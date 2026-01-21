@@ -1,0 +1,159 @@
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/useAuth';
+import { useSegment, QuickActions, SegmentBadge } from '@/lib/SegmentContext';
+
+export default function AgencyDashboard() {
+    const { user, loading: authLoading } = useAuth();
+    const { config, loading: segmentLoading } = useSegment();
+    const router = useRouter();
+
+    useEffect(() => {
+        if (!authLoading && !user) {
+            router.push('/auth/login');
+        }
+    }, [user, authLoading, router]);
+
+    if (authLoading || segmentLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="min-h-screen bg-gray-900">
+            {/* Header - Dark theme for enterprise */}
+            <header className="bg-gray-800 shadow-lg border-b border-gray-700">
+                <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+                    <div>
+                        <div className="flex items-center gap-3">
+                            <h1 className="text-2xl font-bold text-white">
+                                {user?.full_name || 'Agence'}
+                            </h1>
+                            <span className="px-2 py-1 bg-purple-600 text-white text-xs rounded-full">
+                                Enterprise ⭐
+                            </span>
+                        </div>
+                        <span className="text-sm text-gray-400">Console d'administration</span>
+                    </div>
+                    <button
+                        onClick={() => router.push('/auth/logout')}
+                        className="text-gray-400 hover:text-white"
+                    >
+                        Déconnexion
+                    </button>
+                </div>
+            </header>
+
+            <main className="max-w-7xl mx-auto px-4 py-8">
+                {/* Enterprise Quick Actions */}
+                <section className="mb-8">
+                    <h2 className="text-lg font-semibold text-white mb-4">Actions Enterprise</h2>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <button
+                            onClick={() => router.push('/bulk')}
+                            className="flex flex-col items-center p-6 bg-gray-800 rounded-xl border border-gray-700 hover:border-purple-500 transition-colors"
+                        >
+                            <span className="text-3xl mb-2">📤</span>
+                            <span className="text-white font-medium">Import en masse</span>
+                            <span className="text-xs text-gray-400">CSV / XML</span>
+                        </button>
+                        <button
+                            onClick={() => router.push('/gli')}
+                            className="flex flex-col items-center p-6 bg-gray-800 rounded-xl border border-gray-700 hover:border-green-500 transition-colors"
+                        >
+                            <span className="text-3xl mb-2">🛡️</span>
+                            <span className="text-white font-medium">Devis GLI</span>
+                            <span className="text-xs text-gray-400">Garantie loyers impayés</span>
+                        </button>
+                        <button
+                            onClick={() => router.push('/webhooks')}
+                            className="flex flex-col items-center p-6 bg-gray-800 rounded-xl border border-gray-700 hover:border-blue-500 transition-colors"
+                        >
+                            <span className="text-3xl mb-2">🔗</span>
+                            <span className="text-white font-medium">Intégration ERP</span>
+                            <span className="text-xs text-gray-400">Webhooks API</span>
+                        </button>
+                        <button
+                            onClick={() => router.push('/team')}
+                            className="flex flex-col items-center p-6 bg-gray-800 rounded-xl border border-gray-700 hover:border-orange-500 transition-colors"
+                        >
+                            <span className="text-3xl mb-2">👥</span>
+                            <span className="text-white font-medium">Équipe</span>
+                            <span className="text-xs text-gray-400">Gestion des accès</span>
+                        </button>
+                    </div>
+                </section>
+
+                {/* Portfolio Overview */}
+                <section className="mb-8">
+                    <h2 className="text-lg font-semibold text-white mb-4">Vue d'ensemble</h2>
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                        <div className="bg-gray-800 p-4 rounded-xl border border-gray-700">
+                            <div className="text-3xl font-bold text-white">0</div>
+                            <div className="text-sm text-gray-400">Biens gérés</div>
+                        </div>
+                        <div className="bg-gray-800 p-4 rounded-xl border border-gray-700">
+                            <div className="text-3xl font-bold text-green-400">0</div>
+                            <div className="text-sm text-gray-400">Actifs</div>
+                        </div>
+                        <div className="bg-gray-800 p-4 rounded-xl border border-gray-700">
+                            <div className="text-3xl font-bold text-blue-400">0</div>
+                            <div className="text-sm text-gray-400">Candidatures</div>
+                        </div>
+                        <div className="bg-gray-800 p-4 rounded-xl border border-gray-700">
+                            <div className="text-3xl font-bold text-orange-400">0</div>
+                            <div className="text-sm text-gray-400">Webhooks</div>
+                        </div>
+                        <div className="bg-gray-800 p-4 rounded-xl border border-gray-700">
+                            <div className="text-3xl font-bold text-purple-400">0</div>
+                            <div className="text-sm text-gray-400">Membres</div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Analytics */}
+                <section className="mb-8">
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-lg font-semibold text-white">Analytics</h2>
+                        <button className="text-sm text-purple-400 hover:text-purple-300">
+                            Exporter →
+                        </button>
+                    </div>
+                    <div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
+                        <div className="grid grid-cols-4 gap-6 text-center">
+                            <div>
+                                <div className="text-2xl font-bold text-white">0</div>
+                                <div className="text-xs text-gray-400">Vues totales</div>
+                            </div>
+                            <div>
+                                <div className="text-2xl font-bold text-white">0%</div>
+                                <div className="text-xs text-gray-400">Taux de conversion</div>
+                            </div>
+                            <div>
+                                <div className="text-2xl font-bold text-white">0j</div>
+                                <div className="text-xs text-gray-400">Délai moyen location</div>
+                            </div>
+                            <div>
+                                <div className="text-2xl font-bold text-white">0€</div>
+                                <div className="text-xs text-gray-400">CA mensuel</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Recent Activity */}
+                <section>
+                    <h2 className="text-lg font-semibold text-white mb-4">Activité récente</h2>
+                    <div className="bg-gray-800 rounded-xl border border-gray-700 p-6 text-center text-gray-400">
+                        <p>Aucune activité récente</p>
+                    </div>
+                </section>
+            </main>
+        </div>
+    );
+}

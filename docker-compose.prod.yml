@@ -1,0 +1,111 @@
+# Netflix-Style Production Docker Compose
+# Supports auto-scaling, caching, and background workers
+
+services:
+  # API Server (scalable)
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - SECRET_KEY=${SECRET_KEY}
+      - REDIS_URL=redis://redis:6379/0
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - FRONTEND_URL=${FRONTEND_URL}
+    depends_on:
+      - redis
+      - db
+    deploy:
+      replicas: 2 # Netflix: Scale horizontally
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    ports:
+      - "8000:8000"
+
+  # Background Worker (Celery)
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: celery -A app.workers.celery_app worker --loglevel=info
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - SECRET_KEY=${SECRET_KEY}
+      - REDIS_URL=redis://redis:6379/0
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    depends_on:
+      - redis
+      - db
+    deploy:
+      replicas: 1
+
+  # Redis Cache (Netflix EVCache pattern)
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=rental
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=rental_platform
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U rental -d rental_platform" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Frontend (Next.js)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    environment:
+      - NEXT_PUBLIC_API_URL=http://api:8000
+    depends_on:
+      - api
+    ports:
+      - "3000:3000"
+
+  # Nginx Load Balancer (Netflix Zuul pattern)
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - api
+      - frontend
+
+volumes:
+  redis_data:
+  postgres_data:
+
+    # Example .env file for docker-compose:
+    # DATABASE_URL=postgresql+asyncpg://rental:${DB_PASSWORD}@db:5432/rental_platform
+    # SECRET_KEY=your-256-bit-secret-key
+    # DB_PASSWORD=secure-password-here
+    # ANTHROPIC_API_KEY=sk-ant-...
+    # FRONTEND_URL=https://yourdomain.fr
