@@ -19,8 +19,14 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Set sqlalchemy.url from environment
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL.replace("+asyncpg", ""))
+# Set sqlalchemy.url from environment. Alembic needs sync interface
+url = settings.DATABASE_URL
+if url.startswith("postgres://"):
+    url = url.replace("postgres://", "postgresql://", 1)
+elif url.startswith("postgresql+asyncpg://"):
+    url = url.replace("postgresql+asyncpg://", "postgresql://", 1)
+
+config.set_main_option("sqlalchemy.url", url)
 
 # add your model's MetaData object here
 target_metadata = Base.metadata
