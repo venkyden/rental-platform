@@ -141,3 +141,28 @@ async def resume_onboarding(
         "completed": False,
         "responses": current_user.preferences or {}
     }
+
+
+@router.put("/preferences")
+async def update_preferences(
+    request: OnboardingAnswerRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Update user preferences (merge new values into existing)."""
+    existing = current_user.preferences or {}
+    existing.update(request.responses)
+    current_user.preferences = existing
+
+    # Re-detect segment if user_type is present
+    if "user_type" in existing:
+        segment = detect_segment(existing)
+        current_user.segment = segment
+
+    await db.commit()
+    await db.refresh(current_user)
+
+    return {
+        "preferences": current_user.preferences,
+        "segment": current_user.segment
+    }

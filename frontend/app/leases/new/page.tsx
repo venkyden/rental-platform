@@ -62,7 +62,7 @@ export default function LeaseWizard() {
     const fetchInitialData = async () => {
         try {
             // Fetch Properties
-            const propsRes = await apiClient.client.get('/properties/me');
+            const propsRes = await apiClient.client.get('/properties', { params: { landlord_only: true } });
             setProperties(propsRes.data);
 
             // Mock Tenants (In production, fetch from applications or contacts)
@@ -90,7 +90,7 @@ export default function LeaseWizard() {
     const handleGenerate = async () => {
         setGenerating(true);
         try {
-            const response = await apiClient.client.post(`/visits/leases/generate?property_id=${selectedPropertyId}`, {
+            const response = await apiClient.client.post(`/leases/generate`, {
                 tenant_email: tenantEmail,
                 start_date: startDate,
                 rent_amount: rentAmount,
