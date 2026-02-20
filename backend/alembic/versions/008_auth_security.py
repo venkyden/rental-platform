@@ -37,6 +37,6 @@ def upgrade():
     
 
 def downgrade():
-    op.drop_table('used_reset_tokens')
+    op.execute(\"DROP TABLE IF EXISTS used_reset_tokens CASCADE\")
     op.drop_column('users', 'locked_until')
     op.drop_column('users', 'failed_login_attempts')

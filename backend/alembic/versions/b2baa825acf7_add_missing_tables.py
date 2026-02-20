@@ -179,6 +179,6 @@ def downgrade() -> None:
     op.create_index('ix_conversations_property_id', 'conversations', ['property_id'], unique=False)
     op.create_index('ix_conversations_last_message_at', 'conversations', ['last_message_at'], unique=False)
     op.create_index('ix_conversations_landlord_id', 'conversations', ['landlord_id'], unique=False)
-    op.drop_table('applications')
-    op.drop_table('documents')
+    op.execute(\"DROP TABLE IF EXISTS applications CASCADE\")
+    op.execute(\"DROP TABLE IF EXISTS documents CASCADE\")
     # ### end Alembic commands ###

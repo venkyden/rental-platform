@@ -21,7 +21,7 @@ def upgrade() -> None:
     op.drop_index('ix_notifications_read', table_name='notifications', if_exists=True)
     op.drop_index('ix_notifications_user_id', table_name='notifications', if_exists=True)
     op.drop_index('ix_notifications_user_read', table_name='notifications', if_exists=True)
-    op.drop_table('notifications')
+    op.execute(\"DROP TABLE IF EXISTS notifications CASCADE\")
     op.add_column('property_media_sessions', sa.Column('location_verified', sa.Boolean(), nullable=True))
     op.add_column('property_media_sessions', sa.Column('location_verified_at', sa.TIMESTAMP(), nullable=True))
     op.alter_column('used_reset_tokens', 'used_at',

@@ -30,7 +30,7 @@ def upgrade() -> None:
     op.create_index(op.f('ix_feature_flags_name'), 'feature_flags', ['name'], unique=True)
     op.drop_index('ix_notifications_read', table_name='notifications', if_exists=True)
     op.drop_index('ix_notifications_user_id', table_name='notifications', if_exists=True)
-    op.drop_table('notifications')
+    op.execute(\"DROP TABLE IF EXISTS notifications CASCADE\")
     # ### end Alembic commands ###
 
 
@@ -53,5 +53,5 @@ def downgrade() -> None:
     op.create_index('ix_notifications_user_id', 'notifications', ['user_id'], unique=False)
     op.create_index('ix_notifications_read', 'notifications', ['read'], unique=False)
     op.drop_index(op.f('ix_feature_flags_name'), table_name='feature_flags', if_exists=True)
-    op.drop_table('feature_flags')
+    op.execute(\"DROP TABLE IF EXISTS feature_flags CASCADE\")
     # ### end Alembic commands ###

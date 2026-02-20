@@ -40,6 +40,6 @@ def upgrade() -> None:
 def downgrade() -> None:
     op.drop_index('ix_pm_access_landlord_id', if_exists=True)
     op.drop_index('ix_pm_access_property_manager_id', if_exists=True)
-    op.drop_table('property_manager_access')
+    op.execute(\"DROP TABLE IF EXISTS property_manager_access CASCADE\")
     
     # Note: Cannot remove enum value in PostgreSQL easily, would need to recreate the type
