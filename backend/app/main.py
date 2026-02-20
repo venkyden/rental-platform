@@ -79,6 +79,10 @@ app.include_router(erp_webhooks.router)
 from app.routers import documents
 app.include_router(documents.router)
 
+# Import and include applications router
+from app.routers import applications
+app.include_router(applications.router)
+
 @app.get("/health")
 async def health_check():
     """

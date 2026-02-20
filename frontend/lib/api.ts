@@ -69,6 +69,7 @@ class ApiClient {
         password: string;
         full_name: string;
         role: 'tenant' | 'landlord' | 'property_manager';
+        marketing_consent?: boolean;
     }) {
         const response = await this.client.post('/auth/register', data);
         return response.data;
@@ -94,6 +95,19 @@ class ApiClient {
 
     async getMe() {
         const response = await this.client.get('/auth/me');
+        return response.data;
+    }
+
+    async googleLogin(credential: string, role?: string) {
+        const response = await this.client.post('/auth/google', {
+            credential,
+            role,
+        });
+
+        if (response.data.access_token) {
+            this.setToken(response.data.access_token);
+        }
+
         return response.data;
     }
 
@@ -125,6 +139,25 @@ class ApiClient {
     // Health check
     async healthCheck() {
         const response = await this.client.get('/health');
+        return response.data;
+    }
+
+    // Property media upload
+    async uploadPropertyMedia(file: File, metadata: Record<string, any> | string, verificationCode: string) {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const metadataStr = typeof metadata === 'string' ? metadata : JSON.stringify(metadata);
+
+        const response = await this.client.post('/properties/media/upload', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+            params: {
+                metadata: metadataStr,
+                verification_code: verificationCode,
+            },
+        });
         return response.data;
     }
 }

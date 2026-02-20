@@ -12,6 +12,9 @@ interface Property {
     title: string;
     city: string;
     monthly_rent: number;
+    charges?: number;
+    charges_included?: boolean;
+    deposit?: number;
     bedrooms: number;
     property_type: string;
     furnished: boolean;
@@ -20,6 +23,8 @@ interface Property {
     amenities: string[];
     status: string;
     is_caf_eligible?: boolean;
+    dpe_rating?: string;
+    guarantor_required?: boolean;
 }
 
 export default function SearchPage() {
@@ -200,13 +205,40 @@ export default function SearchPage() {
                                     <div className="p-4">
                                         <div className="flex justify-between items-start mb-2">
                                             <h3 className="font-bold text-gray-900 truncate pr-2">{property.title}</h3>
-                                            <span className="text-blue-600 font-bold whitespace-nowrap">{property.monthly_rent}€</span>
+                                            <div className="text-right whitespace-nowrap">
+                                                <span className="text-blue-600 font-bold">{property.monthly_rent}€</span>
+                                                <span className={`ml-1 text-xs font-bold px-1.5 py-0.5 rounded-full ${property.charges_included ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                                                    {property.charges_included ? 'CC' : 'HC'}
+                                                </span>
+                                                {!property.charges_included && property.charges && (
+                                                    <div className="text-xs text-gray-500">+{property.charges}€ charges</div>
+                                                )}
+                                            </div>
                                         </div>
-                                        <p className="text-sm text-gray-500 mb-4">{property.city} • {property.size_sqm}m² • {property.bedrooms}ch</p>
+                                        <p className="text-sm text-gray-500 mb-2">{property.city} • {property.size_sqm}m² • {property.bedrooms}ch</p>
+                                        {property.deposit && (
+                                            <p className="text-xs text-gray-400 mb-2">Dépôt: {property.deposit}€</p>
+                                        )}
                                         <div className="flex gap-2 flex-wrap">
+                                            {property.dpe_rating && (
+                                                <span className={`px-2 py-1 rounded text-xs font-bold text-white ${property.dpe_rating === 'A' ? 'bg-green-500' :
+                                                        property.dpe_rating === 'B' ? 'bg-lime-500' :
+                                                            property.dpe_rating === 'C' ? 'bg-yellow-400 !text-gray-800' :
+                                                                property.dpe_rating === 'D' ? 'bg-amber-400 !text-gray-800' :
+                                                                    property.dpe_rating === 'E' ? 'bg-orange-500' :
+                                                                        property.dpe_rating === 'F' ? 'bg-red-500' :
+                                                                            'bg-red-700'
+                                                    }`}>DPE {property.dpe_rating}</span>
+                                            )}
                                             {property.furnished && <span className="px-2 py-1 bg-purple-50 text-purple-700 rounded text-xs">Meublé</span>}
+                                            {!property.furnished && <span className="px-2 py-1 bg-gray-50 text-gray-500 rounded text-xs">Non meublé</span>}
                                             {property.amenities?.includes('colocation') && <span className="px-2 py-1 bg-green-50 text-green-700 rounded text-xs">Coloc OK</span>}
                                             {property.is_caf_eligible && <span className="px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs">CAF ✅</span>}
+                                            {property.guarantor_required ? (
+                                                <span className="px-2 py-1 bg-indigo-50 text-indigo-700 rounded text-xs">🛡️ Garant requis</span>
+                                            ) : (
+                                                <span className="px-2 py-1 bg-emerald-50 text-emerald-700 rounded text-xs">✅ Sans garant</span>
+                                            )}
                                         </div>
                                     </div>
                                 </div>

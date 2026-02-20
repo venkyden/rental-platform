@@ -7,7 +7,7 @@ from app.core.database import get_db
 from app.core.security import verify_password, get_password_hash, create_access_token, verify_token
 from app.core.config import settings
 from app.models.user import User
-from app.models.schemas import UserRegister, UserLogin, Token, UserResponse, ForgotPasswordRequest, ResetPasswordRequest
+from app.models.schemas import UserRegister, UserLogin, Token, UserResponse, ForgotPasswordRequest, ResetPasswordRequest, GoogleAuthRequest
 from app.services.email import email_service
 import logging
 
@@ -78,7 +78,9 @@ async def register(request: Request, user_data: UserRegister, db: AsyncSession =
         email=user_data.email,
         hashed_password=hashed_password,
         full_name=user_data.full_name,
-        role=user_data.role
+        role=user_data.role,
+        marketing_consent=user_data.marketing_consent,
+        marketing_consent_at=datetime.utcnow() if user_data.marketing_consent else None,
     )
     
     db.add(new_user)
@@ -157,6 +159,118 @@ async def login(
 async def get_me(current_user: User = Depends(get_current_user)):
     """Get current user profile"""
     return current_user
+
+
+@router.post("/google", response_model=Token)
+async def google_auth(
+    request: Request,
+    auth_data: GoogleAuthRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    """Authenticate with Google. Verifies Google ID token, finds or creates user."""
+    if not settings.GOOGLE_CLIENT_ID:
+        raise HTTPException(
+            status_code=status.HTTP_501_NOT_IMPLEMENTED,
+            detail="Google Sign-In is not configured"
+        )
+    
+    # Verify the Google ID token
+    import httpx
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(
+                f"https://oauth2.googleapis.com/tokeninfo?id_token={auth_data.credential}"
+            )
+            if resp.status_code != 200:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Invalid Google token"
+                )
+            google_data = resp.json()
+    except httpx.HTTPError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Failed to verify Google token"
+        )
+    
+    # Validate the token was issued for our app
+    if google_data.get("aud") != settings.GOOGLE_CLIENT_ID:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token was not issued for this application"
+        )
+    
+    google_id = google_data.get("sub")
+    email = google_data.get("email")
+    full_name = google_data.get("name")
+    email_verified = google_data.get("email_verified", "false") == "true"
+    
+    if not email or not google_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Google account missing email or ID"
+        )
+    
+    # Check if user exists by google_id or email
+    result = await db.execute(select(User).where(User.google_id == google_id))
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        # Check by email (existing user linking Google account)
+        result = await db.execute(select(User).where(User.email == email))
+        user = result.scalar_one_or_none()
+        
+        if user:
+            # Link Google account to existing user
+            user.google_id = google_id
+            if email_verified:
+                user.email_verified = True
+            audit_logger.info(f"GOOGLE_LINK email={email}")
+        else:
+            # Create new user
+            role = auth_data.role or "tenant"  # Default to tenant
+            user = User(
+                email=email,
+                google_id=google_id,
+                full_name=full_name,
+                role=role,
+                email_verified=email_verified,
+                hashed_password=None,  # No password for Google-only accounts
+            )
+            db.add(user)
+            audit_logger.info(f"GOOGLE_REGISTER email={email} role={role}")
+    
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account is inactive"
+        )
+    
+    # Update last login
+    user.last_login = datetime.utcnow()
+    await db.commit()
+    await db.refresh(user)
+    
+    # Create access token
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.email, "user_id": str(user.id)},
+        expires_delta=access_token_expires
+    )
+    
+    # Get segment-based redirect
+    from app.core.segment_routing import get_redirect_path, get_segment_config
+    redirect_path = get_redirect_path(user.segment, user.role.value if hasattr(user.role, 'value') else user.role)
+    segment_config = get_segment_config(user.segment)
+    
+    audit_logger.info(f"GOOGLE_LOGIN_SUCCESS email={user.email} segment={user.segment}")
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "redirect_path": redirect_path,
+        "segment": user.segment,
+        "segment_name": segment_config.segment_name if segment_config else None,
+    }
 
 
 @router.post("/forgot-password")

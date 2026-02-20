@@ -22,7 +22,7 @@ export default function ProfilePage() {
                         <div className="flex items-center gap-4 mb-6">
                             <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-2xl">👤</div>
                             <div>
-                                <h2 className="font-bold text-lg">{user?.username}</h2>
+                                <h2 className="font-bold text-lg">{user?.full_name}</h2>
                                 <p className="text-gray-500">{user?.email}</p>
                             </div>
                         </div>

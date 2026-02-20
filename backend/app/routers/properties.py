@@ -104,11 +104,17 @@ async def list_properties(
     if city:
         filters.append(Property.city.ilike(f"%{city}%"))
     
-    if min_rent:
-        filters.append(Property.monthly_rent >= min_rent)
-    
-    if max_rent:
-        filters.append(Property.monthly_rent <= max_rent)
+    if min_rent or max_rent:
+        # Total rent: for CC, charges already in monthly_rent; for HC, add charges
+        from sqlalchemy import case
+        total_rent = Property.monthly_rent + case(
+            (Property.charges_included == True, 0),
+            else_=func.coalesce(Property.charges, 0)
+        )
+        if min_rent:
+            filters.append(total_rent >= min_rent)
+        if max_rent:
+            filters.append(total_rent <= max_rent)
     
     if bedrooms is not None:
         filters.append(Property.bedrooms >= bedrooms)

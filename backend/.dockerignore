@@ -1,0 +1,65 @@
+# Development/Testing Scripts (contain test credentials)
+create_segment_users.py
+verify_v3_config.py
+e2e_test.py
+create_tables.sql
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# Environment files (contain secrets)
+.env
+.env.local
+.env.*
+
+# Database files
+*.db
+*.sqlite
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Testing artifacts
+.coverage
+htmlcov/
+.pytest_cache/
+pytest.ini
+
+# Uploads (should use cloud storage in production)
+uploads/
+
+# Git
+.git/
+.gitignore
+
+# Documentation (not needed in container)
+*.md
+!README.md
+
+# Alembic (migrations should be managed separately)
+# alembic/
+
+# Development configs
+docker-compose.dev.yml

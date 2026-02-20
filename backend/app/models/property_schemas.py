@@ -29,6 +29,8 @@ class PropertyCreate(BaseModel):
     monthly_rent: Decimal = Field(..., gt=0)
     deposit: Optional[Decimal] = Field(None, ge=0)
     charges: Optional[Decimal] = Field(None, ge=0)
+    charges_included: bool = False
+    charges_description: Optional[str] = None
     
     available_from: Optional[date] = None
     lease_duration_months: Optional[int] = Field(None, gt=0)
@@ -42,6 +44,10 @@ class PropertyCreate(BaseModel):
     # Utilities & Eligibility
     utilities_included: Optional[List[str]] = []  # ['electricity', 'gas', 'water', 'internet']
     is_caf_eligible: bool = False
+    
+    # Guarantor Preferences
+    guarantor_required: bool = False
+    accepted_guarantor_types: Optional[List[str]] = []  # physical, visale, garantme, organisation
 
 
 class PropertyUpdate(BaseModel):
@@ -64,6 +70,8 @@ class PropertyUpdate(BaseModel):
     monthly_rent: Optional[Decimal] = Field(None, gt=0)
     deposit: Optional[Decimal] = Field(None, ge=0)
     charges: Optional[Decimal] = Field(None, ge=0)
+    charges_included: Optional[bool] = None
+    charges_description: Optional[str] = None
     
     available_from: Optional[date] = None
     lease_duration_months: Optional[int] = Field(None, gt=0)
@@ -76,6 +84,9 @@ class PropertyUpdate(BaseModel):
     
     utilities_included: Optional[List[str]] = None
     is_caf_eligible: Optional[bool] = None
+    
+    guarantor_required: Optional[bool] = None
+    accepted_guarantor_types: Optional[List[str]] = None
 
 
 class PropertyResponse(BaseModel):
@@ -104,6 +115,8 @@ class PropertyResponse(BaseModel):
     monthly_rent: Decimal
     deposit: Optional[Decimal]
     charges: Optional[Decimal]
+    charges_included: bool
+    charges_description: Optional[str]
     
     available_from: Optional[date]
     lease_duration_months: Optional[int]
@@ -116,6 +129,9 @@ class PropertyResponse(BaseModel):
     
     utilities_included: Optional[dict]
     is_caf_eligible: bool
+    
+    guarantor_required: bool
+    accepted_guarantor_types: Optional[dict]
     
     photos: Optional[dict]
     

@@ -10,6 +10,7 @@ class UserRegister(BaseModel):
     password: str = Field(min_length=8, max_length=128)
     full_name: str
     role: str = Field(pattern="^(tenant|landlord|property_manager)$")
+    marketing_consent: bool = False
     
     @field_validator('password')
     @classmethod
@@ -55,6 +56,7 @@ class UserResponse(BaseModel):
     trust_score: int
     segment: Optional[str] = None
     onboarding_completed: bool = False
+    marketing_consent: bool = False
     created_at: datetime
     
     class Config:
@@ -65,6 +67,27 @@ class ForgotPasswordRequest(BaseModel):
     email: EmailStr
 
 
+class GoogleAuthRequest(BaseModel):
+    credential: str  # Google ID token from frontend
+    role: Optional[str] = Field(default=None, pattern="^(tenant|landlord|property_manager)$")
+
+
 class ResetPasswordRequest(BaseModel):
     token: str
     new_password: str = Field(min_length=8)
+
+
+class ApplicationCreate(BaseModel):
+    property_id: UUID
+    cover_letter: Optional[str] = None
+    
+class ApplicationResponse(BaseModel):
+    id: UUID
+    property_id: UUID
+    tenant_id: UUID
+    status: str
+    cover_letter: Optional[str]
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True

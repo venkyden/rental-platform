@@ -1,9 +1,23 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiClient } from '@/lib/api';
+import RoomivoBrand from '@/components/RoomivoBrand';
+
+declare global {
+    interface Window {
+        google?: {
+            accounts: {
+                id: {
+                    initialize: (config: any) => void;
+                    renderButton: (element: HTMLElement, config: any) => void;
+                };
+            };
+        };
+    }
+}
 
 export default function RegisterPage() {
     const [formData, setFormData] = useState({
@@ -18,7 +32,58 @@ export default function RegisterPage() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [passwordStrength, setPasswordStrength] = useState({ valid: false, message: '' });
+    const [googleLoading, setGoogleLoading] = useState(false);
     const router = useRouter();
+
+    const handleGoogleResponse = useCallback(async (response: any) => {
+        if (!formData.role) return;
+        setError('');
+        setGoogleLoading(true);
+        try {
+            const result = await apiClient.googleLogin(response.credential, formData.role);
+            const redirectPath = result.redirect_path || '/onboarding';
+            router.push(redirectPath);
+        } catch (err: any) {
+            const detail = err.response?.data?.detail;
+            if (typeof detail === 'string') {
+                setError(detail);
+            } else {
+                setError('Google sign-up failed. Please try again.');
+            }
+        } finally {
+            setGoogleLoading(false);
+        }
+    }, [formData.role, router]);
+
+    useEffect(() => {
+        const script = document.createElement('script');
+        script.src = 'https://accounts.google.com/gsi/client';
+        script.async = true;
+        script.defer = true;
+        script.onload = () => {
+            const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+            if (clientId && window.google) {
+                window.google.accounts.id.initialize({
+                    client_id: clientId,
+                    callback: handleGoogleResponse,
+                });
+                const buttonDiv = document.getElementById('google-signup-btn');
+                if (buttonDiv) {
+                    window.google.accounts.id.renderButton(buttonDiv, {
+                        theme: 'outline',
+                        size: 'large',
+                        width: '100%',
+                        text: 'signup_with',
+                        shape: 'pill',
+                    });
+                }
+            }
+        };
+        document.body.appendChild(script);
+        return () => {
+            document.body.removeChild(script);
+        };
+    }, [handleGoogleResponse]);
 
     function handleChange(
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -92,6 +157,7 @@ export default function RegisterPage() {
                 password: formData.password,
                 full_name: formData.full_name,
                 role: formData.role,
+                marketing_consent: formData.marketingConsent,
             });
 
             // Login automatically after registration
@@ -117,29 +183,54 @@ export default function RegisterPage() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full space-y-8">
-                <div>
-                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                        Create your account
-                    </h2>
-                    <p className="mt-2 text-center text-sm text-gray-600">
-                        Already have an account?{' '}
-                        <Link
-                            href="/auth/login"
-                            className="font-medium text-blue-600 hover:text-blue-500"
-                        >
-                            Sign in
-                        </Link>
-                    </p>
+        <div className="min-h-screen flex items-center justify-center bg-[var(--background)] py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-md w-full animate-fade-in-up">
+                <div className="mb-8">
+                    <RoomivoBrand variant="full" size="md" />
                 </div>
-                <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+
+                <div className="glass-card p-8 space-y-6">
+                    <div className="text-center">
+                        <h2 className="text-2xl font-bold text-[var(--foreground)]">
+                            Create your account
+                        </h2>
+                        <p className="mt-2 text-sm text-[var(--gray-500)]">
+                            Already have an account?{' '}
+                            <Link href="/auth/login" className="font-medium text-[var(--primary-500)] hover:text-[var(--primary-600)]">
+                                Sign in
+                            </Link>
+                        </p>
+                    </div>
+
                     {error && (
-                        <div className="rounded-md bg-red-50 p-4">
+                        <div className="rounded-xl bg-red-50 border border-red-200 p-4 animate-shake">
                             <p className="text-sm text-red-800">{error}</p>
                         </div>
                     )}
-                    <div className="space-y-4">
+
+                    {/* Google Sign-Up */}
+                    <div>
+                        <div id="google-signup-btn" className="flex justify-center" />
+                        {googleLoading && (
+                            <p className="text-center text-sm text-[var(--gray-500)] mt-2">
+                                Creating account with Google...
+                            </p>
+                        )}
+                    </div>
+
+                    {/* Divider */}
+                    <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                            <div className="w-full border-t border-[var(--card-border)]" />
+                        </div>
+                        <div className="relative flex justify-center text-sm">
+                            <span className="px-4 bg-[var(--card-bg)] text-[var(--gray-500)]">
+                                or register with email
+                            </span>
+                        </div>
+                    </div>
+
+                    <form className="space-y-5" onSubmit={handleSubmit}>
                         <div>
                             <label
                                 htmlFor="full_name"
@@ -295,18 +386,25 @@ export default function RegisterPage() {
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div>
-                        <button
-                            type="submit"
-                            disabled={loading || !formData.gdprConsent}
-                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {loading ? 'Creating account...' : 'Create account'}
-                        </button>
-                    </div>
-                </form>
+                        <div>
+                            <button
+                                type="submit"
+                                disabled={loading || !formData.gdprConsent}
+                                className="btn-primary btn-shine w-full py-3"
+                            >
+                                {loading ? (
+                                    <span className="flex items-center justify-center gap-2">
+                                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        Creating account...
+                                    </span>
+                                ) : (
+                                    'Create account'
+                                )}
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     );

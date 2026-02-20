@@ -41,7 +41,13 @@ type PropertyFormData = {
     monthly_rent: number;
     deposit?: number;
     charges?: number;
+    charges_included: boolean;
+    charges_description?: string;
     available_from?: string;
+
+    // Guarantor Preferences
+    guarantor_required: boolean;
+    accepted_guarantor_types: string[];
 
     // Features
     amenities: string[];
@@ -84,6 +90,10 @@ export default function NewPropertyPage() {
         surface_type: 'standard',
         // Pricing
         monthly_rent: 800,
+        charges_included: false,
+        // Guarantor
+        guarantor_required: false,
+        accepted_guarantor_types: [],
         amenities: [],
         custom_amenities: [],
         public_transport: [],
@@ -498,10 +508,10 @@ export default function NewPropertyPage() {
                                             value={formData.deposit || ''}
                                             onChange={(e) => updateFormData({ deposit: e.target.value ? parseFloat(e.target.value) : undefined })}
                                             className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${formData.deposit && (
-                                                    formData.furnished
-                                                        ? formData.deposit > formData.monthly_rent * 2
-                                                        : formData.deposit > formData.monthly_rent
-                                                ) ? 'border-red-500 bg-red-50' : ''
+                                                formData.furnished
+                                                    ? formData.deposit > formData.monthly_rent * 2
+                                                    : formData.deposit > formData.monthly_rent
+                                            ) ? 'border-red-500 bg-red-50' : ''
                                                 }`}
                                             min="0"
                                         />
@@ -518,7 +528,7 @@ export default function NewPropertyPage() {
                                             )}
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium mb-2">Monthly Charges (€)</label>
+                                        <label className="block text-sm font-medium mb-2">Charges mensuelles (€)</label>
                                         <input
                                             type="number"
                                             value={formData.charges || ''}
@@ -527,8 +537,58 @@ export default function NewPropertyPage() {
                                             min="0"
                                         />
                                     </div>
+
+                                    {/* CC / HC Toggle */}
+                                    <div className="col-span-2">
+                                        <label className="block text-sm font-medium mb-2">Type de loyer</label>
+                                        <div className="flex gap-3">
+                                            <button
+                                                type="button"
+                                                onClick={() => updateFormData({ charges_included: true })}
+                                                className={`flex-1 py-3 rounded-lg border-2 text-center font-medium transition-all ${formData.charges_included
+                                                        ? 'border-green-500 bg-green-50 text-green-700'
+                                                        : 'border-gray-200 hover:border-gray-300'
+                                                    }`}
+                                            >
+                                                <div className="text-lg">CC</div>
+                                                <div className="text-xs text-gray-500">Charges Comprises</div>
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => updateFormData({ charges_included: false })}
+                                                className={`flex-1 py-3 rounded-lg border-2 text-center font-medium transition-all ${!formData.charges_included
+                                                        ? 'border-amber-500 bg-amber-50 text-amber-700'
+                                                        : 'border-gray-200 hover:border-gray-300'
+                                                    }`}
+                                            >
+                                                <div className="text-lg">HC</div>
+                                                <div className="text-xs text-gray-500">Hors Charges</div>
+                                            </button>
+                                        </div>
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            {formData.charges_included
+                                                ? 'Le loyer affiché inclut les charges (eau, entretien, etc.)'
+                                                : 'Les charges s\'ajoutent au loyer mensuel'
+                                            }
+                                        </p>
+                                    </div>
+
+                                    {/* Charges Description */}
+                                    {formData.charges && Number(formData.charges) > 0 && (
+                                        <div className="col-span-2">
+                                            <label className="block text-sm font-medium mb-2">Détail des charges</label>
+                                            <textarea
+                                                value={formData.charges_description || ''}
+                                                onChange={(e) => updateFormData({ charges_description: e.target.value })}
+                                                placeholder="Ex: Eau froide, entretien parties communes, ordures ménagères, assurance immeuble..."
+                                                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                                                rows={2}
+                                            />
+                                        </div>
+                                    )}
+
                                     <div>
-                                        <label className="block text-sm font-medium mb-2">Available From</label>
+                                        <label className="block text-sm font-medium mb-2">Disponible à partir du</label>
                                         <input
                                             type="date"
                                             value={formData.available_from || ''}
@@ -536,6 +596,62 @@ export default function NewPropertyPage() {
                                             className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                                         />
                                     </div>
+                                </div>
+
+                                {/* Guarantor Preferences */}
+                                <div className="mt-6 pt-6 border-t">
+                                    <h3 className="text-lg font-bold mb-4">🛡️ Garantie locative</h3>
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <label className="relative inline-flex items-center cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                checked={formData.guarantor_required}
+                                                onChange={(e) => {
+                                                    const required = e.target.checked;
+                                                    updateFormData({
+                                                        guarantor_required: required,
+                                                        accepted_guarantor_types: required ? ['visale'] : []
+                                                    });
+                                                }}
+                                                className="sr-only peer"
+                                            />
+                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                        </label>
+                                        <span className="font-medium">Garant requis</span>
+                                    </div>
+
+                                    {formData.guarantor_required && (
+                                        <div className="bg-gray-50 rounded-lg p-4">
+                                            <p className="text-sm font-medium text-gray-700 mb-3">Types de garant acceptés:</p>
+                                            <div className="space-y-2">
+                                                {[
+                                                    { value: 'visale', label: '🏛️ Visale (Action Logement)', forced: true },
+                                                    { value: 'physical', label: '🧑 Personne physique (parent, proche)' },
+                                                    { value: 'garantme', label: '🔐 GarantMe' },
+                                                    { value: 'organisation', label: '🏢 Organisme / employeur' },
+                                                ].map(opt => (
+                                                    <label key={opt.value} className="flex items-center gap-2 cursor-pointer">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={formData.accepted_guarantor_types.includes(opt.value)}
+                                                            disabled={opt.forced}
+                                                            onChange={(e) => {
+                                                                if (e.target.checked) {
+                                                                    updateFormData({ accepted_guarantor_types: [...formData.accepted_guarantor_types, opt.value] });
+                                                                } else {
+                                                                    updateFormData({ accepted_guarantor_types: formData.accepted_guarantor_types.filter(t => t !== opt.value) });
+                                                                }
+                                                            }}
+                                                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                                        />
+                                                        <span className="text-sm">{opt.label}</span>
+                                                        {opt.forced && <span className="text-xs text-green-600 italic">(obligatoire par la loi)</span>}
+                                                    </label>
+                                                ))}
+                                            </div>
+                                            <p className="text-xs text-gray-500 mt-3">⚖️ Loi ELAN: Visale ne peut pas être refusé.</p>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         )}

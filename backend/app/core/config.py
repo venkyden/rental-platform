@@ -16,6 +16,10 @@ class Settings(BaseSettings):
     FOURTHLINE_API_KEY: Optional[str] = None
     SENDGRID_API_KEY: Optional[str] = None
     
+    # Google OAuth
+    GOOGLE_CLIENT_ID: Optional[str] = None
+    GOOGLE_CLIENT_SECRET: Optional[str] = None
+    
     # CORS
     FRONTEND_URL: str = "http://localhost:3000"
     

@@ -1,0 +1,199 @@
+{
+  "smoke": [
+    {
+      "name": "Backend Health Check",
+      "passed": true,
+      "details": "Status: healthy",
+      "timestamp": "2026-01-31T20:14:15.338076"
+    },
+    {
+      "name": "API Documentation",
+      "passed": true,
+      "details": "",
+      "timestamp": "2026-01-31T20:14:15.338645"
+    },
+    {
+      "name": "Root Endpoint",
+      "passed": true,
+      "details": "",
+      "timestamp": "2026-01-31T20:14:15.339658"
+    }
+  ],
+  "functional": [
+    {
+      "name": "User Registration",
+      "passed": true,
+      "details": "",
+      "timestamp": "2026-01-31T20:14:15.523356"
+    },
+    {
+      "name": "User Login",
+      "passed": true,
+      "details": "",
+      "timestamp": "2026-01-31T20:14:15.568227"
+    },
+    {
+      "name": "Profile Retrieval",
+      "passed": true,
+      "details": "",
+      "timestamp": "2026-01-31T20:14:15.570481"
+    },
+    {
+      "name": "Identity Verification Start",
+      "passed": true,
+      "details": "Mock URL: https://identity.stripe.com/mock-verification?user...",
+      "timestamp": "2026-01-31T20:14:15.575095"
+    },
+    {
+      "name": "Verification Status Check",
+      "passed": true,
+      "details": "",
+      "timestamp": "2026-01-31T20:14:15.576887"
+    },
+    {
+      "name": "Property Listing (Public)",
+      "passed": true,
+      "details": "",
+      "timestamp": "2026-01-31T20:14:15.584138"
+    },
+    {
+      "name": "Notifications Retrieval",
+      "passed": true,
+      "details": "",
+      "timestamp": "2026-01-31T20:14:15.588900"
+    }
+  ],
+  "integration": [
+    {
+      "name": "Landlord Account Creation",
+      "passed": true,
+      "details": "",
+      "timestamp": "2026-01-31T20:14:15.631518"
+    },
+    {
+      "name": "E2E Property Flow",
+      "passed": true,
+      "details": "Skipped - requires verified identity",
+      "timestamp": "2026-01-31T20:14:15.631549"
+    },
+    {
+      "name": "GLI Quote Generation",
+      "passed": true,
+      "details": "Premium: \u20ac30.0/mo",
+      "timestamp": "2026-01-31T20:14:15.634251"
+    }
+  ],
+  "load": [
+    {
+      "name": "Concurrent Users (10)",
+      "passed": true,
+      "details": "90% success in 0.00s",
+      "timestamp": "2026-01-31T20:14:15.638867"
+    },
+    {
+      "name": "Rate Limiter Active",
+      "passed": true,
+      "details": "429 Received",
+      "timestamp": "2026-01-31T20:14:15.639515"
+    }
+  ],
+  "stress": [
+    {
+      "name": "Burst Load (50 reqs)",
+      "passed": true,
+      "details": "200: 0, 429: 50, Errors: 0 in 0.02s",
+      "timestamp": "2026-01-31T20:14:15.662708"
+    }
+  ],
+  "security": [
+    {
+      "name": "SQL Injection Protection",
+      "passed": true,
+      "details": "Protected",
+      "timestamp": "2026-01-31T20:14:15.670302"
+    },
+    {
+      "name": "XSS Input Sanitization",
+      "passed": true,
+      "details": "",
+      "timestamp": "2026-01-31T20:14:15.712362"
+    },
+    {
+      "name": "Invalid JWT Rejection",
+      "passed": true,
+      "details": "HTTP 401",
+      "timestamp": "2026-01-31T20:14:15.712978"
+    },
+    {
+      "name": "Tampered JWT Rejection",
+      "passed": true,
+      "details": "HTTP 401",
+      "timestamp": "2026-01-31T20:14:15.714121"
+    },
+    {
+      "name": "IDOR Protection",
+      "passed": true,
+      "details": "HTTP 404",
+      "timestamp": "2026-01-31T20:14:15.714748"
+    },
+    {
+      "name": "CORS Configuration",
+      "passed": true,
+      "details": "Restricted: ",
+      "timestamp": "2026-01-31T20:14:15.715481"
+    },
+    {
+      "name": "User Enumeration Protection",
+      "passed": true,
+      "details": "Generic error (good)",
+      "timestamp": "2026-01-31T20:14:15.718190"
+    },
+    {
+      "name": "Weak Password Rejection",
+      "passed": true,
+      "details": "Enforced strong policy",
+      "timestamp": "2026-01-31T20:14:15.721384"
+    },
+    {
+      "name": "GDPR Right to Erasure Endpoint",
+      "passed": true,
+      "details": "HTTP 405",
+      "timestamp": "2026-01-31T20:14:15.721833"
+    },
+    {
+      "name": "Security Headers",
+      "passed": true,
+      "details": "All present",
+      "timestamp": "2026-01-31T20:14:15.722468"
+    }
+  ],
+  "features": [
+    {
+      "name": "Feature ENABLED Check",
+      "passed": true,
+      "details": "",
+      "timestamp": "2026-01-31T20:14:15.733923"
+    },
+    {
+      "name": "Feature DISABLED Check (503)",
+      "passed": true,
+      "details": "Got 503",
+      "timestamp": "2026-01-31T20:14:15.738006"
+    }
+  ],
+  "findings": [],
+  "feedback": [
+    {
+      "name": "Submit Anonymous Feedback",
+      "passed": true,
+      "details": "ID: 5d3738d0-e6cc-4998-a196-eccb2b2988aa",
+      "timestamp": "2026-01-31T20:14:15.746897"
+    },
+    {
+      "name": "Validation (Length)",
+      "passed": true,
+      "details": "",
+      "timestamp": "2026-01-31T20:14:15.748833"
+    }
+  ]
+}

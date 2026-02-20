@@ -1,0 +1,72 @@
+name: Platform CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  quality-gate:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: venkat
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: rental_platform
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      working-directory: ./backend
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install black aiohttp httpx pytest  # Dev dependencies
+
+    - name: Governance - Lint Check
+      working-directory: ./backend
+      run: |
+        black --check .
+      continue-on-error: true # Warning only for now
+
+    - name: Database - Migrations
+      working-directory: ./backend
+      env:
+        DATABASE_URL: postgresql+asyncpg://venkat:password@localhost:5432/rental_platform
+      run: |
+        alembic upgrade head
+
+    - name: Testing - Comprehensive Suite
+      working-directory: ./backend
+      env:
+        DATABASE_URL: postgresql+asyncpg://venkat:password@localhost:5432/rental_platform
+        SECRET_KEY: test_secret_key_1234567890_ci_pipeline
+        ALGORITHM: HS256
+        ACCESS_TOKEN_EXPIRE_MINUTES: 30
+        ENVIRONMENT: test
+      run: |
+        # Start server in background
+        uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+        
+        # Wait for health check
+        sleep 5
+        
+        # Run tests
+        python tests/comprehensive_test.py

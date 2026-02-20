@@ -27,7 +27,8 @@ class User(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     email = Column(String, unique=True, nullable=False, index=True)
-    hashed_password = Column(String, nullable=False)
+    hashed_password = Column(String, nullable=True)  # Nullable for Google-only accounts
+    google_id = Column(String, unique=True, nullable=True, index=True)
     role = Column(SQLEnum(UserRole, name='userrole', native_enum=True, values_callable=lambda x: [e.value for e in x]), nullable=False)
     
     # Profile fields
@@ -51,6 +52,10 @@ class User(Base):
     segment = Column(String, nullable=True)  # D1/D2/D3/S1/S2/S3
     preferences = Column(JSON, nullable=True)  # User preferences from questionnaire
     onboarding_completed = Column(Boolean, default=False)
+    
+    # GDPR consent tracking
+    marketing_consent = Column(Boolean, default=False)
+    marketing_consent_at = Column(DateTime, nullable=True)
     
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow)

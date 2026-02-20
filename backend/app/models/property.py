@@ -42,6 +42,12 @@ class Property(Base):
     monthly_rent = Column(DECIMAL(10, 2), nullable=False)
     deposit = Column(DECIMAL(10, 2))
     charges = Column(DECIMAL(10, 2))
+    charges_included = Column(Boolean, default=False)  # True=CC (charges comprises), False=HC
+    charges_description = Column(Text)  # "Water, maintenance, garbage, building insurance"
+    
+    # Guarantor Preferences
+    guarantor_required = Column(Boolean, default=False)
+    accepted_guarantor_types = Column(JSONB)  # ['physical', 'visale', 'garantme', 'organisation']
     
     # Availability
     available_from = Column(Date)
