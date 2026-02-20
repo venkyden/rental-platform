@@ -15,15 +15,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Rental Platform",
-  description: "Find and manage rental properties with trust and transparency",
+  title: "Roomivo — Trouvez votre chez-vous en toute confiance",
+  description: "Plateforme de location intelligente : vérification d'identité, matching IA et bail numérique pour les expatriés en France.",
   manifest: "/manifest.json",
   themeColor: "#4F46E5",
   viewport: "width=device-width, initial-scale=1, maximum-scale=1",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Rental Platform",
+    title: "Roomivo",
   },
   icons: {
     icon: "/icons/icon-192.png",
