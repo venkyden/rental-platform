@@ -83,6 +83,38 @@ app.include_router(documents.router)
 from app.routers import applications
 app.include_router(applications.router)
 
+# --- Phase 1 Audit: Register previously missing routers ---
+
+from app.routers import notifications
+app.include_router(notifications.router)
+
+from app.routers import leases
+app.include_router(leases.router)
+
+from app.routers import inventory
+app.include_router(inventory.router)
+
+from app.routers import dispute
+app.include_router(dispute.router)
+
+from app.routers import stats
+app.include_router(stats.router)
+
+from app.routers import admin
+app.include_router(admin.router)
+
+from app.routers import media
+app.include_router(media.router)
+
+from app.routers import feedback
+app.include_router(feedback.router)
+
+from app.routers import identity
+app.include_router(identity.router)
+
+from app.routers import gdpr
+app.include_router(gdpr.router)
+
 @app.get("/health")
 async def health_check():
     """

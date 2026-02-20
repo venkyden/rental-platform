@@ -20,6 +20,13 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_ID: Optional[str] = None
     GOOGLE_CLIENT_SECRET: Optional[str] = None
     
+    # Stripe (Identity verification)
+    STRIPE_API_KEY: Optional[str] = None
+    
+    # Monitoring
+    SENTRY_DSN: Optional[str] = None
+    ENVIRONMENT: str = "development"
+    
     # CORS
     FRONTEND_URL: str = "http://localhost:3000"
     

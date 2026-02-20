@@ -39,8 +39,11 @@ class LeaseResponse(BaseModel):
     tenant_id: UUID
     status: str
     start_date: Optional[str] = None
-    monthly_rent: Optional[float] = None
-    created_at: datetime
+    rent_amount: Optional[float] = None
+    deposit_amount: Optional[float] = None
+    charges_amount: Optional[float] = None
+    lease_type: Optional[str] = None
+    created_at: Optional[datetime] = None
     property_location: Optional[dict] = None # {lat, lng}
 
     class Config:
@@ -159,15 +162,18 @@ async def create_lease(
     
     # Create lease record
     rent = request.rent_override or float(property_obj.monthly_rent or 0)
+    charges = request.charges_override or float(property_obj.charges or 0)
     
     lease = Lease(
         property_id=application.property_id,
+        landlord_id=property_obj.landlord_id,
         tenant_id=application.tenant_id,
-        application_id=application.id,
-        status='pending_signature',
+        status='draft',
         start_date=datetime.strptime(request.start_date, "%Y-%m-%d").date(),
-        monthly_rent=rent,
-        deposit=request.deposit_override or (rent * 2)
+        rent_amount=rent,
+        deposit_amount=request.deposit_override or (rent * 2),
+        charges_amount=charges,
+        lease_type=request.lease_type,
     )
     
     db.add(lease)
@@ -226,9 +232,9 @@ async def download_lease_pdf(
         landlord=landlord,
         tenant=tenant,
         start_date=lease.start_date.strftime("%Y-%m-%d"),
-        rent=float(lease.monthly_rent or 0),
-        lease_type='meuble',  # Default; could be stored in lease
-        deposit=float(lease.deposit or 0)
+        rent=float(lease.rent_amount or 0),
+        lease_type=lease.lease_type or 'meuble',
+        deposit=float(lease.deposit_amount or 0)
     )
     
     return HTMLResponse(content=html)

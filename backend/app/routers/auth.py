@@ -57,6 +57,30 @@ async def get_current_user(
     return user
 
 
+# Optional auth scheme — does not raise 401 when no token is present
+oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="/auth/login", auto_error=False)
+
+
+async def get_current_user_optional(
+    token: str = Depends(oauth2_scheme_optional),
+    db: AsyncSession = Depends(get_db)
+) -> User | None:
+    """Get current user if authenticated, otherwise return None."""
+    if not token:
+        return None
+    payload = verify_token(token)
+    if payload is None:
+        return None
+    email: str = payload.get("sub")
+    if email is None:
+        return None
+    result = await db.execute(select(User).where(User.email == email))
+    user = result.scalar_one_or_none()
+    if user is None or not user.is_active:
+        return None
+    return user
+
+
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 @limiter.limit("3/minute")  # Rate limit: 3 registrations per minute per IP
 async def register(request: Request, user_data: UserRegister, db: AsyncSession = Depends(get_db)):

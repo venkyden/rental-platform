@@ -4,8 +4,11 @@ API endpoints for managing Rental Applications (Candidatures).
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
+from pydantic import BaseModel as PydanticBaseModel
 from typing import List
 from uuid import UUID
+from datetime import datetime
 
 from app.core.database import get_db
 from app.routers.auth import get_current_user
@@ -85,7 +88,7 @@ async def list_received_applications(
     return result.scalars().all()
 
 
-class ApplicationUpdate(BaseModel):
+class ApplicationUpdate(PydanticBaseModel):
     status: ApplicationStatus
 
 @router.patch("/{application_id}", response_model=ApplicationResponse)
