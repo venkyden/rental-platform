@@ -1,6 +1,7 @@
 databases:
   # 1. PostgreSQL Database
   - name: roomivo-db
+    region: frankfurt
     plan: free # Change to starter/standard for production workloads
     ipAllowList: [] # Blank allows all for easier development, change in prod as needed
     
