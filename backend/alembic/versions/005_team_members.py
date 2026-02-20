@@ -61,12 +61,12 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_index('ix_team_member_properties_property_id')
-    op.drop_index('ix_team_member_properties_team_member_id')
-    op.drop_index('ix_team_members_invite_token')
-    op.drop_index('ix_team_members_email')
-    op.drop_index('ix_team_members_member_user_id')
-    op.drop_index('ix_team_members_landlord_id')
+    op.drop_index('ix_team_member_properties_property_id', if_exists=True)
+    op.drop_index('ix_team_member_properties_team_member_id', if_exists=True)
+    op.drop_index('ix_team_members_invite_token', if_exists=True)
+    op.drop_index('ix_team_members_email', if_exists=True)
+    op.drop_index('ix_team_members_member_user_id', if_exists=True)
+    op.drop_index('ix_team_members_landlord_id', if_exists=True)
     op.drop_table('team_member_properties')
     op.drop_table('team_members')
     invite_status_enum.drop(op.get_bind(), checkfirst=True)

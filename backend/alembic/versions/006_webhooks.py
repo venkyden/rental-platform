@@ -55,8 +55,8 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_index('ix_webhook_deliveries_created_at')
-    op.drop_index('ix_webhook_deliveries_subscription_id')
-    op.drop_index('ix_webhook_subscriptions_landlord_id')
+    op.drop_index('ix_webhook_deliveries_created_at', if_exists=True)
+    op.drop_index('ix_webhook_deliveries_subscription_id', if_exists=True)
+    op.drop_index('ix_webhook_subscriptions_landlord_id', if_exists=True)
     op.drop_table('webhook_deliveries')
     op.drop_table('webhook_subscriptions')

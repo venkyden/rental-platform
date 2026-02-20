@@ -56,11 +56,11 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_index('ix_messages_created_at')
-    op.drop_index('ix_messages_conversation_id')
-    op.drop_index('ix_conversations_last_message_at')
-    op.drop_index('ix_conversations_property_id')
-    op.drop_index('ix_conversations_tenant_id')
-    op.drop_index('ix_conversations_landlord_id')
+    op.drop_index('ix_messages_created_at', if_exists=True)
+    op.drop_index('ix_messages_conversation_id', if_exists=True)
+    op.drop_index('ix_conversations_last_message_at', if_exists=True)
+    op.drop_index('ix_conversations_property_id', if_exists=True)
+    op.drop_index('ix_conversations_tenant_id', if_exists=True)
+    op.drop_index('ix_conversations_landlord_id', if_exists=True)
     op.drop_table('messages')
     op.drop_table('conversations')

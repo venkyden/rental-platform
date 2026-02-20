@@ -58,10 +58,10 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_index('ix_verification_records_user_id')
+    op.drop_index('ix_verification_records_user_id', if_exists=True)
     op.drop_table('verification_records')
     op.execute('DROP TYPE verificationstatus')
     
-    op.drop_index('ix_users_email')
+    op.drop_index('ix_users_email', if_exists=True)
     op.drop_table('users')
     op.execute('DROP TYPE userrole')

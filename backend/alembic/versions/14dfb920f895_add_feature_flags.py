@@ -28,8 +28,8 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_feature_flags_name'), 'feature_flags', ['name'], unique=True)
-    op.drop_index('ix_notifications_read', table_name='notifications')
-    op.drop_index('ix_notifications_user_id', table_name='notifications')
+    op.drop_index('ix_notifications_read', table_name='notifications', if_exists=True, if_exists=True)
+    op.drop_index('ix_notifications_user_id', table_name='notifications', if_exists=True, if_exists=True)
     op.drop_table('notifications')
     # ### end Alembic commands ###
 
@@ -52,6 +52,6 @@ def downgrade() -> None:
     )
     op.create_index('ix_notifications_user_id', 'notifications', ['user_id'], unique=False)
     op.create_index('ix_notifications_read', 'notifications', ['read'], unique=False)
-    op.drop_index(op.f('ix_feature_flags_name'), table_name='feature_flags')
+    op.drop_index(op.f('ix_feature_flags_name'), table_name='feature_flags', if_exists=True)
     op.drop_table('feature_flags')
     # ### end Alembic commands ###

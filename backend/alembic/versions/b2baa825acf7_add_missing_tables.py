@@ -46,21 +46,21 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['tenant_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
-    op.drop_index('ix_conversations_landlord_id', table_name='conversations')
-    op.drop_index('ix_conversations_last_message_at', table_name='conversations')
-    op.drop_index('ix_conversations_property_id', table_name='conversations')
-    op.drop_index('ix_conversations_tenant_id', table_name='conversations')
+    op.drop_index('ix_conversations_landlord_id', table_name='conversations', if_exists=True)
+    op.drop_index('ix_conversations_last_message_at', table_name='conversations', if_exists=True)
+    op.drop_index('ix_conversations_property_id', table_name='conversations', if_exists=True)
+    op.drop_index('ix_conversations_tenant_id', table_name='conversations', if_exists=True)
     op.drop_column('leases', 'created_at')
     op.drop_column('leases', 'updated_at')
-    op.drop_index('ix_messages_conversation_id', table_name='messages')
-    op.drop_index('ix_messages_created_at', table_name='messages')
+    op.drop_index('ix_messages_conversation_id', table_name='messages', if_exists=True)
+    op.drop_index('ix_messages_created_at', table_name='messages', if_exists=True)
     op.alter_column('onboarding_responses', 'user_id',
                existing_type=sa.UUID(),
                nullable=True)
     op.alter_column('onboarding_responses', 'responses',
                existing_type=postgresql.JSONB(astext_type=sa.Text()),
                nullable=True)
-    op.drop_index('idx_onboarding_user_id', table_name='onboarding_responses')
+    op.drop_index('idx_onboarding_user_id', table_name='onboarding_responses', if_exists=True)
     op.create_unique_constraint(None, 'onboarding_responses', ['user_id'])
     op.add_column('properties', sa.Column('dpe_rating', sa.String(length=1), nullable=True))
     op.add_column('properties', sa.Column('ges_rating', sa.String(length=1), nullable=True))
@@ -70,24 +70,24 @@ def upgrade() -> None:
     op.add_column('properties', sa.Column('construction_year', sa.Integer(), nullable=True))
     op.add_column('properties', sa.Column('utilities_included', postgresql.JSONB(astext_type=sa.Text()), nullable=True))
     op.add_column('properties', sa.Column('is_caf_eligible', sa.Boolean(), nullable=True))
-    op.drop_index('idx_properties_city', table_name='properties')
-    op.drop_index('idx_properties_landlord', table_name='properties')
-    op.drop_index('idx_properties_rent', table_name='properties')
-    op.drop_index('idx_properties_status', table_name='properties')
-    op.drop_index('ix_pm_access_landlord_id', table_name='property_manager_access')
-    op.drop_index('ix_pm_access_property_manager_id', table_name='property_manager_access')
+    op.drop_index('idx_properties_city', table_name='properties', if_exists=True)
+    op.drop_index('idx_properties_landlord', table_name='properties', if_exists=True)
+    op.drop_index('idx_properties_rent', table_name='properties', if_exists=True)
+    op.drop_index('idx_properties_status', table_name='properties', if_exists=True)
+    op.drop_index('ix_pm_access_landlord_id', table_name='property_manager_access', if_exists=True)
+    op.drop_index('ix_pm_access_property_manager_id', table_name='property_manager_access', if_exists=True)
     op.create_index(op.f('ix_property_manager_access_landlord_id'), 'property_manager_access', ['landlord_id'], unique=False)
     op.create_index(op.f('ix_property_manager_access_property_manager_id'), 'property_manager_access', ['property_manager_id'], unique=False)
-    op.drop_index('idx_property_media_property', table_name='property_media')
-    op.drop_index('idx_property_media_session', table_name='property_media')
+    op.drop_index('idx_property_media_property', table_name='property_media', if_exists=True)
+    op.drop_index('idx_property_media_session', table_name='property_media', if_exists=True)
     op.drop_constraint('property_media_property_id_fkey', 'property_media', type_='foreignkey')
     op.create_foreign_key(None, 'property_media', 'properties', ['property_id'], ['id'])
-    op.drop_index('idx_media_sessions_code', table_name='property_media_sessions')
-    op.drop_index('idx_media_sessions_property', table_name='property_media_sessions')
+    op.drop_index('idx_media_sessions_code', table_name='property_media_sessions', if_exists=True)
+    op.drop_index('idx_media_sessions_property', table_name='property_media_sessions', if_exists=True)
     op.drop_constraint('property_media_sessions_property_id_fkey', 'property_media_sessions', type_='foreignkey')
     op.create_foreign_key(None, 'property_media_sessions', 'properties', ['property_id'], ['id'])
-    op.drop_index('ix_team_members_email', table_name='team_members')
-    op.drop_index('ix_team_members_invite_token', table_name='team_members')
+    op.drop_index('ix_team_members_email', table_name='team_members', if_exists=True)
+    op.drop_index('ix_team_members_invite_token', table_name='team_members', if_exists=True)
     op.alter_column('users', 'identity_data',
                existing_type=postgresql.JSONB(astext_type=sa.Text()),
                type_=sa.JSON(),
@@ -101,7 +101,7 @@ def upgrade() -> None:
                type_=sa.JSON(),
                existing_nullable=True)
     op.drop_constraint('users_email_key', 'users', type_='unique')
-    op.drop_index('ix_users_email', table_name='users')
+    op.drop_index('ix_users_email', table_name='users', if_exists=True)
     op.create_index(op.f('ix_users_email'), 'users', ['email'], unique=True)
     op.alter_column('verification_records', 'verification_data',
                existing_type=postgresql.JSONB(astext_type=sa.Text()),
@@ -109,7 +109,7 @@ def upgrade() -> None:
                existing_nullable=True)
     op.drop_column('visit_slots', 'created_at')
     op.drop_column('visit_slots', 'updated_at')
-    op.drop_index('ix_webhook_deliveries_created_at', table_name='webhook_deliveries')
+    op.drop_index('ix_webhook_deliveries_created_at', table_name='webhook_deliveries', if_exists=True)
     # ### end Alembic commands ###
 
 
@@ -122,7 +122,7 @@ def downgrade() -> None:
                existing_type=sa.JSON(),
                type_=postgresql.JSONB(astext_type=sa.Text()),
                existing_nullable=True)
-    op.drop_index(op.f('ix_users_email'), table_name='users')
+    op.drop_index(op.f('ix_users_email'), table_name='users', if_exists=True)
     op.create_index('ix_users_email', 'users', ['email'], unique=False)
     op.create_unique_constraint('users_email_key', 'users', ['email'])
     op.alter_column('users', 'preferences',
@@ -147,8 +147,8 @@ def downgrade() -> None:
     op.create_foreign_key('property_media_property_id_fkey', 'property_media', 'properties', ['property_id'], ['id'], ondelete='CASCADE')
     op.create_index('idx_property_media_session', 'property_media', ['session_id'], unique=False)
     op.create_index('idx_property_media_property', 'property_media', ['property_id'], unique=False)
-    op.drop_index(op.f('ix_property_manager_access_property_manager_id'), table_name='property_manager_access')
-    op.drop_index(op.f('ix_property_manager_access_landlord_id'), table_name='property_manager_access')
+    op.drop_index(op.f('ix_property_manager_access_property_manager_id'), table_name='property_manager_access', if_exists=True)
+    op.drop_index(op.f('ix_property_manager_access_landlord_id'), table_name='property_manager_access', if_exists=True)
     op.create_index('ix_pm_access_property_manager_id', 'property_manager_access', ['property_manager_id'], unique=False)
     op.create_index('ix_pm_access_landlord_id', 'property_manager_access', ['landlord_id'], unique=False)
     op.create_index('idx_properties_status', 'properties', ['status'], unique=False)

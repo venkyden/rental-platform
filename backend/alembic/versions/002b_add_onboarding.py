@@ -29,5 +29,5 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_index('idx_onboarding_user_id', table_name='onboarding_responses')
+    op.drop_index('idx_onboarding_user_id', table_name='onboarding_responses', if_exists=True)
     op.drop_table('onboarding_responses')

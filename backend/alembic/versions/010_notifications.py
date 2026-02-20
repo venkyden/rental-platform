@@ -48,8 +48,8 @@ def upgrade():
 
 
 def downgrade():
-    op.drop_index('ix_notifications_user_read')
-    op.drop_index('ix_notifications_read')
-    op.drop_index('ix_notifications_user_id')
+    op.drop_index('ix_notifications_user_read', if_exists=True)
+    op.drop_index('ix_notifications_read', if_exists=True)
+    op.drop_index('ix_notifications_user_id', if_exists=True)
     op.drop_table('notifications')
     op.drop_column('users', 'contact_preferences')
