@@ -100,22 +100,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ─── Stats ─── */}
-      <section className="py-16 border-y border-gray-100 bg-white">
-        <div className="max-w-5xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-          {[
-            { value: '15k+', label: 'Active Users' },
-            { value: '8,200', label: 'Verified Properties' },
-            { value: '4.8/5', label: 'Average Rating' },
-            { value: '<48h', label: 'Matching Time' },
-          ].map((stat) => (
-            <div key={stat.label}>
-              <div className="text-3xl sm:text-4xl font-extrabold" style={{ color: '#22B8B8' }}>{stat.value}</div>
-              <div className="text-sm text-gray-500 mt-1">{stat.label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
+
 
       {/* ─── How It Works ─── */}
       <section className="py-24">
