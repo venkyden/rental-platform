@@ -21,7 +21,8 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_SECRET: Optional[str] = None
     
     # Stripe (Identity verification)
-    STRIPE_API_KEY: Optional[str] = None
+    STRIPE_SECRET_KEY: Optional[str] = None
+    STRIPE_IDENTITY_WEBHOOK_SECRET: Optional[str] = None
     
     # Monitoring
     SENTRY_DSN: Optional[str] = None

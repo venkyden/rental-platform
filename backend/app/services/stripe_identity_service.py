@@ -1,13 +1,13 @@
-
 import stripe
 import os
 from typing import Optional, Dict, Any
+from app.core.config import settings
 
 class StripeIdentityService:
     def __init__(self):
-        self.api_key = os.getenv("STRIPE_SECRET_KEY")
+        self.api_key = settings.STRIPE_SECRET_KEY
         stripe.api_key = self.api_key
-        self.webhook_secret = os.getenv("STRIPE_IDENTITY_WEBHOOK_SECRET")
+        self.webhook_secret = settings.STRIPE_IDENTITY_WEBHOOK_SECRET
 
     def create_verification_session(self, user_id: str, email: str) -> Dict[str, Any]:
         """
@@ -36,7 +36,7 @@ class StripeIdentityService:
                         'require_matching_selfie': True,
                     },
                 },
-                return_url= os.getenv("FRONTEND_URL", "http://localhost:3000") + "/profile?verified=true",
+                return_url= settings.FRONTEND_URL + "/profile?verified=true",
             )
             return session
         except Exception as e:
