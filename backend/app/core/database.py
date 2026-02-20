@@ -9,9 +9,16 @@ from app.core.config import settings
 POOL_SIZE = int(os.getenv("DB_POOL_SIZE", "20"))
 MAX_OVERFLOW = int(os.getenv("DB_MAX_OVERFLOW", "30"))
 
+# Render provides `postgres://` but we need `postgresql+asyncpg://`
+url = settings.DATABASE_URL
+if url.startswith("postgres://"):
+    url = url.replace("postgres://", "postgresql+asyncpg://", 1)
+elif url.startswith("postgresql://") and not url.startswith("postgresql+asyncpg://"):
+    url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+
 # Create async engine with connection pooling
 engine = create_async_engine(
-    settings.DATABASE_URL,
+    url,
     echo=os.getenv("DB_ECHO", "false").lower() == "true",  # Disable in production
     future=True,
     # Connection pool settings
