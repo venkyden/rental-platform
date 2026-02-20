@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import RoomivoBrand from '@/components/RoomivoBrand';
 
 export default function HomePage() {
   return (
@@ -26,14 +25,14 @@ export default function HomePage() {
           </Link>
           <div className="flex items-center gap-3">
             <Link href="/auth/login" className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
-              Se connecter
+              Sign In
             </Link>
             <Link
               href="/auth/register"
               className="px-5 py-2.5 text-sm font-semibold text-white rounded-xl shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5"
               style={{ background: 'linear-gradient(135deg, #3DD6D0, #22B8B8)' }}
             >
-              Créer un compte
+              Get Started
             </Link>
           </div>
         </div>
@@ -48,20 +47,20 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-6 pt-24 pb-20 text-center relative">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-50 border border-teal-200 text-teal-700 text-sm font-medium mb-8">
             <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
-            Plateforme N°1 pour les expatriés en France
+            The #1 rental platform for expats in France
           </div>
 
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.08] mb-6">
-            Trouvez votre{' '}
+            Find your{' '}
             <span className="bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(135deg, #3DD6D0, #22B8B8)' }}>
-              chez-vous
+              perfect home
             </span>
             <br />
-            en toute confiance
+            with confidence
           </h1>
 
           <p className="text-lg sm:text-xl text-gray-500 max-w-2xl mx-auto mb-10 leading-relaxed">
-            Vérification d'identité, matching intelligent, bail numérique — tout ce qu'il faut pour louer sereinement en France.
+            Identity verification, smart matching, and digital leases — everything you need to rent safely in France.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
@@ -70,7 +69,7 @@ export default function HomePage() {
               className="group px-8 py-4 text-base font-semibold text-white rounded-2xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 flex items-center gap-2"
               style={{ background: 'linear-gradient(135deg, #3DD6D0, #1CA8A8)' }}
             >
-              Commencer gratuitement
+              Get Started for Free
               <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
@@ -79,7 +78,7 @@ export default function HomePage() {
               href="/search"
               className="px-8 py-4 text-base font-semibold text-gray-700 bg-white border-2 border-gray-200 rounded-2xl hover:border-gray-300 hover:shadow-md transition-all"
             >
-              Voir les annonces
+              Browse Listings
             </Link>
           </div>
 
@@ -87,15 +86,15 @@ export default function HomePage() {
           <div className="flex flex-wrap items-center justify-center gap-8 text-gray-400 text-sm">
             <div className="flex items-center gap-2">
               <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
-              RGPD Conforme
+              GDPR Compliant
             </div>
             <div className="flex items-center gap-2">
               <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
-              Loi ELAN 2018
+              French Law Compliant
             </div>
             <div className="flex items-center gap-2">
               <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
-              Stripe Sécurisé
+              Secured by Stripe
             </div>
           </div>
         </div>
@@ -105,10 +104,10 @@ export default function HomePage() {
       <section className="py-16 border-y border-gray-100 bg-white">
         <div className="max-w-5xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
           {[
-            { value: '15k+', label: 'Utilisateurs actifs' },
-            { value: '8,200', label: 'Biens vérifiés' },
-            { value: '4.8/5', label: 'Note moyenne' },
-            { value: '<48h', label: 'Temps de matching' },
+            { value: '15k+', label: 'Active Users' },
+            { value: '8,200', label: 'Verified Properties' },
+            { value: '4.8/5', label: 'Average Rating' },
+            { value: '<48h', label: 'Matching Time' },
           ].map((stat) => (
             <div key={stat.label}>
               <div className="text-3xl sm:text-4xl font-extrabold" style={{ color: '#22B8B8' }}>{stat.value}</div>
@@ -122,8 +121,8 @@ export default function HomePage() {
       <section className="py-24">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-4">Comment ça marche</h2>
-            <p className="text-gray-500 text-lg max-w-xl mx-auto">Trois étapes pour trouver votre logement idéal ou votre locataire parfait.</p>
+            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-4">How It Works</h2>
+            <p className="text-gray-500 text-lg max-w-xl mx-auto">Three simple steps to find your ideal home or perfect tenant.</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
@@ -135,8 +134,8 @@ export default function HomePage() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                   </svg>
                 ),
-                title: 'Créez votre profil',
-                description: 'Inscrivez-vous et vérifiez votre identité en quelques minutes grâce à notre système Stripe Identity.'
+                title: 'Create Your Profile',
+                description: 'Sign up and verify your identity in minutes with our Stripe Identity integration.'
               },
               {
                 step: '02',
@@ -145,8 +144,8 @@ export default function HomePage() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
                   </svg>
                 ),
-                title: 'Matching intelligent',
-                description: 'Notre algorithme analyse vos préférences et vos critères pour vous proposer les meilleurs profils.'
+                title: 'Smart Matching',
+                description: 'Our algorithm analyzes your preferences and criteria to suggest the best matches for you.'
               },
               {
                 step: '03',
@@ -155,8 +154,8 @@ export default function HomePage() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                   </svg>
                 ),
-                title: 'Bail numérique',
-                description: 'Générez un contrat conforme à la loi française en quelques clics et signez électroniquement.'
+                title: 'Digital Lease',
+                description: 'Generate a legally-compliant French lease contract in a few clicks and sign electronically.'
               }
             ].map((item) => (
               <div key={item.step} className="relative group">
@@ -178,18 +177,18 @@ export default function HomePage() {
       <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-4">Pourquoi Roomivo ?</h2>
-            <p className="text-gray-500 text-lg max-w-xl mx-auto">Conçu spécialement pour le marché locatif français, avec un focus sur la confiance.</p>
+            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-4">Why Roomivo?</h2>
+            <p className="text-gray-500 text-lg max-w-xl mx-auto">Built specifically for the French rental market, with trust at its core.</p>
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { emoji: '🔐', title: 'Vérification d\'identité', desc: 'Stripe Identity + OCR pour vérifier pièces d\'identité et justificatifs en temps réel.' },
-              { emoji: '🤖', title: 'Score de confiance', desc: 'Un score transparent basé sur les vérifications, l\'historique et le comportement.' },
-              { emoji: '📄', title: 'Bail conforme', desc: 'Génération automatique de contrats respectant la loi ELAN et ALUR.' },
-              { emoji: '🛡️', title: 'GLI & Visale', desc: 'Intégration des garanties locatives pour sécuriser propriétaires et locataires.' },
-              { emoji: '💬', title: 'Messagerie intégrée', desc: 'Communiquez directement avec les candidats et propriétaires sur la plateforme.' },
-              { emoji: '📊', title: 'DPE & Charges', desc: 'Affichage conforme des diagnostics énergétiques et transparence des charges (CC/HC).' },
+              { emoji: '🔐', title: 'Identity Verification', desc: 'Stripe Identity + OCR to verify IDs and supporting documents in real time.' },
+              { emoji: '🤖', title: 'Trust Score', desc: 'A transparent score based on verifications, history, and platform behavior.' },
+              { emoji: '📄', title: 'Compliant Leases', desc: 'Auto-generated contracts that comply with French ELAN and ALUR laws.' },
+              { emoji: '🛡️', title: 'GLI & Visale', desc: 'Built-in rental guarantee integrations to protect both landlords and tenants.' },
+              { emoji: '💬', title: 'Built-in Messaging', desc: 'Communicate directly with candidates and landlords without leaving the platform.' },
+              { emoji: '📊', title: 'DPE & Charges', desc: 'Compliant energy performance display and transparent fee breakdowns (CC/HC).' },
             ].map((feature) => (
               <div key={feature.title} className="flex gap-4 p-6 rounded-2xl border border-gray-100 bg-gray-50/50 hover:bg-white hover:shadow-lg hover:border-gray-200 transition-all duration-300">
                 <span className="text-3xl flex-shrink-0">{feature.emoji}</span>
@@ -212,15 +211,15 @@ export default function HomePage() {
               <div className="absolute top-0 right-0 w-40 h-40 rounded-full bg-white/10 -translate-y-1/2 translate-x-1/2" />
               <div className="relative">
                 <div className="text-4xl mb-4">🎓</div>
-                <h3 className="text-2xl font-bold mb-3">Vous cherchez un logement ?</h3>
+                <h3 className="text-2xl font-bold mb-3">Looking for a home?</h3>
                 <p className="text-white/80 mb-6 leading-relaxed">
-                  Créez votre dossier numérique, obtenez votre score de confiance et postulez en un clic.
+                  Build your digital dossier, get your trust score, and apply to listings in one click.
                 </p>
                 <Link
                   href="/auth/register?role=tenant"
                   className="inline-flex items-center gap-2 px-6 py-3 bg-white text-gray-900 font-semibold rounded-xl hover:shadow-lg transition-all"
                 >
-                  Je suis locataire →
+                  I&apos;m a tenant →
                 </Link>
               </div>
             </div>
@@ -230,16 +229,16 @@ export default function HomePage() {
               <div className="absolute bottom-0 left-0 w-40 h-40 rounded-full bg-white/5 translate-y-1/2 -translate-x-1/2" />
               <div className="relative">
                 <div className="text-4xl mb-4">🏠</div>
-                <h3 className="text-2xl font-bold mb-3">Vous êtes propriétaire ?</h3>
+                <h3 className="text-2xl font-bold mb-3">Are you a landlord?</h3>
                 <p className="text-gray-400 mb-6 leading-relaxed">
-                  Publiez vos biens, recevez des candidatures vérifiées et générez vos baux en quelques minutes.
+                  List your properties, receive verified applications, and generate leases in minutes.
                 </p>
                 <Link
                   href="/auth/register?role=landlord"
                   className="inline-flex items-center gap-2 px-6 py-3 font-semibold rounded-xl hover:shadow-lg transition-all"
                   style={{ background: 'linear-gradient(135deg, #3DD6D0, #22B8B8)', color: 'white' }}
                 >
-                  Je suis propriétaire →
+                  I&apos;m a landlord →
                 </Link>
               </div>
             </div>
@@ -271,32 +270,32 @@ export default function HomePage() {
               <p className="text-sm text-gray-400">Your first step to settling in</p>
             </div>
             <div>
-              <h4 className="font-semibold text-gray-900 mb-3 text-sm">Plateforme</h4>
+              <h4 className="font-semibold text-gray-900 mb-3 text-sm">Platform</h4>
               <div className="space-y-2 text-sm text-gray-500">
-                <Link href="/search" className="block hover:text-gray-900 transition-colors">Rechercher</Link>
-                <Link href="/properties" className="block hover:text-gray-900 transition-colors">Mes biens</Link>
-                <Link href="/auth/register" className="block hover:text-gray-900 transition-colors">Inscription</Link>
+                <Link href="/search" className="block hover:text-gray-900 transition-colors">Search</Link>
+                <Link href="/properties" className="block hover:text-gray-900 transition-colors">My Properties</Link>
+                <Link href="/auth/register" className="block hover:text-gray-900 transition-colors">Sign Up</Link>
               </div>
             </div>
             <div>
-              <h4 className="font-semibold text-gray-900 mb-3 text-sm">Légal</h4>
+              <h4 className="font-semibold text-gray-900 mb-3 text-sm">Legal</h4>
               <div className="space-y-2 text-sm text-gray-500">
-                <Link href="/cgv" className="block hover:text-gray-900 transition-colors">CGV</Link>
-                <Link href="/privacy" className="block hover:text-gray-900 transition-colors">Confidentialité</Link>
-                <Link href="/mentions-legales" className="block hover:text-gray-900 transition-colors">Mentions légales</Link>
+                <Link href="/cgv" className="block hover:text-gray-900 transition-colors">Terms of Sale</Link>
+                <Link href="/privacy" className="block hover:text-gray-900 transition-colors">Privacy Policy</Link>
+                <Link href="/mentions-legales" className="block hover:text-gray-900 transition-colors">Legal Notices</Link>
               </div>
             </div>
             <div>
               <h4 className="font-semibold text-gray-900 mb-3 text-sm">Support</h4>
               <div className="space-y-2 text-sm text-gray-500">
-                <Link href="/support" className="block hover:text-gray-900 transition-colors">Aide</Link>
+                <Link href="/support" className="block hover:text-gray-900 transition-colors">Help</Link>
                 <a href="mailto:contact@roomivo.com" className="block hover:text-gray-900 transition-colors">contact@roomivo.com</a>
               </div>
             </div>
           </div>
           <div className="border-t border-gray-100 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-400">
-            <span>© {new Date().getFullYear()} Roomivo. Tous droits réservés.</span>
-            <span>Fait avec ❤️ pour les expatriés en France</span>
+            <span>© {new Date().getFullYear()} Roomivo. All rights reserved.</span>
+            <span>Made with ❤️ for expats in France</span>
           </div>
         </div>
       </footer>

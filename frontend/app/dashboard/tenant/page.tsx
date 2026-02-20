@@ -61,7 +61,7 @@ export default function TenantDashboard() {
                                         <div>
                                             <h3 className="font-medium text-indigo-900">Ajouter un Garant</h3>
                                             <p className="text-sm text-indigo-700">
-                                                Multipliez vos chances par 3 avec un dossier complet.
+                                                Multiply your chances by 3x with a complete dossier.
                                                 <span className="block text-xs mt-1 text-indigo-500">Compatible Visale & Garantme</span>
                                             </p>
                                         </div>
@@ -193,7 +193,7 @@ export default function TenantDashboard() {
                 <section>
                     <h2 className="text-lg font-semibold text-gray-900 mb-4">Recherches récentes</h2>
                     <div className="bg-white rounded-xl shadow-sm p-6 text-center text-gray-500">
-                        <p>Aucune recherche récente</p>
+                        <p>No recent searches</p>
                         <button
                             onClick={() => router.push('/search')}
                             className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg"

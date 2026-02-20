@@ -56,7 +56,7 @@ export default function LandlordDashboard() {
                             <div>
                                 <h3 className="font-medium text-blue-800">Premiers pas</h3>
                                 <p className="text-sm text-blue-700">
-                                    Ajoutez votre premier bien pour commencer à recevoir des candidatures
+                                    Add your first property to start receiving applications
                                 </p>
                             </div>
                             <button
@@ -121,7 +121,7 @@ export default function LandlordDashboard() {
                                 onClick={() => router.push('/analytics')}
                                 className="mt-4 w-full py-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50"
                             >
-                                Voir les analytics détaillés
+                                View detailed analytics
                             </button>
                         </div>
                     </section>
@@ -140,7 +140,7 @@ export default function LandlordDashboard() {
                             </button>
                         </div>
                         <div className="bg-white rounded-xl shadow-sm p-6 text-center text-gray-500">
-                            <p>Invitez des collaborateurs pour gérer vos biens</p>
+                            <p>Invite collaborators to manage your properties</p>
                             <button
                                 onClick={() => router.push('/team')}
                                 className="mt-3 px-4 py-2 bg-green-600 text-white rounded-lg"
@@ -160,11 +160,11 @@ export default function LandlordDashboard() {
                                 onClick={() => router.push('/inbox')}
                                 className="text-sm text-blue-600 hover:text-blue-700"
                             >
-                                Voir tout →
+                                View all →
                             </button>
                         </div>
                         <div className="bg-white rounded-xl shadow-sm p-6 text-center text-gray-500">
-                            <p>Aucun message</p>
+                            <p>No messages</p>
                         </div>
                     </section>
                 </FeatureGate>

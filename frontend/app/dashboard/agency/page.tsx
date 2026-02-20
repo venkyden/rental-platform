@@ -150,7 +150,7 @@ export default function AgencyDashboard() {
                 <section>
                     <h2 className="text-lg font-semibold text-white mb-4">Activité récente</h2>
                     <div className="bg-gray-800 rounded-xl border border-gray-700 p-6 text-center text-gray-400">
-                        <p>Aucune activité récente</p>
+                        <p>No recent activity</p>
                     </div>
                 </section>
             </main>

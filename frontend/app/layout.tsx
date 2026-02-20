@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Roomivo — Trouvez votre chez-vous en toute confiance",
-  description: "Plateforme de location intelligente : vérification d'identité, matching IA et bail numérique pour les expatriés en France.",
+  title: "Roomivo — Find Your Perfect Home with Confidence",
+  description: "Smart rental platform: identity verification, AI matching, and digital leases for expats in France.",
   manifest: "/manifest.json",
   themeColor: "#4F46E5",
   viewport: "width=device-width, initial-scale=1, maximum-scale=1",

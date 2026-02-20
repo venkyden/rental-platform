@@ -239,7 +239,7 @@ export default function DashboardPage() {
                                     onClick={() => router.push('/inbox')}
                                     className="text-blue-600 hover:text-blue-800 text-sm font-medium"
                                 >
-                                    Voir tout →
+                                    View all →
                                 </button>
                             </div>
 
@@ -281,8 +281,8 @@ export default function DashboardPage() {
                             ) : (
                                 <div className="bg-white rounded-xl shadow-md p-8 text-center text-gray-500">
                                     <span className="text-4xl mb-3 block">📭</span>
-                                    <p>Aucun message</p>
-                                    <p className="text-sm mt-1">Vos conversations apparaîtront ici</p>
+                                    <p>No messages</p>
+                                    <p className="text-sm mt-1">Your conversations will appear here</p>
                                 </div>
                             )}
                         </div>
