@@ -1,6 +1,6 @@
 services:
   # 1. PostgreSQL Database
-  - type: psql
+  - type: postgres
     name: roomivo-db
     plan: free # Change to starter/standard for production workloads
     ipAllowList: [] # Blank allows all for easier development, change in prod as needed
