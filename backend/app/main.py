@@ -2,6 +2,23 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from app.core.config import settings
+import logging
+
+logger = logging.getLogger(__name__)
+
+# Sentry error tracking (only if DSN is configured)
+try:
+    import sentry_sdk
+    if settings.SENTRY_DSN:
+        sentry_sdk.init(
+            dsn=settings.SENTRY_DSN,
+            environment=settings.ENVIRONMENT,
+            traces_sample_rate=0.1 if settings.ENVIRONMENT == "production" else 1.0,
+            send_default_pii=False,
+        )
+        logger.info(f"Sentry initialized for {settings.ENVIRONMENT}")
+except ImportError:
+    pass  # sentry-sdk not installed, skip
 from app.routers import auth, property_manager, onboarding, verification, properties, location
 
 # Rate limiting setup (optional - only if slowapi is installed)
@@ -17,8 +34,8 @@ except ImportError:
     RATE_LIMITING_ENABLED = False
 
 app = FastAPI(
-    title="Rental Platform API",
-    description="API for rental property management platform with rate limiting and security features",
+    title="Roomivo API",
+    description="Smart rental platform API — identity verification, AI matching, and digital leases for expats in France",
     version="1.0.0"
 )
 
@@ -41,6 +58,15 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type", "X-Requested-With"],
 )
+
+# Global unhandled exception handler
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Unhandled exception on {request.method} {request.url.path}: {exc}", exc_info=True)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "An unexpected error occurred. Please try again later."},
+    )
 
 # Include routers
 app.include_router(auth.router)
@@ -149,7 +175,7 @@ async def health_check():
 async def root():
     """Root endpoint"""
     return {
-        "message": "Rental Platform API",
+        "message": "Roomivo API",
         "docs": "/docs",
         "health": "/health"
     }
