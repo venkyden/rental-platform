@@ -129,8 +129,8 @@ class EmploymentVerificationService:
         """Extract data from payslip using AI OCR"""
         
         if not self.ai_client:
-            # Fallback: Basic extraction without AI
-            return self._mock_extraction()
+            # No AI client available — cannot extract data
+            return None
         
         try:
             # For PDFs, we'd need a PDF-to-image conversion first
@@ -199,20 +199,9 @@ Return ONLY the JSON, no explanation."""
             
         except Exception as e:
             print(f"AI extraction failed: {e}")
-            return self._mock_extraction()
+            return None
     
-    def _mock_extraction(self) -> EmploymentData:
-        """Fallback mock extraction when AI is unavailable"""
-        return EmploymentData(
-            employer_name="Document Processing Required",
-            employee_name="Manual Review Needed",
-            gross_salary=Decimal("0"),
-            net_salary=Decimal("0"),
-            pay_period=datetime.now().strftime("%Y-%m"),
-            employment_type="pending",
-            confidence_score=0.0,
-        )
-    
+
     def _validate_employment_data(
         self,
         data: EmploymentData,

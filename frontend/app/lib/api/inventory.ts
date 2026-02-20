@@ -1,4 +1,4 @@
-import { authenticatedFetch } from './fetch';
+import { apiClient } from '@/lib/api';
 
 export interface InventoryItem {
     id?: string;
@@ -25,28 +25,23 @@ export interface Inventory {
 }
 
 export const inventoryApi = {
-    create: async (leaseId: string, type: string) => {
-        return authenticatedFetch<Inventory>('/api/v1/inventory/', {
-            method: 'POST',
-            body: JSON.stringify({ lease_id: leaseId, type }),
-        });
+    create: async (leaseId: string, type: string): Promise<Inventory> => {
+        const response = await apiClient.client.post('/inventory/', { lease_id: leaseId, type });
+        return response.data;
     },
 
-    get: async (id: string) => {
-        return authenticatedFetch<Inventory>(`/api/v1/inventory/${id}`);
+    get: async (id: string): Promise<Inventory> => {
+        const response = await apiClient.client.get(`/inventory/${id}`);
+        return response.data;
     },
 
-    addItems: async (id: string, items: InventoryItem[]) => {
-        return authenticatedFetch<Inventory>(`/api/v1/inventory/${id}/items`, {
-            method: 'POST',
-            body: JSON.stringify(items),
-        });
+    addItems: async (id: string, items: InventoryItem[]): Promise<Inventory> => {
+        const response = await apiClient.client.post(`/inventory/${id}/items`, items);
+        return response.data;
     },
 
-    sign: async (id: string, signatures: { signature_tenant?: any, signature_landlord?: any }) => {
-        return authenticatedFetch<Inventory>(`/api/v1/inventory/${id}/sign`, {
-            method: 'POST',
-            body: JSON.stringify(signatures),
-        });
+    sign: async (id: string, signatures: { signature_tenant?: any; signature_landlord?: any }): Promise<Inventory> => {
+        const response = await apiClient.client.post(`/inventory/${id}/sign`, signatures);
+        return response.data;
     }
 };

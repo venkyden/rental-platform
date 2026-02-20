@@ -16,11 +16,6 @@ interface Property {
     deposit?: number;
 }
 
-interface Tenant {
-    id: string;
-    full_name: string;
-    email: string;
-}
 
 export default function LeaseWizard() {
     const { user, loading: authLoading } = useAuth();
@@ -33,7 +28,6 @@ export default function LeaseWizard() {
 
     // Data Lists
     const [properties, setProperties] = useState<Property[]>([]);
-    const [tenants, setTenants] = useState<Tenant[]>([]);
 
     // Form State
     const [selectedPropertyId, setSelectedPropertyId] = useState('');
@@ -65,10 +59,7 @@ export default function LeaseWizard() {
             const propsRes = await apiClient.client.get('/properties', { params: { landlord_only: true } });
             setProperties(propsRes.data);
 
-            // Mock Tenants (In production, fetch from applications or contacts)
-            // For now, let's just allow typing email, or fetch from "received applications" logic if possible.
-            // Simplified: Just auto-fill from an endpoint or let user type.
-            // Let's rely on manual email entry for MVP unless we have a specific endpoint.
+            // Tenant is specified by email in the form (manual entry)
             setLoading(false);
         } catch (error) {
             console.error('Error fetching data:', error);

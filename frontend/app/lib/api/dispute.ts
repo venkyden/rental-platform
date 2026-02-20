@@ -1,4 +1,4 @@
-import { authenticatedFetch } from './fetch';
+import { apiClient } from '@/lib/api';
 
 export type DisputeCategory = 'damage' | 'appliance_failure' | 'shared_liability' | 'cleaning' | 'other';
 
@@ -23,14 +23,13 @@ export interface Dispute {
 }
 
 export const disputeApi = {
-    create: async (data: DisputeCreate) => {
-        return authenticatedFetch<Dispute>('/api/v1/disputes/', {
-            method: 'POST',
-            body: JSON.stringify(data),
-        });
+    create: async (data: DisputeCreate): Promise<Dispute> => {
+        const response = await apiClient.client.post('/disputes/', data);
+        return response.data;
     },
 
-    listMyDisputes: async () => {
-        return authenticatedFetch<Dispute[]>('/api/v1/disputes/');
+    listMyDisputes: async (): Promise<Dispute[]> => {
+        const response = await apiClient.client.get('/disputes/');
+        return response.data;
     }
 };

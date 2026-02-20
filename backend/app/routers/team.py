@@ -13,6 +13,7 @@ import secrets
 
 from app.core.database import get_db
 from app.routers.auth import get_current_user
+from app.services.email import email_service
 from app.models.user import User, UserRole
 from app.models.property import Property
 from app.models.team import TeamMember, TeamMemberProperty, PermissionLevel, InviteStatus
@@ -201,8 +202,14 @@ async def invite_team_member(
     await db.commit()
     await db.refresh(member)
     
-    # TODO: Send invite email with token
-    # For now, just return the invite link
+    # Send invite email
+    await email_service.send_team_invite_email(
+        to_email=member.email,
+        name=member.name or member.email,
+        landlord_name=current_user.full_name or current_user.email,
+        invite_token=member.invite_token,
+        permission_level=member.permission_level.value
+    )
     invite_link = f"/invite/{member.invite_token}"
     
     return TeamMemberDetailResponse(

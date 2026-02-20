@@ -204,6 +204,143 @@ class EmailService:
         
         return await self.send_email(to_email, subject, html_content, text_content)
 
+    async def send_verification_success_email(self, to_email: str, full_name: str, verification_type: str = "identity") -> bool:
+        """Send congratulatory email after successful verification"""
+        subject = "Your verification is complete! ✅"
+        label = "Identity" if verification_type == "identity" else "Employment"
+
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                .header {{ background: linear-gradient(135deg, #3DD6D0, #22B8B8); color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }}
+                .content {{ background-color: #f9fafb; padding: 30px; }}
+                .button {{ display: inline-block; padding: 12px 30px; background: linear-gradient(135deg, #3DD6D0, #22B8B8); color: white; text-decoration: none; border-radius: 8px; margin: 20px 0; }}
+                .footer {{ text-align: center; padding: 20px; color: #6b7280; font-size: 12px; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>Verification Complete!</h1>
+                </div>
+                <div class="content">
+                    <h2>Congratulations {full_name}! 🎉</h2>
+                    <p>Your <strong>{label} verification</strong> has been successfully completed. Your trust score has been updated.</p>
+                    <p>You can now enjoy full access to all platform features.</p>
+                    <p style="text-align: center;">
+                        <a href="{self.frontend_url}/profile" class="button">View Your Profile</a>
+                    </p>
+                </div>
+                <div class="footer">
+                    <p>© 2026 Roomivo. All rights reserved.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+
+        text_content = f"""
+        Congratulations {full_name}!
+
+        Your {label} verification has been successfully completed.
+        Your trust score has been updated.
+
+        View your profile: {self.frontend_url}/profile
+
+        © 2026 Roomivo
+        """
+
+        return await self.send_email(to_email, subject, html_content, text_content)
+
+    async def send_verification_failed_email(self, to_email: str, full_name: str, reason: str = None) -> bool:
+        """Send notification when verification fails"""
+        subject = "Verification update — action needed"
+        reason_text = f"<p><strong>Reason:</strong> {reason}</p>" if reason else ""
+
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                .header {{ background-color: #EF4444; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }}
+                .content {{ background-color: #f9fafb; padding: 30px; }}
+                .button {{ display: inline-block; padding: 12px 30px; background: linear-gradient(135deg, #3DD6D0, #22B8B8); color: white; text-decoration: none; border-radius: 8px; margin: 20px 0; }}
+                .footer {{ text-align: center; padding: 20px; color: #6b7280; font-size: 12px; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>Verification Update</h1>
+                </div>
+                <div class="content">
+                    <h2>Hi {full_name},</h2>
+                    <p>Unfortunately, your verification could not be completed at this time.</p>
+                    {reason_text}
+                    <p>Please try again with a clear, well-lit photo of your document.</p>
+                    <p style="text-align: center;">
+                        <a href="{self.frontend_url}/verification" class="button">Try Again</a>
+                    </p>
+                </div>
+                <div class="footer">
+                    <p>© 2026 Roomivo. All rights reserved.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+
+        return await self.send_email(to_email, subject, html_content)
+
+    async def send_team_invite_email(self, to_email: str, name: str, landlord_name: str, invite_token: str, permission_level: str) -> bool:
+        """Send team invite email"""
+        invite_url = f"{self.frontend_url}/invite/{invite_token}"
+        subject = f"{landlord_name} invited you to join their team on Roomivo"
+
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                .header {{ background: linear-gradient(135deg, #3DD6D0, #22B8B8); color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }}
+                .content {{ background-color: #f9fafb; padding: 30px; }}
+                .button {{ display: inline-block; padding: 12px 30px; background: linear-gradient(135deg, #3DD6D0, #22B8B8); color: white; text-decoration: none; border-radius: 8px; margin: 20px 0; }}
+                .footer {{ text-align: center; padding: 20px; color: #6b7280; font-size: 12px; }}
+                .badge {{ display: inline-block; padding: 4px 12px; background: #E0F2FE; color: #0369A1; border-radius: 12px; font-size: 13px; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>You're Invited!</h1>
+                </div>
+                <div class="content">
+                    <h2>Hi {name},</h2>
+                    <p><strong>{landlord_name}</strong> has invited you to join their property management team on Roomivo.</p>
+                    <p>Your role: <span class="badge">{permission_level.replace('_', ' ').title()}</span></p>
+                    <p style="text-align: center;">
+                        <a href="{invite_url}" class="button">Accept Invite</a>
+                    </p>
+                    <p style="font-size: 13px; color: #6b7280;">This invite expires in 7 days.</p>
+                </div>
+                <div class="footer">
+                    <p>© 2026 Roomivo. All rights reserved.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+
+        return await self.send_email(to_email, subject, html_content)
+
 
 # Singleton instance
 email_service = EmailService()

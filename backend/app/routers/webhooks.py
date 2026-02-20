@@ -13,6 +13,7 @@ import os
 
 from app.core.database import get_db
 from app.models.user import User
+from app.services.email import email_service
 from fastapi import Depends
 
 router = APIRouter(prefix="/webhooks", tags=["Webhooks"])
@@ -98,8 +99,12 @@ async def verification_webhook(
         
         await db.commit()
         
-        # TODO: Send congratulatory email
-        # await email_service.send_verification_success(user.email)
+        # Send congratulatory email
+        await email_service.send_verification_success_email(
+            to_email=user.email,
+            full_name=user.full_name or user.email,
+            verification_type=verification_type
+        )
         
         return {
             "status": "processed",
@@ -112,8 +117,12 @@ async def verification_webhook(
         # Log failure for review
         print(f"Verification failed for user {user_id}: {data.get('rejection_reason')}")
         
-        # TODO: Send notification to user
-        # await email_service.send_verification_failed(user.email, data.get('rejection_reason'))
+        # Send failure notification to user
+        await email_service.send_verification_failed_email(
+            to_email=user.email,
+            full_name=user.full_name or user.email,
+            reason=data.get('rejection_reason')
+        )
         
         return {
             "status": "processed",
