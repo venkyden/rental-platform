@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
     # External APIs
-    ANTHROPIC_API_KEY: str
+    GEMINI_API_KEY: Optional[str] = None
     FOURTHLINE_API_KEY: Optional[str] = None
     SENDGRID_API_KEY: Optional[str] = None
     

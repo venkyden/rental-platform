@@ -31,7 +31,7 @@ services:
       # These MUST be filled in the Render dashboard after deployment!
       - key: SECRET_KEY
         generateValue: true
-      - key: ANTHROPIC_API_KEY
+      - key: GEMINI_API_KEY
         sync: false
       - key: STRIPE_SECRET_KEY
         sync: false

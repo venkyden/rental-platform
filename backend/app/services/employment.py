@@ -13,11 +13,12 @@ import json
 
 # Optional AI imports
 try:
-    from anthropic import Anthropic
-    ANTHROPIC_AVAILABLE = True
+    from google import genai
+    from google.genai import types
+    GEMINI_AVAILABLE = True
 except ImportError:
-    Anthropic = None
-    ANTHROPIC_AVAILABLE = False
+    genai = None
+    GEMINI_AVAILABLE = False
 
 
 @dataclass
@@ -50,8 +51,10 @@ class EmploymentVerificationService:
     
     def __init__(self):
         self.ai_client = None
-        if ANTHROPIC_AVAILABLE and os.getenv("ANTHROPIC_API_KEY"):
-            self.ai_client = Anthropic()
+        
+        from app.core.config import settings
+        if GEMINI_AVAILABLE and settings.GEMINI_API_KEY:
+            self.ai_client = genai.Client(api_key=settings.GEMINI_API_KEY)
     
     async def verify_payslip(
         self,
@@ -133,11 +136,11 @@ class EmploymentVerificationService:
             return None
         
         try:
-            # For PDFs, we'd need a PDF-to-image conversion first
-            # For images, send directly to Claude Vision
-            
-            import base64
-            image_data = base64.b64encode(file_content).decode('utf-8')
+            # Prepare image for Gemini Vision
+            document_part = types.Part.from_bytes(
+                data=file_content,
+                mime_type=file_type,
+            )
             
             prompt = """Analyze this French payslip (bulletin de paie) and extract the following information in JSON format:
 
@@ -162,27 +165,20 @@ Important French payslip terms:
 
 Return ONLY the JSON, no explanation."""
 
-            response = self.ai_client.messages.create(
-                model="claude-3-haiku-20240307",  # Fast & cheap for OCR
-                max_tokens=1000,
-                messages=[{
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "image",
-                            "source": {
-                                "type": "base64",
-                                "media_type": file_type,
-                                "data": image_data,
-                            }
-                        },
-                        {"type": "text", "text": prompt}
-                    ]
-                }]
+            # Generate structured JSON using Gemini 1.5 Flash
+            response = self.ai_client.models.generate_content(
+                model='gemini-1.5-flash',
+                contents=[
+                    document_part,
+                    prompt
+                ],
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                ),
             )
             
             # Parse response
-            json_text = response.content[0].text
+            json_text = response.text
             data = json.loads(json_text)
             
             return EmploymentData(
