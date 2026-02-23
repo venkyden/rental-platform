@@ -62,5 +62,5 @@ def downgrade() -> None:
     op.drop_index('ix_conversations_property_id', if_exists=True)
     op.drop_index('ix_conversations_tenant_id', if_exists=True)
     op.drop_index('ix_conversations_landlord_id', if_exists=True)
-    op.execute(\"DROP TABLE IF EXISTS messages CASCADE\")
-    op.execute(\"DROP TABLE IF EXISTS conversations CASCADE\")
+    op.execute("DROP TABLE IF EXISTS messages CASCADE")
+    op.execute("DROP TABLE IF EXISTS conversations CASCADE")

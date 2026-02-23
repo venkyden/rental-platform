@@ -51,5 +51,5 @@ def downgrade():
     op.drop_index('ix_notifications_user_read', if_exists=True)
     op.drop_index('ix_notifications_read', if_exists=True)
     op.drop_index('ix_notifications_user_id', if_exists=True)
-    op.execute(\"DROP TABLE IF EXISTS notifications CASCADE\")
+    op.execute("DROP TABLE IF EXISTS notifications CASCADE")
     op.drop_column('users', 'contact_preferences')

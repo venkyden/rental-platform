@@ -71,6 +71,6 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.execute(\"DROP TABLE IF EXISTS leases CASCADE\")
+    op.execute("DROP TABLE IF EXISTS leases CASCADE")
     sa.Enum(name='lease_type_enum').drop(op.get_bind())
-    op.execute(\"DROP TABLE IF EXISTS visit_slots CASCADE\")
+    op.execute("DROP TABLE IF EXISTS visit_slots CASCADE")

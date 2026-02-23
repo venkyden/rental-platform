@@ -30,4 +30,4 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     op.drop_index('idx_onboarding_user_id', table_name='onboarding_responses', if_exists=True)
-    op.execute(\"DROP TABLE IF EXISTS onboarding_responses CASCADE\")
+    op.execute("DROP TABLE IF EXISTS onboarding_responses CASCADE")

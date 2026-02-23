@@ -106,6 +106,6 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.execute(\"DROP TABLE IF EXISTS property_media CASCADE\")
-    op.execute(\"DROP TABLE IF EXISTS property_media_sessions CASCADE\")
-    op.execute(\"DROP TABLE IF EXISTS properties CASCADE\")
+    op.execute("DROP TABLE IF EXISTS property_media CASCADE")
+    op.execute("DROP TABLE IF EXISTS property_media_sessions CASCADE")
+    op.execute("DROP TABLE IF EXISTS properties CASCADE")

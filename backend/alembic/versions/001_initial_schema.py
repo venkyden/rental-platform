@@ -59,9 +59,9 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     op.drop_index('ix_verification_records_user_id', if_exists=True)
-    op.execute(\"DROP TABLE IF EXISTS verification_records CASCADE\")
+    op.execute("DROP TABLE IF EXISTS verification_records CASCADE")
     op.execute('DROP TYPE verificationstatus')
     
     op.drop_index('ix_users_email', if_exists=True)
-    op.execute(\"DROP TABLE IF EXISTS users CASCADE\")
+    op.execute("DROP TABLE IF EXISTS users CASCADE")
     op.execute('DROP TYPE userrole')
