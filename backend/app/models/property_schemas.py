@@ -122,18 +122,18 @@ class PropertyResponse(BaseModel):
     lease_duration_months: Optional[int]
     
     
-    amenities: Optional[dict]
-    custom_amenities: Optional[dict]
-    public_transport: Optional[dict]
-    nearby_landmarks: Optional[dict]
+    amenities: Optional[list] = []
+    custom_amenities: Optional[list] = []
+    public_transport: Optional[list] = []
+    nearby_landmarks: Optional[list] = []
     
-    utilities_included: Optional[dict]
+    utilities_included: Optional[list] = []
     is_caf_eligible: bool
     
     guarantor_required: bool
-    accepted_guarantor_types: Optional[dict]
+    accepted_guarantor_types: Optional[list] = []
     
-    photos: Optional[dict]
+    photos: Optional[list] = []
     
     status: str
     views_count: int
