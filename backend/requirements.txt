@@ -26,3 +26,4 @@ aiofiles==23.2.1
 python-dateutil>=2.8.0
 # Monitoring
 sentry-sdk[fastapi]>=2.7.0
+reportlab==4.1.0
