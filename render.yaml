@@ -15,7 +15,7 @@ services:
     plan: free # Change to starter/standard for production workloads
     rootDir: ./backend
     buildCommand: pip install -r requirements.txt
-    startCommand: alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    startCommand: alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT --log-level debug
     envVars:
       - key: DATABASE_URL
         fromDatabase:
