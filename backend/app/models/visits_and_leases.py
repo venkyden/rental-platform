@@ -61,3 +61,6 @@ class Lease(Base):
     property = relationship("Property", back_populates="leases")
     landlord = relationship("User", foreign_keys=[landlord_id])
     tenant = relationship("User", foreign_keys=[tenant_id])
+    
+    inventories = relationship("Inventory", back_populates="lease", cascade="all, delete-orphan")
+    disputes = relationship("Dispute", back_populates="lease", cascade="all, delete-orphan")
