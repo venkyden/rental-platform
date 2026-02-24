@@ -24,82 +24,24 @@ class OnboardingCompleteRequest(BaseModel):
     responses: Dict[str, Any]
 
 
-def detect_segment(responses: Dict[str, Any]) -> str:
-    """
-    Detect user segment based on questionnaire responses.
-    
-    Returns: D1/D2/D3 for tenants, S1/S2/S3 for landlords
-    """
-    user_type = responses.get("user_type", "").lower()
-    
-    if user_type == "landlord":
-        # Landlord segment detection (S1/S2/S3)
-        property_count = responses.get("property_count", 0)
-        if isinstance(property_count, str):
-            # Parse string like "1-4" or "5-100"
-            if "100+" in property_count or property_count.startswith("100"):
-                return "S3"
-            elif "5-" in property_count or property_count.startswith("5"):
-                return "S2"
-            else:
-                return "S1"
-        else:
-            # Numeric count
-            if property_count >= 100:
-                return "S3"
-            elif property_count >= 5:
-                return "S2"
-            else:
-                return "S1"
-    
-    elif user_type == "tenant":
-        # Tenant segment detection (D1/D2/D3)
-        situation = responses.get("situation", "").lower()
-        
-        # Primary detection from refined situation values
-        if situation == "student_budget":
-            return "D1"
-        elif situation == "family_stability":
-            return "D2"
-        elif situation == "flexibility_relocation":
-            return "D3"
-            
-        # Fallback for legacy or fuzzy matching
-        if "student" in situation or "budget" in situation:
-            segment = "D1"
-        elif "family" in situation or "stability" in situation:
-            segment = "D2"
-        elif "relocating" in situation or "remote" in situation or "flexibility" in situation:
-            segment = "D3"
-        else:
-            segment = "D1" # Default
-        
-        return segment
-    
-    return "UNKNOWN"
-
-
 @router.post("/complete")
 async def complete_onboarding(
     request: OnboardingCompleteRequest,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Complete onboarding and detect segment"""
+    """Complete onboarding without segmentation"""
     
-    # Detect segment
-    segment = detect_segment(request.responses)
-    
-    # Save onboarding response
+    # Save onboarding response directly
     onboarding = OnboardingResponse(
         user_id=current_user.id,
         responses=request.responses,
-        detected_segment=segment
+        detected_segment="DIRECT" # Legacy field placeholder
     )
     db.add(onboarding)
     
-    # Update user
-    current_user.segment = segment
+    # Update user directly
+    current_user.segment = "DIRECT" # Legacy field placeholder
     current_user.preferences = request.responses
     current_user.onboarding_completed = True
     
@@ -107,9 +49,9 @@ async def complete_onboarding(
     await db.refresh(current_user)
     
     return {
-        "segment": segment,
+        "segment": "DIRECT",
         "onboarding_completed": True,
-        "message": f"Welcome! You've been matched to segment {segment}"
+        "message": "Welcome! Onboarding completed successfully."
     }
 
 
@@ -154,10 +96,8 @@ async def update_preferences(
     existing.update(request.responses)
     current_user.preferences = existing
 
-    # Re-detect segment if user_type is present
-    if "user_type" in existing:
-        segment = detect_segment(existing)
-        current_user.segment = segment
+    # Do not detect segment anymore
+    current_user.segment = "DIRECT"
 
     await db.commit()
     await db.refresh(current_user)

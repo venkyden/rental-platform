@@ -6,24 +6,24 @@ For production, configure SMTP settings in environment variables.
 """
 import os
 from typing import Optional
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-import smtplib
+import resend
 
 
 class EmailService:
-    """Email service for sending HTML emails"""
+    """Email service for sending HTML emails using Resend"""
     
     def __init__(self):
-        self.smtp_host = os.getenv("SMTP_HOST")
-        self.smtp_port = int(os.getenv("SMTP_PORT", "587"))
-        self.smtp_user = os.getenv("SMTP_USER")
-        self.smtp_password = os.getenv("SMTP_PASSWORD")
-        self.from_email = os.getenv("FROM_EMAIL", "noreply@rentalplatform.com")
+        self.resend_api_key = os.getenv("RESEND_API_KEY")
+        if self.resend_api_key:
+            resend.api_key = self.resend_api_key
+            
+        # By default, Resend limits sending from specific domains. 
+        # "onboarding@resend.dev" is a verified testing domain if FROM_EMAIL isn't configured.
+        self.from_email = os.getenv("FROM_EMAIL", "onboarding@resend.dev")
         self.frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
         
-        # Use console logging if SMTP not configured
-        self.use_console = not all([self.smtp_host, self.smtp_user, self.smtp_password])
+        # Use console logging if API key not configured
+        self.use_console = not bool(self.resend_api_key)
         
     async def send_email(
         self,
@@ -32,7 +32,7 @@ class EmailService:
         html_content: str,
         text_content: Optional[str] = None
     ) -> bool:
-        """Send an HTML email"""
+        """Send an HTML email via Resend API"""
         try:
             if self.use_console:
                 # For local development - print to console
@@ -44,29 +44,21 @@ class EmailService:
                 print("="*80 + "\n")
                 return True
             
-            # Production - send via SMTP
-            message = MIMEMultipart("alternative")
-            message["Subject"] = subject
-            message["From"] = self.from_email
-            message["To"] = to_email
-            
-            # Add text and HTML parts
+            # Send via Resend
+            params = {
+                "from": self.from_email,
+                "to": [to_email],
+                "subject": subject,
+                "html": html_content,
+            }
             if text_content:
-                part1 = MIMEText(text_content, "plain")
-                message.attach(part1)
-            
-            part2 = MIMEText(html_content, "html")
-            message.attach(part2)
-            
-            # Send via SMTP
-            with smtplib.SMTP(self.smtp_host, self.smtp_port) as server:
-                server.starttls()
-                server.login(self.smtp_user, self.smtp_password)
-                server.sendmail(self.from_email, to_email, message.as_string())
-            
+                params["text"] = text_content
+                
+            response = resend.Emails.send(params)
+            print(f"✅ Resend Email dispatched successfully to {to_email}: {response}")
             return True
         except Exception as e:
-            print(f"Failed to send email to {to_email}: {e}")
+            print(f"❌ Failed to send email via Resend to {to_email}: {e}")
             return False
     
     async def send_verification_email(self, to_email: str, token: str, full_name: str) -> bool:

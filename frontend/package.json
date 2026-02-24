@@ -10,7 +10,9 @@
   },
   "dependencies": {
     "@sentry/nextjs": "^10.39.0",
+    "@types/react-signature-canvas": "^1.0.7",
     "axios": "^1.13.2",
+    "framer-motion": "^12.34.3",
     "idb": "^8.0.3",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.562.0",
@@ -20,7 +22,8 @@
     "react-dom": "19.2.3",
     "react-hook-form": "^7.70.0",
     "react-hot-toast": "^2.6.0",
-    "react-leaflet": "^5.0.0"
+    "react-leaflet": "^5.0.0",
+    "react-signature-canvas": "^1.1.0-alpha.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

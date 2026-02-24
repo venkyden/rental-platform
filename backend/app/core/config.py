@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: Optional[str] = None
     FOURTHLINE_API_KEY: Optional[str] = None
     SENDGRID_API_KEY: Optional[str] = None
+    RESEND_API_KEY: Optional[str] = None
     
     # Google OAuth
     GOOGLE_CLIENT_ID: Optional[str] = None

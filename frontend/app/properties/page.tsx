@@ -4,7 +4,24 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/useAuth';
 import { useRouter } from 'next/navigation';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import EmptyState from '@/components/EmptyState';
 import { apiClient } from '@/lib/api';
+import { motion, Variants } from 'framer-motion';
+
+const containerVariants: Variants = {
+    hidden: { opacity: 0 },
+    show: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.1
+        }
+    }
+};
+
+const itemVariants: Variants = {
+    hidden: { opacity: 0, scale: 0.95, y: 20 },
+    show: { opacity: 1, scale: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } }
+};
 
 interface Property {
     id: string;
@@ -86,8 +103,8 @@ export default function PropertiesPage() {
                                 key={status}
                                 onClick={() => setFilter(status as any)}
                                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${filter === status
-                                        ? 'bg-blue-600 text-white'
-                                        : 'bg-white text-gray-700 hover:bg-gray-50'
+                                    ? 'bg-blue-600 text-white'
+                                    : 'bg-white text-gray-700 hover:bg-gray-50'
                                     }`}
                             >
                                 {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -101,21 +118,25 @@ export default function PropertiesPage() {
                             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
                         </div>
                     ) : properties.length === 0 ? (
-                        <div className="bg-white rounded-lg shadow p-12 text-center">
-                            <div className="text-6xl mb-4">🏠</div>
-                            <h3 className="text-xl font-semibold text-gray-900 mb-2">No properties yet</h3>
-                            <p className="text-gray-600 mb-6">Create your first property listing to get started</p>
-                            <button
-                                onClick={() => router.push('/properties/new')}
-                                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg hover:shadow-lg"
-                            >
-                                Create Property
-                            </button>
+                        <div className="py-12">
+                            <EmptyState
+                                icon="🏠"
+                                title="No properties yet"
+                                description="Create your first property listing to get started and manage your rentals."
+                                actionLabel="Create Property"
+                                onAction={() => router.push('/properties/new')}
+                                layout="transparent"
+                            />
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <motion.div
+                            variants={containerVariants}
+                            initial="hidden"
+                            animate="show"
+                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                        >
                             {properties.map((property) => (
-                                <div key={property.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow">
+                                <motion.div variants={itemVariants} key={property.id} className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow flex flex-col">
                                     {/* Property Image */}
                                     <div className="h-48 bg-gradient-to-br from-gray-200 to-gray-300 relative">
                                         {property.photos && property.photos.length > 0 ? (
@@ -131,8 +152,8 @@ export default function PropertiesPage() {
                                         )}
                                         <div className="absolute top-2 right-2">
                                             <span className={`px-3 py-1 rounded-full text-xs font-semibold ${property.status === 'active'
-                                                    ? 'bg-green-500 text-white'
-                                                    : 'bg-yellow-500 text-white'
+                                                ? 'bg-green-500 text-white'
+                                                : 'bg-yellow-500 text-white'
                                                 }`}>
                                                 {property.status}
                                             </span>
@@ -140,14 +161,14 @@ export default function PropertiesPage() {
                                     </div>
 
                                     {/* Property Info */}
-                                    <div className="p-4">
+                                    <div className="p-5 flex flex-col flex-1">
                                         <h3 className="text-lg font-bold text-gray-900 mb-2 truncate">
                                             {property.title}
                                         </h3>
-                                        <p className="text-gray-600 text-sm mb-3">
+                                        <p className="text-gray-600 text-sm mb-4">
                                             📍 {property.city}
                                         </p>
-                                        <div className="flex items-center justify-between mb-4">
+                                        <div className="flex items-center justify-between mb-5 mt-auto">
                                             <div className="text-2xl font-bold text-blue-600">
                                                 €{property.monthly_rent}
                                                 <span className="text-sm text-gray-500">/mo</span>
@@ -179,9 +200,9 @@ export default function PropertiesPage() {
                                             </button>
                                         </div>
                                     </div>
-                                </div>
+                                </motion.div>
                             ))}
-                        </div>
+                        </motion.div>
                     )}
                 </main>
             </div>

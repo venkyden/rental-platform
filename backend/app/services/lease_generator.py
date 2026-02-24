@@ -13,6 +13,14 @@ from reportlab.lib import colors
 from app.models.property import Property
 from app.models.user import User
 from typing import Optional
+from jinja2 import Template
+
+from app.services.lease_templates import (
+    LEASE_MEUBLE_HTML,
+    LEASE_COLOCATION_HTML,
+    LEASE_CODE_CIVIL_HTML,
+    LEASE_SIMPLE_HTML
+)
 
 
 class LeaseGenerator:
@@ -166,6 +174,76 @@ class LeaseGenerator:
         
         c.save()
         return output_path
+
+    def generate_html(
+        self,
+        property: Property,
+        landlord: User,
+        tenant: User,
+        start_date: str,
+        rent: float,
+        lease_type: str = 'meuble',
+        deposit: Optional[float] = None,
+        charges: Optional[float] = None,
+        duration_months: Optional[int] = None,
+        guarantor_name: Optional[str] = None,
+        landlord_signature: Optional[str] = None
+    ) -> str:
+        config = self.LEASE_CONFIGS.get(lease_type, self.LEASE_CONFIGS['meuble'])
+        start = datetime.strptime(start_date, '%Y-%m-%d')
+        duration = duration_months or config['duration_months']
+        end = start + relativedelta(months=duration) - timedelta(days=1)
+        
+        # Determine the right template
+        templates = {
+            'meuble': LEASE_MEUBLE_HTML,
+            'colocation': LEASE_COLOCATION_HTML,
+            'code_civil': LEASE_CODE_CIVIL_HTML,
+            'simple': LEASE_SIMPLE_HTML
+        }
+        template_str = templates.get(lease_type, LEASE_MEUBLE_HTML)
+        template = Template(template_str)
+        
+        max_deposit = rent * config['max_deposit_months']
+        if deposit is None:
+            deposit = max_deposit
+        elif deposit > max_deposit:
+            deposit = max_deposit
+            
+        charges = charges if charges is not None else (property.charges or 0)
+        
+        address = f"{property.address_line1}"
+        if property.address_line2:
+            address += f", {property.address_line2}"
+        address += f", {property.postal_code} {property.city}"
+        
+        landlord_img = ""
+        if landlord_signature:
+            landlord_img = f'<img src="{landlord_signature}" style="max-height: 50px;" alt="Signature Bailleur" />'
+            
+        return template.render(
+            landlord_name=landlord.full_name,
+            landlord_address=address, # Simplified
+            landlord_email=landlord.email,
+            tenant_name=tenant.full_name,
+            tenant_email=tenant.email,
+            tenant_address="A l'adresse du bien",
+            property_address=address,
+            property_description=property.description or "Logement",
+            property_size=property.size_sqm or 0,
+            property_rooms=property.bedrooms, # simplification
+            property_city=property.city,
+            start_date=start.strftime('%d/%m/%Y'),
+            duration_text=f"{duration} mois",
+            duration_months=duration,
+            today_date=datetime.now().strftime('%d/%m/%Y'),
+            rent_amount=f"{rent:.2f}",
+            charges_amount=f"{charges:.2f}",
+            total_amount=f"{(rent + charges):.2f}",
+            deposit_amount=f"{deposit:.2f}",
+            guarantor_name=guarantor_name,
+            landlord_img=landlord_img
+        )
 
     def _draw_header(self, c: canvas.Canvas, config: dict):
         """Draw the document header."""

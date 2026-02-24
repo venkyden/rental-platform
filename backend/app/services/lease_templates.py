@@ -67,7 +67,10 @@ LEASE_MEUBLE_HTML = """
         <h3>VI. SIGNATURES</h3>
         <p>Fait à {{ property_city }}, le {{ today_date }}</p>
         <div class="signatures">
-            <div class="sig-box"><p><strong>LE BAILLEUR</strong></p></div>
+            <div class="sig-box">
+                <p><strong>LE BAILLEUR</strong></p>
+                {{ landlord_img }}
+            </div>
             <div class="sig-box"><p><strong>LE PRENEUR</strong></p></div>
         </div>
     </div>
@@ -131,7 +134,10 @@ LEASE_COLOCATION_HTML = """
         <h2>6 - SIGNATURES</h2>
         <p>Fait à {{ property_city }}, le {{ today_date }}</p>
         <div class="signatures">
-            <div class="sig-box"><p><strong>LE BAILLEUR</strong><br>Lu et approuvé</p></div>
+            <div class="sig-box">
+                <p><strong>LE BAILLEUR</strong><br>Lu et approuvé</p>
+                {{ landlord_img }}
+            </div>
             <div class="sig-box"><p><strong>LE LOCATAIRE</strong><br>Lu et approuvé</p></div>
         </div>
     </div>
@@ -188,7 +194,10 @@ LEASE_CODE_CIVIL_HTML = """
         <br><br>
         <table style="width: 100%;">
             <tr>
-                <td style="width: 50%;"><strong>Le Bailleur</strong></td>
+                <td style="width: 50%;">
+                    <strong>Le Bailleur</strong><br>
+                    {{ landlord_img }}
+                </td>
                 <td style="width: 50%;"><strong>Le Preneur</strong></td>
             </tr>
         </table>
@@ -234,7 +243,17 @@ LEASE_SIMPLE_HTML = """
     <br><br><br>
     <p>Fait le {{ today_date }} à {{ property_city }}.</p>
     <br>
-    <p>Signature Bailleur : ____________________ &nbsp;&nbsp;&nbsp; Signature Locataire : ____________________</p>
+    <table style="width: 100%;">
+        <tr>
+            <td style="width: 50%;">
+                <p>Signature Bailleur :</p>
+                {{ landlord_img }}
+            </td>
+            <td style="width: 50%;">
+                <p>Signature Locataire :</p>
+            </td>
+        </tr>
+    </table>
 </body>
 </html>
 """

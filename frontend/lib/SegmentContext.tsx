@@ -192,17 +192,17 @@ export function CommonActionsBar({ className = '' }: { className?: string }) {
     const commonActions = [
         {
             id: 'profile',
-            label: 'Mon profil',
+            label: 'My Profile',
             icon: '👤',
             path: '/profile',
             always: true
         },
         {
             id: 'id_verification',
-            label: 'Vérification ID',
+            label: 'ID Verification',
             icon: verificationStatus?.id_verified ? '✅' : '🆔',
             path: '/verify/identity',
-            badge: !verificationStatus?.id_verified ? 'À compléter' : undefined
+            badge: !verificationStatus?.id_verified ? 'To complete' : undefined
         },
         {
             id: 'documents',
@@ -213,7 +213,7 @@ export function CommonActionsBar({ className = '' }: { className?: string }) {
         },
         {
             id: 'support',
-            label: 'Aide',
+            label: 'Help',
             icon: '❓',
             path: '/support',
             always: true
@@ -268,8 +268,8 @@ export function VerificationProgress() {
     const steps = [
         { key: 'email_verified', label: 'Email', done: verificationStatus.email_verified },
         { key: 'onboarding_completed', label: 'Questionnaire', done: verificationStatus.onboarding_completed },
-        { key: 'id_verified', label: 'Identité', done: verificationStatus.id_verified },
-        { key: 'employment_verified', label: 'Emploi', done: verificationStatus.employment_verified },
+        { key: 'id_verified', label: 'Identity', done: verificationStatus.id_verified },
+        { key: 'employment_verified', label: 'Employment', done: verificationStatus.employment_verified },
     ];
 
     const completed = steps.filter(s => s.done).length;
@@ -278,7 +278,7 @@ export function VerificationProgress() {
     return (
         <div className="bg-white rounded-xl p-4 shadow-sm border">
             <div className="flex justify-between items-center mb-2">
-                <span className="font-medium text-gray-900">Vérification du profil</span>
+                <span className="font-medium text-gray-900">Profile Verification</span>
                 <span className="text-sm text-gray-500">{percentage}%</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2 mb-3">

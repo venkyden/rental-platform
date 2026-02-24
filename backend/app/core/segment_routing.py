@@ -53,14 +53,14 @@ SEGMENT_CONFIGS: Dict[str, SegmentConfig] = {
     
     "D1": SegmentConfig(
         segment="D1",
-        segment_name="Premier Locataire",
+        segment_name="First-Time Tenant",
         segment_type="demand",
         dashboard_path="/dashboard/tenant",
         features=["search", "favorites", "applications", "documents", "verification", "history", "premium_search"],
         quick_actions=[
-            {"id": "search", "label": "Chercher un logement", "icon": "🔍", "path": "/search"},
-            {"id": "verify", "label": "Vérifier mon profil", "icon": "✓", "path": "/verify"},
-            {"id": "guide", "label": "Guide du locataire", "icon": "📖", "path": "/guide/tenant"},
+            {"id": "search", "label": "Search Property", "icon": "🔍", "path": "/search"},
+            {"id": "verify", "label": "Verify Profile", "icon": "✓", "path": "/verify"},
+            {"id": "guide", "label": "Tenant Guide", "icon": "📖", "path": "/guide/tenant"},
         ],
         settings={
             "verification_flow": "guarantor", # Prompt for Guarantor
@@ -71,14 +71,14 @@ SEGMENT_CONFIGS: Dict[str, SegmentConfig] = {
     
     "D2": SegmentConfig(
         segment="D2",
-        segment_name="Locataire Expérimenté",
+        segment_name="Experienced Tenant",
         segment_type="demand",
         dashboard_path="/dashboard/tenant",
         features=["search", "favorites", "applications", "documents", "verification", "history", "premium_search"],
         quick_actions=[
-            {"id": "search", "label": "Recherche", "icon": "🔍", "path": "/search"},
-            {"id": "applications", "label": "Candidatures", "icon": "📋", "path": "/applications"},
-            {"id": "documents", "label": "Mes documents", "icon": "📁", "path": "/documents"},
+            {"id": "search", "label": "Search", "icon": "🔍", "path": "/search"},
+            {"id": "applications", "label": "Applications", "icon": "📋", "path": "/applications"},
+            {"id": "documents", "label": "My Documents", "icon": "📁", "path": "/documents"},
         ],
         settings={
             "verification_flow": "income", # Prompt for Tax/Pay-slips
@@ -89,14 +89,14 @@ SEGMENT_CONFIGS: Dict[str, SegmentConfig] = {
     
     "D3": SegmentConfig(
         segment="D3",
-        segment_name="Professionnel en Mobilité",
+        segment_name="Mobile Professional",
         segment_type="demand",
         dashboard_path="/dashboard/tenant",
         features=["search", "favorites", "applications", "documents", "verification", "history", "premium_search", "relocation"],
         quick_actions=[
-            {"id": "search", "label": "Recherche", "icon": "🔍", "path": "/search"},
-            {"id": "relocation", "label": "Services Relocation", "icon": "🚚", "path": "/relocation"},
-            {"id": "documents", "label": "Coffre-fort", "icon": "🔒", "path": "/documents"},
+            {"id": "search", "label": "Search", "icon": "🔍", "path": "/search"},
+            {"id": "relocation", "label": "Relocation Services", "icon": "🚚", "path": "/relocation"},
+            {"id": "documents", "label": "Secure Vault", "icon": "🔒", "path": "/documents"},
         ],
         settings={
             "verification_flow": "identity", # Prompt for Visa/Passport
@@ -110,14 +110,14 @@ SEGMENT_CONFIGS: Dict[str, SegmentConfig] = {
     
     "S1": SegmentConfig(
         segment="S1",
-        segment_name="Nouveau Propriétaire",
+        segment_name="New Landlord",
         segment_type="supply",
         dashboard_path="/dashboard/landlord",
         features=["properties", "applications", "visits", "messages"],
         quick_actions=[
-            {"id": "add_property", "label": "Ajouter un bien", "icon": "➕", "path": "/properties/new"},
-            {"id": "applications", "label": "Candidatures", "icon": "📋", "path": "/applications"},
-            {"id": "pricing", "label": "Guide des prix", "icon": "💰", "path": "/guide/pricing"},
+            {"id": "add_property", "label": "Add a Property", "icon": "➕", "path": "/properties/new"},
+            {"id": "applications", "label": "Applications", "icon": "📋", "path": "/applications"},
+            {"id": "pricing", "label": "Pricing Guide", "icon": "💰", "path": "/guide/pricing"},
         ],
         settings={
             "show_onboarding_tips": True,
@@ -127,14 +127,14 @@ SEGMENT_CONFIGS: Dict[str, SegmentConfig] = {
     
     "S2": SegmentConfig(
         segment="S2",
-        segment_name="Investisseur Professionnel",
+        segment_name="Professional Investor",
         segment_type="supply",
         dashboard_path="/dashboard/landlord",
         # Additive: S1 + Team + Analytics
         features=["properties", "applications", "visits", "messages", "team", "analytics", "inbox"],
         quick_actions=[
-            {"id": "portfolio", "label": "Mon Portfolio", "icon": "🏢", "path": "/properties"},
-            {"id": "team", "label": "Mon Équipe", "icon": "👥", "path": "/team"},
+            {"id": "portfolio", "label": "My Portfolio", "icon": "🏢", "path": "/properties"},
+            {"id": "team", "label": "My Team", "icon": "👥", "path": "/team"},
             {"id": "analytics", "label": "Analytics", "icon": "📊", "path": "/analytics"},
         ],
         settings={
@@ -145,17 +145,17 @@ SEGMENT_CONFIGS: Dict[str, SegmentConfig] = {
     
     "S3": SegmentConfig(
         segment="S3",
-        segment_name="Agence Immobilière",
+        segment_name="Real Estate Agency",
         segment_type="supply",
         dashboard_path="/dashboard/agency",
         # Additive: S2 + Enterprise Integrations
         features=["properties", "applications", "visits", "messages", "team", "analytics", "inbox",
                   "bulk_import", "gli", "webhooks", "api_access", "white_label"],
         quick_actions=[
-            {"id": "bulk", "label": "Import en masse", "icon": "📤", "path": "/bulk"},
-            {"id": "gli", "label": "Devis GLI", "icon": "🛡️", "path": "/gli"},
-            {"id": "webhooks", "label": "Intégration ERP", "icon": "🔗", "path": "/webhooks"},
-            {"id": "team", "label": "Équipe", "icon": "👥", "path": "/team"},
+            {"id": "bulk", "label": "Bulk Import", "icon": "📤", "path": "/bulk"},
+            {"id": "gli", "label": "GLI Quote", "icon": "🛡️", "path": "/gli"},
+            {"id": "webhooks", "label": "ERP Integration", "icon": "🔗", "path": "/webhooks"},
+            {"id": "team", "label": "Team", "icon": "👥", "path": "/team"},
         ],
         settings={
             "show_onboarding_tips": False,

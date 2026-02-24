@@ -4,9 +4,26 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/useAuth';
 import { useRouter } from 'next/navigation';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import EmptyState from '@/components/EmptyState';
 import { apiClient } from '@/lib/api';
 import { DashboardCardSkeleton } from '@/components/SkeletonLoaders';
 import { useToast } from '@/lib/ToastContext';
+import { motion, Variants } from 'framer-motion';
+
+const containerVariants: Variants = {
+    hidden: { opacity: 0 },
+    show: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.1
+        }
+    }
+};
+
+const itemVariants: Variants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } }
+};
 
 interface PropertyStats {
     total: number;
@@ -141,9 +158,14 @@ export default function DashboardPage() {
 
                 {/* Main content */}
                 <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-                    <div className="px-4 py-6 sm:px-0">
+                    <motion.div
+                        variants={containerVariants}
+                        initial="hidden"
+                        animate="show"
+                        className="px-4 py-6 sm:px-0"
+                    >
                         {/* Welcome card */}
-                        <div className="bg-white overflow-hidden shadow-xl rounded-xl mb-6 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+                        <motion.div variants={itemVariants} className="bg-white overflow-hidden shadow-xl rounded-xl mb-6 bg-gradient-to-r from-teal-600 to-indigo-600 text-white">
                             <div className="px-6 py-8">
                                 <h2 className="text-3xl font-bold mb-2">
                                     Welcome back, {user.full_name}! 👋
@@ -152,11 +174,11 @@ export default function DashboardPage() {
                                     Role: {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                                 </p>
                             </div>
-                        </div>
+                        </motion.div>
 
                         {/* Property Stats (Landlords only) */}
                         {user.role === 'landlord' && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                            <motion.div variants={containerVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
                                 {loadingStats ? (
                                     <>
                                         <DashboardCardSkeleton />
@@ -166,66 +188,68 @@ export default function DashboardPage() {
                                     </>
                                 ) : stats ? (
                                     <>
-                                        <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
+                                        <motion.div variants={itemVariants} className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
                                             <div className="flex items-center justify-between mb-2">
                                                 <h3 className="text-gray-600 text-sm font-medium">Total Properties</h3>
                                                 <span className="text-2xl">🏢</span>
                                             </div>
                                             <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
                                             <p className="text-xs text-gray-500 mt-1">All your listings</p>
-                                        </div>
+                                        </motion.div>
 
-                                        <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
+                                        <motion.div variants={itemVariants} className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
                                             <div className="flex items-center justify-between mb-2">
                                                 <h3 className="text-gray-600 text-sm font-medium">Active Listings</h3>
                                                 <span className="text-2xl">✅</span>
                                             </div>
                                             <p className="text-3xl font-bold text-green-600">{stats.active}</p>
                                             <p className="text-xs text-gray-500 mt-1">Live on platform</p>
-                                        </div>
+                                        </motion.div>
 
-                                        <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
+                                        <motion.div variants={itemVariants} className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
                                             <div className="flex items-center justify-between mb-2">
                                                 <h3 className="text-gray-600 text-sm font-medium">Draft Properties</h3>
                                                 <span className="text-2xl">📝</span>
                                             </div>
                                             <p className="text-3xl font-bold text-yellow-600">{stats.draft}</p>
                                             <p className="text-xs text-gray-500 mt-1">Pending publication</p>
-                                        </div>
+                                        </motion.div>
 
-                                        <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
+                                        <motion.div variants={itemVariants} className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
                                             <div className="flex items-center justify-between mb-2">
                                                 <h3 className="text-gray-600 text-sm font-medium">Total Views</h3>
                                                 <span className="text-2xl">👁️</span>
                                             </div>
                                             <p className="text-3xl font-bold text-blue-600">{stats.total_views}</p>
                                             <p className="text-xs text-gray-500 mt-1">All time</p>
-                                        </div>
+                                        </motion.div>
                                     </>
                                 ) : null}
-                            </div>
+                            </motion.div>
                         )}
 
                         {/* Quick Actions */}
-                        <div className="mb-6">
+                        <motion.div variants={itemVariants} className="mb-6">
                             <h3 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                 {quickActions.filter(action => action.show).map((action, idx) => (
-                                    <button
+                                    <motion.button
+                                        whileHover={{ scale: 1.02, y: -2 }}
+                                        whileTap={{ scale: 0.98 }}
                                         key={idx}
                                         onClick={action.action}
-                                        className="bg-white rounded-xl shadow-md p-6 hover:shadow-xl hover:scale-105 transition transform text-left"
+                                        className="bg-white rounded-xl shadow-md p-6 hover:shadow-xl transition-all text-left border border-transparent hover:border-teal-100"
                                     >
                                         <div className="text-4xl mb-3">{action.icon}</div>
                                         <h4 className="font-bold text-gray-900 mb-1">{action.title}</h4>
                                         <p className="text-sm text-gray-600">{action.description}</p>
-                                    </button>
+                                    </motion.button>
                                 ))}
                             </div>
-                        </div>
+                        </motion.div>
 
                         {/* Inbox Preview Widget */}
-                        <div className="mb-6">
+                        <motion.div variants={itemVariants} className="mb-6">
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
                                     📬 Messages
@@ -279,15 +303,18 @@ export default function DashboardPage() {
                                     ))}
                                 </div>
                             ) : (
-                                <div className="bg-white rounded-xl shadow-md p-8 text-center text-gray-500">
-                                    <span className="text-4xl mb-3 block">📭</span>
-                                    <p>No messages</p>
-                                    <p className="text-sm mt-1">Your conversations will appear here</p>
+                                <div className="py-8">
+                                    <EmptyState
+                                        icon="📭"
+                                        title="No messages yet"
+                                        description="Your conversation history with tenants and landlords will appear here."
+                                        layout="transparent"
+                                    />
                                 </div>
                             )}
-                        </div>
+                        </motion.div>
 
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             {/* Verification status */}
                             <div className="bg-white overflow-hidden shadow-xl rounded-xl">
                                 <div className="px-6 py-6">
@@ -414,8 +441,8 @@ export default function DashboardPage() {
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
+                        </motion.div>
+                    </motion.div>
                 </main>
             </div>
         </ProtectedRoute>

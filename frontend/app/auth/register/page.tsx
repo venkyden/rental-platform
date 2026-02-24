@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiClient } from '@/lib/api';
-import RoomivoBrand from '@/components/RoomivoBrand';
+import { motion, Variants } from 'framer-motion';
 
 declare global {
     interface Window {
@@ -18,6 +18,21 @@ declare global {
         };
     }
 }
+
+const containerVariants: Variants = {
+    hidden: { opacity: 0 },
+    show: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.1
+        }
+    }
+};
+
+const itemVariants: Variants = {
+    hidden: { opacity: 0, y: 15 },
+    show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } }
+};
 
 export default function RegisterPage() {
     const [formData, setFormData] = useState({
@@ -41,15 +56,10 @@ export default function RegisterPage() {
         setGoogleLoading(true);
         try {
             const result = await apiClient.googleLogin(response.credential, formData.role);
-            const redirectPath = result.redirect_path || '/onboarding';
-            router.push(redirectPath);
+            router.push(result.redirect_path || '/dashboard');
         } catch (err: any) {
             const detail = err.response?.data?.detail;
-            if (typeof detail === 'string') {
-                setError(detail);
-            } else {
-                setError('Google sign-up failed. Please try again.');
-            }
+            setError(typeof detail === 'string' ? detail : 'Google sign-up failed. Please try again.');
         } finally {
             setGoogleLoading(false);
         }
@@ -81,26 +91,20 @@ export default function RegisterPage() {
         };
         document.body.appendChild(script);
         return () => {
-            document.body.removeChild(script);
+            if (document.body.contains(script)) {
+                document.body.removeChild(script);
+            }
         };
     }, [handleGoogleResponse]);
 
-    function handleChange(
-        e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-    ) {
+    function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
         const target = e.target;
         const value = target.type === 'checkbox' ? (target as HTMLInputElement).checked : target.value;
         const name = target.name;
 
-        setFormData({
-            ...formData,
-            [name]: value,
-        });
+        setFormData(prev => ({ ...prev, [name]: value }));
 
-        // Validate password on change
-        if (name === 'password') {
-            validatePassword(value as string);
-        }
+        if (name === 'password') validatePassword(value as string);
     }
 
     function validatePassword(password: string) {
@@ -114,11 +118,11 @@ export default function RegisterPage() {
 
         const allValid = Object.values(checks).every(Boolean);
         const messages = [];
-        if (!checks.length) messages.push('8+ characters');
-        if (!checks.uppercase) messages.push('uppercase letter');
-        if (!checks.lowercase) messages.push('lowercase letter');
+        if (!checks.length) messages.push('8+ chars');
+        if (!checks.uppercase) messages.push('uppercase');
+        if (!checks.lowercase) messages.push('lowercase');
         if (!checks.number) messages.push('number');
-        if (!checks.special) messages.push('special character');
+        if (!checks.special) messages.push('special');
 
         setPasswordStrength({
             valid: allValid,
@@ -132,17 +136,14 @@ export default function RegisterPage() {
         e.preventDefault();
         setError('');
 
-        // Validation
         if (!formData.gdprConsent) {
             setError('You must accept the Privacy Policy to create an account');
             return;
         }
-
         if (formData.password !== formData.confirmPassword) {
             setError('Passwords do not match');
             return;
         }
-
         if (!validatePassword(formData.password)) {
             setError('Password does not meet security requirements');
             return;
@@ -151,7 +152,6 @@ export default function RegisterPage() {
         setLoading(true);
 
         try {
-            // Register
             await apiClient.register({
                 email: formData.email,
                 password: formData.password,
@@ -159,23 +159,14 @@ export default function RegisterPage() {
                 role: formData.role,
                 marketing_consent: formData.marketingConsent,
             });
-
-            // Login automatically after registration
             await apiClient.login(formData.email, formData.password);
-
-            // Redirect to onboarding questionnaire
-            router.push('/onboarding');
+            router.push('/dashboard');
         } catch (err: any) {
-            // Handle both string and object error formats from the API
             const detail = err.response?.data?.detail;
             let errorMessage = 'Registration failed. Please try again.';
-            if (typeof detail === 'string') {
-                errorMessage = detail;
-            } else if (Array.isArray(detail)) {
-                errorMessage = detail.map(d => d.msg || d.message || JSON.stringify(d)).join(', ');
-            } else if (detail && typeof detail === 'object') {
-                errorMessage = detail.msg || detail.message || JSON.stringify(detail);
-            }
+            if (typeof detail === 'string') errorMessage = detail;
+            else if (Array.isArray(detail)) errorMessage = detail.map(d => d.msg || d.message).join(', ');
+            else if (detail && typeof detail === 'object') errorMessage = detail.msg || detail.message;
             setError(errorMessage);
         } finally {
             setLoading(false);
@@ -183,229 +174,192 @@ export default function RegisterPage() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-[var(--background)] py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full animate-fade-in-up">
-                <div className="mb-8">
-                    <RoomivoBrand variant="full" size="md" />
+        <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="show"
+            className="w-full pb-12"
+        >
+            <motion.div variants={itemVariants} className="text-center sm:text-left mb-8">
+                <h2 className="text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
+                    Create your account
+                </h2>
+                <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+                    Already have an account?{' '}
+                    <Link href="/auth/login" className="font-semibold text-teal-600 hover:text-teal-500 transition-colors">
+                        Sign in
+                    </Link>
+                </p>
+            </motion.div>
+
+            {error && (
+                <motion.div variants={itemVariants} className="mb-6 rounded-xl bg-red-50/50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/30 p-4">
+                    <p className="text-sm font-medium text-red-800 dark:text-red-400">{error}</p>
+                </motion.div>
+            )}
+
+            <motion.div variants={itemVariants} className="mb-6">
+                <div id="google-signup-btn" className="flex justify-center sm:justify-start" />
+                {googleLoading && (
+                    <p className="text-sm text-zinc-500 mt-3 text-center sm:text-left animate-pulse">
+                        Creating account with Google...
+                    </p>
+                )}
+            </motion.div>
+
+            <motion.div variants={itemVariants} className="relative mb-6">
+                <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-zinc-200 dark:border-zinc-800" />
                 </div>
+                <div className="relative flex justify-center sm:justify-start">
+                    <span className="bg-white dark:bg-zinc-950 pr-4 text-sm text-zinc-400 font-medium">
+                        Or register with email
+                    </span>
+                </div>
+            </motion.div>
 
-                <div className="glass-card p-8 space-y-6">
-                    <div className="text-center">
-                        <h2 className="text-2xl font-bold text-[var(--foreground)]">
-                            Create your account
-                        </h2>
-                        <p className="mt-2 text-sm text-[var(--gray-500)]">
-                            Already have an account?{' '}
-                            <Link href="/auth/login" className="font-medium text-[var(--primary-500)] hover:text-[var(--primary-600)]">
-                                Sign in
-                            </Link>
-                        </p>
-                    </div>
+            <motion.form variants={containerVariants} className="space-y-5" onSubmit={handleSubmit}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <motion.div variants={itemVariants} className="col-span-1 sm:col-span-2">
+                        <label htmlFor="full_name" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                            Full Name
+                        </label>
+                        <input
+                            id="full_name"
+                            name="full_name"
+                            type="text"
+                            required
+                            className="block w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-900 dark:text-white placeholder-zinc-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
+                            placeholder="Jean Dupont"
+                            value={formData.full_name}
+                            onChange={handleChange}
+                        />
+                    </motion.div>
 
-                    {error && (
-                        <div className="rounded-xl bg-red-50 border border-red-200 p-4 animate-shake">
-                            <p className="text-sm text-red-800">{error}</p>
+                    <motion.div variants={itemVariants} className="col-span-1 sm:col-span-2">
+                        <label htmlFor="email" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                            Email address
+                        </label>
+                        <input
+                            id="email"
+                            name="email"
+                            type="email"
+                            autoComplete="email"
+                            required
+                            className="block w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-900 dark:text-white placeholder-zinc-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
+                            placeholder="name@company.com"
+                            value={formData.email}
+                            onChange={handleChange}
+                        />
+                    </motion.div>
+
+                    <motion.div variants={itemVariants} className="col-span-1 sm:col-span-2">
+                        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-3">
+                            I am a
+                        </label>
+                        <div className="grid grid-cols-2 gap-3">
+                            {[
+                                { id: 'tenant', label: 'Tenant', icon: '👤' },
+                                { id: 'landlord', label: 'Landlord', icon: '🏠' }
+                            ].map((role) => (
+                                <button
+                                    key={role.id}
+                                    type="button"
+                                    onClick={() => setFormData({ ...formData, role: role.id as any })}
+                                    className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${formData.role === role.id
+                                        ? 'border-teal-500 bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-300'
+                                        : 'border-zinc-200 dark:border-zinc-800 hover:border-teal-200 dark:hover:border-teal-800 text-zinc-600 dark:text-zinc-400'
+                                        }`}
+                                >
+                                    <span className="text-2xl mb-2">{role.icon}</span>
+                                    <span className="text-sm font-medium">{role.label}</span>
+                                </button>
+                            ))}
                         </div>
-                    )}
+                    </motion.div>
 
-                    {/* Google Sign-Up */}
-                    <div>
-                        <div id="google-signup-btn" className="flex justify-center" />
-                        {googleLoading && (
-                            <p className="text-center text-sm text-[var(--gray-500)] mt-2">
-                                Creating account with Google...
+                    <motion.div variants={itemVariants} className="col-span-1">
+                        <label htmlFor="password" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                            Password
+                        </label>
+                        <input
+                            id="password"
+                            name="password"
+                            type="password"
+                            autoComplete="new-password"
+                            required
+                            className="block w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-900 dark:text-white placeholder-zinc-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
+                            placeholder="••••••••"
+                            value={formData.password}
+                            onChange={handleChange}
+                        />
+                        {formData.password && (
+                            <p className={`mt-2 text-xs font-medium ${passwordStrength.valid ? 'text-teal-600' : 'text-amber-500'}`}>
+                                {passwordStrength.message}
                             </p>
                         )}
-                    </div>
+                    </motion.div>
 
-                    {/* Divider */}
-                    <div className="relative">
-                        <div className="absolute inset-0 flex items-center">
-                            <div className="w-full border-t border-[var(--card-border)]" />
-                        </div>
-                        <div className="relative flex justify-center text-sm">
-                            <span className="px-4 bg-[var(--card-bg)] text-[var(--gray-500)]">
-                                or register with email
-                            </span>
-                        </div>
-                    </div>
-
-                    <form className="space-y-5" onSubmit={handleSubmit}>
-                        <div>
-                            <label
-                                htmlFor="full_name"
-                                className="block text-sm font-medium text-gray-700"
-                            >
-                                Full Name
-                            </label>
-                            <input
-                                id="full_name"
-                                name="full_name"
-                                type="text"
-                                required
-                                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                placeholder="John Doe"
-                                value={formData.full_name}
-                                onChange={handleChange}
-                            />
-                        </div>
-
-                        <div>
-                            <label
-                                htmlFor="email"
-                                className="block text-sm font-medium text-gray-700"
-                            >
-                                Email address
-                            </label>
-                            <input
-                                id="email"
-                                name="email"
-                                type="email"
-                                autoComplete="email"
-                                required
-                                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                placeholder="you@example.com"
-                                value={formData.email}
-                                onChange={handleChange}
-                            />
-                        </div>
-
-                        <div>
-                            <label
-                                htmlFor="role"
-                                className="block text-sm font-medium text-gray-700"
-                            >
-                                I am a
-                            </label>
-                            <select
-                                id="role"
-                                name="role"
-                                required
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                value={formData.role}
-                                onChange={handleChange}
-                            >
-                                <option value="tenant">Tenant (looking for property)</option>
-                                <option value="landlord">Landlord (listing property)</option>
-                                <option value="property_manager">Property Manager (managing properties)</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label
-                                htmlFor="password"
-                                className="block text-sm font-medium text-gray-700"
-                            >
-                                Password
-                            </label>
-                            <input
-                                id="password"
-                                name="password"
-                                type="password"
-                                autoComplete="new-password"
-                                required
-                                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                placeholder="Min. 8 characters with uppercase, number & special char"
-                                value={formData.password}
-                                onChange={handleChange}
-                            />
-                            {formData.password && (
-                                <p className={`mt-1 text-xs ${passwordStrength.valid ? 'text-green-600' : 'text-amber-600'}`}>
-                                    {passwordStrength.message}
-                                </p>
-                            )}
-                        </div>
-
-                        <div>
-                            <label
-                                htmlFor="confirmPassword"
-                                className="block text-sm font-medium text-gray-700"
-                            >
-                                Confirm Password
-                            </label>
-                            <input
-                                id="confirmPassword"
-                                name="confirmPassword"
-                                type="password"
-                                autoComplete="new-password"
-                                required
-                                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                placeholder="Re-type password"
-                                value={formData.confirmPassword}
-                                onChange={handleChange}
-                            />
-                        </div>
-
-                        {/* GDPR Consent - Required for France */}
-                        <div className="space-y-3 pt-4 border-t border-gray-200">
-                            <div className="flex items-start">
-                                <div className="flex items-center h-5">
-                                    <input
-                                        id="gdprConsent"
-                                        name="gdprConsent"
-                                        type="checkbox"
-                                        required
-                                        checked={formData.gdprConsent}
-                                        onChange={handleChange}
-                                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                                    />
-                                </div>
-                                <div className="ml-3 text-sm">
-                                    <label htmlFor="gdprConsent" className="font-medium text-gray-700">
-                                        I accept the{' '}
-                                        <Link href="/privacy" className="text-blue-600 hover:text-blue-500 underline">
-                                            Privacy Policy
-                                        </Link>
-                                        {' '}and{' '}
-                                        <Link href="/terms" className="text-blue-600 hover:text-blue-500 underline">
-                                            Terms of Service
-                                        </Link>
-                                        {' '}<span className="text-red-500">*</span>
-                                    </label>
-                                    <p className="text-gray-500 text-xs mt-1">
-                                        Your data is processed in accordance with GDPR regulations.
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-start">
-                                <div className="flex items-center h-5">
-                                    <input
-                                        id="marketingConsent"
-                                        name="marketingConsent"
-                                        type="checkbox"
-                                        checked={formData.marketingConsent}
-                                        onChange={handleChange}
-                                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                                    />
-                                </div>
-                                <div className="ml-3 text-sm">
-                                    <label htmlFor="marketingConsent" className="text-gray-700">
-                                        I agree to receive promotional emails (optional)
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <button
-                                type="submit"
-                                disabled={loading || !formData.gdprConsent}
-                                className="btn-primary btn-shine w-full py-3"
-                            >
-                                {loading ? (
-                                    <span className="flex items-center justify-center gap-2">
-                                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                        Creating account...
-                                    </span>
-                                ) : (
-                                    'Create account'
-                                )}
-                            </button>
-                        </div>
-                    </form>
+                    <motion.div variants={itemVariants} className="col-span-1">
+                        <label htmlFor="confirmPassword" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                            Confirm Password
+                        </label>
+                        <input
+                            id="confirmPassword"
+                            name="confirmPassword"
+                            type="password"
+                            autoComplete="new-password"
+                            required
+                            className="block w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-900 dark:text-white placeholder-zinc-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
+                            placeholder="••••••••"
+                            value={formData.confirmPassword}
+                            onChange={handleChange}
+                        />
+                    </motion.div>
                 </div>
-            </div>
-        </div>
+
+                <motion.div variants={itemVariants} className="pt-4 mt-2 border-t border-zinc-100 dark:border-zinc-800 space-y-3">
+                    <div className="flex items-start">
+                        <div className="flex items-center h-5 mt-0.5">
+                            <input
+                                id="gdprConsent"
+                                name="gdprConsent"
+                                type="checkbox"
+                                required
+                                checked={formData.gdprConsent}
+                                onChange={handleChange}
+                                className="h-4 w-4 rounded border-zinc-300 text-teal-600 focus:ring-teal-600"
+                            />
+                        </div>
+                        <div className="ml-3 text-sm">
+                            <label htmlFor="gdprConsent" className="font-medium text-zinc-700 dark:text-zinc-300">
+                                I accept the{' '}
+                                <Link href="/privacy" className="text-teal-600 hover:text-teal-500 underline">Privacy Policy</Link>
+                                {' '}and{' '}
+                                <Link href="/terms" className="text-teal-600 hover:text-teal-500 underline">Terms of Service</Link>
+                                <span className="text-red-500"> *</span>
+                            </label>
+                        </div>
+                    </div>
+                </motion.div>
+
+                <motion.div variants={itemVariants} className="pt-2">
+                    <button
+                        type="submit"
+                        disabled={loading || !formData.gdprConsent}
+                        className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-teal-600 hover:bg-teal-500 focus:outline-none focus:ring-4 focus:ring-teal-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
+                    >
+                        {loading ? (
+                            <span className="flex items-center gap-2">
+                                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                Creating account...
+                            </span>
+                        ) : (
+                            'Create account'
+                        )}
+                    </button>
+                </motion.div>
+            </motion.form>
+        </motion.div>
     );
 }

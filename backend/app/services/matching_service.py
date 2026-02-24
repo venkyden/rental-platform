@@ -48,13 +48,12 @@ class MatchingService:
         breakdown = {}
         
         # 1. Tenant Preference (30 points)
-        tenant_situation = (tenant.preferences or {}).get('situation', 'unknown')
         accepted_types = property.accepted_tenant_types or []
         
         if not accepted_types:
             score += 30
             breakdown['preference'] = 'perfect'
-        elif self._map_situation_to_type(tenant_situation) in accepted_types:
+        elif self._map_situation_to_type(tenant.preferences or {}) in accepted_types:
              score += 30
              breakdown['preference'] = 'perfect'
         else:
@@ -227,50 +226,7 @@ class MatchingService:
                 score += 5
                 matched_feats.append(f"🏪 {service}")
         
-        # 7. Nationality Preference Matching (NEW - Smart Onboarding)
-        # Landlord's nationality preference vs tenant's nationality
-        landlord_prefs = property.landlord.preferences if hasattr(property, 'landlord') and property.landlord else {}
-        landlord_nat_pref = landlord_prefs.get('nationality_preference', 'no_preference') if landlord_prefs else 'no_preference'
-        tenant_nationality = tenant.nationality or ''
-        
-        if landlord_nat_pref and landlord_nat_pref != 'no_preference':
-            if landlord_nat_pref.lower() == 'french' and tenant_nationality.lower() == 'french':
-                score += 10
-                breakdown['nationality'] = 'match'
-            elif landlord_nat_pref.lower() == 'international' and tenant_nationality.lower() != 'french':
-                score += 10
-                breakdown['nationality'] = 'match'
-            elif landlord_nat_pref.lower() not in ['french', 'international']:
-                # Specific nationality preference
-                if tenant_nationality.lower() == landlord_nat_pref.lower():
-                    score += 10
-                    breakdown['nationality'] = 'match'
-                else:
-                    score -= 20  # Strong penalty for mismatch
-                    breakdown['nationality'] = 'mismatch'
-            else:
-                breakdown['nationality'] = 'partial'
-        else:
-            breakdown['nationality'] = 'no_preference'
-        
-        # 8. Gender Preference Matching (NEW - Smart Onboarding)
-        landlord_gender_pref = landlord_prefs.get('gender_preference', 'no_preference') if landlord_prefs else 'no_preference'
-        tenant_gender = tenant.gender or ''
-        
-        if landlord_gender_pref and landlord_gender_pref != 'no_preference':
-            if landlord_gender_pref.lower() == 'female_only' and tenant_gender.lower() == 'female':
-                score += 5
-                breakdown['gender'] = 'match'
-            elif landlord_gender_pref.lower() == 'male_only' and tenant_gender.lower() == 'male':
-                score += 5
-                breakdown['gender'] = 'match'
-            elif landlord_gender_pref.lower() in ['female_only', 'male_only']:
-                score -= 30  # Strong penalty - filter out incompatible
-                breakdown['gender'] = 'mismatch'
-            else:
-                breakdown['gender'] = 'no_preference'
-        else:
-            breakdown['gender'] = 'no_preference'
+
         
         breakdown['matched_features'] = matched_feats
         breakdown['missing_features'] = missing_feats
@@ -293,8 +249,17 @@ class MatchingService:
     def calculate_match_score(self, tenant: User, property: Property) -> int:
         return self.calculate_match_details(tenant, property)["score"]
 
-    def _map_situation_to_type(self, situation: str) -> str:
-        """Map questionnaire 'situation' to database enum types"""
+    def _map_situation_to_type(self, prefs: dict) -> str:
+        """Map questionnaire preferences to expected property accepted types"""
+        contract = prefs.get('contract_type', '').lower()
+        situation = prefs.get('situation', '').lower()
+        
+        # Priority 1: Clear Contract Type Match
+        if contract in ['cdi', 'cdd']: return 'employee'
+        if contract == 'self_employed': return 'freelancer'
+        if contract in ['student', 'internship']: return 'student'
+        
+        # Priority 2: Fallback to Situation
         mapping = {
             'student_budget': 'student',
             'family_stability': 'employee', 

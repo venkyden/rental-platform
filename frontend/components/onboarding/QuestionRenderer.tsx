@@ -35,7 +35,7 @@ export default function QuestionRenderer({
                     <input
                         type="text"
                         placeholder={question.placeholder}
-                        className="w-full px-6 py-4 text-lg text-gray-900 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 transition-colors placeholder-gray-400"
+                        className="w-full px-6 py-4 text-lg text-gray-900 dark:text-white bg-white/50 dark:bg-zinc-800/50 border-2 border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-teal-500 dark:focus:border-teal-400 transition-colors placeholder-zinc-400 dark:placeholder-zinc-500"
                         onKeyPress={(e) => {
                             if (e.key === 'Enter' && e.currentTarget.value) {
                                 onAnswer(e.currentTarget.value);
@@ -47,7 +47,7 @@ export default function QuestionRenderer({
                             const input = document.querySelector('input[type="text"]') as HTMLInputElement;
                             if (input?.value) onAnswer(input.value);
                         }}
-                        className="w-full mt-4 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:shadow-lg transform hover:scale-105 transition-all"
+                        className="w-full mt-8 py-4 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl shadow-lg hover:shadow-teal-500/25 transition-all transform hover:-translate-y-0.5"
                     >
                         Continue →
                     </button>
@@ -58,7 +58,7 @@ export default function QuestionRenderer({
             {question.type === 'select' && (
                 <div>
                     <select
-                        className="w-full px-6 py-4 text-lg text-gray-900 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 transition-colors"
+                        className="w-full px-6 py-4 text-lg text-gray-900 dark:text-white bg-white/50 dark:bg-zinc-800/50 border-2 border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-teal-500 dark:focus:border-teal-400 transition-colors"
                         onChange={(e) => {
                             if (e.target.value) onAnswer(e.target.value);
                         }}
@@ -68,6 +68,11 @@ export default function QuestionRenderer({
                             <option key={i} value={option.value}>{option.label}</option>
                         ))}
                     </select>
+                    {question.id === 'nationality' && (
+                        <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400 text-center">
+                            This field is collected strictly for demographic surveys. It is <strong>never</strong> used in matching or shared with landlords.
+                        </p>
+                    )}
                 </div>
             )}
 
@@ -76,7 +81,7 @@ export default function QuestionRenderer({
                 <div>
                     <select
                         id="university-select"
-                        className="w-full px-6 py-4 text-lg text-gray-900 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 transition-colors"
+                        className="w-full px-6 py-4 text-lg text-gray-900 dark:text-white bg-white/50 dark:bg-zinc-800/50 border-2 border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-teal-500 dark:focus:border-teal-400 transition-colors"
                         onChange={(e) => {
                             if (e.target.value === 'other|other') {
                                 setShowManualUniversityInput(true);
@@ -97,7 +102,7 @@ export default function QuestionRenderer({
                     >
                         <option value="">Select your university...</option>
                         {FRENCH_UNIVERSITIES.map((cityGroup, cityIndex) => (
-                            <optgroup key={cityIndex} label={`📍 ${cityGroup.city}`}>
+                            <optgroup key={cityIndex} label={`📍 ${cityGroup.city}`} className="dark:bg-zinc-800">
                                 {cityGroup.universities.map((uni, uniIndex) => (
                                     <option key={uniIndex} value={`${uni.value}|${cityGroup.city}`}>
                                         {uni.label}
@@ -105,7 +110,7 @@ export default function QuestionRenderer({
                                 ))}
                             </optgroup>
                         ))}
-                        <optgroup label="📍 Other">
+                        <optgroup label="📍 Other" className="dark:bg-zinc-800">
                             <option value="other|other">My school isn't listed - Enter manually</option>
                         </optgroup>
                     </select>
@@ -117,7 +122,7 @@ export default function QuestionRenderer({
                                 value={manualUniName}
                                 onChange={(e) => setManualUniName(e.target.value)}
                                 placeholder="Enter your school/university name"
-                                className="w-full px-6 py-4 text-lg text-gray-900 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 transition-colors"
+                                className="w-full px-6 py-4 text-lg text-gray-900 dark:text-white bg-white/50 dark:bg-zinc-800/50 border-2 border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-teal-500 dark:focus:border-teal-400 transition-colors"
                                 maxLength={100}
                             />
                             <input
@@ -125,7 +130,7 @@ export default function QuestionRenderer({
                                 value={manualUniCity}
                                 onChange={(e) => setManualUniCity(e.target.value)}
                                 placeholder="City (e.g., Paris, Lyon...)"
-                                className="w-full px-6 py-4 text-lg text-gray-900 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 transition-colors"
+                                className="w-full px-6 py-4 text-lg text-gray-900 dark:text-white bg-white/50 dark:bg-zinc-800/50 border-2 border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-teal-500 dark:focus:border-teal-400 transition-colors"
                                 maxLength={50}
                             />
                             <button
@@ -142,14 +147,14 @@ export default function QuestionRenderer({
                                     }
                                 }}
                                 disabled={!manualUniName.trim() || !manualUniCity.trim()}
-                                className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:shadow-lg transform hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="w-full mt-8 py-4 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl shadow-lg hover:shadow-teal-500/25 transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 Continue →
                             </button>
                         </div>
                     )}
 
-                    <p className="text-sm text-gray-500 mt-2 text-center">
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-4 text-center">
                         This helps us find properties near your campus
                     </p>
                 </div>
@@ -158,6 +163,7 @@ export default function QuestionRenderer({
             {/* Location Radius Picker */}
             {question.type === 'location_radius' && (
                 <div>
+                    <p className="mb-4 text-zinc-600 dark:text-zinc-400 text-center">Drag the pin to select your target search area.</p>
                     <RadiusLocationPicker
                         initialLat={48.8566}
                         initialLng={2.3522}
@@ -180,18 +186,18 @@ export default function QuestionRenderer({
                             const value = parseInt(e.target.value);
                             onRangeUpdate(question.id, value);
                         }}
-                        className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                        className="w-full h-3 bg-zinc-200 dark:bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-teal-600"
                     />
                     <div className="flex justify-between mt-4">
-                        <span className="text-gray-600">{question.unit}{question.min}</span>
-                        <span className="text-2xl font-bold text-blue-600">
+                        <span className="text-zinc-500 dark:text-zinc-400">{question.unit}{question.min}</span>
+                        <span className="text-2xl font-bold text-teal-600 dark:text-teal-400">
                             {question.unit}{responses[question.id] || question.min}
                         </span>
-                        <span className="text-gray-600">{question.unit}{question.max}+</span>
+                        <span className="text-zinc-500 dark:text-zinc-400">{question.unit}{question.max}+</span>
                     </div>
                     <button
                         onClick={() => onAnswer(responses[question.id] || question.min)}
-                        className="w-full mt-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:shadow-lg transform hover:scale-105 transition-all"
+                        className="w-full mt-8 py-4 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl shadow-lg hover:shadow-teal-500/25 transition-all transform hover:-translate-y-0.5"
                     >
                         Continue →
                     </button>
@@ -206,19 +212,19 @@ export default function QuestionRenderer({
                             <button
                                 key={index}
                                 onClick={() => onMultiSelectToggle(option.value, question.maxSelections || 5)}
-                                className={`px-4 py-3 rounded-xl border-2 transition-all ${multiSelectValues.includes(option.value)
-                                    ? 'bg-blue-100 border-blue-500 text-blue-700'
-                                    : 'bg-gray-50 border-gray-200 text-gray-700 hover:border-blue-300'
+                                className={`px-4 py-3 text-left rounded-xl border-2 transition-all ${multiSelectValues.includes(option.value)
+                                    ? 'bg-teal-100/50 dark:bg-teal-900/30 border-teal-500 text-teal-800 dark:text-teal-200'
+                                    : 'bg-zinc-50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:border-teal-300 dark:hover:border-teal-700'
                                     }`}
                             >
-                                {option.label}
+                                <span className="font-medium text-sm sm:text-base">{option.label}</span>
                             </button>
                         ))}
                     </div>
                     {multiSelectValues.length > 0 && (
                         <button
                             onClick={() => onAnswer(multiSelectValues)}
-                            className="w-full mt-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:shadow-lg transform hover:scale-105 transition-all"
+                            className="w-full mt-8 py-4 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl shadow-lg hover:shadow-teal-500/25 transition-all transform hover:-translate-y-0.5"
                         >
                             Continue ({multiSelectValues.length} selected) →
                         </button>
@@ -231,9 +237,9 @@ export default function QuestionRenderer({
                 <button
                     key={index}
                     onClick={() => onAnswer(option.value)}
-                    className="w-full text-left px-6 py-5 bg-gray-50 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 rounded-xl border-2 border-gray-200 hover:border-blue-500 transition-all transform hover:scale-102 hover:shadow-md group"
+                    className="w-full text-left px-6 py-5 bg-zinc-50 hover:bg-teal-50 dark:bg-zinc-800/50 dark:hover:bg-teal-900/20 rounded-xl border-2 border-transparent hover:border-teal-500 dark:hover:border-teal-400 transition-all transform hover:-translate-y-0.5 hover:shadow-md group"
                 >
-                    <span className="text-lg font-medium text-gray-800 group-hover:text-blue-600">
+                    <span className="text-lg font-medium text-zinc-800 dark:text-zinc-200 group-hover:text-teal-700 dark:group-hover:text-teal-300">
                         {option.label}
                     </span>
                 </button>

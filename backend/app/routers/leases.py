@@ -31,6 +31,7 @@ class LeaseGenerateRequest(BaseModel):
     charges_override: Optional[float] = None
     deposit_override: Optional[float] = None
     guarantor_name: Optional[str] = None
+    landlord_signature: Optional[str] = None # Base64 PNG
 
 
 class LeaseResponse(BaseModel):
@@ -120,7 +121,8 @@ async def generate_lease(
         deposit=deposit,
         charges=charges,
         duration_months=request.duration_months,
-        guarantor_name=request.guarantor_name
+        guarantor_name=request.guarantor_name,
+        landlord_signature=request.landlord_signature
     )
     
     return HTMLResponse(content=html)
@@ -168,12 +170,13 @@ async def create_lease(
         property_id=application.property_id,
         landlord_id=property_obj.landlord_id,
         tenant_id=application.tenant_id,
-        status='draft',
         start_date=datetime.strptime(request.start_date, "%Y-%m-%d").date(),
         rent_amount=rent,
         deposit_amount=request.deposit_override or (rent * 2),
         charges_amount=charges,
         lease_type=request.lease_type,
+        status="generated",
+        landlord_signature=request.landlord_signature
     )
     
     db.add(lease)

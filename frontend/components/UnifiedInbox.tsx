@@ -1,7 +1,24 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import EmptyState from '@/components/EmptyState';
 import { apiClient } from '@/lib/api';
+import { motion, Variants } from 'framer-motion';
+
+const containerVariants: Variants = {
+    hidden: { opacity: 0 },
+    show: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.05
+        }
+    }
+};
+
+const itemVariants: Variants = {
+    hidden: { opacity: 0, x: -10 },
+    show: { opacity: 1, x: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } }
+};
 
 interface ConversationSummary {
     id: string;
@@ -146,8 +163,8 @@ export default function UnifiedInbox({ onSelectConversation, selectedConversatio
                         key={key}
                         onClick={() => setFilter(key as typeof filter)}
                         className={`flex-1 py-3 text-sm font-medium transition-colors ${filter === key
-                                ? 'text-blue-600 border-b-2 border-blue-600'
-                                : 'text-gray-500 hover:text-gray-700'
+                            ? 'text-blue-600 border-b-2 border-blue-600'
+                            : 'text-gray-500 hover:text-gray-700'
                             }`}
                     >
                         {label}
@@ -156,15 +173,24 @@ export default function UnifiedInbox({ onSelectConversation, selectedConversatio
             </div>
 
             {/* Conversations List */}
-            <div className="flex-1 overflow-y-auto">
+            <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                animate="show"
+                className="flex-1 overflow-y-auto"
+            >
                 {Object.keys(groupedByProperty).length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-12 text-gray-500">
-                        <span className="text-4xl mb-3">📭</span>
-                        <p>Aucune conversation</p>
+                    <div className="py-16">
+                        <EmptyState
+                            icon="📭"
+                            title="Aucune conversation"
+                            description="Vous n'avez pas encore de messages. Les demandes des locataires apparaîtront ici."
+                            layout="transparent"
+                        />
                     </div>
                 ) : (
                     Object.entries(groupedByProperty).map(([propertyId, group]) => (
-                        <div key={propertyId} className="border-b last:border-b-0">
+                        <motion.div variants={itemVariants} key={propertyId} className="border-b last:border-b-0">
                             {/* Property Header */}
                             <div className="px-4 py-2 bg-gray-50 border-b">
                                 <div className="font-medium text-gray-900 text-sm">
@@ -213,10 +239,10 @@ export default function UnifiedInbox({ onSelectConversation, selectedConversatio
                                     </div>
                                 </button>
                             ))}
-                        </div>
+                        </motion.div>
                     ))
                 )}
-            </div>
+            </motion.div>
         </div>
     );
 }

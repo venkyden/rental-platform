@@ -242,7 +242,6 @@ export function getTenantQuestions(): Question[] {
             question: 'Where would you like to live?',
             emoji: '📍',
             type: 'location_radius',
-            showIf: (r) => r.situation !== 'student_budget' && r.contract_type !== 'student' && r.contract_type !== 'internship',
         },
         {
             id: 'budget',
@@ -350,21 +349,29 @@ export function getTenantQuestions(): Question[] {
                 { value: 'flexible', label: '🌊 Flexible' },
             ],
         },
+        {
+            id: 'has_pets',
+            question: 'Do you have pets?',
+            emoji: '🐾',
+            options: [
+                { value: 'yes', label: '🐶 Yes' },
+                { value: 'no', label: '❌ No' },
+            ],
+        },
+        {
+            id: 'is_smoker',
+            question: 'Are you a smoker?',
+            emoji: '🚬',
+            options: [
+                { value: 'yes', label: '🚬 Yes' },
+                { value: 'no', label: '🚭 No' },
+            ],
+        },
     ];
 }
 
 export function getLandlordQuestions(): Question[] {
     return [
-        {
-            id: 'property_count',
-            question: 'How many properties do you manage?',
-            emoji: '🏠',
-            options: [
-                { value: '1-4', label: '🏡 1-4 properties', segment: 'S1' },
-                { value: '5-100', label: '🏘️ 5-100 properties', segment: 'S2' },
-                { value: '100+', label: '🏢 100+ properties', segment: 'S3' },
-            ],
-        },
         {
             id: 'location',
             question: 'Where is your property located?',
@@ -414,26 +421,6 @@ export function getLandlordQuestions(): Question[] {
                 { value: 'family', label: '👨‍👩‍👧 Families' },
             ],
             maxSelections: 4,
-        },
-        {
-            id: 'nationality_preference',
-            question: 'Any nationality preference?',
-            emoji: '🌍',
-            options: [
-                { value: 'no_preference', label: '🌐 No preference' },
-                { value: 'french', label: '🇫🇷 French preferred' },
-                { value: 'international', label: '🌍 International welcome' },
-            ],
-        },
-        {
-            id: 'gender_preference',
-            question: 'Any gender preference?',
-            emoji: '👤',
-            options: [
-                { value: 'no_preference', label: '🤷 No preference' },
-                { value: 'female_only', label: '👩 Female only' },
-                { value: 'male_only', label: '👨 Male only' },
-            ],
         },
         {
             id: 'accepted_guarantees',

@@ -31,18 +31,18 @@ export default function TenantDashboard() {
                 <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900">
-                            Bienvenue, {user?.full_name || 'Locataire'}
+                            Welcome, {user?.full_name || 'Tenant'}
                         </h1>
                         <div className="flex items-center gap-2 mt-1">
                             <SegmentBadge />
-                            <span className="text-sm text-gray-500">Tableau de bord locataire</span>
+                            <span className="text-sm text-gray-500">Tenant Dashboard</span>
                         </div>
                     </div>
                     <button
                         onClick={() => router.push('/auth/logout')}
                         className="text-gray-600 hover:text-gray-900"
                     >
-                        Déconnexion
+                        Logout
                     </button>
                 </div>
             </header>
@@ -59,17 +59,17 @@ export default function TenantDashboard() {
                                     <div className="flex items-center gap-3">
                                         <span className="text-2xl">🤝</span>
                                         <div>
-                                            <h3 className="font-medium text-indigo-900">Ajouter un Garant</h3>
+                                            <h3 className="font-medium text-indigo-900">Add a Guarantor</h3>
                                             <p className="text-sm text-indigo-700">
                                                 Multiply your chances by 3x with a complete dossier.
-                                                <span className="block text-xs mt-1 text-indigo-500">Compatible Visale & Garantme</span>
+                                                <span className="block text-xs mt-1 text-indigo-500">Compatible with Visale & Garantme</span>
                                             </p>
                                         </div>
                                         <button
                                             onClick={() => router.push('/verify/guarantor')}
                                             className="ml-auto px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700"
                                         >
-                                            Ajouter
+                                            Add
                                         </button>
                                     </div>
                                 </div>
@@ -81,16 +81,16 @@ export default function TenantDashboard() {
                                     <div className="flex items-center gap-3">
                                         <span className="text-2xl">💼</span>
                                         <div>
-                                            <h3 className="font-medium text-green-900">Justificatifs de Revenus</h3>
+                                            <h3 className="font-medium text-green-900">Income Proof</h3>
                                             <p className="text-sm text-green-700">
-                                                Prouvez votre stabilité financière pour rassurer les propriétaires.
+                                                Prove your financial stability to reassure landlords.
                                             </p>
                                         </div>
                                         <button
                                             onClick={() => router.push('/verify/income')}
                                             className="ml-auto px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700"
                                         >
-                                            Importer
+                                            Upload
                                         </button>
                                     </div>
                                 </div>
@@ -102,16 +102,16 @@ export default function TenantDashboard() {
                                     <div className="flex items-center gap-3">
                                         <span className="text-2xl">🛂</span>
                                         <div>
-                                            <h3 className="font-medium text-purple-900">Identité & Visa</h3>
+                                            <h3 className="font-medium text-purple-900">Identity & Visa</h3>
                                             <p className="text-sm text-purple-700">
-                                                Validez votre statut de résident pour accéder aux locations.
+                                                Validate your residency status to access rentals.
                                             </p>
                                         </div>
                                         <button
                                             onClick={() => router.push('/verify/identity')}
                                             className="ml-auto px-4 py-2 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700"
                                         >
-                                            Vérifier
+                                            Verify
                                         </button>
                                     </div>
                                 </div>
@@ -123,16 +123,16 @@ export default function TenantDashboard() {
                                     <div className="flex items-center gap-3">
                                         <span className="text-2xl">⚠️</span>
                                         <div>
-                                            <h3 className="font-medium text-yellow-800">Complétez votre profil</h3>
+                                            <h3 className="font-medium text-yellow-800">Complete your profile</h3>
                                             <p className="text-sm text-yellow-700">
-                                                Vérifiez votre identité pour accéder à plus de logements
+                                                Verify your identity to access more properties
                                             </p>
                                         </div>
                                         <button
                                             onClick={() => router.push('/verify')}
                                             className="ml-auto px-4 py-2 bg-yellow-600 text-white rounded-lg text-sm"
                                         >
-                                            Vérifier maintenant
+                                            Verify now
                                         </button>
                                     </div>
                                 </div>
@@ -143,26 +143,26 @@ export default function TenantDashboard() {
 
                 {/* Quick Actions */}
                 <section className="mb-8">
-                    <h2 className="text-lg font-semibold text-gray-900 mb-4">Actions rapides</h2>
+                    <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
                     <QuickActions />
                 </section>
 
                 {/* Stats for experienced tenants */}
                 <FeatureGate feature="history">
                     <section className="mb-8">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-4">Mon activité</h2>
+                        <h2 className="text-lg font-semibold text-gray-900 mb-4">My Activity</h2>
                         <div className="grid grid-cols-3 gap-4">
                             <div className="bg-white p-4 rounded-xl shadow-sm">
                                 <div className="text-2xl font-bold text-blue-600">0</div>
-                                <div className="text-sm text-gray-500">Candidatures</div>
+                                <div className="text-sm text-gray-500">Applications</div>
                             </div>
                             <div className="bg-white p-4 rounded-xl shadow-sm">
                                 <div className="text-2xl font-bold text-green-600">0</div>
-                                <div className="text-sm text-gray-500">Visites prévues</div>
+                                <div className="text-sm text-gray-500">Scheduled Visits</div>
                             </div>
                             <div className="bg-white p-4 rounded-xl shadow-sm">
                                 <div className="text-2xl font-bold text-purple-600">0</div>
-                                <div className="text-sm text-gray-500">Favoris</div>
+                                <div className="text-sm text-gray-500">Favorites</div>
                             </div>
                         </div>
                     </section>
@@ -174,16 +174,16 @@ export default function TenantDashboard() {
                         <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl p-6 text-white">
                             <div className="flex items-center gap-3 mb-3">
                                 <span className="text-2xl">⭐</span>
-                                <h2 className="text-lg font-semibold">Services Premium</h2>
+                                <h2 className="text-lg font-semibold">Premium Services</h2>
                             </div>
                             <p className="text-purple-100 mb-4">
-                                Profitez de nos services de relocation pour votre mobilité professionnelle
+                                Take advantage of our relocation services for your professional mobility
                             </p>
                             <button
                                 onClick={() => router.push('/relocation')}
                                 className="px-4 py-2 bg-white text-purple-600 rounded-lg font-medium"
                             >
-                                Découvrir
+                                Discover
                             </button>
                         </div>
                     </section>
@@ -191,14 +191,14 @@ export default function TenantDashboard() {
 
                 {/* Recent searches */}
                 <section>
-                    <h2 className="text-lg font-semibold text-gray-900 mb-4">Recherches récentes</h2>
+                    <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Searches</h2>
                     <div className="bg-white rounded-xl shadow-sm p-6 text-center text-gray-500">
                         <p>No recent searches</p>
                         <button
                             onClick={() => router.push('/search')}
                             className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg"
                         >
-                            Chercher un logement
+                            Search for a property
                         </button>
                     </div>
                 </section>

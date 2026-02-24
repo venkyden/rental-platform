@@ -50,12 +50,14 @@ class Lease(Base):
     rent_amount = Column(Float, nullable=False)
     deposit_amount = Column(Float, nullable=False)
     charges_amount = Column(Float, nullable=False)
-    lease_type = Column(SQLEnum(LeaseType, name='lease_type_enum'), nullable=False)
+    lease_type = Column(SQLEnum(LeaseType, name='lease_type_enum', native_enum=True, values_callable=lambda x: [e.value for e in x]), nullable=False)
     status = Column(String, default="draft")
 
     # Document management
     pdf_path = Column(String, nullable=True)
     signature_data = Column(JSONB, nullable=True)
+    landlord_signature = Column(String, nullable=True) # Base64 PNG
+    tenant_signature = Column(String, nullable=True) # Base64 PNG
 
     # Relationships
     property = relationship("Property", back_populates="leases")

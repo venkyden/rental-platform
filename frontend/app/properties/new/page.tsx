@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/useAuth';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import WizardProgress from '@/components/WizardProgress';
 import { apiClient } from '@/lib/api';
 import QRCodeDisplay from '@/components/QRCodeDisplay';
 
@@ -201,17 +202,18 @@ export default function NewPropertyPage() {
 
                     {/* Progress Bar */}
                     {currentStep < 7 && (
-                        <div className="mb-8 bg-white rounded-lg p-6 shadow-md">
-                            <div className="flex justify-between mb-2">
-                                <span className="text-sm font-medium text-gray-700">Step {currentStep} of 6</span>
-                                <span className="text-sm font-medium text-blue-600">{Math.round(progress)}%</span>
-                            </div>
-                            <div className="w-full bg-gray-200 rounded-full h-3">
-                                <div
-                                    className="bg-gradient-to-r from-blue-600 to-indigo-600 h-3 rounded-full transition-all duration-300"
-                                    style={{ width: `${progress}%` }}
-                                />
-                            </div>
+                        <div className="mb-10 mt-6 bg-white rounded-2xl p-8 pb-10 shadow-sm border border-gray-100">
+                            <WizardProgress
+                                steps={[
+                                    'Basic Info',
+                                    'Location',
+                                    'Details',
+                                    'Pricing',
+                                    'Features',
+                                    'Review'
+                                ]}
+                                currentStep={currentStep}
+                            />
                         </div>
                     )}
 
@@ -546,8 +548,8 @@ export default function NewPropertyPage() {
                                                 type="button"
                                                 onClick={() => updateFormData({ charges_included: true })}
                                                 className={`flex-1 py-3 rounded-lg border-2 text-center font-medium transition-all ${formData.charges_included
-                                                        ? 'border-green-500 bg-green-50 text-green-700'
-                                                        : 'border-gray-200 hover:border-gray-300'
+                                                    ? 'border-green-500 bg-green-50 text-green-700'
+                                                    : 'border-gray-200 hover:border-gray-300'
                                                     }`}
                                             >
                                                 <div className="text-lg">CC</div>
@@ -557,8 +559,8 @@ export default function NewPropertyPage() {
                                                 type="button"
                                                 onClick={() => updateFormData({ charges_included: false })}
                                                 className={`flex-1 py-3 rounded-lg border-2 text-center font-medium transition-all ${!formData.charges_included
-                                                        ? 'border-amber-500 bg-amber-50 text-amber-700'
-                                                        : 'border-gray-200 hover:border-gray-300'
+                                                    ? 'border-amber-500 bg-amber-50 text-amber-700'
+                                                    : 'border-gray-200 hover:border-gray-300'
                                                     }`}
                                             >
                                                 <div className="text-lg">HC</div>
