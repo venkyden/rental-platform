@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """End-to-end validation script for Rental Platform features"""
-import requests
+
 import json
+
+import requests
 
 BASE = "http://localhost:8000"
 
@@ -28,7 +30,7 @@ user_data = {
     "email": "e2e-landlord2@test.com",
     "password": "TestPass123!",
     "full_name": "E2E Test Landlord",
-    "role": "landlord"
+    "role": "landlord",
 }
 try:
     r = requests.post(f"{BASE}/auth/register", json=user_data)
@@ -37,12 +39,15 @@ try:
         token = r.json()["access_token"]
     elif "already registered" in r.text.lower():
         print("   User exists, logging in...")
-        r = requests.post(f"{BASE}/auth/login", data={"username": user_data["email"], "password": user_data["password"]})
+        r = requests.post(
+            f"{BASE}/auth/login",
+            data={"username": user_data["email"], "password": user_data["password"]},
+        )
         token = r.json()["access_token"]
     else:
         print(f"   Error: {r.text[:100]}")
         token = None
-    
+
     if token:
         headers = {"Authorization": f"Bearer {token}"}
         print("   ✅ Token obtained")
@@ -89,7 +94,7 @@ gli_data = {
     "tenant_monthly_income": 5000,
     "tenant_employment_type": "cdi",
     "tenant_employment_verified": True,
-    "tenant_identity_verified": True
+    "tenant_identity_verified": True,
 }
 try:
     r = requests.post(f"{BASE}/verification/gli/quote", headers=headers, json=gli_data)
@@ -111,7 +116,7 @@ print("\n6. BULK EXPORT")
 try:
     r = requests.get(f"{BASE}/bulk/properties/export?format=csv", headers=headers)
     if r.status_code == 200:
-        lines = r.text.strip().split('\n')
+        lines = r.text.strip().split("\n")
         print(f"   Lines: {len(lines)}")
         print(f"   Header: {lines[0][:50]}...")
         results.append(("Bulk Export", True))

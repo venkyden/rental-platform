@@ -1,8 +1,9 @@
-from pydantic import BaseModel, EmailStr, Field, field_validator
-from typing import Optional
-from datetime import datetime
-from uuid import UUID
 import re
+from datetime import datetime
+from typing import Optional
+from uuid import UUID
+
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 
 class UserRegister(BaseModel):
@@ -11,19 +12,19 @@ class UserRegister(BaseModel):
     full_name: str
     role: str = Field(pattern="^(tenant|landlord|property_manager)$")
     marketing_consent: bool = False
-    
-    @field_validator('password')
+
+    @field_validator("password")
     @classmethod
     def validate_password_complexity(cls, v: str) -> str:
         """Enforce password complexity: uppercase, lowercase, digit, special char"""
-        if not re.search(r'[A-Z]', v):
-            raise ValueError('Password must contain at least one uppercase letter')
-        if not re.search(r'[a-z]', v):
-            raise ValueError('Password must contain at least one lowercase letter')
-        if not re.search(r'\d', v):
-            raise ValueError('Password must contain at least one digit')
+        if not re.search(r"[A-Z]", v):
+            raise ValueError("Password must contain at least one uppercase letter")
+        if not re.search(r"[a-z]", v):
+            raise ValueError("Password must contain at least one lowercase letter")
+        if not re.search(r"\d", v):
+            raise ValueError("Password must contain at least one digit")
         if not re.search(r'[!@#$%^&*(),.?":{}|<>]', v):
-            raise ValueError('Password must contain at least one special character')
+            raise ValueError("Password must contain at least one special character")
         return v
 
 
@@ -58,7 +59,7 @@ class UserResponse(BaseModel):
     onboarding_completed: bool = False
     marketing_consent: bool = False
     created_at: datetime
-    
+
     class Config:
         from_attributes = True
 
@@ -69,7 +70,9 @@ class ForgotPasswordRequest(BaseModel):
 
 class GoogleAuthRequest(BaseModel):
     credential: str  # Google ID token from frontend
-    role: Optional[str] = Field(default=None, pattern="^(tenant|landlord|property_manager)$")
+    role: Optional[str] = Field(
+        default=None, pattern="^(tenant|landlord|property_manager)$"
+    )
 
 
 class ResetPasswordRequest(BaseModel):
@@ -80,7 +83,8 @@ class ResetPasswordRequest(BaseModel):
 class ApplicationCreate(BaseModel):
     property_id: UUID
     cover_letter: Optional[str] = None
-    
+
+
 class ApplicationResponse(BaseModel):
     id: UUID
     property_id: UUID
@@ -88,6 +92,6 @@ class ApplicationResponse(BaseModel):
     status: str
     cover_letter: Optional[str]
     created_at: datetime
-    
+
     class Config:
         from_attributes = True

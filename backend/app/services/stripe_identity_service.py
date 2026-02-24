@@ -1,7 +1,10 @@
-import stripe
 import os
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
+
+import stripe
+
 from app.core.config import settings
+
 
 class StripeIdentityService:
     def __init__(self):
@@ -20,23 +23,23 @@ class StripeIdentityService:
                 "id": "vs_mock_" + user_id,
                 "url": "https://identity.stripe.com/mock-verification?user=" + user_id,
                 "client_secret": "mock_secret",
-                "status": "requires_input"
+                "status": "requires_input",
             }
 
         try:
             # Create the session
             # We require 'document' (ID/Passport) and 'selfie' matching for high security.
             session = stripe.identity.VerificationSession.create(
-                type='document',
+                type="document",
                 metadata={
-                    'user_id': user_id,
+                    "user_id": user_id,
                 },
                 options={
-                    'document': {
-                        'require_matching_selfie': True,
+                    "document": {
+                        "require_matching_selfie": True,
                     },
                 },
-                return_url= settings.FRONTEND_URL + "/profile?verified=true",
+                return_url=settings.FRONTEND_URL + "/profile?verified=true",
             )
             return session
         except Exception as e:
@@ -49,9 +52,8 @@ class StripeIdentityService:
         """
         if not self.webhook_secret:
             raise ValueError("Stripe Webhook Secret not configured")
-            
-        return stripe.Webhook.construct_event(
-            payload, sig_header, self.webhook_secret
-        )
+
+        return stripe.Webhook.construct_event(payload, sig_header, self.webhook_secret)
+
 
 stripe_identity_service = StripeIdentityService()

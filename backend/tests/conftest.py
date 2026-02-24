@@ -7,20 +7,20 @@ session since the real schema uses Postgres-specific types (UUID, JSONB).
 Schema/validation tests (test_config, test_auth schemas) don't need a DB at all.
 """
 
-import pytest
 import uuid
 from datetime import datetime
-from unittest.mock import MagicMock, AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 
+import pytest
 from fastapi.testclient import TestClient
 
-from app.main import app
 from app.core.database import get_db
-from app.routers.auth import get_current_user
+from app.main import app
 from app.models.user import UserRole
-
+from app.routers.auth import get_current_user
 
 # ─── Mock Users ───────────────────────────────────────────────────
+
 
 def make_mock_user(role: str = "tenant", email: str = "test@example.com"):
     """Create a mock User object with all required attributes."""
@@ -53,16 +53,21 @@ MOCK_ADMIN = make_mock_user("admin", "admin@test.com")
 
 # ─── Mock DB Session ─────────────────────────────────────────────
 
+
 def mock_get_db():
     """Yield a mock async session that won't hit a real database."""
     mock_session = MagicMock()
-    mock_session.execute = AsyncMock(return_value=MagicMock(
-        scalars=MagicMock(return_value=MagicMock(
-            first=MagicMock(return_value=None),
-            all=MagicMock(return_value=[]),
-        )),
-        scalar_one_or_none=MagicMock(return_value=None),
-    ))
+    mock_session.execute = AsyncMock(
+        return_value=MagicMock(
+            scalars=MagicMock(
+                return_value=MagicMock(
+                    first=MagicMock(return_value=None),
+                    all=MagicMock(return_value=[]),
+                )
+            ),
+            scalar_one_or_none=MagicMock(return_value=None),
+        )
+    )
     mock_session.add = MagicMock()
     mock_session.commit = AsyncMock()
     mock_session.refresh = AsyncMock()
@@ -71,6 +76,7 @@ def mock_get_db():
 
 
 # ─── Fixtures ─────────────────────────────────────────────────────
+
 
 @pytest.fixture
 def client():

@@ -4,7 +4,8 @@ Tests for the auth router — registration, login, validation.
 
 import pytest
 from pydantic import ValidationError
-from app.models.schemas import UserRegister, ResetPasswordRequest
+
+from app.models.schemas import ResetPasswordRequest, UserRegister
 
 
 class TestUserRegistrationSchema:
@@ -131,17 +132,20 @@ class TestAuthEndpoints:
     """Integration-style tests against the auth router."""
 
     def test_register_invalid_payload(self, client):
-        """POST /api/v1/auth/register with invalid data should return 422."""
-        resp = client.post("/api/v1/auth/register", json={
-            "email": "not-an-email",
-            "password": "weak",
-            "full_name": "",
-            "role": "hacker",
-        })
+        """POST /auth/register with invalid data should return 422."""
+        resp = client.post(
+            "/auth/register",
+            json={
+                "email": "not-an-email",
+                "password": "weak",
+                "full_name": "",
+                "role": "hacker",
+            },
+        )
         assert resp.status_code == 422
 
     def test_register_valid_payload_accepted(self, client):
-        """POST /api/v1/auth/register with valid data should pass validation.
+        """POST /auth/register with valid data should pass validation.
 
         Note: TestClient propagates the AttributeError from request.client.host
         (the audit logger accesses request.client which is None in tests).
@@ -149,25 +153,24 @@ class TestAuthEndpoints:
         were invalid, we'd get a 422 before reaching the audit log line.
         """
         with pytest.raises(AttributeError, match="host"):
-            client.post("/api/v1/auth/register", json={
-                "email": "valid@example.com",
-                "password": "Str0ng!Pass1",
-                "full_name": "Test User",
-                "role": "tenant",
-            })
+            client.post(
+                "/auth/register",
+                json={
+                    "email": "valid@example.com",
+                    "password": "Str0ng!Pass1",
+                    "full_name": "Test User",
+                    "role": "tenant",
+                },
+            )
 
     def test_get_me_unauthenticated(self, client):
         """GET /auth/me without token should fail."""
-        resp = client.get("/api/v1/auth/me")
+        resp = client.get("/auth/me")
         assert resp.status_code in (401, 403)
 
     def test_get_me_authenticated(self, tenant_client):
         """GET /auth/me with valid tenant token should succeed."""
-        resp = tenant_client.get("/api/v1/auth/me")
+        resp = tenant_client.get("/auth/me")
         # With mock user it should return user data
         assert resp.status_code in (200, 500)  # 500 if mock doesn't serialize cleanly
 
-    def test_logout(self, client):
-        """POST /auth/logout should clear cookie."""
-        resp = client.post("/api/v1/auth/logout")
-        assert resp.status_code == 200

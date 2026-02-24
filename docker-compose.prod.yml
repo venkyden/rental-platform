@@ -2,6 +2,18 @@
 # Supports auto-scaling, caching, and background workers
 
 services:
+  # Database Migration Init Container
+  init-db:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: alembic upgrade head
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+    depends_on:
+      db:
+        condition: service_healthy
+
   # API Server (scalable)
   api:
     build:
@@ -14,8 +26,12 @@ services:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - FRONTEND_URL=${FRONTEND_URL}
     depends_on:
-      - redis
-      - db
+      init-db:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_healthy
     deploy:
       replicas: 2 # Netflix: Scale horizontally
       resources:
@@ -29,7 +45,6 @@ services:
       retries: 3
     ports:
       - "8000:8000"
-
   # Background Worker (Celery)
   worker:
     build:

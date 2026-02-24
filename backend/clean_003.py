@@ -1,4 +1,5 @@
 import psycopg2
+
 try:
     conn = psycopg2.connect("postgresql://venkat@localhost:5432/rental_platform")
     conn.autocommit = True

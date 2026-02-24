@@ -1,4 +1,3 @@
-
 import asyncio
 import os
 import sys
@@ -7,9 +6,10 @@ import sys
 sys.path.append(os.getcwd())
 
 from sqlalchemy import select
+
 from app.core.database import AsyncSessionLocal as async_session_factory
-from app.models.user import User, UserRole, VerificationStatus
 from app.core.security import get_password_hash
+from app.models.user import User, UserRole, VerificationStatus
 
 SEGMENT_USERS = [
     # Demand Side (Tenants)
@@ -21,7 +21,7 @@ SEGMENT_USERS = [
         "segment": "D1",
         "description": "First-time renter",
         "identity_verified": False,
-        "onboarding_completed": False
+        "onboarding_completed": False,
     },
     {
         "email": "d2_tenant@example.com",
@@ -31,7 +31,7 @@ SEGMENT_USERS = [
         "segment": "D2",
         "description": "Experienced renter",
         "identity_verified": True,
-        "onboarding_completed": True
+        "onboarding_completed": True,
     },
     {
         "email": "d3_tenant@example.com",
@@ -41,7 +41,7 @@ SEGMENT_USERS = [
         "segment": "D3",
         "description": "Relocating Professional",
         "identity_verified": True,
-        "onboarding_completed": True
+        "onboarding_completed": True,
     },
     # Supply Side (Landlords)
     {
@@ -49,10 +49,10 @@ SEGMENT_USERS = [
         "password": "Password123!",
         "full_name": "David Owner (S1)",
         "role": UserRole.LANDLORD,
-        "segment": "S1", # Updated to uppercase S1 as per previous config
+        "segment": "S1",  # Updated to uppercase S1 as per previous config
         "description": "First-time Landlord",
         "identity_verified": False,
-         "onboarding_completed": False
+        "onboarding_completed": False,
     },
     {
         "email": "s2_landlord@example.com",
@@ -62,7 +62,7 @@ SEGMENT_USERS = [
         "segment": "S2",
         "description": "Professional Investor",
         "identity_verified": True,
-         "onboarding_completed": True
+        "onboarding_completed": True,
     },
     {
         "email": "s3_agency@example.com",
@@ -72,18 +72,21 @@ SEGMENT_USERS = [
         "segment": "S3",
         "description": "Real Estate Agency",
         "identity_verified": True,
-         "onboarding_completed": True
-    }
+        "onboarding_completed": True,
+    },
 ]
+
 
 async def seed_users():
     async with async_session_factory() as db:
         print("🌱 Seeding segment users...")
         for user_data in SEGMENT_USERS:
             # Check if user exists
-            result = await db.execute(select(User).where(User.email == user_data["email"]))
+            result = await db.execute(
+                select(User).where(User.email == user_data["email"])
+            )
             existing_user = result.scalar_one_or_none()
-            
+
             if existing_user:
                 print(f"User {user_data['email']} already exists, updating segment...")
                 existing_user.segment = user_data["segment"]
@@ -100,13 +103,14 @@ async def seed_users():
                     segment=user_data["segment"],
                     identity_verified=user_data["identity_verified"],
                     onboarding_completed=user_data["onboarding_completed"],
-                    email_verified=True, 
-                    is_active=True
+                    email_verified=True,
+                    is_active=True,
                 )
                 db.add(new_user)
-        
+
         await db.commit()
         print("✅ Seeding complete!")
+
 
 if __name__ == "__main__":
     asyncio.run(seed_users())

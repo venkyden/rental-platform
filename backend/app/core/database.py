@@ -1,7 +1,10 @@
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+import os
+
+from sqlalchemy.ext.asyncio import (AsyncSession, async_sessionmaker,
+                                    create_async_engine)
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.pool import QueuePool
-import os
+
 from app.core.config import settings
 
 # Netflix-style connection pooling for high load
@@ -22,18 +25,16 @@ engine = create_async_engine(
     echo=os.getenv("DB_ECHO", "false").lower() == "true",  # Disable in production
     future=True,
     # Connection pool settings
-    pool_size=POOL_SIZE,           # Base number of connections
-    max_overflow=MAX_OVERFLOW,     # Extra connections under load
-    pool_timeout=30,               # Wait for connection before error
-    pool_recycle=1800,             # Recycle connections every 30 min
-    pool_pre_ping=True,            # Health check connections
+    pool_size=POOL_SIZE,  # Base number of connections
+    max_overflow=MAX_OVERFLOW,  # Extra connections under load
+    pool_timeout=30,  # Wait for connection before error
+    pool_recycle=1800,  # Recycle connections every 30 min
+    pool_pre_ping=True,  # Health check connections
 )
 
 # Create session factory
 AsyncSessionLocal = async_sessionmaker(
-    engine,
-    class_=AsyncSession,
-    expire_on_commit=False
+    engine, class_=AsyncSession, expire_on_commit=False
 )
 
 # Base class for models

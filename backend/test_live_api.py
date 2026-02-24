@@ -1,6 +1,7 @@
-import requests
 import json
 import uuid
+
+import requests
 
 BASE_URL = "https://roomivo-backend-0jyi.onrender.com"
 TEST_EMAIL = f"test_landlord_{uuid.uuid4().hex[:8]}@example.com"
@@ -21,7 +22,7 @@ reg_payload = {
     "password": TEST_PASSWORD,
     "full_name": "Test Landlord API",
     "role": "landlord",
-    "marketing_consent": False
+    "marketing_consent": False,
 }
 r = requests.post(f"{BASE_URL}/auth/register", json=reg_payload)
 print(f"Status: {r.status_code}")
@@ -59,7 +60,7 @@ prop_payload = {
     "area_sqm": 65.5,
     "furnished": True,
     "amenities": ["wifi", "kitchen", "elevator"],
-    "status": "draft"
+    "status": "draft",
 }
 r = requests.post(f"{BASE_URL}/properties", json=prop_payload, headers=headers)
 print(f"Status: {r.status_code}")

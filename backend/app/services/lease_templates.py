@@ -376,4 +376,3 @@ EXIT_ATTESTATION_HTML = """
 </body>
 </html>
 """
-

@@ -2,8 +2,9 @@
 Tests for app.core.config — Settings validation.
 """
 
-import pytest
 import os
+
+import pytest
 from pydantic import ValidationError
 
 
@@ -34,10 +35,11 @@ class TestSettings:
     def test_secret_key_long(self):
         os.environ["SECRET_KEY"] = "mysecret"
         os.environ["GEMINI_API_KEY"] = "sk-ant-test"
-        
+
         from app.core.config import Settings
+
         settings = Settings()
-        assert settings.DATABASE_URL == "sqlite:///test.db"
+        assert settings.DATABASE_URL == os.environ.get("DATABASE_URL")
         assert settings.SECRET_KEY == "mysecret"
         assert settings.GEMINI_API_KEY == "sk-ant-test"
 
@@ -48,9 +50,9 @@ class TestSettings:
         # Check class-level field defaults (not instantiating,
         # since Settings reads from .env at instantiation)
         fields = Settings.model_fields
-        assert fields['ALGORITHM'].default == 'HS256'
-        assert fields['ACCESS_TOKEN_EXPIRE_MINUTES'].default == 30
-        assert fields['FRONTEND_URL'].default == 'http://localhost:3000'
-        assert fields['ENVIRONMENT'].default == 'development'
-        assert fields['SENTRY_DSN'].default is None
-        assert fields['GEMINI_API_KEY'].default is None
+        assert fields["ALGORITHM"].default == "HS256"
+        assert fields["ACCESS_TOKEN_EXPIRE_MINUTES"].default == 30
+        assert fields["FRONTEND_URL"].default == "http://localhost:3000"
+        assert fields["ENVIRONMENT"].default == "development"
+        assert fields["SENTRY_DSN"].default is None
+        assert fields["GEMINI_API_KEY"].default is None

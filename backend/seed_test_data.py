@@ -1,16 +1,14 @@
 import asyncio
 import os
 import sys
-from datetime import datetime, date
+from datetime import date, datetime
 from uuid import uuid4
 
 # Add the backend directory to the path so we can import app modules
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from app.core.database import AsyncSessionLocal
-from app.models.user import User, UserRole
-from app.models.property import Property
-from app.models.application import Application, ApplicationStatus
+from sqlalchemy import select
+
 import app.models.dispute
 import app.models.document
 import app.models.feature_flag
@@ -23,8 +21,12 @@ import app.models.team
 import app.models.user
 import app.models.visits_and_leases
 import app.models.webhook_subscriptions
+from app.core.database import AsyncSessionLocal
 from app.core.security import get_password_hash
-from sqlalchemy import select
+from app.models.application import Application, ApplicationStatus
+from app.models.property import Property
+from app.models.user import User, UserRole
+
 
 async def main():
     async with AsyncSessionLocal() as db:
@@ -39,7 +41,7 @@ async def main():
                 role=UserRole.LANDLORD,
                 full_name="Jean Dupont (Test Landlord)",
                 email_verified=True,
-                identity_verified=True
+                identity_verified=True,
             )
             db.add(landlord)
             await db.commit()
@@ -57,7 +59,7 @@ async def main():
                 role=UserRole.TENANT,
                 full_name="Marie Martin (Test Tenant)",
                 email_verified=True,
-                identity_verified=True
+                identity_verified=True,
             )
             db.add(tenant)
             await db.commit()
@@ -83,15 +85,17 @@ async def main():
                 monthly_rent=1000.0,
                 deposit=2000.0,
                 charges=50.0,
-                status="active"
+                status="active",
             )
             db.add(prop)
             await db.commit()
             await db.refresh(prop)
             print("Created Property")
-            
+
         # Create Application
-        stmt = select(Application).where(Application.tenant_id == tenant.id, Application.property_id == prop.id)
+        stmt = select(Application).where(
+            Application.tenant_id == tenant.id, Application.property_id == prop.id
+        )
         res = await db.execute(stmt)
         app = res.scalar_one_or_none()
         if not app:
@@ -99,13 +103,14 @@ async def main():
                 tenant_id=tenant.id,
                 property_id=prop.id,
                 status=ApplicationStatus.APPROVED.value,
-                cover_letter="Test application"
+                cover_letter="Test application",
             )
             db.add(app)
             await db.commit()
             print("Created Application")
 
         print("Seed complete.")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

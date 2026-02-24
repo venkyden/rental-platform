@@ -1,9 +1,13 @@
-import requests
 import json
 import sys
 
+import requests
+
 # Login
-resp = requests.post("http://localhost:8000/auth/login", data={"username": "landlord-test@example.com", "password": "password123"})
+resp = requests.post(
+    "http://localhost:8000/auth/login",
+    data={"username": "landlord-test@example.com", "password": "password123"},
+)
 if resp.status_code != 200:
     print("Login failed:", resp.text)
     sys.exit(1)
@@ -27,8 +31,10 @@ payload = {
     "deposit_override": 1000.0,
     "lease_type": "meuble",
     "duration_months": 12,
-    "landlord_signature": "data:image/png;base64,iVBORw0K"
+    "landlord_signature": "data:image/png;base64,iVBORw0K",
 }
-resp = requests.post("http://localhost:8000/leases/generate", headers=headers, json=payload)
+resp = requests.post(
+    "http://localhost:8000/leases/generate", headers=headers, json=payload
+)
 print(resp.status_code)
 print(json.dumps(resp.json(), indent=2))

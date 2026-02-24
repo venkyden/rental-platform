@@ -4,46 +4,48 @@ Email service for sending emails via SMTP or console logging.
 For local development, emails are printed to console.
 For production, configure SMTP settings in environment variables.
 """
+
 import os
 from typing import Optional
+
 import resend
 
 
 class EmailService:
     """Email service for sending HTML emails using Resend"""
-    
+
     def __init__(self):
         self.resend_api_key = os.getenv("RESEND_API_KEY")
         if self.resend_api_key:
             resend.api_key = self.resend_api_key
-            
-        # By default, Resend limits sending from specific domains. 
+
+        # By default, Resend limits sending from specific domains.
         # "onboarding@resend.dev" is a verified testing domain if FROM_EMAIL isn't configured.
         self.from_email = os.getenv("FROM_EMAIL", "onboarding@resend.dev")
         self.frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
-        
+
         # Use console logging if API key not configured
         self.use_console = not bool(self.resend_api_key)
-        
+
     async def send_email(
         self,
         to_email: str,
         subject: str,
         html_content: str,
-        text_content: Optional[str] = None
+        text_content: Optional[str] = None,
     ) -> bool:
         """Send an HTML email via Resend API"""
         try:
             if self.use_console:
                 # For local development - print to console
-                print("\n" + "="*80)
+                print("\n" + "=" * 80)
                 print(f"📧 EMAIL TO: {to_email}")
                 print(f"📧 SUBJECT: {subject}")
-                print("="*80)
+                print("=" * 80)
                 print(html_content)
-                print("="*80 + "\n")
+                print("=" * 80 + "\n")
                 return True
-            
+
             # Send via Resend
             params = {
                 "from": self.from_email,
@@ -53,20 +55,22 @@ class EmailService:
             }
             if text_content:
                 params["text"] = text_content
-                
+
             response = resend.Emails.send(params)
             print(f"✅ Resend Email dispatched successfully to {to_email}: {response}")
             return True
         except Exception as e:
             print(f"❌ Failed to send email via Resend to {to_email}: {e}")
             return False
-    
-    async def send_verification_email(self, to_email: str, token: str, full_name: str) -> bool:
+
+    async def send_verification_email(
+        self, to_email: str, token: str, full_name: str
+    ) -> bool:
         """Send email verification email"""
         verification_url = f"{self.frontend_url}/auth/verify-email?token={token}"
-        
+
         subject = "Verify your email address"
-        
+
         html_content = f"""
         <!DOCTYPE html>
         <html>
@@ -112,7 +116,7 @@ class EmailService:
         </body>
         </html>
         """
-        
+
         text_content = f"""
         Hi {full_name},
         
@@ -127,15 +131,17 @@ class EmailService:
         
         © 2026 Rental Platform
         """
-        
+
         return await self.send_email(to_email, subject, html_content, text_content)
-    
-    async def send_password_reset_email(self, to_email: str, token: str, full_name: str) -> bool:
+
+    async def send_password_reset_email(
+        self, to_email: str, token: str, full_name: str
+    ) -> bool:
         """Send password reset email"""
         reset_url = f"{self.frontend_url}/auth/reset-password?token={token}"
-        
+
         subject = "Reset your password"
-        
+
         html_content = f"""
         <!DOCTYPE html>
         <html>
@@ -180,7 +186,7 @@ class EmailService:
         </body>
         </html>
         """
-        
+
         text_content = f"""
         Hi {full_name},
         
@@ -193,10 +199,12 @@ class EmailService:
         
         © 2026 Rental Platform
         """
-        
+
         return await self.send_email(to_email, subject, html_content, text_content)
 
-    async def send_verification_success_email(self, to_email: str, full_name: str, verification_type: str = "identity") -> bool:
+    async def send_verification_success_email(
+        self, to_email: str, full_name: str, verification_type: str = "identity"
+    ) -> bool:
         """Send congratulatory email after successful verification"""
         subject = "Your verification is complete! ✅"
         label = "Identity" if verification_type == "identity" else "Employment"
@@ -248,7 +256,9 @@ class EmailService:
 
         return await self.send_email(to_email, subject, html_content, text_content)
 
-    async def send_verification_failed_email(self, to_email: str, full_name: str, reason: str = None) -> bool:
+    async def send_verification_failed_email(
+        self, to_email: str, full_name: str, reason: str = None
+    ) -> bool:
         """Send notification when verification fails"""
         subject = "Verification update — action needed"
         reason_text = f"<p><strong>Reason:</strong> {reason}</p>" if reason else ""
@@ -290,7 +300,14 @@ class EmailService:
 
         return await self.send_email(to_email, subject, html_content)
 
-    async def send_team_invite_email(self, to_email: str, name: str, landlord_name: str, invite_token: str, permission_level: str) -> bool:
+    async def send_team_invite_email(
+        self,
+        to_email: str,
+        name: str,
+        landlord_name: str,
+        invite_token: str,
+        permission_level: str,
+    ) -> bool:
         """Send team invite email"""
         invite_url = f"{self.frontend_url}/invite/{invite_token}"
         subject = f"{landlord_name} invited you to join their team on Roomivo"

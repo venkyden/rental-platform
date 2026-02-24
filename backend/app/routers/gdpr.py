@@ -7,12 +7,14 @@ Endpoints:
 """
 
 from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.database import get_db
-from app.routers.auth import get_current_user
 from app.models.user import User
+from app.routers.auth import get_current_user
 
 router = APIRouter(prefix="/api/v1/gdpr", tags=["GDPR"])
 
@@ -38,16 +40,19 @@ async def export_user_data(
     properties_data = []
     try:
         from app.models.property import Property
+
         props = await db.execute(select(Property).where(Property.owner_id == user.id))
         for prop in props.scalars().all():
-            properties_data.append({
-                "id": str(prop.id),
-                "title": getattr(prop, "title", None),
-                "address": getattr(prop, "address_line1", None),
-                "city": getattr(prop, "city", None),
-                "monthly_rent": float(getattr(prop, "monthly_rent", 0) or 0),
-                "created_at": str(getattr(prop, "created_at", "")),
-            })
+            properties_data.append(
+                {
+                    "id": str(prop.id),
+                    "title": getattr(prop, "title", None),
+                    "address": getattr(prop, "address_line1", None),
+                    "city": getattr(prop, "city", None),
+                    "monthly_rent": float(getattr(prop, "monthly_rent", 0) or 0),
+                    "created_at": str(getattr(prop, "created_at", "")),
+                }
+            )
     except Exception:
         pass  # Properties table may not exist in test environments
 
@@ -55,14 +60,17 @@ async def export_user_data(
     messages_data = []
     try:
         from app.models.message import Message
+
         msgs = await db.execute(select(Message).where(Message.sender_id == user.id))
         for msg in msgs.scalars().all():
-            messages_data.append({
-                "id": str(msg.id),
-                "recipient_id": str(getattr(msg, "recipient_id", "")),
-                "content": getattr(msg, "content", ""),
-                "sent_at": str(getattr(msg, "created_at", "")),
-            })
+            messages_data.append(
+                {
+                    "id": str(msg.id),
+                    "recipient_id": str(getattr(msg, "recipient_id", "")),
+                    "content": getattr(msg, "content", ""),
+                    "sent_at": str(getattr(msg, "created_at", "")),
+                }
+            )
     except Exception:
         pass
 
@@ -123,7 +131,7 @@ async def delete_user_data(
     """
     # Anonymise user record
     anonymised_email = f"deleted_{current_user.id}@anonymised.roomivo.internal"
-    
+
     await db.execute(
         update(User)
         .where(User.id == current_user.id)
@@ -154,8 +162,8 @@ async def delete_user_data(
     return {
         "status": "deleted",
         "message": "Your personal data has been anonymised and your account deactivated. "
-                   "A minimal anonymised record is retained for legal compliance (invoicing, fraud prevention). "
-                   "If you believe any data remains, contact dpo@roomivo.com.",
+        "A minimal anonymised record is retained for legal compliance (invoicing, fraud prevention). "
+        "If you believe any data remains, contact dpo@roomivo.com.",
         "deleted_at": datetime.now(timezone.utc).isoformat(),
         "data_retention_note": "Anonymised records retained per GDPR Art. 17(3)(b)(e) for legal obligations.",
     }

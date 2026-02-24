@@ -2,26 +2,30 @@
 Team Management API router.
 Allows landlords to invite team members, manage permissions, and assign properties.
 """
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
-from typing import List, Optional
-from datetime import datetime, timedelta
-from uuid import UUID
-from pydantic import BaseModel, EmailStr
+
 import secrets
+from datetime import datetime, timedelta
+from typing import List, Optional
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel, EmailStr
+from sqlalchemy import and_, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.models.property import Property
+from app.models.team import (InviteStatus, PermissionLevel, TeamMember,
+                             TeamMemberProperty)
+from app.models.user import User, UserRole
 from app.routers.auth import get_current_user
 from app.services.email import email_service
-from app.models.user import User, UserRole
-from app.models.property import Property
-from app.models.team import TeamMember, TeamMemberProperty, PermissionLevel, InviteStatus
 
 router = APIRouter(prefix="/team", tags=["Team Management"])
 
 
 # --- Schemas ---
+
 
 class InviteTeamMemberRequest(BaseModel):
     email: EmailStr
@@ -76,48 +80,58 @@ class AcceptInviteRequest(BaseModel):
 
 # --- Endpoints ---
 
+
 @router.get("/members", response_model=List[TeamMemberResponse])
 async def get_team_members(
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
 ):
     """Get all team members for the current landlord."""
     if current_user.role != UserRole.LANDLORD:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only landlords can manage team members"
+            detail="Only landlords can manage team members",
         )
-    
+
     result = await db.execute(
-        select(TeamMember).where(
+        select(TeamMember)
+        .where(
             and_(
                 TeamMember.landlord_id == current_user.id,
-                TeamMember.status != InviteStatus.REVOKED
+                TeamMember.status != InviteStatus.REVOKED,
             )
-        ).order_by(TeamMember.created_at.desc())
+        )
+        .order_by(TeamMember.created_at.desc())
     )
     members = result.scalars().all()
-    
+
     response = []
     for member in members:
         # Count assigned properties
-        prop_count = (await db.execute(
-            select(TeamMemberProperty).where(
-                TeamMemberProperty.team_member_id == member.id
+        prop_count = (
+            (
+                await db.execute(
+                    select(TeamMemberProperty).where(
+                        TeamMemberProperty.team_member_id == member.id
+                    )
+                )
             )
-        )).scalars().all()
-        
-        response.append(TeamMemberResponse(
-            id=str(member.id),
-            email=member.email,
-            name=member.name,
-            permission_level=member.permission_level.value,
-            status=member.status.value,
-            property_count=len(prop_count),
-            created_at=member.created_at,
-            accepted_at=member.accepted_at
-        ))
-    
+            .scalars()
+            .all()
+        )
+
+        response.append(
+            TeamMemberResponse(
+                id=str(member.id),
+                email=member.email,
+                name=member.name,
+                permission_level=member.permission_level.value,
+                status=member.status.value,
+                property_count=len(prop_count),
+                created_at=member.created_at,
+                accepted_at=member.accepted_at,
+            )
+        )
+
     return response
 
 
@@ -125,46 +139,48 @@ async def get_team_members(
 async def invite_team_member(
     data: InviteTeamMemberRequest,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """Invite a new team member by email."""
     if current_user.role != UserRole.LANDLORD:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only landlords can invite team members"
+            detail="Only landlords can invite team members",
         )
-    
+
     # Map permission string to enum
     try:
         permission = PermissionLevel(data.permission_level)
     except ValueError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid permission level. Use: view_only, manage_visits, full_access"
+            detail="Invalid permission level. Use: view_only, manage_visits, full_access",
         )
-    
+
     # Check if already invited
-    existing = (await db.execute(
-        select(TeamMember).where(
-            and_(
-                TeamMember.landlord_id == current_user.id,
-                TeamMember.email == data.email,
-                TeamMember.status != InviteStatus.REVOKED
+    existing = (
+        await db.execute(
+            select(TeamMember).where(
+                and_(
+                    TeamMember.landlord_id == current_user.id,
+                    TeamMember.email == data.email,
+                    TeamMember.status != InviteStatus.REVOKED,
+                )
             )
         )
-    )).scalar_one_or_none()
-    
+    ).scalar_one_or_none()
+
     if existing:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="This email has already been invited"
+            detail="This email has already been invited",
         )
-    
+
     # Check if user exists (to auto-link if they accept)
-    existing_user = (await db.execute(
-        select(User).where(User.email == data.email)
-    )).scalar_one_or_none()
-    
+    existing_user = (
+        await db.execute(select(User).where(User.email == data.email))
+    ).scalar_one_or_none()
+
     # Create team member
     member = TeamMember(
         landlord_id=current_user.id,
@@ -174,44 +190,39 @@ async def invite_team_member(
         permission_level=permission,
         status=InviteStatus.PENDING,
         invite_token=secrets.token_urlsafe(32),
-        invite_expires_at=datetime.utcnow() + timedelta(days=7)
+        invite_expires_at=datetime.utcnow() + timedelta(days=7),
     )
     db.add(member)
     await db.flush()  # Get member.id
-    
+
     # Assign properties
     properties_assigned = []
     for prop_id in data.property_ids:
         # Verify property belongs to landlord
-        prop = (await db.execute(
-            select(Property).where(Property.id == prop_id)
-        )).scalar_one_or_none()
-        
+        prop = (
+            await db.execute(select(Property).where(Property.id == prop_id))
+        ).scalar_one_or_none()
+
         if prop and prop.landlord_id == current_user.id:
-            access = TeamMemberProperty(
-                team_member_id=member.id,
-                property_id=prop.id
-            )
+            access = TeamMemberProperty(team_member_id=member.id, property_id=prop.id)
             db.add(access)
-            properties_assigned.append({
-                "id": str(prop.id),
-                "title": prop.title,
-                "permission_override": None
-            })
-    
+            properties_assigned.append(
+                {"id": str(prop.id), "title": prop.title, "permission_override": None}
+            )
+
     await db.commit()
     await db.refresh(member)
-    
+
     # Send invite email
     await email_service.send_team_invite_email(
         to_email=member.email,
         name=member.name or member.email,
         landlord_name=current_user.full_name or current_user.email,
         invite_token=member.invite_token,
-        permission_level=member.permission_level.value
+        permission_level=member.permission_level.value,
     )
     invite_link = f"/invite/{member.invite_token}"
-    
+
     return TeamMemberDetailResponse(
         id=str(member.id),
         email=member.email,
@@ -221,7 +232,7 @@ async def invite_team_member(
         properties=properties_assigned,
         created_at=member.created_at,
         accepted_at=member.accepted_at,
-        invite_link=invite_link
+        invite_link=invite_link,
     )
 
 
@@ -229,40 +240,56 @@ async def invite_team_member(
 async def get_team_member(
     member_id: UUID,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """Get details of a specific team member."""
-    member = (await db.execute(
-        select(TeamMember).where(TeamMember.id == member_id)
-    )).scalar_one_or_none()
-    
+    member = (
+        await db.execute(select(TeamMember).where(TeamMember.id == member_id))
+    ).scalar_one_or_none()
+
     if not member:
         raise HTTPException(status_code=404, detail="Team member not found")
-    
+
     if member.landlord_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized")
-    
+
     # Get assigned properties
-    accesses = (await db.execute(
-        select(TeamMemberProperty).where(
-            TeamMemberProperty.team_member_id == member.id
+    accesses = (
+        (
+            await db.execute(
+                select(TeamMemberProperty).where(
+                    TeamMemberProperty.team_member_id == member.id
+                )
+            )
         )
-    )).scalars().all()
-    
+        .scalars()
+        .all()
+    )
+
     properties = []
     for access in accesses:
-        prop = (await db.execute(
-            select(Property).where(Property.id == access.property_id)
-        )).scalar_one_or_none()
+        prop = (
+            await db.execute(select(Property).where(Property.id == access.property_id))
+        ).scalar_one_or_none()
         if prop:
-            properties.append({
-                "id": str(prop.id),
-                "title": prop.title,
-                "permission_override": access.permission_override.value if access.permission_override else None
-            })
-    
-    invite_link = f"/invite/{member.invite_token}" if member.status == InviteStatus.PENDING else None
-    
+            properties.append(
+                {
+                    "id": str(prop.id),
+                    "title": prop.title,
+                    "permission_override": (
+                        access.permission_override.value
+                        if access.permission_override
+                        else None
+                    ),
+                }
+            )
+
+    invite_link = (
+        f"/invite/{member.invite_token}"
+        if member.status == InviteStatus.PENDING
+        else None
+    )
+
     return TeamMemberDetailResponse(
         id=str(member.id),
         email=member.email,
@@ -272,7 +299,7 @@ async def get_team_member(
         properties=properties,
         created_at=member.created_at,
         accepted_at=member.accepted_at,
-        invite_link=invite_link
+        invite_link=invite_link,
     )
 
 
@@ -281,41 +308,44 @@ async def update_team_member(
     member_id: UUID,
     data: UpdateTeamMemberRequest,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """Update team member's name or permission level."""
-    member = (await db.execute(
-        select(TeamMember).where(TeamMember.id == member_id)
-    )).scalar_one_or_none()
-    
+    member = (
+        await db.execute(select(TeamMember).where(TeamMember.id == member_id))
+    ).scalar_one_or_none()
+
     if not member:
         raise HTTPException(status_code=404, detail="Team member not found")
-    
+
     if member.landlord_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized")
-    
+
     if data.name is not None:
         member.name = data.name
-    
+
     if data.permission_level is not None:
         try:
             member.permission_level = PermissionLevel(data.permission_level)
         except ValueError:
-            raise HTTPException(
-                status_code=400,
-                detail="Invalid permission level"
-            )
-    
+            raise HTTPException(status_code=400, detail="Invalid permission level")
+
     await db.commit()
     await db.refresh(member)
-    
+
     # Get property count
-    prop_count = len((await db.execute(
-        select(TeamMemberProperty).where(
-            TeamMemberProperty.team_member_id == member.id
+    prop_count = len(
+        (
+            await db.execute(
+                select(TeamMemberProperty).where(
+                    TeamMemberProperty.team_member_id == member.id
+                )
+            )
         )
-    )).scalars().all())
-    
+        .scalars()
+        .all()
+    )
+
     return TeamMemberResponse(
         id=str(member.id),
         email=member.email,
@@ -324,7 +354,7 @@ async def update_team_member(
         status=member.status.value,
         property_count=prop_count,
         created_at=member.created_at,
-        accepted_at=member.accepted_at
+        accepted_at=member.accepted_at,
     )
 
 
@@ -332,24 +362,24 @@ async def update_team_member(
 async def revoke_team_member(
     member_id: UUID,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """Revoke a team member's access."""
-    member = (await db.execute(
-        select(TeamMember).where(TeamMember.id == member_id)
-    )).scalar_one_or_none()
-    
+    member = (
+        await db.execute(select(TeamMember).where(TeamMember.id == member_id))
+    ).scalar_one_or_none()
+
     if not member:
         raise HTTPException(status_code=404, detail="Team member not found")
-    
+
     if member.landlord_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized")
-    
+
     member.status = InviteStatus.REVOKED
     member.revoked_at = datetime.utcnow()
-    
+
     await db.commit()
-    
+
     return {"message": "Access revoked successfully"}
 
 
@@ -358,119 +388,122 @@ async def update_property_access(
     member_id: UUID,
     data: UpdatePropertyAccessRequest,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """Update which properties a team member can access."""
-    member = (await db.execute(
-        select(TeamMember).where(TeamMember.id == member_id)
-    )).scalar_one_or_none()
-    
+    member = (
+        await db.execute(select(TeamMember).where(TeamMember.id == member_id))
+    ).scalar_one_or_none()
+
     if not member:
         raise HTTPException(status_code=404, detail="Team member not found")
-    
+
     if member.landlord_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized")
-    
+
     # Remove all existing property access
     await db.execute(
         TeamMemberProperty.__table__.delete().where(
             TeamMemberProperty.team_member_id == member_id
         )
     )
-    
+
     # Add new property access
     for prop_id in data.property_ids:
         # Verify property belongs to landlord
-        prop = (await db.execute(
-            select(Property).where(Property.id == prop_id)
-        )).scalar_one_or_none()
-        
+        prop = (
+            await db.execute(select(Property).where(Property.id == prop_id))
+        ).scalar_one_or_none()
+
         if prop and prop.landlord_id == current_user.id:
-            access = TeamMemberProperty(
-                team_member_id=member_id,
-                property_id=prop.id
-            )
+            access = TeamMemberProperty(team_member_id=member_id, property_id=prop.id)
             db.add(access)
-    
+
     await db.commit()
-    
-    return {"message": "Property access updated", "property_count": len(data.property_ids)}
+
+    return {
+        "message": "Property access updated",
+        "property_count": len(data.property_ids),
+    }
 
 
 @router.post("/invite/accept/{token}")
 async def accept_invite(
     token: str,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """Accept a team invite. User must be logged in."""
-    member = (await db.execute(
-        select(TeamMember).where(TeamMember.invite_token == token)
-    )).scalar_one_or_none()
-    
+    member = (
+        await db.execute(select(TeamMember).where(TeamMember.invite_token == token))
+    ).scalar_one_or_none()
+
     if not member:
         raise HTTPException(status_code=404, detail="Invalid invite link")
-    
+
     if member.status != InviteStatus.PENDING:
         raise HTTPException(status_code=400, detail="Invite already used or revoked")
-    
+
     # Check expiry
     if member.invite_expires_at and datetime.utcnow() > member.invite_expires_at:
         member.status = InviteStatus.EXPIRED
         await db.commit()
         raise HTTPException(status_code=400, detail="Invite has expired")
-    
+
     # Verify email matches
     if current_user.email.lower() != member.email.lower():
         raise HTTPException(
             status_code=400,
-            detail=f"This invite was sent to {member.email}. Please log in with that email."
+            detail=f"This invite was sent to {member.email}. Please log in with that email.",
         )
-    
+
     # Accept invite
     member.member_user_id = current_user.id
     member.status = InviteStatus.ACTIVE
     member.accepted_at = datetime.utcnow()
-    
+
     await db.commit()
-    
+
     # Get landlord name
-    landlord = (await db.execute(
-        select(User).where(User.id == member.landlord_id)
-    )).scalar_one_or_none()
-    
+    landlord = (
+        await db.execute(select(User).where(User.id == member.landlord_id))
+    ).scalar_one_or_none()
+
     return {
         "message": "Invite accepted successfully",
         "landlord_name": landlord.full_name if landlord else "Unknown",
-        "permission_level": member.permission_level.value
+        "permission_level": member.permission_level.value,
     }
 
 
 @router.get("/invite/{token}")
-async def get_invite_info(
-    token: str,
-    db: AsyncSession = Depends(get_db)
-):
+async def get_invite_info(token: str, db: AsyncSession = Depends(get_db)):
     """Get info about an invite (public endpoint for invite page)."""
-    member = (await db.execute(
-        select(TeamMember).where(TeamMember.invite_token == token)
-    )).scalar_one_or_none()
-    
+    member = (
+        await db.execute(select(TeamMember).where(TeamMember.invite_token == token))
+    ).scalar_one_or_none()
+
     if not member:
         raise HTTPException(status_code=404, detail="Invalid invite link")
-    
+
     # Get landlord info
-    landlord = (await db.execute(
-        select(User).where(User.id == member.landlord_id)
-    )).scalar_one_or_none()
-    
+    landlord = (
+        await db.execute(select(User).where(User.id == member.landlord_id))
+    ).scalar_one_or_none()
+
     # Get property count
-    prop_count = len((await db.execute(
-        select(TeamMemberProperty).where(
-            TeamMemberProperty.team_member_id == member.id
+    prop_count = len(
+        (
+            await db.execute(
+                select(TeamMemberProperty).where(
+                    TeamMemberProperty.team_member_id == member.id
+                )
+            )
         )
-    )).scalars().all())
-    
+        .scalars()
+        .all()
+    )
+
     return {
         "email": member.email,
         "name": member.name,
@@ -478,5 +511,6 @@ async def get_invite_info(
         "landlord_name": landlord.full_name if landlord else "Unknown",
         "permission_level": member.permission_level.value,
         "property_count": prop_count,
-        "expired": member.invite_expires_at and datetime.utcnow() > member.invite_expires_at
+        "expired": member.invite_expires_at
+        and datetime.utcnow() > member.invite_expires_at,
     }

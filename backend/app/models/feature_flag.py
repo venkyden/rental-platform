@@ -1,8 +1,11 @@
-from sqlalchemy import Column, String, Boolean, DateTime
-from datetime import datetime
 import uuid
+from datetime import datetime
+
+from sqlalchemy import Boolean, Column, DateTime, String
 from sqlalchemy.dialects.postgresql import UUID
+
 from app.core.database import Base
+
 
 class FeatureFlag(Base):
     __tablename__ = "feature_flags"

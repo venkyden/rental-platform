@@ -1,24 +1,27 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 from typing import List
 from uuid import UUID
 
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.database import get_db
-from app.routers.auth import get_current_user
-from app.models.user import User
 from app.models.dispute import Dispute, DisputeStatus, DisputeVerdict
-from app.models.dispute_schemas import DisputeCreate, DisputeResponse, DisputeVerdictUpdate
-from app.models.visits_and_leases import Lease
+from app.models.dispute_schemas import (DisputeCreate, DisputeResponse,
+                                        DisputeVerdictUpdate)
 from app.models.inventory import Inventory, InventoryType
+from app.models.user import User
+from app.models.visits_and_leases import Lease
+from app.routers.auth import get_current_user
 
 router = APIRouter(prefix="/disputes", tags=["Disputes"])
+
 
 @router.post("/", response_model=DisputeResponse)
 async def create_dispute(
     dispute_in: DisputeCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     """
     Report an incident (Live Reporting).
@@ -29,7 +32,7 @@ async def create_dispute(
     lease = result.scalar_one_or_none()
     if not lease:
         raise HTTPException(status_code=404, detail="Lease not found")
-        
+
     new_dispute = Dispute(
         lease_id=dispute_in.lease_id,
         inventory_id=dispute_in.inventory_id,
@@ -39,18 +42,18 @@ async def create_dispute(
         title=dispute_in.title,
         description=dispute_in.description,
         amount_claimed=dispute_in.amount_claimed,
-        status=DisputeStatus.OPEN
+        status=DisputeStatus.OPEN,
     )
-    
+
     db.add(new_dispute)
     await db.commit()
     await db.refresh(new_dispute)
     return new_dispute
 
+
 @router.get("/", response_model=List[DisputeResponse])
 async def list_my_disputes(
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)
 ):
     # Retrieve disputes where user is raised_by OR accused OR landlord of lease
     # Simplified query for MVP: Just raised_by
@@ -64,8 +67,9 @@ async def list_my_disputes(
 # Admin Endpoints — Dispute Resolution & Diff Viewer
 # ──────────────────────────────────────────────
 
-from sqlalchemy.orm import selectinload
 from datetime import datetime
+
+from sqlalchemy.orm import selectinload
 
 
 def _require_admin(user: User):
@@ -77,7 +81,7 @@ def _require_admin(user: User):
 async def admin_list_disputes(
     status_filter: str = None,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     """List all disputes (admin only)."""
     _require_admin(current_user)
@@ -92,14 +96,12 @@ async def admin_list_disputes(
 async def admin_get_dispute_detail(
     dispute_id: UUID,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     """Get full dispute detail including inventory and lease info."""
     _require_admin(current_user)
 
-    result = await db.execute(
-        select(Dispute).where(Dispute.id == dispute_id)
-    )
+    result = await db.execute(select(Dispute).where(Dispute.id == dispute_id))
     dispute = result.scalar_one_or_none()
     if not dispute:
         raise HTTPException(status_code=404, detail="Dispute not found")
@@ -123,15 +125,23 @@ async def admin_get_dispute_detail(
         "admin_notes": dispute.admin_notes,
         "created_at": dispute.created_at.isoformat() if dispute.created_at else None,
         "resolved_at": dispute.resolved_at.isoformat() if dispute.resolved_at else None,
-        "raised_by": {
-            "id": str(raised_by.id),
-            "full_name": raised_by.full_name,
-            "email": raised_by.email,
-        } if raised_by else None,
-        "lease": {
-            "id": str(lease.id),
-            "property_id": str(lease.property_id) if lease.property_id else None,
-        } if lease else None,
+        "raised_by": (
+            {
+                "id": str(raised_by.id),
+                "full_name": raised_by.full_name,
+                "email": raised_by.email,
+            }
+            if raised_by
+            else None
+        ),
+        "lease": (
+            {
+                "id": str(lease.id),
+                "property_id": str(lease.property_id) if lease.property_id else None,
+            }
+            if lease
+            else None
+        ),
         "inventory_id": str(dispute.inventory_id) if dispute.inventory_id else None,
     }
 
@@ -140,7 +150,7 @@ async def admin_get_dispute_detail(
 async def admin_get_dispute_diff(
     dispute_id: UUID,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     """
     Before vs After comparison for a dispute.
@@ -156,6 +166,7 @@ async def admin_get_dispute_diff(
 
     # Get all inventories for this lease
     from app.models.inventory import InventoryType as InvType
+
     inv_result = await db.execute(
         select(Inventory)
         .options(selectinload(Inventory.items))
@@ -207,13 +218,15 @@ async def admin_get_dispute_diff(
         elif after and not before:
             changed = True  # new item at move-out
 
-        diff_rows.append({
-            "name": key[0],
-            "category": key[1],
-            "before": before,
-            "after": after,
-            "changed": changed,
-        })
+        diff_rows.append(
+            {
+                "name": key[0],
+                "category": key[1],
+                "before": before,
+                "after": after,
+                "changed": changed,
+            }
+        )
 
     return {
         "dispute_id": str(dispute.id),
@@ -240,7 +253,7 @@ async def admin_update_verdict(
     dispute_id: UUID,
     verdict_in: DisputeVerdictUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     """Admin sets the verdict and optionally resolves the dispute."""
     _require_admin(current_user)
