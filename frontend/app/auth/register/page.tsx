@@ -184,7 +184,7 @@ export default function RegisterPage() {
                 <h2 className="text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
                     Create your account
                 </h2>
-                <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+                <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
                     Already have an account?{' '}
                     <Link href="/auth/login" className="font-semibold text-teal-600 hover:text-teal-500 transition-colors">
                         Sign in
@@ -201,7 +201,7 @@ export default function RegisterPage() {
             <motion.div variants={itemVariants} className="mb-6">
                 <div id="google-signup-btn" className="flex justify-center sm:justify-start" />
                 {googleLoading && (
-                    <p className="text-sm text-zinc-500 mt-3 text-center sm:text-left animate-pulse">
+                    <p className="text-sm text-zinc-600 mt-3 text-center sm:text-left animate-pulse">
                         Creating account with Google...
                     </p>
                 )}
@@ -212,16 +212,16 @@ export default function RegisterPage() {
                     <div className="w-full border-t border-zinc-200 dark:border-zinc-800" />
                 </div>
                 <div className="relative flex justify-center sm:justify-start">
-                    <span className="bg-white dark:bg-zinc-950 pr-4 text-sm text-zinc-400 font-medium">
+                    <span className="bg-white dark:bg-zinc-950 pr-4 text-sm text-zinc-500 font-medium">
                         Or register with email
                     </span>
                 </div>
             </motion.div>
 
-            <motion.form variants={containerVariants} className="space-y-5" onSubmit={handleSubmit}>
+            <motion.form variants={containerVariants} className="space-y-5" method="POST" onSubmit={handleSubmit}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <motion.div variants={itemVariants} className="col-span-1 sm:col-span-2">
-                        <label htmlFor="full_name" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                        <label htmlFor="full_name" className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-1.5">
                             Full Name
                         </label>
                         <input
@@ -229,7 +229,7 @@ export default function RegisterPage() {
                             name="full_name"
                             type="text"
                             required
-                            className="block w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-900 dark:text-white placeholder-zinc-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
+                            className="block w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-900 dark:text-white placeholder-zinc-500 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
                             placeholder="Jean Dupont"
                             value={formData.full_name}
                             onChange={handleChange}
@@ -237,7 +237,7 @@ export default function RegisterPage() {
                     </motion.div>
 
                     <motion.div variants={itemVariants} className="col-span-1 sm:col-span-2">
-                        <label htmlFor="email" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                        <label htmlFor="email" className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-1.5">
                             Email address
                         </label>
                         <input
@@ -246,7 +246,7 @@ export default function RegisterPage() {
                             type="email"
                             autoComplete="email"
                             required
-                            className="block w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-900 dark:text-white placeholder-zinc-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
+                            className="block w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-900 dark:text-white placeholder-zinc-500 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
                             placeholder="name@company.com"
                             value={formData.email}
                             onChange={handleChange}
@@ -254,7 +254,7 @@ export default function RegisterPage() {
                     </motion.div>
 
                     <motion.div variants={itemVariants} className="col-span-1 sm:col-span-2">
-                        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-3">
+                        <label className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-3">
                             I am a
                         </label>
                         <div className="grid grid-cols-2 gap-3">
@@ -268,7 +268,7 @@ export default function RegisterPage() {
                                     onClick={() => setFormData({ ...formData, role: role.id as any })}
                                     className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${formData.role === role.id
                                         ? 'border-teal-500 bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-300'
-                                        : 'border-zinc-200 dark:border-zinc-800 hover:border-teal-200 dark:hover:border-teal-800 text-zinc-600 dark:text-zinc-400'
+                                        : 'border-zinc-200 dark:border-zinc-800 hover:border-teal-200 dark:hover:border-teal-800 text-zinc-700 dark:text-zinc-400'
                                         }`}
                                 >
                                     <span className="text-2xl mb-2">{role.icon}</span>
@@ -279,7 +279,7 @@ export default function RegisterPage() {
                     </motion.div>
 
                     <motion.div variants={itemVariants} className="col-span-1">
-                        <label htmlFor="password" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                        <label htmlFor="password" className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-1.5">
                             Password
                         </label>
                         <input
@@ -288,7 +288,7 @@ export default function RegisterPage() {
                             type="password"
                             autoComplete="new-password"
                             required
-                            className="block w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-900 dark:text-white placeholder-zinc-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
+                            className="block w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-900 dark:text-white placeholder-zinc-500 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
                             placeholder="••••••••"
                             value={formData.password}
                             onChange={handleChange}
@@ -301,7 +301,7 @@ export default function RegisterPage() {
                     </motion.div>
 
                     <motion.div variants={itemVariants} className="col-span-1">
-                        <label htmlFor="confirmPassword" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                        <label htmlFor="confirmPassword" className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-1.5">
                             Confirm Password
                         </label>
                         <input
@@ -310,7 +310,7 @@ export default function RegisterPage() {
                             type="password"
                             autoComplete="new-password"
                             required
-                            className="block w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-900 dark:text-white placeholder-zinc-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
+                            className="block w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-900 dark:text-white placeholder-zinc-500 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
                             placeholder="••••••••"
                             value={formData.confirmPassword}
                             onChange={handleChange}
@@ -332,7 +332,7 @@ export default function RegisterPage() {
                             />
                         </div>
                         <div className="ml-3 text-sm">
-                            <label htmlFor="gdprConsent" className="font-medium text-zinc-700 dark:text-zinc-300">
+                            <label htmlFor="gdprConsent" className="font-medium text-zinc-800 dark:text-zinc-300">
                                 I accept the{' '}
                                 <Link href="/privacy" className="text-teal-600 hover:text-teal-500 underline">Privacy Policy</Link>
                                 {' '}and{' '}

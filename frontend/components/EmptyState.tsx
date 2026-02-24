@@ -1,10 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { motion } from 'framer-motion';
 
 interface EmptyStateProps {
-    icon: string;
+    icon: string | ReactNode;
     title: string;
     description: string;
     actionLabel?: string;
@@ -35,7 +35,7 @@ export default function EmptyState({
     };
 
     const containerStyle = layout === 'card'
-        ? "bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center max-w-2xl mx-auto"
+        ? "bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 p-12 text-center max-w-2xl mx-auto transition-colors"
         : "py-16 text-center max-w-lg mx-auto";
 
     return (
@@ -53,17 +53,19 @@ export default function EmptyState({
             >
                 <motion.div
                     variants={float}
-                    className="w-24 h-24 bg-gradient-to-br from-teal-50 to-indigo-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner ring-4 ring-white"
+                    className="w-24 h-24 bg-gradient-to-br from-teal-50 to-teal-100/50 dark:from-teal-500/10 dark:to-teal-500/5 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner ring-4 ring-white dark:ring-zinc-900"
                 >
-                    <span className="text-5xl translate-y-1">{icon}</span>
+                    <div className="text-5xl text-teal-600 dark:text-teal-400 translate-y-1 flex items-center justify-center">
+                        {icon}
+                    </div>
                 </motion.div>
             </motion.div>
 
-            <h3 className="text-2xl font-bold text-gray-900 mb-3 tracking-tight">
+            <h3 className="text-2xl font-bold text-zinc-900 dark:text-white mb-3 tracking-tight">
                 {title}
             </h3>
 
-            <p className="text-gray-500 mb-8 max-w-sm mx-auto leading-relaxed">
+            <p className="text-zinc-500 dark:text-zinc-400 mb-8 max-w-sm mx-auto leading-relaxed">
                 {description}
             </p>
 
@@ -72,7 +74,7 @@ export default function EmptyState({
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={onAction}
-                    className="inline-flex items-center justify-center px-8 py-3.5 bg-gradient-to-r from-teal-600 to-indigo-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-indigo-500/30 transition-shadow"
+                    className="inline-flex items-center justify-center px-8 py-3.5 bg-teal-600 text-white font-semibold rounded-xl hover:bg-teal-700 hover:shadow-lg hover:shadow-teal-500/30 transition-all"
                 >
                     {actionLabel}
                 </motion.button>

@@ -120,7 +120,7 @@ export default function LoginPage() {
                 <h2 className="text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
                     Welcome back
                 </h2>
-                <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+                <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
                     Don't have an account?{' '}
                     <Link href="/auth/register" className="font-semibold text-teal-600 hover:text-teal-500 transition-colors">
                         Create one now
@@ -137,7 +137,7 @@ export default function LoginPage() {
             <motion.div variants={itemVariants} className="mb-6">
                 <div id="google-signin-btn" className="flex justify-center sm:justify-start" />
                 {googleLoading && (
-                    <p className="text-sm text-zinc-500 mt-3 text-center sm:text-left animate-pulse">
+                    <p className="text-sm text-zinc-600 mt-3 text-center sm:text-left animate-pulse">
                         Connecting to Google...
                     </p>
                 )}
@@ -148,7 +148,7 @@ export default function LoginPage() {
                     <div className="w-full border-t border-zinc-200 dark:border-zinc-800" />
                 </div>
                 <div className="relative flex justify-center sm:justify-start">
-                    <span className="bg-white dark:bg-zinc-950 pr-4 text-sm text-zinc-400 font-medium">
+                    <span className="bg-white dark:bg-zinc-950 pr-4 text-sm text-zinc-500 font-medium">
                         Or continue with email
                     </span>
                 </div>
@@ -156,7 +156,7 @@ export default function LoginPage() {
 
             <motion.form variants={containerVariants} className="space-y-5" onSubmit={handleSubmit}>
                 <motion.div variants={itemVariants}>
-                    <label htmlFor="email" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                    <label htmlFor="email" className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-1.5">
                         Email address
                     </label>
                     <input
@@ -165,7 +165,7 @@ export default function LoginPage() {
                         type="email"
                         autoComplete="email"
                         required
-                        className="block w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-900 dark:text-white placeholder-zinc-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
+                        className="block w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-900 dark:text-white placeholder-zinc-500 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
                         placeholder="name@company.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
@@ -174,7 +174,7 @@ export default function LoginPage() {
 
                 <motion.div variants={itemVariants}>
                     <div className="flex items-center justify-between mb-1.5">
-                        <label htmlFor="password" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                        <label htmlFor="password" className="block text-sm font-medium text-zinc-800 dark:text-zinc-300">
                             Password
                         </label>
                         <Link
@@ -190,7 +190,7 @@ export default function LoginPage() {
                         type="password"
                         autoComplete="current-password"
                         required
-                        className="block w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-900 dark:text-white placeholder-zinc-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
+                        className="block w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-900 dark:text-white placeholder-zinc-500 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
                         placeholder="••••••••"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
