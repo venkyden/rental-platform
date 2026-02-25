@@ -14,11 +14,15 @@ export default function GlobalError({
     }, [error]);
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 px-6">
-            <div className="max-w-md w-full text-center">
+        <div className="min-h-screen flex items-center justify-center px-6 relative overflow-hidden bg-slate-50">
+            {/* Background Effects */}
+            <div className="absolute inset-0 z-0">
+                <div className="absolute top-0 w-full h-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-teal-50/50 via-slate-50 to-white"></div>
+            </div>
+            <div className="z-10 max-w-md w-full text-center">
                 <div className="text-6xl mb-6">⚠️</div>
-                <h1 className="text-2xl font-bold text-gray-900 mb-3">Something went wrong</h1>
-                <p className="text-gray-500 mb-8 leading-relaxed">
+                <h1 className="text-2xl font-bold text-zinc-900 mb-3">Something went wrong</h1>
+                <p className="text-zinc-500 mb-8 leading-relaxed">
                     An unexpected error occurred. Our team has been notified. Please try again.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">

@@ -259,7 +259,7 @@ export default function CapturePage({ params }: { params: { code: string } }) {
                         setFile(null);
                         setPreviewUrl(null);
                     }}
-                    className="w-full bg-indigo-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:bg-indigo-700 transition"
+                    className="w-full bg-teal-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:bg-teal-700 transition"
                 >
                     {isOfflineSuccess ? '📸 Capture Next Item' : '📸 Take Another Photo'}
                 </button>
@@ -270,7 +270,7 @@ export default function CapturePage({ params }: { params: { code: string } }) {
     return (
         <div className="min-h-screen bg-gray-100 flex flex-col">
             <header className="bg-white shadow p-4 sticky top-0 z-10 flex justify-between items-center">
-                <h1 className="text-lg font-bold text-indigo-600">Property Verification</h1>
+                <h1 className="text-lg font-bold" style={{ color: '#22B8B8' }}>Property Verification</h1>
                 <div className="flex gap-2">
                     {pendingCount > 0 && (
                         <div className={`text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 ${isSyncing ? 'bg-blue-100 text-blue-800 animate-pulse' : 'bg-amber-100 text-amber-800'}`}>
@@ -327,7 +327,7 @@ export default function CapturePage({ params }: { params: { code: string } }) {
 
                         <button
                             onClick={startCapture}
-                            className="w-full bg-indigo-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-indigo-700 transition transform active:scale-95 flex items-center justify-center gap-2"
+                            className="w-full bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-teal-700 transition transform active:scale-95 flex items-center justify-center gap-2"
                         >
                             <span>📍 Enable Location & Camera</span>
                         </button>
@@ -336,12 +336,12 @@ export default function CapturePage({ params }: { params: { code: string } }) {
 
                 {step === 'capturing' && (
                     <div className="text-center">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto mb-4"></div>
                         <p className="text-gray-600 mb-2">Acquiring GPS location...</p>
                         <p className="text-gray-400 text-sm mb-6">This should only take a few seconds</p>
                         <button
                             onClick={skipGps}
-                            className="text-indigo-600 underline text-sm font-medium"
+                            className="text-teal-600 underline text-sm font-medium"
                         >
                             Skip GPS &amp; continue without location
                         </button>
@@ -378,7 +378,7 @@ export default function CapturePage({ params }: { params: { code: string } }) {
 
                 {step === 'uploading' && (
                     <div className="text-center">
-                        <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-indigo-600 mx-auto mb-6"></div>
+                        <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-teal-600 mx-auto mb-6"></div>
                         <h3 className="text-xl font-bold text-gray-900 mb-2">Verifying & Uploading...</h3>
                         <p className="text-gray-600">Checking location match...</p>
                     </div>

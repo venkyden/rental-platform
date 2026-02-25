@@ -94,7 +94,7 @@ export default function VerifyCaptureePage({ params }: { params: { code: string 
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto mb-4"></div>
                     <p className="text-gray-600">Verifying session...</p>
                 </div>
             </div>
@@ -138,7 +138,7 @@ export default function VerifyCaptureePage({ params }: { params: { code: string 
         <div className="min-h-screen bg-gray-50 flex flex-col">
             {/* Header */}
             <header className="bg-white shadow p-4 sticky top-0 z-10">
-                <h1 className="text-lg font-bold text-indigo-600">🆔 Identity Verification</h1>
+                <h1 className="text-lg font-bold" style={{ color: '#22B8B8' }}>🆔 Identity Verification</h1>
             </header>
 
             <main className="flex-1 flex flex-col items-center justify-center p-6 max-w-md mx-auto w-full">
@@ -160,8 +160,8 @@ export default function VerifyCaptureePage({ params }: { params: { code: string 
                                     key={doc.value}
                                     onClick={() => setDocumentType(doc.value)}
                                     className={`w-full p-4 rounded-xl border-2 text-left transition-all ${documentType === doc.value
-                                            ? 'border-indigo-500 bg-indigo-50'
-                                            : 'border-gray-200 bg-white hover:border-gray-300'
+                                        ? 'border-teal-500 bg-teal-50'
+                                        : 'border-gray-200 bg-white hover:border-gray-300'
                                         }`}
                                 >
                                     <div className="font-semibold text-gray-900">{doc.label}</div>
@@ -183,7 +183,7 @@ export default function VerifyCaptureePage({ params }: { params: { code: string 
 
                         <button
                             onClick={startCapture}
-                            className="w-full bg-indigo-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-indigo-700 transition transform active:scale-95 flex items-center justify-center gap-2"
+                            className="w-full bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-teal-700 transition transform active:scale-95 flex items-center justify-center gap-2"
                         >
                             <span>📷</span> Take Photo
                         </button>
@@ -193,7 +193,7 @@ export default function VerifyCaptureePage({ params }: { params: { code: string 
                 {/* Step: Capturing (spinner while camera opens) */}
                 {step === 'capture' && (
                     <div className="text-center">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto mb-4"></div>
                         <p className="text-gray-600">Opening camera...</p>
                     </div>
                 )}
@@ -236,7 +236,7 @@ export default function VerifyCaptureePage({ params }: { params: { code: string 
                 {/* Step: Uploading */}
                 {step === 'uploading' && (
                     <div className="text-center">
-                        <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-indigo-600 mx-auto mb-6"></div>
+                        <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-teal-600 mx-auto mb-6"></div>
                         <h3 className="text-xl font-bold text-gray-900 mb-2">Verifying Document...</h3>
                         <p className="text-gray-600">This may take a moment</p>
                     </div>
