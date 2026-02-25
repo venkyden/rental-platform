@@ -32,7 +32,7 @@ export default function ApplicationsPage() {
             setApplications(response.data);
         } catch (error) {
             console.error(error);
-            toast.error('Erreur lors du chargement des candidatures');
+            toast.error('Error loading applications');
         } finally {
             setLoading(false);
         }
@@ -40,9 +40,9 @@ export default function ApplicationsPage() {
 
     const getStatusBadge = (status: string) => {
         switch (status) {
-            case 'pending': return <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">En attente</span>;
-            case 'approved': return <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">Approuvé ✅</span>;
-            case 'rejected': return <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium">Refusé ❌</span>;
+            case 'pending': return <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">Pending</span>;
+            case 'approved': return <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">Approved ✅</span>;
+            case 'rejected': return <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium">Rejected ❌</span>;
             default: return <span className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm font-medium">{status}</span>;
         }
     };
@@ -53,11 +53,11 @@ export default function ApplicationsPage() {
                 <header className="bg-white shadow">
                     <div className="max-w-7xl mx-auto py-4 px-4 flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                            <button onClick={() => router.back()} className="text-gray-500 hover:text-gray-900">← Retour</button>
-                            <h1 className="text-2xl font-bold text-gray-900">Mes Candidatures</h1>
+                            <button onClick={() => router.back()} className="text-gray-500 hover:text-gray-900">← Back</button>
+                            <h1 className="text-2xl font-bold text-gray-900">My Applications</h1>
                         </div>
                         <button onClick={() => router.push('/search')} className="text-blue-600 font-medium hover:underline">
-                            + Nouvelle recherche
+                            + New Search
                         </button>
                     </div>
                 </header>
@@ -71,10 +71,10 @@ export default function ApplicationsPage() {
                     ) : applications.length === 0 ? (
                         <div className="text-center bg-white rounded-xl shadow p-12">
                             <span className="text-6xl mb-4 block">📂</span>
-                            <h2 className="text-xl font-bold mb-2">Aucune candidature</h2>
-                            <p className="text-gray-500 mb-6">Vous n'avez pas encore envoyé de dossier.</p>
+                            <h2 className="text-xl font-bold mb-2">No Applications</h2>
+                            <p className="text-gray-500 mb-6">You haven't submitted any applications yet.</p>
                             <button onClick={() => router.push('/search')} className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:shadow-lg transition-all">
-                                Parcourir les logements
+                                Browse Properties
                             </button>
                         </div>
                     ) : (
@@ -85,12 +85,12 @@ export default function ApplicationsPage() {
                                         <div>
                                             <div className="flex items-center gap-3 mb-2">
                                                 <h3 className="text-lg font-bold text-gray-900">
-                                                    Candidature #{app.id.substring(0, 8)}
+                                                    Application #{app.id.substring(0, 8)}
                                                 </h3>
                                                 {getStatusBadge(app.status)}
                                             </div>
                                             <p className="text-sm text-gray-500 mb-2">
-                                                Envoyé le {new Date(app.created_at).toLocaleDateString()}
+                                                Submitted on {new Date(app.created_at).toLocaleDateString()}
                                             </p>
                                             {app.cover_letter && (
                                                 <div className="mt-4 bg-gray-50 p-4 rounded-lg text-gray-700 italic border border-gray-100">
@@ -102,7 +102,7 @@ export default function ApplicationsPage() {
                                             onClick={() => router.push(`/properties/${app.property_id}`)}
                                             className="text-blue-600 hover:text-blue-800 font-medium text-sm"
                                         >
-                                            Voir le logement →
+                                            View Property →
                                         </button>
                                     </div>
                                 </div>

@@ -88,20 +88,30 @@ export default function CapturePage({ params }: { params: { code: string } }) {
         };
     }, [previewUrl]);
 
+    const gpsAbortRef = useRef(false);
+
+    const proceedToCamera = () => {
+        if (fileInputRef.current) fileInputRef.current.click();
+    };
+
+    const skipGps = () => {
+        gpsAbortRef.current = true;
+        showToast("Skipping GPS. Location won't be verified.", "info");
+        proceedToCamera();
+    };
+
     const startCapture = () => {
         // Offline Mode: Allow capture without GPS if offline
         if (isOffline) {
             setStep('capturing');
-            if (fileInputRef.current) fileInputRef.current.click();
+            proceedToCamera();
             return;
         }
 
         // "Verify Once" Logic: If already verified, skip GPS
         if (isSessionVerified) {
             setStep('capturing');
-            if (fileInputRef.current) {
-                fileInputRef.current.click();
-            }
+            proceedToCamera();
             return;
         }
 
@@ -112,34 +122,50 @@ export default function CapturePage({ params }: { params: { code: string } }) {
         }
 
         setStep('capturing');
+        gpsAbortRef.current = false;
+
+        let resolved = false;
+        const onSuccess = (position: GeolocationPosition) => {
+            if (resolved || gpsAbortRef.current) return;
+            resolved = true;
+            setLocation({
+                lat: position.coords.latitude,
+                lng: position.coords.longitude,
+                accuracy: position.coords.accuracy
+            });
+            proceedToCamera();
+        };
+
+        const onHighAccuracyError = () => {
+            if (resolved || gpsAbortRef.current) return;
+            // Fallback: try without high accuracy
+            navigator.geolocation.getCurrentPosition(
+                onSuccess,
+                () => {
+                    if (resolved || gpsAbortRef.current) return;
+                    resolved = true;
+                    showToast("GPS unavailable. Proceeding without location.", "info");
+                    proceedToCamera();
+                },
+                { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }
+            );
+        };
+
+        // Phase 1: Try high accuracy with a short timeout
         navigator.geolocation.getCurrentPosition(
-            (position) => {
-                setLocation({
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude,
-                    accuracy: position.coords.accuracy
-                });
-                // Once location is found, trigger file input
-                if (fileInputRef.current) {
-                    fileInputRef.current.click();
-                }
-            },
-            (error) => {
-                let msg = "Unable to retrieve your location.";
-                if (error.code === 1) msg = "Location permission denied. Please enable it to verify property.";
-
-                // Offline fallback logic for timeouts
-                if (error.code === 3) {
-                    showToast("GPS timeout. Proceeding with limited verification.", "info");
-                    if (fileInputRef.current) fileInputRef.current.click();
-                    return;
-                }
-
-                setLocationError(msg);
-                showToast(msg, 'error');
-            },
-            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            onSuccess,
+            onHighAccuracyError,
+            { enableHighAccuracy: true, timeout: 5000, maximumAge: 30000 }
         );
+
+        // Absolute safety net: if nothing resolved after 8s, just proceed
+        setTimeout(() => {
+            if (!resolved && !gpsAbortRef.current) {
+                resolved = true;
+                showToast("GPS took too long. Proceeding without location.", "info");
+                proceedToCamera();
+            }
+        }, 8000);
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -155,8 +181,6 @@ export default function CapturePage({ params }: { params: { code: string } }) {
 
     const handleUpload = async () => {
         if (!file || !code) return;
-        // Require location ONLY if online, not verified, and have location
-        if (navigator.onLine && !isSessionVerified && !location) return;
 
         setStep('uploading');
 
@@ -313,7 +337,14 @@ export default function CapturePage({ params }: { params: { code: string } }) {
                 {step === 'capturing' && (
                     <div className="text-center">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-                        <p className="text-gray-600">Acquiring high-accuracy GPS...</p>
+                        <p className="text-gray-600 mb-2">Acquiring GPS location...</p>
+                        <p className="text-gray-400 text-sm mb-6">This should only take a few seconds</p>
+                        <button
+                            onClick={skipGps}
+                            className="text-indigo-600 underline text-sm font-medium"
+                        >
+                            Skip GPS &amp; continue without location
+                        </button>
                     </div>
                 )}
 

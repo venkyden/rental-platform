@@ -3,10 +3,11 @@ Verification API endpoints for identity and employment verification.
 """
 
 import json
-from datetime import datetime
+import secrets
+from datetime import datetime, timedelta
 from typing import Optional
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -14,6 +15,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.models.user import User
 from app.routers.auth import get_current_user
+
+# In-memory verification sessions (no migration needed)
+# Format: { code: { user_id, document_type, expires_at, completed } }
+_verification_sessions: dict[str, dict] = {}
 
 router = APIRouter(prefix="/verification", tags=["Verification"])
 
@@ -92,6 +97,135 @@ async def upload_identity_document(
         "trust_score": current_user.trust_score,
     }
 
+
+def _cleanup_expired_sessions():
+    """Remove expired sessions from memory"""
+    now = datetime.utcnow()
+    expired = [k for k, v in _verification_sessions.items() if v["expires_at"] < now]
+    for k in expired:
+        del _verification_sessions[k]
+
+
+@router.post("/identity/session")
+async def create_identity_verification_session(
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Create a verification session for mobile ID capture.
+    Returns a code and capture URL for QR code display on desktop.
+    """
+    _cleanup_expired_sessions()
+
+    code = secrets.token_urlsafe(32)
+    _verification_sessions[code] = {
+        "user_id": str(current_user.id),
+        "expires_at": datetime.utcnow() + timedelta(hours=1),
+        "completed": False,
+    }
+
+    from app.core.config import settings
+
+    capture_url = f"{settings.FRONTEND_URL}/verify-capture/{code}"
+
+    return {
+        "verification_code": code,
+        "capture_url": capture_url,
+        "expires_at": (datetime.utcnow() + timedelta(hours=1)).isoformat(),
+    }
+
+
+@router.get("/identity/session/{code}")
+async def get_identity_session(code: str):
+    """Get session info (for mobile page to verify code is valid)"""
+    _cleanup_expired_sessions()
+
+    session = _verification_sessions.get(code)
+    if not session:
+        raise HTTPException(status_code=404, detail="Invalid or expired session")
+
+    return {
+        "valid": True,
+        "completed": session["completed"],
+    }
+
+
+@router.get("/identity/session/{code}/status")
+async def check_identity_session_status(code: str):
+    """Poll endpoint for desktop to check if mobile has completed upload"""
+    session = _verification_sessions.get(code)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    return {"completed": session["completed"]}
+
+
+@router.post("/identity/upload-mobile")
+async def upload_identity_mobile(
+    verification_code: str = Query(...),
+    document_type: str = Query("passport"),
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Upload identity document via mobile using a verification session code.
+    No auth token needed — the session code links to the user.
+    """
+    _cleanup_expired_sessions()
+
+    session = _verification_sessions.get(verification_code)
+    if not session:
+        raise HTTPException(status_code=404, detail="Invalid or expired verification code")
+
+    if session["completed"]:
+        raise HTTPException(status_code=400, detail="Session already completed")
+
+    # Validate file type
+    allowed_types = ["image/jpeg", "image/png", "image/jpg", "application/pdf"]
+    if file.content_type not in allowed_types:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid file type. Please upload JPEG, PNG, or PDF",
+        )
+
+    # Get user from session
+    import uuid
+    user_id = uuid.UUID(session["user_id"])
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Same verification logic as the authenticated endpoint
+    verification_data = {
+        "document_type": document_type,
+        "upload_date": datetime.utcnow().isoformat(),
+        "filename": file.filename,
+        "status": "verified",
+        "source": "mobile_capture",
+        "extracted_data": {
+            "full_name": user.full_name,
+            "document_number": "MOCK123456",
+            "expiry_date": "2030-12-31",
+            "confidence_score": 0.95,
+        },
+    }
+
+    user.identity_verified = True
+    user.identity_data = verification_data
+    user.trust_score = min(100, user.trust_score + 30)
+
+    # Mark session as completed
+    session["completed"] = True
+
+    await db.commit()
+    await db.refresh(user)
+
+    return {
+        "message": "Identity document verified successfully",
+        "verified": True,
+        "trust_score": user.trust_score,
+    }
 
 @router.post("/employment/upload")
 async def upload_employment_document(

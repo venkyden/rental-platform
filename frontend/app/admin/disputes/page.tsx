@@ -121,15 +121,15 @@ export default function AdminDisputesPage() {
     };
 
     const formatDate = (iso: string) => {
-        return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+        return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
     };
 
     const statusFilters = [
-        { key: '', label: 'Tous', icon: '📋' },
-        { key: 'open', label: 'Ouverts', icon: '🔴' },
-        { key: 'evidence_needed', label: 'Preuves', icon: '📸' },
-        { key: 'under_review', label: 'En revue', icon: '🔍' },
-        { key: 'resolved', label: 'Résolus', icon: '✅' },
+        { key: '', label: 'All', icon: '📋' },
+        { key: 'open', label: 'Open', icon: '🔴' },
+        { key: 'evidence_needed', label: 'Evidence', icon: '📸' },
+        { key: 'under_review', label: 'Under Review', icon: '🔍' },
+        { key: 'resolved', label: 'Resolved', icon: '✅' },
     ];
 
     return (
@@ -142,10 +142,10 @@ export default function AdminDisputesPage() {
                     <div className="flex items-center justify-between mb-6">
                         <div>
                             <h1 className="text-2xl font-bold text-[var(--foreground)] flex items-center gap-3">
-                                ⚖️ Litiges — Admin
+                                ⚖️ Disputes — Admin
                             </h1>
                             <p className="text-sm text-[var(--gray-500)] mt-1">
-                                Comparez les états des lieux et rendez vos verdicts
+                                Compare move-in/move-out inventories and render your verdicts
                             </p>
                         </div>
                         <span className="px-3 py-1.5 bg-gradient-to-r from-red-600 to-rose-600 text-white text-xs font-bold rounded-full">
@@ -160,8 +160,8 @@ export default function AdminDisputesPage() {
                                 key={f.key}
                                 onClick={() => setStatusFilter(f.key)}
                                 className={`px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-1.5 ${statusFilter === f.key
-                                        ? 'bg-gradient-to-r from-[var(--primary-500)] to-[var(--primary-600)] text-white shadow-lg'
-                                        : 'bg-[var(--card-bg)] text-[var(--gray-600)] hover:bg-[var(--gray-100)] border border-[var(--card-border)]'
+                                    ? 'bg-gradient-to-r from-[var(--primary-500)] to-[var(--primary-600)] text-white shadow-lg'
+                                    : 'bg-[var(--card-bg)] text-[var(--gray-600)] hover:bg-[var(--gray-100)] border border-[var(--card-border)]'
                                     }`}
                             >
                                 <span>{f.icon}</span> {f.label}
@@ -179,8 +179,8 @@ export default function AdminDisputesPage() {
                             ) : disputes.length === 0 ? (
                                 <div className="premium-card p-16 text-center">
                                     <span className="text-5xl block mb-4">✅</span>
-                                    <h3 className="text-xl font-bold text-[var(--foreground)] mb-2">Aucun litige</h3>
-                                    <p className="text-[var(--gray-500)]">Tout est calme pour le moment.</p>
+                                    <h3 className="text-xl font-bold text-[var(--foreground)] mb-2">No Disputes</h3>
+                                    <p className="text-[var(--gray-500)]">All is quiet for now.</p>
                                 </div>
                             ) : (
                                 <div className="space-y-3">
@@ -225,7 +225,7 @@ export default function AdminDisputesPage() {
                                 onClick={() => { setSelectedDispute(null); setDiffData(null); }}
                                 className="mb-4 text-[var(--primary-600)] hover:text-[var(--primary-800)] font-medium text-sm"
                             >
-                                ← Retour à la liste
+                                ← Back to List
                             </button>
 
                             {diffLoading ? (
@@ -238,15 +238,15 @@ export default function AdminDisputesPage() {
                                     <div className="premium-card p-5">
                                         <div className="flex items-center justify-between">
                                             <div>
-                                                <h2 className="text-lg font-bold text-[var(--foreground)]">Comparaison Avant / Après</h2>
+                                                <h2 className="text-lg font-bold text-[var(--foreground)]">Before / After Comparison</h2>
                                                 <p className="text-sm text-[var(--gray-500)]">
-                                                    Entrée : {diffData.move_in.date ? formatDate(diffData.move_in.date) : 'N/A'} —
-                                                    Sortie : {diffData.move_out.date ? formatDate(diffData.move_out.date) : 'N/A'}
+                                                    Move-in: {diffData.move_in.date ? formatDate(diffData.move_in.date) : 'N/A'} —
+                                                    Move-out: {diffData.move_out.date ? formatDate(diffData.move_out.date) : 'N/A'}
                                                 </p>
                                             </div>
                                             <div className="flex items-center gap-3">
                                                 <span className="px-3 py-1.5 bg-red-100 text-red-700 text-sm font-bold rounded-xl">
-                                                    {diffData.total_changes} changement{diffData.total_changes !== 1 ? 's' : ''}
+                                                    {diffData.total_changes} change{diffData.total_changes !== 1 ? 's' : ''}
                                                 </span>
                                             </div>
                                         </div>
@@ -257,13 +257,13 @@ export default function AdminDisputesPage() {
                                         <table className="w-full">
                                             <thead>
                                                 <tr className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
-                                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Élément</th>
-                                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Pièce</th>
+                                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Item</th>
+                                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Room</th>
                                                     <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">
-                                                        <span className="flex items-center justify-center gap-1">📥 Entrée</span>
+                                                        <span className="flex items-center justify-center gap-1">📥 Move-in</span>
                                                     </th>
                                                     <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">
-                                                        <span className="flex items-center justify-center gap-1">📤 Sortie</span>
+                                                        <span className="flex items-center justify-center gap-1">📤 Move-out</span>
                                                     </th>
                                                     <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Photos</th>
                                                 </tr>
@@ -304,17 +304,17 @@ export default function AdminDisputesPage() {
                                                                 {(row.before?.photos || []).map((url, i) => (
                                                                     <button
                                                                         key={`before-${i}`}
-                                                                        onClick={() => setPhotoModal({ url, label: `${row.name} — Entrée` })}
+                                                                        onClick={() => setPhotoModal({ url, label: `${row.name} — Move-in` })}
                                                                         className="w-8 h-8 rounded bg-blue-100 hover:bg-blue-200 flex items-center justify-center text-xs transition-colors"
-                                                                        title="Photo entrée"
+                                                                        title="Move-in photo"
                                                                     >📥</button>
                                                                 ))}
                                                                 {(row.after?.photos || []).map((url, i) => (
                                                                     <button
                                                                         key={`after-${i}`}
-                                                                        onClick={() => setPhotoModal({ url, label: `${row.name} — Sortie` })}
+                                                                        onClick={() => setPhotoModal({ url, label: `${row.name} — Move-out` })}
                                                                         className="w-8 h-8 rounded bg-orange-100 hover:bg-orange-200 flex items-center justify-center text-xs transition-colors"
-                                                                        title="Photo sortie"
+                                                                        title="Move-out photo"
                                                                     >📤</button>
                                                                 ))}
                                                             </div>
@@ -326,7 +326,7 @@ export default function AdminDisputesPage() {
                                         {diffData.diff.length === 0 && (
                                             <div className="p-8 text-center text-gray-500">
                                                 <span className="text-3xl block mb-2">📭</span>
-                                                Aucune donnée d&apos;inventaire disponible pour cette comparaison.
+                                                No inventory data available for this comparison.
                                             </div>
                                         )}
                                     </div>
@@ -334,7 +334,7 @@ export default function AdminDisputesPage() {
                                     {/* Verdict Form */}
                                     <div className="premium-card p-6">
                                         <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
-                                            ⚖️ Rendre le verdict
+                                            ⚖️ Render Verdict
                                         </h3>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                             <div>
@@ -344,11 +344,11 @@ export default function AdminDisputesPage() {
                                                     onChange={(e) => setVerdictForm(v => ({ ...v, verdict: e.target.value }))}
                                                     className="w-full px-4 py-2.5 border border-gray-300 rounded-xl bg-white focus:ring-2 focus:ring-[var(--primary-500)] focus:border-transparent"
                                                 >
-                                                    <option value="">Sélectionner...</option>
-                                                    <option value="tenant_wins">🏠 Locataire gagne</option>
-                                                    <option value="landlord_wins">🏢 Propriétaire gagne</option>
-                                                    <option value="split">⚖️ Partagé (50/50)</option>
-                                                    <option value="none">🚫 Aucun verdict</option>
+                                                    <option value="">Select...</option>
+                                                    <option value="tenant_wins">🏠 Tenant Wins</option>
+                                                    <option value="landlord_wins">🏢 Landlord Wins</option>
+                                                    <option value="split">⚖️ Split (50/50)</option>
+                                                    <option value="none">🚫 No Verdict</option>
                                                 </select>
                                             </div>
                                             <div className="flex items-end">
@@ -359,18 +359,18 @@ export default function AdminDisputesPage() {
                                                         onChange={(e) => setVerdictForm(v => ({ ...v, resolve: e.target.checked }))}
                                                         className="w-4 h-4 rounded text-[var(--primary-600)]"
                                                     />
-                                                    <span className="text-sm font-medium text-gray-700">Marquer comme résolu</span>
+                                                    <span className="text-sm font-medium text-gray-700">Mark as Resolved</span>
                                                 </label>
                                             </div>
                                         </div>
                                         <div className="mb-4">
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Notes admin</label>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Admin Notes</label>
                                             <textarea
                                                 value={verdictForm.admin_notes}
                                                 onChange={(e) => setVerdictForm(v => ({ ...v, admin_notes: e.target.value }))}
                                                 rows={3}
                                                 className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[var(--primary-500)] focus:border-transparent"
-                                                placeholder="Justification du verdict, observations..."
+                                                placeholder="Verdict justification, observations..."
                                             />
                                         </div>
                                         <button
@@ -378,13 +378,13 @@ export default function AdminDisputesPage() {
                                             disabled={!verdictForm.verdict || submitting}
                                             className="px-6 py-2.5 bg-gradient-to-r from-[var(--primary-600)] to-[var(--primary-700)] text-white font-medium rounded-xl hover:shadow-lg disabled:opacity-50 transition-all"
                                         >
-                                            {submitting ? 'Enregistrement...' : '✅ Enregistrer le verdict'}
+                                            {submitting ? 'Saving...' : '✅ Save Verdict'}
                                         </button>
                                     </div>
                                 </div>
                             ) : (
                                 <div className="premium-card p-8 text-center text-red-500">
-                                    Erreur lors du chargement de la comparaison.
+                                    Error loading comparison.
                                 </div>
                             )}
                         </div>

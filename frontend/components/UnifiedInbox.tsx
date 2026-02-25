@@ -80,13 +80,13 @@ export default function UnifiedInbox({ onSelectConversation, selectedConversatio
         const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
         if (diffDays === 0) {
-            return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+            return date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
         } else if (diffDays === 1) {
-            return 'Hier';
+            return 'Yesterday';
         } else if (diffDays < 7) {
-            return date.toLocaleDateString('fr-FR', { weekday: 'short' });
+            return date.toLocaleDateString('en-GB', { weekday: 'short' });
         } else {
-            return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
+            return date.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' });
         }
     };
 
@@ -130,7 +130,7 @@ export default function UnifiedInbox({ onSelectConversation, selectedConversatio
             <div className="p-4 border-b bg-gradient-to-r from-blue-600 to-indigo-600">
                 <div className="flex items-center justify-between mb-3">
                     <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                        📬 Boîte de réception
+                        📬 Inbox
                         {totalUnread > 0 && (
                             <span className="px-2 py-0.5 bg-red-500 text-white text-sm rounded-full">
                                 {totalUnread}
@@ -143,7 +143,7 @@ export default function UnifiedInbox({ onSelectConversation, selectedConversatio
                 <div className="relative">
                     <input
                         type="text"
-                        placeholder="Rechercher..."
+                        placeholder="Search..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full px-4 py-2 pl-10 rounded-lg bg-white/20 text-white placeholder-white/70 focus:bg-white focus:text-gray-900 focus:placeholder-gray-400 transition-colors"
@@ -155,9 +155,9 @@ export default function UnifiedInbox({ onSelectConversation, selectedConversatio
             {/* Filter Tabs */}
             <div className="flex border-b">
                 {[
-                    { key: 'all', label: 'Tous' },
-                    { key: 'active', label: 'Actifs' },
-                    { key: 'archived', label: 'Archivés' }
+                    { key: 'all', label: 'All' },
+                    { key: 'active', label: 'Active' },
+                    { key: 'archived', label: 'Archived' }
                 ].map(({ key, label }) => (
                     <button
                         key={key}
@@ -183,8 +183,8 @@ export default function UnifiedInbox({ onSelectConversation, selectedConversatio
                     <div className="py-16">
                         <EmptyState
                             icon="📭"
-                            title="Aucune conversation"
-                            description="Vous n'avez pas encore de messages. Les demandes des locataires apparaîtront ici."
+                            title="No Conversations"
+                            description="You don't have any messages yet. Tenant inquiries will appear here."
                             layout="transparent"
                         />
                     </div>
@@ -194,7 +194,7 @@ export default function UnifiedInbox({ onSelectConversation, selectedConversatio
                             {/* Property Header */}
                             <div className="px-4 py-2 bg-gray-50 border-b">
                                 <div className="font-medium text-gray-900 text-sm">
-                                    🏠 {group.property_title || 'Propriété'}
+                                    🏠 {group.property_title || 'Property'}
                                 </div>
                                 <div className="text-xs text-gray-500">
                                     {group.property_address}

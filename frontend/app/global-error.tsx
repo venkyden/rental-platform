@@ -27,11 +27,11 @@ export default function GlobalError({
                         </div>
 
                         <h1 className="text-3xl font-bold text-gray-900 mb-4">
-                            Oups! Une erreur est survenue.
+                            Oops! Something went wrong.
                         </h1>
 
                         <p className="text-gray-600 mb-8">
-                            Désolé, il semble que la plateforme ait rencontré une erreur inattendue. Nos ingénieurs ont été notifiés.
+                            Sorry, the platform encountered an unexpected error. Our engineers have been notified.
                         </p>
 
                         <div className="space-y-4">
@@ -39,7 +39,7 @@ export default function GlobalError({
                                 onClick={() => reset()}
                                 className="w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-200"
                             >
-                                Essayer à nouveau
+                                Try Again
                             </button>
 
                             <div className="pt-2">
@@ -47,7 +47,7 @@ export default function GlobalError({
                                     href="/"
                                     className="text-blue-600 hover:text-blue-800 font-medium border border-transparent hover:underline"
                                 >
-                                    Ou retourner à l'accueil
+                                    Or return to the homepage
                                 </Link>
                             </div>
                         </div>

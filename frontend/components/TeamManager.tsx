@@ -21,27 +21,27 @@ interface Property {
 
 const PERMISSION_LABELS: Record<string, { label: string; description: string; color: string }> = {
     view_only: {
-        label: 'Lecture seule',
-        description: 'Voir les biens et messages',
+        label: 'View Only',
+        description: 'View properties and messages',
         color: 'bg-gray-100 text-gray-700'
     },
     manage_visits: {
-        label: 'Gérer visites',
-        description: '+ Créer créneaux, répondre aux messages',
+        label: 'Manage Visits',
+        description: '+ Create time slots, respond to messages',
         color: 'bg-blue-100 text-blue-700'
     },
     full_access: {
-        label: 'Accès complet',
-        description: '+ Modifier biens, générer baux',
+        label: 'Full Access',
+        description: '+ Edit properties, generate leases',
         color: 'bg-green-100 text-green-700'
     }
 };
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-    pending: { label: 'En attente', color: 'bg-yellow-100 text-yellow-700' },
-    active: { label: 'Actif', color: 'bg-green-100 text-green-700' },
-    revoked: { label: 'Révoqué', color: 'bg-red-100 text-red-700' },
-    expired: { label: 'Expiré', color: 'bg-gray-100 text-gray-700' }
+    pending: { label: 'Pending', color: 'bg-yellow-100 text-yellow-700' },
+    active: { label: 'Active', color: 'bg-green-100 text-green-700' },
+    revoked: { label: 'Revoked', color: 'bg-red-100 text-red-700' },
+    expired: { label: 'Expired', color: 'bg-gray-100 text-gray-700' }
 };
 
 export default function TeamManager() {
@@ -98,14 +98,14 @@ export default function TeamManager() {
             setInvitePermission('view_only');
             setSelectedProperties([]);
         } catch (error: any) {
-            alert(error.response?.data?.detail || 'Erreur lors de l\'invitation');
+            alert(error.response?.data?.detail || 'Error sending invitation');
         } finally {
             setInviting(false);
         }
     };
 
     const handleRevoke = async (memberId: string) => {
-        if (!confirm('Êtes-vous sûr de vouloir révoquer cet accès ?')) return;
+        if (!confirm('Are you sure you want to revoke this access?')) return;
 
         try {
             await apiClient.client.delete(`/team/members/${memberId}`);
@@ -118,7 +118,7 @@ export default function TeamManager() {
     const copyInviteLink = () => {
         if (inviteLink) {
             navigator.clipboard.writeText(inviteLink);
-            alert('Lien copié !');
+            alert('Link copied!');
         }
     };
 
@@ -137,16 +137,16 @@ export default function TeamManager() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900">Équipe</h2>
+                    <h2 className="text-2xl font-bold text-gray-900">Team</h2>
                     <p className="text-gray-600">
-                        Invitez des collaborateurs pour gérer vos biens
+                        Invite collaborators to manage your properties
                     </p>
                 </div>
                 <button
                     onClick={() => setShowInviteModal(true)}
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium flex items-center gap-2"
                 >
-                    ➕ Inviter un membre
+                    ➕ Invite a Member
                 </button>
             </div>
 
@@ -155,16 +155,16 @@ export default function TeamManager() {
                 <div className="bg-white rounded-xl shadow-md p-8 text-center">
                     <span className="text-5xl mb-4 block">👥</span>
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                        Aucun membre dans votre équipe
+                        No members on your team
                     </h3>
                     <p className="text-gray-500 mb-4">
-                        Invitez des collaborateurs pour vous aider à gérer vos biens
+                        Invite collaborators to help you manage your properties
                     </p>
                     <button
                         onClick={() => setShowInviteModal(true)}
                         className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                     >
-                        Inviter un membre
+                        Invite a Member
                     </button>
                 </div>
             ) : (
@@ -172,10 +172,10 @@ export default function TeamManager() {
                     <table className="w-full">
                         <thead className="bg-gray-50">
                             <tr>
-                                <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Membre</th>
+                                <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Member</th>
                                 <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Permission</th>
-                                <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Biens</th>
-                                <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Statut</th>
+                                <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Properties</th>
+                                <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Status</th>
                                 <th className="px-4 py-3 text-right text-sm font-medium text-gray-600">Actions</th>
                             </tr>
                         </thead>
@@ -189,7 +189,7 @@ export default function TeamManager() {
                                             </div>
                                             <div>
                                                 <div className="font-medium text-gray-900">
-                                                    {member.name || 'Non défini'}
+                                                    {member.name || 'Not set'}
                                                 </div>
                                                 <div className="text-sm text-gray-500">
                                                     {member.email}
@@ -203,7 +203,7 @@ export default function TeamManager() {
                                         </span>
                                     </td>
                                     <td className="px-4 py-4 text-sm text-gray-600">
-                                        {member.property_count} bien{member.property_count !== 1 ? 's' : ''}
+                                        {member.property_count} {member.property_count !== 1 ? 'properties' : 'property'}
                                     </td>
                                     <td className="px-4 py-4">
                                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${STATUS_LABELS[member.status]?.color || 'bg-gray-100'}`}>
@@ -216,7 +216,7 @@ export default function TeamManager() {
                                                 onClick={() => handleRevoke(member.id)}
                                                 className="text-red-600 hover:text-red-800 text-sm font-medium"
                                             >
-                                                Révoquer
+                                                Revoke
                                             </button>
                                         )}
                                     </td>
@@ -234,7 +234,7 @@ export default function TeamManager() {
                         <div className="p-6 border-b">
                             <div className="flex items-center justify-between">
                                 <h3 className="text-xl font-bold text-gray-900">
-                                    Inviter un membre
+                                    Invite a Member
                                 </h3>
                                 <button
                                     onClick={() => {
@@ -253,10 +253,10 @@ export default function TeamManager() {
                                 <div className="text-center mb-6">
                                     <span className="text-5xl mb-4 block">✅</span>
                                     <h4 className="text-lg font-semibold text-gray-900">
-                                        Invitation créée !
+                                        Invitation Created!
                                     </h4>
                                     <p className="text-gray-500 mt-2">
-                                        Partagez ce lien avec votre collaborateur
+                                        Share this link with your collaborator
                                     </p>
                                 </div>
 
@@ -274,7 +274,7 @@ export default function TeamManager() {
                                         onClick={copyInviteLink}
                                         className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
                                     >
-                                        📋 Copier le lien
+                                        📋 Copy Link
                                     </button>
                                     <button
                                         onClick={() => {
@@ -283,7 +283,7 @@ export default function TeamManager() {
                                         }}
                                         className="flex-1 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium"
                                     >
-                                        Fermer
+                                        Close
                                     </button>
                                 </div>
                             </div>
@@ -298,7 +298,7 @@ export default function TeamManager() {
                                         type="email"
                                         value={inviteEmail}
                                         onChange={(e) => setInviteEmail(e.target.value)}
-                                        placeholder="collaborateur@email.com"
+                                        placeholder="collaborator@email.com"
                                         className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                                     />
                                 </div>
@@ -306,13 +306,13 @@ export default function TeamManager() {
                                 {/* Name */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Nom *
+                                        Name *
                                     </label>
                                     <input
                                         type="text"
                                         value={inviteName}
                                         onChange={(e) => setInviteName(e.target.value)}
-                                        placeholder="Jean Dupont"
+                                        placeholder="John Doe"
                                         className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                                     />
                                 </div>
@@ -320,15 +320,15 @@ export default function TeamManager() {
                                 {/* Permission Level */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Niveau de permission
+                                        Permission Level
                                     </label>
                                     <div className="space-y-2">
                                         {Object.entries(PERMISSION_LABELS).map(([key, info]) => (
                                             <label
                                                 key={key}
                                                 className={`flex items-start gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${invitePermission === key
-                                                        ? 'border-blue-500 bg-blue-50'
-                                                        : 'border-gray-200 hover:border-gray-300'
+                                                    ? 'border-blue-500 bg-blue-50'
+                                                    : 'border-gray-200 hover:border-gray-300'
                                                     }`}
                                             >
                                                 <input
@@ -355,11 +355,11 @@ export default function TeamManager() {
                                 {/* Properties */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Biens accessibles
+                                        Accessible Properties
                                     </label>
                                     {properties.length === 0 ? (
                                         <p className="text-sm text-gray-500">
-                                            Aucun bien disponible
+                                            No properties available
                                         </p>
                                     ) : (
                                         <div className="max-h-40 overflow-y-auto border rounded-lg divide-y">
@@ -392,7 +392,7 @@ export default function TeamManager() {
                                     disabled={!inviteEmail || !inviteName || inviting}
                                     className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium disabled:opacity-50"
                                 >
-                                    {inviting ? 'Envoi...' : 'Envoyer l\'invitation'}
+                                    {inviting ? 'Sending...' : 'Send Invitation'}
                                 </button>
                             </div>
                         )}

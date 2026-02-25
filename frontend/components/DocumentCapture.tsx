@@ -82,6 +82,12 @@ const DOCUMENT_CONFIG = {
     }
 };
 
+function isMobileDevice(): boolean {
+    if (typeof window === 'undefined') return false;
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+        || (navigator.maxTouchPoints > 0 && window.innerWidth < 1024);
+}
+
 export default function DocumentCapture({ documentType, onComplete, onCancel }: DocumentCaptureProps) {
     const [currentStep, setCurrentStep] = useState(0);
     const [stream, setStream] = useState<MediaStream | null>(null);
@@ -89,15 +95,66 @@ export default function DocumentCapture({ documentType, onComplete, onCancel }: 
     const [error, setError] = useState('');
     const [capturedFiles, setCapturedFiles] = useState<File[]>([]);
     const [showGuidelines, setShowGuidelines] = useState(true);
+    const [isMobile, setIsMobile] = useState(false);
 
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const mobileInputRef = useRef<HTMLInputElement>(null);
 
     const config = DOCUMENT_CONFIG[documentType as keyof typeof DOCUMENT_CONFIG];
     const currentInstruction = config.instructions[currentStep];
     const totalSteps = config.steps;
     const progress = ((currentStep + 1) / totalSteps) * 100;
 
+    useEffect(() => {
+        setIsMobile(isMobileDevice());
+    }, []);
+
+    // Cleanup camera stream on unmount
+    useEffect(() => {
+        return () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        };
+    }, [stream]);
+
+    // --- Mobile: use native <input capture> ---
+    const handleMobileCapture = () => {
+        setShowGuidelines(false);
+        if (mobileInputRef.current) {
+            mobileInputRef.current.click();
+        }
+    };
+
+    const handleMobileFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const selectedFile = e.target.files[0];
+            const fileName = `${documentType}-${currentStep === 0 ? 'front' : 'back'}-${Date.now()}.jpg`;
+            const file = new File([selectedFile], fileName, { type: selectedFile.type });
+
+            const newCapturedFiles = [...capturedFiles, file];
+            setCapturedFiles(newCapturedFiles);
+
+            if (currentStep < totalSteps - 1) {
+                // Move to next step (e.g. back of ID card)
+                setCurrentStep(currentStep + 1);
+                setShowGuidelines(true);
+            } else {
+                // All captures done
+                onComplete(newCapturedFiles);
+            }
+        } else {
+            // User cancelled the camera — go back to guidelines
+            setShowGuidelines(true);
+        }
+        // Reset input value so same file can be re-selected
+        if (mobileInputRef.current) {
+            mobileInputRef.current.value = '';
+        }
+    };
+
+    // --- Desktop: use getUserMedia stream ---
     const startCamera = async () => {
         try {
             setError('');
@@ -116,7 +173,7 @@ export default function DocumentCapture({ documentType, onComplete, onCancel }: 
             }
             setCapturing(true);
         } catch (err: any) {
-            setError('Camera access denied. Please allow camera access to continue.');
+            setError('Camera access denied. Please allow camera access or use the file upload option below.');
         }
     };
 
@@ -178,6 +235,26 @@ export default function DocumentCapture({ documentType, onComplete, onCancel }: 
         stopCamera();
     };
 
+    // Fallback file upload (for both mobile and desktop when camera fails)
+    const handleFallbackFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const selectedFile = e.target.files[0];
+            const fileName = `${documentType}-${currentStep === 0 ? 'front' : 'back'}-${Date.now()}.jpg`;
+            const file = new File([selectedFile], fileName, { type: selectedFile.type });
+
+            const newCapturedFiles = [...capturedFiles, file];
+            setCapturedFiles(newCapturedFiles);
+
+            if (currentStep < totalSteps - 1) {
+                setCurrentStep(currentStep + 1);
+                setShowGuidelines(true);
+                setError('');
+            } else {
+                onComplete(newCapturedFiles);
+            }
+        }
+    };
+
     return (
         <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
@@ -212,6 +289,18 @@ export default function DocumentCapture({ documentType, onComplete, onCancel }: 
                 {error && (
                     <div className="mx-6 mt-4 p-4 bg-red-50 border border-red-200 rounded-md">
                         <p className="text-sm text-red-800">{error}</p>
+                        {/* Fallback file upload when camera stream fails */}
+                        <div className="mt-3">
+                            <label className="inline-flex items-center gap-2 cursor-pointer text-sm font-medium text-blue-600 hover:text-blue-700">
+                                📁 Upload from gallery instead
+                                <input
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/jpg"
+                                    onChange={handleFallbackFileChange}
+                                    className="hidden"
+                                />
+                            </label>
+                        </div>
                     </div>
                 )}
 
@@ -243,18 +332,43 @@ export default function DocumentCapture({ documentType, onComplete, onCancel }: 
                             </ul>
                         </div>
 
-                        <button
-                            onClick={startCamera}
-                            className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg hover:shadow-lg transform hover:scale-105 transition-all flex items-center justify-center gap-2"
-                        >
-                            <span className="text-2xl">📷</span>
-                            Open Camera
-                        </button>
+                        {isMobile ? (
+                            /* Mobile: native camera capture */
+                            <button
+                                onClick={handleMobileCapture}
+                                className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg hover:shadow-lg transform hover:scale-105 transition-all flex items-center justify-center gap-2"
+                            >
+                                <span className="text-2xl">📷</span>
+                                Take Photo
+                            </button>
+                        ) : (
+                            /* Desktop: getUserMedia stream */
+                            <button
+                                onClick={startCamera}
+                                className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg hover:shadow-lg transform hover:scale-105 transition-all flex items-center justify-center gap-2"
+                            >
+                                <span className="text-2xl">📷</span>
+                                Open Camera
+                            </button>
+                        )}
+
+                        {/* Fallback upload for all devices */}
+                        <div className="mt-3 text-center">
+                            <label className="inline-flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-500 hover:text-gray-700">
+                                📁 Or upload from gallery
+                                <input
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/jpg"
+                                    onChange={handleFallbackFileChange}
+                                    className="hidden"
+                                />
+                            </label>
+                        </div>
                     </div>
                 )}
 
-                {/* Camera View */}
-                {capturing && (
+                {/* Camera View — Desktop only */}
+                {capturing && !isMobile && (
                     <div className="p-6">
                         <div className="relative bg-gray-900 rounded-lg overflow-hidden mb-4">
                             <video
@@ -268,8 +382,8 @@ export default function DocumentCapture({ documentType, onComplete, onCancel }: 
                                 <div className="relative">
                                     {/* Frame overlay */}
                                     <div className={`border-4 border-blue-500 rounded-lg ${currentInstruction.frameType === 'landscape'
-                                            ? 'w-96 h-60'
-                                            : 'w-60 h-80'
+                                        ? 'w-96 h-60'
+                                        : 'w-60 h-80'
                                         }`}>
                                         {/* Corner guides */}
                                         <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-white"></div>
@@ -321,8 +435,17 @@ export default function DocumentCapture({ documentType, onComplete, onCancel }: 
                     </div>
                 )}
 
-                {/* Hidden canvas for capturing */}
+                {/* Hidden elements */}
                 <canvas ref={canvasRef} className="hidden" />
+                {/* Native mobile camera input */}
+                <input
+                    ref={mobileInputRef}
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    onChange={handleMobileFileChange}
+                    className="hidden"
+                />
             </div>
         </div>
     );

@@ -106,14 +106,14 @@ export default function ConversationView({ conversationId, onClose, onArchive }:
     };
 
     const formatTime = (dateString: string) => {
-        return new Date(dateString).toLocaleTimeString('fr-FR', {
+        return new Date(dateString).toLocaleTimeString('en-GB', {
             hour: '2-digit',
             minute: '2-digit'
         });
     };
 
     const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('fr-FR', {
+        return new Date(dateString).toLocaleDateString('en-GB', {
             weekday: 'long',
             day: 'numeric',
             month: 'long'
@@ -141,7 +141,7 @@ export default function ConversationView({ conversationId, onClose, onArchive }:
     if (!conversation) {
         return (
             <div className="flex items-center justify-center h-full text-gray-500">
-                Conversation non trouvée
+                Conversation not found
             </div>
         );
     }
@@ -182,7 +182,7 @@ export default function ConversationView({ conversationId, onClose, onArchive }:
                                 onClick={handleArchive}
                                 className="px-3 py-1 text-sm bg-white/20 hover:bg-white/30 rounded-lg transition-colors"
                             >
-                                📁 Archiver
+                                📁 Archive
                             </button>
                         )}
                     </div>
@@ -193,11 +193,11 @@ export default function ConversationView({ conversationId, onClose, onArchive }:
             <div className="px-4 py-3 bg-gray-50 border-b flex items-center justify-between text-sm">
                 <div className="flex items-center gap-4">
                     <div>
-                        <span className="text-gray-500">Propriétaire:</span>{' '}
+                        <span className="text-gray-500">Landlord:</span>{' '}
                         <span className="font-medium">{conversation.landlord_name}</span>
                     </div>
                     <div>
-                        <span className="text-gray-500">Locataire:</span>{' '}
+                        <span className="text-gray-500">Tenant:</span>{' '}
                         <span className="font-medium">{conversation.tenant_name}</span>
                     </div>
                 </div>
@@ -205,7 +205,7 @@ export default function ConversationView({ conversationId, onClose, onArchive }:
                     href={`/properties/${conversation.property_id}`}
                     className="text-blue-600 hover:underline"
                 >
-                    Voir le bien →
+                    View Property →
                 </a>
             </div>
 
@@ -233,10 +233,10 @@ export default function ConversationView({ conversationId, onClose, onArchive }:
                                 >
                                     <div
                                         className={`max-w-[75%] ${isSystemType
-                                                ? 'bg-amber-50 border border-amber-200 text-amber-900'
-                                                : isOwn
-                                                    ? 'bg-blue-600 text-white'
-                                                    : 'bg-white border text-gray-900'
+                                            ? 'bg-amber-50 border border-amber-200 text-amber-900'
+                                            : isOwn
+                                                ? 'bg-blue-600 text-white'
+                                                : 'bg-white border text-gray-900'
                                             } rounded-2xl px-4 py-2 shadow-sm`}
                                     >
                                         {/* Sender name for received messages */}
@@ -262,7 +262,7 @@ export default function ConversationView({ conversationId, onClose, onArchive }:
                                                 rel="noopener noreferrer"
                                                 className={`mt-2 inline-block text-sm ${isOwn ? 'text-white/80 hover:text-white' : 'text-blue-600 hover:underline'}`}
                                             >
-                                                📥 Télécharger le bail
+                                                📥 Download Lease
                                             </a>
                                         )}
 
@@ -289,7 +289,7 @@ export default function ConversationView({ conversationId, onClose, onArchive }:
                             value={newMessage}
                             onChange={(e) => setNewMessage(e.target.value)}
                             onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-                            placeholder="Écrire un message..."
+                            placeholder="Write a message..."
                             className="flex-1 px-4 py-3 border rounded-full focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             disabled={sending}
                         />
@@ -314,7 +314,7 @@ export default function ConversationView({ conversationId, onClose, onArchive }:
             {/* Archived notice */}
             {conversation.status === 'archived' && (
                 <div className="p-4 border-t bg-gray-100 text-center text-gray-500 text-sm">
-                    Cette conversation est archivée
+                    This conversation is archived
                 </div>
             )}
         </div>

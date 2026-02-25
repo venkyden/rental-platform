@@ -9,11 +9,11 @@ interface GLIQuoteWidgetProps {
 }
 
 const EMPLOYMENT_TYPES = [
-    { value: 'cdi', label: 'CDI (Contrat indéterminé)' },
-    { value: 'cdd', label: 'CDD (Contrat déterminé)' },
-    { value: 'freelance', label: 'Indépendant / Freelance' },
-    { value: 'retired', label: 'Retraité' },
-    { value: 'student', label: 'Étudiant' },
+    { value: 'cdi', label: 'CDI (Permanent Contract)' },
+    { value: 'cdd', label: 'CDD (Fixed-term Contract)' },
+    { value: 'freelance', label: 'Self-employed / Freelance' },
+    { value: 'retired', label: 'Retired' },
+    { value: 'student', label: 'Student' },
 ];
 
 export default function GLIQuoteWidget({ monthlyRent, propertyId }: GLIQuoteWidgetProps) {
@@ -43,7 +43,7 @@ export default function GLIQuoteWidget({ monthlyRent, propertyId }: GLIQuoteWidg
             });
             setQuote(response.data);
         } catch (err: any) {
-            setError(err.response?.data?.detail || 'Erreur lors du calcul du devis');
+            setError(err.response?.data?.detail || 'Error calculating quote');
         } finally {
             setLoading(false);
         }
@@ -59,9 +59,9 @@ export default function GLIQuoteWidget({ monthlyRent, propertyId }: GLIQuoteWidg
                 tenant_employment_verified: employmentVerified,
                 tenant_identity_verified: identityVerified
             });
-            alert('Demande soumise ! Un conseiller vous contactera sous 24h.');
+            alert('Application submitted! An advisor will contact you within 24h.');
         } catch (err: any) {
-            setError(err.response?.data?.detail || 'Erreur lors de la soumission');
+            setError(err.response?.data?.detail || 'Error submitting application');
         } finally {
             setLoading(false);
         }
@@ -73,7 +73,7 @@ export default function GLIQuoteWidget({ monthlyRent, propertyId }: GLIQuoteWidg
                 onClick={() => setShowForm(true)}
                 className="w-full py-3 px-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 font-medium flex items-center justify-center gap-2 shadow-md"
             >
-                🛡️ Obtenir un devis GLI
+                🛡️ Get GLI Quote
             </button>
         );
     }
@@ -86,8 +86,8 @@ export default function GLIQuoteWidget({ monthlyRent, propertyId }: GLIQuoteWidg
                     <div className="flex items-center gap-2">
                         <span className="text-2xl">🛡️</span>
                         <div>
-                            <h3 className="font-bold">Garantie Loyers Impayés</h3>
-                            <p className="text-sm text-green-100">Protection contre les impayés</p>
+                            <h3 className="font-bold">Rent Guarantee Insurance</h3>
+                            <p className="text-sm text-green-100">Protection against unpaid rent</p>
                         </div>
                     </div>
                     <button
@@ -103,14 +103,14 @@ export default function GLIQuoteWidget({ monthlyRent, propertyId }: GLIQuoteWidg
             <div className="p-4 space-y-4">
                 {/* Rent display */}
                 <div className="bg-gray-50 rounded-lg p-3">
-                    <div className="text-sm text-gray-500">Loyer mensuel</div>
+                    <div className="text-sm text-gray-500">Monthly Rent</div>
                     <div className="text-2xl font-bold text-gray-900">{monthlyRent.toLocaleString('fr-FR')} €</div>
                 </div>
 
                 {/* Tenant income */}
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Revenus mensuels du locataire
+                        Tenant Monthly Income
                     </label>
                     <div className="relative">
                         <input
@@ -122,7 +122,7 @@ export default function GLIQuoteWidget({ monthlyRent, propertyId }: GLIQuoteWidg
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">€</span>
                     </div>
                     <p className="text-xs text-gray-500 mt-1">
-                        Ratio: {(tenantIncome / monthlyRent).toFixed(1)}x le loyer
+                        Ratio: {(tenantIncome / monthlyRent).toFixed(1)}x the rent
                         {tenantIncome / monthlyRent >= 3 ? ' ✅' : ' ⚠️ (minimum 3x)'}
                     </p>
                 </div>
@@ -130,7 +130,7 @@ export default function GLIQuoteWidget({ monthlyRent, propertyId }: GLIQuoteWidg
                 {/* Employment type */}
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Type de contrat
+                        Employment Type
                     </label>
                     <select
                         value={employmentType}
@@ -154,7 +154,7 @@ export default function GLIQuoteWidget({ monthlyRent, propertyId }: GLIQuoteWidg
                             onChange={(e) => setEmploymentVerified(e.target.checked)}
                             className="rounded"
                         />
-                        <span className="text-sm">Emploi vérifié</span>
+                        <span className="text-sm">Employment Verified</span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
                         <input
@@ -163,7 +163,7 @@ export default function GLIQuoteWidget({ monthlyRent, propertyId }: GLIQuoteWidg
                             onChange={(e) => setIdentityVerified(e.target.checked)}
                             className="rounded"
                         />
-                        <span className="text-sm">Identité vérifiée</span>
+                        <span className="text-sm">Identity Verified</span>
                     </label>
                 </div>
 
@@ -173,7 +173,7 @@ export default function GLIQuoteWidget({ monthlyRent, propertyId }: GLIQuoteWidg
                     disabled={loading}
                     className="w-full py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium disabled:opacity-50"
                 >
-                    {loading ? 'Calcul en cours...' : 'Calculer le devis'}
+                    {loading ? 'Calculating...' : 'Calculate Quote'}
                 </button>
 
                 {/* Error */}
@@ -190,18 +190,18 @@ export default function GLIQuoteWidget({ monthlyRent, propertyId }: GLIQuoteWidg
                             <>
                                 <div className="flex items-center gap-2 mb-3">
                                     <span className="text-xl">✅</span>
-                                    <span className="font-bold text-green-800">Éligible à la GLI</span>
+                                    <span className="font-bold text-green-800">Eligible for GLI</span>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-3 mb-4">
                                     <div className="bg-white rounded-lg p-3 text-center">
-                                        <div className="text-sm text-gray-500">Prime mensuelle</div>
+                                        <div className="text-sm text-gray-500">Monthly Premium</div>
                                         <div className="text-xl font-bold text-green-700">
                                             {quote.monthly_premium?.toLocaleString('fr-FR')} €
                                         </div>
                                     </div>
                                     <div className="bg-white rounded-lg p-3 text-center">
-                                        <div className="text-sm text-gray-500">Prime annuelle</div>
+                                        <div className="text-sm text-gray-500">Annual Premium</div>
                                         <div className="text-xl font-bold text-green-700">
                                             {quote.annual_premium?.toLocaleString('fr-FR')} €
                                         </div>
@@ -209,9 +209,9 @@ export default function GLIQuoteWidget({ monthlyRent, propertyId }: GLIQuoteWidg
                                 </div>
 
                                 <div className="text-sm text-gray-600 mb-3">
-                                    <div>📊 Taux: {quote.premium_rate}% du loyer</div>
-                                    <div>🛡️ Couverture: {quote.coverage_amount?.toLocaleString('fr-FR')} € ({quote.coverage_months} mois)</div>
-                                    <div>📅 Devis valable jusqu'au: {quote.quote_valid_until}</div>
+                                    <div>📊 Rate: {quote.premium_rate}% of rent</div>
+                                    <div>🛡️ Coverage: {quote.coverage_amount?.toLocaleString('fr-FR')} € ({quote.coverage_months} months)</div>
+                                    <div>📅 Quote valid until: {quote.quote_valid_until}</div>
                                 </div>
 
                                 <button
@@ -219,14 +219,14 @@ export default function GLIQuoteWidget({ monthlyRent, propertyId }: GLIQuoteWidg
                                     disabled={loading}
                                     className="w-full py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
                                 >
-                                    Souscrire maintenant
+                                    Subscribe Now
                                 </button>
                             </>
                         ) : (
                             <div className="flex items-start gap-2">
                                 <span className="text-xl">⚠️</span>
                                 <div>
-                                    <div className="font-bold text-yellow-800">Non éligible</div>
+                                    <div className="font-bold text-yellow-800">Not Eligible</div>
                                     <p className="text-sm text-yellow-700 mt-1">{quote.eligibility_reason}</p>
                                 </div>
                             </div>

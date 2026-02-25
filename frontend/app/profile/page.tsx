@@ -13,8 +13,8 @@ export default function ProfilePage() {
             <div className="min-h-screen bg-gray-50">
                 <header className="bg-white shadow">
                     <div className="max-w-7xl mx-auto py-4 px-4 flex items-center gap-4">
-                        <button onClick={() => router.back()} className="text-gray-500 hover:text-gray-900">← Retour</button>
-                        <h1 className="text-2xl font-bold text-gray-900">Mon Profil</h1>
+                        <button onClick={() => router.back()} className="text-gray-500 hover:text-gray-900">← Back</button>
+                        <h1 className="text-2xl font-bold text-gray-900">My Profile</h1>
                     </div>
                 </header>
                 <main className="max-w-md mx-auto py-8 px-4">
@@ -27,14 +27,14 @@ export default function ProfilePage() {
                             </div>
                         </div>
                         <div className="space-y-4">
-                            <button className="w-full text-left p-3 hover:bg-gray-50 rounded border">⚙️ Paramètres du compte</button>
+                            <button className="w-full text-left p-3 hover:bg-gray-50 rounded border">⚙️ Account Settings</button>
                             <button className="w-full text-left p-3 hover:bg-gray-50 rounded border">🔔 Notifications</button>
-                            <button className="w-full text-left p-3 hover:bg-gray-50 rounded border">🛡️ Confidentialité (GDPR)</button>
+                            <button className="w-full text-left p-3 hover:bg-gray-50 rounded border">🛡️ Privacy (GDPR)</button>
                         </div>
                     </div>
 
                     <button onClick={logout} className="w-full py-3 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 font-medium">
-                        Déconnexion
+                        Logout
                     </button>
                 </main>
             </div>

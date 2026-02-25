@@ -21,7 +21,7 @@ export default function TeamPage() {
                                 ← Dashboard
                             </button>
                             <h1 className="text-2xl font-bold text-gray-900">
-                                👥 Gestion d'équipe
+                                👥 Team Management
                             </h1>
                         </div>
                     </div>

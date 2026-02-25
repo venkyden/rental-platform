@@ -82,8 +82,8 @@ export default function ActionCenter() {
         return (
             <div className="premium-card p-8 text-center">
                 <span className="text-5xl block mb-3">✅</span>
-                <p className="text-lg font-semibold text-gray-700">Tout est en ordre</p>
-                <p className="text-sm text-gray-500 mt-1">Aucune action urgente requise</p>
+                <p className="text-lg font-semibold text-gray-700">All is in order</p>
+                <p className="text-sm text-gray-500 mt-1">No urgent action required</p>
             </div>
         );
     }

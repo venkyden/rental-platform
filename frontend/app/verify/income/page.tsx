@@ -24,11 +24,11 @@ export default function IncomeVerifyPage() {
             await apiClient.client.post('/documents/verify/income', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
-            toast.success('Justificatif de revenus envoyé avec succès !');
+            toast.success('Income proof uploaded successfully!');
             setTimeout(() => router.push('/dashboard'), 1500);
         } catch (error) {
             console.error(error);
-            toast.error("Erreur lors de l'envoi du document");
+            toast.error("Error uploading document");
         } finally {
             setUploading(false);
         }
@@ -40,9 +40,9 @@ export default function IncomeVerifyPage() {
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
             <div className="max-w-lg w-full bg-white rounded-2xl shadow-xl p-8 border border-gray-200">
                 <div className="text-6xl mb-6 text-center">💼</div>
-                <h1 className="text-2xl font-bold text-gray-900 mb-2 text-center">Justificatifs de Revenus</h1>
+                <h1 className="text-2xl font-bold text-gray-900 mb-2 text-center">Income Verification</h1>
                 <p className="text-center text-gray-500 mb-8">
-                    Sécurisez votre dossier pour les propriétaires.
+                    Secure your application for landlords.
                 </p>
 
                 <div className="space-y-4 mb-8">
@@ -51,9 +51,9 @@ export default function IncomeVerifyPage() {
                         className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:bg-indigo-50 hover:border-indigo-300 transition-colors cursor-pointer"
                     >
                         <span className="text-4xl block mb-2">📄</span>
-                        <span className="text-gray-600 font-medium">Glissez votre Avis d'Impôt 2025</span>
+                        <span className="text-gray-600 font-medium">Drop your Tax Notice 2025</span>
                         <span className="text-xs text-gray-400 block mt-1">
-                            {uploading ? 'Envoi...' : 'PDF uniquement'}
+                            {uploading ? 'Uploading...' : 'PDF only'}
                         </span>
                     </div>
 
@@ -72,7 +72,7 @@ export default function IncomeVerifyPage() {
                             className="border rounded-xl p-4 text-center hover:bg-gray-50 cursor-pointer transition-colors"
                         >
                             <span className="text-2xl block mb-1">📑</span>
-                            <span className="text-xs font-medium">3 Fiches de paie</span>
+                            <span className="text-xs font-medium">3 Pay Stubs</span>
                         </div>
                     </div>
                 </div>
@@ -83,7 +83,7 @@ export default function IncomeVerifyPage() {
                         className="w-full py-3 text-gray-400 hover:text-gray-600 transition-colors"
                         disabled={uploading}
                     >
-                        Annuler / Retour
+                        Cancel / Back
                     </button>
                     {/* Optional skip button if needed */}
                 </div>
