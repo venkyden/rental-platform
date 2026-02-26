@@ -143,16 +143,7 @@ export default function LoginPage() {
                 )}
             </motion.div>
 
-            <motion.div variants={itemVariants} className="relative mb-6">
-                <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-zinc-200 dark:border-zinc-800" />
-                </div>
-                <div className="relative flex justify-center sm:justify-start">
-                    <span className="bg-white dark:bg-zinc-950 pr-4 text-sm text-zinc-500 font-medium">
-                        Or continue with email
-                    </span>
-                </div>
-            </motion.div>
+
 
             <motion.form variants={containerVariants} className="space-y-5" onSubmit={handleSubmit}>
                 <motion.div variants={itemVariants}>
