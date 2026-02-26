@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import RadiusLocationPicker from '../RadiusLocationPicker';
+import AddressAutocomplete, { AddressResult } from '../AddressAutocomplete';
 import { Question, FRENCH_UNIVERSITIES } from './onboardingQuestions';
 
 interface QuestionRendererProps {
@@ -24,9 +25,47 @@ export default function QuestionRenderer({
     const [showManualUniversityInput, setShowManualUniversityInput] = useState(false);
     const [manualUniName, setManualUniName] = useState('');
     const [manualUniCity, setManualUniCity] = useState('');
+    const [selectedAddress, setSelectedAddress] = useState<AddressResult | null>(null);
 
     return (
         <div className="space-y-4">
+            {/* Address Autocomplete */}
+            {question.type === 'address_autocomplete' && (
+                <div>
+                    <AddressAutocomplete
+                        onSelectAction={(result) => setSelectedAddress(result)}
+                        restrictToCities={question.restrictToCities || []}
+                        placeholder={question.placeholder || 'Start typing an address…'}
+                        variant="onboarding"
+                    />
+                    {selectedAddress && (
+                        <div className="mt-3 px-4 py-3 bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800 rounded-xl">
+                            <p className="text-sm font-medium text-teal-800 dark:text-teal-200">
+                                📍 {selectedAddress.display}
+                            </p>
+                        </div>
+                    )}
+                    <button
+                        onClick={() => {
+                            if (selectedAddress) {
+                                onAnswer({
+                                    address: selectedAddress.address,
+                                    city: selectedAddress.city,
+                                    postal_code: selectedAddress.postal_code,
+                                    lat: selectedAddress.lat,
+                                    lng: selectedAddress.lng,
+                                    display: selectedAddress.display,
+                                });
+                            }
+                        }}
+                        disabled={!selectedAddress}
+                        className="w-full mt-8 py-4 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl shadow-lg hover:shadow-teal-500/25 transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        Continue →
+                    </button>
+                </div>
+            )}
+
             {/* Text Input */}
             {question.type === 'text' && (
                 <div>

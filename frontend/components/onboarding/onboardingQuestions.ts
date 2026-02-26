@@ -15,7 +15,8 @@ export interface Question {
     question: string;
     emoji: string;
     options?: QuestionOption[];
-    type?: 'text' | 'range' | 'multiselect' | 'date' | 'select' | 'university_select' | 'location_radius';
+    type?: 'text' | 'range' | 'multiselect' | 'date' | 'select' | 'university_select' | 'location_radius' | 'address_autocomplete';
+    restrictToCities?: string[];
     placeholder?: string;
     min?: number;
     max?: number;
@@ -376,8 +377,9 @@ export function getLandlordQuestions(): Question[] {
             id: 'location',
             question: 'Where is your property located?',
             emoji: '📍',
-            type: 'text',
-            placeholder: 'e.g. Paris 15e, Lyon 3e...',
+            type: 'address_autocomplete',
+            restrictToCities: ['nantes', 'paris'],
+            placeholder: 'Start typing an address in Nantes or Paris…',
         },
         {
             id: 'rooms',
