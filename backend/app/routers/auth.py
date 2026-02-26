@@ -184,6 +184,10 @@ async def login(
     )
     segment_config = get_segment_config(user.segment)
 
+    # Redirect users who haven't completed onboarding
+    if not user.onboarding_completed:
+        redirect_path = "/onboarding"
+
     audit_logger.info(f"LOGIN_SUCCESS email={user.email} segment={user.segment}")
     return {
         "access_token": access_token,
@@ -302,6 +306,10 @@ async def google_auth(
         user.segment, user.role.value if hasattr(user.role, "value") else user.role
     )
     segment_config = get_segment_config(user.segment)
+
+    # Redirect users who haven't completed onboarding
+    if not user.onboarding_completed:
+        redirect_path = "/onboarding"
 
     audit_logger.info(f"GOOGLE_LOGIN_SUCCESS email={user.email} segment={user.segment}")
     return {
