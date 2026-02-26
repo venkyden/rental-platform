@@ -1,5 +1,3 @@
-'use client';
-
 import { useState, useEffect, useRef } from 'react';
 import { apiClient } from '@/lib/api';
 import DocumentCapture from './DocumentCapture';

@@ -1,5 +1,3 @@
-'use client';
-
 import { useState } from 'react';
 import RadiusLocationPicker from '../RadiusLocationPicker';
 import { Question, FRENCH_UNIVERSITIES } from './onboardingQuestions';
