@@ -98,17 +98,25 @@ async def get_nearby_pois(latitude: float, longitude: float) -> Dict[str, List[D
     overpass_endpoints = [
         "https://overpass-api.de/api/interpreter",
         "https://lz4.overpass-api.de/api/interpreter",
+        "https://overpass.kumi.systems/api/interpreter",
     ]
 
-    async with httpx.AsyncClient(timeout=30.0) as client:
-        for endpoint in overpass_endpoints:
+    async with httpx.AsyncClient(timeout=45.0) as client:
+        for i, endpoint in enumerate(overpass_endpoints):
             try:
                 response = await client.post(endpoint, data={"data": overpass_query})
                 if response.status_code == 200:
                     data = response.json()
                     return parse_overpass_results(data, latitude, longitude)
+                # If 429/504, try next mirror after short delay
+                if response.status_code in (429, 504):
+                    print(f"Overpass {response.status_code} on {endpoint}, trying next...")
+                    if i < len(overpass_endpoints) - 1:
+                        await asyncio.sleep(3)
             except Exception as e:
                 print(f"Overpass API error ({endpoint}): {e}")
+                if i < len(overpass_endpoints) - 1:
+                    await asyncio.sleep(3)
                 continue
 
     return {"public_transport": [], "nearby_landmarks": []}
