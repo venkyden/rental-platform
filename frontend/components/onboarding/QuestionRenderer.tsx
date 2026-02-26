@@ -161,17 +161,49 @@ export default function QuestionRenderer({
             )}
 
             {/* Location Radius Picker */}
-            {question.type === 'location_radius' && (
-                <div>
-                    <p className="mb-4 text-zinc-600 dark:text-zinc-400 text-center">Drag the pin to select your target search area.</p>
-                    <RadiusLocationPicker
-                        initialLat={48.8566}
-                        initialLng={2.3522}
-                        radiusMeters={2000}
-                        onLocationChange={(lat: number, lng: number) => onAnswer({ lat, lng })}
-                    />
-                </div>
-            )}
+            {question.type === 'location_radius' && (() => {
+                // City-to-coordinates lookup for major French cities
+                const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
+                    'Paris': { lat: 48.8566, lng: 2.3522 },
+                    'Lyon': { lat: 45.7640, lng: 4.8357 },
+                    'Toulouse': { lat: 43.6047, lng: 1.4442 },
+                    'Bordeaux': { lat: 44.8378, lng: -0.5792 },
+                    'Lille': { lat: 50.6292, lng: 3.0573 },
+                    'Marseille / Aix': { lat: 43.2965, lng: 5.3698 },
+                    'Marseille': { lat: 43.2965, lng: 5.3698 },
+                    'Aix': { lat: 43.5297, lng: 5.4474 },
+                    'Nantes': { lat: 47.2184, lng: -1.5536 },
+                    'Strasbourg': { lat: 48.5734, lng: 7.7521 },
+                    'Montpellier': { lat: 43.6108, lng: 3.8767 },
+                    'Rennes': { lat: 48.1173, lng: -1.6778 },
+                    'Grenoble': { lat: 45.1885, lng: 5.7245 },
+                    'Nice': { lat: 43.7102, lng: 7.2620 },
+                };
+
+                // Try to get coordinates from previous university selection
+                const uniResponse = responses?.university;
+                const uniCity = typeof uniResponse === 'object' ? uniResponse?.city : null;
+                const coords = uniCity ? CITY_COORDS[uniCity] : null;
+
+                // Default: center of France if no university city
+                const defaultLat = coords?.lat ?? 46.6034;
+                const defaultLng = coords?.lng ?? 2.2137;
+                const defaultZoom = coords ? 13 : 6;
+
+                return (
+                    <div>
+                        <p className="mb-4 text-zinc-600 dark:text-zinc-400 text-center">
+                            {coords ? `Centered on ${uniCity} — drag the pin to refine.` : 'Drag the pin to select your target search area.'}
+                        </p>
+                        <RadiusLocationPicker
+                            initialLat={defaultLat}
+                            initialLng={defaultLng}
+                            radiusMeters={2000}
+                            onLocationChange={(lat: number, lng: number) => onAnswer({ lat, lng })}
+                        />
+                    </div>
+                );
+            })()}
 
             {/* Range Slider */}
             {question.type === 'range' && (

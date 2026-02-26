@@ -23,7 +23,7 @@ async def geocode_address(
             response = await client.get(
                 "https://nominatim.openstreetmap.org/search",
                 params={"q": full_address, "format": "json", "limit": 1},
-                headers={"User-Agent": "RentalPlatform/1.0"},
+                headers={"User-Agent": "Roomivo/1.0 (rental platform)"},
             )
 
             if response.status_code == 200:
@@ -39,65 +39,85 @@ async def geocode_address(
 async def get_nearby_pois(latitude: float, longitude: float) -> Dict[str, List[Dict]]:
     """
     Query OpenStreetMap Overpass API for nearby points of interest.
-    Returns dict with transit, schools, hospitals, supermarkets, etc.
+    Returns dict with transit stops, route lines, and nearby landmarks.
     """
 
-    # Overpass query for multiple POI types
+    # Overpass query — includes transit stops, route relations, and POIs
     overpass_query = f"""
     [out:json][timeout:25];
     (
-      // Metro/Train stations (500m)
-      node["railway"="station"](around:500,{latitude},{longitude});
-      node["railway"="subway_entrance"](around:500,{latitude},{longitude});
-      
-      // Bus stops (300m)
-      node["highway"="bus_stop"](around:300,{latitude},{longitude});
-      
+      // Metro/Train/RER stations (800m)
+      node["railway"="station"](around:800,{latitude},{longitude});
+      node["railway"="subway_entrance"](around:800,{latitude},{longitude});
+      node["railway"="halt"](around:800,{latitude},{longitude});
+
+      // Tram stops (500m)
+      node["railway"="tram_stop"](around:500,{latitude},{longitude});
+
+      // Bus stops (500m)
+      node["highway"="bus_stop"](around:500,{latitude},{longitude});
+
+      // Bus/Tram/Metro route relations passing near this point (500m)
+      relation["type"="route"]["route"~"bus|tram|subway|light_rail"](around:500,{latitude},{longitude});
+
       // Schools (1000m)
       node["amenity"="school"](around:1000,{latitude},{longitude});
       way["amenity"="school"](around:1000,{latitude},{longitude});
-      
+      node["amenity"="university"](around:1500,{latitude},{longitude});
+      way["amenity"="university"](around:1500,{latitude},{longitude});
+
       // Hospitals (2000m)
       node["amenity"="hospital"](around:2000,{latitude},{longitude});
       way["amenity"="hospital"](around:2000,{latitude},{longitude});
-      
-      // Supermarkets (500m)
+
+      // Supermarkets & convenience stores (500m)
       node["shop"="supermarket"](around:500,{latitude},{longitude});
       way["shop"="supermarket"](around:500,{latitude},{longitude});
-      
+      node["shop"="convenience"](around:300,{latitude},{longitude});
+
       // Police (2000m)
       node["amenity"="police"](around:2000,{latitude},{longitude});
       way["amenity"="police"](around:2000,{latitude},{longitude});
-      
+
       // Pharmacies (500m)
       node["amenity"="pharmacy"](around:500,{latitude},{longitude});
-      
+
       // Parks (800m)
       node["leisure"="park"](around:800,{latitude},{longitude});
       way["leisure"="park"](around:800,{latitude},{longitude});
+
+      // Post offices (800m)
+      node["amenity"="post_office"](around:800,{latitude},{longitude});
+
+      // Bakeries / restaurants (300m)
+      node["shop"="bakery"](around:300,{latitude},{longitude});
     );
-    out center;
+    out center tags;
     """
 
-    async with httpx.AsyncClient(timeout=30.0) as client:
-        try:
-            response = await client.post(
-                "https://overpass-api.de/api/interpreter", data={"data": overpass_query}
-            )
+    overpass_endpoints = [
+        "https://overpass-api.de/api/interpreter",
+        "https://lz4.overpass-api.de/api/interpreter",
+    ]
 
-            if response.status_code == 200:
-                data = response.json()
-                return parse_overpass_results(data, latitude, longitude)
-        except Exception as e:
-            print(f"Overpass API error: {e}")
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        for endpoint in overpass_endpoints:
+            try:
+                response = await client.post(endpoint, data={"data": overpass_query})
+                if response.status_code == 200:
+                    data = response.json()
+                    return parse_overpass_results(data, latitude, longitude)
+            except Exception as e:
+                print(f"Overpass API error ({endpoint}): {e}")
+                continue
 
     return {"public_transport": [], "nearby_landmarks": []}
 
 
 def parse_overpass_results(
     data: Dict, origin_lat: float, origin_lon: float
-) -> Dict[str, List[Dict]]:
-    """Parse Overpass API results and categorize POIs"""
+) -> Dict[str, List[str]]:
+    """Parse Overpass API results and categorize POIs into transport and landmarks."""
     from math import asin, cos, radians, sin, sqrt
 
     def calculate_distance(lat1, lon1, lat2, lon2):
@@ -109,11 +129,32 @@ def parse_overpass_results(
         c = 2 * asin(sqrt(a))
         return c * 6371000  # Earth radius in meters
 
-    public_transport = []
+    transport_items = []
+    route_lines = set()  # Track unique route lines (e.g., "Bus 12", "Tram T1")
     landmarks = []
 
     for element in data.get("elements", []):
         tags = element.get("tags", {})
+        elem_type = element.get("type", "")
+
+        # --- Route Relations (bus/tram/metro lines) ---
+        if elem_type == "relation" and tags.get("type") == "route":
+            route_type = tags.get("route", "")
+            ref = tags.get("ref", "")
+            name = tags.get("name", "")
+            operator = tags.get("operator", "")
+
+            if route_type in ("bus", "tram", "subway", "light_rail"):
+                emoji = {"bus": "🚌", "tram": "🚊", "subway": "🚇", "light_rail": "🚈"}.get(route_type, "🚌")
+                label = route_type.replace("_", " ").title()
+
+                if ref:
+                    route_lines.add(f"{emoji} {label} {ref}")
+                elif name:
+                    # Truncate long route names
+                    short_name = name[:50] + "..." if len(name) > 50 else name
+                    route_lines.add(f"{emoji} {short_name}")
+            continue
 
         # Get coordinates (handle both nodes and ways with center)
         if "lat" in element and "lon" in element:
@@ -125,94 +166,119 @@ def parse_overpass_results(
 
         distance = int(calculate_distance(origin_lat, origin_lon, lat, lon))
         name = tags.get("name", "")
+        brand = tags.get("brand", "")
 
-        # Categorize transit
+        # --- Transit stops ---
         if "railway" in tags:
-            if tags["railway"] in ["station", "subway_entrance"]:
-                line_info = tags.get("line", tags.get("operator", ""))
-                transport_name = f"{name}" if name else "Metro/Train Station"
+            rail_type = tags["railway"]
+            if rail_type in ("station", "subway_entrance", "halt"):
+                line_info = tags.get("line", tags.get("ref", tags.get("operator", "")))
+                network = tags.get("network", "")
+                station_name = name if name else "Metro/Train Station"
+
+                # Try to identify RER / Transilien / Metro
+                if network and "RER" in network.upper():
+                    transport_name = f"🚆 RER {station_name}"
+                elif network and "METRO" in network.upper():
+                    transport_name = f"🚇 Metro {station_name}"
+                else:
+                    transport_name = f"🚉 {station_name}"
+
                 if line_info:
-                    transport_name += f" ({line_info})"
-                public_transport.append(
-                    {"name": transport_name, "type": "metro", "distance": distance}
+                    transport_name += f" (Line {line_info})"
+
+                transport_items.append(
+                    {"label": transport_name, "distance": distance}
+                )
+
+            elif rail_type == "tram_stop":
+                tram_name = name if name else "Tram Stop"
+                ref = tags.get("ref", "")
+                transport_items.append(
+                    {"label": f"🚊 {tram_name}" + (f" (Line {ref})" if ref else ""), "distance": distance}
                 )
 
         elif "highway" in tags and tags["highway"] == "bus_stop":
-            bus_lines = tags.get("route_ref", tags.get("ref", ""))
             bus_name = name if name else "Bus Stop"
-            if bus_lines:
-                bus_name += f" - Line {bus_lines}"
-            public_transport.append(
-                {"name": bus_name, "type": "bus", "distance": distance}
+            route_ref = tags.get("route_ref", tags.get("ref", ""))
+            if route_ref:
+                bus_name += f" — Lines {route_ref}"
+            transport_items.append(
+                {"label": f"🚌 {bus_name}", "distance": distance}
             )
 
-        # Categorize landmarks
+        # --- Landmarks ---
         elif "amenity" in tags:
             amenity_type = tags["amenity"]
+            display_name = name or brand
 
             if amenity_type == "school":
-                landmarks.append(
-                    {
-                        "name": name if name else "School",
-                        "type": "school",
-                        "distance": distance,
-                    }
-                )
+                landmarks.append({"label": f"🏫 {display_name or 'School'}", "distance": distance})
+            elif amenity_type == "university":
+                landmarks.append({"label": f"🎓 {display_name or 'University'}", "distance": distance})
             elif amenity_type == "hospital":
-                landmarks.append(
-                    {
-                        "name": name if name else "Hospital",
-                        "type": "hospital",
-                        "distance": distance,
-                    }
-                )
+                landmarks.append({"label": f"🏥 {display_name or 'Hospital'}", "distance": distance})
             elif amenity_type == "police":
-                landmarks.append(
-                    {
-                        "name": name if name else "Police Station",
-                        "type": "police",
-                        "distance": distance,
-                    }
-                )
+                landmarks.append({"label": f"👮 {display_name or 'Police Station'}", "distance": distance})
             elif amenity_type == "pharmacy":
-                landmarks.append(
-                    {
-                        "name": name if name else "Pharmacy",
-                        "type": "pharmacy",
-                        "distance": distance,
-                    }
-                )
+                landmarks.append({"label": f"💊 {display_name or 'Pharmacy'}", "distance": distance})
+            elif amenity_type == "post_office":
+                landmarks.append({"label": f"📮 {display_name or 'Post Office'}", "distance": distance})
 
-        elif "shop" in tags and tags["shop"] == "supermarket":
-            landmarks.append(
-                {
-                    "name": name if name else "Supermarket",
-                    "type": "supermarket",
-                    "distance": distance,
-                }
-            )
+        elif "shop" in tags:
+            shop_type = tags["shop"]
+            display_name = brand or name
+
+            if shop_type == "supermarket":
+                landmarks.append({"label": f"🛒 {display_name or 'Supermarket'}", "distance": distance})
+            elif shop_type == "convenience":
+                landmarks.append({"label": f"🏪 {display_name or 'Convenience Store'}", "distance": distance})
+            elif shop_type == "bakery":
+                landmarks.append({"label": f"🥖 {display_name or 'Bakery'}", "distance": distance})
 
         elif "leisure" in tags and tags["leisure"] == "park":
             landmarks.append(
-                {"name": name if name else "Park", "type": "park", "distance": distance}
+                {"label": f"🌳 {name or 'Park'}", "distance": distance}
             )
 
-    # Sort by distance and limit results
-    public_transport.sort(key=lambda x: x["distance"])
+    # Sort stops by distance, deduplicate
+    transport_items.sort(key=lambda x: x["distance"])
     landmarks.sort(key=lambda x: x["distance"])
 
-    # Format for frontend
+    # Build final lists with distance
     transport_list = [
-        f"{item['name']} - {item['distance']}m"
-        for item in public_transport[:5]  # Top 5 closest
+        f"{item['label']} — {item['distance']}m"
+        for item in transport_items[:8]
     ]
+
+    # Prepend route lines summary (these don't have distances)
+    sorted_routes = sorted(route_lines)
+    if sorted_routes:
+        transport_list = [f"📋 Routes: {', '.join(sorted_routes)}"] + transport_list
 
     landmark_list = [
-        f"{item['name']} - {item['distance']}m"
-        for item in landmarks[:8]  # Top 8 closest
+        f"{item['label']} — {item['distance']}m"
+        for item in landmarks[:10]
     ]
 
-    return {"public_transport": transport_list, "nearby_landmarks": landmark_list}
+    # Deduplicate by removing items with identical labels (keep closest)
+    seen_labels = set()
+    deduped_transport = []
+    for item in transport_list:
+        label_key = item.split(" — ")[0] if " — " in item else item
+        if label_key not in seen_labels:
+            seen_labels.add(label_key)
+            deduped_transport.append(item)
+
+    seen_labels = set()
+    deduped_landmarks = []
+    for item in landmark_list:
+        label_key = item.split(" — ")[0] if " — " in item else item
+        if label_key not in seen_labels:
+            seen_labels.add(label_key)
+            deduped_landmarks.append(item)
+
+    return {"public_transport": deduped_transport, "nearby_landmarks": deduped_landmarks}
 
 
 async def enrich_property_location(

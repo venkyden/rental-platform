@@ -7,6 +7,12 @@ session since the real schema uses Postgres-specific types (UUID, JSONB).
 Schema/validation tests (test_config, test_auth schemas) don't need a DB at all.
 """
 
+import os
+
+# Set required env vars BEFORE any app imports trigger Settings() initialization
+os.environ.setdefault("DATABASE_URL", "sqlite+aiosqlite:///./test.db")
+os.environ.setdefault("SECRET_KEY", "test-secret-key-not-for-production")
+
 import uuid
 from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock
