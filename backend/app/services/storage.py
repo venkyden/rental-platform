@@ -71,8 +71,9 @@ class CloudStorageService:
                 aws_secret_access_key=secret_key,
                 config=Config(signature_version="s3v4", retries={"max_attempts": 3}),
             )
-            # Test connection
-            self.client.list_buckets()
+            # Test connection to the specific bucket instead of all buckets
+            # R2 specific-bucket tokens often don't have ListAllMyBuckets permission
+            self.client.head_bucket(Bucket=self.bucket_name)
             self.is_local = False
             print(f"✅ Cloud storage connected: {endpoint}")
         except Exception as e:
