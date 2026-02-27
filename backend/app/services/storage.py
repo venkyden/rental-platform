@@ -47,10 +47,10 @@ class CloudStorageService:
         # Use centralized settings
         from app.core.config import settings
 
-        endpoint = settings.STORAGE_ENDPOINT
-        access_key = settings.STORAGE_ACCESS_KEY
-        secret_key = settings.STORAGE_SECRET_KEY
-        self.bucket_name = settings.STORAGE_BUCKET
+        endpoint = settings.STORAGE_ENDPOINT.strip() if settings.STORAGE_ENDPOINT else None
+        access_key = settings.STORAGE_ACCESS_KEY.strip() if settings.STORAGE_ACCESS_KEY else None
+        secret_key = settings.STORAGE_SECRET_KEY.strip() if settings.STORAGE_SECRET_KEY else None
+        self.bucket_name = settings.STORAGE_BUCKET.strip() if settings.STORAGE_BUCKET else "rental-platform-media"
 
         if not endpoint:
             print("⚠️ STORAGE_ENDPOINT is missing.")
