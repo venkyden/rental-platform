@@ -1,0 +1,54 @@
+<svg
+    width="512"
+    height="512"
+    viewBox="0 0 64 64"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    aria-label="Roomivo logo"
+>
+    <!-- Background -->
+    <rect width="64" height="64" rx="16" fill="url(#grad)" />
+    
+    <!-- House outline — roof -->
+    <path
+        d="M32 10L8 30H14V52H50V30H56L32 10Z"
+        stroke="white"
+        stroke-width="3"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        fill="none"
+    />
+
+    <!-- Left person (with graduation cap) -->
+    <!-- Head -->
+    <circle cx="25" cy="32" r="4.5" fill="white" />
+    <!-- Graduation cap -->
+    <path
+        d="M18 28L25 25L32 28L25 31Z"
+        fill="white"
+    />
+    <line x1="25" y1="28" x2="25" y2="25" stroke="white" stroke-width="1.5" />
+    <!-- Body -->
+    <path
+        d="M20 52C20 45 21 40 25 40C29 40 30 45 30 52"
+        fill="white"
+        fill-opacity="0.9"
+    />
+
+    <!-- Right person -->
+    <!-- Head -->
+    <circle cx="39" cy="34" r="4" fill="white" fill-opacity="0.85" />
+    <!-- Body -->
+    <path
+        d="M34 52C34 46 35 42 39 42C43 42 44 46 44 52"
+        fill="white"
+        fill-opacity="0.75"
+    />
+    
+    <defs>
+        <linearGradient id="grad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#3DD6D0" />
+            <stop offset="1" stop-color="#22B8B8" />
+        </linearGradient>
+    </defs>
+</svg>

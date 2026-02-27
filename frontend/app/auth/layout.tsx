@@ -40,7 +40,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                 transition={{ delay: 0.8 }}
                 className="z-10 mt-12 text-center text-sm text-zinc-500 dark:text-zinc-400 max-w-sm"
             >
-                <p>Find your perfect home with confidence.</p>
+                <p>Your first step to settling in.</p>
                 <div className="flex items-center justify-center gap-4 mt-2">
                     <span className="flex items-center gap-1"><span className="text-teal-500">✓</span> Verified</span>
                     <span className="flex items-center gap-1"><span className="text-teal-500">✓</span> Secure</span>

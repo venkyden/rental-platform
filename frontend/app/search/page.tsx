@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useSegment } from '@/lib/SegmentContext';
 import { useAuth } from '@/lib/useAuth';
 import { apiClient } from '@/lib/api';
+import { BRAND } from '@/lib/constants';
+import { motion } from 'framer-motion';
 
 // Define property interface based on API response
 interface Property {
@@ -115,7 +117,14 @@ export default function SearchPage() {
                         <button onClick={() => router.push(isAuthenticated ? '/dashboard' : '/')} className="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 flex items-center gap-2 transition-colors">
                             ← {isAuthenticated ? 'Dashboard' : 'Home'}
                         </button>
-                        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Find your perfect home</h1>
+                        <motion.h1
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, ease: "easeOut" }}
+                            className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-500 dark:from-white dark:to-zinc-400"
+                        >
+                            {BRAND.tagline}
+                        </motion.h1>
                     </div>
                     {isAuthenticated && (
                         <div className="text-sm text-zinc-500 hover:text-teal-600 transition-colors">

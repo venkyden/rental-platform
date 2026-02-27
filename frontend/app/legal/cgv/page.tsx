@@ -422,13 +422,13 @@ export default function CGVPage() {
                         <Link href="/" className="text-blue-600 hover:text-blue-500 font-medium">
                             {t.backHome}
                         </Link>
-                        <Link href="/terms" className="text-blue-600 hover:text-blue-500 font-medium">
+                        <Link href="/legal/terms" className="text-blue-600 hover:text-blue-500 font-medium">
                             Terms / CGU
                         </Link>
-                        <Link href="/privacy" className="text-blue-600 hover:text-blue-500 font-medium">
+                        <Link href="/legal/privacy" className="text-blue-600 hover:text-blue-500 font-medium">
                             Privacy
                         </Link>
-                        <Link href="/mentions-legales" className="text-blue-600 hover:text-blue-500 font-medium">
+                        <Link href="/legal/mentions-legales" className="text-blue-600 hover:text-blue-500 font-medium">
                             Mentions Légales
                         </Link>
                     </div>

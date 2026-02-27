@@ -6,7 +6,7 @@ import { useAuth } from '@/lib/useAuth';
 import { useSegment, QuickActions, SegmentBadge, FeatureGate } from '@/lib/SegmentContext';
 
 export default function TenantDashboard() {
-    const { user, loading: authLoading } = useAuth();
+    const { user, logout, loading: authLoading } = useAuth();
     const { config, loading: segmentLoading } = useSegment();
     const router = useRouter();
 
@@ -39,7 +39,7 @@ export default function TenantDashboard() {
                         </div>
                     </div>
                     <button
-                        onClick={() => router.push('/auth/logout')}
+                        onClick={logout}
                         className="text-gray-600 hover:text-gray-900"
                     >
                         Logout

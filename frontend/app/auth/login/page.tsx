@@ -74,7 +74,7 @@ export default function LoginPage() {
                     window.google.accounts.id.renderButton(buttonDiv, {
                         theme: 'outline',
                         size: 'large',
-                        width: '100%',
+                        width: 400,
                         text: 'signin_with',
                         shape: 'pill',
                     });

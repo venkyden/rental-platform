@@ -3,8 +3,10 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/lib/ToastContext";
 import { SegmentProvider } from "@/lib/SegmentContext";
+import { LanguageProvider } from "@/lib/LanguageContext";
 import ToastContainer from "@/components/ToastContainer";
 import GlobalFooter from "@/components/GlobalFooter";
+import { BRAND } from "@/lib/constants";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,8 +19,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Roomivo — Find Your Perfect Home with Confidence",
-  description: "Smart rental platform: identity verification, AI matching, and digital leases for expats in France.",
+  title: BRAND.title,
+  description: BRAND.description,
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -48,15 +50,17 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ToastProvider>
-          <SegmentProvider>
-            <div className="flex flex-col min-h-screen">
-              {children}
-              <ToastContainer />
-              <GlobalFooter />
-            </div>
-          </SegmentProvider>
-        </ToastProvider>
+        <LanguageProvider>
+          <ToastProvider>
+            <SegmentProvider>
+              <div className="flex flex-col min-h-screen">
+                {children}
+                <ToastContainer />
+                <GlobalFooter />
+              </div>
+            </SegmentProvider>
+          </ToastProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

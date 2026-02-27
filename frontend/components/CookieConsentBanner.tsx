@@ -73,7 +73,7 @@ export default function CookieConsentBanner() {
                             <p className="text-sm text-gray-600 leading-relaxed">
                                 Roomivo uses cookies to ensure essential functionality and, with your consent,
                                 for analytics to improve the platform. See our{' '}
-                                <Link href="/privacy" className="text-blue-600 hover:underline">
+                                <Link href="/legal/privacy" className="text-blue-600 hover:underline">
                                     Privacy Policy
                                 </Link>{' '}
                                 for details.

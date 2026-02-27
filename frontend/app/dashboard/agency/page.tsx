@@ -6,7 +6,7 @@ import { useAuth } from '@/lib/useAuth';
 import { useSegment, QuickActions, SegmentBadge } from '@/lib/SegmentContext';
 
 export default function AgencyDashboard() {
-    const { user, loading: authLoading } = useAuth();
+    const { user, logout, loading: authLoading } = useAuth();
     const { config, loading: segmentLoading } = useSegment();
     const router = useRouter();
 
@@ -41,7 +41,7 @@ export default function AgencyDashboard() {
                         <span className="text-sm text-gray-400">Admin Console</span>
                     </div>
                     <button
-                        onClick={() => router.push('/auth/logout')}
+                        onClick={logout}
                         className="text-gray-400 hover:text-white"
                     >
                         Logout

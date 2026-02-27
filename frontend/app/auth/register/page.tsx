@@ -82,7 +82,7 @@ export default function RegisterPage() {
                     window.google.accounts.id.renderButton(buttonDiv, {
                         theme: 'outline',
                         size: 'large',
-                        width: '100%',
+                        width: 400,
                         text: 'signup_with',
                         shape: 'pill',
                     });
@@ -181,10 +181,10 @@ export default function RegisterPage() {
             className="w-full pb-12"
         >
             <motion.div variants={itemVariants} className="text-center sm:text-left mb-8">
-                <h2 className="text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
+                <h2 className="text-3xl font-extrabold text-zinc-900 tracking-tight">
                     Create your account
                 </h2>
-                <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+                <p className="mt-2 text-sm text-zinc-600">
                     Already have an account?{' '}
                     <Link href="/auth/login" className="font-semibold text-teal-600 hover:text-teal-500 transition-colors">
                         Sign in
@@ -193,8 +193,8 @@ export default function RegisterPage() {
             </motion.div>
 
             {error && (
-                <motion.div variants={itemVariants} className="mb-6 rounded-xl bg-red-50/50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/30 p-4">
-                    <p className="text-sm font-medium text-red-800 dark:text-red-400">{error}</p>
+                <motion.div variants={itemVariants} className="mb-6 rounded-xl bg-red-50/50 border border-red-200 p-4">
+                    <p className="text-sm font-medium text-red-800">{error}</p>
                 </motion.div>
             )}
 
@@ -209,10 +209,10 @@ export default function RegisterPage() {
 
             <motion.div variants={itemVariants} className="relative mb-6">
                 <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-zinc-200 dark:border-zinc-800" />
+                    <div className="w-full border-t border-zinc-200" />
                 </div>
                 <div className="relative flex justify-center sm:justify-start">
-                    <span className="bg-white dark:bg-zinc-950 pr-4 text-sm text-zinc-500 font-medium">
+                    <span className="bg-white pr-4 text-sm text-zinc-500 font-medium">
                         Or register with email
                     </span>
                 </div>
@@ -334,9 +334,9 @@ export default function RegisterPage() {
                         <div className="ml-3 text-sm">
                             <label htmlFor="gdprConsent" className="font-medium text-zinc-800 dark:text-zinc-300">
                                 I accept the{' '}
-                                <Link href="/privacy" className="text-teal-600 hover:text-teal-500 underline">Privacy Policy</Link>
+                                <Link href="/legal/privacy" className="text-teal-600 hover:text-teal-500 underline">Privacy Policy</Link>
                                 {' '}and{' '}
-                                <Link href="/terms" className="text-teal-600 hover:text-teal-500 underline">Terms of Service</Link>
+                                <Link href="/legal/terms" className="text-teal-600 hover:text-teal-500 underline">Terms of Service</Link>
                                 <span className="text-red-500"> *</span>
                             </label>
                         </div>

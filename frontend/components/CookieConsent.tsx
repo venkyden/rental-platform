@@ -47,7 +47,7 @@ export default function CookieConsent() {
                     <p className="text-sm text-gray-600">
                         We use cookies to improve your experience. By continuing to use this site,
                         you agree to our use of cookies in accordance with our{' '}
-                        <Link href="/privacy" className="text-blue-600 hover:underline">
+                        <Link href="/legal/privacy" className="text-blue-600 hover:underline">
                             Privacy Policy
                         </Link>.
                     </p>

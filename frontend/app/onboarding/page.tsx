@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import OnboardingQuestionnaire from '@/components/OnboardingQuestionnaire';
 import { apiClient } from '@/lib/api';
 import RoomivoBrand from '@/components/RoomivoBrand';
+import { BRAND } from '@/lib/constants';
 
 export default function OnboardingPage() {
     const [step, setStep] = useState<'welcome' | 'role-select' | 'questionnaire'>('welcome');
@@ -116,7 +117,9 @@ export default function OnboardingPage() {
                                     <div className="text-2xl font-bold text-gray-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400">
                                         I'm looking for a place to rent
                                     </div>
-                                    <div className="text-gray-600 dark:text-zinc-400 mt-1">Find your perfect home</div>
+                                    <div className="text-gray-600 dark:text-zinc-400 mt-1 font-medium tracking-tight">
+                                        {BRAND.tagline}
+                                    </div>
                                 </div>
                             </div>
                         </button>
