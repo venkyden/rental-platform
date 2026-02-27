@@ -1,58 +1,40 @@
-databases:
-  # 1. PostgreSQL Database
-  - name: roomivo-db
-    region: frankfurt
-    plan: free # Change to starter/standard for production workloads
-    ipAllowList: [] # Blank allows all for easier development, change in prod as needed
-    
 services:
-    
-  # 2. FastAPI Backend
   - type: web
-    name: roomivo-backend
+    name: roomivo-backend-0jyi
     env: python
-    region: frankfurt # Good defaults for a .eu domain
-    plan: free # Change to starter/standard for production workloads
-    rootDir: ./backend
-    buildCommand: pip install -r requirements.txt
-    startCommand: ./start.sh
-    envVars:
-      - key: DATABASE_URL
-        fromDatabase:
-          name: roomivo-db
-          property: connectionString
-      - key: ENVIRONMENT
-        value: production
-      - key: PYTHON_VERSION
-        value: 3.12.2
-      - key: ALLOWED_ORIGINS
-        # When Next.js frontend deploys, you should come back and add its actual URL here
-        value: "https://roomivo.eu,https://www.roomivo.eu"
-      - key: FRONTEND_URL
-        value: "https://www.roomivo.eu"
-        
-      # These MUST be filled in the Render dashboard after deployment!
-      - key: SECRET_KEY
-        generateValue: true
-      - key: GEMINI_API_KEY
-        sync: false
-      - key: STRIPE_SECRET_KEY
-        sync: false
-      - key: STRIPE_IDENTITY_WEBHOOK_SECRET
-        sync: false
-
-  # 3. Next.js Frontend
-  - type: web
-    name: roomivo-frontend
-    env: node
     region: frankfurt
-    plan: free 
-    rootDir: ./frontend
-    buildCommand: npm install && npm run build
-    startCommand: npm start
+    plan: free
+    branch: master
+    rootDir: backend
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
     envVars:
-      - key: NEXT_PUBLIC_API_URL
-        fromService:
-          type: web
-          name: roomivo-backend
-          envVarKey: RENDER_EXTERNAL_URL
+      - key: REDIS_URL
+        value: "rediss://default:AdJ4AAIncDI1NDYyNmQzYjVlMWE0ZDI3OTljNmI5OWFmNWM0ZTc4OXAyNTM4ODA@native-ray-53880.upstash.io:6379"
+      - key: STORAGE_ENDPOINT
+        value: "https://e9e4f279f640445e67f1070fea6e8c6c.r2.cloudflarestorage.com"
+      - key: STORAGE_BUCKET
+        value: "rental-platform-media"
+      - key: CACHE_DIR
+        value: "./.cache"
+      - key: PYTHONPATH
+        value: "/opt/render/project/src/backend"
+      - key: ALLOWED_ORIGINS
+        value: "https://roomivo-frontend-0jyi.onrender.com,http://localhost:3000"
+      - key: ENVIRONMENT
+        value: "production"
+      
+      # SECRETS (Sync false tells Render not to pull these from Git, 
+      # but to prompt you to paste them manually in the Dashboard)
+      - key: STORAGE_ACCESS_KEY
+        sync: false
+      - key: STORAGE_SECRET_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: SECRET_KEY
+        sync: false
+      - key: ALGORITHM
+        value: "HS256"
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "10080"
