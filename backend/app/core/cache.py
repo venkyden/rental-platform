@@ -39,7 +39,9 @@ class CacheLayer:
             print("⚠️ Redis not installed. Running without cache (pip install redis)")
             return
 
-        redis_url = os.getenv("REDIS_URL")
+        # Use centralized settings
+        from app.core.config import settings
+        redis_url = settings.REDIS_URL
         if redis_url:
             try:
                 self.redis_client = redis.Redis.from_url(

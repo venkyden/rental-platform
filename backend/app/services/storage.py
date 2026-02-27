@@ -44,9 +44,20 @@ class CloudStorageService:
             print("⚠️ boto3 not installed. Using local storage (pip install boto3)")
             return
 
-        endpoint = os.getenv("STORAGE_ENDPOINT")  # R2 or S3 endpoint
-        access_key = os.getenv("STORAGE_ACCESS_KEY")
-        secret_key = os.getenv("STORAGE_SECRET_KEY")
+        # Use centralized settings
+        from app.core.config import settings
+
+        endpoint = settings.STORAGE_ENDPOINT
+        access_key = settings.STORAGE_ACCESS_KEY
+        secret_key = settings.STORAGE_SECRET_KEY
+        self.bucket_name = settings.STORAGE_BUCKET
+
+        if not endpoint:
+            print("⚠️ STORAGE_ENDPOINT is missing.")
+        if not access_key:
+            print("⚠️ STORAGE_ACCESS_KEY is missing.")
+        if not secret_key:
+            print("⚠️ STORAGE_SECRET_KEY is missing.")
 
         if not all([endpoint, access_key, secret_key]):
             print("⚠️ Cloud storage not configured. Using local storage.")

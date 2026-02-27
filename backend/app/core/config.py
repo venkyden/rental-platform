@@ -12,6 +12,16 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
+    # Redis Cache
+    REDIS_URL: Optional[str] = None
+
+    # Cloudflare R2 / S3 Storage
+    STORAGE_ENDPOINT: Optional[str] = None
+    STORAGE_ACCESS_KEY: Optional[str] = None
+    STORAGE_SECRET_KEY: Optional[str] = None
+    STORAGE_BUCKET: Optional[str] = "rental-platform-media"
+    STORAGE_PUBLIC_URL: Optional[str] = None
+
     # External APIs
     GEMINI_API_KEY: Optional[str] = None
     FOURTHLINE_API_KEY: Optional[str] = None
