@@ -20,7 +20,7 @@ services:
       - key: PYTHONPATH
         value: "/opt/render/project/src/backend"
       - key: ALLOWED_ORIGINS
-        value: "https://roomivo-frontend-0jyi.onrender.com,http://localhost:3000"
+        value: "https://roomivo.eu,https://www.roomivo.eu,https://roomivo-frontend-0jyi.onrender.com,http://localhost:3000"
       - key: ENVIRONMENT
         value: "production"
       
