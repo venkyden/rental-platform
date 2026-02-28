@@ -51,11 +51,11 @@ export default function RegisterPage() {
     const router = useRouter();
 
     const handleGoogleResponse = useCallback(async (response: any) => {
-        if (!formData.role) return;
         setError('');
         setGoogleLoading(true);
         try {
-            const result = await apiClient.googleLogin(response.credential, formData.role);
+            const roleToUse = formData.role || 'tenant';
+            const result = await apiClient.googleLogin(response.credential, roleToUse);
             router.push(result.redirect_path || '/dashboard');
         } catch (err: any) {
             const detail = err.response?.data?.detail;
