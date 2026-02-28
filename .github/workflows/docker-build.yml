@@ -71,7 +71,7 @@ jobs:
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy to Vercel/Render (Optional Webhook)
+      - name: Deploy to Vercel/Render
         run: |
-          echo "Placeholder: Trigger your free Render/Vercel instance webhook here."
-          # if [ ! -z "${{ secrets.DEPLOY_WEBHOOK_URL }}" ]; then curl -X POST "${{ secrets.DEPLOY_WEBHOOK_URL }}"; fi
+          echo "Triggering Render/Vercel instance webhook..."
+          if [ ! -z "${{ secrets.DEPLOY_WEBHOOK_URL }}" ]; then curl -X POST "${{ secrets.DEPLOY_WEBHOOK_URL }}"; else echo "DEPLOY_WEBHOOK_URL secret is not set, skipping deployment trigger."; fi

@@ -10,8 +10,8 @@ export default function CapturePage({ params }: { params: { code: string } }) {
     const router = useRouter();
     const { showToast } = useToast();
     const [step, setStep] = useState<'intro' | 'capturing' | 'preview' | 'uploading' | 'success'>('intro');
-    const [file, setFile] = useState<File | null>(null);
-    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [files, setFiles] = useState<File[]>([]);
+    const [previewUrls, setPreviewUrls] = useState<string[]>([]);
     const [location, setLocation] = useState<{ lat: number; lng: number; accuracy: number } | null>(null);
     const [locationError, setLocationError] = useState<string | null>(null);
     const [isSessionVerified, setIsSessionVerified] = useState(false);
@@ -81,12 +81,12 @@ export default function CapturePage({ params }: { params: { code: string } }) {
         }
     };
 
-    // Clean up preview URL
+    // Clean up preview URLs
     useEffect(() => {
         return () => {
-            if (previewUrl) URL.revokeObjectURL(previewUrl);
+            previewUrls.forEach(url => URL.revokeObjectURL(url));
         };
-    }, [previewUrl]);
+    }, [previewUrls]);
 
     const gpsAbortRef = useRef(false);
 
@@ -94,9 +94,9 @@ export default function CapturePage({ params }: { params: { code: string } }) {
         if (fileInputRef.current) fileInputRef.current.click();
     };
 
-    const skipGps = () => {
+    const manualProceed = () => {
         gpsAbortRef.current = true;
-        showToast("Skipping GPS. Location won't be verified.", "info");
+        showToast("Proceeding without GPS. Media will be marked as unverified.", "warning");
         proceedToCamera();
     };
 
@@ -169,10 +169,10 @@ export default function CapturePage({ params }: { params: { code: string } }) {
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            const selectedFile = e.target.files[0];
-            setFile(selectedFile);
-            setPreviewUrl(URL.createObjectURL(selectedFile));
+        if (e.target.files && e.target.files.length > 0) {
+            const selectedFiles = Array.from(e.target.files);
+            setFiles(selectedFiles);
+            setPreviewUrls(selectedFiles.map(f => URL.createObjectURL(f)));
             setStep('preview');
         } else {
             setStep('intro'); // User cancelled
@@ -180,60 +180,64 @@ export default function CapturePage({ params }: { params: { code: string } }) {
     };
 
     const handleUpload = async () => {
-        if (!file || !code) return;
+        if (files.length === 0 || !code) return;
 
         setStep('uploading');
+        let successCount = 0;
 
-        const metadataObj = {
-            latitude: location?.lat || null,
-            longitude: location?.lng || null,
-            gps_accuracy: location?.accuracy || null,
-            captured_at: new Date().toISOString(),
-            media_type: file.type.startsWith('video') ? 'video' : 'photo',
-            device_id: navigator.userAgent,
-            watermark_address: ''
-        };
-        const metadata = JSON.stringify(metadataObj);
+        // Use sequential upload to prevent massive spikes
+        for (const file of files) {
+            const metadataObj = {
+                latitude: location?.lat || null,
+                longitude: location?.lng || null,
+                gps_accuracy: location?.accuracy || null,
+                captured_at: new Date().toISOString(),
+                media_type: file.type.startsWith('video') ? 'video' : 'photo',
+                device_id: navigator.userAgent,
+                watermark_address: ''
+            };
+            const metadata = JSON.stringify(metadataObj);
 
-        // OFFLINE HANDLING
-        if (!navigator.onLine) {
-            try {
-                const { offlineQueue } = await import('@/lib/offlineQueue');
-                await offlineQueue.addToQueue(file, metadata, code, metadataObj.media_type as any);
-                setStep('success');
-                checkQueueHelper();
-                showToast('Saved to Offline Queue. Will sync when online.', 'success');
-            } catch (err) {
-                console.error("Offline save failed", err);
-                showToast("Failed to save offline.", "error");
-                setStep('preview');
+            // OFFLINE HANDLING
+            if (!navigator.onLine) {
+                try {
+                    const { offlineQueue } = await import('@/lib/offlineQueue');
+                    await offlineQueue.addToQueue(file, metadata, code, metadataObj.media_type as any);
+                    successCount++;
+                } catch (err) {
+                    console.error("Offline save failed", err);
+                }
+                continue;
             }
-            return;
+
+            // ONLINE UPLOAD
+            try {
+                const response = await apiClient.uploadPropertyMedia(file, metadata, code);
+                if (response.property_verified || response.distance_verified) {
+                    setIsSessionVerified(true);
+                }
+                successCount++;
+            } catch (error: any) {
+                console.error(error);
+                // Auto-queue if network error
+                if (!error.response || error.code === 'ERR_NETWORK') {
+                    const { offlineQueue } = await import('@/lib/offlineQueue');
+                    await offlineQueue.addToQueue(file, metadata, code, metadataObj.media_type as any);
+                    successCount++;
+                }
+            }
         }
 
-        // ONLINE UPLOAD
-        try {
-            const response = await apiClient.uploadPropertyMedia(file, metadata, code);
-            if (response.property_verified || response.distance_verified) {
-                setIsSessionVerified(true);
-            }
+        if (successCount > 0) {
             setStep('success');
-            showToast('Media uploaded successfully!', 'success');
-        } catch (error: any) {
-            console.error(error);
-            const msg = error.response?.data?.detail || "Upload failed.";
-
-            // Auto-queue if network error
-            if (!error.response || error.code === 'ERR_NETWORK') {
-                const { offlineQueue } = await import('@/lib/offlineQueue');
-                await offlineQueue.addToQueue(file, metadata, code, metadataObj.media_type as any);
-                setStep('success');
+            if (!navigator.onLine) {
                 checkQueueHelper();
-                showToast('Network unstable. Saved to Queue.', 'warning');
-                return;
+                showToast(`Saved ${successCount} item(s) to offline queue.`, 'success');
+            } else {
+                showToast(`Successfully uploaded ${successCount} item(s)!`, 'success');
             }
-
-            showToast(msg, 'error');
+        } else {
+            showToast("Failed to upload media. Please try again.", "error");
             setStep('preview');
         }
     };
@@ -256,8 +260,8 @@ export default function CapturePage({ params }: { params: { code: string } }) {
                 <button
                     onClick={() => {
                         setStep('intro');
-                        setFile(null);
-                        setPreviewUrl(null);
+                        setFiles([]);
+                        setPreviewUrls([]);
                     }}
                     className="w-full bg-teal-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:bg-teal-700 transition"
                 >
@@ -340,20 +344,32 @@ export default function CapturePage({ params }: { params: { code: string } }) {
                         <p className="text-gray-600 mb-2">Acquiring GPS location...</p>
                         <p className="text-gray-400 text-sm mb-6">This should only take a few seconds</p>
                         <button
-                            onClick={skipGps}
+                            onClick={manualProceed}
                             className="text-teal-600 underline text-sm font-medium"
                         >
-                            Skip GPS &amp; continue without location
+                            Taking too long? Proceed anyway (unverified)
                         </button>
                     </div>
                 )}
 
-                {step === 'preview' && previewUrl && (
+                {step === 'preview' && files.length > 0 && (
                     <div className="w-full flex-1 flex flex-col">
-                        <div className="relative flex-1 bg-black rounded-lg overflow-hidden shadow-xl mb-6">
-                            <img src={previewUrl} alt="Preview" className="w-full h-full object-contain" />
+                        <div className="relative flex-1 bg-black rounded-lg overflow-y-auto shadow-xl mb-6 flex flex-col gap-2 p-2">
+                            {files.map((file, idx) => (
+                                <div key={idx} className="relative w-full h-64 bg-gray-900 rounded-md overflow-hidden shrink-0">
+                                    {file.type.startsWith('video') ? (
+                                        <video src={previewUrls[idx]} controls className="w-full h-full object-contain" />
+                                    ) : (
+                                        <img src={previewUrls[idx]} alt={`Preview ${idx + 1}`} className="w-full h-full object-contain" />
+                                    )}
+                                </div>
+                            ))}
+                            <div className="text-center text-gray-400 text-xs mt-2">
+                                {files.length} item(s) selected
+                            </div>
+
                             {location && (
-                                <div className="absolute bottom-4 left-4 right-4 bg-black/50 text-white text-xs p-2 rounded backdrop-blur-sm">
+                                <div className="absolute bottom-4 left-4 right-4 bg-black/50 text-white text-xs p-2 rounded backdrop-blur-sm z-10 w-auto text-center mx-auto">
                                     📍 Location acquired (Accuracy: {Math.round(location.accuracy)}m)
                                 </div>
                             )}
@@ -361,7 +377,7 @@ export default function CapturePage({ params }: { params: { code: string } }) {
 
                         <div className="flex gap-3">
                             <button
-                                onClick={() => setStep('intro')}
+                                onClick={() => { setStep('intro'); setFiles([]); setPreviewUrls([]); }}
                                 className="flex-1 bg-white text-gray-700 font-bold py-3 px-4 rounded-xl shadow border border-gray-200"
                             >
                                 Retake
@@ -390,7 +406,7 @@ export default function CapturePage({ params }: { params: { code: string } }) {
                     ref={fileInputRef}
                     onChange={handleFileChange}
                     accept="image/*,video/*"
-                    capture="environment"
+                    multiple
                     className="hidden"
                 />
             </main>

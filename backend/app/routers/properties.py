@@ -393,6 +393,7 @@ async def upload_media(
 
     # GPS verification (if coordinates provided)
     distance = None
+    verification_status = "pending_review"
     if meta_obj.latitude and meta_obj.longitude:
         if session.target_latitude and session.target_longitude:
             distance = calculate_distance(
@@ -403,11 +404,8 @@ async def upload_media(
             )
 
             # Check if within radius
-            if distance > session.gps_radius_meters:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Too far from property ({int(distance)}m away, max {session.gps_radius_meters}m)",
-                )
+            if distance <= session.gps_radius_meters:
+                verification_status = "verified"
 
     # Save file
     property_dir = os.path.join(UPLOAD_DIR, str(session.property_id))
@@ -434,8 +432,8 @@ async def upload_media(
         captured_at=meta_obj.captured_at,
         device_id=meta_obj.device_id,
         watermark_address=meta_obj.watermark_address,
-        verification_status="verified",
-        verified_at=datetime.utcnow(),
+        verification_status=verification_status,
+        verified_at=datetime.utcnow() if verification_status == "verified" else None,
     )
 
     db.add(media)
