@@ -72,8 +72,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Deploy to Vercel/Render (Optional Webhook)
-        env:
-          DEPLOY_WEBHOOK_URL: ${{ secrets.DEPLOY_WEBHOOK_URL }}
         run: |
           echo "Placeholder: Trigger your free Render/Vercel instance webhook here."
-          # if [ ! -z "$DEPLOY_WEBHOOK_URL" ]; then curl -X POST "$DEPLOY_WEBHOOK_URL"; fi
+          # if [ ! -z "${{ secrets.DEPLOY_WEBHOOK_URL }}" ]; then curl -X POST "${{ secrets.DEPLOY_WEBHOOK_URL }}"; fi
