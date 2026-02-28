@@ -1,0 +1,96 @@
+services:
+  # API Server (Development with Hot Reloading)
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: builder # Use builder stage for dev (includes dev utilities)
+    volumes:
+      - ./backend:/app
+    environment:
+      - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://rental:mysecretpassword@db:5432/rental_platform}
+      - SECRET_KEY=${SECRET_KEY:-development-secret-key-min-32-chars-long-change-in-production}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - FRONTEND_URL=http://localhost:3000
+      - ENVIRONMENT=development
+      - PYTHONPATH=/app
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Background Worker (Celery)
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: builder
+    volumes:
+      - ./backend:/app
+    environment:
+      - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://rental:mysecretpassword@db:5432/rental_platform}
+      - SECRET_KEY=${SECRET_KEY:-development-secret-key-min-32-chars-long-change-in-production}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - PYTHONPATH=/app
+    depends_on:
+      - redis
+      - db
+    command: celery -A app.workers.celery_app worker --loglevel=info
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_dev_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=${DB_USER:-rental}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-mysecretpassword}
+      - POSTGRES_DB=${DB_NAME:-rental_platform}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U rental -d rental_platform" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Frontend (Next.js with Hot Reloading)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: deps # Use deps stage for dev (we want npm commands available)
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules # Anonymous volume to preserve container's node_modules
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000 # Map to localhost when accessing from browser
+      - NODE_ENV=development
+    ports:
+      - "3000:3000"
+    command: npm run dev
+    depends_on:
+      - api
+
+volumes:
+  redis_dev_data:
+  postgres_dev_data:

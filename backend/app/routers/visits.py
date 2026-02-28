@@ -34,7 +34,65 @@ class VisitSlotResponse(BaseModel):
     meeting_link: Optional[str] = None
 
 
+class DirectLeaseGenerateRequest(BaseModel):
+    tenant_email: str
+    rent_amount: float
+    start_date: str
+    lease_type: str = "meuble"
+    deposit_amount: Optional[float] = None
+    charges_amount: Optional[float] = None
+    duration_months: Optional[int] = None
+
+
 # --- Visit Endpoints ---
+
+
+@router.post("/visits/leases/generate")
+async def generate_lease_directly(
+    property_id: UUID,
+    request: DirectLeaseGenerateRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Generate a lease directly from the property VisitScheduler UI"""
+    # Check property ownership
+    result = await db.execute(select(Property).where(Property.id == property_id))
+    property_obj = result.scalar_one_or_none()
+
+    if not property_obj or property_obj.landlord_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # Get or create tenant (simplified for UI)
+    result = await db.execute(select(User).where(User.email == request.tenant_email))
+    tenant = result.scalar_one_or_none()
+
+    if not tenant:
+        raise HTTPException(
+            status_code=404, detail=f"No user found with email {request.tenant_email}"
+        )
+
+    # Create dummy lease entry just to satisfy the download endpoint
+    lease = Lease(
+        property_id=property_id,
+        landlord_id=current_user.id,
+        tenant_id=tenant.id,
+        start_date=datetime.strptime(request.start_date, "%Y-%m-%d").date(),
+        rent_amount=request.rent_amount,
+        deposit_amount=request.deposit_amount or (request.rent_amount * 2),
+        charges_amount=request.charges_amount or 0,
+        lease_type=request.lease_type,
+        status="generated",
+    )
+    db.add(lease)
+    await db.commit()
+    await db.refresh(lease)
+
+    return {
+        "download_url": f"http://localhost:8000/leases/{lease.id}/download",
+        "lease_type": request.lease_type,
+    }
+
+
 
 
 @router.post("/visits/slots", response_model=List[VisitSlotResponse])
@@ -57,7 +115,7 @@ async def create_visit_slots(
         if not property:
             raise HTTPException(status_code=404, detail="Property not found")
 
-        if property.owner_id != current_user.id:
+        if property.landlord_id != current_user.id:
             raise HTTPException(
                 status_code=403,
                 detail="Not authorized to manage visits for this property",

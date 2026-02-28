@@ -24,7 +24,7 @@ export default function Navbar() {
     ];
 
     return (
-        <header className="glass-card sticky top-0 z-50 border-b border-[var(--card-border)] mb-6">
+        <header className="sticky top-0 z-50 mb-6 w-full rounded-2xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] dark:shadow-[0_8px_40px_-12px_rgba(0,0,0,0.5)] border border-white/50 dark:border-white/10 mt-4">
             <div className="max-w-7xl mx-auto py-3 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
                 {/* Logo & Brand */}
                 <div className="flex items-center gap-8">
@@ -53,8 +53,8 @@ export default function Navbar() {
                                     href={link.href}
                                     className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2
                                         ${isActive
-                                            ? 'bg-[var(--primary-50)] text-[var(--primary-700)] shadow-sm'
-                                            : 'text-[var(--gray-600)] hover:bg-[var(--gray-50)] hover:text-[var(--gray-900)]'
+                                            ? 'bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300 shadow-sm'
+                                            : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-white'
                                         }`}
                                 >
                                     <span>{link.icon}</span>
@@ -70,16 +70,16 @@ export default function Navbar() {
                     <LanguageSwitcher />
                     <NotificationBell />
 
-                    <div className="h-6 w-px bg-[var(--gray-200)] mx-1"></div>
+                    <div className="h-6 w-px bg-zinc-200 dark:bg-zinc-700 mx-1"></div>
 
                     <div className="flex items-center gap-3">
-                        <span className="text-sm font-medium text-[var(--gray-700)] hidden sm:block">
+                        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300 hidden sm:block">
                             {user.full_name?.split(' ')[0]}
                         </span>
                         <button
                             onClick={logout}
                             title={t('dashboard.logout')}
-                            className="p-2 rounded-lg text-[var(--error)] bg-red-50 hover:bg-red-100 transition-all duration-200 border border-red-200"
+                            className="p-2 rounded-lg text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 transition-all duration-200 border border-red-200 dark:border-red-900/30"
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

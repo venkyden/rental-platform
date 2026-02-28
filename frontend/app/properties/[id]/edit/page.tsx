@@ -6,6 +6,8 @@ import { useAuth } from '@/lib/useAuth';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { apiClient } from '@/lib/api';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
+import QRCodeDisplay from '@/components/QRCodeDisplay';
+import { Camera } from 'lucide-react';
 
 type PropertyFormData = {
     title: string;
@@ -53,6 +55,8 @@ export default function EditPropertyPage() {
     const [loading, setLoading] = useState(false);
     const [enriching, setEnriching] = useState(false);
     const [initialLoading, setInitialLoading] = useState(true);
+    const [mediaSession, setMediaSession] = useState<any>(null);
+    const [generatingSession, setGeneratingSession] = useState(false);
 
     const [formData, setFormData] = useState<PropertyFormData>({
         title: '',
@@ -146,6 +150,19 @@ export default function EditPropertyPage() {
         setFormData(prev => ({ ...prev, ...updates }));
     };
 
+    const handleGenerateSession = async () => {
+        setGeneratingSession(true);
+        try {
+            const response = await apiClient.client.post(`/properties/${propertyId}/media-session`);
+            setMediaSession(response.data);
+        } catch (error) {
+            console.error('Failed to generate media session:', error);
+            alert('Failed to generate secure upload session');
+        } finally {
+            setGeneratingSession(false);
+        }
+    };
+
     const handleEnrichLocation = async () => {
         setEnriching(true);
         try {
@@ -198,6 +215,8 @@ export default function EditPropertyPage() {
                 return formData.monthly_rent > 0;
             case 5:
                 return true;
+            case 6:
+                return true;
             default:
                 return true;
         }
@@ -213,7 +232,7 @@ export default function EditPropertyPage() {
 
     const prevStep = () => setCurrentStep(prev => Math.max(1, prev - 1));
 
-    const progress = (currentStep / 6) * 100;
+    const progress = (currentStep / 7) * 100;
 
     if (initialLoading) {
         return (
@@ -247,7 +266,7 @@ export default function EditPropertyPage() {
                     {/* Progress Bar */}
                     <div className="mb-8 bg-white rounded-lg p-6 shadow-md">
                         <div className="flex justify-between mb-2">
-                            <span className="text-sm font-medium text-gray-700">Step {currentStep} of 6</span>
+                            <span className="text-sm font-medium text-gray-700">Step {currentStep} of 7</span>
                             <span className="text-sm font-medium text-blue-600">{Math.round(progress)}%</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-3">
@@ -682,6 +701,42 @@ export default function EditPropertyPage() {
 
                         {currentStep === 6 && (
                             <div>
+                                <h2 className="text-2xl font-bold mb-6 text-gray-900">Photos & Media</h2>
+                                <div className="space-y-6">
+                                    <div className="p-6 bg-blue-50 border border-blue-200 rounded-xl text-center">
+                                        <Camera className="w-12 h-12 text-blue-500 mx-auto mb-4" />
+                                        <h3 className="text-lg font-bold text-gray-900 mb-2">Upload Real Media</h3>
+                                        <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                                            Switch to your mobile device to securely capture and upload photos with GPS verification.
+                                        </p>
+
+                                        {!mediaSession ? (
+                                            <button
+                                                onClick={handleGenerateSession}
+                                                disabled={generatingSession}
+                                                className="px-6 py-3 bg-black text-white rounded-lg font-bold hover:bg-gray-800 disabled:opacity-50"
+                                            >
+                                                {generatingSession ? 'Generating...' : '📱 Generate Upload Code'}
+                                            </button>
+                                        ) : (
+                                            <div className="bg-white p-6 justify-center flex rounded-lg border mt-4">
+                                                <div className="text-center">
+                                                    <QRCodeDisplay
+                                                        verificationCode={mediaSession.verification_code}
+                                                        captureUrl={mediaSession.capture_url}
+                                                        expiresAt={mediaSession.expires_at}
+                                                    />
+                                                    <p className="mt-4 text-sm font-medium text-gray-600">Scan this code with your phone camera</p>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {currentStep === 7 && (
+                            <div>
                                 <h2 className="text-2xl font-bold mb-6 text-gray-900">Review Changes</h2>
                                 <div className="space-y-4 text-sm">
                                     <div className="bg-gray-50 p-4 rounded-lg">
@@ -737,7 +792,7 @@ export default function EditPropertyPage() {
                                 </button>
                             )}
 
-                            {currentStep < 6 ? (
+                            {currentStep < 7 ? (
                                 <button
                                     onClick={nextStep}
                                     className="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:shadow-lg"

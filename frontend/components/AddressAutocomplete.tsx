@@ -111,7 +111,6 @@ export default function AddressAutocomplete({
                         q,
                         limit: '5',
                         lang: 'fr',
-                        layer: 'house,street',
                     });
 
                     const bounds = city ? CITY_BOUNDS[city.toLowerCase()] : null;
