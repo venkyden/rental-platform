@@ -56,7 +56,7 @@ allowed_origins = (
     os.getenv("ALLOWED_ORIGINS", "").split(",") if os.getenv("ALLOWED_ORIGINS") else []
 )
 allowed_origins.extend(
-    ["http://localhost:3000", "http://localhost:3001", "http://127.0.0.1:3000", "https://roomivo-frontend-0jyi.onrender.com"]
+    ["http://localhost:3000", "http://localhost:3001", "http://127.0.0.1:3000", "https://roomivo-frontend-0jyi.onrender.com", "https://roomivo.eu", "https://www.roomivo.eu"]
 )
 allowed_origins = [o.strip() for o in allowed_origins if o.strip()]
 

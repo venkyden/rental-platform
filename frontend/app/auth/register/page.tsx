@@ -231,12 +231,6 @@ export default function RegisterPage() {
             </motion.div>
 
             <motion.form variants={containerVariants} className="space-y-5" method="POST" onSubmit={handleSubmit}>
-                <div className="relative flex justify-center sm:justify-start pt-2 border-t border-zinc-200 dark:border-zinc-800">
-                    <span className="bg-white dark:bg-zinc-950 pr-4 mt-[-12px] text-sm text-zinc-500 font-medium absolute left-0 sm:left-auto">
-                        Or register with email
-                    </span>
-                </div>
-
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-4">
                     <motion.div variants={itemVariants} className="col-span-1 sm:col-span-2">
                         <label htmlFor="full_name" className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-1.5">
