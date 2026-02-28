@@ -282,7 +282,7 @@ async def google_auth(
             db.add(user)
             audit_logger.info(f"GOOGLE_REGISTER email={email} role={role}")
 
-    if not user.is_active:
+    if user.is_active is False:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Account is inactive"
         )
