@@ -35,12 +35,18 @@ class Property(Base):
     latitude = Column(DECIMAL(10, 8))
     longitude = Column(DECIMAL(11, 8))
 
-    # Details
     bedrooms = Column(Integer, nullable=False)
     bathrooms = Column(DECIMAL(3, 1))
     size_sqm = Column(DECIMAL(8, 2))
     floor_number = Column(Integer)
     furnished = Column(Boolean, default=False)
+
+    # Detailed Rooms Configuration
+    accommodation_capacity = Column(Integer)
+    rooms_count = Column(Integer)  # matches "number of pieces"
+    living_room_type = Column(String(50))  # 'Private', 'Common', 'None'
+    kitchen_type = Column(String(50))  # 'Private', 'Municipality', 'None'
+    room_details = Column(JSONB)  # Detailed configurations for each bedroom
 
     # Pricing
     monthly_rent = Column(DECIMAL(10, 2), nullable=False)

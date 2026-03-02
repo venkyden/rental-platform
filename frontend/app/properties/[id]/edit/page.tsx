@@ -7,7 +7,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import { apiClient } from '@/lib/api';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
 import QRCodeDisplay from '@/components/QRCodeDisplay';
-import { Camera } from 'lucide-react';
+import { Camera, RefreshCw, CheckCircle2 } from 'lucide-react';
 
 type PropertyFormData = {
     title: string;
@@ -57,6 +57,11 @@ export default function EditPropertyPage() {
     const [initialLoading, setInitialLoading] = useState(true);
     const [mediaSession, setMediaSession] = useState<any>(null);
     const [generatingSession, setGeneratingSession] = useState(false);
+
+    // Media Verification State
+    const [mediaVerified, setMediaVerified] = useState(false);
+    const [verifyingMedia, setVerifyingMedia] = useState(false);
+    const [mediaCount, setMediaCount] = useState(0);
 
     const [formData, setFormData] = useState<PropertyFormData>({
         title: '',
@@ -155,11 +160,34 @@ export default function EditPropertyPage() {
         try {
             const response = await apiClient.client.post(`/properties/${propertyId}/media-session`);
             setMediaSession(response.data);
+            setMediaVerified(false); // Reset verification if new session generated
         } catch (error) {
             console.error('Failed to generate media session:', error);
             alert('Failed to generate secure upload session');
         } finally {
             setGeneratingSession(false);
+        }
+    };
+
+    const handleVerifyMedia = async () => {
+        setVerifyingMedia(true);
+        try {
+            // Check if the property has media uploaded
+            const response = await apiClient.client.get(`/properties/${propertyId}`);
+            const propertyImages = response.data.images || [];
+
+            setMediaCount(propertyImages.length);
+
+            if (propertyImages.length > 0) {
+                setMediaVerified(true);
+            } else {
+                alert('No media found yet. Please make sure you have uploaded and confirmed on your mobile device.');
+            }
+        } catch (error) {
+            console.error('Failed to verify media:', error);
+            alert('Error checking media status. Please try again.');
+        } finally {
+            setVerifyingMedia(false);
         }
     };
 
@@ -216,6 +244,10 @@ export default function EditPropertyPage() {
             case 5:
                 return true;
             case 6:
+                if (!mediaVerified) {
+                    alert('Please capture and verify property media on your mobile device before proceeding.');
+                    return false;
+                }
                 return true;
             default:
                 return true;
@@ -719,7 +751,7 @@ export default function EditPropertyPage() {
                                                 {generatingSession ? 'Generating...' : '📱 Generate Upload Code'}
                                             </button>
                                         ) : (
-                                            <div className="bg-white p-6 justify-center flex rounded-lg border mt-4">
+                                            <div className="bg-white p-6 justify-center flex flex-col items-center rounded-lg border mt-4">
                                                 <div className="text-center">
                                                     <QRCodeDisplay
                                                         verificationCode={mediaSession.verification_code}
@@ -727,6 +759,34 @@ export default function EditPropertyPage() {
                                                         expiresAt={mediaSession.expires_at}
                                                     />
                                                     <p className="mt-4 text-sm font-medium text-gray-600">Scan this code with your phone camera</p>
+
+                                                    <div className="mt-8 pt-6 border-t border-gray-100 w-full flex flex-col items-center">
+                                                        {mediaVerified ? (
+                                                            <div className="flex flex-col items-center text-green-600 space-y-2">
+                                                                <CheckCircle2 className="w-10 h-10" />
+                                                                <span className="font-bold text-lg">Media Verified!</span>
+                                                                <span className="text-sm">({mediaCount} item(s) securely uploaded)</span>
+                                                            </div>
+                                                        ) : (
+                                                            <>
+                                                                <p className="text-sm text-gray-500 mb-4">
+                                                                    Waiting for media upload... Once you've finished capturing on your phone, click below to verify.
+                                                                </p>
+                                                                <button
+                                                                    onClick={handleVerifyMedia}
+                                                                    disabled={verifyingMedia}
+                                                                    className="px-6 py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+                                                                >
+                                                                    {verifyingMedia ? (
+                                                                        <RefreshCw className="w-5 h-5 animate-spin" />
+                                                                    ) : (
+                                                                        <RefreshCw className="w-5 h-5" />
+                                                                    )}
+                                                                    {verifyingMedia ? 'Checking...' : 'Verify Uploads'}
+                                                                </button>
+                                                            </>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
                                         )}

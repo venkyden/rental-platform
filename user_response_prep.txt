@@ -1,0 +1,1 @@
+Browser CORS and COOP Caching Explanation

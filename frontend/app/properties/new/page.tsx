@@ -31,6 +31,22 @@ type PropertyFormData = {
     floor_number?: number;
     furnished: boolean;
 
+    // Detailed Layout
+    accommodation_capacity: number;
+    rooms_count: number;
+    living_room_type: 'Private' | 'Common' | 'None';
+    kitchen_type: 'Private' | 'Municipality' | 'None';
+    room_details: Array<{
+        surface: number;
+        capacity: number;
+        description: string;
+        bedding: string;
+        has_cupboard: boolean;
+        has_chair: boolean;
+        has_private_bathroom: boolean;
+        has_desk: boolean;
+    }>;
+
     // French Compliance (Loi ALUR)
     dpe_rating: string;        // A-G energy rating (required)
     ges_rating: string;        // A-G greenhouse gas rating
@@ -86,6 +102,13 @@ export default function NewPropertyPage() {
         bathrooms: 1,
         size_sqm: 30,
         furnished: false,
+        // Detailed Layout
+        accommodation_capacity: 1,
+        rooms_count: 1,
+        living_room_type: 'None',
+        kitchen_type: 'None',
+        room_details: [],
+
         // French Compliance
         dpe_rating: '',
         ges_rating: '',
@@ -163,10 +186,12 @@ export default function NewPropertyPage() {
             case 2:
                 return !!(formData.address_line1 && formData.city && formData.postal_code);
             case 3:
-                return formData.bedrooms > 0 && formData.bathrooms > 0 && formData.size_sqm > 0;
+                return formData.bedrooms >= 0 && formData.bathrooms > 0 && formData.size_sqm > 0;
             case 4:
-                return formData.monthly_rent > 0;
+                return formData.accommodation_capacity > 0 && formData.rooms_count > 0 && formData.room_details.length === formData.bedrooms;
             case 5:
+                return formData.monthly_rent > 0;
+            case 6:
                 return true; // Amenities are optional
             default:
                 return true;
@@ -174,6 +199,23 @@ export default function NewPropertyPage() {
     };
 
     const nextStep = () => {
+        if (currentStep === 3) {
+            // Auto-sync room_details length with number of bedrooms
+            if (formData.room_details.length !== formData.bedrooms) {
+                const newRoomDetails = Array(formData.bedrooms).fill({}).map((_, i) => formData.room_details[i] || {
+                    surface: 10,
+                    capacity: 1,
+                    description: '',
+                    bedding: 'Double',
+                    has_cupboard: false,
+                    has_chair: false,
+                    has_private_bathroom: false,
+                    has_desk: false,
+                });
+                updateFormData({ room_details: newRoomDetails });
+            }
+        }
+
         if (validateStep(currentStep)) {
             setCurrentStep(prev => prev + 1);
         } else {
@@ -183,7 +225,7 @@ export default function NewPropertyPage() {
 
     const prevStep = () => setCurrentStep(prev => Math.max(1, prev - 1));
 
-    const progress = (currentStep / 6) * 100;
+    const progress = (currentStep / 7) * 100;
 
     return (
         <ProtectedRoute>
@@ -202,13 +244,14 @@ export default function NewPropertyPage() {
                     </div>
 
                     {/* Progress Bar */}
-                    {currentStep < 7 && (
+                    {currentStep < 8 && (
                         <div className="mb-10 mt-6 bg-white rounded-2xl p-8 pb-10 shadow-sm border border-gray-100">
                             <WizardProgress
                                 steps={[
                                     'Basic Info',
                                     'Location',
                                     'Details',
+                                    'Rooms & Layout',
                                     'Pricing',
                                     'Features',
                                     'Review'
@@ -483,6 +526,217 @@ export default function NewPropertyPage() {
 
                         {currentStep === 4 && (
                             <div>
+                                <h2 className="text-2xl font-bold mb-6 text-gray-900">Rooms & Layout</h2>
+
+                                <div className="space-y-8">
+                                    {/* Global Accommodation Details */}
+                                    <div className="bg-white p-6 rounded-xl border border-gray-200">
+                                        <h3 className="text-lg font-semibold mb-4 text-gray-800">Global Details</h3>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-medium mb-2 text-gray-700">Accommodation capacity *</label>
+                                                <input
+                                                    type="number"
+                                                    value={formData.accommodation_capacity}
+                                                    onChange={(e) => updateFormData({ accommodation_capacity: parseInt(e.target.value) })}
+                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                                                    min="1"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium mb-2 text-gray-700">Number of pieces *</label>
+                                                <input
+                                                    type="number"
+                                                    value={formData.rooms_count}
+                                                    onChange={(e) => updateFormData({ rooms_count: parseInt(e.target.value) })}
+                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                                                    min="1"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {formData.property_type === 'studio' && (
+                                            <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm">
+                                                <strong>ℹ️ Decency Standards:</strong> According to the decree of January 30, 2002 on decency standards, a decent dwelling must have a minimum living area of at least 9m².
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Shared / Private configuration */}
+                                    <div className="bg-white p-6 rounded-xl border border-gray-200">
+                                        <h3 className="text-lg font-semibold mb-4 text-gray-800">Common Areas</h3>
+                                        <div className="grid grid-cols-2 gap-8">
+                                            {/* Living Room */}
+                                            <div>
+                                                <label className="block text-sm font-bold mb-3 text-gray-700">Living room</label>
+                                                <div className="space-y-2">
+                                                    {['Private', 'Common', 'None'].map(type => (
+                                                        <label key={`lr-${type}`} className="flex items-center space-x-2">
+                                                            <input
+                                                                type="radio"
+                                                                name="living_room_type"
+                                                                value={type}
+                                                                checked={formData.living_room_type === type}
+                                                                onChange={() => updateFormData({ living_room_type: type as any })}
+                                                                className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                                                            />
+                                                            <span className="text-sm text-gray-700">{type}</span>
+                                                        </label>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            {/* Kitchen */}
+                                            <div>
+                                                <label className="block text-sm font-bold mb-3 text-gray-700">Kitchen</label>
+                                                <div className="space-y-2">
+                                                    {['Private', 'Municipality', 'None'].map(type => (
+                                                        <label key={`k-${type}`} className="flex items-center space-x-2">
+                                                            <input
+                                                                type="radio"
+                                                                name="kitchen_type"
+                                                                value={type}
+                                                                checked={formData.kitchen_type === type}
+                                                                onChange={() => updateFormData({ kitchen_type: type as any })}
+                                                                className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                                                            />
+                                                            <span className="text-sm text-gray-700">{type}</span>
+                                                        </label>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Bedroom Deep Dive */}
+                                    <div className="space-y-4">
+                                        <h3 className="text-xl font-bold text-gray-900 border-b pb-2">Bedrooms Details</h3>
+                                        <p className="text-sm text-gray-500 mb-4">Please detail the features for the {formData.bedrooms} bedrooms you indicated.</p>
+
+                                        {formData.room_details.map((room, index) => (
+                                            <div key={`room-${index}`} className="bg-gray-50 p-6 rounded-xl border border-gray-200 shadow-sm">
+                                                <h4 className="font-semibold text-lg text-blue-800 mb-4">Bedroom {index + 1}</h4>
+
+                                                <div className="grid grid-cols-2 gap-4 mb-4">
+                                                    <div>
+                                                        <label className="block text-sm font-medium mb-1 text-gray-700">Surface (m²) *</label>
+                                                        <input
+                                                            type="number"
+                                                            value={room.surface}
+                                                            onChange={(e) => {
+                                                                const newDetails = [...formData.room_details];
+                                                                newDetails[index].surface = parseFloat(e.target.value);
+                                                                updateFormData({ room_details: newDetails });
+                                                            }}
+                                                            className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-gray-900"
+                                                            min="1"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-sm font-medium mb-1 text-gray-700">Accommodation capacity *</label>
+                                                        <input
+                                                            type="number"
+                                                            value={room.capacity}
+                                                            onChange={(e) => {
+                                                                const newDetails = [...formData.room_details];
+                                                                newDetails[index].capacity = parseInt(e.target.value);
+                                                                updateFormData({ room_details: newDetails });
+                                                            }}
+                                                            className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-gray-900"
+                                                            min="1"
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                <div className="mb-4">
+                                                    <label className="block text-sm font-medium mb-1 text-gray-700">Describe this room</label>
+                                                    <input
+                                                        type="text"
+                                                        value={room.description}
+                                                        onChange={(e) => {
+                                                            const newDetails = [...formData.room_details];
+                                                            newDetails[index].description = e.target.value;
+                                                            updateFormData({ room_details: newDetails });
+                                                        }}
+                                                        placeholder="e.g. Master suite with large window"
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-gray-900"
+                                                    />
+                                                </div>
+
+                                                <h5 className="font-medium text-sm text-gray-800 mb-3 border-b pb-1">Room amenities</h5>
+
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className="block text-xs font-semibold mb-1 text-gray-500 uppercase">Bedding</label>
+                                                        <select
+                                                            value={room.bedding}
+                                                            onChange={(e) => {
+                                                                const newDetails = [...formData.room_details];
+                                                                newDetails[index].bedding = e.target.value;
+                                                                updateFormData({ room_details: newDetails });
+                                                            }}
+                                                            className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 text-sm text-gray-900"
+                                                        >
+                                                            <option value="Single">Single</option>
+                                                            <option value="Double">Double</option>
+                                                            <option value="Queen">Queen</option>
+                                                            <option value="King">King</option>
+                                                            <option value="Bunk Bed">Bunk Bed</option>
+                                                            <option value="Sofa Bed">Sofa Bed</option>
+                                                            <option value="None">None</option>
+                                                        </select>
+                                                    </div>
+
+                                                    <div className="space-y-3">
+                                                        {[
+                                                            { label: 'Cupboard', key: 'has_cupboard' as const },
+                                                            { label: 'Chair', key: 'has_chair' as const },
+                                                            { label: 'Private bathroom', key: 'has_private_bathroom' as const },
+                                                            { label: 'Desk', key: 'has_desk' as const }
+                                                        ].map(amenity => (
+                                                            <div key={amenity.key} className="flex justify-between items-center bg-white px-3 py-2 rounded border border-gray-200">
+                                                                <span className="text-sm font-medium text-gray-700">{amenity.label}</span>
+                                                                <div className="flex gap-3">
+                                                                    <label className="flex items-center gap-1 cursor-pointer">
+                                                                        <input
+                                                                            type="radio"
+                                                                            checked={!!room[amenity.key]}
+                                                                            onChange={() => {
+                                                                                const newDetails = [...formData.room_details];
+                                                                                newDetails[index][amenity.key] = true;
+                                                                                updateFormData({ room_details: newDetails });
+                                                                            }}
+                                                                            className="w-3.5 h-3.5 text-blue-600 focus:ring-blue-500"
+                                                                        />
+                                                                        <span className="text-xs text-gray-600">Yes</span>
+                                                                    </label>
+                                                                    <label className="flex items-center gap-1 cursor-pointer">
+                                                                        <input
+                                                                            type="radio"
+                                                                            checked={!room[amenity.key]}
+                                                                            onChange={() => {
+                                                                                const newDetails = [...formData.room_details];
+                                                                                newDetails[index][amenity.key] = false;
+                                                                                updateFormData({ room_details: newDetails });
+                                                                            }}
+                                                                            className="w-3.5 h-3.5 text-red-600 focus:ring-red-500"
+                                                                        />
+                                                                        <span className="text-xs text-gray-600">No</span>
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {currentStep === 5 && (
+                            <div>
                                 <h2 className="text-2xl font-bold mb-6 text-gray-900">Pricing & Availability</h2>
                                 <div className="space-y-4">
                                     <div>
@@ -667,7 +921,7 @@ export default function NewPropertyPage() {
                             </div>
                         )}
 
-                        {currentStep === 5 && (
+                        {currentStep === 6 && (
                             <div>
                                 <h2 className="text-2xl font-bold mb-6 text-gray-900">Amenities & Features</h2>
                                 <div className="space-y-6">
@@ -756,7 +1010,7 @@ export default function NewPropertyPage() {
                             </div>
                         )}
 
-                        {currentStep === 6 && (
+                        {currentStep === 7 && (
                             <div>
                                 <h2 className="text-2xl font-bold mb-6 text-gray-900">Review & Submit</h2>
                                 <div className="space-y-4 text-sm">
@@ -790,7 +1044,7 @@ export default function NewPropertyPage() {
                             </div>
                         )}
 
-                        {currentStep === 7 && mediaSession && (
+                        {currentStep === 8 && mediaSession && (
                             <div className="text-center">
                                 <div className="text-6xl mb-4">🎉</div>
                                 <h2 className="text-3xl font-bold text-green-600 mb-4">Property Created Successfully!</h2>

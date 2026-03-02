@@ -29,6 +29,12 @@ class PropertyCreate(BaseModel):
     floor_number: Optional[int] = None
     furnished: bool = False
 
+    accommodation_capacity: Optional[int] = Field(None, gt=0)
+    rooms_count: Optional[int] = Field(None, gt=0)
+    living_room_type: Optional[str] = None
+    kitchen_type: Optional[str] = None
+    room_details: Optional[List[dict]] = []
+
     monthly_rent: Decimal = Field(..., gt=0)
     deposit: Optional[Decimal] = Field(None, ge=0)
     charges: Optional[Decimal] = Field(None, ge=0)
@@ -76,6 +82,12 @@ class PropertyUpdate(BaseModel):
     floor_number: Optional[int] = None
     furnished: Optional[bool] = None
 
+    accommodation_capacity: Optional[int] = Field(None, gt=0)
+    rooms_count: Optional[int] = Field(None, gt=0)
+    living_room_type: Optional[str] = None
+    kitchen_type: Optional[str] = None
+    room_details: Optional[List[dict]] = None
+
     monthly_rent: Optional[Decimal] = Field(None, gt=0)
     deposit: Optional[Decimal] = Field(None, ge=0)
     charges: Optional[Decimal] = Field(None, ge=0)
@@ -120,6 +132,12 @@ class PropertyResponse(BaseModel):
     size_sqm: Optional[Decimal]
     floor_number: Optional[int]
     furnished: bool
+
+    accommodation_capacity: Optional[int]
+    rooms_count: Optional[int]
+    living_room_type: Optional[str]
+    kitchen_type: Optional[str]
+    room_details: Optional[List[dict]] = []
 
     monthly_rent: Decimal
     deposit: Optional[Decimal]
