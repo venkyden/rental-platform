@@ -71,10 +71,13 @@ export default function LoginPage() {
                 });
                 const buttonDiv = document.getElementById('google-signin-btn');
                 if (buttonDiv) {
+                    // Try to make it match the container width, max 400
+                    const containerWidth = buttonDiv.parentElement?.clientWidth || window.innerWidth - 64;
+                    const buttonWidth = Math.min(400, containerWidth);
                     window.google.accounts.id.renderButton(buttonDiv, {
                         theme: 'outline',
                         size: 'large',
-                        width: 400,
+                        width: buttonWidth,
                         text: 'signin_with',
                         shape: 'pill',
                     });
@@ -135,9 +138,11 @@ export default function LoginPage() {
             )}
 
             <motion.div variants={itemVariants} className="mb-6">
-                <div id="google-signin-btn" className="flex justify-center sm:justify-start" />
+                <div className="flex justify-center w-full">
+                    <div id="google-signin-btn" className="flex justify-center" />
+                </div>
                 {googleLoading && (
-                    <p className="text-sm text-zinc-600 mt-3 text-center sm:text-left animate-pulse">
+                    <p className="text-sm text-zinc-600 mt-3 text-center animate-pulse">
                         Connecting to Google...
                     </p>
                 )}

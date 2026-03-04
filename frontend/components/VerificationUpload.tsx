@@ -2,6 +2,22 @@ import { useState, useEffect, useRef } from 'react';
 import { apiClient } from '@/lib/api';
 import DocumentCapture from './DocumentCapture';
 import { QRCodeSVG } from 'qrcode.react';
+import { motion, Variants } from 'framer-motion';
+
+const containerVariants: Variants = {
+    hidden: { opacity: 0 },
+    show: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.1
+        }
+    }
+};
+
+const itemVariants: Variants = {
+    hidden: { opacity: 0, y: 15 },
+    show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } }
+};
 
 interface VerificationUploadProps {
     verificationType: 'identity' | 'employment';
@@ -152,30 +168,37 @@ export default function VerificationUpload({ verificationType, onSuccess }: Veri
     // ─── Desktop Identity: show QR code ───
     if (verificationType === 'identity' && !isMobile) {
         return (
-            <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Identity Verification</h3>
-                <p className="text-sm text-gray-600 mb-6">
-                    🔒 For security, capture live photos of your ID using your phone's camera
-                </p>
+            <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                animate="show"
+                className="w-full bg-white dark:bg-zinc-900/50 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 p-6 md:p-8"
+            >
+                <motion.div variants={itemVariants} className="text-center sm:text-left mb-6">
+                    <h3 className="text-2xl font-extrabold text-zinc-900 dark:text-white tracking-tight">Identity Verification</h3>
+                    <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+                        🔒 For security, capture live photos of your ID using your phone's camera
+                    </p>
+                </motion.div>
 
                 {qrLoading && (
-                    <div className="text-center py-12">
-                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-                        <p className="text-gray-500">Generating secure session...</p>
-                    </div>
+                    <motion.div variants={itemVariants} className="text-center py-12">
+                        <div className="w-10 h-10 border-4 border-teal-500/30 border-t-teal-500 rounded-full animate-spin mx-auto mb-4" />
+                        <p className="text-zinc-500 dark:text-zinc-400">Generating secure session...</p>
+                    </motion.div>
                 )}
 
                 {error && (
-                    <div className="rounded-md bg-red-50 p-4 mb-4">
-                        <p className="text-sm text-red-800">{error}</p>
-                    </div>
+                    <motion.div variants={itemVariants} className="mb-6 rounded-xl bg-red-50/50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/30 p-4">
+                        <p className="text-sm font-medium text-red-800 dark:text-red-400">{error}</p>
+                    </motion.div>
                 )}
 
                 {qrSession && (
-                    <div className="space-y-6">
+                    <motion.div variants={containerVariants} className="space-y-6 flex flex-col items-center sm:items-stretch">
                         {/* QR Code */}
-                        <div className="flex justify-center">
-                            <div className="p-4 bg-white border-2 border-gray-300 rounded-lg">
+                        <motion.div variants={itemVariants} className="flex justify-center">
+                            <div className="p-4 bg-white rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-800">
                                 <QRCodeSVG
                                     value={qrSession.captureUrl}
                                     size={200}
@@ -183,57 +206,60 @@ export default function VerificationUpload({ verificationType, onSuccess }: Veri
                                     includeMargin={true}
                                 />
                             </div>
-                        </div>
+                        </motion.div>
 
                         {/* Copy Link */}
-                        <div className="bg-gray-50 rounded-lg p-4">
-                            <p className="text-sm text-gray-600 mb-2">Or copy this link:</p>
+                        <motion.div variants={itemVariants} className="w-full bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-4 border border-zinc-100 dark:border-zinc-800">
+                            <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">Or copy this link:</p>
                             <div className="flex gap-2">
                                 <input
                                     type="text"
                                     value={qrSession.captureUrl}
                                     readOnly
-                                    className="flex-1 px-3 py-2 bg-white border rounded text-sm"
+                                    className="flex-1 px-4 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm text-zinc-600 dark:text-zinc-300 focus:outline-none"
                                 />
                                 <button
                                     onClick={() => copyToClipboard(qrSession.captureUrl)}
-                                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+                                    className="px-5 py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-medium rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-colors text-sm shadow-sm"
                                 >
                                     Copy
                                 </button>
                             </div>
-                        </div>
+                        </motion.div>
 
                         {/* Instructions */}
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                            <p className="text-sm font-medium mb-2">📱 How it works:</p>
-                            <ol className="text-xs text-gray-700 space-y-1 list-decimal list-inside">
+                        <motion.div variants={itemVariants} className="w-full bg-teal-50/50 dark:bg-teal-900/10 border border-teal-100 dark:border-teal-900/30 rounded-xl p-5">
+                            <p className="text-sm font-semibold text-teal-800 dark:text-teal-300 mb-3">📱 How it works:</p>
+                            <ol className="text-sm text-teal-700/80 dark:text-teal-400/80 space-y-2 list-decimal list-inside ml-1">
                                 <li>Scan the QR code with your phone camera</li>
-                                <li>Select your document type (Passport, ID Card, etc.)</li>
+                                <li>Select your document type</li>
                                 <li>Take a clear photo of your document</li>
-                                <li>This page will update automatically once verified</li>
+                                <li>This page will update automatically</li>
                             </ol>
-                        </div>
+                        </motion.div>
 
                         {/* Waiting indicator */}
-                        <div className="flex items-center justify-center gap-2 text-gray-500 text-sm">
-                            <div className="animate-pulse w-2 h-2 bg-green-500 rounded-full"></div>
+                        <motion.div variants={itemVariants} className="flex items-center justify-center gap-3 text-zinc-500 dark:text-zinc-400 text-sm font-medium py-2">
+                            <span className="relative flex h-3 w-3">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-3 w-3 bg-teal-500"></span>
+                            </span>
                             Waiting for mobile capture...
-                        </div>
+                        </motion.div>
 
                         {/* Expiry */}
-                        <p className="text-xs text-gray-400 text-center">
+                        <motion.p variants={itemVariants} className="text-xs text-zinc-400 dark:text-zinc-500 text-center font-medium">
                             Session expires: {new Date(qrSession.expiresAt).toLocaleTimeString()}
-                        </p>
-                    </div>
+                        </motion.p>
+                    </motion.div>
                 )}
 
-                <div className="mt-4 p-4 bg-gray-50 rounded-md">
-                    <p className="text-xs text-gray-600">
+                <motion.div variants={itemVariants} className="mt-6 p-4 bg-zinc-50 dark:bg-zinc-800/30 rounded-xl border border-zinc-100 dark:border-zinc-800/50">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed text-center sm:text-left">
                         🔒 Your documents are encrypted and stored securely. We use industry-standard security practices to protect your privacy.
                     </p>
-                </div>
-            </div>
+                </motion.div>
+            </motion.div>
         );
     }
 
@@ -248,25 +274,32 @@ export default function VerificationUpload({ verificationType, onSuccess }: Veri
                 />
             )}
 
-            <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">
-                    {verificationType === 'identity' ? 'Identity Verification' : 'Employment Verification'}
-                </h3>
-                <p className="text-sm text-gray-600 mb-6">
-                    {verificationType === 'identity'
-                        ? '🔒 For security, please capture live photos of your government-issued ID'
-                        : 'Upload a recent payslip or employment document'}
-                </p>
+            <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                animate="show"
+                className="w-full bg-white dark:bg-zinc-900/50 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 p-6 md:p-8"
+            >
+                <motion.div variants={itemVariants} className="text-center sm:text-left mb-8">
+                    <h3 className="text-2xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
+                        {verificationType === 'identity' ? 'Identity Verification' : 'Employment Verification'}
+                    </h3>
+                    <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+                        {verificationType === 'identity'
+                            ? '🔒 For security, please capture live photos of your government-issued ID'
+                            : 'Upload a recent payslip or employment document'}
+                    </p>
+                </motion.div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <motion.form variants={containerVariants} onSubmit={handleSubmit} className="space-y-6">
                     {error && (
-                        <div className="rounded-md bg-red-50 p-4">
-                            <p className="text-sm text-red-800">{error}</p>
-                        </div>
+                        <motion.div variants={itemVariants} className="rounded-xl bg-red-50/50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/30 p-4">
+                            <p className="text-sm font-medium text-red-800 dark:text-red-400">{error}</p>
+                        </motion.div>
                     )}
 
-                    <div>
-                        <label htmlFor="documentType" className="block text-sm font-medium text-gray-700 mb-2">
+                    <motion.div variants={itemVariants}>
+                        <label htmlFor="documentType" className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-1.5">
                             Document Type
                         </label>
                         <select
@@ -276,7 +309,7 @@ export default function VerificationUpload({ verificationType, onSuccess }: Veri
                                 setDocumentType(e.target.value);
                                 setFiles([]); // Reset files when document type changes
                             }}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="block w-full px-4 py-3 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900/50 text-zinc-900 dark:text-white focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 transition-all shadow-sm"
                             required
                         >
                             <option value="">Select document type...</option>
@@ -286,106 +319,132 @@ export default function VerificationUpload({ verificationType, onSuccess }: Veri
                                 </option>
                             ))}
                         </select>
-                    </div>
+                    </motion.div>
 
-                    {verificationType === 'identity' ? (
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Capture Document {selectedDocType && `(${selectedDocType.captures} photo${selectedDocType.captures > 1 ? 's' : ''})`}
-                            </label>
-                            {files.length === 0 ? (
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        if (!documentType) {
-                                            setError('Please select a document type first');
-                                            return;
-                                        }
-                                        setShowCamera(true);
-                                    }}
-                                    disabled={!documentType}
-                                    className="w-full py-4 border-2 border-dashed border-blue-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors flex items-center justify-center gap-2 text-blue-600 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    <span className="text-2xl">📷</span>
-                                    Take Photo of Document
-                                </button>
-                            ) : (
-                                <div className="space-y-2">
-                                    <div className="bg-green-50 border border-green-200 rounded-md p-3">
-                                        <p className="text-sm text-green-800 font-medium mb-2">
-                                            ✅ {files.length} photo{files.length > 1 ? 's' : ''} captured
-                                        </p>
-                                        {files.map((file, index) => (
-                                            <p key={index} className="text-xs text-green-700">
-                                                {index + 1}. {file.name} ({(file.size / 1024).toFixed(0)} KB)
-                                            </p>
-                                        ))}
-                                    </div>
+                    <motion.div variants={itemVariants}>
+                        {verificationType === 'identity' ? (
+                            <div className="space-y-3">
+                                <label className="block text-sm font-medium text-zinc-800 dark:text-zinc-300">
+                                    Capture Document {selectedDocType && <span className="text-zinc-500 font-normal">({selectedDocType.captures} photo{selectedDocType.captures > 1 ? 's' : ''})</span>}
+                                </label>
+                                {files.length === 0 ? (
                                     <button
                                         type="button"
                                         onClick={() => {
-                                            setFiles([]);
+                                            if (!documentType) {
+                                                setError('Please select a document type first');
+                                                return;
+                                            }
                                             setShowCamera(true);
                                         }}
-                                        className="text-sm text-blue-600 hover:text-blue-700"
+                                        disabled={!documentType}
+                                        className="w-full py-8 border-2 border-dashed border-teal-300 dark:border-teal-900/50 rounded-xl hover:bg-teal-50/50 dark:hover:bg-teal-900/10 hover:border-teal-500 transition-all flex flex-col items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed group"
                                     >
-                                        Recapture
+                                        <div className="w-12 h-12 bg-teal-100 dark:bg-teal-900/40 text-teal-600 dark:text-teal-400 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                                            <span className="text-2xl">📷</span>
+                                        </div>
+                                        <span className="font-semibold text-teal-700 dark:text-teal-400">Take Photo of Document</span>
                                     </button>
-                                </div>
-                            )}
-                            <p className="mt-2 text-xs text-gray-500">
-                                🔒 Live capture prevents fraud and ensures document authenticity
-                            </p>
-                        </div>
-                    ) : (
-                        <div>
-                            <label htmlFor="file" className="block text-sm font-medium text-gray-700 mb-2">
-                                Upload Document
-                            </label>
-                            <input
-                                type="file"
-                                id="file"
-                                onChange={handleFileChange}
-                                accept="image/jpeg,image/png,image/jpg,application/pdf"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                required
-                            />
-                            <p className="mt-1 text-xs text-gray-500">
-                                Accepted formats: JPEG, PNG, PDF (Max 10MB)
-                            </p>
-                        </div>
-                    )}
+                                ) : (
+                                    <div className="space-y-4">
+                                        <div className="bg-teal-50/50 dark:bg-teal-900/10 border border-teal-200 dark:border-teal-900/30 rounded-xl p-4">
+                                            <div className="flex items-center gap-2 mb-3">
+                                                <div className="w-8 h-8 rounded-full bg-teal-100 dark:bg-teal-900/50 flex items-center justify-center text-teal-600 dark:text-teal-400">
+                                                    ✓
+                                                </div>
+                                                <p className="text-sm font-semibold text-teal-900 dark:text-teal-300">
+                                                    {files.length} photo{files.length > 1 ? 's' : ''} captured
+                                                </p>
+                                            </div>
+                                            <div className="space-y-2">
+                                                {files.map((file, index) => (
+                                                    <div key={index} className="flex justify-between items-center bg-white dark:bg-zinc-900/60 p-2.5 rounded-lg border border-teal-100 dark:border-teal-900/20">
+                                                        <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300 truncate max-w-[200px]">{index + 1}. {file.name}</span>
+                                                        <span className="text-xs text-zinc-500">{(file.size / 1024).toFixed(0)} KB</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div className="flex justify-end">
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setFiles([]);
+                                                    setShowCamera(true);
+                                                }}
+                                                className="text-sm font-medium text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
+                                            >
+                                                ↻ Retake photos
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                                <p className="text-xs text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5 pt-1">
+                                    <span>🔒</span> Live capture prevents fraud and ensures document authenticity
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                <label htmlFor="file" className="block text-sm font-medium text-zinc-800 dark:text-zinc-300">
+                                    Upload Document
+                                </label>
+                                <input
+                                    type="file"
+                                    id="file"
+                                    onChange={handleFileChange}
+                                    accept="image/jpeg,image/png,image/jpg,application/pdf"
+                                    className="block w-full text-sm text-zinc-500 dark:text-zinc-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-zinc-100 dark:file:bg-zinc-800 file:text-zinc-700 dark:file:text-zinc-300 hover:file:bg-zinc-200 dark:hover:file:bg-zinc-700/80 focus:outline-none transition-all cursor-pointer"
+                                    required
+                                />
+                                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-2">
+                                    Accepted formats: JPEG, PNG, PDF (Max 10MB)
+                                </p>
+                            </div>
+                        )}
+                    </motion.div>
 
                     {files.length > 0 && verificationType === 'employment' && (
-                        <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
-                            <p className="text-sm text-blue-800">
-                                📎 {files[0].name} ({(files[0].size / 1024 / 1024).toFixed(2)} MB)
-                            </p>
-                        </div>
+                        <motion.div variants={itemVariants} className="bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700/50 rounded-xl p-4 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-lg bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center text-zinc-600 dark:text-zinc-300">
+                                    📎
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-zinc-900 dark:text-white truncate max-w-[200px]">
+                                        {files[0].name}
+                                    </p>
+                                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                                        {(files[0].size / 1024 / 1024).toFixed(2)} MB
+                                    </p>
+                                </div>
+                            </div>
+                        </motion.div>
                     )}
 
-                    <button
-                        type="submit"
-                        disabled={uploading || files.length === 0}
-                        className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg hover:shadow-lg transform hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                    >
-                        {uploading ? (
-                            <span className="flex items-center justify-center gap-2">
-                                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                Uploading...
-                            </span>
-                        ) : (
-                            'Upload & Verify'
-                        )}
-                    </button>
-                </form>
+                    <motion.div variants={itemVariants} className="pt-2">
+                        <button
+                            type="submit"
+                            disabled={uploading || files.length === 0}
+                            className="w-full flex items-center justify-center py-3.5 px-4 rounded-xl text-sm font-bold text-white bg-teal-600 hover:bg-teal-500 focus:outline-none focus:ring-4 focus:ring-teal-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm active:scale-[0.98]"
+                        >
+                            {uploading ? (
+                                <span className="flex items-center gap-2">
+                                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    Uploading & Verifying...
+                                </span>
+                            ) : (
+                                'Upload & Verify Securely'
+                            )}
+                        </button>
+                    </motion.div>
+                </motion.form>
 
-                <div className="mt-4 p-4 bg-gray-50 rounded-md">
-                    <p className="text-xs text-gray-600">
+                <motion.div variants={itemVariants} className="mt-6 pt-6 border-t border-zinc-100 dark:border-zinc-800/50">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 text-center sm:text-left leading-relaxed">
                         🔒 Your documents are encrypted and stored securely. We use industry-standard security practices to protect your privacy.
                     </p>
-                </div>
-            </div>
+                </motion.div>
+            </motion.div>
         </>
     );
 }

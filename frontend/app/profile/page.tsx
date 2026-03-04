@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/lib/useAuth';
 
@@ -27,9 +28,11 @@ export default function ProfilePage() {
                             </div>
                         </div>
                         <div className="space-y-4">
-                            <button className="w-full text-left p-3 hover:bg-gray-50 rounded border">⚙️ Account Settings</button>
-                            <button className="w-full text-left p-3 hover:bg-gray-50 rounded border">🔔 Notifications</button>
-                            <button className="w-full text-left p-3 hover:bg-gray-50 rounded border">🛡️ Privacy (GDPR)</button>
+                            <button className="w-full text-left p-3 hover:bg-gray-50 rounded border transition-colors">⚙️ Account Settings</button>
+                            <button className="w-full text-left p-3 hover:bg-gray-50 rounded border transition-colors">🔔 Notifications</button>
+                            <Link href="/settings/privacy" className="block w-full text-left p-3 hover:bg-gray-50 rounded border transition-colors">
+                                🛡️ Privacy (GDPR)
+                            </Link>
                         </div>
                     </div>
 

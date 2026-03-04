@@ -79,10 +79,13 @@ export default function RegisterPage() {
                 });
                 const buttonDiv = document.getElementById('google-signup-btn');
                 if (buttonDiv) {
+                    // Try to make it match the container width, max 400
+                    const containerWidth = buttonDiv.parentElement?.clientWidth || window.innerWidth - 64;
+                    const buttonWidth = Math.min(400, containerWidth);
                     window.google.accounts.id.renderButton(buttonDiv, {
                         theme: 'outline',
                         size: 'large',
-                        width: 400,
+                        width: buttonWidth,
                         text: 'signup_with',
                         shape: 'pill',
                     });
@@ -222,9 +225,11 @@ export default function RegisterPage() {
                     ))}
                 </div>
 
-                <div id="google-signup-btn" className="flex justify-center sm:justify-start" />
+                <div className="w-full flex justify-center mt-2 mb-2">
+                    <div id="google-signup-btn" className="flex justify-center" />
+                </div>
                 {googleLoading && (
-                    <p className="text-sm text-zinc-600 mt-3 text-center sm:text-left animate-pulse">
+                    <p className="text-sm text-zinc-600 mt-3 text-center animate-pulse">
                         Creating account with Google...
                     </p>
                 )}

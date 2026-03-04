@@ -8,6 +8,7 @@ class ApiClient {
     constructor() {
         this.client = axios.create({
             baseURL: API_URL,
+            withCredentials: true,
             headers: {
                 'Content-Type': 'application/json',
             },
@@ -30,14 +31,38 @@ class ApiClient {
         // Add response interceptor for error handling
         this.client.interceptors.response.use(
             (response) => response,
-            (error: AxiosError) => {
-                if (error.response?.status === 401) {
-                    // Token expired or invalid
-                    this.clearToken();
-                    if (typeof window !== 'undefined') {
-                        window.location.href = '/auth/login';
+            async (error: AxiosError) => {
+                const originalRequest = error.config as any;
+
+                // If the error is 401 and we haven't retried yet
+                if (error.response?.status === 401 && !originalRequest._retry) {
+                    originalRequest._retry = true;
+
+                    try {
+                        // Attempt to refresh the token using the HttpOnly cookie
+                        const refreshResponse = await axios.post(
+                            `${API_URL}/auth/refresh`,
+                            {},
+                            { withCredentials: true }
+                        );
+
+                        const newAccessToken = refreshResponse.data.access_token;
+                        if (newAccessToken) {
+                            this.setToken(newAccessToken);
+                            // Retry the original request with the new token
+                            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+                            return this.client(originalRequest);
+                        }
+                    } catch (refreshError) {
+                        // Refresh token failed or expired
+                        this.clearToken();
+                        if (typeof window !== 'undefined' && window.location.pathname !== '/auth/login') {
+                            window.location.href = '/auth/login?expired=1';
+                        }
+                        return Promise.reject(refreshError);
                     }
                 }
+
                 return Promise.reject(error);
             }
         );
@@ -129,8 +154,13 @@ class ApiClient {
         return response.data;
     }
 
-    logout(): void {
+    async logout(): Promise<void> {
         this.clearToken();
+        try {
+            await this.client.post('/auth/logout');
+        } catch (e) {
+            console.error('Logout error', e);
+        }
         if (typeof window !== 'undefined') {
             window.location.href = '/auth/login';
         }

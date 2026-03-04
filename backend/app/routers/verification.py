@@ -61,17 +61,29 @@ async def upload_identity_document(
             detail="Invalid file type. Please upload JPEG, PNG, or PDF",
         )
 
-    # For MVP: Simulate document processing
-    # In production, this would:
-    # 1. Upload to cloud storage (S3, etc.)
-    # 2. Send to Fourthline API for OCR + verification
-    # 3. Get verification results
+    # Save file to disk
+    import os
+    import secrets
+    
+    upload_dir = "uploads/verification"
+    os.makedirs(upload_dir, exist_ok=True)
+    
+    file_extension = os.path.splitext(file.filename)[1]
+    filename = f"{current_user.id}_{secrets.token_urlsafe(8)}{file_extension}"
+    file_path = os.path.join(upload_dir, filename)
+    
+    content = await file.read()
+    with open(file_path, "wb") as f:
+        f.write(content)
+
+    file_url = f"/uploads/verification/{filename}"
 
     # Mock verification data (simulating Fourthline response)
     verification_data = {
         "document_type": document_type,
         "upload_date": datetime.utcnow().isoformat(),
         "filename": file.filename,
+        "file_url": file_url,
         "status": "verified",  # Mock: auto-verify for MVP
         "extracted_data": {
             "full_name": current_user.full_name,
@@ -196,11 +208,29 @@ async def upload_identity_mobile(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
+    # Save file to disk
+    import os
+    import secrets
+    
+    upload_dir = "uploads/verification"
+    os.makedirs(upload_dir, exist_ok=True)
+    
+    file_extension = os.path.splitext(file.filename)[1]
+    filename = f"{user.id}_{secrets.token_urlsafe(8)}{file_extension}"
+    file_path = os.path.join(upload_dir, filename)
+    
+    content = await file.read()
+    with open(file_path, "wb") as f:
+        f.write(content)
+
+    file_url = f"/uploads/verification/{filename}"
+
     # Same verification logic as the authenticated endpoint
     verification_data = {
         "document_type": document_type,
         "upload_date": datetime.utcnow().isoformat(),
         "filename": file.filename,
+        "file_url": file_url,
         "status": "verified",
         "source": "mobile_capture",
         "extracted_data": {
@@ -274,11 +304,28 @@ async def upload_employment_document(
         # Add trust score points (30 for verified employment)
         current_user.trust_score = min(100, current_user.trust_score + 30)
 
+    # Save file to disk
+    import os
+    import secrets
+    
+    upload_dir = "uploads/verification"
+    os.makedirs(upload_dir, exist_ok=True)
+    
+    file_extension = os.path.splitext(file.filename)[1]
+    filename = f"emp_{current_user.id}_{secrets.token_urlsafe(8)}{file_extension}"
+    file_path = os.path.join(upload_dir, filename)
+    
+    with open(file_path, "wb") as f:
+        f.write(content)
+
+    file_url = f"/uploads/verification/{filename}"
+
     # Store verification data
     current_user.employment_data = {
         "verified": result["verified"],
         "upload_date": datetime.utcnow().isoformat(),
         "filename": file.filename,
+        "file_url": file_url,
         "status": result["status"],
         "extracted_data": result["data"],
         "checks": result["validation_checks"],
