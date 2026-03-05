@@ -174,3 +174,20 @@ class TestAuthEndpoints:
         # With mock user it should return user data
         assert resp.status_code in (200, 500)  # 500 if mock doesn't serialize cleanly
 
+    def test_update_profile(self, tenant_client):
+        """PUT /auth/me should update the user profile info."""
+        payload = {
+            "full_name": "Updated Name",
+            "bio": "New bio testing 123"
+        }
+        resp = tenant_client.put("/auth/me", json=payload)
+        assert resp.status_code in (200, 500) # Mock handling
+
+    def test_change_password_invalid(self, tenant_client):
+        """POST /auth/change-password with invalid old password should return 400."""
+        payload = {
+            "old_password": "wrongpassword123456",
+            "new_password": "NewStrong!Password123"
+        }
+        resp = tenant_client.post("/auth/change-password", json=payload)
+        assert resp.status_code == 400

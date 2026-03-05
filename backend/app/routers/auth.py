@@ -12,7 +12,8 @@ from app.core.security import (create_access_token, get_password_hash,
                                verify_password, verify_token)
 from app.models.schemas import (ForgotPasswordRequest, GoogleAuthRequest,
                                 ResetPasswordRequest, Token, UserLogin,
-                                UserRegister, UserResponse)
+                                UserRegister, UserResponse, UserUpdate, 
+                                ChangePasswordRequest, RequestEmailChangeRequest, ConfirmEmailChangeRequest)
 from app.models.user import User
 from app.services.email import email_service
 
@@ -202,6 +203,148 @@ async def login(
 async def get_me(current_user: User = Depends(get_current_user)):
     """Get current user profile"""
     return current_user
+
+@router.put("/me", response_model=UserResponse)
+async def update_me(
+    user_update: UserUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Update current user profile (name, bio)"""
+    if user_update.full_name is not None:
+        current_user.full_name = user_update.full_name
+    if user_update.bio is not None:
+        current_user.bio = user_update.bio
+        
+    await db.commit()
+    await db.refresh(current_user)
+    return current_user
+
+from fastapi import UploadFile, File
+from app.services.storage import storage
+import os
+import secrets
+from io import BytesIO
+
+@router.post("/me/avatar", response_model=UserResponse)
+async def upload_avatar(
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Upload and set profile picture"""
+    file_ext = os.path.splitext(file.filename)[1].lower()
+    allowed_extensions = {".jpg", ".jpeg", ".png", ".webp"}
+
+    if file_ext not in allowed_extensions:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid image type")
+
+    content = await file.read()
+    file_obj = BytesIO(content)
+    safe_filename = f"avatar_{current_user.id}_{secrets.token_hex(4)}{file_ext}"
+
+    result = await storage.upload_file(
+        file_data=file_obj,
+        filename=safe_filename,
+        content_type=file.content_type,
+        folder="avatars",
+    )
+
+    current_user.profile_picture_url = result["url"]
+    await db.commit()
+    await db.refresh(current_user)
+    
+    return current_user
+
+@router.post("/change-password")
+async def change_password(
+    request: ChangePasswordRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Change password for an authenticated user"""
+    if not current_user.hashed_password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, 
+            detail="Cannot change password for a Google-only account. Try resetting it instead if needed."
+        )
+
+    if not verify_password(request.old_password, current_user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Incorrect old password"
+        )
+
+    current_user.hashed_password = get_password_hash(request.new_password)
+    await db.commit()
+    return {"message": "Password changed successfully"}
+
+@router.post("/request-email-change")
+async def request_email_change(
+    request: RequestEmailChangeRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Request to change the account email. Sends a validation link to the new email."""
+    if current_user.hashed_password and not verify_password(request.password, current_user.hashed_password):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Incorrect password")
+        
+    # Check if new email is already taken
+    result = await db.execute(select(User).where(User.email == request.new_email))
+    if result.scalar_one_or_none():
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already in use")
+
+    # Generate token with new email embedded
+    change_token = create_access_token(
+        data={"sub": current_user.email, "type": "email_change", "new_email": request.new_email},
+        expires_delta=timedelta(hours=1),
+    )
+
+    # Send confirmation email to the NEW email address
+    await email_service.send_email_change_verification(
+        to_email=request.new_email,
+        token=change_token,
+        full_name=current_user.full_name or "User"
+    )
+
+    return {"message": f"Verification link sent to {request.new_email}"}
+
+@router.post("/confirm-email-change")
+async def confirm_email_change(
+    request: ConfirmEmailChangeRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    """Verify link and update the user's email"""
+    payload = verify_token(request.token)
+
+    if payload is None or payload.get("type") != "email_change":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired token",
+        )
+
+    old_email = payload.get("sub")
+    new_email = payload.get("new_email")
+    
+    if not new_email:
+         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Token missing new email data")
+
+    result = await db.execute(select(User).where(User.email == old_email))
+    user = result.scalar_one_or_none()
+
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    # Ensure another user hasn't claimed it in the meantime
+    check_result = await db.execute(select(User).where(User.email == new_email))
+    if check_result.scalar_one_or_none():
+         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email is now already in use")
+
+    user.email = new_email
+    user.email_verified = True  # Implicitly verified since they clicked the link
+    await db.commit()
+
+    return {"message": "Email address updated successfully"}
 
 
 @router.post("/google", response_model=Token)

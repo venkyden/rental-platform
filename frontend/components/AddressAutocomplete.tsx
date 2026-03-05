@@ -34,6 +34,8 @@ interface AddressAutocompleteProps {
     onSelectAction: (result: AddressResult) => void;
     /** Restrict results to these cities (lowercase). Empty = no restriction. */
     restrictToCities?: string[];
+    /** Country code for Photon API (default: 'fr'). Set to '' for global. */
+    countryCode?: string;
     /** Pre-filled value for the input */
     initialValue?: string;
     /** Placeholder text */
@@ -42,6 +44,8 @@ interface AddressAutocompleteProps {
     inputClassName?: string;
     /** Variant: 'onboarding' uses the teal rounded style, 'form' uses standard form style */
     variant?: 'onboarding' | 'form';
+    /** Allow user to proceed with typed text even if no autocomplete match */
+    allowManualEntry?: boolean;
 }
 
 // ─── City bounding boxes (lon_min, lat_min, lon_max, lat_max) ───
@@ -64,10 +68,12 @@ const CITY_BOUNDS: Record<string, { bbox: string; lat: number; lng: number }> = 
 export default function AddressAutocomplete({
     onSelectAction,
     restrictToCities = [],
+    countryCode = 'fr',
     initialValue = '',
     placeholder = 'Start typing an address…',
     inputClassName,
     variant = 'form',
+    allowManualEntry = true,
 }: AddressAutocompleteProps) {
     const [query, setQuery] = useState(initialValue);
     const [results, setResults] = useState<AddressResult[]>([]);
@@ -102,30 +108,35 @@ export default function AddressAutocomplete({
             setLoading(true);
 
             try {
-                // Build requests — one per restricted city, or one global
-                const cities = restrictToCities.length > 0 ? restrictToCities : [''];
-                const allResults: AddressResult[] = [];
+                const params = new URLSearchParams({
+                    q,
+                    limit: '8',
+                    lang: 'fr',
+                });
 
-                for (const city of cities) {
-                    const params = new URLSearchParams({
-                        q,
-                        limit: '5',
-                        lang: 'fr',
-                    });
+                // Add country filter if specified
+                if (countryCode) {
+                    params.set('osm_tag', `place`);
+                }
 
-                    const bounds = city ? CITY_BOUNDS[city.toLowerCase()] : null;
+                // If restricting to specific cities, add bbox for the first matching city
+                if (restrictToCities.length > 0) {
+                    const cityKey = restrictToCities[0].toLowerCase();
+                    const bounds = CITY_BOUNDS[cityKey];
                     if (bounds) {
                         params.set('bbox', bounds.bbox);
                         params.set('lat', String(bounds.lat));
                         params.set('lon', String(bounds.lng));
                     }
+                }
 
-                    const res = await fetch(
-                        `https://photon.komoot.io/api/?${params.toString()}`
-                    );
+                const res = await fetch(
+                    `https://photon.komoot.io/api/?${params.toString()}`
+                );
 
-                    if (!res.ok) continue;
+                const allResults: AddressResult[] = [];
 
+                if (res.ok) {
                     const data = await res.json();
                     const features: PhotonFeature[] = data.features || [];
 
@@ -133,12 +144,21 @@ export default function AddressAutocomplete({
                         const p = f.properties;
                         const [lng, lat] = f.geometry.coordinates;
 
-                        // If restricting, double-check the city name
+                        // Country filter: only show results from the target country
+                        if (countryCode && p.country) {
+                            const countryLower = p.country.toLowerCase();
+                            if (countryCode === 'fr' && !['france', 'francia', 'frankreich'].includes(countryLower)) {
+                                continue;
+                            }
+                        }
+
+                        // If restricting to cities, filter — but use fuzzy matching
                         if (
                             restrictToCities.length > 0 &&
                             p.city &&
                             !restrictToCities.some(
-                                (c) => p.city!.toLowerCase().includes(c.toLowerCase())
+                                (c) => p.city!.toLowerCase().includes(c.toLowerCase()) ||
+                                    c.toLowerCase().includes(p.city!.toLowerCase())
                             )
                         ) {
                             continue;
@@ -180,16 +200,20 @@ export default function AddressAutocomplete({
                 });
 
                 setResults(deduped.slice(0, 6));
-                setIsOpen(deduped.length > 0);
+                setIsOpen(deduped.length > 0 || (allowManualEntry && q.length >= 3));
                 setActiveIndex(-1);
             } catch (err) {
                 console.error('Photon API error:', err);
                 setResults([]);
+                // Still show manual entry option on error
+                if (allowManualEntry && q.length >= 3) {
+                    setIsOpen(true);
+                }
             } finally {
                 setLoading(false);
             }
         },
-        [restrictToCities]
+        [restrictToCities, countryCode, allowManualEntry]
     );
 
     // ─── Debounced input handler ───
@@ -284,7 +308,7 @@ export default function AddressAutocomplete({
             </div>
 
             {/* Dropdown */}
-            {isOpen && results.length > 0 && (
+            {isOpen && (results.length > 0 || allowManualEntry) && (
                 <ul className="absolute z-50 mt-1 w-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-xl max-h-72 overflow-y-auto">
                     {results.map((result, idx) => (
                         <li
@@ -294,8 +318,7 @@ export default function AddressAutocomplete({
                             className={`px-4 py-3 cursor-pointer transition-colors flex items-start gap-3 ${idx === activeIndex
                                 ? 'bg-teal-50 dark:bg-teal-900/30'
                                 : 'hover:bg-zinc-50 dark:hover:bg-zinc-700/50'
-                                } ${idx === 0 ? 'rounded-t-xl' : ''} ${idx === results.length - 1 ? 'rounded-b-xl' : ''
-                                }`}
+                                } ${idx === 0 ? 'rounded-t-xl' : ''}`}
                         >
                             {/* Pin icon */}
                             <span className="mt-0.5 text-teal-500 shrink-0">
@@ -324,6 +347,40 @@ export default function AddressAutocomplete({
                             </div>
                         </li>
                     ))}
+
+                    {/* Manual entry fallback */}
+                    {allowManualEntry && query.length >= 3 && (
+                        <li
+                            onClick={() => {
+                                onSelectAction({
+                                    address: query,
+                                    city: '',
+                                    postal_code: '',
+                                    lat: 0,
+                                    lng: 0,
+                                    display: query,
+                                });
+                                setQuery(query);
+                                setIsOpen(false);
+                            }}
+                            className={`px-4 py-3 cursor-pointer transition-colors flex items-start gap-3 border-t border-zinc-100 dark:border-zinc-700 rounded-b-xl ${activeIndex === results.length
+                                    ? 'bg-zinc-100 dark:bg-zinc-700/50'
+                                    : 'hover:bg-zinc-50 dark:hover:bg-zinc-700/50'
+                                }`}
+                            onMouseEnter={() => setActiveIndex(results.length)}
+                        >
+                            <span className="mt-0.5 text-zinc-400 shrink-0">✍️</span>
+                            <div className="min-w-0">
+                                <p className="font-medium text-sm text-zinc-700 dark:text-zinc-300 truncate">
+                                    Use &ldquo;{query}&rdquo; as typed
+                                </p>
+                                <p className="text-xs text-zinc-400 dark:text-zinc-500">
+                                    Address not found? Enter it manually
+                                </p>
+                            </div>
+                        </li>
+                    )}
+
                     {/* Powered by */}
                     <li className="px-4 py-1.5 text-[10px] text-zinc-400 dark:text-zinc-500 text-right border-t border-zinc-100 dark:border-zinc-700">
                         Powered by OpenStreetMap
@@ -332,7 +389,7 @@ export default function AddressAutocomplete({
             )}
 
             {/* No results */}
-            {isOpen && results.length === 0 && !loading && query.length >= 3 && (
+            {isOpen && results.length === 0 && !loading && query.length >= 3 && !allowManualEntry && (
                 <div className="absolute z-50 mt-1 w-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-xl p-4 text-center">
                     <p className="text-sm text-zinc-500 dark:text-zinc-400">
                         No addresses found

@@ -202,6 +202,77 @@ class EmailService:
 
         return await self.send_email(to_email, subject, html_content, text_content)
 
+    async def send_email_change_verification(
+        self, to_email: str, token: str, full_name: str
+    ) -> bool:
+        """Send verification link for changing account email"""
+        verify_url = f"{self.frontend_url}/auth/verify-email-change?token={token}"
+
+        subject = "Confirm your new email address"
+
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                .header {{ background-color: #4F46E5; color: white; padding: 20px; text-align: center; }}
+                .content {{ background-color: #f9fafb; padding: 30px; }}
+                .button {{ 
+                    display: inline-block; 
+                    padding: 12px 30px; 
+                    background-color: #4F46E5; 
+                    color: white; 
+                    text-decoration: none; 
+                    border-radius: 5px;
+                    margin: 20px 0;
+                }}
+                .footer {{ text-align: center; padding: 20px; color: #6b7280; font-size: 12px; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>Email Address Update Request</h1>
+                </div>
+                <div class="content">
+                    <h2>Hi {full_name},</h2>
+                    <p>We received a request to change the email address associated with your Rental Platform account to this email.</p>
+                    <p>Click the button below to confirm this change:</p>
+                    <p style="text-align: center;">
+                        <a href="{verify_url}" class="button">Confirm New Email</a>
+                    </p>
+                    <p>Or copy and paste this link into your browser:</p>
+                    <p style="word-break: break-all; color: #4F46E5;">{verify_url}</p>
+                    <p><strong>This link will expire in 1 hour.</strong></p>
+                    <p>If you didn't request an email change, please ignore this email and your account will remain secure.</p>
+                </div>
+                <div class="footer">
+                    <p>© 2026 Rental Platform. All rights reserved.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+
+        text_content = f"""
+        Hi {full_name},
+        
+        We received a request to change the email address associated with your Rental Platform account to this email.
+        
+        Click the link below to confirm this change:
+        {verify_url}
+        
+        This link will expire in 1 hour.
+        
+        If you didn't request an email change, please ignore this email.
+        
+        © 2026 Rental Platform
+        """
+
+        return await self.send_email(to_email, subject, html_content, text_content)
+
     async def send_verification_success_email(
         self, to_email: str, full_name: str, verification_type: str = "identity"
     ) -> bool:

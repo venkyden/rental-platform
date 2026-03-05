@@ -37,6 +37,7 @@ def make_mock_user(role: str = "tenant", email: str = "test@example.com"):
     user.role = UserRole(role)
     user.is_active = True
     user.email_verified = True
+    user.hashed_password = "$argon2id$v=19$m=65536,t=3,p=4$I+ScU2ptzRlDaC0FoLS2Ng$FqCEMSmSbogAGkouI7YR+twSn5by1ojMvpbyy944E50"
     user.identity_verified = False
     user.employment_verified = False
     user.trust_score = 50
@@ -46,6 +47,8 @@ def make_mock_user(role: str = "tenant", email: str = "test@example.com"):
     user.languages = None
     user.gender = None
     user.birth_date = None
+    user.bio = None
+    user.profile_picture_url = None
     user.created_at = datetime.utcnow()
     user.preferences = None
     user.contact_preferences = {"email_notifications": True}

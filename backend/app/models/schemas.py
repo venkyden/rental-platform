@@ -50,6 +50,8 @@ class UserResponse(BaseModel):
     id: UUID
     email: str
     full_name: Optional[str]
+    bio: Optional[str] = None
+    profile_picture_url: Optional[str] = None
     role: str
     email_verified: bool
     identity_verified: bool
@@ -62,6 +64,36 @@ class UserResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class UserUpdate(BaseModel):
+    full_name: Optional[str] = Field(None, min_length=2, max_length=100)
+    bio: Optional[str] = Field(None, max_length=500)
+
+class ChangePasswordRequest(BaseModel):
+    old_password: str
+    new_password: str = Field(min_length=8)
+
+    @field_validator("new_password")
+    @classmethod
+    def validate_password_complexity(cls, v: str) -> str:
+        """Enforce password complexity"""
+        import re
+        if not re.search(r"[A-Z]", v):
+            raise ValueError("Password must contain at least one uppercase letter")
+        if not re.search(r"[a-z]", v):
+            raise ValueError("Password must contain at least one lowercase letter")
+        if not re.search(r"\d", v):
+            raise ValueError("Password must contain at least one digit")
+        if not re.search(r'[!@#$%^&*(),.?":{}|<>]', v):
+            raise ValueError("Password must contain at least one special character")
+        return v
+
+class RequestEmailChangeRequest(BaseModel):
+    new_email: EmailStr
+    password: str
+
+class ConfirmEmailChangeRequest(BaseModel):
+    token: str
 
 
 class ForgotPasswordRequest(BaseModel):

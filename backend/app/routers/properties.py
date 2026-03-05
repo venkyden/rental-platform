@@ -281,12 +281,45 @@ async def publish_property(
             detail="You can only publish your own properties",
         )
 
-    # Check if has photos
-    if not property_obj.photos or len(property_obj.photos) == 0:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Property must have at least 1 photo to publish",
+    # Check per-room media coverage
+    room_details = property_obj.room_details or []
+    if len(room_details) > 0:
+        # Query all media for this property
+        from app.models.property import PropertyMedia
+
+        media_result = await db.execute(
+            select(PropertyMedia).where(PropertyMedia.property_id == property_id)
         )
+        all_media = media_result.scalars().all()
+
+        # Build set of room indices that have media
+        rooms_with_media = set()
+        has_common_media = False
+        for m in all_media:
+            if m.room_index is not None:
+                rooms_with_media.add(m.room_index)
+            else:
+                has_common_media = True
+
+        # Check each room has at least 1 photo or video
+        missing_rooms = []
+        for i, room in enumerate(room_details):
+            if i not in rooms_with_media:
+                label = room.get("label", f"Room {i + 1}")
+                missing_rooms.append(label)
+
+        if missing_rooms:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Missing media for: {', '.join(missing_rooms)}. Upload at least 1 photo or video per room.",
+            )
+    else:
+        # No room_details — fall back to property-level check
+        if not property_obj.photos or len(property_obj.photos) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Property must have at least 1 photo or video to publish",
+            )
 
     # Publish
     property_obj.status = "active"
@@ -301,10 +334,12 @@ async def publish_property(
 @router.post("/{property_id}/media-session", response_model=MediaSessionResponse)
 async def create_media_session(
     property_id: UUID,
+    room_index: Optional[int] = Query(None, description="Room index (0-based)"),
+    room_label: Optional[str] = Query(None, description="Room label e.g. 'Bedroom 1'"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Generate a shareable link/QR code for media capture"""
+    """Generate a shareable link/QR code for media capture, optionally scoped to a room"""
 
     # Get property
     result = await db.execute(select(Property).where(Property.id == property_id))
@@ -335,6 +370,8 @@ async def create_media_session(
         target_latitude=property_obj.latitude,
         target_longitude=property_obj.longitude,
         gps_radius_meters=500,
+        room_index=room_index,
+        room_label=room_label,
     )
 
     db.add(session)
@@ -346,6 +383,14 @@ async def create_media_session(
 
     capture_url = f"{settings.FRONTEND_URL}/capture/{verification_code}"
 
+    # Fetch room details for the capture page room selector
+    rooms_list = None
+    if property_obj.room_details and len(property_obj.room_details) > 0:
+        rooms_list = [
+            {"index": i, "label": f"Bedroom {i + 1}"}
+            for i in range(len(property_obj.room_details))
+        ]
+
     return {
         "id": session.id,
         "property_id": property_id,
@@ -353,6 +398,63 @@ async def create_media_session(
         "capture_url": capture_url,
         "expires_at": session.expires_at,
         "target_address": session.target_address,
+        "target_latitude": session.target_latitude,
+        "target_longitude": session.target_longitude,
+        "gps_radius_meters": session.gps_radius_meters,
+        "location_verified": session.location_verified,
+        "room_index": session.room_index,
+        "room_label": session.room_label,
+        "rooms": rooms_list,
+    }
+
+
+@router.get("/media-sessions/{code}")
+async def get_media_session(
+    code: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """Get media session details by verification code (no auth — used by mobile capture page)"""
+
+    result = await db.execute(
+        select(PropertyMediaSession).where(
+            PropertyMediaSession.verification_code == code
+        )
+    )
+    session = result.scalar_one_or_none()
+
+    if not session or not session.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Invalid or expired session",
+        )
+
+    if session.expires_at < datetime.utcnow():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Session has expired",
+        )
+
+    # Get property for room details
+    prop_result = await db.execute(
+        select(Property).where(Property.id == session.property_id)
+    )
+    property_obj = prop_result.scalar_one_or_none()
+
+    rooms_list = None
+    if property_obj and property_obj.room_details and len(property_obj.room_details) > 0:
+        rooms_list = [
+            {"index": i, "label": f"Bedroom {i + 1}"}
+            for i in range(len(property_obj.room_details))
+        ]
+
+    return {
+        "target_address": session.target_address,
+        "target_latitude": float(session.target_latitude) if session.target_latitude else None,
+        "target_longitude": float(session.target_longitude) if session.target_longitude else None,
+        "gps_radius_meters": session.gps_radius_meters,
+        "location_verified": session.location_verified or False,
+        "expires_at": session.expires_at,
+        "rooms": rooms_list,
     }
 
 
@@ -393,8 +495,15 @@ async def upload_media(
 
     # GPS verification (if coordinates provided)
     distance = None
+    gps_verified = False
     verification_status = "pending_review"
-    if meta_obj.latitude and meta_obj.longitude:
+
+    # Check accuracy — if too inaccurate (>200m), treat as unverified
+    accuracy_ok = True
+    if meta_obj.gps_accuracy and meta_obj.gps_accuracy > 200:
+        accuracy_ok = False
+
+    if meta_obj.latitude and meta_obj.longitude and accuracy_ok:
         if session.target_latitude and session.target_longitude:
             distance = calculate_distance(
                 session.target_latitude,
@@ -405,7 +514,17 @@ async def upload_media(
 
             # Check if within radius
             if distance <= session.gps_radius_meters:
+                gps_verified = True
                 verification_status = "verified"
+
+                # Persist session-level verification (verify-once)
+                if not session.location_verified:
+                    session.location_verified = True
+                    session.location_verified_at = datetime.utcnow()
+
+    # Determine room info — prefer metadata over session
+    upload_room_index = meta_obj.room_index if meta_obj.room_index is not None else session.room_index
+    upload_room_label = meta_obj.room_label or session.room_label
 
     # Save file
     property_dir = os.path.join(UPLOAD_DIR, str(session.property_id))
@@ -426,8 +545,11 @@ async def upload_media(
         media_type=meta_obj.media_type,
         file_url=f"/uploads/properties/{session.property_id}/{filename}",
         file_size=len(content),
+        room_index=upload_room_index,
+        room_label=upload_room_label,
         captured_latitude=meta_obj.latitude,
         captured_longitude=meta_obj.longitude,
+        gps_accuracy=Decimal(str(meta_obj.gps_accuracy)) if meta_obj.gps_accuracy else None,
         distance_from_target=Decimal(str(distance)) if distance else None,
         captured_at=meta_obj.captured_at,
         device_id=meta_obj.device_id,
@@ -446,7 +568,13 @@ async def upload_media(
 
     if property_obj:
         photos = property_obj.photos or []
-        photos.append({"url": media.file_url, "order": len(photos)})
+        photos.append({
+            "url": media.file_url,
+            "order": len(photos),
+            "room_index": upload_room_index,
+            "room_label": upload_room_label,
+            "media_type": meta_obj.media_type,
+        })
         property_obj.photos = photos
 
     await db.commit()
@@ -455,6 +583,11 @@ async def upload_media(
     return {
         "message": "Media uploaded successfully",
         "media_id": str(media.id),
-        "distance_verified": distance is not None,
+        "room_index": media.room_index,
+        "room_label": media.room_label,
+        "media_type": meta_obj.media_type,
+        "gps_verified": gps_verified,
         "distance_meters": int(distance) if distance else None,
+        "gps_accuracy": round(meta_obj.gps_accuracy, 1) if meta_obj.gps_accuracy else None,
+        "verification_status": verification_status,
     }

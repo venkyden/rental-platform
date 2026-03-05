@@ -141,6 +141,14 @@ class PropertyMediaSession(Base):
     target_longitude = Column(DECIMAL(11, 8))
     gps_radius_meters = Column(Integer, default=500)
 
+    # Room targeting
+    room_index = Column(Integer, nullable=True)  # null = property-level / common area
+    room_label = Column(String(100), nullable=True)  # e.g. 'Bedroom 1'
+
+    # GPS verification state (verify-once: set True on first upload within radius)
+    location_verified = Column(Boolean, default=False)
+    location_verified_at = Column(TIMESTAMP, nullable=True)
+
     # Audit trail
     created_at = Column(TIMESTAMP, server_default=func.now())
 
@@ -167,9 +175,14 @@ class PropertyMedia(Base):
     order_index = Column(Integer, default=0)
     is_cover = Column(Boolean, default=False)
 
+    # Room targeting
+    room_index = Column(Integer, nullable=True)  # null = property-level / common area
+    room_label = Column(String(100), nullable=True)  # e.g. 'Bedroom 1'
+
     # Verification metadata
     captured_latitude = Column(DECIMAL(10, 8))
     captured_longitude = Column(DECIMAL(11, 8))
+    gps_accuracy = Column(DECIMAL(8, 2), nullable=True)  # meters
     distance_from_target = Column(DECIMAL(8, 2))  # meters
     captured_at = Column(TIMESTAMP)
     device_id = Column(String(100))

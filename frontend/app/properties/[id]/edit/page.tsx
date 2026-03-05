@@ -4,10 +4,27 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/lib/useAuth';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import PremiumLayout from '@/components/PremiumLayout';
 import { apiClient } from '@/lib/api';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
 import QRCodeDisplay from '@/components/QRCodeDisplay';
 import { Camera, RefreshCw, CheckCircle2 } from 'lucide-react';
+import { motion, Variants } from 'framer-motion';
+
+const containerVariants: Variants = {
+    hidden: { opacity: 0 },
+    show: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.08
+        }
+    }
+};
+
+const itemVariants: Variants = {
+    hidden: { opacity: 0, y: 15 },
+    show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } }
+};
 
 type PropertyFormData = {
     title: string;
@@ -269,68 +286,85 @@ export default function EditPropertyPage() {
     if (initialLoading) {
         return (
             <ProtectedRoute>
-                <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-                    <div className="text-center">
-                        <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4" />
-                        <p className="text-gray-600">Loading property data...</p>
+                <PremiumLayout withNavbar>
+                    <div className="flex items-center justify-center min-h-[60vh]">
+                        <div className="text-center">
+                            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-teal-600 mx-auto mb-4" />
+                            <p className="text-zinc-500 dark:text-zinc-400">Loading property data...</p>
+                        </div>
                     </div>
-                </div>
+                </PremiumLayout>
             </ProtectedRoute>
         );
     }
 
     return (
         <ProtectedRoute>
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
-                <div className="max-w-4xl mx-auto px-4">
+            <PremiumLayout withNavbar>
+                <div className="max-w-4xl mx-auto py-8">
                     {/* Header */}
-                    <div className="mb-8">
+                    <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="mb-8"
+                    >
                         <button
                             onClick={() => router.push(`/properties/${propertyId}`)}
-                            className="text-blue-600 hover:text-blue-800 mb-4"
+                            className="text-teal-600 hover:text-teal-500 mb-4 font-medium transition-colors"
                         >
                             ← Back to Property
                         </button>
-                        <h1 className="text-4xl font-bold text-gray-900 mb-2">Edit Property</h1>
-                        <p className="text-gray-600">Update your property details</p>
-                    </div>
+                        <h1 className="text-4xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-2">Edit Property</h1>
+                        <p className="text-zinc-500 dark:text-zinc-400">Update your property details</p>
+                    </motion.div>
 
                     {/* Progress Bar */}
-                    <div className="mb-8 bg-white rounded-lg p-6 shadow-md">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        transition={{ duration: 0.5, delay: 0.1 }}
+                        className="mb-8 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl p-6 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] border border-white/50 dark:border-white/10"
+                    >
                         <div className="flex justify-between mb-2">
-                            <span className="text-sm font-medium text-gray-700">Step {currentStep} of 7</span>
-                            <span className="text-sm font-medium text-blue-600">{Math.round(progress)}%</span>
+                            <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Step {currentStep} of 7</span>
+                            <span className="text-sm font-medium text-teal-600 dark:text-teal-400">{Math.round(progress)}%</span>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-3">
+                        <div className="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-3">
                             <div
-                                className="bg-gradient-to-r from-blue-600 to-indigo-600 h-3 rounded-full transition-all duration-300"
+                                className="bg-gradient-to-r from-teal-600 to-emerald-600 h-3 rounded-full transition-all duration-300"
                                 style={{ width: `${progress}%` }}
                             />
                         </div>
-                    </div>
+                    </motion.div>
 
                     {/* Form Steps */}
-                    <div className="bg-white rounded-lg shadow-xl p-8">
+                    <motion.div
+                        variants={containerVariants}
+                        initial="hidden"
+                        animate="show"
+                        className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] border border-white/50 dark:border-white/10 p-8 sm:p-10"
+                    >
                         {currentStep === 1 && (
                             <div>
-                                <h2 className="text-2xl font-bold mb-6 text-gray-900">Basic Information</h2>
+                                <h2 className="text-2xl font-bold mb-6 text-zinc-900 dark:text-white">Basic Information</h2>
                                 <div className="space-y-4">
                                     <div>
-                                        <label className="block text-sm font-medium mb-2 text-gray-700">Property Title *</label>
+                                        <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">Property Title *</label>
                                         <input
                                             type="text"
                                             value={formData.title}
                                             onChange={(e) => updateFormData({ title: e.target.value })}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                                            className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-zinc-900 dark:text-white bg-white"
                                             placeholder="e.g., Bright 2BR Apartment in Central Paris"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium mb-2 text-gray-700">Property Type *</label>
+                                        <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">Property Type *</label>
                                         <select
                                             value={formData.property_type}
                                             onChange={(e) => updateFormData({ property_type: e.target.value })}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                                            className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-zinc-900 dark:text-white bg-white"
                                         >
                                             {PROPERTY_TYPES.map(type => (
                                                 <option key={type} value={type}>
@@ -340,11 +374,11 @@ export default function EditPropertyPage() {
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium mb-2 text-gray-700">Description *</label>
+                                        <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">Description *</label>
                                         <textarea
                                             value={formData.description}
                                             onChange={(e) => updateFormData({ description: e.target.value })}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                                            className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-zinc-900 dark:text-white bg-white"
                                             rows={4}
                                             placeholder="Describe your property..."
                                         />
@@ -355,10 +389,10 @@ export default function EditPropertyPage() {
 
                         {currentStep === 2 && (
                             <div>
-                                <h2 className="text-2xl font-bold mb-6 text-gray-900">Location</h2>
+                                <h2 className="text-2xl font-bold mb-6 text-zinc-900 dark:text-white">Location</h2>
                                 <div className="space-y-4">
                                     <div>
-                                        <label className="block text-sm font-medium mb-2 text-gray-700">Address *</label>
+                                        <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">Address *</label>
                                         <AddressAutocomplete
                                             onSelectAction={(result) => {
                                                 updateFormData({
@@ -369,52 +403,52 @@ export default function EditPropertyPage() {
                                                     longitude: result.lng,
                                                 });
                                             }}
-                                            restrictToCities={['nantes', 'paris']}
+                                            countryCode="fr"
                                             initialValue={formData.address_line1}
-                                            placeholder="Start typing an address in Nantes or Paris…"
+                                            placeholder="Start typing an address in France…"
                                             variant="form"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium mb-2 text-gray-700">Address Line 2</label>
+                                        <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">Address Line 2</label>
                                         <input
                                             type="text"
                                             value={formData.address_line2}
                                             onChange={(e) => updateFormData({ address_line2: e.target.value })}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                                            className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-zinc-900 dark:text-white bg-white"
                                             placeholder="Apartment, suite, etc. (optional)"
                                         />
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-sm font-medium mb-2 text-gray-700">City *</label>
+                                            <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">City *</label>
                                             <input
                                                 type="text"
                                                 value={formData.city}
                                                 onChange={(e) => updateFormData({ city: e.target.value })}
-                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                                                className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-zinc-900 dark:text-white bg-white"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium mb-2 text-gray-700">Postal Code *</label>
+                                            <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">Postal Code *</label>
                                             <input
                                                 type="text"
                                                 value={formData.postal_code}
                                                 onChange={(e) => updateFormData({ postal_code: e.target.value })}
-                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                                                className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-zinc-900 dark:text-white bg-white"
                                             />
                                         </div>
                                     </div>
 
-                                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
-                                        <h3 className="font-semibold mb-2 text-gray-900">🗺️ Update Location Data</h3>
-                                        <p className="text-sm text-gray-600 mb-3">
+                                    <div className="bg-teal-50/50 dark:bg-teal-900/10 border border-teal-200 dark:border-teal-800 rounded-xl p-4 mt-6">
+                                        <h3 className="font-semibold mb-2 text-zinc-900 dark:text-white">🗺️ Update Location Data</h3>
+                                        <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-3">
                                             Re-detect nearby transport & landmarks if address changed
                                         </p>
                                         <button
                                             onClick={handleEnrichLocation}
                                             disabled={enriching || !formData.address_line1}
-                                            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2"
+                                            className="px-6 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2"
                                         >
                                             {enriching ? (
                                                 <>
@@ -439,48 +473,48 @@ export default function EditPropertyPage() {
 
                         {currentStep === 3 && (
                             <div>
-                                <h2 className="text-2xl font-bold mb-6 text-gray-900">Property Details</h2>
+                                <h2 className="text-2xl font-bold mb-6 text-zinc-900 dark:text-white">Property Details</h2>
                                 <div className="space-y-4">
                                     <div className="grid grid-cols-3 gap-4">
                                         <div>
-                                            <label className="block text-sm font-medium mb-2 text-gray-700">Bedrooms *</label>
+                                            <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">Bedrooms *</label>
                                             <input
                                                 type="number"
                                                 value={formData.bedrooms}
                                                 onChange={(e) => updateFormData({ bedrooms: parseInt(e.target.value) })}
-                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                                                className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-zinc-900 dark:text-white bg-white"
                                                 min="0"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium mb-2 text-gray-700">Bathrooms *</label>
+                                            <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">Bathrooms *</label>
                                             <input
                                                 type="number"
                                                 step="0.5"
                                                 value={formData.bathrooms}
                                                 onChange={(e) => updateFormData({ bathrooms: parseFloat(e.target.value) })}
-                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                                                className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-zinc-900 dark:text-white bg-white"
                                                 min="0"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium mb-2 text-gray-700">Size (m²) *</label>
+                                            <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">Size (m²) *</label>
                                             <input
                                                 type="number"
                                                 value={formData.size_sqm}
                                                 onChange={(e) => updateFormData({ size_sqm: parseFloat(e.target.value) })}
-                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                                                className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-zinc-900 dark:text-white bg-white"
                                                 min="1"
                                             />
                                         </div>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium mb-2 text-gray-700">Floor Number (optional)</label>
+                                        <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">Floor Number (optional)</label>
                                         <input
                                             type="number"
                                             value={formData.floor_number || ''}
                                             onChange={(e) => updateFormData({ floor_number: e.target.value ? parseInt(e.target.value) : undefined })}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                                            className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-zinc-900 dark:text-white bg-white"
                                         />
                                     </div>
                                     <div className="flex items-center">
@@ -488,9 +522,9 @@ export default function EditPropertyPage() {
                                             type="checkbox"
                                             checked={formData.furnished}
                                             onChange={(e) => updateFormData({ furnished: e.target.checked })}
-                                            className="w-5 h-5 text-blue-600"
+                                            className="w-5 h-5 text-teal-600 dark:text-teal-400"
                                         />
-                                        <label className="ml-2 text-sm font-medium text-gray-700">Furnished</label>
+                                        <label className="ml-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">Furnished</label>
                                     </div>
                                 </div>
                             </div>
@@ -498,64 +532,64 @@ export default function EditPropertyPage() {
 
                         {currentStep === 4 && (
                             <div>
-                                <h2 className="text-2xl font-bold mb-6 text-gray-900">Pricing & Availability</h2>
+                                <h2 className="text-2xl font-bold mb-6 text-zinc-900 dark:text-white">Pricing & Availability</h2>
                                 <div className="space-y-4">
                                     <div>
-                                        <label className="block text-sm font-medium mb-2 text-gray-700">Monthly Rent (€) *</label>
+                                        <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">Monthly Rent (€) *</label>
                                         <input
                                             type="number"
                                             value={formData.monthly_rent}
                                             onChange={(e) => updateFormData({ monthly_rent: parseFloat(e.target.value) })}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                                            className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-zinc-900 dark:text-white bg-white"
                                             min="0"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium mb-2 text-gray-700">Deposit (€)</label>
+                                        <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">Deposit (€)</label>
                                         <input
                                             type="number"
                                             value={formData.deposit || ''}
                                             onChange={(e) => updateFormData({ deposit: e.target.value ? parseFloat(e.target.value) : undefined })}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                                            className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-zinc-900 dark:text-white bg-white"
                                             min="0"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium mb-2 text-gray-700">Charges mensuelles (€)</label>
+                                        <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">Charges mensuelles (€)</label>
                                         <input
                                             type="number"
                                             value={formData.charges || ''}
                                             onChange={(e) => updateFormData({ charges: e.target.value ? parseFloat(e.target.value) : undefined })}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                                            className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-zinc-900 dark:text-white bg-white"
                                             min="0"
                                         />
                                     </div>
 
                                     {/* CC / HC Toggle */}
                                     <div className="col-span-2">
-                                        <label className="block text-sm font-medium mb-2 text-gray-700">Type de loyer</label>
+                                        <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">Type de loyer</label>
                                         <div className="flex gap-3">
                                             <button
                                                 type="button"
                                                 onClick={() => updateFormData({ charges_included: true })}
-                                                className={`flex-1 py-3 rounded-lg border-2 text-center font-medium transition-all ${formData.charges_included
+                                                className={`flex-1 py-3 rounded-xl border-2 text-center font-medium transition-all ${formData.charges_included
                                                     ? 'border-green-500 bg-green-50 text-green-700'
-                                                    : 'border-gray-200 hover:border-gray-300'
+                                                    : 'border-zinc-200 dark:border-zinc-800 hover:border-zinc-200 dark:border-zinc-700'
                                                     }`}
                                             >
                                                 <div className="text-lg">CC</div>
-                                                <div className="text-xs text-gray-500">Charges Comprises</div>
+                                                <div className="text-xs text-zinc-500 dark:text-zinc-400">Charges Comprises</div>
                                             </button>
                                             <button
                                                 type="button"
                                                 onClick={() => updateFormData({ charges_included: false })}
-                                                className={`flex-1 py-3 rounded-lg border-2 text-center font-medium transition-all ${!formData.charges_included
+                                                className={`flex-1 py-3 rounded-xl border-2 text-center font-medium transition-all ${!formData.charges_included
                                                     ? 'border-amber-500 bg-amber-50 text-amber-700'
-                                                    : 'border-gray-200 hover:border-gray-300'
+                                                    : 'border-zinc-200 dark:border-zinc-800 hover:border-zinc-200 dark:border-zinc-700'
                                                     }`}
                                             >
                                                 <div className="text-lg">HC</div>
-                                                <div className="text-xs text-gray-500">Hors Charges</div>
+                                                <div className="text-xs text-zinc-500 dark:text-zinc-400">Hors Charges</div>
                                             </button>
                                         </div>
                                     </div>
@@ -563,31 +597,31 @@ export default function EditPropertyPage() {
                                     {/* Charges Description */}
                                     {formData.charges && Number(formData.charges) > 0 && (
                                         <div className="col-span-2">
-                                            <label className="block text-sm font-medium mb-2 text-gray-700">Détail des charges</label>
+                                            <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">Détail des charges</label>
                                             <textarea
                                                 value={formData.charges_description || ''}
                                                 onChange={(e) => updateFormData({ charges_description: e.target.value })}
                                                 placeholder="Ex: Eau froide, entretien parties communes, ordures ménagères..."
-                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm text-gray-900 placeholder:text-gray-400 bg-white"
+                                                className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-sm text-zinc-900 dark:text-white placeholder:text-zinc-400 bg-white"
                                                 rows={2}
                                             />
                                         </div>
                                     )}
 
                                     <div>
-                                        <label className="block text-sm font-medium mb-2 text-gray-700">Disponible à partir du</label>
+                                        <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">Disponible à partir du</label>
                                         <input
                                             type="date"
                                             value={formData.available_from || ''}
                                             onChange={(e) => updateFormData({ available_from: e.target.value })}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                                            className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-zinc-900 dark:text-white bg-white"
                                         />
                                     </div>
                                 </div>
 
                                 {/* Guarantor Preferences */}
-                                <div className="mt-6 pt-6 border-t border-gray-200">
-                                    <h3 className="text-lg font-bold mb-4 text-gray-900">🛡️ Garantie locative</h3>
+                                <div className="mt-6 pt-6 border-t border-zinc-200 dark:border-zinc-800">
+                                    <h3 className="text-lg font-bold mb-4 text-zinc-900 dark:text-white">🛡️ Garantie locative</h3>
                                     <div className="flex items-center gap-3 mb-4">
                                         <label className="relative inline-flex items-center cursor-pointer">
                                             <input
@@ -602,14 +636,14 @@ export default function EditPropertyPage() {
                                                 }}
                                                 className="sr-only peer"
                                             />
-                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                            <div className="w-11 h-6 bg-zinc-200 dark:bg-zinc-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-200 dark:border-zinc-700 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                                         </label>
-                                        <span className="font-medium text-gray-900">Garant requis</span>
+                                        <span className="font-medium text-zinc-900 dark:text-white">Garant requis</span>
                                     </div>
 
                                     {formData.guarantor_required && (
-                                        <div className="bg-gray-50 rounded-lg p-4">
-                                            <p className="text-sm font-medium text-gray-700 mb-3">Types de garant acceptés:</p>
+                                        <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-4">
+                                            <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-3">Types de garant acceptés:</p>
                                             <div className="space-y-2">
                                                 {[
                                                     { value: 'visale', label: '🏛️ Visale (Action Logement)', forced: true },
@@ -629,14 +663,14 @@ export default function EditPropertyPage() {
                                                                     updateFormData({ accepted_guarantor_types: formData.accepted_guarantor_types.filter(t => t !== opt.value) });
                                                                 }
                                                             }}
-                                                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                                            className="rounded border-zinc-200 dark:border-zinc-700 text-teal-600 dark:text-teal-400 focus:ring-teal-500/10 focus:border-teal-500"
                                                         />
-                                                        <span className="text-sm text-gray-700">{opt.label}</span>
+                                                        <span className="text-sm text-zinc-700 dark:text-zinc-300">{opt.label}</span>
                                                         {opt.forced && <span className="text-xs text-green-600 italic">(obligatoire par la loi)</span>}
                                                     </label>
                                                 ))}
                                             </div>
-                                            <p className="text-xs text-gray-500 mt-3">⚖️ Loi ELAN: Visale ne peut pas être refusé.</p>
+                                            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-3">⚖️ Loi ELAN: Visale ne peut pas être refusé.</p>
                                         </div>
                                     )}
                                 </div>
@@ -645,10 +679,10 @@ export default function EditPropertyPage() {
 
                         {currentStep === 5 && (
                             <div>
-                                <h2 className="text-2xl font-bold mb-6 text-gray-900">Amenities & Features</h2>
+                                <h2 className="text-2xl font-bold mb-6 text-zinc-900 dark:text-white">Amenities & Features</h2>
                                 <div className="space-y-6">
                                     <div>
-                                        <label className="block text-sm font-medium mb-3 text-gray-700">Standard Amenities</label>
+                                        <label className="block text-sm font-medium mb-3 text-zinc-700 dark:text-zinc-300">Standard Amenities</label>
                                         <div className="grid grid-cols-3 gap-3">
                                             {STANDARD_AMENITIES.map(amenity => (
                                                 <label key={amenity} className="flex items-center space-x-2 cursor-pointer">
@@ -662,16 +696,16 @@ export default function EditPropertyPage() {
                                                                 updateFormData({ amenities: formData.amenities.filter(a => a !== amenity) });
                                                             }
                                                         }}
-                                                        className="w-4 h-4 text-blue-600"
+                                                        className="w-4 h-4 text-teal-600 dark:text-teal-400"
                                                     />
-                                                    <span className="text-sm text-gray-700">{amenity}</span>
+                                                    <span className="text-sm text-zinc-700 dark:text-zinc-300">{amenity}</span>
                                                 </label>
                                             ))}
                                         </div>
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium mb-2 text-gray-700">Custom Amenities</label>
+                                        <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">Custom Amenities</label>
                                         <div className="space-y-2">
                                             {formData.custom_amenities.map((amenity, idx) => (
                                                 <div key={idx} className="flex gap-2">
@@ -683,7 +717,7 @@ export default function EditPropertyPage() {
                                                             newCustom[idx] = e.target.value;
                                                             updateFormData({ custom_amenities: newCustom });
                                                         }}
-                                                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white"
+                                                        className="flex-1 px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-white bg-white"
                                                     />
                                                     <button
                                                         onClick={() => {
@@ -691,7 +725,7 @@ export default function EditPropertyPage() {
                                                                 custom_amenities: formData.custom_amenities.filter((_, i) => i !== idx)
                                                             });
                                                         }}
-                                                        className="px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200"
+                                                        className="px-3 py-2 bg-red-100 text-red-600 rounded-xl hover:bg-red-200"
                                                     >
                                                         Remove
                                                     </button>
@@ -699,7 +733,7 @@ export default function EditPropertyPage() {
                                             ))}
                                             <button
                                                 onClick={() => updateFormData({ custom_amenities: [...formData.custom_amenities, ''] })}
-                                                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+                                                className="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-xl hover:bg-zinc-200 dark:bg-zinc-700"
                                             >
                                                 + Add Custom Amenity
                                             </button>
@@ -707,22 +741,22 @@ export default function EditPropertyPage() {
                                     </div>
 
                                     {formData.public_transport.length > 0 && (
-                                        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                                            <h3 className="font-semibold mb-2 text-gray-900">🚇 Public Transport ({formData.public_transport.length})</h3>
+                                        <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+                                            <h3 className="font-semibold mb-2 text-zinc-900 dark:text-white">🚇 Public Transport ({formData.public_transport.length})</h3>
                                             <ul className="text-sm space-y-1">
                                                 {formData.public_transport.slice(0, 5).map((t, i) => (
-                                                    <li key={i} className="text-gray-700">{t}</li>
+                                                    <li key={i} className="text-zinc-700 dark:text-zinc-300">{t}</li>
                                                 ))}
                                             </ul>
                                         </div>
                                     )}
 
                                     {formData.nearby_landmarks.length > 0 && (
-                                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                            <h3 className="font-semibold mb-2 text-gray-900">📍 Nearby Landmarks ({formData.nearby_landmarks.length})</h3>
+                                        <div className="bg-teal-50/50 dark:bg-teal-900/10 border border-teal-200 dark:border-teal-800 rounded-xl p-4">
+                                            <h3 className="font-semibold mb-2 text-zinc-900 dark:text-white">📍 Nearby Landmarks ({formData.nearby_landmarks.length})</h3>
                                             <ul className="text-sm space-y-1 grid grid-cols-2 gap-1">
                                                 {formData.nearby_landmarks.slice(0, 8).map((l, i) => (
-                                                    <li key={i} className="text-gray-700">{l}</li>
+                                                    <li key={i} className="text-zinc-700 dark:text-zinc-300">{l}</li>
                                                 ))}
                                             </ul>
                                         </div>
@@ -733,12 +767,12 @@ export default function EditPropertyPage() {
 
                         {currentStep === 6 && (
                             <div>
-                                <h2 className="text-2xl font-bold mb-6 text-gray-900">Photos & Media</h2>
+                                <h2 className="text-2xl font-bold mb-6 text-zinc-900 dark:text-white">Photos & Media</h2>
                                 <div className="space-y-6">
-                                    <div className="p-6 bg-blue-50 border border-blue-200 rounded-xl text-center">
+                                    <div className="p-6 bg-teal-50/50 dark:bg-teal-900/10 border border-teal-200 dark:border-teal-800 rounded-xl text-center">
                                         <Camera className="w-12 h-12 text-blue-500 mx-auto mb-4" />
-                                        <h3 className="text-lg font-bold text-gray-900 mb-2">Upload Real Media</h3>
-                                        <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                                        <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2">Upload Real Media</h3>
+                                        <p className="text-zinc-600 dark:text-zinc-400 mb-6 max-w-md mx-auto">
                                             Switch to your mobile device to securely capture and upload photos with GPS verification.
                                         </p>
 
@@ -746,21 +780,21 @@ export default function EditPropertyPage() {
                                             <button
                                                 onClick={handleGenerateSession}
                                                 disabled={generatingSession}
-                                                className="px-6 py-3 bg-black text-white rounded-lg font-bold hover:bg-gray-800 disabled:opacity-50"
+                                                className="px-6 py-3 bg-black text-white rounded-xl font-bold hover:bg-gray-800 disabled:opacity-50"
                                             >
                                                 {generatingSession ? 'Generating...' : '📱 Generate Upload Code'}
                                             </button>
                                         ) : (
-                                            <div className="bg-white p-6 justify-center flex flex-col items-center rounded-lg border mt-4">
+                                            <div className="bg-white/60 dark:bg-zinc-800/60 backdrop-blur-md p-6 justify-center flex flex-col items-center rounded-xl border mt-4">
                                                 <div className="text-center">
                                                     <QRCodeDisplay
                                                         verificationCode={mediaSession.verification_code}
                                                         captureUrl={mediaSession.capture_url}
                                                         expiresAt={mediaSession.expires_at}
                                                     />
-                                                    <p className="mt-4 text-sm font-medium text-gray-600">Scan this code with your phone camera</p>
+                                                    <p className="mt-4 text-sm font-medium text-zinc-600 dark:text-zinc-400">Scan this code with your phone camera</p>
 
-                                                    <div className="mt-8 pt-6 border-t border-gray-100 w-full flex flex-col items-center">
+                                                    <div className="mt-8 pt-6 border-t border-zinc-100 dark:border-zinc-800 w-full flex flex-col items-center">
                                                         {mediaVerified ? (
                                                             <div className="flex flex-col items-center text-green-600 space-y-2">
                                                                 <CheckCircle2 className="w-10 h-10" />
@@ -769,13 +803,13 @@ export default function EditPropertyPage() {
                                                             </div>
                                                         ) : (
                                                             <>
-                                                                <p className="text-sm text-gray-500 mb-4">
+                                                                <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4">
                                                                     Waiting for media upload... Once you've finished capturing on your phone, click below to verify.
                                                                 </p>
                                                                 <button
                                                                     onClick={handleVerifyMedia}
                                                                     disabled={verifyingMedia}
-                                                                    className="px-6 py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+                                                                    className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
                                                                 >
                                                                     {verifyingMedia ? (
                                                                         <RefreshCw className="w-5 h-5 animate-spin" />
@@ -797,30 +831,30 @@ export default function EditPropertyPage() {
 
                         {currentStep === 7 && (
                             <div>
-                                <h2 className="text-2xl font-bold mb-6 text-gray-900">Review Changes</h2>
+                                <h2 className="text-2xl font-bold mb-6 text-zinc-900 dark:text-white">Review Changes</h2>
                                 <div className="space-y-4 text-sm">
-                                    <div className="bg-gray-50 p-4 rounded-lg">
-                                        <h3 className="font-bold mb-2 text-gray-900">{formData.title}</h3>
-                                        <p className="text-gray-600">{formData.description}</p>
+                                    <div className="bg-zinc-50 dark:bg-zinc-800/50 p-4 rounded-xl">
+                                        <h3 className="font-bold mb-2 text-zinc-900 dark:text-white">{formData.title}</h3>
+                                        <p className="text-zinc-600 dark:text-zinc-400">{formData.description}</p>
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
-                                        <div className="bg-gray-50 p-4 rounded-lg">
-                                            <p className="font-medium text-gray-900">Type: {formData.property_type}</p>
+                                        <div className="bg-zinc-50 dark:bg-zinc-800/50 p-4 rounded-xl">
+                                            <p className="font-medium text-zinc-900 dark:text-white">Type: {formData.property_type}</p>
                                             <p>Address: {formData.address_line1}, {formData.city}</p>
                                             <p>{formData.bedrooms} bed • {formData.bathrooms} bath • {formData.size_sqm}m²</p>
                                         </div>
-                                        <div className="bg-gray-50 p-4 rounded-lg">
-                                            <p className="font-bold text-xl text-blue-600">€{formData.monthly_rent}/mo <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${formData.charges_included ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>{formData.charges_included ? 'CC' : 'HC'}</span></p>
+                                        <div className="bg-zinc-50 dark:bg-zinc-800/50 p-4 rounded-xl">
+                                            <p className="font-bold text-xl text-teal-600 dark:text-teal-400">€{formData.monthly_rent}/mo <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${formData.charges_included ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>{formData.charges_included ? 'CC' : 'HC'}</span></p>
                                             {formData.deposit && <p>Dépôt: €{formData.deposit}</p>}
                                             {formData.charges && <p>Charges: €{formData.charges}/mo {formData.charges_included ? '(incluses)' : '(en sus)'}</p>}
                                             {formData.guarantor_required && <p>🛡️ Garant requis ({formData.accepted_guarantor_types.join(', ')})</p>}
                                         </div>
                                     </div>
-                                    <div className="bg-gray-50 p-4 rounded-lg">
-                                        <p className="font-medium mb-2 text-gray-900">Amenities:</p>
+                                    <div className="bg-zinc-50 dark:bg-zinc-800/50 p-4 rounded-xl">
+                                        <p className="font-medium mb-2 text-zinc-900 dark:text-white">Amenities:</p>
                                         <div className="flex flex-wrap gap-2">
                                             {[...formData.amenities, ...formData.custom_amenities].map((a, i) => (
-                                                <span key={i} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
+                                                <span key={i} className="px-3 py-1 bg-teal-50 dark:bg-teal-900/20 text-teal-700 rounded-full text-xs">
                                                     {a}
                                                 </span>
                                             ))}
@@ -831,11 +865,11 @@ export default function EditPropertyPage() {
                         )}
 
                         {/* Navigation Buttons */}
-                        <div className="flex justify-between mt-8 pt-6 border-t border-gray-200">
+                        <div className="flex justify-between mt-8 pt-6 border-t border-zinc-200 dark:border-zinc-800">
                             {currentStep > 1 ? (
                                 <button
                                     onClick={prevStep}
-                                    className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                                    className="px-6 py-2.5 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800 font-medium transition-all"
                                 >
                                     ← Back
                                 </button>
@@ -846,7 +880,7 @@ export default function EditPropertyPage() {
                                             router.push(`/properties/${propertyId}`);
                                         }
                                     }}
-                                    className="px-6 py-2 text-red-600 hover:text-red-800"
+                                    className="px-6 py-2.5 text-red-600 hover:text-red-700 font-medium transition-colors"
                                 >
                                     Cancel
                                 </button>
@@ -855,7 +889,7 @@ export default function EditPropertyPage() {
                             {currentStep < 7 ? (
                                 <button
                                     onClick={nextStep}
-                                    className="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:shadow-lg"
+                                    className="px-6 py-2.5 bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-xl hover:shadow-lg hover:shadow-teal-500/25 font-semibold transform hover:-translate-y-0.5 transition-all"
                                 >
                                     Next →
                                 </button>
@@ -863,15 +897,22 @@ export default function EditPropertyPage() {
                                 <button
                                     onClick={handleSubmit}
                                     disabled={loading}
-                                    className="px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold rounded-lg hover:shadow-lg disabled:opacity-50"
+                                    className="px-8 py-3 bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-teal-500/25 disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-0.5 transition-all"
                                 >
-                                    {loading ? 'Saving...' : '💾 Save Changes'}
+                                    {loading ? (
+                                        <span className="flex items-center gap-2">
+                                            <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                            Saving...
+                                        </span>
+                                    ) : (
+                                        '💾 Save Changes'
+                                    )}
                                 </button>
                             )}
                         </div>
-                    </div>
+                    </motion.div>
                 </div>
-            </div>
+            </PremiumLayout>
         </ProtectedRoute>
     );
 }

@@ -14,6 +14,8 @@ interface User {
     employment_verified: boolean;
     trust_score: number;
     onboarding_completed?: boolean;
+    bio?: string;
+    profile_picture_url?: string;
 }
 
 export function useAuth() {

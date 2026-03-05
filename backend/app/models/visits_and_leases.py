@@ -3,7 +3,7 @@ import uuid
 
 from sqlalchemy import JSON, Boolean, Column, Date, DateTime
 from sqlalchemy import Enum as SQLEnum
-from sqlalchemy import Float, ForeignKey, String
+from sqlalchemy import Float, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import relationship
 
@@ -38,6 +38,10 @@ class VisitSlot(Base):
     end_time = Column(DateTime(timezone=True), nullable=False)
     is_booked = Column(Boolean, default=False)
     meeting_link = Column(String, nullable=True)
+
+    # Room targeting
+    room_index = Column(Integer, nullable=True)  # null = property-level visit
+    room_label = Column(String(100), nullable=True)  # e.g. 'Bedroom 1'
 
     # Relationships
     property = relationship("Property", back_populates="visit_slots")

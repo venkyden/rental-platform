@@ -73,9 +73,18 @@ export default function Navbar() {
                     <div className="h-6 w-px bg-zinc-200 dark:bg-zinc-700 mx-1"></div>
 
                     <div className="flex items-center gap-3">
-                        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300 hidden sm:block">
-                            {user.full_name?.split(' ')[0]}
-                        </span>
+                        <Link href="/profile" className="flex items-center gap-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 p-2 rounded-lg transition-colors">
+                            <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 flex justify-center items-center">
+                                {user.profile_picture_url ? (
+                                    <img src={user.profile_picture_url} alt="Profile" className="w-full h-full object-cover" />
+                                ) : (
+                                    <span className="text-zinc-500 font-medium text-sm">{user.full_name?.charAt(0) || user.email?.charAt(0).toUpperCase()}</span>
+                                )}
+                            </div>
+                            <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300 hidden sm:block">
+                                {user.full_name?.split(' ')[0]}
+                            </span>
+                        </Link>
                         <button
                             onClick={logout}
                             title={t('dashboard.logout')}

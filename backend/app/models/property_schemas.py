@@ -187,6 +187,14 @@ class MediaSessionResponse(BaseModel):
     capture_url: str
     expires_at: datetime
     target_address: str
+    target_latitude: Optional[Decimal] = None
+    target_longitude: Optional[Decimal] = None
+    gps_radius_meters: int = 500
+    location_verified: bool = False
+    room_index: Optional[int] = None
+    room_label: Optional[str] = None
+    # Room info for capture page room selector
+    rooms: Optional[list] = None
 
     class Config:
         from_attributes = True
@@ -198,6 +206,9 @@ class MediaUploadMetadata(BaseModel):
     media_type: str  # 'photo' or 'video'
     latitude: Optional[Decimal] = None
     longitude: Optional[Decimal] = None
+    gps_accuracy: Optional[float] = None  # meters
     captured_at: datetime
     device_id: Optional[str] = None
-    watermark_address: str
+    watermark_address: str = ""
+    room_index: Optional[int] = None  # which room this media belongs to
+    room_label: Optional[str] = None

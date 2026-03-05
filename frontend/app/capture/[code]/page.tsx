@@ -21,6 +21,31 @@ const itemVariants: Variants = {
     show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } }
 };
 
+interface Room {
+    index: number;
+    label: string;
+}
+
+function GpsQualityBadge({ accuracy }: { accuracy: number | null }) {
+    if (accuracy === null) return null;
+    const rounded = Math.round(accuracy);
+    if (rounded <= 30) return (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-bold">
+            🟢 {rounded}m
+        </span>
+    );
+    if (rounded <= 100) return (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 text-xs font-bold">
+            🟡 {rounded}m
+        </span>
+    );
+    return (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-xs font-bold">
+            🔴 {rounded}m
+        </span>
+    );
+}
+
 export default function CapturePage({ params }: { params: { code: string } }) {
     const { code } = params;
     const router = useRouter();
@@ -34,7 +59,19 @@ export default function CapturePage({ params }: { params: { code: string } }) {
     const [isOffline, setIsOffline] = useState(false);
     const [pendingCount, setPendingCount] = useState(0);
     const [isSyncing, setIsSyncing] = useState(false);
-    const [sessionDetails, setSessionDetails] = useState<any>(null); // New state for address
+    const [sessionDetails, setSessionDetails] = useState<any>(null);
+
+    // Room selection state
+    const [rooms, setRooms] = useState<Room[]>([]);
+    const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
+
+    // Upload result state
+    const [lastUploadResult, setLastUploadResult] = useState<{
+        gps_verified: boolean;
+        distance_meters: number | null;
+        gps_accuracy: number | null;
+    } | null>(null);
+
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Initial check and network listeners + Fetch Session
@@ -60,6 +97,9 @@ export default function CapturePage({ params }: { params: { code: string } }) {
             const res = await apiClient.client.get(`/properties/media-sessions/${code}`);
             setSessionDetails(res.data);
             if (res.data.location_verified) setIsSessionVerified(true);
+            if (res.data.rooms && res.data.rooms.length > 0) {
+                setRooms(res.data.rooms);
+            }
         } catch (e) {
             console.error("Failed to load session", e);
         }
@@ -116,7 +156,7 @@ export default function CapturePage({ params }: { params: { code: string } }) {
         proceedToCamera();
     };
 
-    const startCapture = () => {
+    const acquireGpsAndCapture = () => {
         // Offline Mode: Allow capture without GPS if offline
         if (isOffline) {
             setStep('capturing');
@@ -138,6 +178,7 @@ export default function CapturePage({ params }: { params: { code: string } }) {
         }
 
         setStep('capturing');
+        setLocation(null); // Reset for fresh reading
         gpsAbortRef.current = false;
 
         let resolved = false;
@@ -184,6 +225,15 @@ export default function CapturePage({ params }: { params: { code: string } }) {
         }, 6000);
     };
 
+    const startCapture = () => {
+        // If rooms exist and none selected, don't start
+        if (rooms.length > 0 && !selectedRoom) {
+            showToast("Please select a room first.", "warning");
+            return;
+        }
+        acquireGpsAndCapture();
+    };
+
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
             const newlyCapturedFiles = Array.from(e.target.files);
@@ -210,14 +260,16 @@ export default function CapturePage({ params }: { params: { code: string } }) {
 
         // Use sequential upload to prevent massive spikes
         for (const file of files) {
-            const metadataObj = {
+            const metadataObj: Record<string, any> = {
                 latitude: location?.lat || null,
                 longitude: location?.lng || null,
                 gps_accuracy: location?.accuracy || null,
                 captured_at: new Date().toISOString(),
                 media_type: file.type.startsWith('video') ? 'video' : 'photo',
                 device_id: navigator.userAgent,
-                watermark_address: ''
+                watermark_address: '',
+                room_index: selectedRoom?.index ?? null,
+                room_label: selectedRoom?.label ?? null,
             };
             const metadata = JSON.stringify(metadataObj);
 
@@ -236,9 +288,14 @@ export default function CapturePage({ params }: { params: { code: string } }) {
             // ONLINE UPLOAD
             try {
                 const response = await apiClient.uploadPropertyMedia(file, metadata, code);
-                if (response.property_verified || response.distance_verified) {
+                if (response.gps_verified) {
                     setIsSessionVerified(true);
                 }
+                setLastUploadResult({
+                    gps_verified: response.gps_verified || false,
+                    distance_meters: response.distance_meters || null,
+                    gps_accuracy: response.gps_accuracy || null,
+                });
                 successCount++;
             } catch (error: any) {
                 console.error(error);
@@ -281,16 +338,40 @@ export default function CapturePage({ params }: { params: { code: string } }) {
                     <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mb-3">
                         {isOfflineSuccess ? 'Saved to Queue' : 'Uploaded Successfully!'}
                     </h1>
-                    <p className="text-zinc-600 dark:text-zinc-400 mb-8 text-sm">
+                    <p className="text-zinc-600 dark:text-zinc-400 mb-4 text-sm">
                         {isOfflineSuccess
                             ? "Your media is safely stored on this device. It will upload automatically when connection returns."
-                            : "Your media has been securely uploaded to the landlord dashboard. You can return to your computer."}
+                            : "Your media has been securely uploaded to the landlord dashboard."}
                     </p>
+
+                    {/* GPS Verification Result */}
+                    {lastUploadResult && !isOfflineSuccess && (
+                        <div className={`mb-6 p-3 rounded-xl text-sm font-medium ${lastUploadResult.gps_verified
+                                ? 'bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300'
+                                : 'bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300'
+                            }`}>
+                            {lastUploadResult.gps_verified ? (
+                                <>✅ GPS Verified — {lastUploadResult.distance_meters}m from property</>
+                            ) : lastUploadResult.distance_meters ? (
+                                <>⚠️ {lastUploadResult.distance_meters}m away — outside verification radius</>
+                            ) : (
+                                <>⚠️ No GPS — media marked as unverified</>
+                            )}
+                            {lastUploadResult.gps_accuracy !== null && (
+                                <div className="mt-1 flex justify-center">
+                                    <GpsQualityBadge accuracy={lastUploadResult.gps_accuracy} />
+                                </div>
+                            )}
+                        </div>
+                    )}
+
                     <button
                         onClick={() => {
                             setStep('intro');
                             setFiles([]);
                             setPreviewUrls([]);
+                            setLocation(null); // Reset GPS for fresh reading
+                            setLastUploadResult(null);
                         }}
                         className={`w-full font-bold py-3.5 px-6 rounded-xl shadow-sm transition-all active:scale-[0.98] ${isOfflineSuccess
                             ? 'bg-amber-500 hover:bg-amber-600 text-white'
@@ -333,7 +414,7 @@ export default function CapturePage({ params }: { params: { code: string } }) {
                         <div className="text-center w-full bg-white dark:bg-zinc-900/50 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 p-8">
                             <motion.div variants={itemVariants}>
                                 {isSessionVerified ? (
-                                    <div className="mb-8">
+                                    <div className="mb-6">
                                         <div className="w-20 h-20 bg-teal-50 dark:bg-teal-900/20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border border-teal-100 dark:border-teal-900/30">
                                             <span className="text-4xl">🔓</span>
                                         </div>
@@ -355,10 +436,18 @@ export default function CapturePage({ params }: { params: { code: string } }) {
                                             </div>
                                         )}
 
-                                        <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-8 leading-relaxed">
-                                            Please take a photo of the property while you are physically at the location. This ensures authenticity.
+                                        <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-6 leading-relaxed">
+                                            Please take photos/videos while physically at the property. This ensures authenticity.
                                         </p>
                                     </>
+                                )}
+
+                                {/* GPS quality indicator if we have a reading */}
+                                {location && (
+                                    <div className="flex items-center justify-center gap-2 mb-4">
+                                        <span className="text-xs text-zinc-500 dark:text-zinc-400">GPS accuracy:</span>
+                                        <GpsQualityBadge accuracy={location.accuracy} />
+                                    </div>
                                 )}
 
                                 {locationError && (
@@ -368,12 +457,44 @@ export default function CapturePage({ params }: { params: { code: string } }) {
                                     </div>
                                 )}
 
+                                {/* Room Selector */}
+                                {rooms.length > 0 && (
+                                    <div className="mb-6">
+                                        <p className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-3 text-left">Select Room</p>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <button
+                                                onClick={() => setSelectedRoom(null)}
+                                                className={`py-2.5 px-3 rounded-xl border text-sm font-medium transition-all ${selectedRoom === null
+                                                        ? 'bg-teal-600 text-white border-teal-600 shadow-lg shadow-teal-500/25'
+                                                        : 'border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:border-teal-300 dark:hover:border-teal-700'
+                                                    }`}
+                                            >
+                                                🏠 Common Area
+                                            </button>
+                                            {rooms.map(room => (
+                                                <button
+                                                    key={room.index}
+                                                    onClick={() => setSelectedRoom(room)}
+                                                    className={`py-2.5 px-3 rounded-xl border text-sm font-medium transition-all ${selectedRoom?.index === room.index
+                                                            ? 'bg-teal-600 text-white border-teal-600 shadow-lg shadow-teal-500/25'
+                                                            : 'border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:border-teal-300 dark:hover:border-teal-700'
+                                                        }`}
+                                                >
+                                                    🛏️ {room.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
                                 <button
                                     onClick={startCapture}
                                     className="w-full bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-sm hover:bg-teal-500 focus:ring-4 focus:ring-teal-500/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                                 >
                                     <span className="text-lg">📷</span>
-                                    <span>Capture Media Authentically</span>
+                                    <span>
+                                        {selectedRoom ? `Capture ${selectedRoom.label}` : 'Capture Media'}
+                                    </span>
                                 </button>
                                 <p className="mt-4 text-xs text-zinc-500 dark:text-zinc-400 flex items-center justify-center gap-1.5">
                                     <span>🔒</span> Live capture prevents fraud
@@ -413,11 +534,10 @@ export default function CapturePage({ params }: { params: { code: string } }) {
                                 <div className="absolute top-4 left-4 right-4 flex justify-between items-center pointer-events-none">
                                     <div className="bg-black/60 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg border border-white/10">
                                         {files.length} item{files.length > 1 ? 's' : ''} captured
+                                        {selectedRoom && ` • ${selectedRoom.label}`}
                                     </div>
                                     {location && (
-                                        <div className="bg-black/60 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg border border-white/10">
-                                            📍 Acc: {Math.round(location.accuracy)}m
-                                        </div>
+                                        <GpsQualityBadge accuracy={location.accuracy} />
                                     )}
                                 </div>
                             </motion.div>

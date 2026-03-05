@@ -46,6 +46,8 @@ class User(Base):
     # Profile fields
     full_name = Column(String, nullable=True)
     phone = Column(String, nullable=True)
+    bio = Column(String, nullable=True)
+    profile_picture_url = Column(String, nullable=True)
 
     # Verification status
     email_verified = Column(Boolean, default=False)

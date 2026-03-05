@@ -23,6 +23,8 @@ class VisitSlotCreate(BaseModel):
     property_id: UUID
     start_time: datetime
     end_time: datetime
+    room_index: Optional[int] = None  # null = property-level visit
+    room_label: Optional[str] = None  # e.g. 'Bedroom 1'
 
 
 class VisitSlotResponse(BaseModel):
@@ -32,6 +34,8 @@ class VisitSlotResponse(BaseModel):
     end_time: datetime
     is_booked: bool
     meeting_link: Optional[str] = None
+    room_index: Optional[int] = None
+    room_label: Optional[str] = None
 
 
 class DirectLeaseGenerateRequest(BaseModel):
@@ -127,6 +131,8 @@ async def create_visit_slots(
             start_time=slot_data.start_time,
             end_time=slot_data.end_time,
             is_booked=False,
+            room_index=slot_data.room_index,
+            room_label=slot_data.room_label,
         )
         db.add(visit_slot)
         created_slots.append(visit_slot)
@@ -140,23 +146,64 @@ async def create_visit_slots(
 
 @router.get("/visits/slots/{property_id}", response_model=List[VisitSlotResponse])
 async def get_property_visit_slots(
-    property_id: UUID, db: AsyncSession = Depends(get_db)
+    property_id: UUID,
+    room_index: Optional[int] = None,
+    db: AsyncSession = Depends(get_db),
 ):
-    """Get available visit slots for a property"""
+    """Get available visit slots for a property, optionally filtered by room"""
+    conditions = [
+        VisitSlot.property_id == property_id,
+        VisitSlot.is_booked == False,
+        VisitSlot.start_time > datetime.utcnow(),
+    ]
+
+    if room_index is not None:
+        conditions.append(VisitSlot.room_index == room_index)
+
     query = (
         select(VisitSlot)
-        .where(
-            and_(
-                VisitSlot.property_id == property_id,
-                VisitSlot.is_booked == False,
-                VisitSlot.start_time > datetime.utcnow(),
-            )
-        )
+        .where(and_(*conditions))
         .order_by(VisitSlot.start_time)
     )
 
     result = await db.execute(query)
     return result.scalars().all()
+
+
+@router.get("/visits/slots/{property_id}/by-room")
+async def get_slots_by_room(
+    property_id: UUID, db: AsyncSession = Depends(get_db)
+):
+    """Get visit slots grouped by room"""
+    query = (
+        select(VisitSlot)
+        .where(
+            and_(
+                VisitSlot.property_id == property_id,
+                VisitSlot.start_time > datetime.utcnow(),
+            )
+        )
+        .order_by(VisitSlot.room_index, VisitSlot.start_time)
+    )
+
+    result = await db.execute(query)
+    slots = result.scalars().all()
+
+    # Group by room
+    grouped = {}
+    for slot in slots:
+        key = slot.room_label or (f"Room {slot.room_index + 1}" if slot.room_index is not None else "Property")
+        if key not in grouped:
+            grouped[key] = {"room_index": slot.room_index, "room_label": key, "slots": []}
+        grouped[key]["slots"].append({
+            "id": str(slot.id),
+            "start_time": slot.start_time.isoformat(),
+            "end_time": slot.end_time.isoformat(),
+            "is_booked": slot.is_booked,
+            "meeting_link": slot.meeting_link,
+        })
+
+    return list(grouped.values())
 
 
 @router.post("/visits/book/{slot_id}")
