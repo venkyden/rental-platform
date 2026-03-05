@@ -150,7 +150,7 @@ async def login(
     result = await db.execute(select(User).where(User.email == form_data.username))
     user = result.scalar_one_or_none()
 
-    if not user or not verify_password(form_data.password, user.hashed_password):
+    if not user or not user.hashed_password or not verify_password(form_data.password, user.hashed_password):
         audit_logger.warning(
             f"LOGIN_FAILED email={form_data.username} ip={request.client.host}"
         )
