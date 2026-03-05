@@ -19,19 +19,6 @@ def upgrade() -> None:
     # Add gps_accuracy to property_media
     op.add_column('property_media', sa.Column('gps_accuracy', sa.NUMERIC(precision=8, scale=2), nullable=True))
 
-    # Add location_verified fields to property_media_sessions (if not already present)
-    # These columns may already exist from migration d827573aade4
-    try:
-        op.add_column('property_media_sessions', sa.Column('location_verified', sa.Boolean(), nullable=True, server_default=sa.text('false')))
-    except Exception:
-        pass  # Column may already exist
-
-    try:
-        op.add_column('property_media_sessions', sa.Column('location_verified_at', sa.TIMESTAMP(), nullable=True))
-    except Exception:
-        pass  # Column may already exist
-
 
 def downgrade() -> None:
     op.drop_column('property_media', 'gps_accuracy')
-    # Don't drop location_verified columns as they may have been created by another migration
