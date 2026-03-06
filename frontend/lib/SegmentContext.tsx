@@ -254,7 +254,7 @@ export function SegmentBadge() {
     return (
         <span className={`px-2 py-1 rounded-full text-xs font-medium ${bgColor}`}>
             {config.segment_name}
-            {config.settings.show_premium_badge && ' ⭐'}
+            {config?.settings?.show_premium_badge && ' ⭐'}
         </span>
     );
 }

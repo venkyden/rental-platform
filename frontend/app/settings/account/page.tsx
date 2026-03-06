@@ -48,7 +48,9 @@ export default function AccountSettingsPage() {
             window.location.reload();
             setProfileMessage({ text: 'Profile updated successfully!', type: 'success' });
         } catch (error: any) {
-            setProfileMessage({ text: error.response?.data?.detail || 'Failed to update profile', type: 'error' });
+            let errorMsg = error.response?.data?.detail || 'Failed to update profile';
+            if (Array.isArray(errorMsg)) errorMsg = errorMsg[0].msg;
+            setProfileMessage({ text: errorMsg, type: 'error' });
         } finally {
             setIsUpdatingProfile(false);
         }
@@ -96,7 +98,9 @@ export default function AccountSettingsPage() {
             setNewPassword('');
             setConfirmPassword('');
         } catch (error: any) {
-            setPasswordMessage({ text: error.response?.data?.detail || 'Failed to change password', type: 'error' });
+            let errorMsg = error.response?.data?.detail || 'Failed to change password';
+            if (Array.isArray(errorMsg)) errorMsg = errorMsg[0].msg;
+            setPasswordMessage({ text: errorMsg, type: 'error' });
         } finally {
             setIsChangingPassword(false);
         }
@@ -116,7 +120,9 @@ export default function AccountSettingsPage() {
             setNewEmail('');
             setEmailPassword('');
         } catch (error: any) {
-            setEmailMessage({ text: error.response?.data?.detail || 'Failed to request email change', type: 'error' });
+            let errorMsg = error.response?.data?.detail || 'Failed to request email change';
+            if (Array.isArray(errorMsg)) errorMsg = errorMsg[0].msg;
+            setEmailMessage({ text: errorMsg, type: 'error' });
         } finally {
             setIsChangingEmail(false);
         }

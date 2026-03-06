@@ -47,7 +47,7 @@ export default function TenantDashboard() {
                 {!user?.identity_verified && (
                     <>
                         {/* D1: Guarantor Focus */}
-                        {config?.settings.verification_flow === 'guarantor' && (
+                        {config?.settings?.verification_flow === 'guarantor' && (
                             <div className="bg-indigo-50/80 dark:bg-indigo-900/20 backdrop-blur-xl rounded-3xl shadow-sm border border-indigo-200/50 dark:border-indigo-800/30 p-6 mb-8 relative overflow-hidden">
                                 <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 dark:bg-indigo-500/5 rounded-full blur-[60px] -translate-y-1/2 translate-x-1/2"></div>
                                 <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center gap-4">
@@ -72,7 +72,7 @@ export default function TenantDashboard() {
                         )}
 
                         {/* D2: Income Focus */}
-                        {config?.settings.verification_flow === 'income' && (
+                        {config?.settings?.verification_flow === 'income' && (
                             <div className="bg-emerald-50/80 dark:bg-emerald-900/20 backdrop-blur-xl rounded-3xl shadow-sm border border-emerald-200/50 dark:border-emerald-800/30 p-6 mb-8 relative overflow-hidden">
                                 <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 dark:bg-emerald-500/5 rounded-full blur-[60px] -translate-y-1/2 translate-x-1/2"></div>
                                 <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center gap-4">
@@ -96,7 +96,7 @@ export default function TenantDashboard() {
                         )}
 
                         {/* D3: Identity Focus */}
-                        {config?.settings.verification_flow === 'identity' && (
+                        {config?.settings?.verification_flow === 'identity' && (
                             <div className="bg-purple-50/80 dark:bg-purple-900/20 backdrop-blur-xl rounded-3xl shadow-sm border border-purple-200/50 dark:border-purple-800/30 p-6 mb-8 relative overflow-hidden">
                                 <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 dark:bg-purple-500/5 rounded-full blur-[60px] -translate-y-1/2 translate-x-1/2"></div>
                                 <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center gap-4">
@@ -120,7 +120,7 @@ export default function TenantDashboard() {
                         )}
 
                         {/* Fallback for legacy D1 logic if settings are missing */}
-                        {config?.settings.show_verification_prompt && !config?.settings.verification_flow && (
+                        {config?.settings?.show_verification_prompt && !config?.settings?.verification_flow && (
                             <div className="bg-amber-50/80 dark:bg-amber-900/20 backdrop-blur-xl rounded-3xl shadow-sm border border-amber-200/50 dark:border-amber-800/30 p-6 mb-8 relative overflow-hidden">
                                 <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 dark:bg-amber-500/5 rounded-full blur-[60px] -translate-y-1/2 translate-x-1/2"></div>
                                 <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center gap-4">

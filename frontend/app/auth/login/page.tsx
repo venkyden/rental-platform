@@ -81,7 +81,7 @@ export default function LoginPage() {
                 if (buttonDiv) {
                     // Try to make it match the container width, max 400
                     const containerWidth = buttonDiv.parentElement?.clientWidth || window.innerWidth - 64;
-                    const buttonWidth = Math.min(400, containerWidth);
+                    const buttonWidth = Math.max(200, Math.min(400, Math.floor(containerWidth)));
                     window.google.accounts.id.renderButton(buttonDiv, {
                         theme: 'outline',
                         size: 'large',
