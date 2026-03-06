@@ -137,24 +137,19 @@ async def delete_user_data(
         .where(User.id == current_user.id)
         .values(
             email=anonymised_email,
+            google_id=None,
+            hashed_password=None,
             full_name="[Deleted User]",
             phone=None,
-            nationality=None,
-            languages=None,
-            gender=None,
-            birth_date=None,
-            address_line1=None,
-            address_line2=None,
-            city=None,
-            postal_code=None,
-            country=None,
+            bio=None,
+            profile_picture_url=None,
             identity_data=None,
             employment_data=None,
             preferences=None,
             contact_preferences=None,
             segment=None,
             is_active=False,
-            updated_at=datetime.now(timezone.utc),
+            updated_at=datetime.utcnow(),
         )
     )
     await db.commit()
@@ -164,6 +159,6 @@ async def delete_user_data(
         "message": "Your personal data has been anonymised and your account deactivated. "
         "A minimal anonymised record is retained for legal compliance (invoicing, fraud prevention). "
         "If you believe any data remains, contact dpo@roomivo.com.",
-        "deleted_at": datetime.now(timezone.utc).isoformat(),
+        "deleted_at": datetime.utcnow().isoformat(),
         "data_retention_note": "Anonymised records retained per GDPR Art. 17(3)(b)(e) for legal obligations.",
     }
