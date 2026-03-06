@@ -74,6 +74,7 @@ class User(Base):
     # GDPR consent tracking
     marketing_consent = Column(Boolean, default=False)
     marketing_consent_at = Column(DateTime, nullable=True)
+    contact_preferences = Column(JSON, nullable=True)  # Notification/contact prefs
 
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow)

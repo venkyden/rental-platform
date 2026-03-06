@@ -67,13 +67,3 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  deploy:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy to Vercel/Render
-        env:
-          DEPLOY_WEBHOOK_URL: ${{ secrets.DEPLOY_WEBHOOK_URL }}
-        run: |
-          echo "Triggering Render/Vercel instance webhook..."
-          if [ ! -z "$DEPLOY_WEBHOOK_URL" ]; then curl -X POST "$DEPLOY_WEBHOOK_URL"; else echo "DEPLOY_WEBHOOK_URL secret is not set, skipping deployment trigger."; fi

@@ -69,6 +69,14 @@ app.add_middleware(
 )
 
 
+# Add Cross-Origin-Opener-Policy header to allow Google Sign-In popup communication
+@app.middleware("http")
+async def add_coop_header(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["Cross-Origin-Opener-Policy"] = "unsafe-none"
+    return response
+
+
 # Global unhandled exception handler
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):

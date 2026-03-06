@@ -12,8 +12,9 @@ from app.core.security import (create_access_token, get_password_hash,
                                verify_password, verify_token)
 from app.models.schemas import (ForgotPasswordRequest, GoogleAuthRequest,
                                 ResetPasswordRequest, Token, UserLogin,
-                                UserRegister, UserResponse, UserUpdate, 
-                                ChangePasswordRequest, RequestEmailChangeRequest, ConfirmEmailChangeRequest)
+                                UserRegister, UserResponse, UserUpdate,
+                                ChangePasswordRequest, RequestEmailChangeRequest,
+                                ConfirmEmailChangeRequest, ContactPreferencesUpdate)
 from app.models.user import User
 from app.services.email import email_service
 
@@ -219,6 +220,19 @@ async def update_me(
     await db.commit()
     await db.refresh(current_user)
     return current_user
+
+
+@router.patch("/me/preferences")
+async def update_contact_preferences(
+    data: ContactPreferencesUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Update notification and contact preferences"""
+    current_user.contact_preferences = data.contact_preferences
+    await db.commit()
+    return {"status": "ok", "contact_preferences": current_user.contact_preferences}
+
 
 from fastapi import UploadFile, File
 from app.services.storage import storage

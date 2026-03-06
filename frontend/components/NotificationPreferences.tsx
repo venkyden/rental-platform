@@ -42,7 +42,7 @@ export default function NotificationPreferences() {
     const handleSave = async () => {
         setSaving(true);
         try {
-            await apiClient.client.patch('/users/me/preferences', {
+            await apiClient.client.patch('/auth/me/preferences', {
                 contact_preferences: preferences
             });
             toast.success('Preferences saved!');

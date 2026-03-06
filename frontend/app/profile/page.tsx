@@ -28,8 +28,8 @@ export default function ProfilePage() {
                             </div>
                         </div>
                         <div className="space-y-4">
-                            <button className="w-full text-left p-3 hover:bg-gray-50 rounded border transition-colors">⚙️ Account Settings</button>
-                            <button className="w-full text-left p-3 hover:bg-gray-50 rounded border transition-colors">🔔 Notifications</button>
+                            <Link href="/settings/account" className="block w-full text-left p-3 hover:bg-gray-50 rounded border transition-colors">⚙️ Account Settings</Link>
+                            <Link href="/settings/notifications" className="block w-full text-left p-3 hover:bg-gray-50 rounded border transition-colors">🔔 Notifications</Link>
                             <Link href="/settings/privacy" className="block w-full text-left p-3 hover:bg-gray-50 rounded border transition-colors">
                                 🛡️ Privacy (GDPR)
                             </Link>

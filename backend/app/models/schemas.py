@@ -1,6 +1,6 @@
 import re
 from datetime import datetime
-from typing import Optional
+from typing import Any, Dict, Optional
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
@@ -60,6 +60,7 @@ class UserResponse(BaseModel):
     segment: Optional[str] = None
     onboarding_completed: bool = False
     marketing_consent: bool = False
+    contact_preferences: Optional[Dict[str, Any]] = None
     created_at: datetime
 
     class Config:
@@ -68,6 +69,10 @@ class UserResponse(BaseModel):
 class UserUpdate(BaseModel):
     full_name: Optional[str] = Field(None, min_length=2, max_length=100)
     bio: Optional[str] = Field(None, max_length=500)
+
+
+class ContactPreferencesUpdate(BaseModel):
+    contact_preferences: Dict[str, Any]
 
 class ChangePasswordRequest(BaseModel):
     old_password: str

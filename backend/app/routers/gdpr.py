@@ -16,7 +16,7 @@ from app.core.database import get_db
 from app.models.user import User
 from app.routers.auth import get_current_user
 
-router = APIRouter(prefix="/api/v1/gdpr", tags=["GDPR"])
+router = APIRouter(prefix="/gdpr", tags=["GDPR"])
 
 
 @router.get("/export")

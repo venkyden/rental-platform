@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiClient } from '@/lib/api';
@@ -42,9 +42,16 @@ export default function LoginPage() {
     const [googleLoading, setGoogleLoading] = useState(false);
     const router = useRouter();
 
+    const googleTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
     const handleGoogleResponse = useCallback(async (response: any) => {
         setError('');
         setGoogleLoading(true);
+        // Clear any existing timeout since callback fired successfully
+        if (googleTimeoutRef.current) {
+            clearTimeout(googleTimeoutRef.current);
+            googleTimeoutRef.current = null;
+        }
         try {
             const result = await apiClient.googleLogin(response.credential);
             const redirectPath = result.redirect_path || '/dashboard';
@@ -68,6 +75,7 @@ export default function LoginPage() {
                 window.google.accounts.id.initialize({
                     client_id: clientId,
                     callback: handleGoogleResponse,
+                    use_fedcm_for_prompt: true,
                 });
                 const buttonDiv = document.getElementById('google-signin-btn');
                 if (buttonDiv) {
@@ -80,6 +88,20 @@ export default function LoginPage() {
                         width: buttonWidth,
                         text: 'signin_with',
                         shape: 'pill',
+                    });
+
+                    // Add click listener to start a safety timeout
+                    buttonDiv.addEventListener('click', () => {
+                        // Start safety timeout — if callback doesn't fire in 15s, reset loading
+                        googleTimeoutRef.current = setTimeout(() => {
+                            setGoogleLoading((current) => {
+                                if (current) {
+                                    setError('Google sign-in timed out. Please try again or use email login.');
+                                    return false;
+                                }
+                                return current;
+                            });
+                        }, 15000);
                     });
                 }
             }
