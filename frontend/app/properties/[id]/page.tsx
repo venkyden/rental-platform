@@ -70,6 +70,7 @@ export default function PropertyDetailPage() {
     const [isApplying, setIsApplying] = useState(false);
     const [coverLetter, setCoverLetter] = useState('');
     const [submittingApp, setSubmittingApp] = useState(false);
+    const [activePhotoIdx, setActivePhotoIdx] = useState(0);
 
     useEffect(() => {
         if (propertyId) {
@@ -160,7 +161,9 @@ export default function PropertyDetailPage() {
     const customAmenities = property.custom_amenities?.items || [];
     const publicTransport = property.public_transport?.items || [];
     const nearbyLandmarks = property.nearby_landmarks?.items || [];
-    const photos = property.photos?.urls || [];
+    const photos = Array.isArray(property.photos) ? property.photos : property.photos?.urls ? property.photos.urls.map((url: string) => ({ url })) : [];
+
+    const activePhoto = photos[activePhotoIdx];
 
     return (
         <ProtectedRoute>
@@ -218,17 +221,45 @@ export default function PropertyDetailPage() {
                             <div className="lg:col-span-2 space-y-6">
                                 {/* Photo Gallery */}
                                 <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] border border-white/50 dark:border-white/10 overflow-hidden">
-                                    {photos && photos.length > 0 ? (
-                                        <div className="relative h-96">
-                                            <img
-                                                src={photos[0]}
-                                                alt={property.title}
-                                                className="w-full h-full object-cover"
-                                            />
-                                            {photos.length > 1 && (
-                                                <div className="absolute bottom-4 right-4 bg-black bg-opacity-70 text-white px-3 py-1 rounded-full text-sm">
-                                                    1 / {photos.length}
+                                    {photos && photos.length > 0 && activePhoto ? (
+                                        <div className="relative w-full h-96 group">
+                                            {activePhoto.media_type === 'video' ? (
+                                                <video src={activePhoto.url || activePhoto} controls className="w-full h-full object-cover" />
+                                            ) : (
+                                                <img
+                                                    src={activePhoto.url || activePhoto}
+                                                    alt={`${property.title} - ${activePhoto.room_label || 'Photo'}`}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            )}
+
+                                            {/* Room Label Badge */}
+                                            {activePhoto.room_label && (
+                                                <div className="absolute top-4 left-4 bg-teal-600/90 backdrop-blur-md text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg border border-teal-500/50 flex items-center gap-2">
+                                                    🛏️ {activePhoto.room_label}
                                                 </div>
+                                            )}
+
+                                            {/* Navigation Controls */}
+                                            {photos.length > 1 && (
+                                                <>
+                                                    <button
+                                                        onClick={() => setActivePhotoIdx(i => i === 0 ? photos.length - 1 : i - 1)}
+                                                        className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 text-white backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70"
+                                                    >
+                                                        ❮
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setActivePhotoIdx(i => i === photos.length - 1 ? 0 : i + 1)}
+                                                        className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 text-white backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70"
+                                                    >
+                                                        ❯
+                                                    </button>
+
+                                                    <div className="absolute bottom-4 right-4 bg-black/70 backdrop-blur-md text-white px-3 py-1.5 rounded-full text-xs font-bold">
+                                                        {activePhotoIdx + 1} / {photos.length}
+                                                    </div>
+                                                </>
                                             )}
                                         </div>
                                     ) : (

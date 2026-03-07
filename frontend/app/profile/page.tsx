@@ -39,13 +39,13 @@ export default function ProfilePage() {
                                 <div className="space-y-3 text-sm">
                                     {user.role === 'tenant' ? (
                                         <>
-                                            <div className="flex justify-between border-b border-gray-100 pb-2"><span className="text-gray-500">Location</span><span className="font-medium text-gray-900">{user.preferences.location_preference?.address || user.preferences.location_preference || 'Any'}</span></div>
+                                            <div className="flex justify-between border-b border-gray-100 pb-2"><span className="text-gray-500">Location</span><span className="font-medium text-gray-900">{user.preferences.location_preference?.address || (typeof user.preferences.location_preference === 'string' ? user.preferences.location_preference : 'Selected on map') || 'Any'}</span></div>
                                             <div className="flex justify-between border-b border-gray-100 pb-2"><span className="text-gray-500">Max Budget</span><span className="font-medium text-gray-900">{user.preferences.budget ? `€${user.preferences.budget}` : 'Any'}</span></div>
                                             <div className="flex justify-between pb-2"><span className="text-gray-500">Min Surface</span><span className="font-medium text-gray-900">{user.preferences.min_surface_area ? `${user.preferences.min_surface_area} m²` : 'Any'}</span></div>
                                         </>
                                     ) : (
                                         <>
-                                            <div className="flex justify-between border-b border-gray-100 pb-2"><span className="text-gray-500">Location</span><span className="font-medium text-gray-900">{user.preferences.location?.name || user.preferences.location || 'Any'}</span></div>
+                                            <div className="flex justify-between border-b border-gray-100 pb-2"><span className="text-gray-500">Location</span><span className="font-medium text-gray-900">{user.preferences.location?.name || (typeof user.preferences.location === 'string' ? user.preferences.location : 'Selected on map') || 'Any'}</span></div>
                                             <div className="flex justify-between border-b border-gray-100 pb-2"><span className="text-gray-500">Urgency</span><span className="font-medium capitalize text-gray-900">{user.preferences.urgency || 'Any'}</span></div>
                                             <div className="flex justify-between pb-2"><span className="text-gray-500">Target Tenant</span><span className="font-medium capitalize text-gray-900">{(user.preferences.accepted_tenant_types || []).join(', ').replace(/_/g, ' ') || 'Any'}</span></div>
                                         </>

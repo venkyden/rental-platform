@@ -43,14 +43,20 @@ export default function PropertiesPage() {
     const [filter, setFilter] = useState<'all' | 'draft' | 'active'>('all');
 
     useEffect(() => {
+        if (user && user.role !== 'landlord') {
+            router.replace('/dashboard');
+            return;
+        }
         loadProperties();
-    }, [filter]);
+    }, [filter, user, router]);
 
     const loadProperties = async () => {
+        if (!user || user.role !== 'landlord') return;
+
         try {
             const response = await apiClient.client.get('/properties', {
                 params: {
-                    landlord_id: user?.id,
+                    landlord_id: user.id,
                     status: filter === 'all' ? undefined : filter
                 }
             });

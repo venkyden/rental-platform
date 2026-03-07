@@ -191,7 +191,8 @@ export default function EditPropertyPage() {
         try {
             // Check if the property has media uploaded
             const response = await apiClient.client.get(`/properties/${propertyId}`);
-            const propertyImages = response.data.images || [];
+            const photos = Array.isArray(response.data.photos) ? response.data.photos : response.data.photos?.urls ? response.data.photos.urls : [];
+            const propertyImages = photos;
 
             setMediaCount(propertyImages.length);
 

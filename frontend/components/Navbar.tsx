@@ -18,7 +18,9 @@ export default function Navbar() {
 
     const navLinks = [
         { href: '/dashboard', label: 'Dashboard', icon: '🏠' },
-        { href: '/properties', label: 'Properties', icon: '🏢' },
+        ...(user.role === 'landlord'
+            ? [{ href: '/properties', label: 'Properties', icon: '🏢' }]
+            : [{ href: '/search', label: 'Search', icon: '🔍' }]),
         { href: '/inbox', label: 'Inbox', icon: '📬' },
         { href: '/verification', label: 'Verification', icon: '✅' },
     ];

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, use } from 'react';
 import { apiClient } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/lib/ToastContext';
@@ -46,8 +46,8 @@ function GpsQualityBadge({ accuracy }: { accuracy: number | null }) {
     );
 }
 
-export default function CapturePage({ params }: { params: { code: string } }) {
-    const { code } = params;
+export default function CapturePage({ params }: { params: Promise<{ code: string }> }) {
+    const { code } = use(params);
     const router = useRouter();
     const { showToast } = useToast();
     const [step, setStep] = useState<'intro' | 'capturing' | 'ready_to_capture' | 'preview' | 'uploading' | 'success'>('intro');
