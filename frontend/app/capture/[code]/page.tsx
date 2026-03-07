@@ -308,20 +308,15 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
 
         if (successCount > 0) {
             setStep('success');
-            if (!navigator.onLine) {
-                checkQueueHelper();
-                showToast(`Saved ${successCount} item(s) to offline queue.`, 'success');
-            } else {
-                showToast(`Successfully uploaded ${successCount} item(s)!`, 'success');
-            }
         } else {
             showToast("Failed to upload media. Please try again.", "error");
             setStep('preview');
         }
     };
 
+
     if (step === 'success') {
-        const isOfflineSuccess = !navigator.onLine || isSyncing;
+        const isOfflineSuccess = !navigator.onLine || isSyncing || pendingCount > 0;
         return (
             <motion.div
                 variants={containerVariants}
@@ -334,11 +329,11 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                         <span className="text-4xl">{isOfflineSuccess ? '💾' : '✅'}</span>
                     </div>
                     <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mb-3">
-                        {isOfflineSuccess ? 'Saved to Queue' : 'Uploaded Successfully!'}
+                        {isOfflineSuccess ? 'Saved to Offline Queue' : 'Uploaded Successfully!'}
                     </h1>
                     <p className="text-zinc-600 dark:text-zinc-400 mb-4 text-sm">
                         {isOfflineSuccess
-                            ? "Your media is safely stored on this device. It will upload automatically when connection returns."
+                            ? "Your media is safely stored on this device. It failed to reach the server due to your network or file size. It will upload automatically later."
                             : "Your media has been securely uploaded to the landlord dashboard."}
                     </p>
 
@@ -363,32 +358,34 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                         </div>
                     )}
 
-                    <button
-                        onClick={() => {
-                            setStep('intro');
-                            setFiles([]);
-                            setPreviewUrls([]);
-                            setLocation(null); // Reset GPS for fresh reading
-                            setLastUploadResult(null);
-                        }}
-                        className={`w-full font-bold py-3.5 px-6 rounded-xl shadow-sm transition-all active:scale-[0.98] ${isOfflineSuccess
-                            ? 'bg-amber-500 hover:bg-amber-600 text-white'
-                            : 'bg-teal-600 hover:bg-teal-500 text-white focus:ring-4 focus:ring-teal-500/20'
-                            }`}
-                    >
-                        {isOfflineSuccess ? '📸 Capture Next Item' : '📸 Take Another Photo'}
-                    </button>
-
-                    <button
-                        onClick={() => setStep('finished')}
-                        className="w-full mt-3 font-bold py-3.5 px-6 rounded-xl border-2 border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-all active:scale-[0.98]"
-                    >
-                        ✅ I'm Finished
-                    </button>
+                    <div className="flex gap-3 mt-4 w-full">
+                        <button
+                            onClick={() => {
+                                setStep('intro');
+                                setFiles([]);
+                                setPreviewUrls([]);
+                                setLocation(null); // Reset GPS for fresh reading
+                                setLastUploadResult(null);
+                            }}
+                            className="w-1/2 bg-white dark:bg-zinc-800 text-teal-600 dark:text-teal-400 font-bold py-3 px-4 rounded-xl shadow-sm border border-teal-200 dark:border-teal-900/50 hover:bg-teal-50 dark:hover:bg-zinc-700 transition-colors"
+                        >
+                            Take Another
+                        </button>
+                        <button
+                            onClick={() => {
+                                setStep('finished');
+                            }}
+                            className="w-1/2 bg-teal-600 dark:bg-teal-500 text-white font-bold py-3 px-4 rounded-xl shadow-sm border border-teal-600 dark:border-teal-500 hover:bg-teal-700 transition-colors"
+                        >
+                            ✅ I'm Finished
+                        </button>
+                    </div>
                 </motion.div>
             </motion.div>
         );
     }
+
+
 
     if (step === 'finished') {
         return (

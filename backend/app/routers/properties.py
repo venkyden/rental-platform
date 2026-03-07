@@ -274,6 +274,35 @@ async def delete_property(
             detail="You can only delete your own properties",
         )
 
+    # Manual cascade delete to prevent IntegrityError
+    from app.models.property import PropertyMedia, PropertyMediaSession
+    from app.models.visit import VisitSlot
+    from app.models.lease import Lease
+    from app.models.application import TenantApplication
+    from app.models.document import Document
+    from app.models.message import Message
+
+    # Delete related documents
+    await db.execute(sql_delete(Document).where(Document.property_id == property_id))
+    
+    # Delete related messages
+    await db.execute(sql_delete(Message).where(Message.property_id == property_id))
+
+    # Delete related tenant applications
+    await db.execute(sql_delete(TenantApplication).where(TenantApplication.property_id == property_id))
+
+    # Delete related leases
+    await db.execute(sql_delete(Lease).where(Lease.property_id == property_id))
+
+    # Delete related visit slots
+    await db.execute(sql_delete(VisitSlot).where(VisitSlot.property_id == property_id))
+
+    # Delete property media
+    await db.execute(sql_delete(PropertyMedia).where(PropertyMedia.property_id == property_id))
+
+    # Delete property media sessions
+    await db.execute(sql_delete(PropertyMediaSession).where(PropertyMediaSession.property_id == property_id))
+
     await db.execute(sql_delete(Property).where(Property.id == property_id))
     await db.commit()
 

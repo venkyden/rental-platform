@@ -192,8 +192,7 @@ export default function EditPropertyPage() {
         setVerifyingMedia(true);
         try {
             // Check if the property has media uploaded
-            // Add cache busting timestamp
-            const response = await apiClient.client.get(`/properties/${propertyId}?t=${Date.now()}`);
+            const response = await apiClient.client.get(`/properties/${propertyId}`);
             const photos = Array.isArray(response.data.photos) ? response.data.photos : response.data.photos?.urls ? response.data.photos.urls : [];
             const propertyImages = photos;
 
