@@ -280,14 +280,21 @@ async def delete_property(
     from app.models.lease import Lease
     from app.models.application import TenantApplication
     from app.models.document import Document
-    from app.models.message import Message
+    from app.models.message import Message, Conversation
     from app.models.team import TeamMemberProperty
 
     # Delete related documents
     await db.execute(sql_delete(Document).where(Document.property_id == property_id))
+    # Delete related conversations and their messages
+    # First get all conversations for this property
+    conv_result = await db.execute(select(Conversation.id).where(Conversation.property_id == property_id))
+    conv_ids = conv_result.scalars().all()
     
-    # Delete related messages
-    await db.execute(sql_delete(Message).where(Message.property_id == property_id))
+    if conv_ids:
+        # Delete messages associated with these conversations
+        await db.execute(sql_delete(Message).where(Message.conversation_id.in_(conv_ids)))
+        # Delete the conversations
+        await db.execute(sql_delete(Conversation).where(Conversation.property_id == property_id))
 
     # Delete related tenant applications
     await db.execute(sql_delete(TenantApplication).where(TenantApplication.property_id == property_id))
