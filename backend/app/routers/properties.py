@@ -274,47 +274,8 @@ async def delete_property(
             detail="You can only delete your own properties",
         )
 
-    # Manual cascade delete to prevent IntegrityError
-    from app.models.property import PropertyMedia, PropertyMediaSession
-    from app.models.visit import VisitSlot
-    from app.models.lease import Lease
-    from app.models.application import TenantApplication
-    from app.models.document import Document
-    from app.models.message import Message, Conversation
-    from app.models.team import TeamMemberProperty
-
-    # Delete related documents
-    await db.execute(sql_delete(Document).where(Document.property_id == property_id))
-    # Delete related conversations and their messages
-    # First get all conversations for this property
-    conv_result = await db.execute(select(Conversation.id).where(Conversation.property_id == property_id))
-    conv_ids = conv_result.scalars().all()
-    
-    if conv_ids:
-        # Delete messages associated with these conversations
-        await db.execute(sql_delete(Message).where(Message.conversation_id.in_(conv_ids)))
-        # Delete the conversations
-        await db.execute(sql_delete(Conversation).where(Conversation.property_id == property_id))
-
-    # Delete related tenant applications
-    await db.execute(sql_delete(TenantApplication).where(TenantApplication.property_id == property_id))
-
-    # Delete related leases
-    await db.execute(sql_delete(Lease).where(Lease.property_id == property_id))
-
-    # Delete related visit slots
-    await db.execute(sql_delete(VisitSlot).where(VisitSlot.property_id == property_id))
-
-    # Delete related team member properties
-    await db.execute(sql_delete(TeamMemberProperty).where(TeamMemberProperty.property_id == property_id))
-
-    # Delete property media
-    await db.execute(sql_delete(PropertyMedia).where(PropertyMedia.property_id == property_id))
-
-    # Delete property media sessions
-    await db.execute(sql_delete(PropertyMediaSession).where(PropertyMediaSession.property_id == property_id))
-
-    await db.execute(sql_delete(Property).where(Property.id == property_id))
+    # Use SQLAlchemy ORM delete to trigger all configured 'cascade="all, delete-orphan"' relationships
+    await db.delete(property_obj)
     await db.commit()
 
     return

@@ -117,6 +117,15 @@ class Property(Base):
     leases = relationship(
         "Lease", back_populates="property", cascade="all, delete-orphan"
     )
+    conversations = relationship(
+        "Conversation", back_populates="property", cascade="all, delete-orphan"
+    )
+    applications = relationship(
+        "TenantApplication", back_populates="property", cascade="all, delete-orphan"
+    )
+    team_members = relationship(
+        "TeamMemberProperty", back_populates="property", cascade="all, delete-orphan"
+    )
 
 
 class PropertyMediaSession(Base):
