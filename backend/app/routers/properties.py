@@ -15,6 +15,7 @@ from sqlalchemy import and_
 from sqlalchemy import delete as sql_delete
 from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm.attributes import flag_modified
 
 from app.core.database import get_db
 from app.models.property import Property, PropertyMedia, PropertyMediaSession
@@ -576,6 +577,7 @@ async def upload_media(
             "media_type": meta_obj.media_type,
         })
         property_obj.photos = photos
+        flag_modified(property_obj, "photos")
 
     await db.commit()
     await db.refresh(media)

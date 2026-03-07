@@ -239,6 +239,14 @@ export function getTenantQuestions(): Question[] {
             showIf: (r) => r.situation === 'student_budget' || r.contract_type === 'student' || r.contract_type === 'internship',
         },
         {
+            id: 'workplace',
+            question: 'Where do you work?',
+            emoji: '🏢',
+            type: 'address_autocomplete',
+            placeholder: 'Start typing your workplace address...',
+            showIf: (r) => !(r.situation === 'student_budget' || r.contract_type === 'student' || r.contract_type === 'internship'),
+        },
+        {
             id: 'location_preference',
             question: 'Where would you like to live?',
             emoji: '📍',

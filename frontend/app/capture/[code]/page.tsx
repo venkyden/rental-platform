@@ -50,7 +50,7 @@ export default function CapturePage({ params }: { params: { code: string } }) {
     const { code } = params;
     const router = useRouter();
     const { showToast } = useToast();
-    const [step, setStep] = useState<'intro' | 'capturing' | 'preview' | 'uploading' | 'success'>('intro');
+    const [step, setStep] = useState<'intro' | 'capturing' | 'ready_to_capture' | 'preview' | 'uploading' | 'success'>('intro');
     const [files, setFiles] = useState<File[]>([]);
     const [previewUrls, setPreviewUrls] = useState<string[]>([]);
     const [location, setLocation] = useState<{ lat: number; lng: number; accuracy: number } | null>(null);
@@ -153,21 +153,19 @@ export default function CapturePage({ params }: { params: { code: string } }) {
     const manualProceed = () => {
         gpsAbortRef.current = true;
         showToast("Proceeding without GPS. Media will be marked as unverified.", "warning");
-        proceedToCamera();
+        setStep('ready_to_capture');
     };
 
     const acquireGpsAndCapture = () => {
         // Offline Mode: Allow capture without GPS if offline
         if (isOffline) {
-            setStep('capturing');
-            proceedToCamera();
+            setStep('ready_to_capture');
             return;
         }
 
         // "Verify Once" Logic: If already verified, skip GPS
         if (isSessionVerified) {
-            setStep('capturing');
-            proceedToCamera();
+            setStep('ready_to_capture');
             return;
         }
 
@@ -190,7 +188,7 @@ export default function CapturePage({ params }: { params: { code: string } }) {
                 lng: position.coords.longitude,
                 accuracy: position.coords.accuracy
             });
-            proceedToCamera();
+            setStep('ready_to_capture');
         };
 
         const onHighAccuracyError = () => {
@@ -202,7 +200,7 @@ export default function CapturePage({ params }: { params: { code: string } }) {
                     if (resolved || gpsAbortRef.current) return;
                     resolved = true;
                     showToast("GPS unavailable. Proceeding without location.", "info");
-                    proceedToCamera();
+                    setStep('ready_to_capture');
                 },
                 { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }
             );
@@ -220,7 +218,7 @@ export default function CapturePage({ params }: { params: { code: string } }) {
             if (!resolved && !gpsAbortRef.current) {
                 resolved = true;
                 showToast("GPS took too long. Proceeding without location.", "info");
-                proceedToCamera();
+                setStep('ready_to_capture');
             }
         }, 6000);
     };
@@ -347,8 +345,8 @@ export default function CapturePage({ params }: { params: { code: string } }) {
                     {/* GPS Verification Result */}
                     {lastUploadResult && !isOfflineSuccess && (
                         <div className={`mb-6 p-3 rounded-xl text-sm font-medium ${lastUploadResult.gps_verified
-                                ? 'bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300'
-                                : 'bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300'
+                            ? 'bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300'
+                            : 'bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300'
                             }`}>
                             {lastUploadResult.gps_verified ? (
                                 <>✅ GPS Verified — {lastUploadResult.distance_meters}m from property</>
@@ -465,8 +463,8 @@ export default function CapturePage({ params }: { params: { code: string } }) {
                                             <button
                                                 onClick={() => setSelectedRoom(null)}
                                                 className={`py-2.5 px-3 rounded-xl border text-sm font-medium transition-all ${selectedRoom === null
-                                                        ? 'bg-teal-600 text-white border-teal-600 shadow-lg shadow-teal-500/25'
-                                                        : 'border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:border-teal-300 dark:hover:border-teal-700'
+                                                    ? 'bg-teal-600 text-white border-teal-600 shadow-lg shadow-teal-500/25'
+                                                    : 'border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:border-teal-300 dark:hover:border-teal-700'
                                                     }`}
                                             >
                                                 🏠 Common Area
@@ -476,8 +474,8 @@ export default function CapturePage({ params }: { params: { code: string } }) {
                                                     key={room.index}
                                                     onClick={() => setSelectedRoom(room)}
                                                     className={`py-2.5 px-3 rounded-xl border text-sm font-medium transition-all ${selectedRoom?.index === room.index
-                                                            ? 'bg-teal-600 text-white border-teal-600 shadow-lg shadow-teal-500/25'
-                                                            : 'border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:border-teal-300 dark:hover:border-teal-700'
+                                                        ? 'bg-teal-600 text-white border-teal-600 shadow-lg shadow-teal-500/25'
+                                                        : 'border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:border-teal-300 dark:hover:border-teal-700'
                                                         }`}
                                                 >
                                                     🛏️ {room.label}
@@ -517,6 +515,40 @@ export default function CapturePage({ params }: { params: { code: string } }) {
                         </motion.div>
                     )}
 
+                    {step === 'ready_to_capture' && (
+                        <motion.div variants={itemVariants} className="text-center bg-white dark:bg-zinc-900/50 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 p-8">
+                            <div className="w-20 h-20 bg-teal-50 dark:bg-teal-900/20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border border-teal-100 dark:border-teal-900/30">
+                                <span className="text-4xl">📸</span>
+                            </div>
+                            <h2 className="text-2xl font-extrabold text-zinc-900 dark:text-white mb-6">Ready to Capture</h2>
+
+                            {selectedRoom && (
+                                <div className="bg-teal-50 dark:bg-teal-900/30 border border-teal-200 dark:border-teal-800/50 text-teal-800 dark:text-teal-200 px-4 py-3 rounded-xl mb-6 text-sm font-bold shadow-inner flex items-center justify-center gap-2">
+                                    🛏️ Capturing: {selectedRoom.label}
+                                </div>
+                            )}
+
+                            <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-8 leading-relaxed">
+                                You can now open your camera and start taking photos or videos.
+                            </p>
+
+                            <button
+                                onClick={proceedToCamera}
+                                className="w-full bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-sm hover:bg-teal-500 focus:ring-4 focus:ring-teal-500/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                            >
+                                <span className="text-lg">📷</span>
+                                <span>Open Camera</span>
+                            </button>
+
+                            <button
+                                onClick={() => { setStep('intro'); setLocation(null); gpsAbortRef.current = true; }}
+                                className="mt-6 text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300 text-sm font-medium transition-colors"
+                            >
+                                Cancel
+                            </button>
+                        </motion.div>
+                    )}
+
                     {step === 'preview' && files.length > 0 && (
                         <motion.div variants={containerVariants} className="w-full flex-1 flex flex-col pt-2">
                             <motion.div variants={itemVariants} className="relative w-full bg-zinc-900 rounded-2xl overflow-hidden shadow-2xl mb-6 flex flex-col">
@@ -531,15 +563,21 @@ export default function CapturePage({ params }: { params: { code: string } }) {
                                         </div>
                                     ))}
                                 </div>
-                                <div className="absolute top-4 left-4 right-4 flex justify-between items-center pointer-events-none">
+                                <div className="absolute top-4 left-4 right-4 flex justify-between items-center pointer-events-none z-10">
                                     <div className="bg-black/60 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg border border-white/10">
                                         {files.length} item{files.length > 1 ? 's' : ''} captured
-                                        {selectedRoom && ` • ${selectedRoom.label}`}
                                     </div>
                                     {location && (
                                         <GpsQualityBadge accuracy={location.accuracy} />
                                     )}
                                 </div>
+                                {selectedRoom && (
+                                    <div className="absolute bottom-4 left-4 right-4 pointer-events-none flex justify-center z-10">
+                                        <div className="bg-teal-600/90 backdrop-blur-md text-white text-sm font-bold px-4 py-2 rounded-xl shadow-lg border border-teal-500/50">
+                                            🛏️ Capturing: {selectedRoom.label}
+                                        </div>
+                                    </div>
+                                )}
                             </motion.div>
 
                             <motion.div variants={itemVariants} className="flex flex-col gap-3">
@@ -547,7 +585,7 @@ export default function CapturePage({ params }: { params: { code: string } }) {
                                     onClick={() => fileInputRef.current?.click()}
                                     className="w-full bg-white dark:bg-zinc-800 text-teal-600 dark:text-teal-400 font-bold py-3.5 px-4 rounded-xl shadow-sm border border-teal-200 dark:border-teal-900/50 hover:bg-teal-50 dark:hover:bg-zinc-700 transition-colors flex items-center justify-center gap-2"
                                 >
-                                    <span>➕</span> Add Another Photo/Video
+                                    <span>➕</span> Add Another Photo/Video {selectedRoom ? `for ${selectedRoom.label}` : ''}
                                 </button>
                                 <div className="flex gap-3">
                                     <button

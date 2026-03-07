@@ -8,13 +8,20 @@ import QuestionRenderer from './onboarding/QuestionRenderer';
 
 interface QuestionnaireProps {
     userType: 'tenant' | 'landlord';
+    initialResponses?: Record<string, any>;
     onComplete: (responses: Record<string, any>) => void;
 }
 
-export default function OnboardingQuestionnaire({ userType, onComplete }: QuestionnaireProps) {
+export default function OnboardingQuestionnaire({ userType, initialResponses, onComplete }: QuestionnaireProps) {
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
-    const [responses, setResponses] = useState<Record<string, any>>({});
-    const [multiSelectValues, setMultiSelectValues] = useState<string[]>([]);
+    const [responses, setResponses] = useState<Record<string, any>>(initialResponses || {});
+    const [multiSelectValues, setMultiSelectValues] = useState<string[]>(() => {
+        const initialQuestions = userType === 'tenant' ? getTenantQuestions() : getLandlordQuestions();
+        if (initialQuestions[0]?.type === 'multiselect') {
+            return (initialResponses || {})[initialQuestions[0].id] || [];
+        }
+        return [];
+    });
     const [loading, setLoading] = useState(false);
 
     // Get the base set of questions

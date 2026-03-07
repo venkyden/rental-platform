@@ -104,7 +104,7 @@ export default function RadiusLocationPicker({ initialLat, initialLng, radiusMet
             {/* Instruction Overlay */}
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white/90 backdrop-blur-md px-4 py-2 rounded-full shadow-lg border border-[var(--gray-200)] pointer-events-none z-[1000]">
                 <p className="text-xs font-semibold text-[var(--foreground)] text-center whitespace-nowrap">
-                    Search Area ({Math.round(radiusMeters / 1000)}km)
+                    Search Area ({radiusMeters >= 1000 ? `${+(radiusMeters / 1000).toFixed(1)}km` : `${radiusMeters}m`})
                 </p>
             </div>
         </div>

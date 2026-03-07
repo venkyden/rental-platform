@@ -58,6 +58,7 @@ class UserResponse(BaseModel):
     employment_verified: bool
     trust_score: int
     segment: Optional[str] = None
+    preferences: Optional[Dict[str, Any]] = None
     onboarding_completed: bool = False
     marketing_consent: bool = False
     contact_preferences: Optional[Dict[str, Any]] = None

@@ -26,6 +26,8 @@ export default function QuestionRenderer({
     const [manualUniName, setManualUniName] = useState('');
     const [manualUniCity, setManualUniCity] = useState('');
     const [selectedAddress, setSelectedAddress] = useState<AddressResult | null>(null);
+    const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number } | null>(null);
+    const [mapRadius, setMapRadius] = useState<number>(2000);
 
     return (
         <div className="space-y-4">
@@ -220,24 +222,66 @@ export default function QuestionRenderer({
                 // Try to get coordinates from previous university selection
                 const uniResponse = responses?.university;
                 const uniCity = typeof uniResponse === 'object' ? uniResponse?.city : null;
-                const coords = uniCity ? CITY_COORDS[uniCity] : null;
 
-                // Default: center of France if no university city
+                // Try to get coordinates from workplace selection
+                const workplaceResponse = responses?.workplace;
+                const workplaceLat = typeof workplaceResponse === 'object' ? workplaceResponse?.lat : null;
+                const workplaceLng = typeof workplaceResponse === 'object' ? workplaceResponse?.lng : null;
+
+                const coords = uniCity ? CITY_COORDS[uniCity] : (workplaceLat && workplaceLng ? { lat: workplaceLat, lng: workplaceLng } : null);
+
+                // Default: center of France if no location
                 const defaultLat = coords?.lat ?? 46.6034;
                 const defaultLng = coords?.lng ?? 2.2137;
-                const defaultZoom = coords ? 13 : 6;
+
+                const currentLat = mapCenter?.lat ?? defaultLat;
+                const currentLng = mapCenter?.lng ?? defaultLng;
+
+                const centerText = uniCity ? `Centered on ${uniCity} — ` : (workplaceResponse ? 'Centered on your workplace — ' : '');
 
                 return (
-                    <div>
-                        <p className="mb-4 text-zinc-600 dark:text-zinc-400 text-center">
-                            {coords ? `Centered on ${uniCity} — drag the pin to refine.` : 'Drag the pin to select your target search area.'}
+                    <div className="space-y-6">
+                        <p className="text-zinc-600 dark:text-zinc-400 text-center px-4">
+                            {centerText}drag the pin to select your target search area, and use the slider to adjust your commute radius.
                         </p>
                         <RadiusLocationPicker
-                            initialLat={defaultLat}
-                            initialLng={defaultLng}
-                            radiusMeters={2000}
-                            onLocationChange={(lat: number, lng: number) => onAnswer({ lat, lng })}
+                            initialLat={currentLat}
+                            initialLng={currentLng}
+                            radiusMeters={mapRadius}
+                            onLocationChange={(lat: number, lng: number) => setMapCenter({ lat, lng })}
                         />
+
+                        <div className="bg-white/50 dark:bg-zinc-800/50 p-6 rounded-xl border border-zinc-200 dark:border-zinc-700 mx-1">
+                            <div className="flex justify-between items-end mb-4">
+                                <div>
+                                    <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">Search Area Size</h3>
+                                    <p className="text-xs text-zinc-500 dark:text-zinc-400">Maximum commute distance</p>
+                                </div>
+                                <div className="text-lg font-bold text-teal-600 dark:text-teal-400">
+                                    {mapRadius >= 1000 ? `${+(mapRadius / 1000).toFixed(1)} km` : `${mapRadius} m`}
+                                </div>
+                            </div>
+                            <input
+                                type="range"
+                                min={500}
+                                max={20000}
+                                step={500}
+                                value={mapRadius}
+                                onChange={(e) => setMapRadius(Number(e.target.value))}
+                                className="w-full h-2 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-teal-600"
+                            />
+                            <div className="flex justify-between text-xs text-zinc-400 mt-2 font-medium">
+                                <span>500m</span>
+                                <span>20km</span>
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={() => onAnswer({ lat: currentLat, lng: currentLng, radius: mapRadius })}
+                            className="w-full mt-6 py-4 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl shadow-lg hover:shadow-teal-500/25 transition-all transform hover:-translate-y-0.5"
+                        >
+                            Continue →
+                        </button>
                     </div>
                 );
             })()}

@@ -14,6 +14,7 @@ interface User {
     employment_verified: boolean;
     trust_score: number;
     onboarding_completed?: boolean;
+    preferences?: Record<string, any>;
     bio?: string;
     profile_picture_url?: string;
 }

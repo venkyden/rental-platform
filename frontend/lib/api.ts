@@ -190,6 +190,11 @@ class ApiClient {
         });
         return response.data;
     }
+
+    async updateOnboardingPreferences(responses: Record<string, any>) {
+        const response = await this.client.put('/onboarding/preferences', { responses });
+        return response.data;
+    }
 }
 
 export const apiClient = new ApiClient();
