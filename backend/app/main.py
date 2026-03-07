@@ -72,14 +72,13 @@ app.add_middleware(
 # Global unhandled exception handler
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
-    import traceback
     logger.error(
         f"Unhandled exception on {request.method} {request.url.path}: {exc}",
         exc_info=True,
     )
     return JSONResponse(
         status_code=500,
-        content={"detail": "An unexpected error occurred. Please try again later.", "error": str(exc), "traceback": traceback.format_exc()},
+        content={"detail": "An unexpected error occurred. Please try again later."},
     )
 
 

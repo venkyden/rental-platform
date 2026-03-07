@@ -574,7 +574,7 @@ async def upload_media(
         captured_longitude=meta_obj.longitude,
         gps_accuracy=Decimal(str(meta_obj.gps_accuracy)) if meta_obj.gps_accuracy else None,
         distance_from_target=Decimal(str(distance)) if distance else None,
-        captured_at=meta_obj.captured_at,
+        captured_at=meta_obj.captured_at.replace(tzinfo=None) if meta_obj.captured_at else None,
         device_id=meta_obj.device_id,
         watermark_address=meta_obj.watermark_address,
         verification_status=verification_status,
