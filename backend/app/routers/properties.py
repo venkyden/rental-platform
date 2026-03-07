@@ -179,6 +179,28 @@ async def get_property(property_id: UUID, db: AsyncSession = Depends(get_db)):
             status_code=status.HTTP_404_NOT_FOUND, detail="Property not found"
         )
 
+    # SECURE CHECK: Ensure photos JSONB is in sync with PropertyMedia table
+    # This is necessary because the JSONB field might be out of sync if uploads happened concurrently
+    media_query = select(PropertyMedia).where(PropertyMedia.property_id == property_id)
+    media_result = await db.execute(media_query)
+    all_media = media_result.scalars().all()
+
+    if all_media:
+        # Re-build photos array if it's out of sync (JSONB might be null or have fewer items)
+        if not property_obj.photos or len(property_obj.photos) < len(all_media):
+            new_photos = []
+            for i, m in enumerate(all_media):
+                new_photos.append({
+                    "url": m.file_url,
+                    "order": i,
+                    "room_index": m.room_index,
+                    "room_label": m.room_label,
+                    "media_type": m.media_type,
+                })
+            property_obj.photos = new_photos
+            # We don't commit here as this is a GET request, but it's okay because 
+            # the response_model will pick up the updated property_obj.attrs.
+
     # Increment view count
     await db.execute(
         update(Property)
@@ -568,15 +590,19 @@ async def upload_media(
     property_obj = result.scalar_one_or_none()
 
     if property_obj:
-        photos = property_obj.photos or []
-        photos.append({
+        # Crucial: Initialize photos as a NEW list if it's currently None or empty
+        # If we use += or append to an object pulled from SQLAlchemy without flag_modified, it might not track correctly.
+        current_photos = list(property_obj.photos) if property_obj.photos else []
+        
+        current_photos.append({
             "url": media.file_url,
-            "order": len(photos),
+            "order": len(current_photos),
             "room_index": upload_room_index,
             "room_label": upload_room_label,
             "media_type": meta_obj.media_type,
         })
-        property_obj.photos = photos
+        
+        property_obj.photos = current_photos
         flag_modified(property_obj, "photos")
 
     await db.commit()
