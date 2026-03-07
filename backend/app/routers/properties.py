@@ -281,6 +281,7 @@ async def delete_property(
     from app.models.application import TenantApplication
     from app.models.document import Document
     from app.models.message import Message
+    from app.models.team import TeamMemberProperty
 
     # Delete related documents
     await db.execute(sql_delete(Document).where(Document.property_id == property_id))
@@ -296,6 +297,9 @@ async def delete_property(
 
     # Delete related visit slots
     await db.execute(sql_delete(VisitSlot).where(VisitSlot.property_id == property_id))
+
+    # Delete related team member properties
+    await db.execute(sql_delete(TeamMemberProperty).where(TeamMemberProperty.property_id == property_id))
 
     # Delete property media
     await db.execute(sql_delete(PropertyMedia).where(PropertyMedia.property_id == property_id))
