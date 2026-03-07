@@ -264,11 +264,15 @@ SEGMENT_CONFIGS: Dict[str, SegmentConfig] = {
 }
 
 
-def get_segment_config(segment: Optional[str]) -> SegmentConfig:
-    """Get configuration for a user segment, with fallback to D1/S1"""
+def get_segment_config(segment: Optional[str], role: Optional[str] = None) -> SegmentConfig:
+    """Get configuration for a user segment, with fallback based on role to D1/S1"""
     if segment and segment in SEGMENT_CONFIGS:
         return SEGMENT_CONFIGS[segment]
-    # Default to D1 for tenants or S1 for landlords
+        
+    # Default based on role
+    if role in ["landlord", "property_manager"]:
+        return SEGMENT_CONFIGS["S1"]
+        
     return SEGMENT_CONFIGS["D1"]
 
 
@@ -293,7 +297,7 @@ def has_feature(segment: Optional[str], feature: str) -> bool:
     return feature in config.features
 
 
-def get_all_features(segment: Optional[str]) -> List[str]:
+def get_all_features(segment: Optional[str], role: Optional[str] = None) -> List[str]:
     """Get all features for a segment (common + segment-specific)"""
-    config = get_segment_config(segment)
+    config = get_segment_config(segment, role=role)
     return get_full_features(config.features)

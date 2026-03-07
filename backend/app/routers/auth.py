@@ -184,7 +184,9 @@ async def login(
     redirect_path = get_redirect_path(
         user.segment, user.role.value if hasattr(user.role, "value") else user.role
     )
-    segment_config = get_segment_config(user.segment)
+    segment_config = get_segment_config(
+        user.segment, role=user.role.value if hasattr(user.role, "value") else user.role
+    )
 
     # Redirect users who haven't completed onboarding
     if not user.onboarding_completed:
@@ -462,7 +464,9 @@ async def google_auth(
     redirect_path = get_redirect_path(
         user.segment, user.role.value if hasattr(user.role, "value") else user.role
     )
-    segment_config = get_segment_config(user.segment)
+    segment_config = get_segment_config(
+        user.segment, role=user.role.value if hasattr(user.role, "value") else user.role
+    )
 
     # Redirect users who haven't completed onboarding
     if not user.onboarding_completed:
@@ -597,15 +601,9 @@ async def get_my_segment_config(current_user: User = Depends(get_current_user)):
                                           get_redirect_path,
                                           get_segment_config)
 
-    config = get_segment_config(current_user.segment)
-    redirect_path = get_redirect_path(
-        current_user.segment,
-        (
-            current_user.role.value
-            if hasattr(current_user.role, "value")
-            else current_user.role
-        ),
-    )
+    role_value = current_user.role.value if hasattr(current_user.role, "value") else current_user.role
+    config = get_segment_config(current_user.segment, role=role_value)
+    redirect_path = get_redirect_path(current_user.segment, role_value)
 
     return {
         "segment": config.segment,
@@ -615,7 +613,7 @@ async def get_my_segment_config(current_user: User = Depends(get_current_user)):
         # Feature sets
         "common_features": COMMON_FEATURES,
         "segment_features": config.features,
-        "all_features": get_all_features(current_user.segment),
+        "all_features": get_all_features(current_user.segment, role=role_value),
         # UI config
         "quick_actions": config.quick_actions,
         "settings": config.settings,
