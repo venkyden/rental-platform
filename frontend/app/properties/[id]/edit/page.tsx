@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/lib/useAuth';
+import { useToast } from '@/lib/ToastContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import PremiumLayout from '@/components/PremiumLayout';
 import { apiClient } from '@/lib/api';
@@ -66,6 +67,7 @@ export default function EditPropertyPage() {
     const router = useRouter();
     const params = useParams();
     const { user } = useAuth();
+    const { showToast } = useToast();
     const propertyId = params?.id as string;
 
     const [currentStep, setCurrentStep] = useState(1);
@@ -198,12 +200,13 @@ export default function EditPropertyPage() {
 
             if (propertyImages.length > 0) {
                 setMediaVerified(true);
+                showToast(`Success! Found ${propertyImages.length} images.`, 'success');
             } else {
-                alert('No media found yet. Please make sure you have uploaded and confirmed on your mobile device.');
+                showToast('No media found yet. If you just uploaded, please wait a few seconds and try again.', 'info');
             }
         } catch (error) {
             console.error('Failed to verify media:', error);
-            alert('Error checking media status. Please try again.');
+            showToast('Error checking media status. Please try again.', 'error');
         } finally {
             setVerifyingMedia(false);
         }

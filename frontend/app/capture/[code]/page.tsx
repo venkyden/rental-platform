@@ -50,7 +50,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
     const { code } = use(params);
     const router = useRouter();
     const { showToast } = useToast();
-    const [step, setStep] = useState<'intro' | 'capturing' | 'ready_to_capture' | 'preview' | 'uploading' | 'success'>('intro');
+    const [step, setStep] = useState<'intro' | 'capturing' | 'ready_to_capture' | 'preview' | 'uploading' | 'success' | 'finished'>('intro');
     const [files, setFiles] = useState<File[]>([]);
     const [previewUrls, setPreviewUrls] = useState<string[]>([]);
     const [location, setLocation] = useState<{ lat: number; lng: number; accuracy: number } | null>(null);
@@ -377,6 +377,40 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                             }`}
                     >
                         {isOfflineSuccess ? '📸 Capture Next Item' : '📸 Take Another Photo'}
+                    </button>
+
+                    <button
+                        onClick={() => setStep('finished')}
+                        className="w-full mt-3 font-bold py-3.5 px-6 rounded-xl border-2 border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-all active:scale-[0.98]"
+                    >
+                        ✅ I'm Finished
+                    </button>
+                </motion.div>
+            </motion.div>
+        );
+    }
+
+    if (step === 'finished') {
+        return (
+            <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                animate="show"
+                className="min-h-screen flex flex-col items-center justify-center p-6 text-center bg-zinc-50 dark:bg-zinc-950"
+            >
+                <motion.div variants={itemVariants} className="bg-white dark:bg-zinc-900 shadow-xl rounded-2xl p-10 max-w-sm w-full border border-zinc-100 dark:border-zinc-800">
+                    <div className="w-20 h-20 bg-teal-100 dark:bg-teal-900/30 text-teal-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
+                        <span className="text-4xl">🎉</span>
+                    </div>
+                    <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mb-3">All Done!</h1>
+                    <p className="text-zinc-600 dark:text-zinc-400 mb-8 text-sm">
+                        Your media has been securely uploaded. You can now close this tab and return to your dashboard on your computer to finish your listing.
+                    </p>
+                    <button
+                        onClick={() => router.push('/dashboard')}
+                        className="w-full bg-teal-600 hover:bg-teal-500 text-white font-bold py-3.5 px-6 rounded-xl shadow-sm transition-all focus:ring-4 focus:ring-teal-500/20"
+                    >
+                        Go to Dashboard
                     </button>
                 </motion.div>
             </motion.div>
