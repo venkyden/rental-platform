@@ -1,4 +1,5 @@
 import logging
+import httpx
 from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -375,8 +376,6 @@ async def google_auth(
         )
 
     # Verify the Google ID token
-    import httpx
-
     try:
         async with httpx.AsyncClient() as client:
             resp = await client.get(
@@ -388,10 +387,17 @@ async def google_auth(
                     detail="Invalid Google token",
                 )
             google_data = resp.json()
-    except httpx.HTTPError:
+    except httpx.HTTPError as e:
+        audit_logger.error(f"HTTPError verifying Google token: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Failed to verify Google token",
+        )
+    except Exception as e:
+        audit_logger.error(f"Unexpected error verifying Google token: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error during Google token verification",
         )
 
     # Validate the token was issued for our app
