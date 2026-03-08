@@ -375,23 +375,22 @@ async def google_auth(
             detail="Google Sign-In is not configured",
         )
 
-    # Verify the Google ID token
+    # Verify the Google ID token locally using the google-auth library
     try:
-        async with httpx.AsyncClient() as client:
-            resp = await client.get(
-                f"https://oauth2.googleapis.com/tokeninfo?id_token={auth_data.credential}"
-            )
-            if resp.status_code != 200:
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Invalid Google token",
-                )
-            google_data = resp.json()
-    except httpx.HTTPError as e:
-        audit_logger.error(f"HTTPError verifying Google token: {e}")
+        from google.oauth2 import id_token
+        from google.auth.transport import requests as google_requests
+        
+        google_data = id_token.verify_oauth2_token(
+            auth_data.credential, 
+            google_requests.Request(), 
+            settings.GOOGLE_CLIENT_ID
+        )
+    except ValueError as e:
+        # Invalid token
+        audit_logger.error(f"Invalid Google token: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Failed to verify Google token",
+            detail="Invalid Google token",
         )
     except Exception as e:
         audit_logger.error(f"Unexpected error verifying Google token: {e}")
@@ -400,17 +399,12 @@ async def google_auth(
             detail="Internal server error during Google token verification",
         )
 
-    # Validate the token was issued for our app
-    if google_data.get("aud") != settings.GOOGLE_CLIENT_ID:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token was not issued for this application",
-        )
-
     google_id = google_data.get("sub")
     email = google_data.get("email")
     full_name = google_data.get("name")
-    email_verified = google_data.get("email_verified", "false") == "true"
+    
+    email_verified_raw = google_data.get("email_verified", False)
+    email_verified = str(email_verified_raw).lower() == "true" if isinstance(email_verified_raw, str) else bool(email_verified_raw)
 
     if not email or not google_id:
         raise HTTPException(
