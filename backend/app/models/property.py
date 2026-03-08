@@ -121,7 +121,7 @@ class Property(Base):
         "Conversation", back_populates="property", cascade="all, delete-orphan"
     )
     applications = relationship(
-        "TenantApplication", back_populates="property", cascade="all, delete-orphan"
+        "Application", back_populates="property", cascade="all, delete-orphan"
     )
     team_members = relationship(
         "TeamMemberProperty", back_populates="property", cascade="all, delete-orphan"
