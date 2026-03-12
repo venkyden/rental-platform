@@ -42,7 +42,7 @@ class Conversation(Base):
     updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
 
     # Relationships
-    property = relationship("Property", backref="conversations")
+    property = relationship("Property", back_populates="conversations")
     landlord = relationship(
         "User", foreign_keys=[landlord_id], backref="landlord_conversations"
     )
