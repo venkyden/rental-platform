@@ -369,42 +369,50 @@ async def google_auth(
     request: Request, auth_data: GoogleAuthRequest, db: AsyncSession = Depends(get_db)
 ):
     """Authenticate with Google. Verifies Google ID token, finds or creates user."""
+    import asyncio
+
     if not settings.GOOGLE_CLIENT_ID:
         raise HTTPException(
             status_code=status.HTTP_501_NOT_IMPLEMENTED,
             detail="Google Sign-In is not configured",
         )
 
-    # Verify the Google ID token locally using the google-auth library
+    # ---- Step 1: Verify Google ID token ----
+    # google.oauth2.id_token.verify_oauth2_token is SYNCHRONOUS (makes HTTP call
+    # to fetch Google certs), so we run it in a thread to avoid blocking the loop.
     try:
-        from google.oauth2 import id_token
+        from google.oauth2 import id_token as google_id_token
         from google.auth.transport import requests as google_requests
-        
-        google_data = id_token.verify_oauth2_token(
-            auth_data.credential, 
-            google_requests.Request(), 
-            settings.GOOGLE_CLIENT_ID
+
+        google_data = await asyncio.to_thread(
+            google_id_token.verify_oauth2_token,
+            auth_data.credential,
+            google_requests.Request(),
+            settings.GOOGLE_CLIENT_ID,
         )
     except ValueError as e:
-        # Invalid token
-        audit_logger.error(f"Invalid Google token: {e}")
+        audit_logger.warning(f"GOOGLE_AUTH_INVALID_TOKEN error={e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid Google token",
+            detail="Invalid or expired Google token. Please try again.",
         )
     except Exception as e:
-        audit_logger.error(f"Unexpected error verifying Google token: {e}")
+        audit_logger.error(f"GOOGLE_AUTH_VERIFY_ERROR error={e}", exc_info=True)
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error during Google token verification",
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Could not verify Google token. Please try again later.",
         )
 
     google_id = google_data.get("sub")
     email = google_data.get("email")
     full_name = google_data.get("name")
-    
+
     email_verified_raw = google_data.get("email_verified", False)
-    email_verified = str(email_verified_raw).lower() == "true" if isinstance(email_verified_raw, str) else bool(email_verified_raw)
+    email_verified = (
+        str(email_verified_raw).lower() == "true"
+        if isinstance(email_verified_raw, str)
+        else bool(email_verified_raw)
+    )
 
     if not email or not google_id:
         raise HTTPException(
@@ -412,74 +420,95 @@ async def google_auth(
             detail="Google account missing email or ID",
         )
 
-    # Check if user exists by google_id or email
-    result = await db.execute(select(User).where(User.google_id == google_id))
-    user = result.scalar_one_or_none()
-
-    if not user:
-        # Check by email (existing user linking Google account)
-        result = await db.execute(select(User).where(User.email == email))
+    # ---- Step 2: Find or create user ----
+    try:
+        result = await db.execute(select(User).where(User.google_id == google_id))
         user = result.scalar_one_or_none()
 
-        if user:
-            # Link Google account to existing user
-            user.google_id = google_id
-            if email_verified:
-                user.email_verified = True
-            audit_logger.info(f"GOOGLE_LINK email={email}")
-        else:
-            # Create new user
-            role = auth_data.role or "tenant"  # Default to tenant
-            user = User(
-                email=email,
-                google_id=google_id,
-                full_name=full_name,
-                role=role,
-                email_verified=email_verified,
-                hashed_password=None,  # No password for Google-only accounts
-            )
-            db.add(user)
-            audit_logger.info(f"GOOGLE_REGISTER email={email} role={role}")
+        if not user:
+            # Check by email (existing user linking Google account)
+            result = await db.execute(select(User).where(User.email == email))
+            user = result.scalar_one_or_none()
 
-    if user.is_active is False:
+            if user:
+                # Link Google account to existing user
+                user.google_id = google_id
+                if email_verified:
+                    user.email_verified = True
+                audit_logger.info(f"GOOGLE_LINK email={email}")
+            else:
+                # Create new user — convert role string to UserRole enum
+                from app.models.user import UserRole
+
+                role_str = auth_data.role or "tenant"
+                try:
+                    role_enum = UserRole(role_str)
+                except ValueError:
+                    role_enum = UserRole.TENANT
+
+                user = User(
+                    email=email,
+                    google_id=google_id,
+                    full_name=full_name,
+                    role=role_enum,
+                    email_verified=email_verified,
+                    hashed_password=None,
+                )
+                db.add(user)
+                audit_logger.info(f"GOOGLE_REGISTER email={email} role={role_str}")
+
+        if user.is_active is False:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="Account is inactive"
+            )
+
+        # Update last login
+        user.last_login = datetime.utcnow()
+        await db.commit()
+        await db.refresh(user)
+    except HTTPException:
+        raise  # Re-raise HTTP exceptions as-is
+    except Exception as e:
+        audit_logger.error(f"GOOGLE_AUTH_DB_ERROR email={email} error={e}", exc_info=True)
+        await db.rollback()
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Account is inactive"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Account setup failed. Please try again.",
         )
 
-    # Update last login
-    user.last_login = datetime.utcnow()
-    await db.commit()
-    await db.refresh(user)
+    # ---- Step 3: Create JWT and return ----
+    try:
+        access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = create_access_token(
+            data={"sub": user.email, "user_id": str(user.id)},
+            expires_delta=access_token_expires,
+        )
 
-    # Create access token
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": user.email, "user_id": str(user.id)},
-        expires_delta=access_token_expires,
-    )
+        # Get segment-based redirect
+        from app.core.segment_routing import get_redirect_path, get_segment_config
 
-    # Get segment-based redirect
-    from app.core.segment_routing import get_redirect_path, get_segment_config
+        role_value = user.role.value if hasattr(user.role, "value") else user.role
+        redirect_path = get_redirect_path(user.segment, role_value)
+        segment_config = get_segment_config(user.segment, role=role_value)
 
-    redirect_path = get_redirect_path(
-        user.segment, user.role.value if hasattr(user.role, "value") else user.role
-    )
-    segment_config = get_segment_config(
-        user.segment, role=user.role.value if hasattr(user.role, "value") else user.role
-    )
+        # Redirect users who haven't completed onboarding
+        if not user.onboarding_completed:
+            redirect_path = "/onboarding"
 
-    # Redirect users who haven't completed onboarding
-    if not user.onboarding_completed:
-        redirect_path = "/onboarding"
-
-    audit_logger.info(f"GOOGLE_LOGIN_SUCCESS email={user.email} segment={user.segment}")
-    return {
-        "access_token": access_token,
-        "token_type": "bearer",
-        "redirect_path": redirect_path,
-        "segment": user.segment,
-        "segment_name": segment_config.segment_name if segment_config else None,
-    }
+        audit_logger.info(f"GOOGLE_LOGIN_SUCCESS email={user.email} segment={user.segment}")
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "redirect_path": redirect_path,
+            "segment": user.segment,
+            "segment_name": segment_config.segment_name if segment_config else None,
+        }
+    except Exception as e:
+        audit_logger.error(f"GOOGLE_AUTH_TOKEN_ERROR email={email} error={e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Login succeeded but token generation failed. Please try again.",
+        )
 
 
 @router.post("/forgot-password")

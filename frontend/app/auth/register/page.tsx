@@ -1,39 +1,45 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiClient } from '@/lib/api';
 import { motion, Variants } from 'framer-motion';
 
+/* ----------------------------------------------------------------
+   Google Identity Services type declaration
+   ---------------------------------------------------------------- */
 declare global {
     interface Window {
         google?: {
             accounts: {
                 id: {
-                    initialize: (config: any) => void;
-                    renderButton: (element: HTMLElement, config: any) => void;
+                    initialize: (config: Record<string, unknown>) => void;
+                    renderButton: (element: HTMLElement, config: Record<string, unknown>) => void;
+                    prompt: () => void;
+                    cancel: () => void;
                 };
             };
         };
     }
 }
 
+/* ----------------------------------------------------------------
+   Framer-motion variants
+   ---------------------------------------------------------------- */
 const containerVariants: Variants = {
     hidden: { opacity: 0 },
-    show: {
-        opacity: 1,
-        transition: {
-            staggerChildren: 0.1
-        }
-    }
+    show: { opacity: 1, transition: { staggerChildren: 0.1 } },
 };
 
 const itemVariants: Variants = {
     hidden: { opacity: 0, y: 15 },
-    show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } }
+    show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } },
 };
 
+/* ================================================================
+   REGISTER PAGE
+   ================================================================ */
 export default function RegisterPage() {
     const [formData, setFormData] = useState({
         email: '',
@@ -50,85 +56,114 @@ export default function RegisterPage() {
     const [googleLoading, setGoogleLoading] = useState(false);
     const router = useRouter();
 
-    const googleTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+    const googleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const scriptLoadedRef = useRef(false);
 
-    const handleGoogleResponse = useCallback(async (response: any) => {
-        setError('');
-        setGoogleLoading(true);
-        // Clear any existing timeout since callback fired successfully
-        if (googleTimeoutRef.current) {
-            clearTimeout(googleTimeoutRef.current);
-            googleTimeoutRef.current = null;
-        }
-        try {
-            const roleToUse = formData.role || 'tenant';
-            const result = await apiClient.googleLogin(response.credential, roleToUse);
-            router.push(result.redirect_path || '/dashboard');
-        } catch (err: any) {
-            const detail = err.response?.data?.detail;
-            setError(typeof detail === 'string' ? detail : 'Google sign-up failed. Please try again.');
-        } finally {
-            setGoogleLoading(false);
-        }
-    }, [formData.role, router]);
+    /* ---------- Google callback ---------- */
+    const handleGoogleResponse = useCallback(
+        async (response: { credential?: string }) => {
+            if (!response.credential) {
+                setError('Google sign-up did not return a credential. Please try again.');
+                return;
+            }
 
+            setError('');
+            setGoogleLoading(true);
+
+            if (googleTimeoutRef.current) {
+                clearTimeout(googleTimeoutRef.current);
+                googleTimeoutRef.current = null;
+            }
+
+            try {
+                const roleToUse = formData.role || 'tenant';
+                const result = await apiClient.googleLogin(response.credential, roleToUse);
+                router.push(result.redirect_path || '/dashboard');
+            } catch (err: unknown) {
+                const axiosErr = err as { response?: { data?: { detail?: string } } };
+                const detail = axiosErr?.response?.data?.detail;
+                setError(
+                    typeof detail === 'string'
+                        ? detail
+                        : 'Google sign-up failed. Please try again.',
+                );
+            } finally {
+                setGoogleLoading(false);
+            }
+        },
+        [formData.role, router],
+    );
+
+    /* ---------- Load Google GSI script ---------- */
     useEffect(() => {
+        if (scriptLoadedRef.current) return;
+        scriptLoadedRef.current = true;
+
+        const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+        if (!clientId) return;
+
         const script = document.createElement('script');
         script.src = 'https://accounts.google.com/gsi/client';
         script.async = true;
         script.defer = true;
-        script.onload = () => {
-            const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-            if (clientId && window.google) {
-                window.google.accounts.id.initialize({
-                    client_id: clientId,
-                    callback: handleGoogleResponse,
-                    use_fedcm_for_prompt: true,
-                });
-                const buttonDiv = document.getElementById('google-signup-btn');
-                if (buttonDiv) {
-                    // Try to make it match the container width, max 400
-                    const containerWidth = buttonDiv.parentElement?.clientWidth || window.innerWidth - 64;
-                    const buttonWidth = Math.max(200, Math.min(400, Math.floor(containerWidth)));
-                    window.google.accounts.id.renderButton(buttonDiv, {
-                        theme: 'outline',
-                        size: 'large',
-                        width: buttonWidth,
-                        text: 'signup_with',
-                        shape: 'pill',
-                    });
 
-                    // Add click listener to start a safety timeout
-                    buttonDiv.addEventListener('click', () => {
-                        // Start safety timeout — if callback doesn't fire in 15s, reset loading
-                        googleTimeoutRef.current = setTimeout(() => {
-                            setGoogleLoading((current) => {
-                                if (current) {
-                                    setError('Google sign-up timed out. Please try again or use email registration.');
-                                    return false;
-                                }
-                                return current;
-                            });
-                        }, 15000);
-                    });
-                }
+        script.onload = () => {
+            if (!window.google) return;
+
+            window.google.accounts.id.initialize({
+                client_id: clientId,
+                callback: handleGoogleResponse,
+                auto_select: false,
+                cancel_on_tap_outside: true,
+            });
+
+            const buttonDiv = document.getElementById('google-signup-btn');
+            if (buttonDiv) {
+                const containerWidth =
+                    buttonDiv.parentElement?.clientWidth || window.innerWidth - 64;
+                const buttonWidth = Math.max(200, Math.min(400, Math.floor(containerWidth)));
+
+                window.google.accounts.id.renderButton(buttonDiv, {
+                    theme: 'outline',
+                    size: 'large',
+                    width: buttonWidth,
+                    text: 'signup_with',
+                    shape: 'pill',
+                });
+
+                buttonDiv.addEventListener('click', () => {
+                    googleTimeoutRef.current = setTimeout(() => {
+                        setGoogleLoading((cur) => {
+                            if (cur) {
+                                setError(
+                                    'Google sign-up timed out. Please try again or use email registration.',
+                                );
+                                return false;
+                            }
+                            return cur;
+                        });
+                    }, 15_000);
+                });
             }
         };
+
+        script.onerror = () => {
+            console.warn('Failed to load Google Sign-In script');
+        };
+
         document.body.appendChild(script);
+
         return () => {
-            if (document.body.contains(script)) {
-                document.body.removeChild(script);
-            }
+            if (googleTimeoutRef.current) clearTimeout(googleTimeoutRef.current);
         };
     }, [handleGoogleResponse]);
 
+    /* ---------- Form helpers ---------- */
     function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
         const target = e.target;
         const value = target.type === 'checkbox' ? (target as HTMLInputElement).checked : target.value;
         const name = target.name;
-
-        setFormData(prev => ({ ...prev, [name]: value }));
-
+        setFormData((prev) => ({ ...prev, [name]: value }));
         if (name === 'password') validatePassword(value as string);
     }
 
@@ -142,7 +177,7 @@ export default function RegisterPage() {
         };
 
         const allValid = Object.values(checks).every(Boolean);
-        const messages = [];
+        const messages: string[] = [];
         if (!checks.length) messages.push('8+ chars');
         if (!checks.uppercase) messages.push('uppercase');
         if (!checks.lowercase) messages.push('lowercase');
@@ -157,6 +192,7 @@ export default function RegisterPage() {
         return allValid;
     }
 
+    /* ---------- Email/password submit ---------- */
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         setError('');
@@ -186,18 +222,22 @@ export default function RegisterPage() {
             });
             await apiClient.login(formData.email, formData.password);
             router.push('/dashboard');
-        } catch (err: any) {
-            const detail = err.response?.data?.detail;
+        } catch (err: unknown) {
+            const axiosErr = err as { response?: { data?: { detail?: string | Array<{ msg?: string; message?: string }> | { msg?: string; message?: string } } } };
+            const detail = axiosErr?.response?.data?.detail;
             let errorMessage = 'Registration failed. Please try again.';
             if (typeof detail === 'string') errorMessage = detail;
-            else if (Array.isArray(detail)) errorMessage = detail.map(d => d.msg || d.message).join(', ');
-            else if (detail && typeof detail === 'object') errorMessage = detail.msg || detail.message;
+            else if (Array.isArray(detail))
+                errorMessage = detail.map((d) => d.msg || d.message).join(', ');
+            else if (detail && typeof detail === 'object')
+                errorMessage = detail.msg || detail.message || errorMessage;
             setError(errorMessage);
         } finally {
             setLoading(false);
         }
     }
 
+    /* ---------- Render ---------- */
     return (
         <motion.div
             variants={containerVariants}
@@ -211,18 +251,25 @@ export default function RegisterPage() {
                 </h2>
                 <p className="mt-2 text-sm text-zinc-600">
                     Already have an account?{' '}
-                    <Link href="/auth/login" className="font-semibold text-teal-600 hover:text-teal-500 transition-colors">
+                    <Link
+                        href="/auth/login"
+                        className="font-semibold text-teal-600 hover:text-teal-500 transition-colors"
+                    >
                         Sign in
                     </Link>
                 </p>
             </motion.div>
 
             {error && (
-                <motion.div variants={itemVariants} className="mb-6 rounded-xl bg-red-50/50 border border-red-200 p-4">
+                <motion.div
+                    variants={itemVariants}
+                    className="mb-6 rounded-xl bg-red-50/50 border border-red-200 p-4"
+                >
                     <p className="text-sm font-medium text-red-800">{error}</p>
                 </motion.div>
             )}
 
+            {/* Role selector + Google sign-up */}
             <motion.div variants={itemVariants} className="mb-6">
                 <label className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-3 text-center sm:text-left">
                     I am a
@@ -230,16 +277,17 @@ export default function RegisterPage() {
                 <div className="grid grid-cols-2 gap-3 mb-6">
                     {[
                         { id: 'tenant', label: 'Tenant', icon: '👤' },
-                        { id: 'landlord', label: 'Landlord', icon: '🏠' }
+                        { id: 'landlord', label: 'Landlord', icon: '🏠' },
                     ].map((role) => (
                         <button
                             key={role.id}
                             type="button"
-                            onClick={() => setFormData({ ...formData, role: role.id as any })}
-                            className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${formData.role === role.id
-                                ? 'border-teal-500 bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-300'
-                                : 'border-zinc-200 dark:border-zinc-800 hover:border-teal-200 dark:hover:border-teal-800 text-zinc-700 dark:text-zinc-400'
-                                }`}
+                            onClick={() => setFormData({ ...formData, role: role.id as 'tenant' | 'landlord' })}
+                            className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${
+                                formData.role === role.id
+                                    ? 'border-teal-500 bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-300'
+                                    : 'border-zinc-200 dark:border-zinc-800 hover:border-teal-200 dark:hover:border-teal-800 text-zinc-700 dark:text-zinc-400'
+                            }`}
                         >
                             <span className="text-2xl mb-2">{role.icon}</span>
                             <span className="text-sm font-medium">{role.label}</span>
@@ -257,10 +305,30 @@ export default function RegisterPage() {
                 )}
             </motion.div>
 
-            <motion.form variants={containerVariants} className="space-y-5" method="POST" onSubmit={handleSubmit}>
+            {/* Divider */}
+            <motion.div variants={itemVariants} className="relative mb-6">
+                <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-zinc-200 dark:border-zinc-700" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-white dark:bg-zinc-900 px-3 text-zinc-500 dark:text-zinc-400">
+                        or create with email
+                    </span>
+                </div>
+            </motion.div>
+
+            <motion.form
+                variants={containerVariants}
+                className="space-y-5"
+                method="POST"
+                onSubmit={handleSubmit}
+            >
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-4">
                     <motion.div variants={itemVariants} className="col-span-1 sm:col-span-2">
-                        <label htmlFor="full_name" className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-1.5">
+                        <label
+                            htmlFor="full_name"
+                            className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-1.5"
+                        >
                             Full Name
                         </label>
                         <input
@@ -276,7 +344,10 @@ export default function RegisterPage() {
                     </motion.div>
 
                     <motion.div variants={itemVariants} className="col-span-1 sm:col-span-2">
-                        <label htmlFor="email" className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-1.5">
+                        <label
+                            htmlFor="email"
+                            className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-1.5"
+                        >
                             Email address
                         </label>
                         <input
@@ -293,7 +364,10 @@ export default function RegisterPage() {
                     </motion.div>
 
                     <motion.div variants={itemVariants} className="col-span-1">
-                        <label htmlFor="password" className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-1.5">
+                        <label
+                            htmlFor="password"
+                            className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-1.5"
+                        >
                             Password
                         </label>
                         <input
@@ -308,14 +382,21 @@ export default function RegisterPage() {
                             onChange={handleChange}
                         />
                         {formData.password && (
-                            <p className={`mt-2 text-xs font-medium ${passwordStrength.valid ? 'text-teal-600' : 'text-amber-500'}`}>
+                            <p
+                                className={`mt-2 text-xs font-medium ${
+                                    passwordStrength.valid ? 'text-teal-600' : 'text-amber-500'
+                                }`}
+                            >
                                 {passwordStrength.message}
                             </p>
                         )}
                     </motion.div>
 
                     <motion.div variants={itemVariants} className="col-span-1">
-                        <label htmlFor="confirmPassword" className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-1.5">
+                        <label
+                            htmlFor="confirmPassword"
+                            className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-1.5"
+                        >
                             Confirm Password
                         </label>
                         <input
@@ -332,7 +413,10 @@ export default function RegisterPage() {
                     </motion.div>
                 </div>
 
-                <motion.div variants={itemVariants} className="pt-4 mt-2 border-t border-zinc-100 dark:border-zinc-800 space-y-3">
+                <motion.div
+                    variants={itemVariants}
+                    className="pt-4 mt-2 border-t border-zinc-100 dark:border-zinc-800 space-y-3"
+                >
                     <div className="flex items-start">
                         <div className="flex items-center h-5 mt-0.5">
                             <input
@@ -346,11 +430,24 @@ export default function RegisterPage() {
                             />
                         </div>
                         <div className="ml-3 text-sm">
-                            <label htmlFor="gdprConsent" className="font-medium text-zinc-800 dark:text-zinc-300">
+                            <label
+                                htmlFor="gdprConsent"
+                                className="font-medium text-zinc-800 dark:text-zinc-300"
+                            >
                                 I accept the{' '}
-                                <Link href="/legal/privacy" className="text-teal-600 hover:text-teal-500 underline">Privacy Policy</Link>
-                                {' '}and{' '}
-                                <Link href="/legal/terms" className="text-teal-600 hover:text-teal-500 underline">Terms of Service</Link>
+                                <Link
+                                    href="/legal/privacy"
+                                    className="text-teal-600 hover:text-teal-500 underline"
+                                >
+                                    Privacy Policy
+                                </Link>{' '}
+                                and{' '}
+                                <Link
+                                    href="/legal/terms"
+                                    className="text-teal-600 hover:text-teal-500 underline"
+                                >
+                                    Terms of Service
+                                </Link>
                                 <span className="text-red-500"> *</span>
                             </label>
                         </div>

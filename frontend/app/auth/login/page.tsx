@@ -1,39 +1,45 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiClient } from '@/lib/api';
 import { motion, Variants } from 'framer-motion';
 
+/* ----------------------------------------------------------------
+   Google Identity Services type declaration
+   ---------------------------------------------------------------- */
 declare global {
     interface Window {
         google?: {
             accounts: {
                 id: {
-                    initialize: (config: any) => void;
-                    renderButton: (element: HTMLElement, config: any) => void;
+                    initialize: (config: Record<string, unknown>) => void;
+                    renderButton: (element: HTMLElement, config: Record<string, unknown>) => void;
+                    prompt: () => void;
+                    cancel: () => void;
                 };
             };
         };
     }
 }
 
+/* ----------------------------------------------------------------
+   Framer-motion variants
+   ---------------------------------------------------------------- */
 const containerVariants: Variants = {
     hidden: { opacity: 0 },
-    show: {
-        opacity: 1,
-        transition: {
-            staggerChildren: 0.1
-        }
-    }
+    show: { opacity: 1, transition: { staggerChildren: 0.1 } },
 };
 
 const itemVariants: Variants = {
     hidden: { opacity: 0, y: 15 },
-    show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } }
+    show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } },
 };
 
+/* ================================================================
+   LOGIN PAGE
+   ================================================================ */
 export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -42,78 +48,109 @@ export default function LoginPage() {
     const [googleLoading, setGoogleLoading] = useState(false);
     const router = useRouter();
 
-    const googleTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+    const googleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const scriptLoadedRef = useRef(false);
 
-    const handleGoogleResponse = useCallback(async (response: any) => {
-        setError('');
-        setGoogleLoading(true);
-        // Clear any existing timeout since callback fired successfully
-        if (googleTimeoutRef.current) {
-            clearTimeout(googleTimeoutRef.current);
-            googleTimeoutRef.current = null;
-        }
-        try {
-            const result = await apiClient.googleLogin(response.credential);
-            const redirectPath = result.redirect_path || '/dashboard';
-            router.push(redirectPath);
-        } catch (err: any) {
-            const detail = err.response?.data?.detail;
-            setError(typeof detail === 'string' ? detail : 'Google sign-in failed. Please try again.');
-        } finally {
-            setGoogleLoading(false);
-        }
-    }, [router]);
+    /* ---------- Google callback ---------- */
+    const handleGoogleResponse = useCallback(
+        async (response: { credential?: string }) => {
+            if (!response.credential) {
+                setError('Google sign-in did not return a credential. Please try again.');
+                return;
+            }
 
+            setError('');
+            setGoogleLoading(true);
+
+            if (googleTimeoutRef.current) {
+                clearTimeout(googleTimeoutRef.current);
+                googleTimeoutRef.current = null;
+            }
+
+            try {
+                const result = await apiClient.googleLogin(response.credential);
+                const redirectPath = result.redirect_path || '/dashboard';
+                router.push(redirectPath);
+            } catch (err: unknown) {
+                const axiosErr = err as { response?: { data?: { detail?: string } } };
+                const detail = axiosErr?.response?.data?.detail;
+                setError(
+                    typeof detail === 'string'
+                        ? detail
+                        : 'Google sign-in failed. Please try again.',
+                );
+            } finally {
+                setGoogleLoading(false);
+            }
+        },
+        [router],
+    );
+
+    /* ---------- Load Google GSI script ---------- */
     useEffect(() => {
+        if (scriptLoadedRef.current) return;
+        scriptLoadedRef.current = true;
+
+        const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+        if (!clientId) return;
+
         const script = document.createElement('script');
         script.src = 'https://accounts.google.com/gsi/client';
         script.async = true;
         script.defer = true;
-        script.onload = () => {
-            const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-            if (clientId && window.google) {
-                window.google.accounts.id.initialize({
-                    client_id: clientId,
-                    callback: handleGoogleResponse,
-                    use_fedcm_for_prompt: true,
-                });
-                const buttonDiv = document.getElementById('google-signin-btn');
-                if (buttonDiv) {
-                    // Try to make it match the container width, max 400
-                    const containerWidth = buttonDiv.parentElement?.clientWidth || window.innerWidth - 64;
-                    const buttonWidth = Math.max(200, Math.min(400, Math.floor(containerWidth)));
-                    window.google.accounts.id.renderButton(buttonDiv, {
-                        theme: 'outline',
-                        size: 'large',
-                        width: buttonWidth,
-                        text: 'signin_with',
-                        shape: 'pill',
-                    });
 
-                    // Add click listener to start a safety timeout
-                    buttonDiv.addEventListener('click', () => {
-                        // Start safety timeout — if callback doesn't fire in 15s, reset loading
-                        googleTimeoutRef.current = setTimeout(() => {
-                            setGoogleLoading((current) => {
-                                if (current) {
-                                    setError('Google sign-in timed out. Please try again or use email login.');
-                                    return false;
-                                }
-                                return current;
-                            });
-                        }, 15000);
-                    });
-                }
+        script.onload = () => {
+            if (!window.google) return;
+
+            window.google.accounts.id.initialize({
+                client_id: clientId,
+                callback: handleGoogleResponse,
+                auto_select: false,
+                cancel_on_tap_outside: true,
+            });
+
+            const buttonDiv = document.getElementById('google-signin-btn');
+            if (buttonDiv) {
+                const containerWidth =
+                    buttonDiv.parentElement?.clientWidth || window.innerWidth - 64;
+                const buttonWidth = Math.max(200, Math.min(400, Math.floor(containerWidth)));
+
+                window.google.accounts.id.renderButton(buttonDiv, {
+                    theme: 'outline',
+                    size: 'large',
+                    width: buttonWidth,
+                    text: 'signin_with',
+                    shape: 'pill',
+                });
+
+                buttonDiv.addEventListener('click', () => {
+                    googleTimeoutRef.current = setTimeout(() => {
+                        setGoogleLoading((cur) => {
+                            if (cur) {
+                                setError(
+                                    'Google sign-in timed out. Please try again or use email login.',
+                                );
+                                return false;
+                            }
+                            return cur;
+                        });
+                    }, 15_000);
+                });
             }
         };
+
+        script.onerror = () => {
+            console.warn('Failed to load Google Sign-In script');
+        };
+
         document.body.appendChild(script);
+
         return () => {
-            if (document.body.contains(script)) {
-                document.body.removeChild(script);
-            }
+            if (googleTimeoutRef.current) clearTimeout(googleTimeoutRef.current);
         };
     }, [handleGoogleResponse]);
 
+    /* ---------- Email/password submit ---------- */
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         setError('');
@@ -122,43 +159,49 @@ export default function LoginPage() {
         try {
             const response = await apiClient.login(email, password);
             router.push(response.redirect_path || '/dashboard');
-        } catch (err: any) {
-            const detail = err.response?.data?.detail;
+        } catch (err: unknown) {
+            const axiosErr = err as { response?: { data?: { detail?: string | Array<{ msg?: string; message?: string }> | { msg?: string; message?: string } } } };
+            const detail = axiosErr?.response?.data?.detail;
             let errorMessage = 'Login failed. Please try again.';
             if (typeof detail === 'string') errorMessage = detail;
-            else if (Array.isArray(detail)) errorMessage = detail.map(d => d.msg || d.message).join(', ');
-            else if (detail && typeof detail === 'object') errorMessage = detail.msg || detail.message;
+            else if (Array.isArray(detail))
+                errorMessage = detail.map((d) => d.msg || d.message).join(', ');
+            else if (detail && typeof detail === 'object')
+                errorMessage = detail.msg || detail.message || errorMessage;
             setError(errorMessage);
         } finally {
             setLoading(false);
         }
     }
 
+    /* ---------- Render ---------- */
     return (
-        <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="show"
-            className="w-full"
-        >
+        <motion.div variants={containerVariants} initial="hidden" animate="show" className="w-full">
             <motion.div variants={itemVariants} className="text-center sm:text-left mb-8">
                 <h2 className="text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
                     Welcome back
                 </h2>
                 <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-                    Don't have an account?{' '}
-                    <Link href="/auth/register" className="font-semibold text-teal-600 hover:text-teal-500 transition-colors">
+                    Don&apos;t have an account?{' '}
+                    <Link
+                        href="/auth/register"
+                        className="font-semibold text-teal-600 hover:text-teal-500 transition-colors"
+                    >
                         Create one now
                     </Link>
                 </p>
             </motion.div>
 
             {error && (
-                <motion.div variants={itemVariants} className="mb-6 rounded-xl bg-red-50/50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/30 p-4">
+                <motion.div
+                    variants={itemVariants}
+                    className="mb-6 rounded-xl bg-red-50/50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/30 p-4"
+                >
                     <p className="text-sm font-medium text-red-800 dark:text-red-400">{error}</p>
                 </motion.div>
             )}
 
+            {/* Google Sign-In button */}
             <motion.div variants={itemVariants} className="mb-6">
                 <div className="flex justify-center w-full">
                     <div id="google-signin-btn" className="flex justify-center" />
@@ -170,11 +213,24 @@ export default function LoginPage() {
                 )}
             </motion.div>
 
-
+            {/* Divider */}
+            <motion.div variants={itemVariants} className="relative mb-6">
+                <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-zinc-200 dark:border-zinc-700" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-white dark:bg-zinc-900 px-3 text-zinc-500 dark:text-zinc-400">
+                        or sign in with email
+                    </span>
+                </div>
+            </motion.div>
 
             <motion.form variants={containerVariants} className="space-y-5" onSubmit={handleSubmit}>
                 <motion.div variants={itemVariants}>
-                    <label htmlFor="email" className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-1.5">
+                    <label
+                        htmlFor="email"
+                        className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-1.5"
+                    >
                         Email address
                     </label>
                     <input
@@ -192,7 +248,10 @@ export default function LoginPage() {
 
                 <motion.div variants={itemVariants}>
                     <div className="flex items-center justify-between mb-1.5">
-                        <label htmlFor="password" className="block text-sm font-medium text-zinc-800 dark:text-zinc-300">
+                        <label
+                            htmlFor="password"
+                            className="block text-sm font-medium text-zinc-800 dark:text-zinc-300"
+                        >
                             Password
                         </label>
                         <Link
