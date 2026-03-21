@@ -48,7 +48,6 @@ export default function LoginPage() {
     const [googleLoading, setGoogleLoading] = useState(false);
     const router = useRouter();
 
-    const googleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const scriptLoadedRef = useRef(false);
 
     /* ---------- Google callback ---------- */
@@ -61,11 +60,6 @@ export default function LoginPage() {
 
             setError('');
             setGoogleLoading(true);
-
-            if (googleTimeoutRef.current) {
-                clearTimeout(googleTimeoutRef.current);
-                googleTimeoutRef.current = null;
-            }
 
             try {
                 const result = await apiClient.googleLogin(response.credential);
@@ -107,6 +101,8 @@ export default function LoginPage() {
                 callback: handleGoogleResponse,
                 auto_select: false,
                 cancel_on_tap_outside: true,
+                ux_mode: 'popup',
+                itp_support: true,
             });
 
             const buttonDiv = document.getElementById('google-signin-btn');
@@ -122,32 +118,15 @@ export default function LoginPage() {
                     text: 'signin_with',
                     shape: 'pill',
                 });
-
-                buttonDiv.addEventListener('click', () => {
-                    googleTimeoutRef.current = setTimeout(() => {
-                        setGoogleLoading((cur) => {
-                            if (cur) {
-                                setError(
-                                    'Google sign-in timed out. Please try again or use email login.',
-                                );
-                                return false;
-                            }
-                            return cur;
-                        });
-                    }, 15_000);
-                });
             }
         };
 
         script.onerror = () => {
             console.warn('Failed to load Google Sign-In script');
+            setError('Could not load Google Sign-In. Please use email login.');
         };
 
         document.body.appendChild(script);
-
-        return () => {
-            if (googleTimeoutRef.current) clearTimeout(googleTimeoutRef.current);
-        };
     }, [handleGoogleResponse]);
 
     /* ---------- Email/password submit ---------- */

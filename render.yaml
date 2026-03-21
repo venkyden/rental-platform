@@ -23,6 +23,8 @@ services:
         value: "https://roomivo.eu,https://www.roomivo.eu,https://roomivo-frontend-0jyi.onrender.com,http://localhost:3000"
       - key: ENVIRONMENT
         value: "production"
+      - key: GOOGLE_CLIENT_ID
+        sync: false
       
       # SECRETS (Sync false tells Render not to pull these from Git, 
       # but to prompt you to paste them manually in the Dashboard)

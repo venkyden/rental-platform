@@ -375,35 +375,37 @@ async def google_auth(
     if not settings.GOOGLE_CLIENT_ID:
         raise HTTPException(
             status_code=status.HTTP_501_NOT_IMPLEMENTED,
-            detail="Google Sign-In is not configured",
+            detail="Google Sign-In is not configured on the server",
         )
 
     # ---- Step 1: Verify Google ID token ----
-    # verify_oauth2_token is synchronous (fetches Google certs over HTTP).
-    # We create both the transport and call verification inside the thread
-    # to avoid thread-safety issues with requests.Session.
+    # verify_oauth2_token is synchronous — it fetches Google certs over HTTP
+    # using requests.Session. We MUST create the transport inside the thread
+    # to avoid sharing a Session across threads.
     def _verify_google_token(credential: str, client_id: str):
         from google.oauth2 import id_token as google_id_token
         from google.auth.transport import requests as google_requests
+
         transport = google_requests.Request()
-        return google_id_token.verify_oauth2_token(credential, transport, client_id)
+        return google_id_token.verify_oauth2_token(
+            credential, transport, client_id
+        )
 
     try:
-        loop = asyncio.get_event_loop()
-        google_data = await loop.run_in_executor(
-            None, _verify_google_token, auth_data.credential, settings.GOOGLE_CLIENT_ID
+        google_data = await asyncio.to_thread(
+            _verify_google_token, auth_data.credential, settings.GOOGLE_CLIENT_ID
         )
     except ValueError as e:
         audit_logger.warning(f"GOOGLE_AUTH_INVALID_TOKEN error={e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired Google token. Please try again.",
+            detail="Invalid or expired Google token. Please try signing in again.",
         )
     except Exception as e:
         audit_logger.error(f"GOOGLE_AUTH_VERIFY_ERROR error={e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=f"Could not verify Google token: {type(e).__name__}: {e}",
+            detail="Could not verify Google token. Please try again later.",
         )
 
     google_id = google_data.get("sub")
@@ -480,7 +482,7 @@ async def google_auth(
             pass
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Account setup failed: {type(e).__name__}: {e}",
+            detail="Account setup failed. Please try again.",
         )
 
     # ---- Step 3: Create JWT and return ----
@@ -515,7 +517,7 @@ async def google_auth(
         audit_logger.error(f"GOOGLE_AUTH_TOKEN_ERROR email={email} error={e}\n{tb}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Token generation failed: {type(e).__name__}: {e}",
+            detail="Login failed. Please try again.",
         )
 
 

@@ -56,8 +56,10 @@ export default function RegisterPage() {
     const [googleLoading, setGoogleLoading] = useState(false);
     const router = useRouter();
 
-    const googleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const scriptLoadedRef = useRef(false);
+    // Use a ref so the GSI callback always reads the latest role
+    const roleRef = useRef(formData.role);
+    roleRef.current = formData.role;
 
     /* ---------- Google callback ---------- */
     const handleGoogleResponse = useCallback(
@@ -70,13 +72,8 @@ export default function RegisterPage() {
             setError('');
             setGoogleLoading(true);
 
-            if (googleTimeoutRef.current) {
-                clearTimeout(googleTimeoutRef.current);
-                googleTimeoutRef.current = null;
-            }
-
             try {
-                const roleToUse = formData.role || 'tenant';
+                const roleToUse = roleRef.current || 'tenant';
                 const result = await apiClient.googleLogin(response.credential, roleToUse);
                 router.push(result.redirect_path || '/dashboard');
             } catch (err: unknown) {
@@ -91,7 +88,7 @@ export default function RegisterPage() {
                 setGoogleLoading(false);
             }
         },
-        [formData.role, router],
+        [router],
     );
 
     /* ---------- Load Google GSI script ---------- */
@@ -115,6 +112,8 @@ export default function RegisterPage() {
                 callback: handleGoogleResponse,
                 auto_select: false,
                 cancel_on_tap_outside: true,
+                ux_mode: 'popup',
+                itp_support: true,
             });
 
             const buttonDiv = document.getElementById('google-signup-btn');
@@ -130,32 +129,15 @@ export default function RegisterPage() {
                     text: 'signup_with',
                     shape: 'pill',
                 });
-
-                buttonDiv.addEventListener('click', () => {
-                    googleTimeoutRef.current = setTimeout(() => {
-                        setGoogleLoading((cur) => {
-                            if (cur) {
-                                setError(
-                                    'Google sign-up timed out. Please try again or use email registration.',
-                                );
-                                return false;
-                            }
-                            return cur;
-                        });
-                    }, 15_000);
-                });
             }
         };
 
         script.onerror = () => {
             console.warn('Failed to load Google Sign-In script');
+            setError('Could not load Google Sign-In. Please use email registration.');
         };
 
         document.body.appendChild(script);
-
-        return () => {
-            if (googleTimeoutRef.current) clearTimeout(googleTimeoutRef.current);
-        };
     }, [handleGoogleResponse]);
 
     /* ---------- Form helpers ---------- */
