@@ -567,14 +567,16 @@ async def upload_media(
         )
         file_url = upload_result["url"]
     except RuntimeError as e:
+        logger.error(f"Storage runtime error: {e}")
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=f"Storage service unavailable: {e}",
         )
     except Exception as e:
+        logger.exception("Unexpected error during media upload")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to upload file: {e}",
+            detail=f"Internal server error during upload: {type(e).__name__}: {e}",
         )
 
     # Create media record

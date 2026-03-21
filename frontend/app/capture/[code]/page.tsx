@@ -296,16 +296,18 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                 });
                 successCount++;
             } catch (error: any) {
-                console.error(error);
+                console.error("Upload error:", error);
                 const serverMessage = error?.response?.data?.detail;
+                
                 // Auto-queue if network error (no response at all)
                 if (!error.response || error.code === 'ERR_NETWORK') {
                     const { offlineQueue } = await import('@/lib/offlineQueue');
                     await offlineQueue.addToQueue(file, metadata, code, metadataObj.media_type as any);
                     successCount++;
-                } else if (serverMessage) {
-                    // Server returned an error — show it
-                    showToast(`Upload failed: ${serverMessage}`, "error");
+                } else {
+                    // Server returned an error — show it immediately
+                    const displayMsg = serverMessage || error.message || "Unknown upload error";
+                    showToast(`Upload failed: ${displayMsg}`, "error");
                 }
             }
         }
@@ -313,7 +315,8 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
         if (successCount > 0) {
             setStep('success');
         } else {
-            showToast("Failed to upload media. Check your connection and try again.", "error");
+            // Only show generic error if no individual upload toasts were shown
+            // (Note: handleUpload usually loops, so we might want to be careful here)
             setStep('preview');
         }
     };

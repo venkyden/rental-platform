@@ -194,7 +194,7 @@ class PropertyMedia(Base):
     gps_accuracy = Column(DECIMAL(8, 2), nullable=True)  # meters
     distance_from_target = Column(DECIMAL(8, 2))  # meters
     captured_at = Column(TIMESTAMP)
-    device_id = Column(String(100))
+    device_id = Column(String(512))
 
     # Watermark data
     watermark_address = Column(Text)
