@@ -558,13 +558,24 @@ async def upload_media(
     file_extension = os.path.splitext(file.filename)[1]
     safe_filename = f"{secrets.token_urlsafe(16)}{file_extension}"
 
-    upload_result = await storage.upload_file(
-        file_data=BytesIO(content),
-        filename=safe_filename,
-        content_type=file.content_type or "application/octet-stream",
-        folder=f"properties/{session.property_id}",
-    )
-    file_url = upload_result["url"]
+    try:
+        upload_result = await storage.upload_file(
+            file_data=BytesIO(content),
+            filename=safe_filename,
+            content_type=file.content_type or "application/octet-stream",
+            folder=f"properties/{session.property_id}",
+        )
+        file_url = upload_result["url"]
+    except RuntimeError as e:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"Storage service unavailable: {e}",
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to upload file: {e}",
+        )
 
     # Create media record
     media = PropertyMedia(

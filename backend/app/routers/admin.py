@@ -114,3 +114,14 @@ async def cleanup_stale_photos(
         "message": "Stale local-path photo references cleaned up.",
     }
 
+
+@router.get("/storage-health")
+async def storage_health():
+    """
+    Diagnostic endpoint: check cloud storage configuration and connectivity.
+    Use this to verify R2 is working after deploy.
+    """
+    from app.services.storage import storage
+
+    return storage.get_health()
+

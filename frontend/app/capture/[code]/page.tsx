@@ -297,11 +297,15 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                 successCount++;
             } catch (error: any) {
                 console.error(error);
-                // Auto-queue if network error
+                const serverMessage = error?.response?.data?.detail;
+                // Auto-queue if network error (no response at all)
                 if (!error.response || error.code === 'ERR_NETWORK') {
                     const { offlineQueue } = await import('@/lib/offlineQueue');
                     await offlineQueue.addToQueue(file, metadata, code, metadataObj.media_type as any);
                     successCount++;
+                } else if (serverMessage) {
+                    // Server returned an error — show it
+                    showToast(`Upload failed: ${serverMessage}`, "error");
                 }
             }
         }
@@ -309,7 +313,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
         if (successCount > 0) {
             setStep('success');
         } else {
-            showToast("Failed to upload media. Please try again.", "error");
+            showToast("Failed to upload media. Check your connection and try again.", "error");
             setStep('preview');
         }
     };
