@@ -229,6 +229,15 @@ async def health_check():
     }
 
 
+# ------------------------------------------------------------------
+# Static file serving for local development (uploads fallback)
+# ------------------------------------------------------------------
+import os as _os
+if _os.path.isdir("uploads"):
+    from fastapi.staticfiles import StaticFiles
+    app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
+
 @app.get("/")
 async def root():
     """Root endpoint"""

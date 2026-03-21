@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/useAuth';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import PremiumLayout from '@/components/PremiumLayout';
 import { apiClient } from '@/lib/api';
+import { resolveMediaUrl } from '@/lib/mediaUrl';
 import { PropertyDetailSkeleton } from '@/components/SkeletonLoaders';
 import { useToast } from '@/lib/ToastContext';
 import VisitScheduler from '@/components/VisitScheduler';
@@ -224,10 +225,10 @@ export default function PropertyDetailPage() {
                                     {photos && photos.length > 0 && activePhoto ? (
                                         <div className="relative w-full h-96 group">
                                             {activePhoto.media_type === 'video' ? (
-                                                <video src={activePhoto.url || activePhoto} controls className="w-full h-full object-cover" />
+                                                <video src={resolveMediaUrl(activePhoto.url || activePhoto)} controls className="w-full h-full object-cover" />
                                             ) : (
                                                 <img
-                                                    src={activePhoto.url || activePhoto}
+                                                    src={resolveMediaUrl(activePhoto.url || activePhoto)}
                                                     alt={`${property.title} - ${activePhoto.room_label || 'Photo'}`}
                                                     className="w-full h-full object-cover"
                                                 />

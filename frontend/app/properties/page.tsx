@@ -8,6 +8,7 @@ import PremiumLayout from '@/components/PremiumLayout';
 import EmptyState from '@/components/EmptyState';
 import { apiClient } from '@/lib/api';
 import { motion, Variants } from 'framer-motion';
+import { resolveMediaUrl } from '@/lib/mediaUrl';
 
 const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -146,7 +147,7 @@ export default function PropertiesPage() {
                                     <div className="h-48 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-zinc-800 dark:to-zinc-700 relative rounded-2xl overflow-hidden m-2">
                                         {property.photos && property.photos.length > 0 ? (
                                             <img
-                                                src={property.photos[0].url}
+                                                src={resolveMediaUrl(property.photos[0].url)}
                                                 alt={property.title}
                                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                             />

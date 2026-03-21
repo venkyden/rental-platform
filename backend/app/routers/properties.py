@@ -550,24 +550,28 @@ async def upload_media(
     upload_room_index = meta_obj.room_index if meta_obj.room_index is not None else session.room_index
     upload_room_label = meta_obj.room_label or session.room_label
 
-    # Save file
-    property_dir = os.path.join(UPLOAD_DIR, str(session.property_id))
-    os.makedirs(property_dir, exist_ok=True)
+    # Save file via cloud storage service (R2 / local fallback)
+    from io import BytesIO
+    from app.services.storage import storage
 
+    content = await file.read()
     file_extension = os.path.splitext(file.filename)[1]
-    filename = f"{secrets.token_urlsafe(16)}{file_extension}"
-    file_path = os.path.join(property_dir, filename)
+    safe_filename = f"{secrets.token_urlsafe(16)}{file_extension}"
 
-    with open(file_path, "wb") as f:
-        content = await file.read()
-        f.write(content)
+    upload_result = await storage.upload_file(
+        file_data=BytesIO(content),
+        filename=safe_filename,
+        content_type=file.content_type or "application/octet-stream",
+        folder=f"properties/{session.property_id}",
+    )
+    file_url = upload_result["url"]
 
     # Create media record
     media = PropertyMedia(
         property_id=session.property_id,
         session_id=session.id,
         media_type=meta_obj.media_type,
-        file_url=f"/uploads/properties/{session.property_id}/{filename}",
+        file_url=file_url,
         file_size=len(content),
         room_index=upload_room_index,
         room_label=upload_room_label,

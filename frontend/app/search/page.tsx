@@ -8,6 +8,7 @@ import { apiClient } from '@/lib/api';
 import { BRAND } from '@/lib/constants';
 import { motion } from 'framer-motion';
 import PremiumLayout from '@/components/PremiumLayout';
+import { resolveMediaUrl } from '@/lib/mediaUrl';
 
 // Define property interface based on API response
 interface Property {
@@ -221,7 +222,7 @@ export default function SearchPage() {
                                 )}
                                 <div className="h-48 bg-zinc-200 dark:bg-zinc-800 relative rounded-2xl overflow-hidden m-2">
                                     {property.photos?.[0] ? (
-                                        <img src={property.photos[0].url} alt={property.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                        <img src={resolveMediaUrl(property.photos[0].url)} alt={property.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center text-zinc-400 dark:text-zinc-600 text-4xl">🏠</div>
                                     )}

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { apiClient } from '@/lib/api';
 import Navbar from '@/components/Navbar';
+import { resolveMediaUrl } from '@/lib/mediaUrl';
 
 interface Dispute {
     id: string;
@@ -402,7 +403,7 @@ export default function AdminDisputesPage() {
                                     <button onClick={() => setPhotoModal(null)} className="text-gray-400 hover:text-gray-600">✕</button>
                                 </div>
                                 <img
-                                    src={photoModal.url}
+                                    src={resolveMediaUrl(photoModal.url)}
                                     alt={photoModal.label}
                                     className="w-full rounded-xl object-contain max-h-[60vh]"
                                 />
