@@ -44,5 +44,5 @@ class Application(Base):
     updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
 
     # Relationships
-    tenant = relationship("User", backref="applications")
-    property = relationship("Property", backref="applications")
+    tenant = relationship("User", back_populates="applications")
+    property = relationship("Property", back_populates="applications")

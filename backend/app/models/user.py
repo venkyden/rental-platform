@@ -84,6 +84,9 @@ class User(Base):
     # Soft delete
     is_active = Column(Boolean, default=True)
 
+    # Relationships
+    applications = relationship("Application", back_populates="tenant")
+
 
 class VerificationRecord(Base):
     __tablename__ = "verification_records"
