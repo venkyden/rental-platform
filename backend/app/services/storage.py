@@ -103,10 +103,38 @@ class CloudStorageService:
             self.is_local = False
             self._connection_error = None
             logger.info(f"✅ Cloud storage configured: {endpoint} (bucket: {self.bucket_name})")
+
+            # Auto-configure CORS on the bucket
+            self._configure_cors()
         except Exception as e:
             self._connection_error = str(e)
             logger.error(f"⚠️ Cloud storage connection failed: {e}. Using local storage.")
             self.client = None
+
+    def _configure_cors(self):
+        """Configure CORS on the R2/S3 bucket so presigned URLs work from any origin."""
+        if not self.client:
+            return
+
+        cors_config = {
+            "CORSRules": [
+                {
+                    "AllowedOrigins": ["*"],
+                    "AllowedMethods": ["GET", "HEAD"],
+                    "AllowedHeaders": ["*"],
+                    "MaxAgeSeconds": 86400,
+                }
+            ]
+        }
+
+        try:
+            self.client.put_bucket_cors(
+                Bucket=self.bucket_name,
+                CORSConfiguration=cors_config,
+            )
+            logger.info(f"✅ CORS configured on bucket '{self.bucket_name}'")
+        except Exception as e:
+            logger.warning(f"⚠️ Failed to set CORS on bucket: {e}")
 
     def _generate_key(self, filename: str, folder: str = "uploads") -> str:
         """Generate unique storage key"""
