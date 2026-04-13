@@ -23,6 +23,8 @@ services:
         value: "https://e9e4f279f640445e67f1070fea6e8c6c.r2.cloudflarestorage.com"
       - key: STORAGE_BUCKET
         value: "rental-platform-media"
+      - key: STORAGE_PUBLIC_URL
+        sync: false
       - key: CACHE_DIR
         value: "./.cache"
       - key: PYTHONPATH

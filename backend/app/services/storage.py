@@ -112,8 +112,23 @@ class CloudStorageService:
             self.client = None
 
     def _configure_cors(self):
-        """Configure CORS on the R2/S3 bucket so presigned URLs work from any origin."""
+        """Configure CORS on the R2/S3 bucket so presigned URLs work from any origin.
+
+        Skipped when STORAGE_PUBLIC_URL is set, because public R2 URLs
+        don't need CORS (they are served from a different domain that
+        already allows cross-origin access).
+        """
         if not self.client:
+            return
+
+        # If public URL is configured, files are served via R2 public
+        # access (or a custom domain / CDN), so bucket-level CORS is
+        # not required for GET requests.
+        if self.public_url:
+            logger.info(
+                "ℹ️ STORAGE_PUBLIC_URL is set — skipping programmatic CORS "
+                "config (not needed for public access URLs)."
+            )
             return
 
         cors_config = {
@@ -134,7 +149,12 @@ class CloudStorageService:
             )
             logger.info(f"✅ CORS configured on bucket '{self.bucket_name}'")
         except Exception as e:
-            logger.warning(f"⚠️ Failed to set CORS on bucket: {e}")
+            logger.warning(
+                f"⚠️ Could not set CORS on bucket programmatically: {e}. "
+                f"This is expected if your R2 API token lacks 'Admin' permissions. "
+                f"To fix: configure CORS manually in Cloudflare Dashboard → "
+                f"R2 → {self.bucket_name} → Settings → CORS Policy."
+            )
 
     def _generate_key(self, filename: str, folder: str = "uploads") -> str:
         """Generate unique storage key"""

@@ -43,19 +43,43 @@ class CacheLayer:
         from app.core.config import settings
         redis_url = settings.REDIS_URL
         if redis_url:
-            try:
-                self.redis_client = redis.Redis.from_url(
-                    redis_url,
-                    decode_responses=True,
-                    socket_timeout=5,
-                    socket_connect_timeout=5,
-                )
-                # Test connection
-                self.redis_client.ping()
-                print("✅ Redis cache connected")
-            except Exception as e:
-                print(f"⚠️ Redis connection failed: {e}. Running without cache.")
-                self.redis_client = None
+            import time
+
+            # Retry once for transient DNS issues (common on cold starts)
+            for attempt in range(2):
+                try:
+                    self.redis_client = redis.Redis.from_url(
+                        redis_url,
+                        decode_responses=True,
+                        socket_timeout=5,
+                        socket_connect_timeout=5,
+                    )
+                    # Test connection
+                    self.redis_client.ping()
+                    print("✅ Redis cache connected")
+                    return
+                except Exception as e:
+                    error_msg = str(e)
+                    if attempt == 0 and ("Name or service not known" in error_msg
+                                          or "nodename nor servname" in error_msg
+                                          or "Name does not resolve" in error_msg):
+                        # DNS failure — retry once after a brief pause
+                        print(f"⚠️ Redis DNS resolution failed (attempt 1/2), retrying in 2s...")
+                        time.sleep(2)
+                        continue
+
+                    # Final failure
+                    self.redis_client = None
+                    if "Name or service not known" in error_msg or "nodename nor servname" in error_msg:
+                        print(
+                            f"⚠️ Redis connection failed: DNS cannot resolve the host. "
+                            f"The Redis instance may have been deleted or the URL is stale. "
+                            f"Check your Upstash/Redis dashboard and update REDIS_URL in Render. "
+                            f"Running without cache."
+                        )
+                    else:
+                        print(f"⚠️ Redis connection failed: {e}. Running without cache.")
+                    return
         else:
             print("⚠️ REDIS_URL not set. Running without cache.")
 
