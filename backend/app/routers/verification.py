@@ -348,11 +348,11 @@ async def upload_employment_document(
     """
 
     # Validate file type
-    allowed_types = ["image/jpeg", "image/png", "image/jpg", "application/pdf"]
+    allowed_types = ["image/jpeg", "image/png", "image/jpg", "application/pdf", "image/heic", "image/heif"]
     if file.content_type not in allowed_types:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid file type. Please upload JPEG, PNG, or PDF",
+            detail=f"Invalid file type: {file.content_type}. Please upload JPEG, PNG, HEIC, or PDF",
         )
 
     # Read file content
@@ -362,12 +362,19 @@ async def upload_employment_document(
     from app.services.employment import employment_service
 
     # Process document
-    result = await employment_service.verify_document(
-        file_content=content,
-        file_type=file.content_type,
-        expected_name=current_user.full_name,
-        document_type=document_type,
-    )
+    try:
+        result = await employment_service.verify_document(
+            file_content=content,
+            file_type=file.content_type,
+            expected_name=current_user.full_name,
+            document_type=document_type,
+        )
+    except Exception as e:
+        logger.error(f"Employment verification crashed: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Verification processing error: {str(e)}",
+        )
 
     if not result["verified"] and result["status"] == "rejected":
         raise HTTPException(
@@ -397,14 +404,20 @@ async def upload_employment_document(
 
     file_url = f"/uploads/verification/{filename}"
 
-    # Store verification data
+    # Store verification data — convert any Decimal values to float for JSON serialization
+    extracted = result.get("data")
+    if extracted and isinstance(extracted, dict):
+        for k, v in extracted.items():
+            if hasattr(v, 'as_integer_ratio'):  # duck-type check for Decimal/float
+                extracted[k] = float(v)
+
     current_user.employment_data = {
         "verified": result["verified"],
         "upload_date": datetime.utcnow().isoformat(),
         "filename": file.filename,
         "file_url": file_url,
         "status": result["status"],
-        "extracted_data": result["data"],
+        "extracted_data": extracted,
         "checks": result["validation_checks"],
     }
 

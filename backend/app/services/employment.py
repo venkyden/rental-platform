@@ -120,7 +120,7 @@ class EmploymentVerificationService:
                 "pay_period": extracted_data.pay_period,
                 "job_title": extracted_data.job_title,
                 "siret": extracted_data.siret,
-                "confidence_score": extracted_data.confidence_score,
+                "confidence_score": float(extracted_data.confidence_score),
             },
             "validation_checks": validation_results,
             "rejection_reason": (
@@ -224,19 +224,23 @@ Return ONLY the JSON, no explanation."""
 
         checks = []
 
-        # 1. Name match check (critical)
+        # 1. Name match check (non-critical — flagged for review)
         name_match = self._fuzzy_name_match(data.employee_name, expected_name)
         checks.append(
             {
                 "name": "name_match",
                 "description": "Employee name matches account",
-                "passed": name_match > 0.8,
-                "critical": True,
-                "details": f"Match score: {name_match:.0%}",
+                "passed": name_match > 0.5,
+                "critical": False,
+                "details": f"Document: {data.employee_name} | Account: {expected_name} | Match: {name_match:.0%}",
             }
         )
 
-        is_student_or_kbis = document_type in ("student_id", "kbis", "urssaf", "scholarship")
+        is_student_or_kbis = document_type in (
+            "student_id", "kbis", "urssaf", "scholarship", 
+            "tax_return", "contract", "internship_contract",
+            "caf", "benefits", "pension", "accounting",
+        )
 
         # 2. Salary sanity check
         if is_student_or_kbis:
