@@ -125,4 +125,4 @@ class TeamMemberProperty(Base):
 
     # Relationships
     team_member = relationship("TeamMember", back_populates="property_access")
-    property = relationship("Property", backref="team_access")
+    property = relationship("Property", back_populates="team_members")
