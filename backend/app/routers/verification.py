@@ -89,9 +89,8 @@ async def upload_identity_document(
     # Read file content
     content = await file.read()
 
-    # Process document with real AI logic
+    # Process document with AI — non-blocking (accept upload, store result for review)
     from app.services.identity import identity_service
-    # Only verify the front strictly. The back doesn't have the face or name in all countries
     if side == "back":
         result = {
             "verified": True, "status": "verified", "data": {},
@@ -105,12 +104,8 @@ async def upload_identity_document(
             document_type=document_type,
         )
 
-    if not result["verified"] and result["status"] == "rejected":
-        logger.error(f"Identity verification failed for user {current_user.id}: {result.get('rejection_reason')}")
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Verification failed: {result.get('rejection_reason')}",
-        )
+    if not result["verified"]:
+        logger.warning(f"Identity verification flagged for user {current_user.id}: {result.get('rejection_reason')}")
 
     # Save file to disk
     import os
@@ -257,10 +252,9 @@ async def upload_identity_mobile(
     # Read file content
     content = await file.read()
 
-    # Process document
+    # Process document with AI — non-blocking (accept upload, store result for review)
     from app.services.identity import identity_service
     
-    # Only verify the front strictly to avoid 400s on the back of IDs
     if side == "back":
         result = {
             "verified": True, "status": "verified", "data": {}, 
@@ -274,12 +268,8 @@ async def upload_identity_mobile(
             document_type=document_type,
         )
 
-    if not result["verified"] and result["status"] == "rejected":
-        logger.error(f"Identity verification failed for mobile session {verification_code}: {result.get('rejection_reason')}")
-        raise HTTPException(
-            status_code=400,
-            detail=f"Verification failed: {result.get('rejection_reason')}",
-        )
+    if not result["verified"]:
+        logger.warning(f"Identity verification flagged for mobile session {verification_code}: {result.get('rejection_reason')}")
 
     # Save file to disk
     import os
