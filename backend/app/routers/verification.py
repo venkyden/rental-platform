@@ -81,6 +81,24 @@ async def upload_identity_document(
             detail="Invalid file type. Please upload JPEG, PNG, or PDF",
         )
 
+    # Read file content
+    content = await file.read()
+
+    # Process document with real AI logic
+    from app.services.identity import identity_service
+    result = await identity_service.verify_document(
+        file_content=content,
+        file_type=file.content_type,
+        expected_name=current_user.full_name,
+        document_type=document_type,
+    )
+
+    if not result["verified"] and result["status"] == "rejected":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Verification failed: {result.get('rejection_reason')}",
+        )
+
     # Save file to disk
     import os
     import secrets
@@ -92,41 +110,37 @@ async def upload_identity_document(
     filename = f"{current_user.id}_{secrets.token_urlsafe(8)}{file_extension}"
     file_path = os.path.join(upload_dir, filename)
     
-    content = await file.read()
     with open(file_path, "wb") as f:
         f.write(content)
 
     file_url = f"/uploads/verification/{filename}"
 
-    # Mock verification data (simulating Fourthline response)
-    verification_data = {
-        "document_type": document_type,
+    # Update user verification status
+    current_user.identity_verified = result["verified"]
+    
+    if result["verified"]:
+        current_user.trust_score = min(100, current_user.trust_score + 30)
+
+    # Store verification data
+    current_user.identity_data = {
+        "verified": result["verified"],
         "upload_date": datetime.utcnow().isoformat(),
         "filename": file.filename,
         "file_url": file_url,
-        "status": "verified",  # Mock: auto-verify for MVP
-        "extracted_data": {
-            "full_name": current_user.full_name,
-            "document_number": "MOCK123456",
-            "expiry_date": "2030-12-31",
-            "confidence_score": 0.95,
-        },
+        "status": result["status"],
+        "extracted_data": result["data"],
+        "checks": result["validation_checks"],
     }
-
-    # Update user verification status
-    current_user.identity_verified = True
-    current_user.identity_data = verification_data
-
-    # Update trust score (identity verification adds 30 points)
-    current_user.trust_score = min(100, current_user.trust_score + 30)
 
     await db.commit()
     await db.refresh(current_user)
 
     return {
-        "message": "Identity document verified successfully",
-        "verified": True,
+        "message": "Identity document processed",
+        "verified": result["verified"],
+        "status": result["status"],
         "trust_score": current_user.trust_score,
+        "details": result.get("rejection_reason") or "Identity document verified successfully",
     }
 
 
@@ -225,6 +239,24 @@ async def upload_identity_mobile(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
+    # Read file content
+    content = await file.read()
+
+    # Process document
+    from app.services.identity import identity_service
+    result = await identity_service.verify_document(
+        file_content=content,
+        file_type=file.content_type,
+        expected_name=user.full_name,
+        document_type=document_type,
+    )
+
+    if not result["verified"] and result["status"] == "rejected":
+        raise HTTPException(
+            status_code=400,
+            detail=f"Verification failed: {result.get('rejection_reason')}",
+        )
+
     # Save file to disk
     import os
     import secrets
@@ -236,31 +268,25 @@ async def upload_identity_mobile(
     filename = f"{user.id}_{secrets.token_urlsafe(8)}{file_extension}"
     file_path = os.path.join(upload_dir, filename)
     
-    content = await file.read()
     with open(file_path, "wb") as f:
         f.write(content)
 
     file_url = f"/uploads/verification/{filename}"
 
-    # Same verification logic as the authenticated endpoint
-    verification_data = {
-        "document_type": document_type,
+    user.identity_verified = result["verified"]
+    if result["verified"]:
+        user.trust_score = min(100, user.trust_score + 30)
+
+    user.identity_data = {
+        "verified": result["verified"],
         "upload_date": datetime.utcnow().isoformat(),
         "filename": file.filename,
         "file_url": file_url,
-        "status": "verified",
         "source": "mobile_capture",
-        "extracted_data": {
-            "full_name": user.full_name,
-            "document_number": "MOCK123456",
-            "expiry_date": "2030-12-31",
-            "confidence_score": 0.95,
-        },
+        "status": result["status"],
+        "extracted_data": result["data"],
+        "checks": result["validation_checks"],
     }
-
-    user.identity_verified = True
-    user.identity_data = verification_data
-    user.trust_score = min(100, user.trust_score + 30)
 
     # Mark session as completed
     session["completed"] = True
@@ -270,9 +296,11 @@ async def upload_identity_mobile(
     await db.refresh(user)
 
     return {
-        "message": "Identity document verified successfully",
-        "verified": True,
+        "message": "Identity document processed",
+        "verified": result["verified"],
+        "status": result["status"],
         "trust_score": user.trust_score,
+        "details": result.get("rejection_reason") or "Identity document verified successfully",
     }
 
 @router.post("/employment/upload")
