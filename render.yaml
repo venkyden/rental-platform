@@ -2,7 +2,7 @@ databases:
   - name: roomivo-db
     databaseName: rental_platform
     user: roomivo_api
-    plan: free
+    plan: starter
     region: frankfurt
 
 services:
@@ -10,7 +10,7 @@ services:
     name: roomivo-backend-0jyi
     env: python
     region: frankfurt
-    plan: free
+    plan: starter
     branch: master
     rootDir: backend
     buildCommand: "pip install -r requirements.txt"
