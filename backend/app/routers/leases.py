@@ -18,7 +18,7 @@ from app.models.application import Application
 from app.models.property import Property
 from app.models.user import User
 from app.models.visits_and_leases import Lease
-from app.routers.auth import get_current_user
+from app.routers.auth import get_current_user, get_current_user_optional
 from app.services.lease_generator import lease_generator
 
 router = APIRouter(prefix="/leases", tags=["leases"])
@@ -198,12 +198,21 @@ async def create_lease(
 @router.get("/{lease_id}/download")
 async def download_lease_pdf(
     lease_id: UUID,
-    current_user: User = Depends(get_current_user),
+    token: Optional[str] = None,
+    current_user_dep: Optional[User] = Depends(get_current_user_optional),
     db: AsyncSession = Depends(get_db),
 ):
     """
     Download lease as PDF.
     """
+    # Authenticate via header or param
+    if current_user_dep:
+        current_user = current_user_dep
+    elif token:
+        current_user = await get_current_user(token=token, db=db)
+    else:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
     # Get lease
     result = await db.execute(select(Lease).where(Lease.id == lease_id))
     lease = result.scalar_one_or_none()

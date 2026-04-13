@@ -92,7 +92,7 @@ async def generate_lease_directly(
     await db.refresh(lease)
 
     return {
-        "download_url": f"http://localhost:8000/leases/{lease.id}/download",
+        "download_url": f"/leases/{lease.id}/download",
         "lease_type": request.lease_type,
     }
 

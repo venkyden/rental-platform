@@ -85,9 +85,8 @@ class Property(Base):
     public_transport = Column(JSONB)  # ['Metro Line 1', 'Bus 42']
     nearby_landmarks = Column(JSONB)  # ['School - 200m', 'Supermarket - 500m']
 
-    # Utilities & CAF
+    # Utilities
     utilities_included = Column(JSONB)  # ['electricity', 'gas', 'water', 'internet']
-    is_caf_eligible = Column(Boolean, default=False)
 
     # Photos (will be managed by PropertyMedia table, but keep this for quick access)
     photos = Column(JSONB)  # [{'url': '...', 'order': 1}, ...]

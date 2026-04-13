@@ -1,3 +1,10 @@
+databases:
+  - name: roomivo-db
+    databaseName: rental_platform
+    user: roomivo_api
+    plan: free
+    region: frankfurt
+
 services:
   - type: web
     name: roomivo-backend-0jyi
@@ -28,11 +35,13 @@ services:
       
       # SECRETS (Sync false tells Render not to pull these from Git, 
       # but to prompt you to paste them manually in the Dashboard)
+      - key: DATABASE_URL
+        fromDatabase:
+          name: roomivo-db
+          property: connectionString
       - key: STORAGE_ACCESS_KEY
         sync: false
       - key: STORAGE_SECRET_KEY
-        sync: false
-      - key: DATABASE_URL
         sync: false
       - key: SECRET_KEY
         sync: false

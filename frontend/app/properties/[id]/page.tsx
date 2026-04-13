@@ -50,7 +50,6 @@ interface Property {
     updated_at?: string;
     published_at?: string;
     utilities_included?: string[];
-    is_caf_eligible?: boolean;
     dpe_rating?: string;
     dpe_value?: number;
     ges_rating?: string;
@@ -388,20 +387,6 @@ export default function PropertyDetailPage() {
                                             </div>
                                             <div className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
                                                 {property.utilities_included?.length ? 'Highlighted items are included.' : 'Tenant handles all utility contracts.'}
-                                            </div>
-                                        </div>
-                                        <div className="pt-4 border-t">
-                                            <div className="flex justify-between items-center">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-2xl">🇫🇷</span>
-                                                    <div>
-                                                        <div className="font-semibold text-zinc-900 dark:text-white">CAF / APL Eligible</div>
-                                                        <div className="text-xs text-zinc-500 dark:text-zinc-400">Housing allowance supported</div>
-                                                    </div>
-                                                </div>
-                                                <span className={`px-3 py-1 rounded-full text-sm font-bold ${property.is_caf_eligible ? 'bg-green-100 text-green-700' : 'bg-red-50 text-red-600'}`}>
-                                                    {property.is_caf_eligible ? 'YES ✅' : 'NO ❌'}
-                                                </span>
                                             </div>
                                         </div>
                                     </div>

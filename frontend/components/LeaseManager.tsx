@@ -258,7 +258,11 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
                         dépôt de garantie, obligations des parties, état des lieux, et clause résolutoire.
                     </p>
                     <a
-                        href={result.downloadUrl}
+                        href={result.downloadUrl ? (
+                            result.downloadUrl.startsWith('http') 
+                                ? `${result.downloadUrl}?token=${typeof window !== 'undefined' ? localStorage.getItem('access_token') : ''}` 
+                                : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${result.downloadUrl}?token=${typeof window !== 'undefined' ? localStorage.getItem('access_token') : ''}`
+                        ) : '#'}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"

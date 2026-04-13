@@ -26,7 +26,6 @@ interface Property {
     photos: { url: string }[];
     amenities: string[];
     status: string;
-    is_caf_eligible?: boolean;
     dpe_rating?: string;
     guarantor_required?: boolean;
 }
@@ -260,7 +259,6 @@ export default function SearchPage() {
                                         )}
                                         {property.furnished ? <span className="px-2 py-1 bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 rounded-lg text-xs font-semibold shadow-sm border border-purple-100 dark:border-purple-900/50">Furnished</span> : <span className="px-2 py-1 bg-zinc-50 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400 rounded-lg text-xs font-semibold shadow-sm">Unfurnished</span>}
                                         {property.amenities?.includes('colocation') && <span className="px-2 py-1 bg-teal-50 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300 rounded-lg text-xs font-semibold shadow-sm border border-teal-100 dark:border-teal-900/50">Coloc OK</span>}
-                                        {property.is_caf_eligible && <span className="px-2 py-1 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-lg text-xs font-semibold shadow-sm border border-blue-100 dark:border-blue-900/50">CAF ✅</span>}
                                         {property.guarantor_required ? (
                                             <span className="px-2 py-1 bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 rounded-lg text-xs font-semibold shadow-sm border border-indigo-100 dark:border-indigo-900/50">🛡️ Guarantor Req.</span>
                                         ) : (
