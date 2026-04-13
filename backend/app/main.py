@@ -4,12 +4,15 @@ import os
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from starlette.types import ASGIApp, Receive, Scope, Send
 
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
-# Sentry error tracking (only if DSN is configured)
+# ------------------------------------------------------------------
+# Sentry (optional)
+# ------------------------------------------------------------------
 try:
     import sentry_sdk
 
@@ -22,12 +25,11 @@ try:
         )
         logger.info(f"Sentry initialized for {settings.ENVIRONMENT}")
 except ImportError:
-    pass  # sentry-sdk not installed, skip
+    pass
 
-from app.routers import (auth, location, onboarding, properties,
-                         property_manager, verification)
-
-# Rate limiting setup (optional - only if slowapi is installed)
+# ------------------------------------------------------------------
+# Rate limiting (optional — only if slowapi is installed)
+# ------------------------------------------------------------------
 try:
     from slowapi import Limiter, _rate_limit_exceeded_handler
     from slowapi.errors import RateLimitExceeded
@@ -62,23 +64,22 @@ def _get_cors_origin(request_origin: str | None) -> str | None:
 
 
 # ------------------------------------------------------------------
-# App
+# FastAPI app
 # ------------------------------------------------------------------
-app = FastAPI(
+fastapi_app = FastAPI(
     title="Roomivo API",
-    description="Smart rental platform API — identity verification, AI matching, and digital leases for expats in France",
+    description="Smart rental platform API",
     version="1.0.0",
 )
 
-# Add rate limiting if available
 if RATE_LIMITING_ENABLED:
-    app.state.limiter = limiter
-    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+    fastapi_app.state.limiter = limiter
+    fastapi_app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # ------------------------------------------------------------------
-# CORS middleware
+# CORS middleware (standard layer)
 # ------------------------------------------------------------------
-app.add_middleware(
+fastapi_app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
@@ -90,11 +91,10 @@ app.add_middleware(
 
 
 # ------------------------------------------------------------------
-# Global exception handler – ALWAYS include CORS headers so the
-# browser lets the frontend read the error body instead of showing
-# an opaque "Network Error".
+# Global exception handler — injects CORS headers on every error
+# so the browser never blocks the response body.
 # ------------------------------------------------------------------
-@app.exception_handler(Exception)
+@fastapi_app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     logger.error(
         f"Unhandled exception on {request.method} {request.url.path}: {exc}",
@@ -108,17 +108,15 @@ async def global_exception_handler(request: Request, exc: Exception):
         headers["Access-Control-Allow-Credentials"] = "true"
     return JSONResponse(
         status_code=500,
-        content={"detail": "An unexpected error occurred. Please try again later."},
+        content={"detail": f"Server error: {type(exc).__name__}: {exc}"},
         headers=headers,
     )
 
 
 # ------------------------------------------------------------------
-# Extra safety: explicit OPTIONS handler for any path.
-# Catches preflight requests that might not reach CORSMiddleware
-# when an exception is thrown during middleware startup.
+# Explicit OPTIONS handler — safety net for preflight requests.
 # ------------------------------------------------------------------
-@app.options("/{full_path:path}")
+@fastapi_app.options("/{full_path:path}")
 async def preflight_handler(request: Request, full_path: str):
     origin = request.headers.get("origin")
     allowed = _get_cors_origin(origin)
@@ -135,77 +133,77 @@ async def preflight_handler(request: Request, full_path: str):
 # ------------------------------------------------------------------
 # Include all routers
 # ------------------------------------------------------------------
-app.include_router(auth.router)
-app.include_router(property_manager.router)
-app.include_router(onboarding.router)
-app.include_router(verification.router)
-app.include_router(properties.router)
-app.include_router(location.router)
+from app.routers import (auth, location, onboarding, properties,
+                         property_manager, verification)
+
+fastapi_app.include_router(auth.router)
+fastapi_app.include_router(property_manager.router)
+fastapi_app.include_router(onboarding.router)
+fastapi_app.include_router(verification.router)
+fastapi_app.include_router(properties.router)
+fastapi_app.include_router(location.router)
 
 from app.routers import webhooks
-app.include_router(webhooks.router)
+fastapi_app.include_router(webhooks.router)
 
 from app.routers import visits
-app.include_router(visits.router)
+fastapi_app.include_router(visits.router)
 
 from app.routers import messages
-app.include_router(messages.router)
+fastapi_app.include_router(messages.router)
 
 from app.routers import team
-app.include_router(team.router)
+fastapi_app.include_router(team.router)
 
 from app.routers import bulk
-app.include_router(bulk.router)
+fastapi_app.include_router(bulk.router)
 
 from app.routers import erp_webhooks
-app.include_router(erp_webhooks.router)
+fastapi_app.include_router(erp_webhooks.router)
 
 from app.routers import documents
-app.include_router(documents.router)
+fastapi_app.include_router(documents.router)
 
 from app.routers import applications
-app.include_router(applications.router)
+fastapi_app.include_router(applications.router)
 
 from app.routers import notifications
-app.include_router(notifications.router)
+fastapi_app.include_router(notifications.router)
 
 from app.routers import leases
-app.include_router(leases.router)
+fastapi_app.include_router(leases.router)
 
 from app.routers import inventory
-app.include_router(inventory.router)
+fastapi_app.include_router(inventory.router)
 
 from app.routers import dispute
-app.include_router(dispute.router)
+fastapi_app.include_router(dispute.router)
 
 from app.routers import stats
-app.include_router(stats.router)
+fastapi_app.include_router(stats.router)
 
 from app.routers import admin
-app.include_router(admin.router)
+fastapi_app.include_router(admin.router)
 
 from app.routers import media
-app.include_router(media.router)
+fastapi_app.include_router(media.router)
 
 from app.routers import feedback
-app.include_router(feedback.router)
+fastapi_app.include_router(feedback.router)
 
 from app.routers import identity
-app.include_router(identity.router)
+fastapi_app.include_router(identity.router)
 
 from app.routers import gdpr
-app.include_router(gdpr.router)
+fastapi_app.include_router(gdpr.router)
 
 
 # ------------------------------------------------------------------
 # Health & root
 # ------------------------------------------------------------------
-@app.get("/health")
+@fastapi_app.get("/health")
 async def health_check():
-    """
-    Netflix-style health check endpoint.
-    Returns detailed system status for monitoring and load balancers.
-    """
+    """Health check endpoint."""
     try:
         from app.core.circuit_breaker import get_circuit_health
         circuit_status = get_circuit_health()
@@ -229,16 +227,54 @@ async def health_check():
     }
 
 
-# ------------------------------------------------------------------
-# Static file serving for local development (uploads fallback)
-# ------------------------------------------------------------------
-import os as _os
-if _os.path.isdir("uploads"):
-    from fastapi.staticfiles import StaticFiles
-    app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
-
-
-@app.get("/")
+@fastapi_app.get("/")
 async def root():
     """Root endpoint"""
     return {"message": "Roomivo API", "docs": "/docs", "health": "/health"}
+
+
+# Static file serving for local development
+import os as _os
+if _os.path.isdir("uploads"):
+    from fastapi.staticfiles import StaticFiles
+    fastapi_app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
+
+# ------------------------------------------------------------------
+# CORS safety-net — outermost ASGI wrapper.
+# If something crashes so hard that FastAPI's exception handler is
+# never reached (DB connection refused, import error, middleware
+# crash), this guarantees the browser still gets CORS headers so
+# the frontend sees a readable error instead of "Network Error".
+# ------------------------------------------------------------------
+class CORSSafetyNet:
+    def __init__(self, wrapped: ASGIApp):
+        self.wrapped = wrapped
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send):
+        if scope["type"] != "http":
+            await self.wrapped(scope, receive, send)
+            return
+        try:
+            await self.wrapped(scope, receive, send)
+        except Exception as exc:
+            logger.error(f"CORS-safety-net caught crash: {exc}", exc_info=True)
+            headers_raw = dict(scope.get("headers", []))
+            origin = headers_raw.get(b"origin", b"").decode()
+            allowed = _get_cors_origin(origin)
+            resp_headers = [
+                (b"content-type", b"application/json"),
+            ]
+            if allowed:
+                resp_headers.extend([
+                    (b"access-control-allow-origin", allowed.encode()),
+                    (b"access-control-allow-credentials", b"true"),
+                ])
+            body = b'{"detail":"Service temporarily unavailable. Please try again."}'
+            await send({"type": "http.response.start", "status": 503, "headers": resp_headers})
+            await send({"type": "http.response.body", "body": body})
+
+
+# This is what uvicorn imports: app = CORSSafetyNet(fastapi_app)
+# The safety net wraps the entire FastAPI stack.
+app = CORSSafetyNet(fastapi_app)
