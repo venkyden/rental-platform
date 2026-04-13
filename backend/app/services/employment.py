@@ -165,7 +165,7 @@ Important Context:
 
 Return ONLY the JSON, no explanation."""
 
-            # Generate structured JSON using Gemini 1.5 Flash
+            # Generate structured JSON using Gemini 2.5 Flash
             response = self.ai_client.models.generate_content(
                 model="gemini-2.5-flash",
                 contents=[document_part, prompt],
