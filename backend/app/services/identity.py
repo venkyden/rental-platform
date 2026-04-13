@@ -120,19 +120,23 @@ class IdentityVerificationService:
     async def _extract_document_data(
         self, file_content: bytes, file_type: str, document_type: str
     ) -> Optional[IdentityData]:
-        """Extract data from document using AI OCR"""
+        """Extract data from document using AI OCR with retry and model fallback"""
 
         if not self.ai_client:
             logger.warning("AI client not initialized — skipping verification")
             return None
 
-        try:
-            document_part = types.Part.from_bytes(
-                data=file_content,
-                mime_type=file_type,
-            )
+        import asyncio
 
-            prompt = f"""You are an identity document verification assistant.
+        models_to_try = ["gemini-2.5-flash", "gemini-2.0-flash"]
+        max_retries = 2
+
+        document_part = types.Part.from_bytes(
+            data=file_content,
+            mime_type=file_type,
+        )
+
+        prompt = f"""You are an identity document verification assistant.
 
 Analyze the provided image and determine:
 1. Is this actually a government-issued identity document (passport, national ID card, residence permit, or driver's license)?
@@ -160,33 +164,52 @@ Critical rules:
 
 Return ONLY the JSON, no explanation."""
 
-            response = self.ai_client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=[document_part, prompt],
-                config=types.GenerateContentConfig(
-                    response_mime_type="application/json",
-                ),
-            )
+        last_error = None
+        for model_name in models_to_try:
+            for attempt in range(max_retries + 1):
+                try:
+                    response = self.ai_client.models.generate_content(
+                        model=model_name,
+                        contents=[document_part, prompt],
+                        config=types.GenerateContentConfig(
+                            response_mime_type="application/json",
+                        ),
+                    )
 
-            # Parse response
-            json_text = response.text
-            data = json.loads(json_text)
+                    json_text = response.text
+                    data = json.loads(json_text)
 
-            logger.info(f"AI extracted data for {document_type}: {data}")
+                    logger.info(f"AI extracted data for {document_type} (model={model_name}): {data}")
 
-            return IdentityData(
-                full_name=data.get("full_name", "Unknown"),
-                document_number=data.get("document_number", "Unknown"),
-                expiry_date=data.get("expiry_date"),
-                document_type=data.get("document_type", document_type),
-                is_identity_document=bool(data.get("is_identity_document", False)),
-                has_face_photo=bool(data.get("has_face_photo", False)),
-                confidence_score=float(data.get("confidence_score", 0.0)),
-            )
+                    return IdentityData(
+                        full_name=data.get("full_name", "Unknown"),
+                        document_number=data.get("document_number", "Unknown"),
+                        expiry_date=data.get("expiry_date"),
+                        document_type=data.get("document_type", document_type),
+                        is_identity_document=bool(data.get("is_identity_document", False)),
+                        has_face_photo=bool(data.get("has_face_photo", False)),
+                        confidence_score=float(data.get("confidence_score", 0.0)),
+                    )
 
-        except Exception as e:
-            logger.error(f"AI identity extraction failed: {e}", exc_info=True)
-            return None
+                except Exception as e:
+                    last_error = e
+                    error_str = str(e)
+                    # Retry on 503 (overloaded) or 429 (rate limit)
+                    if "503" in error_str or "UNAVAILABLE" in error_str or "429" in error_str:
+                        wait_time = (attempt + 1) * 2  # 2s, 4s, 6s
+                        logger.warning(f"Model {model_name} unavailable (attempt {attempt+1}/{max_retries+1}), retrying in {wait_time}s...")
+                        await asyncio.sleep(wait_time)
+                        continue
+                    # For 404 (model not found), skip to next model immediately
+                    elif "404" in error_str or "NOT_FOUND" in error_str:
+                        logger.warning(f"Model {model_name} not found, trying next model...")
+                        break
+                    else:
+                        logger.error(f"AI identity extraction failed: {e}", exc_info=True)
+                        return None
+
+        logger.error(f"All AI models failed for identity extraction. Last error: {last_error}")
+        return None
 
     def _validate_identity_data(
         self, data: IdentityData, expected_name: str, claimed_type: str

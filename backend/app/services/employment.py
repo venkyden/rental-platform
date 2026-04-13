@@ -131,20 +131,27 @@ class EmploymentVerificationService:
     async def _extract_document_data(
         self, file_content: bytes, file_type: str, document_type: str
     ) -> Optional[EmploymentData]:
-        """Extract data from document using AI OCR"""
+        """Extract data from document using AI OCR with retry and model fallback"""
 
         if not self.ai_client:
             # No AI client available — cannot extract data
             return None
 
-        try:
-            # Prepare image for Gemini Vision
-            document_part = types.Part.from_bytes(
-                data=file_content,
-                mime_type=file_type,
-            )
+        import asyncio
+        import logging
 
-            prompt = f"""Analyze this document of type '{document_type}' and extract the following information in JSON format:
+        logger = logging.getLogger(__name__)
+
+        models_to_try = ["gemini-2.5-flash", "gemini-2.0-flash"]
+        max_retries = 2
+
+        # Prepare image for Gemini Vision
+        document_part = types.Part.from_bytes(
+            data=file_content,
+            mime_type=file_type,
+        )
+
+        prompt = f"""Analyze this document of type '{document_type}' and extract the following information in JSON format:
 
 {{
     "employer_name": "Company/University/Organization name",
@@ -165,34 +172,50 @@ Important Context:
 
 Return ONLY the JSON, no explanation."""
 
-            # Generate structured JSON using Gemini 2.5 Flash
-            response = self.ai_client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=[document_part, prompt],
-                config=types.GenerateContentConfig(
-                    response_mime_type="application/json",
-                ),
-            )
+        last_error = None
+        for model_name in models_to_try:
+            for attempt in range(max_retries + 1):
+                try:
+                    response = self.ai_client.models.generate_content(
+                        model=model_name,
+                        contents=[document_part, prompt],
+                        config=types.GenerateContentConfig(
+                            response_mime_type="application/json",
+                        ),
+                    )
 
-            # Parse response
-            json_text = response.text
-            data = json.loads(json_text)
+                    json_text = response.text
+                    data = json.loads(json_text)
 
-            return EmploymentData(
-                employer_name=data.get("employer_name", "Unknown"),
-                employee_name=data.get("employee_name", "Unknown"),
-                gross_salary=Decimal(str(data.get("gross_salary", 0))),
-                net_salary=Decimal(str(data.get("net_salary", 0))),
-                pay_period=data.get("pay_period", ""),
-                employment_type=data.get("employment_type", "Unknown"),
-                siret=data.get("siret"),
-                job_title=data.get("job_title"),
-                confidence_score=data.get("confidence_score", 0.5),
-            )
+                    return EmploymentData(
+                        employer_name=data.get("employer_name", "Unknown"),
+                        employee_name=data.get("employee_name", "Unknown"),
+                        gross_salary=Decimal(str(data.get("gross_salary", 0))),
+                        net_salary=Decimal(str(data.get("net_salary", 0))),
+                        pay_period=data.get("pay_period", ""),
+                        employment_type=data.get("employment_type", "Unknown"),
+                        siret=data.get("siret"),
+                        job_title=data.get("job_title"),
+                        confidence_score=data.get("confidence_score", 0.5),
+                    )
 
-        except Exception as e:
-            print(f"AI extraction failed: {e}")
-            return None
+                except Exception as e:
+                    last_error = e
+                    error_str = str(e)
+                    if "503" in error_str or "UNAVAILABLE" in error_str or "429" in error_str:
+                        wait_time = (attempt + 1) * 2
+                        logger.warning(f"Model {model_name} unavailable (attempt {attempt+1}/{max_retries+1}), retrying in {wait_time}s...")
+                        await asyncio.sleep(wait_time)
+                        continue
+                    elif "404" in error_str or "NOT_FOUND" in error_str:
+                        logger.warning(f"Model {model_name} not found, trying next model...")
+                        break
+                    else:
+                        logger.error(f"AI extraction failed: {e}", exc_info=True)
+                        return None
+
+        logger.error(f"All AI models failed for employment extraction. Last error: {last_error}")
+        return None
 
     def _validate_employment_data(
         self, data: EmploymentData, expected_name: str, document_type: str = "payslip"
