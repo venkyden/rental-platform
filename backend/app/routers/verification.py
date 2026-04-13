@@ -7,7 +7,7 @@ import secrets
 from datetime import datetime, timedelta
 from typing import Optional
 
-from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -66,6 +66,7 @@ class VerificationStatusResponse(BaseModel):
 async def upload_identity_document(
     document_type: str,
     file: UploadFile = File(...),
+    side: Optional[str] = Form(None),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -90,12 +91,19 @@ async def upload_identity_document(
 
     # Process document with real AI logic
     from app.services.identity import identity_service
-    result = await identity_service.verify_document(
-        file_content=content,
-        file_type=file.content_type,
-        expected_name=current_user.full_name,
-        document_type=document_type,
-    )
+    # Only verify the front strictly. The back doesn't have the face or name in all countries
+    if side == "back":
+        result = {
+            "verified": True, "status": "verified", "data": {},
+            "validation_checks": [], "rejection_reason": None
+        }
+    else:
+        result = await identity_service.verify_document(
+            file_content=content,
+            file_type=file.content_type,
+            expected_name=current_user.full_name,
+            document_type=document_type,
+        )
 
     if not result["verified"] and result["status"] == "rejected":
         logger.error(f"Identity verification failed for user {current_user.id}: {result.get('rejection_reason')}")
@@ -214,6 +222,7 @@ async def upload_identity_mobile(
     verification_code: str = Query(...),
     document_type: str = Query("passport"),
     file: UploadFile = File(...),
+    side: Optional[str] = Form(None),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -250,12 +259,20 @@ async def upload_identity_mobile(
 
     # Process document
     from app.services.identity import identity_service
-    result = await identity_service.verify_document(
-        file_content=content,
-        file_type=file.content_type,
-        expected_name=user.full_name,
-        document_type=document_type,
-    )
+    
+    # Only verify the front strictly to avoid 400s on the back of IDs
+    if side == "back":
+        result = {
+            "verified": True, "status": "verified", "data": {}, 
+            "validation_checks": [], "rejection_reason": None
+        }
+    else:
+        result = await identity_service.verify_document(
+            file_content=content,
+            file_type=file.content_type,
+            expected_name=user.full_name,
+            document_type=document_type,
+        )
 
     if not result["verified"] and result["status"] == "rejected":
         logger.error(f"Identity verification failed for mobile session {verification_code}: {result.get('rejection_reason')}")
@@ -295,9 +312,17 @@ async def upload_identity_mobile(
         "checks": result["validation_checks"],
     }
 
-    # Mark session as completed
-    session["completed"] = True
-    await _update_session(verification_code, session)
+    # Determine if this is the final upload for this document type
+    # For passports it's 1 capture. For others it's usually front + back.
+    # If it's front and not a passport, we don't finish yet. 
+    is_final = True
+    if side == "front" and document_type in ("id_card", "drivers_license", "residence_permit"):
+        is_final = False
+
+    if is_final:
+        # Mark session as completed only when all parts are done
+        session["completed"] = True
+        await _update_session(verification_code, session)
 
     await db.commit()
     await db.refresh(user)
