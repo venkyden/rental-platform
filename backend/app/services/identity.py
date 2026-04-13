@@ -161,7 +161,7 @@ Critical rules:
 Return ONLY the JSON, no explanation."""
 
             response = self.ai_client.models.generate_content(
-                model="gemini-1.5-flash",
+                model="gemini-2.5-flash",
                 contents=[document_part, prompt],
                 config=types.GenerateContentConfig(
                     response_mime_type="application/json",
