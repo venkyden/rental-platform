@@ -2,11 +2,13 @@
 
 import { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
+import { useParams } from 'next/navigation';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-export default function VerifyCaptureePage({ params }: { params: { code: string } }) {
-    const { code } = params;
+export default function VerifyCaptureePage() {
+    const params = useParams();
+    const code = params?.code as string;
     const [step, setStep] = useState<'loading' | 'select' | 'capture' | 'preview' | 'uploading' | 'success' | 'error'>('loading');
     const [documentType, setDocumentType] = useState('passport');
     const [file, setFile] = useState<File | null>(null);
@@ -23,8 +25,9 @@ export default function VerifyCaptureePage({ params }: { params: { code: string 
 
     // Validate session on load
     useEffect(() => {
+        if (!code) return;
         validateSession();
-    }, []);
+    }, [code]);
 
     // Cleanup preview URL
     useEffect(() => {
@@ -34,6 +37,7 @@ export default function VerifyCaptureePage({ params }: { params: { code: string 
     }, [previewUrl]);
 
     const validateSession = async () => {
+        if (!code) return;
         try {
             const res = await axios.get(`${API_URL}/verification/identity/session/${code}`);
             if (res.data.completed) {
