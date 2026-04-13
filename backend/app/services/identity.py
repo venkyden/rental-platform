@@ -136,33 +136,45 @@ class IdentityVerificationService:
             mime_type=file_type,
         )
 
-        prompt = f"""You are an identity document verification assistant.
+        prompt = f"""You are a STRICT identity document verification assistant. Your job is to determine if an image shows a REAL government-issued photo ID.
 
-Analyze the provided image and determine:
-1. Is this actually a government-issued identity document (passport, national ID card, residence permit, or driver's license)?
-2. If yes, extract the data from it.
+An identity document is ONLY one of these:
+- Passport (booklet with bio page containing photo, name, passport number, expiry)
+- National ID Card / Carte Nationale d'Identité (plastic card with photo, name, ID number)
+- Residence Permit / Titre de séjour (card with photo, name, permit number)
+- Driver's License / Permis de conduire (card with photo, name, license number)
+
+The following are NOT identity documents and MUST be rejected (is_identity_document = false):
+- Payslips / bulletins de salaire
+- Tax returns / avis d'imposition  
+- Employment contracts
+- Bank statements
+- Student IDs or enrollment certificates
+- Utility bills
+- Screenshots, selfies, random photos
+- Any document without a government-issued photo ID format
 
 The user claims this is a '{document_type}'.
 
-Return a JSON object with these fields:
+Return a JSON object:
 
 {{
-    "is_identity_document": true or false (Is this image actually a government-issued identity document? Set to false if it's a random photo, selfie, screenshot, receipt, payslip, or ANY non-ID image),
-    "full_name": "Person's full name as it appears on the document, or 'Unknown' if not an ID",
-    "document_number": "Document ID number, or 'Unknown' if not readable",
-    "expiry_date": "YYYY-MM-DD format, or null if not found or not an ID",
-    "document_type": "passport, id_card, residence_permit, or drivers_license — what the document actually is",
-    "has_face_photo": true or false (does the document contain a photograph of a person's face?),
-    "confidence_score": 0.0 to 1.0 (how confident you are in your extraction)
+    "is_identity_document": true or false,
+    "full_name": "Person's full name from the ID, or 'Unknown'",
+    "document_number": "ID number, passport number, permit number, or license number. 'Unknown' if not an ID",
+    "expiry_date": "YYYY-MM-DD or null",
+    "document_type": "passport, id_card, residence_permit, or drivers_license. Use 'other' if it's not any of these",
+    "has_face_photo": true or false,
+    "confidence_score": 0.0 to 1.0
 }}
 
-Critical rules:
-- If the image is NOT an identity document at all, set is_identity_document to false and confidence_score below 0.3.
-- If it IS an identity document but of a different type than claimed '{document_type}', still set is_identity_document to true and set document_type to what it actually is.
-- Extract names exactly as printed (given names + surname).
-- Standardize expiry_date to YYYY-MM-DD. Use null if not found.
+Strict rules:
+- Set is_identity_document to false if the image is NOT a government photo ID. Be strict.
+- Set document_type to "other" if it's not one of the 4 valid types listed above.
+- A real ID card always has a face photo. If there's no face photo, it's likely not an ID.
+- If confidence is low or the image is unclear, set confidence_score below 0.3.
 
-Return ONLY the JSON, no explanation."""
+Return ONLY the JSON."""
 
         last_error = None
         for model_name in models_to_try:
@@ -231,7 +243,20 @@ Return ONLY the JSON, no explanation."""
             }
         )
 
-        # 2. CRITICAL: Confidence score (prevents garbage/blurry images)
+        # 2. CRITICAL: Document type must be a valid ID type (not 'other')
+        valid_id_types = {"passport", "id_card", "residence_permit", "drivers_license"}
+        is_valid_type = data.document_type.lower().replace(" ", "_") in valid_id_types
+        checks.append(
+            {
+                "name": "valid_document_type",
+                "description": "Document is a recognized identity document type",
+                "passed": is_valid_type,
+                "critical": True,
+                "details": f"Detected type: {data.document_type}" if is_valid_type else f"'{data.document_type}' is not a valid identity document type",
+            }
+        )
+
+        # 3. CRITICAL: Confidence score (prevents garbage/blurry images)
         high_confidence = data.confidence_score >= 0.5
         checks.append(
             {
@@ -279,14 +304,14 @@ Return ONLY the JSON, no explanation."""
             }
         )
 
-        # 5. NON-CRITICAL: Face photo present
+        # 5. CRITICAL: Face photo present (all valid IDs have a face photo)
         checks.append(
             {
                 "name": "has_face_photo",
                 "description": "Document contains a photograph of a face",
                 "passed": data.has_face_photo,
-                "critical": False,
-                "details": "Photo detected" if data.has_face_photo else "No photo detected",
+                "critical": True,
+                "details": "Photo detected" if data.has_face_photo else "No face photo detected — this may not be a valid ID",
             }
         )
 
