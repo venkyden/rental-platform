@@ -22,6 +22,7 @@ const itemVariants: Variants = {
 interface VerificationUploadProps {
     verificationType: 'identity' | 'employment';
     onSuccess: () => void;
+    user?: any; // Contains user.preferences.contract_type etc.
 }
 
 function isMobileDevice(): boolean {
@@ -30,7 +31,7 @@ function isMobileDevice(): boolean {
         || (navigator.maxTouchPoints > 0 && window.innerWidth < 1024);
 }
 
-export default function VerificationUpload({ verificationType, onSuccess }: VerificationUploadProps) {
+export default function VerificationUpload({ verificationType, onSuccess, user }: VerificationUploadProps) {
     const [files, setFiles] = useState<File[]>([]);
     const [documentType, setDocumentType] = useState('');
     const [uploading, setUploading] = useState(false);
@@ -97,17 +98,47 @@ export default function VerificationUpload({ verificationType, onSuccess }: Veri
         navigator.clipboard.writeText(url);
     };
 
+    const getEmploymentDocumentTypes = () => {
+        const contractType = user?.preferences?.contract_type;
+        const situation = user?.preferences?.situation;
+
+        if (contractType === 'student' || situation === 'student_budget' || contractType === 'internship') {
+            return [
+                { value: 'student_id', label: '🎓 Carte d\'Étudiant / Certificat de scolarité', captures: 1 },
+                { value: 'internship_contract', label: '📝 Convention de stage', captures: 1 },
+                { value: 'scholarship', label: '💶 Avis d\'attribution de bourse', captures: 1 },
+                { value: 'caf', label: '🏠 Simulation d\'aides (CAF/MSA)', captures: 1 },
+            ];
+        } else if (contractType === 'self_employed' || situation === 'flexibility_relocation') {
+            return [
+                { value: 'kbis', label: '🏢 Extrait K/Kbis (moins de 3 mois)', captures: 1 },
+                { value: 'tax_return', label: '📄 Dernier avis d\'imposition', captures: 1 },
+                { value: 'accounting', label: '📊 Dernier bilan comptable', captures: 1 },
+            ];
+        } else if (contractType === 'other' || situation === 'other') {
+            return [
+                { value: 'tax_return', label: '📄 Dernier avis d\'imposition', captures: 1 },
+                { value: 'benefits', label: '💶 Prestations sociales / familiales', captures: 1 },
+                { value: 'pension', label: '👴 Justificatif de pension/retraite', captures: 1 },
+            ];
+        }
+        
+        // Default to employee
+        return [
+            { value: 'payslip', label: '📄 3 Derniers bulletins de salaire', captures: 3 },
+            { value: 'contract', label: '💼 Contrat de travail / Attestation employeur', captures: 1 },
+            { value: 'tax_return', label: '📄 Dernier avis d\'imposition', captures: 1 },
+        ];
+    };
+
     const documentTypes = verificationType === 'identity'
         ? [
-            { value: 'passport', label: 'Passport (1 photo)', captures: 1 },
-            { value: 'id_card', label: 'National ID Card (2 photos: front & back)', captures: 2 },
-            { value: 'drivers_license', label: "Driver's License (2 photos: front & back)", captures: 2 },
+            { value: 'passport', label: '📘 Passport / Passeport', captures: 1 },
+            { value: 'id_card', label: '🪪 Carte Nationale d\'Identité', captures: 2 },
+            { value: 'drivers_license', label: '🚗 Permis de conduire', captures: 2 },
+            { value: 'residence_permit', label: '🌍 Titre de séjour', captures: 2 },
         ]
-        : [
-            { value: 'payslip', label: 'Recent Payslip', captures: 1 },
-            { value: 'contract', label: 'Employment Contract', captures: 1 },
-            { value: 'tax_return', label: 'Tax Return', captures: 1 },
-        ];
+        : getEmploymentDocumentTypes();
 
     const selectedDocType = documentTypes.find(dt => dt.value === documentType);
 

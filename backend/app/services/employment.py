@@ -60,8 +60,8 @@ class EmploymentVerificationService:
         if GEMINI_AVAILABLE and settings.GEMINI_API_KEY:
             self.ai_client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
-    async def verify_payslip(
-        self, file_content: bytes, file_type: str, expected_name: str
+    async def verify_document(
+        self, file_content: bytes, file_type: str, expected_name: str, document_type: str = "payslip"
     ) -> dict:
         """
         Verify French payslip (bulletin de paie).
@@ -76,7 +76,7 @@ class EmploymentVerificationService:
             }
         """
         # Extract data using AI
-        extracted_data = await self._extract_payslip_data(file_content, file_type)
+        extracted_data = await self._extract_document_data(file_content, file_type, document_type)
 
         if not extracted_data:
             return {
@@ -89,7 +89,7 @@ class EmploymentVerificationService:
 
         # Run validation checks
         validation_results = self._validate_employment_data(
-            extracted_data, expected_name
+            extracted_data, expected_name, document_type
         )
 
         # Determine overall status
@@ -128,10 +128,10 @@ class EmploymentVerificationService:
             ),
         }
 
-    async def _extract_payslip_data(
-        self, file_content: bytes, file_type: str
+    async def _extract_document_data(
+        self, file_content: bytes, file_type: str, document_type: str
     ) -> Optional[EmploymentData]:
-        """Extract data from payslip using AI OCR"""
+        """Extract data from document using AI OCR"""
 
         if not self.ai_client:
             # No AI client available — cannot extract data
@@ -144,26 +144,24 @@ class EmploymentVerificationService:
                 mime_type=file_type,
             )
 
-            prompt = """Analyze this French payslip (bulletin de paie) and extract the following information in JSON format:
+            prompt = f"""Analyze this document of type '{document_type}' and extract the following information in JSON format:
 
-{
-    "employer_name": "Company name",
-    "employee_name": "Employee full name",
+{{
+    "employer_name": "Company/University/Organization name",
+    "employee_name": "Person's full name",
     "gross_salary": 0.00,
     "net_salary": 0.00,
-    "pay_period": "YYYY-MM",
-    "employment_type": "CDI/CDD/Interim",
+    "pay_period": "YYYY-MM or relevant period",
+    "employment_type": "CDI/CDD/Student/Freelance/interim",
     "siret": "SIRET number if visible",
-    "job_title": "Job title if visible",
+    "job_title": "Job title or academic program if visible",
     "confidence_score": 0.0 to 1.0
-}
+}}
 
-Important French payslip terms:
-- "Salaire brut" = gross salary
-- "Net à payer" or "Net imposable" = net salary
-- "Période" = pay period
-- "Employeur" = employer
-- "SIRET" = company registration number
+Important Context:
+- If this is a payslip, extract 'Salaire brut' (gross) and 'Net à payer' (net).
+- If this is a student ID or enrollment certificate, 'net_salary' and 'gross_salary' should be 0.00, 'employment_type' should be 'Student', 'employer_name' should be the University.
+- If this is a tax return or KBIS, extract relevant identifiers, incomes as salaried, and company names.
 
 Return ONLY the JSON, no explanation."""
 
@@ -197,7 +195,7 @@ Return ONLY the JSON, no explanation."""
             return None
 
     def _validate_employment_data(
-        self, data: EmploymentData, expected_name: str
+        self, data: EmploymentData, expected_name: str, document_type: str = "payslip"
     ) -> list:
         """Run validation checks on extracted data"""
 
@@ -215,12 +213,18 @@ Return ONLY the JSON, no explanation."""
             }
         )
 
+        is_student_or_kbis = document_type in ("student_id", "kbis", "urssaf", "scholarship")
+
         # 2. Salary sanity check
-        salary_valid = data.net_salary > 0 and data.net_salary < 100000
+        if is_student_or_kbis:
+            salary_valid = True
+        else:
+            salary_valid = data.net_salary > 0 and data.net_salary < 100000
+            
         checks.append(
             {
                 "name": "salary_valid",
-                "description": "Salary within reasonable range",
+                "description": "Salary within reasonable range or not applicable",
                 "passed": salary_valid,
                 "critical": False,
                 "details": f"Net salary: €{data.net_salary}",
@@ -228,23 +232,31 @@ Return ONLY the JSON, no explanation."""
         )
 
         # 3. Recent payslip check
-        pay_period_recent = self._is_recent_payslip(data.pay_period)
+        if is_student_or_kbis:
+            pay_period_recent = True
+        else:
+            pay_period_recent = self._is_recent_payslip(data.pay_period)
+            
         checks.append(
             {
                 "name": "recent_document",
-                "description": "Payslip from last 3 months",
+                "description": "Payslip from last 3 months or not applicable",
                 "passed": pay_period_recent,
-                "critical": True,
+                "critical": not is_student_or_kbis,
                 "details": f"Pay period: {data.pay_period}",
             }
         )
 
         # 4. Employment type check
-        stable_employment = data.employment_type.upper() in ["CDI", "FONCTIONNAIRE"]
+        if is_student_or_kbis:
+            stable_employment = True
+        else:
+            stable_employment = data.employment_type.upper() in ["CDI", "FONCTIONNAIRE"]
+            
         checks.append(
             {
                 "name": "stable_employment",
-                "description": "Stable employment type (CDI)",
+                "description": "Stable employment type (CDI) or not applicable",
                 "passed": stable_employment,
                 "critical": False,
                 "details": f"Type: {data.employment_type}",

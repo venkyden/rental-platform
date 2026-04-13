@@ -110,6 +110,7 @@ export default function VerificationPage() {
                                     key={`identity-${refreshKey}`}
                                     verificationType="identity"
                                     onSuccess={handleSuccess}
+                                    user={user}
                                 />
                             )}
                             {activeTab === 'identity' && user.identity_verified && (
@@ -125,6 +126,7 @@ export default function VerificationPage() {
                                     key={`employment-${refreshKey}`}
                                     verificationType="employment"
                                     onSuccess={handleSuccess}
+                                    user={user}
                                 />
                             )}
                             {activeTab === 'employment' && user.employment_verified && (

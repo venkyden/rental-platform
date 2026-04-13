@@ -15,10 +15,30 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.models.user import User
 from app.routers.auth import get_current_user
+from app.core.cache import cache
 
-# In-memory verification sessions (no migration needed)
+# Fallback in-memory verification sessions (if Redis is not available)
 # Format: { code: { user_id, document_type, expires_at, completed } }
 _verification_sessions: dict[str, dict] = {}
+
+async def _save_session(code: str, session_data: dict):
+    if cache.redis_client:
+        await cache.set(f"verification_session:{code}", session_data, ttl=3600)
+    else:
+        _verification_sessions[code] = session_data
+
+async def _get_session(code: str):
+    if cache.redis_client:
+        return await cache.get(f"verification_session:{code}")
+    else:
+        _cleanup_expired_sessions()
+        return _verification_sessions.get(code)
+
+async def _update_session(code: str, session_data: dict):
+    if cache.redis_client:
+        await cache.set(f"verification_session:{code}", session_data, ttl=3600)
+    else:
+        _verification_sessions[code] = session_data
 
 router = APIRouter(prefix="/verification", tags=["Verification"])
 
@@ -112,8 +132,8 @@ async def upload_identity_document(
 
 def _cleanup_expired_sessions():
     """Remove expired sessions from memory"""
-    now = datetime.utcnow()
-    expired = [k for k, v in _verification_sessions.items() if v["expires_at"] < now]
+    now_iso = datetime.utcnow().isoformat()
+    expired = [k for k, v in _verification_sessions.items() if v.get("expires_at", "") < now_iso]
     for k in expired:
         del _verification_sessions[k]
 
@@ -129,11 +149,12 @@ async def create_identity_verification_session(
     _cleanup_expired_sessions()
 
     code = secrets.token_urlsafe(32)
-    _verification_sessions[code] = {
+    session_data = {
         "user_id": str(current_user.id),
-        "expires_at": datetime.utcnow() + timedelta(hours=1),
+        "expires_at": (datetime.utcnow() + timedelta(hours=1)).isoformat(),
         "completed": False,
     }
+    await _save_session(code, session_data)
 
     from app.core.config import settings
 
@@ -149,9 +170,7 @@ async def create_identity_verification_session(
 @router.get("/identity/session/{code}")
 async def get_identity_session(code: str):
     """Get session info (for mobile page to verify code is valid)"""
-    _cleanup_expired_sessions()
-
-    session = _verification_sessions.get(code)
+    session = await _get_session(code)
     if not session:
         raise HTTPException(status_code=404, detail="Invalid or expired session")
 
@@ -164,7 +183,7 @@ async def get_identity_session(code: str):
 @router.get("/identity/session/{code}/status")
 async def check_identity_session_status(code: str):
     """Poll endpoint for desktop to check if mobile has completed upload"""
-    session = _verification_sessions.get(code)
+    session = await _get_session(code)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
 
@@ -182,9 +201,7 @@ async def upload_identity_mobile(
     Upload identity document via mobile using a verification session code.
     No auth token needed — the session code links to the user.
     """
-    _cleanup_expired_sessions()
-
-    session = _verification_sessions.get(verification_code)
+    session = await _get_session(verification_code)
     if not session:
         raise HTTPException(status_code=404, detail="Invalid or expired verification code")
 
@@ -247,6 +264,7 @@ async def upload_identity_mobile(
 
     # Mark session as completed
     session["completed"] = True
+    await _update_session(verification_code, session)
 
     await db.commit()
     await db.refresh(user)
@@ -286,10 +304,11 @@ async def upload_employment_document(
     from app.services.employment import employment_service
 
     # Process document
-    result = await employment_service.verify_payslip(
+    result = await employment_service.verify_document(
         file_content=content,
         file_type=file.content_type,
         expected_name=current_user.full_name,
+        document_type=document_type,
     )
 
     if not result["verified"] and result["status"] == "rejected":

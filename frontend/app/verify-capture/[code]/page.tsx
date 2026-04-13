@@ -15,9 +15,10 @@ export default function VerifyCaptureePage({ params }: { params: { code: string 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const documentTypes = [
-        { value: 'passport', label: '📘 Passport', description: '1 photo of bio page' },
-        { value: 'id_card', label: '🪪 National ID Card', description: 'Front side photo' },
-        { value: 'drivers_license', label: '🚗 Driver\'s License', description: 'Front side photo' },
+        { value: 'passport', label: '📘 Passport / Passeport', description: '1 photo of bio page' },
+        { value: 'id_card', label: '🪪 National ID Card / CNI', description: 'Front side photo' },
+        { value: 'drivers_license', label: '🚗 Driver\'s License / Permis', description: 'Front side photo' },
+        { value: 'residence_permit', label: '🌍 Titre de séjour', description: 'Front side photo' },
     ];
 
     // Validate session on load
