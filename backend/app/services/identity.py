@@ -8,6 +8,9 @@ import json
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Optional AI imports
 try:
@@ -128,12 +131,13 @@ class IdentityVerificationService:
     "full_name": "Person's full name exactly as it appears (first and last names)",
     "document_number": "Main document identification number",
     "expiry_date": "YYYY-MM-DD",
-    "document_type": "passport, id_card, or residence_permit",
+    "document_type": "passport, id_card, residence_permit, or drivers_license",
     "has_face_photo": true or false (does the document clearly contain a photograph of a person's face?),
     "confidence_score": 0.0 to 1.0
 }}
 
 Important Context:
+- Supported types: passport, id_card, residence_permit, drivers_license.
 - Extract the primary given names and surnames to form the full_name.
 - The expiry_date should be standardized to YYYY-MM-DD. If no expiry date is found, use null.
 - Set has_face_photo to true only if there is a distinct photograph of a human face on the document.
@@ -148,8 +152,11 @@ Return ONLY the JSON, no explanation."""
                 ),
             )
 
+            # Parse response
             json_text = response.text
             data = json.loads(json_text)
+            
+            logger.info(f"AI extracted data for {document_type}: {data}")
 
             return IdentityData(
                 full_name=data.get("full_name", "Unknown"),
@@ -161,7 +168,7 @@ Return ONLY the JSON, no explanation."""
             )
 
         except Exception as e:
-            print(f"AI identity extraction failed: {e}")
+            logger.error(f"AI identity extraction failed: {e}", exc_info=True)
             return None
 
     def _validate_identity_data(

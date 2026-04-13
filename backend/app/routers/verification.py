@@ -16,6 +16,9 @@ from app.core.database import get_db
 from app.models.user import User
 from app.routers.auth import get_current_user
 from app.core.cache import cache
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Fallback in-memory verification sessions (if Redis is not available)
 # Format: { code: { user_id, document_type, expires_at, completed } }
@@ -74,11 +77,12 @@ async def upload_identity_document(
     """
 
     # Validate file type
-    allowed_types = ["image/jpeg", "image/png", "image/jpg", "application/pdf"]
+    allowed_types = ["image/jpeg", "image/png", "image/jpg", "application/pdf", "image/heic", "image/heif"]
     if file.content_type not in allowed_types:
+        logger.warning(f"Invalid file type uploaded: {file.content_type}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid file type. Please upload JPEG, PNG, or PDF",
+            detail=f"Invalid file type: {file.content_type}. Please upload JPEG, PNG, HEIC, or PDF",
         )
 
     # Read file content
@@ -94,6 +98,7 @@ async def upload_identity_document(
     )
 
     if not result["verified"] and result["status"] == "rejected":
+        logger.error(f"Identity verification failed for user {current_user.id}: {result.get('rejection_reason')}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Verification failed: {result.get('rejection_reason')}",
@@ -223,11 +228,12 @@ async def upload_identity_mobile(
         raise HTTPException(status_code=400, detail="Session already completed")
 
     # Validate file type
-    allowed_types = ["image/jpeg", "image/png", "image/jpg", "application/pdf"]
+    allowed_types = ["image/jpeg", "image/png", "image/jpg", "application/pdf", "image/heic", "image/heif"]
     if file.content_type not in allowed_types:
+        logger.warning(f"Invalid mobile file type: {file.content_type}")
         raise HTTPException(
             status_code=400,
-            detail="Invalid file type. Please upload JPEG, PNG, or PDF",
+            detail=f"Invalid file type: {file.content_type}. Please upload JPEG, PNG, HEIC, or PDF",
         )
 
     # Get user from session
@@ -252,6 +258,7 @@ async def upload_identity_mobile(
     )
 
     if not result["verified"] and result["status"] == "rejected":
+        logger.error(f"Identity verification failed for mobile session {verification_code}: {result.get('rejection_reason')}")
         raise HTTPException(
             status_code=400,
             detail=f"Verification failed: {result.get('rejection_reason')}",
