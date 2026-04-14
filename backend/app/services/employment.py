@@ -190,8 +190,8 @@ Return ONLY the JSON, no explanation."""
                     return EmploymentData(
                         employer_name=data.get("employer_name", "Unknown"),
                         employee_name=data.get("employee_name", "Unknown"),
-                        gross_salary=Decimal(str(data.get("gross_salary", 0))),
-                        net_salary=Decimal(str(data.get("net_salary", 0))),
+                        gross_salary=Decimal(str(data.get("gross_salary") if data.get("gross_salary") is not None else 0)),
+                        net_salary=Decimal(str(data.get("net_salary") if data.get("net_salary") is not None else 0)),
                         pay_period=data.get("pay_period", ""),
                         employment_type=data.get("employment_type", "Unknown"),
                         siret=data.get("siret"),

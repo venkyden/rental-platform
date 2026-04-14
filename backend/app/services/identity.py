@@ -200,7 +200,7 @@ Return ONLY the JSON."""
                         document_type=data.get("document_type", document_type),
                         is_identity_document=bool(data.get("is_identity_document", False)),
                         has_face_photo=bool(data.get("has_face_photo", False)),
-                        confidence_score=float(data.get("confidence_score", 0.0)),
+                        confidence_score=float(data.get("confidence_score") if data.get("confidence_score") is not None else 0.0),
                     )
 
                 except Exception as e:
