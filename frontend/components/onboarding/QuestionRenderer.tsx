@@ -43,7 +43,7 @@ export default function QuestionRenderer({
                     {selectedAddress && (
                         <div className="mt-3 px-4 py-3 bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800 rounded-xl">
                             <p className="text-sm font-medium text-teal-800 dark:text-teal-200">
-                                📍 {selectedAddress.display}
+                                 {selectedAddress.display}
                             </p>
                         </div>
                     )}
@@ -61,7 +61,7 @@ export default function QuestionRenderer({
                             }
                         }}
                         disabled={!selectedAddress}
-                        className="w-full mt-8 py-4 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl shadow-lg hover:shadow-teal-500/25 transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full mt-8 py-4 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl shadow-sm hover: transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Continue →
                     </button>
@@ -86,7 +86,7 @@ export default function QuestionRenderer({
                             const input = document.querySelector('input[type="text"]') as HTMLInputElement;
                             if (input?.value) onAnswer(input.value);
                         }}
-                        className="w-full mt-8 py-4 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl shadow-lg hover:shadow-teal-500/25 transition-all transform hover:-translate-y-0.5"
+                        className="w-full mt-8 py-4 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl shadow-sm hover: transition-all transform hover:-translate-y-0.5"
                     >
                         Continue →
                     </button>
@@ -141,7 +141,7 @@ export default function QuestionRenderer({
                     >
                         <option value="">Select your university...</option>
                         {FRENCH_UNIVERSITIES.map((cityGroup, cityIndex) => (
-                            <optgroup key={cityIndex} label={`📍 ${cityGroup.city}`} className="dark:bg-zinc-800">
+                            <optgroup key={cityIndex} label={` ${cityGroup.city}`} className="dark:bg-zinc-800">
                                 {cityGroup.universities.map((uni, uniIndex) => (
                                     <option key={uniIndex} value={`${uni.value}|${cityGroup.city}`}>
                                         {uni.label}
@@ -149,7 +149,7 @@ export default function QuestionRenderer({
                                 ))}
                             </optgroup>
                         ))}
-                        <optgroup label="📍 Other" className="dark:bg-zinc-800">
+                        <optgroup label=" Other" className="dark:bg-zinc-800">
                             <option value="other|other">My school isn't listed - Enter manually</option>
                         </optgroup>
                     </select>
@@ -186,7 +186,7 @@ export default function QuestionRenderer({
                                     }
                                 }}
                                 disabled={!manualUniName.trim() || !manualUniCity.trim()}
-                                className="w-full mt-8 py-4 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl shadow-lg hover:shadow-teal-500/25 transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="w-full mt-8 py-4 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl shadow-sm hover: transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 Continue →
                             </button>
@@ -278,7 +278,7 @@ export default function QuestionRenderer({
 
                         <button
                             onClick={() => onAnswer({ lat: currentLat, lng: currentLng, radius: mapRadius })}
-                            className="w-full mt-6 py-4 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl shadow-lg hover:shadow-teal-500/25 transition-all transform hover:-translate-y-0.5"
+                            className="w-full mt-6 py-4 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl shadow-sm hover: transition-all transform hover:-translate-y-0.5"
                         >
                             Continue →
                         </button>
@@ -310,7 +310,7 @@ export default function QuestionRenderer({
                     </div>
                     <button
                         onClick={() => onAnswer(responses[question.id] || question.min)}
-                        className="w-full mt-8 py-4 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl shadow-lg hover:shadow-teal-500/25 transition-all transform hover:-translate-y-0.5"
+                        className="w-full mt-8 py-4 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl shadow-sm hover: transition-all transform hover:-translate-y-0.5"
                     >
                         Continue →
                     </button>
@@ -337,7 +337,7 @@ export default function QuestionRenderer({
                     {multiSelectValues.length > 0 && (
                         <button
                             onClick={() => onAnswer(multiSelectValues)}
-                            className="w-full mt-8 py-4 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl shadow-lg hover:shadow-teal-500/25 transition-all transform hover:-translate-y-0.5"
+                            className="w-full mt-8 py-4 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl shadow-sm hover: transition-all transform hover:-translate-y-0.5"
                         >
                             Continue ({multiSelectValues.length} selected) →
                         </button>

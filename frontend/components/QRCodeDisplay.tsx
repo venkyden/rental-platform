@@ -16,7 +16,7 @@ export default function QRCodeDisplay({ verificationCode, captureUrl, expiresAt 
 
     return (
         <div className="bg-white border-2 border-blue-200 rounded-lg p-6">
-            <h3 className="text-xl font-bold mb-4">📸 Upload Property Photos</h3>
+            <h3 className="text-xl font-bold mb-4"> Upload Property Photos</h3>
             <p className="text-gray-600 mb-6">
                 Scan this QR code with your phone to upload GPS-verified photos of the property
             </p>
@@ -66,7 +66,7 @@ export default function QRCodeDisplay({ verificationCode, captureUrl, expiresAt 
 
             {/* Instructions */}
             <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <p className="text-sm font-medium mb-2">📱 Instructions:</p>
+                <p className="text-sm font-medium mb-2"> Instructions:</p>
                 <ol className="text-xs text-gray-700 space-y-1 list-decimal list-inside">
                     <li>Open the link on your mobile phone</li>
                     <li>Allow camera and location permissions</li>

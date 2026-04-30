@@ -17,25 +17,25 @@ export function PropertyCardSkeleton() {
 
 export function PropertyDetailSkeleton() {
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
+        <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 py-8">
             <div className="max-w-6xl mx-auto px-4 animate-pulse">
                 <div className="h-8 bg-gray-300 rounded w-32 mb-8" />
 
                 {/* Photo Gallery Skeleton */}
-                <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
                     <div className="h-96 bg-gray-200 rounded-lg" />
                 </div>
 
                 {/* Info Section Skeleton */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-2 space-y-6">
-                        <div className="bg-white rounded-xl shadow-lg p-6">
+                        <div className="bg-white rounded-xl shadow-sm p-6">
                             <div className="h-8 bg-gray-200 rounded w-3/4 mb-4" />
                             <div className="h-4 bg-gray-200 rounded w-full mb-2" />
                             <div className="h-4 bg-gray-200 rounded w-5/6" />
                         </div>
 
-                        <div className="bg-white rounded-xl shadow-lg p-6">
+                        <div className="bg-white rounded-xl shadow-sm p-6">
                             <div className="h-6 bg-gray-200 rounded w-1/4 mb-4" />
                             <div className="grid grid-cols-2 gap-4">
                                 {[1, 2, 3, 4].map(i => (
@@ -45,7 +45,7 @@ export function PropertyDetailSkeleton() {
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-xl shadow-lg p-6 h-fit">
+                    <div className="bg-white rounded-xl shadow-sm p-6 h-fit">
                         <div className="h-10 bg-gray-200 rounded w-2/3 mb-4" />
                         <div className="h-12 bg-gray-200 rounded w-full mb-4" />
                         <div className="h-4 bg-gray-200 rounded w-3/4" />

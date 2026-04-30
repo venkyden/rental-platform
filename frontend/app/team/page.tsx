@@ -9,7 +9,7 @@ export default function TeamPage() {
 
     return (
         <ProtectedRoute>
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+            <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
                 {/* Header */}
                 <header className="bg-white shadow">
                     <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
@@ -21,7 +21,7 @@ export default function TeamPage() {
                                 ← Dashboard
                             </button>
                             <h1 className="text-2xl font-bold text-gray-900">
-                                👥 Team Management
+                                 Team Management
                             </h1>
                         </div>
                     </div>

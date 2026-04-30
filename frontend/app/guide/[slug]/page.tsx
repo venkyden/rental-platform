@@ -25,12 +25,12 @@ export default function GuidePage() {
                     <p>Discover our articles to help with your real estate project.</p>
 
                     <div className="grid gap-6 not-prose mt-8">
-                        <div className="bg-white/80 backdrop-blur-xl p-6 rounded-2xl shadow-[0_4px_24px_-8px_rgba(0,0,0,0.08)] border border-white/50 hover:shadow-lg cursor-pointer transition-all hover:-translate-y-0.5">
-                            <h3 className="font-bold text-xl mb-2">📖 Tenant's Guide</h3>
+                        <div className="bg-white/80 backdrop-blur-xl p-6 rounded-2xl shadow-[0_4px_24px_-8px_rgba(0,0,0,0.08)] border border-white/50 hover:shadow-sm cursor-pointer transition-all hover:-translate-y-0.5">
+                            <h3 className="font-bold text-xl mb-2"> Tenant's Guide</h3>
                             <p className="text-zinc-600">Understanding the application, guarantors, and lease.</p>
                         </div>
-                        <div className="bg-white/80 backdrop-blur-xl p-6 rounded-2xl shadow-[0_4px_24px_-8px_rgba(0,0,0,0.08)] border border-white/50 hover:shadow-lg cursor-pointer transition-all hover:-translate-y-0.5">
-                            <h3 className="font-bold text-xl mb-2">💰 Pricing Guide (Landlord)</h3>
+                        <div className="bg-white/80 backdrop-blur-xl p-6 rounded-2xl shadow-[0_4px_24px_-8px_rgba(0,0,0,0.08)] border border-white/50 hover:shadow-sm cursor-pointer transition-all hover:-translate-y-0.5">
+                            <h3 className="font-bold text-xl mb-2"> Pricing Guide (Landlord)</h3>
                             <p className="text-zinc-600">Market trends and rent estimation.</p>
                         </div>
                     </div>

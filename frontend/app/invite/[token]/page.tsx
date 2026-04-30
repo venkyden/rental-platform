@@ -72,7 +72,7 @@ export default function InviteAcceptPage() {
 
     if (loading || authLoading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+            <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
             </div>
         );
@@ -80,9 +80,9 @@ export default function InviteAcceptPage() {
 
     if (error && !invite) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-                <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-8 text-center">
-                    <span className="text-6xl mb-4 block">❌</span>
+            <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center p-4">
+                <div className="bg-white rounded-xl shadow-sm max-w-md w-full p-8 text-center">
+                    <span className="text-6xl mb-4 block"></span>
                     <h1 className="text-2xl font-bold text-gray-900 mb-4">
                         Invalid Invitation
                     </h1>
@@ -100,9 +100,9 @@ export default function InviteAcceptPage() {
 
     if (success) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-                <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-8 text-center">
-                    <span className="text-6xl mb-4 block">🎉</span>
+            <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center p-4">
+                <div className="bg-white rounded-xl shadow-sm max-w-md w-full p-8 text-center">
+                    <span className="text-6xl mb-4 block"></span>
                     <h1 className="text-2xl font-bold text-gray-900 mb-4">
                         Invitation Accepted!
                     </h1>
@@ -122,8 +122,8 @@ export default function InviteAcceptPage() {
 
     if (invite?.expired) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-                <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-8 text-center">
+            <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center p-4">
+                <div className="bg-white rounded-xl shadow-sm max-w-md w-full p-8 text-center">
                     <span className="text-6xl mb-4 block">⏰</span>
                     <h1 className="text-2xl font-bold text-gray-900 mb-4">
                         Invitation Expired
@@ -144,8 +144,8 @@ export default function InviteAcceptPage() {
 
     if (invite?.status !== 'pending') {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-                <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-8 text-center">
+            <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center p-4">
+                <div className="bg-white rounded-xl shadow-sm max-w-md w-full p-8 text-center">
                     <span className="text-6xl mb-4 block">ℹ️</span>
                     <h1 className="text-2xl font-bold text-gray-900 mb-4">
                         Invitation Already Used
@@ -165,11 +165,11 @@ export default function InviteAcceptPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-            <div className="bg-white rounded-xl shadow-xl max-w-md w-full overflow-hidden">
+        <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center p-4">
+            <div className="bg-white rounded-xl shadow-sm max-w-md w-full overflow-hidden">
                 {/* Header */}
-                <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 text-center">
-                    <span className="text-5xl mb-3 block">📨</span>
+                <div className="bg-blue-600 text-white p-6 text-center">
+                    <span className="text-5xl mb-3 block"></span>
                     <h1 className="text-2xl font-bold">
                         You're Invited!
                     </h1>
@@ -219,7 +219,7 @@ export default function InviteAcceptPage() {
                             </p>
                             {user.email.toLowerCase() !== invite?.email.toLowerCase() && (
                                 <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 rounded-lg p-3 text-sm">
-                                    ⚠️ This invitation is for {invite?.email}. Please log in with that account.
+                                    ️ This invitation is for {invite?.email}. Please log in with that account.
                                 </div>
                             )}
                             <button
@@ -227,7 +227,7 @@ export default function InviteAcceptPage() {
                                 disabled={accepting || user.email.toLowerCase() !== invite?.email.toLowerCase()}
                                 className="w-full py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium disabled:opacity-50"
                             >
-                                {accepting ? 'Accepting...' : '✓ Accept Invitation'}
+                                {accepting ? 'Accepting...' : ' Accept Invitation'}
                             </button>
                         </div>
                     ) : (

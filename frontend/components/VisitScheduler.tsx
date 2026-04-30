@@ -155,7 +155,7 @@ export default function VisitScheduler({ propertyId, rooms = [] }: VisitSchedule
                 <button
                     onClick={addSlot}
                     disabled={loading}
-                    className="bg-gradient-to-r from-teal-600 to-emerald-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:shadow-lg hover:shadow-teal-500/25 disabled:opacity-50 flex items-center gap-2 transition-all"
+                    className="bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-white px-4 py-2 rounded-xl text-sm font-medium hover:shadow-sm hover: disabled:opacity-50 flex items-center gap-2 transition-all"
                 >
                     <Plus className="w-4 h-4" />
                     Add Slot

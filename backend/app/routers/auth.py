@@ -11,7 +11,7 @@ from app.core.config import settings
 from app.core.database import get_db
 from app.core.security import (create_access_token, get_password_hash,
                                verify_password, verify_token)
-from app.models.schemas import (ForgotPasswordRequest, GoogleAuthRequest,
+from app.models.schemas import (ForgotPasswordRequest, ForgotEmailRequest, GoogleAuthRequest,
                                 ResetPasswordRequest, Token, UserLogin,
                                 UserRegister, UserResponse, UserUpdate,
                                 ChangePasswordRequest, RequestEmailChangeRequest,
@@ -454,7 +454,7 @@ async def google_auth(
                 user = User(
                     email=email,
                     google_id=google_id,
-                    full_name=full_name,
+                    full_name=None, # Force user to enter name manually in onboarding
                     role=role_enum,
                     email_verified=email_verified,
                     hashed_password=None,
@@ -519,6 +519,51 @@ async def google_auth(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Login failed. Please try again.",
         )
+
+
+@router.post("/forgot-email", status_code=status.HTTP_200_OK)
+@limiter.limit("5/minute")
+async def forgot_email(
+    request: Request,
+    payload: ForgotEmailRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Recover an email address using full name and phone number.
+    Returns a masked version of the email to protect privacy.
+    """
+    # Case-insensitive search using ilike
+    query = select(User).where(
+        User.full_name.ilike(payload.full_name.strip()),
+        User.phone == payload.phone.strip()
+    )
+    result = await db.execute(query)
+    user = result.scalars().first()
+
+    if not user:
+        # Generic error message to prevent enumeration
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No account found matching this name and phone number."
+        )
+
+    # Mask the email
+    email_parts = user.email.split("@")
+    if len(email_parts) == 2:
+        username, domain = email_parts
+        if len(username) > 2:
+            masked_username = username[0] + "*" * (len(username) - 2) + username[-1]
+        elif len(username) == 2:
+            masked_username = username[0] + "*"
+        else:
+            masked_username = username
+        masked_email = f"{masked_username}@{domain}"
+    else:
+        masked_email = user.email
+
+    audit_logger.info(f"FORGOT_EMAIL_SUCCESS masked_email={masked_email} ip={request.client.host}")
+
+    return {"message": "Account found", "masked_email": masked_email}
 
 
 @router.post("/forgot-password")

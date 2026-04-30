@@ -106,6 +106,11 @@ class ForgotPasswordRequest(BaseModel):
     email: EmailStr
 
 
+class ForgotEmailRequest(BaseModel):
+    full_name: str
+    phone: str
+
+
 class GoogleAuthRequest(BaseModel):
     credential: str  # Google ID token from frontend
     role: Optional[str] = Field(

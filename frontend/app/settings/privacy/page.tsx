@@ -54,7 +54,7 @@ export default function PrivacySettingsPage() {
                     {/* General Privacy Information */}
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                         <div className="flex items-center gap-3 mb-4">
-                            <span className="text-2xl">🛡️</span>
+                            <span className="text-2xl">️</span>
                             <h2 className="text-lg font-bold text-gray-900">Data & Privacy</h2>
                         </div>
                         <p className="text-gray-600 mb-4 leading-relaxed">
@@ -63,15 +63,15 @@ export default function PrivacySettingsPage() {
                         </p>
                         <ul className="space-y-3 text-sm text-gray-600">
                             <li className="flex items-start gap-2">
-                                <span className="text-green-500 mt-0.5">✓</span>
+                                <span className="text-green-500 mt-0.5"></span>
                                 <div><strong>Right to Access:</strong> You can request a copy of your data at any time.</div>
                             </li>
                             <li className="flex items-start gap-2">
-                                <span className="text-green-500 mt-0.5">✓</span>
+                                <span className="text-green-500 mt-0.5"></span>
                                 <div><strong>Right to Portability:</strong> We provide your data in a machine-readable format.</div>
                             </li>
                             <li className="flex items-start gap-2">
-                                <span className="text-green-500 mt-0.5">✓</span>
+                                <span className="text-green-500 mt-0.5"></span>
                                 <div><strong>Right to be Forgotten:</strong> You can permanently delete your account and anonymize your data.</div>
                             </li>
                         </ul>
@@ -80,7 +80,7 @@ export default function PrivacySettingsPage() {
                     {/* Danger Zone */}
                     <div className="bg-red-50 rounded-2xl border border-red-100 p-6 mt-8">
                         <div className="flex items-center gap-3 mb-4">
-                            <span className="text-2xl">⚠️</span>
+                            <span className="text-2xl">️</span>
                             <h2 className="text-lg font-bold text-red-700">Danger Zone</h2>
                         </div>
                         <p className="text-red-600/80 mb-6 text-sm">
@@ -99,7 +99,7 @@ export default function PrivacySettingsPage() {
                 {/* Delete Confirmation Modal */}
                 {showDeleteModal && (
                     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-                        <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-200">
+                        <div className="bg-white rounded-2xl max-w-md w-full shadow-sm p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-200">
                             <h3 className="text-xl font-bold text-gray-900 mb-2">Delete Account?</h3>
                             <p className="text-gray-600 mb-6 text-sm">
                                 This action cannot be undone. All your personal data will be anonymized per GDPR Article 17.
@@ -131,7 +131,7 @@ export default function PrivacySettingsPage() {
                                     disabled={deleteConfirmation !== 'DELETE' || isDeleting}
                                     className={`flex-1 px-4 py-3 font-medium text-white rounded-xl transition-colors flex items-center justify-center gap-2
                                         ${deleteConfirmation === 'DELETE' && !isDeleting
-                                            ? 'bg-red-600 hover:bg-red-700 shadow-md shadow-red-600/20'
+                                            ? 'bg-red-600 hover:bg-red-700 shadow-md '
                                             : 'bg-red-300 cursor-not-allowed'
                                         }`}
                                 >

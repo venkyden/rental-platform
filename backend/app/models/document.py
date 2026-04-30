@@ -16,10 +16,37 @@ from app.core.database import Base
 
 
 class DocumentType(str, enum.Enum):
-    IDENTITY = "identity"
+    # Identity
+    PASSPORT = "passport"
+    ID_CARD = "id_card"
+    DRIVERS_LICENSE = "drivers_license"
+    RESIDENCE_PERMIT = "residence_permit"
+    
+    # Professional
+    CONTRACT = "contract"
+    EMPLOYER_CERTIFICATE = "employer_certificate"
+    STUDENT_ID = "student_id"
+    INTERNSHIP_CONTRACT = "internship_contract"
+    KBIS = "kbis"
+    
+    # Resources
     PAYSLIP = "payslip"
     TAX_RETURN = "tax_return"
-    EMPLOYMENT_CONTRACT = "employment_contract"
+    FOREIGN_TAX_RETURN = "foreign_tax_return"
+    SCHOLARSHIP = "scholarship"
+    CAF = "caf"
+    ACCOUNTING = "accounting"
+    BENEFITS = "benefits"
+    PENSION = "pension"
+    BANK_FUNDS_CERTIFICATE = "bank_funds_certificate"
+    VISALE_CERTIFICATE = "visale_certificate"
+    GARANTME_CERTIFICATE = "garantme_certificate"
+    
+    # Property
+    PROPERTY_DEED = "property_deed"
+    PROPERTY_TAX_NOTICE = "property_tax_notice"
+    
+    # Other
     GUARANTOR_FORM = "guarantor_form"
     RENT_RECEIPT = "rent_receipt"
     OTHER = "other"

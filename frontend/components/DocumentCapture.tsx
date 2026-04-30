@@ -15,10 +15,10 @@ const DOCUMENT_CONFIG = {
                 title: "Capture Passport Bio Page",
                 description: "Place your passport's bio page (with photo) within the frame",
                 tips: [
-                    "✓ Ensure all text is clearly readable",
-                    "✓ Position passport horizontally",
-                    "✓ Avoid glare and shadows",
-                    "✗ Don't cover any part with your fingers"
+                    " Ensure all text is clearly readable",
+                    " Position passport horizontally",
+                    " Avoid glare and shadows",
+                    " Don't cover any part with your fingers"
                 ],
                 frameType: 'landscape' as const
             }
@@ -31,10 +31,10 @@ const DOCUMENT_CONFIG = {
                 title: "Capture Front of ID Card",
                 description: "Place the front of your ID card within the frame",
                 tips: [
-                    "✓ Ensure photo and all text are visible",
-                    "✓ Position card horizontally",
-                    "✓ Avoid reflections from overhead lights",
-                    "✗ Don't tilt the card"
+                    " Ensure photo and all text are visible",
+                    " Position card horizontally",
+                    " Avoid reflections from overhead lights",
+                    " Don't tilt the card"
                 ],
                 frameType: 'landscape' as const
             },
@@ -42,10 +42,10 @@ const DOCUMENT_CONFIG = {
                 title: "Capture Back of ID Card",
                 description: "Now flip your ID and capture the back side",
                 tips: [
-                    "✓ Ensure all information is readable",
-                    "✓ Keep card in same orientation",
-                    "✓ Good lighting is essential",
-                    "✗ Don't rush - take your time"
+                    " Ensure all information is readable",
+                    " Keep card in same orientation",
+                    " Good lighting is essential",
+                    " Don't rush - take your time"
                 ],
                 frameType: 'landscape' as const
             }
@@ -58,10 +58,10 @@ const DOCUMENT_CONFIG = {
                 title: "Capture Front of Driver's License",
                 description: "Place the front of your driver's license within the frame",
                 tips: [
-                    "✓ Ensure photo is clearly visible",
-                    "✓ All text must be readable",
-                    "✓ Avoid glare from plastic coating",
-                    "✗ Don't cover barcode area"
+                    " Ensure photo is clearly visible",
+                    " All text must be readable",
+                    " Avoid glare from plastic coating",
+                    " Don't cover barcode area"
                 ],
                 frameType: 'landscape' as const
             },
@@ -69,10 +69,10 @@ const DOCUMENT_CONFIG = {
                 title: "Capture Back of Driver's License",
                 description: "Now capture the back of your driver's license",
                 tips: [
-                    "✓ Barcode must be visible",
-                    "✓ Keep card flat and steady",
-                    "✓ Ensure good focus",
-                    "✗ Don't capture in dim lighting"
+                    " Barcode must be visible",
+                    " Keep card flat and steady",
+                    " Ensure good focus",
+                    " Don't capture in dim lighting"
                 ],
                 frameType: 'landscape' as const
             }
@@ -290,7 +290,7 @@ export default function DocumentCapture({ documentType, onComplete, onCancel }: 
                         {/* Fallback file upload when camera stream fails */}
                         <div className="mt-3">
                             <label className="inline-flex items-center gap-2 cursor-pointer text-sm font-medium text-blue-600 hover:text-blue-700">
-                                📁 Upload from gallery instead
+                                 Upload from gallery instead
                                 <input
                                     type="file"
                                     accept="image/jpeg,image/png,image/jpg"
@@ -307,7 +307,7 @@ export default function DocumentCapture({ documentType, onComplete, onCancel }: 
                     <div className="p-6">
                         <div className="text-center mb-6">
                             <div className="text-6xl mb-3">
-                                {documentType === 'passport' ? '📘' : '🪪'}
+                                {documentType === 'passport' ? '' : ''}
                             </div>
                             <h4 className="text-2xl font-bold text-gray-900 mb-2">
                                 {currentInstruction.title}
@@ -319,11 +319,11 @@ export default function DocumentCapture({ documentType, onComplete, onCancel }: 
 
                         {/* Tips */}
                         <div className="bg-blue-50 rounded-lg p-4 mb-6">
-                            <h5 className="font-semibold text-gray-900 mb-3">💡 Guidelines:</h5>
+                            <h5 className="font-semibold text-gray-900 mb-3"> Guidelines:</h5>
                             <ul className="space-y-2">
                                 {currentInstruction.tips.map((tip, index) => (
                                     <li key={index} className="text-sm text-gray-700 flex items-start gap-2">
-                                        <span className="text-lg leading-none">{tip.startsWith('✓') ? '✓' : '✗'}</span>
+                                        <span className="text-lg leading-none">{tip.startsWith('') ? '' : ''}</span>
                                         <span>{tip.substring(2)}</span>
                                     </li>
                                 ))}
@@ -334,18 +334,18 @@ export default function DocumentCapture({ documentType, onComplete, onCancel }: 
                             /* Mobile: native camera capture */
                             <button
                                 onClick={handleMobileCapture}
-                                className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg hover:shadow-lg transform hover:scale-105 transition-all flex items-center justify-center gap-2"
+                                className="w-full py-4 bg-blue-600 text-white font-semibold rounded-lg hover:shadow-sm transform hover:scale-105 transition-all flex items-center justify-center gap-2"
                             >
-                                <span className="text-2xl">📷</span>
+                                <span className="text-2xl"></span>
                                 Take Photo
                             </button>
                         ) : (
                             /* Desktop: getUserMedia stream */
                             <button
                                 onClick={startCamera}
-                                className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg hover:shadow-lg transform hover:scale-105 transition-all flex items-center justify-center gap-2"
+                                className="w-full py-4 bg-blue-600 text-white font-semibold rounded-lg hover:shadow-sm transform hover:scale-105 transition-all flex items-center justify-center gap-2"
                             >
-                                <span className="text-2xl">📷</span>
+                                <span className="text-2xl"></span>
                                 Open Camera
                             </button>
                         )}
@@ -353,7 +353,7 @@ export default function DocumentCapture({ documentType, onComplete, onCancel }: 
                         {/* Fallback upload for all devices */}
                         <div className="mt-3 text-center">
                             <label className="inline-flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-500 hover:text-gray-700">
-                                📁 Or upload from gallery
+                                 Or upload from gallery
                                 <input
                                     type="file"
                                     accept="image/jpeg,image/png,image/jpg"
@@ -406,9 +406,9 @@ export default function DocumentCapture({ documentType, onComplete, onCancel }: 
                             </button>
                             <button
                                 onClick={capturePhoto}
-                                className="flex-1 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg hover:shadow-lg transform hover:scale-105 transition-all flex items-center justify-center gap-2"
+                                className="flex-1 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:shadow-sm transform hover:scale-105 transition-all flex items-center justify-center gap-2"
                             >
-                                <span className="text-xl">📸</span>
+                                <span className="text-xl"></span>
                                 Capture
                             </button>
                         </div>
@@ -419,7 +419,7 @@ export default function DocumentCapture({ documentType, onComplete, onCancel }: 
                 {capturedFiles.length > 0 && !capturing && !showGuidelines && (
                     <div className="p-6">
                         <div className="text-center">
-                            <div className="text-6xl mb-4">✅</div>
+                            <div className="text-6xl mb-4"></div>
                             <p className="text-lg text-gray-700 mb-4">
                                 {capturedFiles.length} of {totalSteps} photo(s) captured
                             </p>

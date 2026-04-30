@@ -29,7 +29,7 @@ export default function HomePage() {
             </Link>
             <Link
               href="/auth/register"
-              className="px-5 py-2.5 text-sm font-semibold text-white rounded-xl shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5"
+              className="px-5 py-2.5 text-sm font-semibold text-white rounded-xl shadow-md hover:shadow-sm transition-all hover:-translate-y-0.5"
               style={{ background: 'linear-gradient(135deg, #3DD6D0, #22B8B8)' }}
             >
               Get Started
@@ -45,11 +45,6 @@ export default function HomePage() {
         <div className="absolute top-60 -left-32 w-72 h-72 rounded-full opacity-15" style={{ background: 'radial-gradient(circle, #22B8B8, transparent 70%)' }} />
 
         <div className="max-w-7xl mx-auto px-6 pt-24 pb-20 text-center relative">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-50 border border-teal-200 text-teal-700 text-sm font-medium mb-8">
-            <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
-            The #1 rental platform for expats in France
-          </div>
-
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.08] mb-6">
             Find your{' '}
             <span className="bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(135deg, #3DD6D0, #22B8B8)' }}>
@@ -66,7 +61,7 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
             <Link
               href="/auth/register"
-              className="group px-8 py-4 text-base font-semibold text-white rounded-2xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 flex items-center gap-2"
+              className="group px-8 py-4 text-base font-semibold text-white rounded-2xl shadow-sm hover:shadow-sm transition-all hover:-translate-y-0.5 flex items-center gap-2"
               style={{ background: 'linear-gradient(135deg, #3DD6D0, #1CA8A8)' }}
             >
               Get Started for Free
@@ -144,7 +139,7 @@ export default function HomePage() {
               }
             ].map((item) => (
               <div key={item.step} className="relative group">
-                <div className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                <div className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-sm hover:-translate-y-1 transition-all duration-300">
                   <div className="text-xs font-bold tracking-widest text-gray-300 mb-4">{item.step}</div>
                   <div className="w-14 h-14 rounded-xl flex items-center justify-center mb-5 text-white" style={{ background: 'linear-gradient(135deg, #3DD6D0, #22B8B8)' }}>
                     {item.icon}
@@ -168,14 +163,14 @@ export default function HomePage() {
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { emoji: '🔐', title: 'Identity Verification', desc: 'Stripe Identity + OCR to verify IDs and supporting documents in real time.' },
-              { emoji: '🤖', title: 'Trust Score', desc: 'A transparent score based on verifications, history, and platform behavior.' },
-              { emoji: '📄', title: 'Compliant Leases', desc: 'Auto-generated contracts that comply with French ELAN and ALUR laws.' },
-              { emoji: '🛡️', title: 'GLI & Visale', desc: 'Built-in rental guarantee integrations to protect both landlords and tenants.' },
-              { emoji: '💬', title: 'Built-in Messaging', desc: 'Communicate directly with candidates and landlords without leaving the platform.' },
-              { emoji: '📊', title: 'DPE & Charges', desc: 'Compliant energy performance display and transparent fee breakdowns (CC/HC).' },
+              { emoji: '', title: 'Identity Verification', desc: 'Stripe Identity + OCR to verify IDs and supporting documents in real time.' },
+              { emoji: '', title: 'Trust Score', desc: 'A transparent score based on verifications, history, and platform behavior.' },
+              { emoji: '', title: 'Compliant Leases', desc: 'Auto-generated contracts that comply with French ELAN and ALUR laws.' },
+              { emoji: '️', title: 'GLI & Visale', desc: 'Built-in rental guarantee integrations to protect both landlords and tenants.' },
+              { emoji: '', title: 'Built-in Messaging', desc: 'Communicate directly with candidates and landlords without leaving the platform.' },
+              { emoji: '', title: 'DPE & Charges', desc: 'Compliant energy performance display and transparent fee breakdowns (CC/HC).' },
             ].map((feature) => (
-              <div key={feature.title} className="flex gap-4 p-6 rounded-2xl border border-gray-100 bg-gray-50/50 hover:bg-white hover:shadow-lg hover:border-gray-200 transition-all duration-300">
+              <div key={feature.title} className="flex gap-4 p-6 rounded-2xl border border-gray-100 bg-gray-50/50 hover:bg-white hover:shadow-sm hover:border-gray-200 transition-all duration-300">
                 <span className="text-3xl flex-shrink-0">{feature.emoji}</span>
                 <div>
                   <h3 className="font-bold text-gray-900 mb-1">{feature.title}</h3>
@@ -195,14 +190,14 @@ export default function HomePage() {
             <div className="relative rounded-3xl p-10 text-white overflow-hidden" style={{ background: 'linear-gradient(135deg, #3DD6D0, #1CA8A8)' }}>
               <div className="absolute top-0 right-0 w-40 h-40 rounded-full bg-white/10 -translate-y-1/2 translate-x-1/2" />
               <div className="relative">
-                <div className="text-4xl mb-4">🎓</div>
+                <div className="text-4xl mb-4"></div>
                 <h3 className="text-2xl font-bold mb-3">Looking for a home?</h3>
                 <p className="text-white/80 mb-6 leading-relaxed">
                   Build your digital dossier, get your trust score, and apply to listings in one click.
                 </p>
                 <Link
                   href="/auth/register?role=tenant"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-white text-gray-900 font-semibold rounded-xl hover:shadow-lg transition-all"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-white text-gray-900 font-semibold rounded-xl hover:shadow-sm transition-all"
                 >
                   I&apos;m a tenant →
                 </Link>
@@ -213,14 +208,14 @@ export default function HomePage() {
             <div className="relative rounded-3xl p-10 bg-gray-900 text-white overflow-hidden">
               <div className="absolute bottom-0 left-0 w-40 h-40 rounded-full bg-white/5 translate-y-1/2 -translate-x-1/2" />
               <div className="relative">
-                <div className="text-4xl mb-4">🏠</div>
+                <div className="text-4xl mb-4"></div>
                 <h3 className="text-2xl font-bold mb-3">Are you a landlord?</h3>
                 <p className="text-gray-400 mb-6 leading-relaxed">
                   List your properties, receive verified applications, and generate leases in minutes.
                 </p>
                 <Link
                   href="/auth/register?role=landlord"
-                  className="inline-flex items-center gap-2 px-6 py-3 font-semibold rounded-xl hover:shadow-lg transition-all"
+                  className="inline-flex items-center gap-2 px-6 py-3 font-semibold rounded-xl hover:shadow-sm transition-all"
                   style={{ background: 'linear-gradient(135deg, #3DD6D0, #22B8B8)', color: 'white' }}
                 >
                   I&apos;m a landlord →
@@ -252,7 +247,7 @@ export default function HomePage() {
                 </div>
                 <span className="font-bold" style={{ color: '#22B8B8' }}>Roomivo</span>
               </div>
-              <p className="text-sm text-gray-400">Your first step to settling in</p>
+              <p className="text-sm text-gray-400">Rent securely in France</p>
             </div>
             <div>
               <h4 className="font-semibold text-gray-900 mb-3 text-sm">Platform</h4>
@@ -280,7 +275,7 @@ export default function HomePage() {
           </div>
           <div className="border-t border-gray-100 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-400">
             <span>© {new Date().getFullYear()} Roomivo. All rights reserved.</span>
-            <span>Made with ❤️ for expats in France</span>
+            <span>Made with ️ in France</span>
           </div>
         </div>
       </footer>

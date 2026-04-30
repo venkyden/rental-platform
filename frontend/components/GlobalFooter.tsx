@@ -36,7 +36,7 @@ export default function GlobalFooter() {
                         &copy; {currentYear} Roomivo SAS. All rights reserved.
                     </p>
                     <p className="mt-2 md:mt-0">
-                        Made with <span className="text-red-500">♥</span> in France
+                        Made with <span className="text-red-500"></span> in France
                     </p>
                 </div>
             </div>

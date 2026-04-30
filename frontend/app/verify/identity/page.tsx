@@ -7,8 +7,8 @@ export default function IdentityVerifyPage() {
 
     return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-            <div className="max-w-lg w-full bg-white rounded-2xl shadow-xl p-8 border border-gray-200">
-                <div className="text-6xl mb-6 text-center">🛂</div>
+            <div className="max-w-lg w-full bg-white rounded-2xl shadow-sm p-8 border border-gray-200">
+                <div className="text-6xl mb-6 text-center"></div>
                 <h1 className="text-2xl font-bold text-gray-900 mb-2 text-center">Identité & Visa</h1>
 
                 <div className="space-y-4 mb-8">
@@ -16,7 +16,7 @@ export default function IdentityVerifyPage() {
                         <h3 className="font-bold text-blue-900 mb-1">Passeport / CNI</h3>
                         <p className="text-sm text-blue-800">Scan automatique via caméra sécurisée.</p>
                         <button className="mt-3 w-full py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
-                            Scanner le document 📷
+                            Scanner le document 
                         </button>
                     </div>
 

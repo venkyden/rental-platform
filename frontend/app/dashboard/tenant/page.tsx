@@ -52,7 +52,7 @@ export default function TenantDashboard() {
                                 <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 dark:bg-indigo-500/5 rounded-full blur-[60px] -translate-y-1/2 translate-x-1/2"></div>
                                 <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center gap-4">
                                     <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-indigo-100 dark:bg-indigo-900/50 rounded-2xl text-2xl">
-                                        🤝
+                                        
                                     </div>
                                     <div className="flex-grow text-left">
                                         <h3 className="text-lg font-bold text-indigo-900 dark:text-indigo-100">Add a Guarantor</h3>
@@ -77,7 +77,7 @@ export default function TenantDashboard() {
                                 <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 dark:bg-emerald-500/5 rounded-full blur-[60px] -translate-y-1/2 translate-x-1/2"></div>
                                 <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center gap-4">
                                     <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-emerald-100 dark:bg-emerald-900/50 rounded-2xl text-2xl">
-                                        💼
+                                        
                                     </div>
                                     <div className="flex-grow text-left">
                                         <h3 className="text-lg font-bold text-emerald-900 dark:text-emerald-100">Income Proof</h3>
@@ -101,7 +101,7 @@ export default function TenantDashboard() {
                                 <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 dark:bg-purple-500/5 rounded-full blur-[60px] -translate-y-1/2 translate-x-1/2"></div>
                                 <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center gap-4">
                                     <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-purple-100 dark:bg-purple-900/50 rounded-2xl text-2xl">
-                                        🛂
+                                        
                                     </div>
                                     <div className="flex-grow text-left">
                                         <h3 className="text-lg font-bold text-purple-900 dark:text-purple-100">Identity & Visa</h3>
@@ -125,7 +125,7 @@ export default function TenantDashboard() {
                                 <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 dark:bg-amber-500/5 rounded-full blur-[60px] -translate-y-1/2 translate-x-1/2"></div>
                                 <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center gap-4">
                                     <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-amber-100 dark:bg-amber-900/50 rounded-2xl text-2xl">
-                                        ⚠️
+                                        ️
                                     </div>
                                     <div className="flex-grow text-left">
                                         <h3 className="text-lg font-bold text-amber-900 dark:text-amber-100">Complete your profile</h3>
@@ -176,13 +176,13 @@ export default function TenantDashboard() {
             {/* Premium badge for D3 */}
             <FeatureGate feature="relocation">
                 <section className="mb-8">
-                    <div className="bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-600 rounded-3xl p-8 sm:p-10 text-white shadow-lg relative overflow-hidden">
+                    <div className="bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-600 rounded-3xl p-8 sm:p-10 text-white shadow-sm relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-[60px] -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
                         <div className="absolute bottom-0 left-0 w-64 h-64 bg-black/10 rounded-full blur-[60px] translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
                         <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
                             <div>
                                 <div className="flex items-center justify-center sm:justify-start gap-3 mb-2">
-                                    <span className="text-3xl filter drop-shadow-md">✨</span>
+                                    <span className="text-3xl filter drop-shadow-md"></span>
                                     <h2 className="text-2xl font-extrabold tracking-tight">Premium Services</h2>
                                 </div>
                                 <p className="text-purple-100 font-medium">
@@ -191,7 +191,7 @@ export default function TenantDashboard() {
                             </div>
                             <button
                                 onClick={() => router.push('/relocation')}
-                                className="w-full sm:w-auto px-8 py-3.5 bg-white text-purple-700 hover:bg-purple-50 font-bold rounded-xl transition-all shadow-md hover:shadow-lg focus:ring-4 focus:ring-white/30 active:scale-95 whitespace-nowrap"
+                                className="w-full sm:w-auto px-8 py-3.5 bg-white text-purple-700 hover:bg-purple-50 font-bold rounded-xl transition-all shadow-md hover:shadow-sm focus:ring-4 focus:ring-white/30 active:scale-95 whitespace-nowrap"
                             >
                                 Discover
                             </button>
@@ -204,7 +204,7 @@ export default function TenantDashboard() {
             <section className="mb-8">
                 <h2 className="text-xl font-bold text-zinc-900 dark:text-white mb-4 pl-2 tracking-tight">Recent Searches</h2>
                 <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl shadow-sm border border-white/50 dark:border-white/10 p-8 text-center py-12 flex flex-col items-center justify-center">
-                    <div className="text-4xl mb-3 opacity-50">🔍</div>
+                    <div className="text-4xl mb-3 opacity-50"></div>
                     <p className="text-base font-medium text-zinc-500 dark:text-zinc-400 mb-4">You haven't made any searches yet.</p>
                     <button
                         onClick={() => router.push('/search')}

@@ -38,9 +38,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                 >
                     <p>Your first step to settling in.</p>
                     <div className="flex items-center justify-center gap-4 mt-2">
-                        <span className="flex items-center gap-1"><span className="text-teal-500">✓</span> Verified</span>
-                        <span className="flex items-center gap-1"><span className="text-teal-500">✓</span> Secure</span>
-                        <span className="flex items-center gap-1"><span className="text-teal-500">✓</span> Compliant</span>
+                        <span className="flex items-center gap-1"><span className="text-teal-500"></span> Verified</span>
+                        <span className="flex items-center gap-1"><span className="text-teal-500"></span> Secure</span>
+                        <span className="flex items-center gap-1"><span className="text-teal-500"></span> Compliant</span>
                     </div>
                 </motion.div>
             </div>

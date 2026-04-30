@@ -71,20 +71,20 @@ export default function GLIQuoteWidget({ monthlyRent, propertyId }: GLIQuoteWidg
         return (
             <button
                 onClick={() => setShowForm(true)}
-                className="w-full py-3 px-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 font-medium flex items-center justify-center gap-2 shadow-md"
+                className="w-full py-3 px-4 bg-zinc-900 dark:bg-white text-white rounded-lg hover:from-green-600 hover:to-emerald-700 font-medium flex items-center justify-center gap-2 shadow-md"
             >
-                🛡️ Get GLI Quote
+                ️ Get GLI Quote
             </button>
         );
     }
 
     return (
-        <div className="bg-white rounded-xl shadow-lg border overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
             {/* Header */}
-            <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white p-4">
+            <div className="bg-zinc-900 dark:bg-white text-white p-4">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <span className="text-2xl">🛡️</span>
+                        <span className="text-2xl">️</span>
                         <div>
                             <h3 className="font-bold">Rent Guarantee Insurance</h3>
                             <p className="text-sm text-green-100">Protection against unpaid rent</p>
@@ -94,7 +94,7 @@ export default function GLIQuoteWidget({ monthlyRent, propertyId }: GLIQuoteWidg
                         onClick={() => setShowForm(false)}
                         className="text-white/70 hover:text-white"
                     >
-                        ✕
+                        
                     </button>
                 </div>
             </div>
@@ -123,7 +123,7 @@ export default function GLIQuoteWidget({ monthlyRent, propertyId }: GLIQuoteWidg
                     </div>
                     <p className="text-xs text-gray-500 mt-1">
                         Ratio: {(tenantIncome / monthlyRent).toFixed(1)}x the rent
-                        {tenantIncome / monthlyRent >= 3 ? ' ✅' : ' ⚠️ (minimum 3x)'}
+                        {tenantIncome / monthlyRent >= 3 ? ' ' : ' ️ (minimum 3x)'}
                     </p>
                 </div>
 
@@ -189,7 +189,7 @@ export default function GLIQuoteWidget({ monthlyRent, propertyId }: GLIQuoteWidg
                         {quote.eligible ? (
                             <>
                                 <div className="flex items-center gap-2 mb-3">
-                                    <span className="text-xl">✅</span>
+                                    <span className="text-xl"></span>
                                     <span className="font-bold text-green-800">Eligible for GLI</span>
                                 </div>
 
@@ -209,9 +209,9 @@ export default function GLIQuoteWidget({ monthlyRent, propertyId }: GLIQuoteWidg
                                 </div>
 
                                 <div className="text-sm text-gray-600 mb-3">
-                                    <div>📊 Rate: {quote.premium_rate}% of rent</div>
-                                    <div>🛡️ Coverage: {quote.coverage_amount?.toLocaleString('fr-FR')} € ({quote.coverage_months} months)</div>
-                                    <div>📅 Quote valid until: {quote.quote_valid_until}</div>
+                                    <div> Rate: {quote.premium_rate}% of rent</div>
+                                    <div>️ Coverage: {quote.coverage_amount?.toLocaleString('fr-FR')} € ({quote.coverage_months} months)</div>
+                                    <div> Quote valid until: {quote.quote_valid_until}</div>
                                 </div>
 
                                 <button
@@ -224,7 +224,7 @@ export default function GLIQuoteWidget({ monthlyRent, propertyId }: GLIQuoteWidg
                             </>
                         ) : (
                             <div className="flex items-start gap-2">
-                                <span className="text-xl">⚠️</span>
+                                <span className="text-xl">️</span>
                                 <div>
                                     <div className="font-bold text-yellow-800">Not Eligible</div>
                                     <p className="text-sm text-yellow-700 mt-1">{quote.eligibility_reason}</p>

@@ -15,7 +15,7 @@ export default function AnalyticsPage() {
 
             <div className="z-10 max-w-2xl w-full bg-white/80 backdrop-blur-xl rounded-3xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] border border-white/50 p-8">
                 <div className="flex items-center gap-4 mb-8">
-                    <span className="text-4xl">📊</span>
+                    <span className="text-4xl"></span>
                     <div>
                         <h1 className="text-2xl font-bold text-zinc-900">Portfolio Performance</h1>
                         <p className="text-zinc-500">Real-time statistics for investors</p>

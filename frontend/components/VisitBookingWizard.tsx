@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, CheckCircle, Video, ChevronRight } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import toast from 'react-hot-toast';
+import { useLanguage } from '@/lib/LanguageContext';
 
 interface VisitSlot {
     id: string;
@@ -31,6 +32,7 @@ interface VisitBookingProps {
 }
 
 export default function VisitBookingWizard({ propertyId, rooms = [], onBookingSuccess }: VisitBookingProps) {
+    const { t } = useLanguage();
     const [slots, setSlots] = useState<VisitSlot[]>([]);
     const [selectedRoom, setSelectedRoom] = useState<number | null>(null);
     const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
@@ -57,10 +59,10 @@ export default function VisitBookingWizard({ propertyId, rooms = [], onBookingSu
         try {
             const res = await apiClient.client.post(`/visits/book/${selectedSlot}`);
             setSuccessLink(res.data.meeting_link);
-            toast.success("Visit booked successfully!");
+            toast.success(t('visitBooking.success.booked', 'Visit booked successfully!'));
             if (onBookingSuccess) onBookingSuccess();
         } catch (error) {
-            toast.error("Booking failed. Slot might be taken.");
+            toast.error(t('visitBooking.error.bookingFailed', 'Booking failed. Slot might be taken.'));
             loadSlots();
         } finally {
             setBooking(false);
@@ -74,19 +76,19 @@ export default function VisitBookingWizard({ propertyId, rooms = [], onBookingSu
                 <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
                     <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
-                <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-2">Visit Confirmed!</h3>
-                <p className="text-zinc-600 dark:text-zinc-400 mb-6">Your virtual tour is scheduled. You will receive an email confirmation.</p>
+                <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-2">{t('visitBooking.confirmed.title', 'Visit Confirmed!')}</h3>
+                <p className="text-zinc-600 dark:text-zinc-400 mb-6">{t('visitBooking.confirmed.desc', 'Your virtual tour is scheduled. You will receive an email confirmation.')}</p>
 
                 <a
                     href={successLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 bg-gradient-to-r from-teal-600 to-emerald-600 text-white px-6 py-3 rounded-xl font-bold hover:shadow-lg hover:shadow-teal-500/25 transition-all"
+                    className="inline-flex items-center gap-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-white px-6 py-3 rounded-xl font-bold hover:shadow-sm hover: transition-all"
                 >
                     <Video className="w-5 h-5" />
-                    Join Video Call
+                    {t('visitBooking.confirmed.joinButton', 'Join Video Call')}
                 </a>
-                <p className="text-xs text-zinc-400 mt-4">Secure link via Jitsi Meet</p>
+                <p className="text-xs text-zinc-400 mt-4">{t('visitBooking.confirmed.secureLink', 'Secure link via Jitsi Meet')}</p>
             </div>
         );
     }
@@ -103,7 +105,7 @@ export default function VisitBookingWizard({ propertyId, rooms = [], onBookingSu
         <div className="space-y-4">
             <h3 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-teal-600" />
-                Schedule a Visit
+                {t('visitBooking.title', 'Schedule a Visit')}
             </h3>
 
             {/* Step 1: Room Selection (if rooms exist) */}
@@ -125,7 +127,7 @@ export default function VisitBookingWizard({ propertyId, rooms = [], onBookingSu
                                     <div>
                                         <span className="font-medium text-zinc-900 dark:text-white text-sm">{room.label}</span>
                                         <span className="ml-2 text-xs text-zinc-500 dark:text-zinc-400">
-                                            {roomSlotCount} slot{roomSlotCount !== 1 ? 's' : ''} available
+                                            {roomSlotCount} {t('visitBooking.slotsAvailable', `slot${roomSlotCount !== 1 ? 's' : ''} available`)}
                                         </span>
                                     </div>
                                     <ChevronRight className="w-4 h-4 text-zinc-400 group-hover:text-teal-500 transition-colors" />
@@ -149,7 +151,7 @@ export default function VisitBookingWizard({ propertyId, rooms = [], onBookingSu
                                 }}
                                 className="text-xs text-teal-600 dark:text-teal-400 hover:underline font-medium"
                             >
-                                ← Back to rooms
+                                ← {t('visitBooking.backToRooms', 'Back to rooms')}
                             </button>
                             <span className="text-xs text-zinc-400">|</span>
                             <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
@@ -161,7 +163,7 @@ export default function VisitBookingWizard({ propertyId, rooms = [], onBookingSu
                     {filteredSlots.length === 0 ? (
                         <div className="text-center py-8 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl">
                             <Calendar className="w-8 h-8 text-zinc-400 mx-auto mb-2" />
-                            <p className="text-sm text-zinc-500 dark:text-zinc-400">No availability listed yet.</p>
+                            <p className="text-sm text-zinc-500 dark:text-zinc-400">{t('visitBooking.noSlots', 'No availability listed yet.')}</p>
                         </div>
                     ) : (
                         <div className="space-y-4">
@@ -181,7 +183,7 @@ export default function VisitBookingWizard({ propertyId, rooms = [], onBookingSu
                                                         className={`
                                                             text-sm py-2 px-3 rounded-xl border text-center transition-all
                                                             ${selectedSlot === slot.id
-                                                                ? 'bg-teal-600 text-white border-teal-600 shadow-lg shadow-teal-500/25'
+                                                                ? 'bg-teal-600 text-white border-teal-600 shadow-sm '
                                                                 : 'hover:border-teal-300 dark:hover:border-teal-700 hover:bg-teal-50 dark:hover:bg-teal-900/10 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700'}
                                                         `}
                                                     >
@@ -198,15 +200,15 @@ export default function VisitBookingWizard({ propertyId, rooms = [], onBookingSu
                                 onClick={confirmBooking}
                                 disabled={!selectedSlot || booking}
                                 className={`w-full py-3 rounded-xl font-bold transition-all ${selectedSlot && !booking
-                                        ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white hover:shadow-lg hover:shadow-teal-500/25'
+                                        ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-white hover:shadow-sm hover:'
                                         : 'bg-zinc-200 dark:bg-zinc-700 text-zinc-400 cursor-not-allowed'
                                     }`}
                             >
-                                {booking ? 'Booking...' : 'Confirm Visit'}
+                                {booking ? t('visitBooking.bookingInProgress', 'Booking...') : t('visitBooking.confirmButton', 'Confirm Visit')}
                             </button>
 
                             <p className="text-xs text-center text-zinc-500 dark:text-zinc-400">
-                                {selectedSlot ? 'Reserve this slot instantly.' : 'Select a time slot.'}
+                                {selectedSlot ? t('visitBooking.reserveInstantly', 'Reserve this slot instantly.') : t('visitBooking.selectTimeSlot', 'Select a time slot.')}
                             </p>
                         </div>
                     )}

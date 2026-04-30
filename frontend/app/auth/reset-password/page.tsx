@@ -80,11 +80,11 @@ function ResetPasswordContent() {
 
     if (success) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
+            <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950 py-12 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-md w-full">
-                    <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
+                    <div className="bg-white rounded-2xl shadow-sm p-8 text-center">
                         <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <span className="text-3xl">✅</span>
+                            <span className="text-3xl"></span>
                         </div>
                         <h2 className="text-2xl font-bold text-gray-900 mb-2">
                             Password Reset Successful!
@@ -94,7 +94,7 @@ function ResetPasswordContent() {
                         </p>
                         <Link
                             href="/auth/login"
-                            className="inline-block px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-lg hover:shadow-lg transition-all"
+                            className="inline-block px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:shadow-sm transition-all"
                         >
                             Sign in now
                         </Link>
@@ -105,12 +105,12 @@ function ResetPasswordContent() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950 py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-md w-full">
-                <div className="bg-white rounded-2xl shadow-xl p-8">
+                <div className="bg-white rounded-2xl shadow-sm p-8">
                     <div className="text-center mb-8">
                         <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <span className="text-3xl">🔐</span>
+                            <span className="text-3xl"></span>
                         </div>
                         <h2 className="text-2xl font-bold text-gray-900">
                             Set new password
@@ -176,7 +176,7 @@ function ResetPasswordContent() {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-lg hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                className="w-full py-3 px-4 bg-blue-600 text-white font-medium rounded-lg hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                             >
                                 {loading ? (
                                     <span className="flex items-center justify-center gap-2">
@@ -209,7 +209,7 @@ function ResetPasswordContent() {
 
 function LoadingFallback() {
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950">
             <div className="text-center">
                 <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
                 <p className="mt-4 text-gray-600">Loading...</p>

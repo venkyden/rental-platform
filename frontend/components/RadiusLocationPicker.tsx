@@ -93,7 +93,7 @@ export default function RadiusLocationPicker({ initialLat, initialLng, radiusMet
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-[1000] flex flex-col items-center pb-8">
                 {/* Pin Head */}
                 <div className="relative">
-                    <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center shadow-2xl">
+                    <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center shadow-sm">
                         <div className="w-4 h-4 bg-white rounded-sm"></div>
                     </div>
                     {/* Triangle pointer */}
@@ -102,7 +102,7 @@ export default function RadiusLocationPicker({ initialLat, initialLng, radiusMet
             </div>
 
             {/* Instruction Overlay */}
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white/90 backdrop-blur-md px-4 py-2 rounded-full shadow-lg border border-[var(--gray-200)] pointer-events-none z-[1000]">
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white/90 backdrop-blur-md px-4 py-2 rounded-full shadow-sm border border-[var(--gray-200)] pointer-events-none z-[1000]">
                 <p className="text-xs font-semibold text-[var(--foreground)] text-center whitespace-nowrap">
                     Search Area ({radiusMeters >= 1000 ? `${+(radiusMeters / 1000).toFixed(1)}km` : `${radiusMeters}m`})
                 </p>

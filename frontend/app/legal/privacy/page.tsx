@@ -48,11 +48,13 @@ export default function PrivacyPage() {
 
             <section className="mb-12">
                 <h2 className="text-2xl font-bold tracking-tight text-zinc-900 mb-4">4. Data Retention & Security</h2>
-                <p>
-                    Documents uploaded for verification are processed securely. Once your Trust Score is generated and verified,
-                    we aggressively minimize the retention of sensitive files (like payslips and tax returns) to reduce risk,
-                    relying instead on the verified cryptographic proofs.
+                <p className="mb-4">
+                    We strictly adhere to the retention limits set forth by the French Data Protection Authority (CNIL):
                 </p>
+                <ul className="list-disc pl-6 space-y-2 mt-4 text-zinc-700">
+                    <li><strong className="text-zinc-900">If your application is rejected:</strong> Your sensitive documents are securely deleted within 3 months of the property being rented, unless you explicitly consent to remain in a talent pool.</li>
+                    <li><strong className="text-zinc-900">If your application is accepted:</strong> Your documents are securely stored for the duration of your lease, plus up to 5 years after the lease ends, to comply with legal dispute requirements.</li>
+                </ul>
             </section>
 
             <div className="mt-16 pt-8 border-t border-zinc-100 text-sm text-zinc-400">

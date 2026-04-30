@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Eye, EyeOff } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { motion, Variants } from 'framer-motion';
 
@@ -43,6 +44,7 @@ const itemVariants: Variants = {
 export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [googleLoading, setGoogleLoading] = useState(false);
@@ -206,12 +208,20 @@ export default function LoginPage() {
 
             <motion.form variants={containerVariants} className="space-y-5" onSubmit={handleSubmit}>
                 <motion.div variants={itemVariants}>
-                    <label
-                        htmlFor="email"
-                        className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-1.5"
-                    >
-                        Email address
-                    </label>
+                    <div className="flex items-center justify-between mb-1.5">
+                        <label
+                            htmlFor="email"
+                            className="block text-sm font-medium text-zinc-800 dark:text-zinc-300"
+                        >
+                            Email address
+                        </label>
+                        <Link
+                            href="/auth/forgot-email"
+                            className="text-sm font-semibold text-teal-600 hover:text-teal-500 transition-colors"
+                        >
+                            Forgot email?
+                        </Link>
+                    </div>
                     <input
                         id="email"
                         name="email"
@@ -240,17 +250,26 @@ export default function LoginPage() {
                             Forgot password?
                         </Link>
                     </div>
-                    <input
-                        id="password"
-                        name="password"
-                        type="password"
-                        autoComplete="current-password"
-                        required
-                        className="block w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-900 dark:text-white placeholder-zinc-500 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
-                        placeholder="••••••••"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                    />
+                    <div className="relative">
+                        <input
+                            id="password"
+                            name="password"
+                            type={showPassword ? 'text' : 'password'}
+                            autoComplete="current-password"
+                            required
+                            className="block w-full px-4 py-3 pr-12 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-900 dark:text-white placeholder-zinc-500 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
+                            placeholder="••••••••"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
+                        >
+                            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        </button>
+                    </div>
                 </motion.div>
 
                 <motion.div variants={itemVariants} className="pt-2">

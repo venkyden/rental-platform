@@ -178,7 +178,7 @@ export default function DashboardPage() {
                             </div>
                             <div className="relative z-10 px-8 py-10 sm:p-12 mix-blend-normal">
                                 <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2">
-                                    Welcome back, <span className="bg-clip-text text-transparent bg-gradient-to-r from-teal-500 to-indigo-500">{user.full_name.split(' ')[0]}</span>
+                                    Welcome back, <span className="text-zinc-900 dark:text-white">{user.full_name.split(' ')[0]}</span>
                                 </h2>
                                 <p className="text-lg text-zinc-500 dark:text-zinc-400 max-w-2xl">
                                     Here's what's happening with your rental journey today.
@@ -198,37 +198,37 @@ export default function DashboardPage() {
                                     </>
                                 ) : stats ? (
                                     <>
-                                        <motion.div variants={itemVariants} className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
+                                        <motion.div variants={itemVariants} className="bg-white rounded-xl shadow-md p-6 hover:shadow-sm transition">
                                             <div className="flex items-center justify-between mb-2">
                                                 <h3 className="text-gray-600 text-sm font-medium">Total Properties</h3>
-                                                <span className="text-2xl">🏢</span>
+                                                <span className="text-2xl"></span>
                                             </div>
                                             <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
                                             <p className="text-xs text-gray-500 mt-1">All your listings</p>
                                         </motion.div>
 
-                                        <motion.div variants={itemVariants} className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
+                                        <motion.div variants={itemVariants} className="bg-white rounded-xl shadow-md p-6 hover:shadow-sm transition">
                                             <div className="flex items-center justify-between mb-2">
                                                 <h3 className="text-gray-600 text-sm font-medium">Active Listings</h3>
-                                                <span className="text-2xl">✅</span>
+                                                <span className="text-2xl"></span>
                                             </div>
                                             <p className="text-3xl font-bold text-green-600">{stats.active}</p>
                                             <p className="text-xs text-gray-500 mt-1">Live on platform</p>
                                         </motion.div>
 
-                                        <motion.div variants={itemVariants} className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
+                                        <motion.div variants={itemVariants} className="bg-white rounded-xl shadow-md p-6 hover:shadow-sm transition">
                                             <div className="flex items-center justify-between mb-2">
                                                 <h3 className="text-gray-600 text-sm font-medium">Draft Properties</h3>
-                                                <span className="text-2xl">📝</span>
+                                                <span className="text-2xl"></span>
                                             </div>
                                             <p className="text-3xl font-bold text-yellow-600">{stats.draft}</p>
                                             <p className="text-xs text-gray-500 mt-1">Pending publication</p>
                                         </motion.div>
 
-                                        <motion.div variants={itemVariants} className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
+                                        <motion.div variants={itemVariants} className="bg-white rounded-xl shadow-md p-6 hover:shadow-sm transition">
                                             <div className="flex items-center justify-between mb-2">
                                                 <h3 className="text-gray-600 text-sm font-medium">Total Views</h3>
-                                                <span className="text-2xl">👁️</span>
+                                                <span className="text-2xl">️</span>
                                             </div>
                                             <p className="text-3xl font-bold text-blue-600">{stats.total_views}</p>
                                             <p className="text-xs text-gray-500 mt-1">All time</p>
@@ -248,7 +248,7 @@ export default function DashboardPage() {
                                         whileTap={{ scale: 0.98 }}
                                         key={idx}
                                         onClick={action.action}
-                                        className="group relative flex flex-col items-start bg-white dark:bg-zinc-900 p-6 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 hover:shadow-lg hover:border-teal-500/30 dark:hover:border-teal-500/50 transition-all text-left overflow-hidden"
+                                        className="group relative flex flex-col items-start bg-white dark:bg-zinc-900 p-6 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 hover:shadow-sm hover:border-teal-500/30 dark:hover:border-teal-500/50 transition-all text-left overflow-hidden"
                                     >
                                         <div className="mb-4 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 group-hover:bg-teal-50 dark:group-hover:bg-teal-900/20 transition-colors">
                                             {action.icon}
@@ -287,7 +287,7 @@ export default function DashboardPage() {
                                                 onClick={() => router.push('/inbox')}
                                                 className={`w-full p-4 text-left hover:bg-gray-50 transition-colors flex items-start gap-3 ${idx !== recentConversations.length - 1 ? 'border-b' : ''}`}
                                             >
-                                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white font-bold flex-shrink-0">
+                                                <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-white font-bold flex-shrink-0">
                                                     {conv.other_party_name?.charAt(0).toUpperCase() || '?'}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
@@ -300,7 +300,7 @@ export default function DashboardPage() {
                                                         </span>
                                                     </div>
                                                     <p className="text-sm text-gray-500 truncate">
-                                                        🏠 {conv.property_title}
+                                                         {conv.property_title}
                                                     </p>
                                                     <p className={`text-sm truncate mt-1 ${conv.unread_count > 0 ? 'text-gray-900 font-medium' : 'text-gray-500'}`}>
                                                         {conv.last_message_preview || conv.subject}
@@ -317,7 +317,7 @@ export default function DashboardPage() {
                                 ) : (
                                     <div className="py-8">
                                         <EmptyState
-                                            icon="📭"
+                                            icon=""
                                             title="No messages yet"
                                             description="Your conversation history with tenants and landlords will appear here."
                                             layout="transparent"

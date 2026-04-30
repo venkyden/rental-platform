@@ -33,7 +33,7 @@ function PreferenceCard({ title, emoji, value, onEdit }: PreferenceCardProps) {
                         <p className="text-gray-600 text-sm truncate max-w-[200px]">{displayValue}</p>
                     </div>
                 </div>
-                <span className="text-gray-400">✏️</span>
+                <span className="text-gray-400">️</span>
             </div>
         </div>
     );
@@ -80,7 +80,7 @@ function EditModal({ isOpen, title, currentValue, options, type, min, max, unit,
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
+            <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-sm">
                 <h3 className="text-xl font-bold mb-4">{title}</h3>
 
                 {type === 'select' && options && (
@@ -248,11 +248,11 @@ export default function SettingsPreferencesPage() {
                 <main className="max-w-3xl mx-auto py-6 px-4">
                     {/* Identity Section */}
                     <section className="mb-8">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-4">👤 Profile</h2>
+                        <h2 className="text-lg font-semibold text-gray-900 mb-4"> Profile</h2>
                         <div className="grid gap-3 md:grid-cols-2">
                             <PreferenceCard
                                 title="Nationality"
-                                emoji="🌍"
+                                emoji=""
                                 value={preferences.nationality || 'Not set'}
                                 onEdit={() => openEdit({
                                     isOpen: true,
@@ -264,7 +264,7 @@ export default function SettingsPreferencesPage() {
                             />
                             <PreferenceCard
                                 title="Languages"
-                                emoji="💬"
+                                emoji=""
                                 value={preferences.languages || []}
                                 onEdit={() => openEdit({
                                     isOpen: true,
@@ -281,7 +281,7 @@ export default function SettingsPreferencesPage() {
                             />
                             <PreferenceCard
                                 title="Gender"
-                                emoji="👤"
+                                emoji=""
                                 value={preferences.gender || 'Not set'}
                                 onEdit={() => openEdit({
                                     isOpen: true,
@@ -289,9 +289,9 @@ export default function SettingsPreferencesPage() {
                                     title: 'Gender',
                                     type: 'select',
                                     options: [
-                                        { value: 'female', label: '👩 Female' },
-                                        { value: 'male', label: '👨 Male' },
-                                        { value: 'other', label: '🧑 Other' },
+                                        { value: 'female', label: ' Female' },
+                                        { value: 'male', label: ' Male' },
+                                        { value: 'other', label: ' Other' },
                                     ]
                                 })}
                             />
@@ -302,11 +302,11 @@ export default function SettingsPreferencesPage() {
                         <>
                             {/* Budget & Housing */}
                             <section className="mb-8">
-                                <h2 className="text-lg font-semibold text-gray-900 mb-4">💰 Budget & Housing</h2>
+                                <h2 className="text-lg font-semibold text-gray-900 mb-4"> Budget & Housing</h2>
                                 <div className="grid gap-3 md:grid-cols-2">
                                     <PreferenceCard
                                         title="Max Budget"
-                                        emoji="💶"
+                                        emoji=""
                                         value={`€${preferences.budget || 0}`}
                                         onEdit={() => openEdit({
                                             isOpen: true,
@@ -320,7 +320,7 @@ export default function SettingsPreferencesPage() {
                                     />
                                     <PreferenceCard
                                         title="Min Surface"
-                                        emoji="📐"
+                                        emoji=""
                                         value={`${preferences.min_surface_area || 0}m²`}
                                         onEdit={() => openEdit({
                                             isOpen: true,
@@ -334,7 +334,7 @@ export default function SettingsPreferencesPage() {
                                     />
                                     <PreferenceCard
                                         title="Furnished"
-                                        emoji="🛋️"
+                                        emoji="️"
                                         value={preferences.furnished_preference || 'No preference'}
                                         onEdit={() => openEdit({
                                             isOpen: true,
@@ -342,9 +342,9 @@ export default function SettingsPreferencesPage() {
                                             title: 'Furnished Preference',
                                             type: 'select',
                                             options: [
-                                                { value: 'furnished', label: '🛋️ Furnished' },
-                                                { value: 'unfurnished', label: '📦 Unfurnished' },
-                                                { value: 'no_preference', label: '🤷 No preference' },
+                                                { value: 'furnished', label: '️ Furnished' },
+                                                { value: 'unfurnished', label: ' Unfurnished' },
+                                                { value: 'no_preference', label: ' No preference' },
                                             ]
                                         })}
                                     />
@@ -353,11 +353,11 @@ export default function SettingsPreferencesPage() {
 
                             {/* Location & Transport */}
                             <section className="mb-8">
-                                <h2 className="text-lg font-semibold text-gray-900 mb-4">📍 Location & Transport</h2>
+                                <h2 className="text-lg font-semibold text-gray-900 mb-4"> Location & Transport</h2>
                                 <div className="grid gap-3 md:grid-cols-2">
                                     <PreferenceCard
                                         title="Near Location"
-                                        emoji="📍"
+                                        emoji=""
                                         value={preferences.proximity_landmark || 'Not set'}
                                         onEdit={() => openEdit({
                                             isOpen: true,
@@ -368,7 +368,7 @@ export default function SettingsPreferencesPage() {
                                     />
                                     <PreferenceCard
                                         title="Transport"
-                                        emoji="🚇"
+                                        emoji=""
                                         value={preferences.transport_needs || []}
                                         onEdit={() => openEdit({
                                             isOpen: true,
@@ -376,16 +376,16 @@ export default function SettingsPreferencesPage() {
                                             title: 'Transport Needs',
                                             type: 'multiselect',
                                             options: [
-                                                { value: 'metro', label: '🚇 Metro' },
-                                                { value: 'bus', label: '🚌 Bus' },
-                                                { value: 'rer', label: '🚉 RER/Train' },
-                                                { value: 'bike', label: '🚲 Bike' },
+                                                { value: 'metro', label: ' Metro' },
+                                                { value: 'bus', label: ' Bus' },
+                                                { value: 'rer', label: ' RER/Train' },
+                                                { value: 'bike', label: ' Bike' },
                                             ]
                                         })}
                                     />
                                     <PreferenceCard
                                         title="Services"
-                                        emoji="🏪"
+                                        emoji=""
                                         value={preferences.service_needs || []}
                                         onEdit={() => openEdit({
                                             isOpen: true,
@@ -393,10 +393,10 @@ export default function SettingsPreferencesPage() {
                                             title: 'Nearby Services',
                                             type: 'multiselect',
                                             options: [
-                                                { value: 'grocery', label: '🛒 Grocery' },
-                                                { value: 'hospital', label: '🏥 Hospital' },
-                                                { value: 'pharmacy', label: '💊 Pharmacy' },
-                                                { value: 'atm', label: '🏧 ATM' },
+                                                { value: 'grocery', label: ' Grocery' },
+                                                { value: 'hospital', label: ' Hospital' },
+                                                { value: 'pharmacy', label: ' Pharmacy' },
+                                                { value: 'atm', label: ' ATM' },
                                             ]
                                         })}
                                     />
@@ -405,11 +405,11 @@ export default function SettingsPreferencesPage() {
 
                             {/* Amenities */}
                             <section className="mb-8">
-                                <h2 className="text-lg font-semibold text-gray-900 mb-4">✨ Amenities</h2>
+                                <h2 className="text-lg font-semibold text-gray-900 mb-4"> Amenities</h2>
                                 <div className="grid gap-3">
                                     <PreferenceCard
                                         title="Must-Have Amenities"
-                                        emoji="✨"
+                                        emoji=""
                                         value={preferences.must_have_amenities || []}
                                         onEdit={() => openEdit({
                                             isOpen: true,
@@ -417,12 +417,12 @@ export default function SettingsPreferencesPage() {
                                             title: 'Must-Have Amenities',
                                             type: 'multiselect',
                                             options: [
-                                                { value: 'fiber', label: '📶 Fiber Internet' },
-                                                { value: 'parking', label: '🚗 Parking' },
-                                                { value: 'balcony', label: '☀️ Balcony' },
-                                                { value: 'elevator', label: '🛗 Elevator' },
-                                                { value: 'laundry', label: '🧺 Laundry' },
-                                                { value: 'dishwasher', label: '🍽️ Dishwasher' },
+                                                { value: 'fiber', label: ' Fiber Internet' },
+                                                { value: 'parking', label: ' Parking' },
+                                                { value: 'balcony', label: '️ Balcony' },
+                                                { value: 'elevator', label: ' Elevator' },
+                                                { value: 'laundry', label: ' Laundry' },
+                                                { value: 'dishwasher', label: '️ Dishwasher' },
                                             ]
                                         })}
                                     />
@@ -433,11 +433,11 @@ export default function SettingsPreferencesPage() {
                         /* Landlord Preferences */
                         <>
                             <section className="mb-8">
-                                <h2 className="text-lg font-semibold text-gray-900 mb-4">👥 Tenant Preferences</h2>
+                                <h2 className="text-lg font-semibold text-gray-900 mb-4"> Tenant Preferences</h2>
                                 <div className="grid gap-3 md:grid-cols-2">
                                     <PreferenceCard
                                         title="Accepted Tenant Types"
-                                        emoji="👥"
+                                        emoji=""
                                         value={preferences.accepted_tenant_types || []}
                                         onEdit={() => openEdit({
                                             isOpen: true,
@@ -445,16 +445,16 @@ export default function SettingsPreferencesPage() {
                                             title: 'Preferred Tenants',
                                             type: 'multiselect',
                                             options: [
-                                                { value: 'student', label: '🎓 Students' },
-                                                { value: 'employee', label: '💼 Employees' },
-                                                { value: 'freelancer', label: '💻 Freelancers' },
-                                                { value: 'family', label: '👨‍👩‍👧 Families' },
+                                                { value: 'student', label: ' Students' },
+                                                { value: 'employee', label: ' Employees' },
+                                                { value: 'freelancer', label: ' Freelancers' },
+                                                { value: 'family', label: '‍‍ Families' },
                                             ]
                                         })}
                                     />
                                     <PreferenceCard
                                         title="Nationality Pref"
-                                        emoji="🌍"
+                                        emoji=""
                                         value={preferences.nationality_preference || 'No preference'}
                                         onEdit={() => openEdit({
                                             isOpen: true,
@@ -462,15 +462,15 @@ export default function SettingsPreferencesPage() {
                                             title: 'Nationality Preference',
                                             type: 'select',
                                             options: [
-                                                { value: 'no_preference', label: '🌐 No preference' },
+                                                { value: 'no_preference', label: ' No preference' },
                                                 { value: 'french', label: '🇫🇷 French preferred' },
-                                                { value: 'international', label: '🌍 International' },
+                                                { value: 'international', label: ' International' },
                                             ]
                                         })}
                                     />
                                     <PreferenceCard
                                         title="Gender Pref"
-                                        emoji="👤"
+                                        emoji=""
                                         value={preferences.gender_preference || 'No preference'}
                                         onEdit={() => openEdit({
                                             isOpen: true,
@@ -478,9 +478,9 @@ export default function SettingsPreferencesPage() {
                                             title: 'Gender Preference',
                                             type: 'select',
                                             options: [
-                                                { value: 'no_preference', label: '🤷 No preference' },
-                                                { value: 'female_only', label: '👩 Female only' },
-                                                { value: 'male_only', label: '👨 Male only' },
+                                                { value: 'no_preference', label: ' No preference' },
+                                                { value: 'female_only', label: ' Female only' },
+                                                { value: 'male_only', label: ' Male only' },
                                             ]
                                         })}
                                     />
@@ -488,11 +488,11 @@ export default function SettingsPreferencesPage() {
                             </section>
 
                             <section className="mb-8">
-                                <h2 className="text-lg font-semibold text-gray-900 mb-4">📋 Requirements</h2>
+                                <h2 className="text-lg font-semibold text-gray-900 mb-4"> Requirements</h2>
                                 <div className="grid gap-3 md:grid-cols-2">
                                     <PreferenceCard
                                         title="Accepted Guarantees"
-                                        emoji="🛡️"
+                                        emoji="️"
                                         value={preferences.accepted_guarantees || []}
                                         onEdit={() => openEdit({
                                             isOpen: true,
@@ -500,16 +500,16 @@ export default function SettingsPreferencesPage() {
                                             title: 'Accepted Guarantees',
                                             type: 'multiselect',
                                             options: [
-                                                { value: 'visale', label: '🏛️ Visale' },
-                                                { value: 'garantme', label: '🔐 GarantMe' },
-                                                { value: 'parents', label: '👨‍👩‍👧 Parents' },
-                                                { value: 'bank', label: '🏦 Bank' },
+                                                { value: 'visale', label: '️ Visale' },
+                                                { value: 'garantme', label: ' GarantMe' },
+                                                { value: 'parents', label: '‍‍ Parents' },
+                                                { value: 'bank', label: ' Bank' },
                                             ]
                                         })}
                                     />
                                     <PreferenceCard
                                         title="House Rules"
-                                        emoji="📋"
+                                        emoji=""
                                         value={preferences.house_rules || []}
                                         onEdit={() => openEdit({
                                             isOpen: true,
@@ -517,9 +517,9 @@ export default function SettingsPreferencesPage() {
                                             title: 'House Rules',
                                             type: 'multiselect',
                                             options: [
-                                                { value: 'no_smoking', label: '🚭 No Smoking' },
-                                                { value: 'no_pets', label: '🐾 No Pets' },
-                                                { value: 'no_parties', label: '🎉 No Parties' },
+                                                { value: 'no_smoking', label: ' No Smoking' },
+                                                { value: 'no_pets', label: ' No Pets' },
+                                                { value: 'no_parties', label: ' No Parties' },
                                             ]
                                         })}
                                     />
@@ -545,7 +545,7 @@ export default function SettingsPreferencesPage() {
 
                 {saving && (
                     <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-                        <div className="bg-white rounded-xl p-6 shadow-2xl">
+                        <div className="bg-white rounded-xl p-6 shadow-sm">
                             <div className="animate-spin rounded-full h-8 w-8 border-b-4 border-blue-600 mx-auto"></div>
                             <p className="mt-2 text-gray-600">Saving...</p>
                         </div>

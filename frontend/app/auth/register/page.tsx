@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Eye, EyeOff, User, Home } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { motion, Variants } from 'framer-motion';
 
@@ -52,6 +53,8 @@ export default function RegisterPage() {
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [passwordStrength, setPasswordStrength] = useState({ valid: false, message: '' });
     const [googleLoading, setGoogleLoading] = useState(false);
     const router = useRouter();
@@ -168,7 +171,7 @@ export default function RegisterPage() {
 
         setPasswordStrength({
             valid: allValid,
-            message: allValid ? 'Strong password ✓' : `Missing: ${messages.join(', ')}`,
+            message: allValid ? 'Strong password ' : `Missing: ${messages.join(', ')}`,
         });
 
         return allValid;
@@ -258,8 +261,8 @@ export default function RegisterPage() {
                 </label>
                 <div className="grid grid-cols-2 gap-3 mb-6">
                     {[
-                        { id: 'tenant', label: 'Tenant', icon: '👤' },
-                        { id: 'landlord', label: 'Landlord', icon: '🏠' },
+                        { id: 'tenant', label: 'Tenant', icon: <User className="w-6 h-6" /> },
+                        { id: 'landlord', label: 'Landlord', icon: <Home className="w-6 h-6" /> },
                     ].map((role) => (
                         <button
                             key={role.id}
@@ -271,7 +274,7 @@ export default function RegisterPage() {
                                     : 'border-zinc-200 dark:border-zinc-800 hover:border-teal-200 dark:hover:border-teal-800 text-zinc-700 dark:text-zinc-400'
                             }`}
                         >
-                            <span className="text-2xl mb-2">{role.icon}</span>
+                            <div className="mb-2 text-zinc-500 dark:text-zinc-400 group-hover:text-teal-500 transition-colors">{role.icon}</div>
                             <span className="text-sm font-medium">{role.label}</span>
                         </button>
                     ))}
@@ -352,17 +355,26 @@ export default function RegisterPage() {
                         >
                             Password
                         </label>
-                        <input
-                            id="password"
-                            name="password"
-                            type="password"
-                            autoComplete="new-password"
-                            required
-                            className="block w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-900 dark:text-white placeholder-zinc-500 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
-                            placeholder="••••••••"
-                            value={formData.password}
-                            onChange={handleChange}
-                        />
+                        <div className="relative">
+                            <input
+                                id="password"
+                                name="password"
+                                type={showPassword ? 'text' : 'password'}
+                                autoComplete="new-password"
+                                required
+                                className="block w-full px-4 py-3 pr-12 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-900 dark:text-white placeholder-zinc-500 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
+                                placeholder="••••••••"
+                                value={formData.password}
+                                onChange={handleChange}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
+                            >
+                                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                            </button>
+                        </div>
                         {formData.password && (
                             <p
                                 className={`mt-2 text-xs font-medium ${
@@ -381,17 +393,26 @@ export default function RegisterPage() {
                         >
                             Confirm Password
                         </label>
-                        <input
-                            id="confirmPassword"
-                            name="confirmPassword"
-                            type="password"
-                            autoComplete="new-password"
-                            required
-                            className="block w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-900 dark:text-white placeholder-zinc-500 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
-                            placeholder="••••••••"
-                            value={formData.confirmPassword}
-                            onChange={handleChange}
-                        />
+                        <div className="relative">
+                            <input
+                                id="confirmPassword"
+                                name="confirmPassword"
+                                type={showConfirmPassword ? 'text' : 'password'}
+                                autoComplete="new-password"
+                                required
+                                className="block w-full px-4 py-3 pr-12 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-900 dark:text-white placeholder-zinc-500 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
+                                placeholder="••••••••"
+                                value={formData.confirmPassword}
+                                onChange={handleChange}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
+                            >
+                                {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                            </button>
+                        </div>
                     </motion.div>
                 </div>
 

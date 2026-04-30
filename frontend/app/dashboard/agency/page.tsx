@@ -27,7 +27,7 @@ export default function AgencyDashboard() {
     return (
         <div className="min-h-screen bg-gray-900">
             {/* Header - Dark theme for enterprise */}
-            <header className="bg-gray-800 shadow-lg border-b border-gray-700">
+            <header className="bg-gray-800 shadow-sm border-b border-gray-700">
                 <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
                     <div>
                         <div className="flex items-center gap-3">
@@ -35,7 +35,7 @@ export default function AgencyDashboard() {
                                 {user?.full_name || 'Agency'}
                             </h1>
                             <span className="px-2 py-1 bg-purple-600 text-white text-xs rounded-full">
-                                Enterprise ⭐
+                                Enterprise 
                             </span>
                         </div>
                         <span className="text-sm text-gray-400">Admin Console</span>
@@ -58,7 +58,7 @@ export default function AgencyDashboard() {
                             onClick={() => router.push('/bulk')}
                             className="flex flex-col items-center p-6 bg-gray-800 rounded-xl border border-gray-700 hover:border-purple-500 transition-colors"
                         >
-                            <span className="text-3xl mb-2">📤</span>
+                            <span className="text-3xl mb-2"></span>
                             <span className="text-white font-medium">Bulk Import</span>
                             <span className="text-xs text-gray-400">CSV / XML</span>
                         </button>
@@ -66,7 +66,7 @@ export default function AgencyDashboard() {
                             onClick={() => router.push('/gli')}
                             className="flex flex-col items-center p-6 bg-gray-800 rounded-xl border border-gray-700 hover:border-green-500 transition-colors"
                         >
-                            <span className="text-3xl mb-2">🛡️</span>
+                            <span className="text-3xl mb-2">️</span>
                             <span className="text-white font-medium">GLI Quote</span>
                             <span className="text-xs text-gray-400">Rent Guarantee Insurance</span>
                         </button>
@@ -74,7 +74,7 @@ export default function AgencyDashboard() {
                             onClick={() => router.push('/webhooks')}
                             className="flex flex-col items-center p-6 bg-gray-800 rounded-xl border border-gray-700 hover:border-blue-500 transition-colors"
                         >
-                            <span className="text-3xl mb-2">🔗</span>
+                            <span className="text-3xl mb-2"></span>
                             <span className="text-white font-medium">ERP Integration</span>
                             <span className="text-xs text-gray-400">Webhooks API</span>
                         </button>
@@ -82,7 +82,7 @@ export default function AgencyDashboard() {
                             onClick={() => router.push('/team')}
                             className="flex flex-col items-center p-6 bg-gray-800 rounded-xl border border-gray-700 hover:border-orange-500 transition-colors"
                         >
-                            <span className="text-3xl mb-2">👥</span>
+                            <span className="text-3xl mb-2"></span>
                             <span className="text-white font-medium">Team</span>
                             <span className="text-xs text-gray-400">Access Management</span>
                         </button>

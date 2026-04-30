@@ -102,12 +102,12 @@ export default function NotificationBell() {
 
     const getNotificationIcon = (type: string) => {
         switch (type) {
-            case 'application': return '📋';
-            case 'message': return '💬';
-            case 'visit': return '📅';
-            case 'match': return '🎯';
-            case 'verification': return '✅';
-            default: return '🔔';
+            case 'application': return '';
+            case 'message': return '';
+            case 'visit': return '';
+            case 'match': return '';
+            case 'verification': return '';
+            default: return '';
         }
     };
 
@@ -149,7 +149,7 @@ export default function NotificationBell() {
 
             {/* Dropdown */}
             {isOpen && (
-                <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50">
+                <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden z-50">
                     {/* Header */}
                     <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50">
                         <h3 className="font-semibold text-gray-900">Notifications</h3>
@@ -171,7 +171,7 @@ export default function NotificationBell() {
                             </div>
                         ) : notifications.length === 0 ? (
                             <div className="p-8 text-center">
-                                <span className="text-3xl mb-2 block">🔔</span>
+                                <span className="text-3xl mb-2 block"></span>
                                 <p className="text-gray-500">No notifications yet</p>
                             </div>
                         ) : (

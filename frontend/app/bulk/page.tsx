@@ -14,7 +14,7 @@ export default function BulkImportPage() {
             </div>
 
             <div className="z-10 max-w-md w-full bg-white/80 backdrop-blur-xl rounded-3xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] border border-white/50 p-8 text-center">
-                <div className="text-6xl mb-6">📤</div>
+                <div className="text-6xl mb-6"></div>
                 <h1 className="text-2xl font-bold text-zinc-900 mb-2">Bulk Import</h1>
                 <p className="text-zinc-500 mb-8">
                     Import your properties and tenants via CSV or XML.
@@ -25,7 +25,7 @@ export default function BulkImportPage() {
                 </p>
                 <div className="space-y-3">
                     <button
-                        className="w-full py-3 text-sm font-bold text-white rounded-xl shadow-md transition-all hover:shadow-lg active:scale-[0.98] bg-teal-600 hover:bg-teal-500"
+                        className="w-full py-3 text-sm font-bold text-white rounded-xl shadow-md transition-all hover:shadow-sm active:scale-[0.98] bg-teal-600 hover:bg-teal-500"
                     >
                         Download CSV Template
                     </button>

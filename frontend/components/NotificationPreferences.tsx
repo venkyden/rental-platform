@@ -55,7 +55,7 @@ export default function NotificationPreferences() {
     };
 
     return (
-        <div className="bg-white rounded-xl shadow-lg p-6">
+        <div className="bg-white rounded-xl shadow-sm p-6">
             <div className="flex items-center justify-between mb-6">
                 <div>
                     <h2 className="text-xl font-bold text-gray-900">Contact Preferences</h2>
@@ -81,7 +81,7 @@ export default function NotificationPreferences() {
                 {/* In-App (Always on) */}
                 <div className="flex items-center justify-between py-3 border-b border-gray-100">
                     <div className="flex items-center gap-3">
-                        <span className="text-xl">🔔</span>
+                        <span className="text-xl"></span>
                         <div>
                             <p className="font-medium text-gray-900">In-App Notifications</p>
                             <p className="text-sm text-gray-500">Always on - see notifications in the app</p>
@@ -93,7 +93,7 @@ export default function NotificationPreferences() {
                 {/* Email */}
                 <div className="flex items-center justify-between py-3 border-b border-gray-100">
                     <div className="flex items-center gap-3">
-                        <span className="text-xl">📧</span>
+                        <span className="text-xl"></span>
                         <div>
                             <p className="font-medium text-gray-900">Email Notifications</p>
                             <p className="text-sm text-gray-500">Receive updates via email</p>
@@ -113,7 +113,7 @@ export default function NotificationPreferences() {
                 {/* WhatsApp */}
                 <div className="flex items-center justify-between py-3 border-b border-gray-100">
                     <div className="flex items-center gap-3">
-                        <span className="text-xl">💬</span>
+                        <span className="text-xl"></span>
                         <div>
                             <p className="font-medium text-gray-900">WhatsApp Notifications</p>
                             <p className="text-sm text-gray-500">Receive messages via WhatsApp (requires phone number)</p>
@@ -172,9 +172,9 @@ export default function NotificationPreferences() {
                 </p>
                 <div className="grid grid-cols-3 gap-3">
                     {[
-                        { value: 'in_app', label: 'In-App Messages', icon: '💬' },
-                        { value: 'email', label: 'Email', icon: '📧' },
-                        { value: 'phone', label: 'Phone/WhatsApp', icon: '📞' }
+                        { value: 'in_app', label: 'In-App Messages', icon: '' },
+                        { value: 'email', label: 'Email', icon: '' },
+                        { value: 'phone', label: 'Phone/WhatsApp', icon: '' }
                     ].map(option => (
                         <button
                             key={option.value}
@@ -196,7 +196,7 @@ export default function NotificationPreferences() {
             {/* Privacy Notice */}
             <div className="mt-8 p-4 bg-gray-50 rounded-xl">
                 <div className="flex items-start gap-3">
-                    <span className="text-xl">🔒</span>
+                    <span className="text-xl"></span>
                     <div>
                         <p className="font-medium text-gray-900 text-sm">Privacy Protected</p>
                         <p className="text-sm text-gray-600">

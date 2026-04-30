@@ -38,8 +38,8 @@ export default function IncomeVerifyPage() {
 
     return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-            <div className="max-w-lg w-full bg-white rounded-2xl shadow-xl p-8 border border-gray-200">
-                <div className="text-6xl mb-6 text-center">💼</div>
+            <div className="max-w-lg w-full bg-white rounded-2xl shadow-sm p-8 border border-gray-200">
+                <div className="text-6xl mb-6 text-center"></div>
                 <h1 className="text-2xl font-bold text-gray-900 mb-2 text-center">Income Verification</h1>
                 <p className="text-center text-gray-500 mb-8">
                     Secure your application for landlords.
@@ -50,7 +50,7 @@ export default function IncomeVerifyPage() {
                         onClick={() => fileInputRef.current?.click()}
                         className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:bg-indigo-50 hover:border-indigo-300 transition-colors cursor-pointer"
                     >
-                        <span className="text-4xl block mb-2">📄</span>
+                        <span className="text-4xl block mb-2"></span>
                         <span className="text-gray-600 font-medium">Drop your Tax Notice 2025</span>
                         <span className="text-xs text-gray-400 block mt-1">
                             {uploading ? 'Uploading...' : 'PDF only'}
@@ -71,7 +71,7 @@ export default function IncomeVerifyPage() {
                             onClick={() => fileInputRef.current?.click()}
                             className="border rounded-xl p-4 text-center hover:bg-gray-50 cursor-pointer transition-colors"
                         >
-                            <span className="text-2xl block mb-1">📑</span>
+                            <span className="text-2xl block mb-1"></span>
                             <span className="text-xs font-medium">3 Pay Stubs</span>
                         </div>
                     </div>

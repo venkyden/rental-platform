@@ -19,7 +19,7 @@ export default function NotFound() {
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                     <Link
                         href="/"
-                        className="px-6 py-3 text-sm font-semibold text-white rounded-xl shadow-md transition-all hover:shadow-lg hover:-translate-y-0.5"
+                        className="px-6 py-3 text-sm font-semibold text-white rounded-xl shadow-md transition-all hover:shadow-sm hover:-translate-y-0.5"
                         style={{ background: 'linear-gradient(135deg, #3DD6D0, #22B8B8)' }}
                     >
                         Go home

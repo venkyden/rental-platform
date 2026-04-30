@@ -121,7 +121,7 @@ export default function SearchPage() {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, ease: "easeOut" }}
-                        className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-500 dark:from-white dark:to-zinc-400"
+                        className="text-2xl font-bold text-zinc-900 dark:text-white dark:from-white dark:to-zinc-400"
                     >
                         {BRAND.tagline}
                     </motion.h1>
@@ -134,7 +134,7 @@ export default function SearchPage() {
                 {!isAuthenticated && (
                     <div className="flex gap-4">
                         <button onClick={() => router.push('/auth/login')} className="text-sm font-medium text-teal-600 hover:text-teal-700 dark:text-teal-400 px-4 py-2 bg-teal-50 dark:bg-teal-900/30 rounded-xl hover:bg-teal-100 dark:hover:bg-teal-900/50 transition-colors">Log In</button>
-                        <button onClick={() => router.push('/auth/register')} className="text-sm font-medium px-6 py-2 bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-xl shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5">Sign Up</button>
+                        <button onClick={() => router.push('/auth/register')} className="text-sm font-medium px-6 py-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-white rounded-xl shadow-md hover:shadow-sm transition-all transform hover:-translate-y-0.5">Sign Up</button>
                     </div>
                 )}
             </header>
@@ -204,17 +204,17 @@ export default function SearchPage() {
                     <div className="text-center py-12 text-red-500">{error}</div>
                 ) : properties.length === 0 ? (
                     <div className="text-center py-12 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md rounded-3xl border border-dashed border-zinc-300 dark:border-zinc-700">
-                        <div className="text-4xl mb-2">🔍</div>
+                        <div className="text-4xl mb-2"></div>
                         <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">No results found</h3>
                         <p className="text-zinc-500 dark:text-zinc-400">Try expanding your search criteria.</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {properties.map((property) => (
-                            <div key={property.id} className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-white/50 dark:border-white/10 rounded-3xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] overflow-hidden hover:shadow-xl transition-all hover:-translate-y-1 relative group p-2 flex flex-col">
+                            <div key={property.id} className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-white/50 dark:border-white/10 rounded-3xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] overflow-hidden hover:shadow-sm transition-all hover:-translate-y-1 relative group p-2 flex flex-col">
                                 {!isAuthenticated && (
                                     <div className="absolute inset-0 bg-white/40 dark:bg-black/40 backdrop-blur-[4px] z-10 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl">
-                                        <button onClick={() => router.push('/auth/login')} className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl shadow-lg transition-transform transform hover:scale-105 mb-2">
+                                        <button onClick={() => router.push('/auth/login')} className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl shadow-sm transition-transform transform hover:scale-105 mb-2">
                                             Log in to View Details
                                         </button>
                                     </div>
@@ -223,7 +223,7 @@ export default function SearchPage() {
                                     {property.photos?.[0] ? (
                                         <img src={resolveMediaUrl(property.photos[0].url)} alt={property.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                                     ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-zinc-400 dark:text-zinc-600 text-4xl">🏠</div>
+                                        <div className="w-full h-full flex items-center justify-center text-zinc-400 dark:text-zinc-600 text-4xl"></div>
                                     )}
                                     <div className="absolute top-3 right-3 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md px-4 py-1.5 rounded-full text-xs font-bold text-teal-700 dark:text-teal-400 shadow-sm">
                                         Available
@@ -260,9 +260,9 @@ export default function SearchPage() {
                                         {property.furnished ? <span className="px-2 py-1 bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 rounded-lg text-xs font-semibold shadow-sm border border-purple-100 dark:border-purple-900/50">Furnished</span> : <span className="px-2 py-1 bg-zinc-50 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400 rounded-lg text-xs font-semibold shadow-sm">Unfurnished</span>}
                                         {property.amenities?.includes('colocation') && <span className="px-2 py-1 bg-teal-50 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300 rounded-lg text-xs font-semibold shadow-sm border border-teal-100 dark:border-teal-900/50">Coloc OK</span>}
                                         {property.guarantor_required ? (
-                                            <span className="px-2 py-1 bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 rounded-lg text-xs font-semibold shadow-sm border border-indigo-100 dark:border-indigo-900/50">🛡️ Guarantor Req.</span>
+                                            <span className="px-2 py-1 bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 rounded-lg text-xs font-semibold shadow-sm border border-indigo-100 dark:border-indigo-900/50">️ Guarantor Req.</span>
                                         ) : (
-                                            <span className="px-2 py-1 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 rounded-lg text-xs font-semibold shadow-sm border border-emerald-100 dark:border-emerald-900/50">✅ No Guarantor</span>
+                                            <span className="px-2 py-1 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 rounded-lg text-xs font-semibold shadow-sm border border-emerald-100 dark:border-emerald-900/50"> No Guarantor</span>
                                         )}
                                     </div>
                                 </div>

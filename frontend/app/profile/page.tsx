@@ -21,7 +21,7 @@ export default function ProfilePage() {
                 <main className="max-w-md mx-auto py-8 px-4">
                     <div className="bg-white rounded-xl shadow p-6 mb-6">
                         <div className="flex items-center gap-4 mb-6">
-                            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-2xl">👤</div>
+                            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-2xl"></div>
                             <div>
                                 <h2 className="font-bold text-lg">{user?.full_name}</h2>
                                 <p className="text-gray-500">{user?.email}</p>
@@ -57,10 +57,10 @@ export default function ProfilePage() {
                         </div>
 
                         <div className="space-y-4">
-                            <Link href="/settings/account" className="block w-full text-left p-3 hover:bg-gray-50 rounded border transition-colors">⚙️ Account Settings</Link>
-                            <Link href="/settings/notifications" className="block w-full text-left p-3 hover:bg-gray-50 rounded border transition-colors">🔔 Notifications</Link>
+                            <Link href="/settings/account" className="block w-full text-left p-3 hover:bg-gray-50 rounded border transition-colors">️ Account Settings</Link>
+                            <Link href="/settings/notifications" className="block w-full text-left p-3 hover:bg-gray-50 rounded border transition-colors"> Notifications</Link>
                             <Link href="/settings/privacy" className="block w-full text-left p-3 hover:bg-gray-50 rounded border transition-colors">
-                                🛡️ Privacy (GDPR)
+                                ️ Privacy (GDPR)
                             </Link>
                         </div>
                     </div>

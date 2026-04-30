@@ -41,8 +41,8 @@ export default function ApplicationsPage() {
     const getStatusBadge = (status: string) => {
         switch (status) {
             case 'pending': return <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">Pending</span>;
-            case 'approved': return <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">Approved ✅</span>;
-            case 'rejected': return <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium">Rejected ❌</span>;
+            case 'approved': return <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">Approved </span>;
+            case 'rejected': return <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium">Rejected </span>;
             default: return <span className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm font-medium">{status}</span>;
         }
     };
@@ -70,10 +70,10 @@ export default function ApplicationsPage() {
                         </div>
                     ) : applications.length === 0 ? (
                         <div className="text-center bg-white rounded-xl shadow p-12">
-                            <span className="text-6xl mb-4 block">📂</span>
+                            <span className="text-6xl mb-4 block"></span>
                             <h2 className="text-xl font-bold mb-2">No Applications</h2>
                             <p className="text-gray-500 mb-6">You haven't submitted any applications yet.</p>
-                            <button onClick={() => router.push('/search')} className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:shadow-lg transition-all">
+                            <button onClick={() => router.push('/search')} className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:shadow-sm transition-all">
                                 Browse Properties
                             </button>
                         </div>

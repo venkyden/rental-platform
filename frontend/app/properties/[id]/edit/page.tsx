@@ -336,7 +336,7 @@ export default function EditPropertyPage() {
                         </div>
                         <div className="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-3">
                             <div
-                                className="bg-gradient-to-r from-teal-600 to-emerald-600 h-3 rounded-full transition-all duration-300"
+                                className="bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 h-3 rounded-full transition-all duration-300"
                                 style={{ width: `${progress}%` }}
                             />
                         </div>
@@ -445,7 +445,7 @@ export default function EditPropertyPage() {
                                     </div>
 
                                     <div className="bg-teal-50/50 dark:bg-teal-900/10 border border-teal-200 dark:border-teal-800 rounded-xl p-4 mt-6">
-                                        <h3 className="font-semibold mb-2 text-zinc-900 dark:text-white">🗺️ Update Location Data</h3>
+                                        <h3 className="font-semibold mb-2 text-zinc-900 dark:text-white">️ Update Location Data</h3>
                                         <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-3">
                                             Re-detect nearby transport & landmarks if address changed
                                         </p>
@@ -460,14 +460,14 @@ export default function EditPropertyPage() {
                                                     Detecting...
                                                 </>
                                             ) : (
-                                                '🔍 Re-Enrich Location Data'
+                                                ' Re-Enrich Location Data'
                                             )}
                                         </button>
 
                                         {formData.public_transport.length > 0 && (
                                             <div className="mt-4 text-sm">
-                                                <p className="font-medium text-green-600">✅ {formData.public_transport.length} transport options</p>
-                                                <p className="font-medium text-green-600">✅ {formData.nearby_landmarks.length} landmarks</p>
+                                                <p className="font-medium text-green-600"> {formData.public_transport.length} transport options</p>
+                                                <p className="font-medium text-green-600"> {formData.nearby_landmarks.length} landmarks</p>
                                             </div>
                                         )}
                                     </div>
@@ -625,7 +625,7 @@ export default function EditPropertyPage() {
 
                                 {/* Guarantor Preferences */}
                                 <div className="mt-6 pt-6 border-t border-zinc-200 dark:border-zinc-800">
-                                    <h3 className="text-lg font-bold mb-4 text-zinc-900 dark:text-white">🛡️ Garantie locative</h3>
+                                    <h3 className="text-lg font-bold mb-4 text-zinc-900 dark:text-white">️ Garantie locative</h3>
                                     <div className="flex items-center gap-3 mb-4">
                                         <label className="relative inline-flex items-center cursor-pointer">
                                             <input
@@ -650,10 +650,10 @@ export default function EditPropertyPage() {
                                             <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-3">Types de garant acceptés:</p>
                                             <div className="space-y-2">
                                                 {[
-                                                    { value: 'visale', label: '🏛️ Visale (Action Logement)', forced: true },
-                                                    { value: 'physical', label: '🧑 Personne physique (parent, proche)' },
-                                                    { value: 'garantme', label: '🔐 GarantMe' },
-                                                    { value: 'organisation', label: '🏢 Organisme / employeur' },
+                                                    { value: 'visale', label: '️ Visale (Action Logement)', forced: true },
+                                                    { value: 'physical', label: ' Personne physique (parent, proche)' },
+                                                    { value: 'garantme', label: ' GarantMe' },
+                                                    { value: 'organisation', label: ' Organisme / employeur' },
                                                 ].map(opt => (
                                                     <label key={opt.value} className="flex items-center gap-2 cursor-pointer">
                                                         <input
@@ -674,7 +674,7 @@ export default function EditPropertyPage() {
                                                     </label>
                                                 ))}
                                             </div>
-                                            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-3">⚖️ Loi ELAN: Visale ne peut pas être refusé.</p>
+                                            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-3">️ Loi ELAN: Visale ne peut pas être refusé.</p>
                                         </div>
                                     )}
                                 </div>
@@ -746,7 +746,7 @@ export default function EditPropertyPage() {
 
                                     {formData.public_transport.length > 0 && (
                                         <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-                                            <h3 className="font-semibold mb-2 text-zinc-900 dark:text-white">🚇 Public Transport ({formData.public_transport.length})</h3>
+                                            <h3 className="font-semibold mb-2 text-zinc-900 dark:text-white"> Public Transport ({formData.public_transport.length})</h3>
                                             <ul className="text-sm space-y-1">
                                                 {formData.public_transport.slice(0, 5).map((t, i) => (
                                                     <li key={i} className="text-zinc-700 dark:text-zinc-300">{t}</li>
@@ -757,7 +757,7 @@ export default function EditPropertyPage() {
 
                                     {formData.nearby_landmarks.length > 0 && (
                                         <div className="bg-teal-50/50 dark:bg-teal-900/10 border border-teal-200 dark:border-teal-800 rounded-xl p-4">
-                                            <h3 className="font-semibold mb-2 text-zinc-900 dark:text-white">📍 Nearby Landmarks ({formData.nearby_landmarks.length})</h3>
+                                            <h3 className="font-semibold mb-2 text-zinc-900 dark:text-white"> Nearby Landmarks ({formData.nearby_landmarks.length})</h3>
                                             <ul className="text-sm space-y-1 grid grid-cols-2 gap-1">
                                                 {formData.nearby_landmarks.slice(0, 8).map((l, i) => (
                                                     <li key={i} className="text-zinc-700 dark:text-zinc-300">{l}</li>
@@ -786,7 +786,7 @@ export default function EditPropertyPage() {
                                                 disabled={generatingSession}
                                                 className="px-6 py-3 bg-black text-white rounded-xl font-bold hover:bg-gray-800 disabled:opacity-50"
                                             >
-                                                {generatingSession ? 'Generating...' : '📱 Generate Upload Code'}
+                                                {generatingSession ? 'Generating...' : ' Generate Upload Code'}
                                             </button>
                                         ) : (
                                             <div className="bg-white/60 dark:bg-zinc-800/60 backdrop-blur-md p-6 justify-center flex flex-col items-center rounded-xl border mt-4">
@@ -851,7 +851,7 @@ export default function EditPropertyPage() {
                                             <p className="font-bold text-xl text-teal-600 dark:text-teal-400">€{formData.monthly_rent}/mo <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${formData.charges_included ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>{formData.charges_included ? 'CC' : 'HC'}</span></p>
                                             {formData.deposit && <p>Dépôt: €{formData.deposit}</p>}
                                             {formData.charges && <p>Charges: €{formData.charges}/mo {formData.charges_included ? '(incluses)' : '(en sus)'}</p>}
-                                            {formData.guarantor_required && <p>🛡️ Garant requis ({formData.accepted_guarantor_types.join(', ')})</p>}
+                                            {formData.guarantor_required && <p>️ Garant requis ({formData.accepted_guarantor_types.join(', ')})</p>}
                                         </div>
                                     </div>
                                     <div className="bg-zinc-50 dark:bg-zinc-800/50 p-4 rounded-xl">
@@ -893,7 +893,7 @@ export default function EditPropertyPage() {
                             {currentStep < 7 ? (
                                 <button
                                     onClick={nextStep}
-                                    className="px-6 py-2.5 bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-xl hover:shadow-lg hover:shadow-teal-500/25 font-semibold transform hover:-translate-y-0.5 transition-all"
+                                    className="px-6 py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-white rounded-xl hover:shadow-sm hover: font-semibold transform hover:-translate-y-0.5 transition-all"
                                 >
                                     Next →
                                 </button>
@@ -901,7 +901,7 @@ export default function EditPropertyPage() {
                                 <button
                                     onClick={handleSubmit}
                                     disabled={loading}
-                                    className="px-8 py-3 bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-teal-500/25 disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-0.5 transition-all"
+                                    className="px-8 py-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-white font-bold rounded-xl hover:shadow-sm hover: disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-0.5 transition-all"
                                 >
                                     {loading ? (
                                         <span className="flex items-center gap-2">
@@ -909,7 +909,7 @@ export default function EditPropertyPage() {
                                             Saving...
                                         </span>
                                     ) : (
-                                        '💾 Save Changes'
+                                        ' Save Changes'
                                     )}
                                 </button>
                             )}

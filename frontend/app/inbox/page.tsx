@@ -27,7 +27,7 @@ export default function InboxPage() {
 
     return (
         <ProtectedRoute>
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+            <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
                 {/* Header */}
                 <header className="bg-white shadow">
                     <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
@@ -39,7 +39,7 @@ export default function InboxPage() {
                                 ← Dashboard
                             </button>
                             <h1 className="text-2xl font-bold text-gray-900">
-                                📬 Boîte de réception
+                                 Boîte de réception
                             </h1>
                         </div>
                     </div>
@@ -65,8 +65,8 @@ export default function InboxPage() {
                                     onArchive={handleArchive}
                                 />
                             ) : (
-                                <div className="h-full bg-white rounded-xl shadow-lg flex flex-col items-center justify-center text-gray-400">
-                                    <span className="text-6xl mb-4">💬</span>
+                                <div className="h-full bg-white rounded-xl shadow-sm flex flex-col items-center justify-center text-gray-400">
+                                    <span className="text-6xl mb-4"></span>
                                     <p className="text-lg">Sélectionnez une conversation</p>
                                     <p className="text-sm mt-2">
                                         Cliquez sur une conversation pour voir les messages

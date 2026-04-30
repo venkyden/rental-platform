@@ -20,10 +20,10 @@ export default function GuarantorVerifyPage() {
 
         try {
             setUploading(true);
-            await apiClient.client.post('/documents/verify/guarantor', formData, {
+            await apiClient.client.post('/verification/guarantor/upload', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
-            toast.success('Guarantor document uploaded successfully!');
+            toast.success('Guarantor dossier uploaded successfully!');
             setTimeout(() => router.push('/dashboard'), 1500);
         } catch (error) {
             console.error(error);
@@ -45,8 +45,8 @@ export default function GuarantorVerifyPage() {
 
     return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-            <div className="max-w-lg w-full bg-white rounded-2xl shadow-xl p-8 border border-gray-200">
-                <div className="text-6xl mb-6 text-center">🤝</div>
+            <div className="max-w-lg w-full bg-white rounded-2xl shadow-sm p-8 border border-gray-200">
+                <div className="text-6xl mb-6 text-center"></div>
                 <h1 className="text-2xl font-bold text-gray-900 mb-2 text-center">Add a Guarantor</h1>
                 <p className="text-center text-gray-500 mb-8">Select a method to guarantee your application.</p>
 
@@ -57,7 +57,7 @@ export default function GuarantorVerifyPage() {
                         disabled={uploading}
                     >
                         <div className="flex items-center gap-3">
-                            <span className="text-2xl">🏛️</span>
+                            <span className="text-2xl">️</span>
                             <div>
                                 <div className="font-medium">Connect Visale Guarantee</div>
                                 <div className="text-xs text-gray-500">Government Service (Free)</div>
@@ -72,7 +72,7 @@ export default function GuarantorVerifyPage() {
                         disabled={uploading}
                     >
                         <div className="flex items-center gap-3">
-                            <span className="text-2xl">🦁</span>
+                            <span className="text-2xl"></span>
                             <div>
                                 <div className="font-medium">Connect Garantme</div>
                                 <div className="text-xs text-gray-500">Certified Partner</div>
@@ -86,10 +86,10 @@ export default function GuarantorVerifyPage() {
                         className="p-4 border rounded-xl hover:bg-gray-50 cursor-pointer flex justify-between items-center transition-colors"
                     >
                         <div className="flex items-center gap-3">
-                            <span className="text-2xl">👤</span>
+                            <span className="text-2xl"></span>
                             <div>
                                 <div className="font-medium">Physical Guarantor</div>
-                                <div className="text-xs text-gray-500">Upload full dossier (PDF)</div>
+                                <div className="text-xs text-gray-500">Upload single PDF with ID, Contract & Payslips</div>
                             </div>
                         </div>
                         <span className="text-gray-400 text-sm">

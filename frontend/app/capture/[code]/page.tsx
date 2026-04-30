@@ -31,17 +31,17 @@ function GpsQualityBadge({ accuracy }: { accuracy: number | null }) {
     const rounded = Math.round(accuracy);
     if (rounded <= 30) return (
         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-bold">
-            🟢 {rounded}m
+             {rounded}m
         </span>
     );
     if (rounded <= 100) return (
         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 text-xs font-bold">
-            🟡 {rounded}m
+             {rounded}m
         </span>
     );
     return (
         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-xs font-bold">
-            🔴 {rounded}m
+             {rounded}m
         </span>
     );
 }
@@ -331,9 +331,9 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                 animate="show"
                 className={`min-h-screen flex flex-col items-center justify-center p-6 text-center ${isOfflineSuccess ? 'bg-amber-50/50 dark:bg-amber-900/10' : 'bg-teal-50/50 dark:bg-teal-900/10'}`}
             >
-                <motion.div variants={itemVariants} className="bg-white dark:bg-zinc-900 shadow-xl rounded-2xl p-8 max-w-sm w-full border border-zinc-100 dark:border-zinc-800">
+                <motion.div variants={itemVariants} className="bg-white dark:bg-zinc-900 shadow-sm rounded-2xl p-8 max-w-sm w-full border border-zinc-100 dark:border-zinc-800">
                     <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm ${isOfflineSuccess ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-600' : 'bg-teal-100 dark:bg-teal-900/30 text-teal-600'}`}>
-                        <span className="text-4xl">{isOfflineSuccess ? '💾' : '✅'}</span>
+                        <span className="text-4xl">{isOfflineSuccess ? '' : ''}</span>
                     </div>
                     <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mb-3">
                         {isOfflineSuccess ? 'Saved to Offline Queue' : 'Uploaded Successfully!'}
@@ -351,11 +351,11 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                             : 'bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300'
                             }`}>
                             {lastUploadResult.gps_verified ? (
-                                <>✅ GPS Verified — {lastUploadResult.distance_meters}m from property</>
+                                <> GPS Verified — {lastUploadResult.distance_meters}m from property</>
                             ) : lastUploadResult.distance_meters ? (
-                                <>⚠️ {lastUploadResult.distance_meters}m away — outside verification radius</>
+                                <>️ {lastUploadResult.distance_meters}m away — outside verification radius</>
                             ) : (
-                                <>⚠️ No GPS — media marked as unverified</>
+                                <>️ No GPS — media marked as unverified</>
                             )}
                             {lastUploadResult.gps_accuracy !== null && (
                                 <div className="mt-1 flex justify-center">
@@ -384,7 +384,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                             }}
                             className="w-1/2 bg-teal-600 dark:bg-teal-500 text-white font-bold py-3 px-4 rounded-xl shadow-sm border border-teal-600 dark:border-teal-500 hover:bg-teal-700 transition-colors"
                         >
-                            ✅ I'm Finished
+                             I'm Finished
                         </button>
                     </div>
                 </motion.div>
@@ -402,9 +402,9 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                 animate="show"
                 className="min-h-screen flex flex-col items-center justify-center p-6 text-center bg-zinc-50 dark:bg-zinc-950"
             >
-                <motion.div variants={itemVariants} className="bg-white dark:bg-zinc-900 shadow-xl rounded-2xl p-10 max-w-sm w-full border border-zinc-100 dark:border-zinc-800">
+                <motion.div variants={itemVariants} className="bg-white dark:bg-zinc-900 shadow-sm rounded-2xl p-10 max-w-sm w-full border border-zinc-100 dark:border-zinc-800">
                     <div className="w-20 h-20 bg-teal-100 dark:bg-teal-900/30 text-teal-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
-                        <span className="text-4xl">🎉</span>
+                        <span className="text-4xl"></span>
                     </div>
                     <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mb-3">All Done!</h1>
                     <p className="text-zinc-600 dark:text-zinc-400 mb-8 text-sm">
@@ -428,12 +428,12 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                 <div className="flex gap-2">
                     {pendingCount > 0 && (
                         <div className={`text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm ${isSyncing ? 'bg-blue-100 text-blue-800 animate-pulse' : 'bg-amber-100 text-amber-800'}`}>
-                            <span>{isSyncing ? '🔄' : '⏳'}</span> {pendingCount} Pending
+                            <span>{isSyncing ? '' : '⏳'}</span> {pendingCount} Pending
                         </div>
                     )}
                     {isSessionVerified && (
                         <div className="bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800/50 text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm">
-                            <span className="text-[10px]">✅</span> Verified
+                            <span className="text-[10px]"></span> Verified
                         </div>
                     )}
                 </div>
@@ -452,7 +452,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                                 {isSessionVerified ? (
                                     <div className="mb-6">
                                         <div className="w-20 h-20 bg-teal-50 dark:bg-teal-900/20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border border-teal-100 dark:border-teal-900/30">
-                                            <span className="text-4xl">🔓</span>
+                                            <span className="text-4xl"></span>
                                         </div>
                                         <h2 className="text-2xl font-extrabold text-zinc-900 dark:text-white mb-2">You are verified!</h2>
                                         <p className="text-sm text-zinc-600 dark:text-zinc-400">
@@ -462,13 +462,13 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                                 ) : (
                                     <>
                                         <div className="w-20 h-20 bg-zinc-50 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border border-zinc-200 dark:border-zinc-700">
-                                            <span className="text-4xl text-zinc-700 dark:text-zinc-300">📸</span>
+                                            <span className="text-4xl text-zinc-700 dark:text-zinc-300"></span>
                                         </div>
                                         <h2 className="text-2xl font-extrabold text-zinc-900 dark:text-white mb-3">Verify Location</h2>
 
                                         {sessionDetails?.target_address && (
                                             <div className="bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700/50 text-zinc-800 dark:text-zinc-200 px-4 py-3 rounded-xl mb-6 text-sm font-medium shadow-inner">
-                                                📍 {sessionDetails.target_address}
+                                                 {sessionDetails.target_address}
                                             </div>
                                         )}
 
@@ -501,22 +501,22 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                                             <button
                                                 onClick={() => setSelectedRoom(null)}
                                                 className={`py-2.5 px-3 rounded-xl border text-sm font-medium transition-all ${selectedRoom === null
-                                                    ? 'bg-teal-600 text-white border-teal-600 shadow-lg shadow-teal-500/25'
+                                                    ? 'bg-teal-600 text-white border-teal-600 shadow-sm '
                                                     : 'border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:border-teal-300 dark:hover:border-teal-700'
                                                     }`}
                                             >
-                                                🏠 Common Area
+                                                 Common Area
                                             </button>
                                             {rooms.map(room => (
                                                 <button
                                                     key={room.index}
                                                     onClick={() => setSelectedRoom(room)}
                                                     className={`py-2.5 px-3 rounded-xl border text-sm font-medium transition-all ${selectedRoom?.index === room.index
-                                                        ? 'bg-teal-600 text-white border-teal-600 shadow-lg shadow-teal-500/25'
+                                                        ? 'bg-teal-600 text-white border-teal-600 shadow-sm '
                                                         : 'border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:border-teal-300 dark:hover:border-teal-700'
                                                         }`}
                                                 >
-                                                    🛏️ {room.label}
+                                                    ️ {room.label}
                                                 </button>
                                             ))}
                                         </div>
@@ -527,13 +527,13 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                                     onClick={startCapture}
                                     className="w-full bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-sm hover:bg-teal-500 focus:ring-4 focus:ring-teal-500/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                                 >
-                                    <span className="text-lg">📷</span>
+                                    <span className="text-lg"></span>
                                     <span>
                                         {selectedRoom ? `Capture ${selectedRoom.label}` : 'Capture Media'}
                                     </span>
                                 </button>
                                 <p className="mt-4 text-xs text-zinc-500 dark:text-zinc-400 flex items-center justify-center gap-1.5">
-                                    <span>🔒</span> Live capture prevents fraud
+                                    <span></span> Live capture prevents fraud
                                 </p>
                             </motion.div>
                         </div>
@@ -556,13 +556,13 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                     {step === 'ready_to_capture' && (
                         <motion.div variants={itemVariants} className="text-center bg-white dark:bg-zinc-900/50 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 p-8">
                             <div className="w-20 h-20 bg-teal-50 dark:bg-teal-900/20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border border-teal-100 dark:border-teal-900/30">
-                                <span className="text-4xl">📸</span>
+                                <span className="text-4xl"></span>
                             </div>
                             <h2 className="text-2xl font-extrabold text-zinc-900 dark:text-white mb-6">Ready to Capture</h2>
 
                             {selectedRoom && (
                                 <div className="bg-teal-50 dark:bg-teal-900/30 border border-teal-200 dark:border-teal-800/50 text-teal-800 dark:text-teal-200 px-4 py-3 rounded-xl mb-6 text-sm font-bold shadow-inner flex items-center justify-center gap-2">
-                                    🛏️ Capturing: {selectedRoom.label}
+                                    ️ Capturing: {selectedRoom.label}
                                 </div>
                             )}
 
@@ -574,7 +574,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                                 onClick={proceedToCamera}
                                 className="w-full bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-sm hover:bg-teal-500 focus:ring-4 focus:ring-teal-500/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                             >
-                                <span className="text-lg">📷</span>
+                                <span className="text-lg"></span>
                                 <span>Open Camera</span>
                             </button>
 
@@ -589,7 +589,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
 
                     {step === 'preview' && files.length > 0 && (
                         <motion.div variants={containerVariants} className="w-full flex-1 flex flex-col pt-2">
-                            <motion.div variants={itemVariants} className="relative w-full bg-zinc-900 rounded-2xl overflow-hidden shadow-2xl mb-6 flex flex-col">
+                            <motion.div variants={itemVariants} className="relative w-full bg-zinc-900 rounded-2xl overflow-hidden shadow-sm mb-6 flex flex-col">
                                 <div className="p-2 gap-2 flex flex-col overflow-y-auto max-h-[60vh]">
                                     {files.map((file, idx) => (
                                         <div key={idx} className="relative w-full h-72 bg-black rounded-xl overflow-hidden shrink-0 border border-zinc-800">
@@ -602,7 +602,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                                     ))}
                                 </div>
                                 <div className="absolute top-4 left-4 right-4 flex justify-between items-center pointer-events-none z-10">
-                                    <div className="bg-black/60 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg border border-white/10">
+                                    <div className="bg-black/60 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm border border-white/10">
                                         {files.length} item{files.length > 1 ? 's' : ''} captured
                                     </div>
                                     {location && (
@@ -611,8 +611,8 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                                 </div>
                                 {selectedRoom && (
                                     <div className="absolute bottom-4 left-4 right-4 pointer-events-none flex justify-center z-10">
-                                        <div className="bg-teal-600/90 backdrop-blur-md text-white text-sm font-bold px-4 py-2 rounded-xl shadow-lg border border-teal-500/50">
-                                            🛏️ Capturing: {selectedRoom.label}
+                                        <div className="bg-teal-600/90 backdrop-blur-md text-white text-sm font-bold px-4 py-2 rounded-xl shadow-sm border border-teal-500/50">
+                                            ️ Capturing: {selectedRoom.label}
                                         </div>
                                     </div>
                                 )}
@@ -623,7 +623,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                                     onClick={() => fileInputRef.current?.click()}
                                     className="w-full bg-white dark:bg-zinc-800 text-teal-600 dark:text-teal-400 font-bold py-3.5 px-4 rounded-xl shadow-sm border border-teal-200 dark:border-teal-900/50 hover:bg-teal-50 dark:hover:bg-zinc-700 transition-colors flex items-center justify-center gap-2"
                                 >
-                                    <span>➕</span> Add Another Photo/Video {selectedRoom ? `for ${selectedRoom.label}` : ''}
+                                    <span></span> Add Another Photo/Video {selectedRoom ? `for ${selectedRoom.label}` : ''}
                                 </button>
                                 <div className="flex gap-3">
                                     <button

@@ -309,7 +309,7 @@ export default function AddressAutocomplete({
 
             {/* Dropdown */}
             {isOpen && (results.length > 0 || allowManualEntry) && (
-                <ul className="absolute z-50 mt-1 w-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-xl max-h-72 overflow-y-auto">
+                <ul className="absolute z-50 mt-1 w-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-sm max-h-72 overflow-y-auto">
                     {results.map((result, idx) => (
                         <li
                             key={idx}
@@ -369,7 +369,7 @@ export default function AddressAutocomplete({
                                 }`}
                             onMouseEnter={() => setActiveIndex(results.length)}
                         >
-                            <span className="mt-0.5 text-zinc-400 shrink-0">✍️</span>
+                            <span className="mt-0.5 text-zinc-400 shrink-0">️</span>
                             <div className="min-w-0">
                                 <p className="font-medium text-sm text-zinc-700 dark:text-zinc-300 truncate">
                                     Use &ldquo;{query}&rdquo; as typed
@@ -390,7 +390,7 @@ export default function AddressAutocomplete({
 
             {/* No results */}
             {isOpen && results.length === 0 && !loading && query.length >= 3 && !allowManualEntry && (
-                <div className="absolute z-50 mt-1 w-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-xl p-4 text-center">
+                <div className="absolute z-50 mt-1 w-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-sm p-4 text-center">
                     <p className="text-sm text-zinc-500 dark:text-zinc-400">
                         No addresses found
                         {restrictToCities.length > 0 && (

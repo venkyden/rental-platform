@@ -193,28 +193,28 @@ export function CommonActionsBar({ className = '' }: { className?: string }) {
         {
             id: 'profile',
             label: 'My Profile',
-            icon: '👤',
+            icon: '',
             path: '/profile',
             always: true
         },
         {
             id: 'id_verification',
             label: 'ID Verification',
-            icon: verificationStatus?.id_verified ? '✅' : '🆔',
+            icon: verificationStatus?.id_verified ? '' : '🆔',
             path: '/verify/identity',
             badge: !verificationStatus?.id_verified ? 'To complete' : undefined
         },
         {
             id: 'documents',
             label: 'Documents',
-            icon: '📄',
+            icon: '',
             path: '/documents',
             always: true
         },
         {
             id: 'support',
             label: 'Help',
-            icon: '❓',
+            icon: '',
             path: '/support',
             always: true
         },
@@ -254,7 +254,7 @@ export function SegmentBadge() {
     return (
         <span className={`px-2 py-1 rounded-full text-xs font-medium ${bgColor}`}>
             {config.segment_name}
-            {config?.settings?.show_premium_badge && ' ⭐'}
+            {config?.settings?.show_premium_badge && ' '}
         </span>
     );
 }
@@ -291,7 +291,7 @@ export function VerificationProgress() {
                 {steps.map((step) => (
                     <div key={step.key} className="text-center">
                         <div className={`text-lg ${step.done ? 'text-green-500' : 'text-gray-300'}`}>
-                            {step.done ? '✓' : '○'}
+                            {step.done ? '' : '○'}
                         </div>
                         <div className="text-xs text-gray-500">{step.label}</div>
                     </div>

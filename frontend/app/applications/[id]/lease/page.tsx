@@ -51,7 +51,7 @@ function GLILeaseWidget({ monthlyRent, propertyId }: { monthlyRent: number; prop
     if (applied) {
         return (
             <div className="flex items-center gap-2 text-green-700 font-medium">
-                <span className="text-xl">✅</span>
+                <span className="text-xl"></span>
                 GLI souscrite! Vous serez contacté sous 24h.
             </div>
         );
@@ -64,7 +64,7 @@ function GLILeaseWidget({ monthlyRent, propertyId }: { monthlyRent: number; prop
                 disabled={loading}
                 className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium disabled:opacity-50"
             >
-                {loading ? '⏳ Calcul...' : '📊 Obtenir un devis GLI'}
+                {loading ? '⏳ Calcul...' : ' Obtenir un devis GLI'}
             </button>
         );
     }
@@ -72,7 +72,7 @@ function GLILeaseWidget({ monthlyRent, propertyId }: { monthlyRent: number; prop
     if (!quote.eligible) {
         return (
             <div className="text-yellow-700 text-sm">
-                ⚠️ Non éligible: {quote.eligibility_reason}
+                ️ Non éligible: {quote.eligibility_reason}
             </div>
         );
     }
@@ -88,7 +88,7 @@ function GLILeaseWidget({ monthlyRent, propertyId }: { monthlyRent: number; prop
                 disabled={loading}
                 className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium disabled:opacity-50"
             >
-                {loading ? '⏳' : '✅ Souscrire'}
+                {loading ? '⏳' : ' Souscrire'}
             </button>
         </div>
     );
@@ -209,8 +209,8 @@ export default function LeaseGeneratorPage() {
         return (
             <ProtectedRoute>
                 <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-                    <div className="bg-white p-8 rounded-xl shadow-lg text-center">
-                        <div className="text-6xl mb-4">⚠️</div>
+                    <div className="bg-white p-8 rounded-xl shadow-sm text-center">
+                        <div className="text-6xl mb-4">️</div>
                         <h2 className="text-xl font-bold text-gray-900 mb-2">Application non valide</h2>
                         <p className="text-gray-600 mb-4">Seules les candidatures approuvées peuvent générer un bail.</p>
                         <button
@@ -231,7 +231,7 @@ export default function LeaseGeneratorPage() {
                 <header className="bg-white shadow">
                     <div className="max-w-7xl mx-auto py-6 px-4 flex justify-between items-center">
                         <div>
-                            <h1 className="text-2xl font-bold text-gray-900">📄 Génération du Bail</h1>
+                            <h1 className="text-2xl font-bold text-gray-900"> Génération du Bail</h1>
                             <p className="text-gray-600">
                                 Pour: {application.tenant?.full_name || 'Locataire'}
                             </p>
@@ -248,8 +248,8 @@ export default function LeaseGeneratorPage() {
                 <main className="max-w-7xl mx-auto py-8 px-4">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         {/* Configuration Form */}
-                        <div className="bg-white rounded-xl shadow-lg p-6">
-                            <h2 className="text-lg font-bold text-gray-900 mb-6">⚙️ Configuration du Bail</h2>
+                        <div className="bg-white rounded-xl shadow-sm p-6">
+                            <h2 className="text-lg font-bold text-gray-900 mb-6">️ Configuration du Bail</h2>
 
                             <div className="space-y-4">
                                 <div>
@@ -322,10 +322,10 @@ export default function LeaseGeneratorPage() {
 
                             {/* GLI Insurance Section */}
                             <div className="mt-6">
-                                <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl border border-green-200">
+                                <div className="bg-zinc-50 border border-zinc-200 p-4 rounded-xl border border-green-200">
                                     <div className="flex items-start gap-3">
-                                        <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 flex items-center justify-center text-white text-xl">
-                                            🛡️
+                                        <div className="w-10 h-10 rounded-lg bg-zinc-900 dark:bg-white flex items-center justify-center text-white text-xl">
+                                            ️
                                         </div>
                                         <div className="flex-1">
                                             <h3 className="font-bold text-gray-900">Rent Guarantee Insurance (GLI)</h3>
@@ -348,21 +348,21 @@ export default function LeaseGeneratorPage() {
                                     disabled={generating}
                                     className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium disabled:opacity-50"
                                 >
-                                    {generating ? '⏳ Génération...' : '👁️ Aperçu'}
+                                    {generating ? '⏳ Génération...' : '️ Aperçu'}
                                 </button>
                                 <button
                                     onClick={handleCreateLease}
                                     disabled={generating}
-                                    className="flex-1 px-4 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 font-medium disabled:opacity-50"
+                                    className="flex-1 px-4 py-3 bg-zinc-100 dark:bg-zinc-800 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 font-medium disabled:opacity-50"
                                 >
-                                    {generating ? '⏳ Création...' : '✅ Créer le Bail'}
+                                    {generating ? '⏳ Création...' : ' Créer le Bail'}
                                 </button>
                             </div>
                         </div>
 
                         {/* Preview */}
-                        <div className="bg-white rounded-xl shadow-lg p-6">
-                            <h2 className="text-lg font-bold text-gray-900 mb-4">📄 Aperçu du Bail</h2>
+                        <div className="bg-white rounded-xl shadow-sm p-6">
+                            <h2 className="text-lg font-bold text-gray-900 mb-4"> Aperçu du Bail</h2>
 
                             {previewHtml ? (
                                 <div className="border border-gray-200 rounded-lg overflow-hidden">
@@ -375,7 +375,7 @@ export default function LeaseGeneratorPage() {
                             ) : (
                                 <div className="h-[600px] bg-gray-50 rounded-lg flex items-center justify-center text-gray-400">
                                     <div className="text-center">
-                                        <div className="text-6xl mb-4">📄</div>
+                                        <div className="text-6xl mb-4"></div>
                                         <p>Cliquez sur "Aperçu" pour voir le bail</p>
                                     </div>
                                 </div>

@@ -448,7 +448,7 @@ export default function NewPropertyPage() {
 
                                     {/* Location Enrichment */}
                                     <div className="bg-teal-50/50 dark:bg-teal-900/10 border border-teal-200 dark:border-teal-800 rounded-xl p-4 mt-6">
-                                        <h3 className="font-semibold mb-2 text-zinc-900 dark:text-white">🗺️ Auto-Detect Nearby Transport & Landmarks</h3>
+                                        <h3 className="font-semibold mb-2 text-zinc-900 dark:text-white">️ Auto-Detect Nearby Transport & Landmarks</h3>
                                         <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-3">
                                             Automatically find nearby metro stations, bus stops, schools, supermarkets, and more!
                                         </p>
@@ -463,14 +463,14 @@ export default function NewPropertyPage() {
                                                     Detecting... (~3s)
                                                 </>
                                             ) : (
-                                                '🔍 Auto-Detect Location Data'
+                                                ' Auto-Detect Location Data'
                                             )}
                                         </button>
 
                                         {formData.public_transport.length > 0 && (
                                             <div className="mt-4 text-sm">
-                                                <p className="font-medium text-emerald-600 dark:text-emerald-400">✅ {formData.public_transport.length} transport options found!</p>
-                                                <p className="font-medium text-emerald-600 dark:text-emerald-400">✅ {formData.nearby_landmarks.length} landmarks found!</p>
+                                                <p className="font-medium text-emerald-600 dark:text-emerald-400"> {formData.public_transport.length} transport options found!</p>
+                                                <p className="font-medium text-emerald-600 dark:text-emerald-400"> {formData.nearby_landmarks.length} landmarks found!</p>
                                             </div>
                                         )}
                                     </div>
@@ -920,7 +920,7 @@ export default function NewPropertyPage() {
                                                 : formData.deposit > formData.monthly_rent
                                         ) && (
                                                 <p className="text-red-600 text-sm mt-1">
-                                                    ⚠️ French law limits deposit to {formData.furnished ? '2 months' : '1 month'} rent
+                                                    ️ French law limits deposit to {formData.furnished ? '2 months' : '1 month'} rent
                                                     (max €{formData.furnished ? formData.monthly_rent * 2 : formData.monthly_rent})
                                                 </p>
                                             )}
@@ -998,7 +998,7 @@ export default function NewPropertyPage() {
 
                                 {/* Guarantor Preferences */}
                                 <div className="mt-6 pt-6 border-t">
-                                    <h3 className="text-lg font-bold mb-4 text-zinc-900 dark:text-white">🛡️ Garantie locative</h3>
+                                    <h3 className="text-lg font-bold mb-4 text-zinc-900 dark:text-white">️ Garantie locative</h3>
                                     <div className="flex items-center gap-3 mb-4">
                                         <label className="relative inline-flex items-center cursor-pointer">
                                             <input
@@ -1023,10 +1023,10 @@ export default function NewPropertyPage() {
                                             <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-3">Types de garant acceptés:</p>
                                             <div className="space-y-2">
                                                 {[
-                                                    { value: 'visale', label: '🏛️ Visale (Action Logement)', forced: true },
-                                                    { value: 'physical', label: '🧑 Personne physique (parent, proche)' },
-                                                    { value: 'garantme', label: '🔐 GarantMe' },
-                                                    { value: 'organisation', label: '🏢 Organisme / employeur' },
+                                                    { value: 'visale', label: '️ Visale (Action Logement)', forced: true },
+                                                    { value: 'physical', label: ' Personne physique (parent, proche)' },
+                                                    { value: 'garantme', label: ' GarantMe' },
+                                                    { value: 'organisation', label: ' Organisme / employeur' },
                                                 ].map(opt => (
                                                     <label key={opt.value} className="flex items-center gap-2 cursor-pointer">
                                                         <input
@@ -1047,7 +1047,7 @@ export default function NewPropertyPage() {
                                                     </label>
                                                 ))}
                                             </div>
-                                            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-3">⚖️ Loi ELAN: Visale ne peut pas être refusé.</p>
+                                            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-3">️ Loi ELAN: Visale ne peut pas être refusé.</p>
                                         </div>
                                     )}
                                 </div>
@@ -1120,7 +1120,7 @@ export default function NewPropertyPage() {
                                     {/* Display enriched data */}
                                     {formData.public_transport.length > 0 && (
                                         <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-                                            <h3 className="font-semibold mb-2 text-zinc-900 dark:text-white">🚇 Public Transport ({formData.public_transport.length})</h3>
+                                            <h3 className="font-semibold mb-2 text-zinc-900 dark:text-white"> Public Transport ({formData.public_transport.length})</h3>
                                             <ul className="text-sm space-y-1">
                                                 {formData.public_transport.slice(0, 5).map((t, i) => (
                                                     <li key={i} className="text-zinc-700 dark:text-zinc-300">{t}</li>
@@ -1131,7 +1131,7 @@ export default function NewPropertyPage() {
 
                                     {formData.nearby_landmarks.length > 0 && (
                                         <div className="bg-teal-50/50 dark:bg-teal-900/10 border border-teal-200 dark:border-teal-800 rounded-xl p-4">
-                                            <h3 className="font-semibold mb-2 text-zinc-900 dark:text-white">📍 Nearby Landmarks ({formData.nearby_landmarks.length})</h3>
+                                            <h3 className="font-semibold mb-2 text-zinc-900 dark:text-white"> Nearby Landmarks ({formData.nearby_landmarks.length})</h3>
                                             <ul className="text-sm space-y-1 grid grid-cols-2 gap-1">
                                                 {formData.nearby_landmarks.slice(0, 8).map((l, i) => (
                                                     <li key={i} className="text-zinc-700 dark:text-zinc-300">{l}</li>
@@ -1179,7 +1179,7 @@ export default function NewPropertyPage() {
 
                         {currentStep === 8 && mediaSession && (
                             <div className="text-center">
-                                <div className="text-6xl mb-4">📸</div>
+                                <div className="text-6xl mb-4"></div>
                                 <h2 className="text-3xl font-bold text-zinc-900 dark:text-white mb-2">Property Saved as Draft</h2>
                                 <p className="text-zinc-600 dark:text-zinc-400 mb-6">Upload photos & videos for each room using the QR codes below to publish your listing.</p>
 
@@ -1198,7 +1198,7 @@ export default function NewPropertyPage() {
                                                             : 'bg-amber-50 text-amber-700 border-amber-200'
                                                             }`}
                                                     >
-                                                        {count > 0 ? '✅' : '⚠️'} Bedroom {i + 1}
+                                                        {count > 0 ? '' : '️'} Bedroom {i + 1}
                                                         <span className="ml-1.5 text-xs opacity-75">({count} files)</span>
                                                     </div>
                                                 );
@@ -1216,7 +1216,7 @@ export default function NewPropertyPage() {
                                     }`}>
                                     {published ? (
                                         <div className="flex items-center gap-3">
-                                            <span className="text-3xl">✅</span>
+                                            <span className="text-3xl"></span>
                                             <div>
                                                 <p className="font-bold text-green-800">Property Published!</p>
                                                 <p className="text-sm text-green-700">Your listing is now live and visible to tenants.</p>
@@ -1224,7 +1224,7 @@ export default function NewPropertyPage() {
                                         </div>
                                     ) : mediaVerified ? (
                                         <div className="flex items-center gap-3">
-                                            <span className="text-3xl">📷</span>
+                                            <span className="text-3xl"></span>
                                             <div>
                                                 <p className="font-bold text-teal-700 dark:text-teal-300">{mediaCount} media file{mediaCount !== 1 ? 's' : ''} uploaded</p>
                                                 <p className="text-sm text-teal-700">All rooms have media — ready to publish!</p>
@@ -1232,7 +1232,7 @@ export default function NewPropertyPage() {
                                         </div>
                                     ) : (
                                         <div className="flex items-center gap-3">
-                                            <span className="text-3xl">⚠️</span>
+                                            <span className="text-3xl">️</span>
                                             <div>
                                                 <p className="font-bold text-amber-800">
                                                     {formData.room_details.length > 0
@@ -1266,24 +1266,24 @@ export default function NewPropertyPage() {
                                                 onClick={checkMediaStatus}
                                                 className="px-6 py-3 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-xl hover:bg-zinc-200 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 font-medium transition-all"
                                             >
-                                                🔄 Check for Uploaded Media
+                                                 Check for Uploaded Media
                                             </button>
                                             <button
                                                 onClick={handlePublish}
                                                 disabled={!mediaVerified || publishing}
                                                 className={`px-8 py-3 font-bold rounded-xl transition-all ${mediaVerified && !publishing
-                                                    ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white hover:shadow-lg cursor-pointer'
+                                                    ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-white hover:shadow-sm cursor-pointer'
                                                     : 'bg-zinc-200 dark:bg-zinc-700 text-zinc-400 cursor-not-allowed'
                                                     }`}
                                                 title={!mediaVerified ? 'Upload media for all rooms to publish' : ''}
                                             >
-                                                {publishing ? 'Publishing...' : '🚀 Publish Property'}
+                                                {publishing ? 'Publishing...' : ' Publish Property'}
                                             </button>
                                         </>
                                     )}
                                     <button
                                         onClick={() => router.push(`/properties/${propertyId}`)}
-                                        className="px-6 py-3 bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-xl hover:shadow-lg hover:shadow-teal-500/25 font-medium transition-all"
+                                        className="px-6 py-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-white rounded-xl hover:shadow-sm hover: font-medium transition-all"
                                     >
                                         View Property
                                     </button>
@@ -1323,7 +1323,7 @@ export default function NewPropertyPage() {
                                 {currentStep < 6 ? (
                                     <button
                                         onClick={nextStep}
-                                        className="px-6 py-2.5 bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-xl hover:shadow-lg hover:shadow-teal-500/25 font-semibold transform hover:-translate-y-0.5 transition-all"
+                                        className="px-6 py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-white rounded-xl hover:shadow-sm hover: font-semibold transform hover:-translate-y-0.5 transition-all"
                                     >
                                         Next →
                                     </button>
@@ -1331,7 +1331,7 @@ export default function NewPropertyPage() {
                                     <button
                                         onClick={handleSubmit}
                                         disabled={loading}
-                                        className="px-8 py-3 bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-teal-500/25 disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-0.5 transition-all"
+                                        className="px-8 py-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-white font-bold rounded-xl hover:shadow-sm hover: disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-0.5 transition-all"
                                     >
                                         {loading ? (
                                             <span className="flex items-center gap-2">
@@ -1339,7 +1339,7 @@ export default function NewPropertyPage() {
                                                 Creating...
                                             </span>
                                         ) : (
-                                            '✨ Create Property'
+                                            ' Create Property'
                                         )}
                                     </button>
                                 )}

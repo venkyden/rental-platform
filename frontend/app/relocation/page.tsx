@@ -14,7 +14,7 @@ export default function RelocationPage() {
             </div>
 
             <div className="z-10 max-w-md w-full bg-white/80 backdrop-blur-xl rounded-3xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] border border-white/50 p-8 text-center">
-                <div className="text-6xl mb-6 animate-bounce">🌍</div>
+                <div className="text-6xl mb-6 animate-bounce"></div>
                 <h1 className="text-2xl font-bold text-zinc-900 mb-2">
                     Relocation Services
                 </h1>
@@ -28,15 +28,15 @@ export default function RelocationPage() {
 
                 <div className="space-y-3 mb-6">
                     <div className="p-4 bg-white/60 backdrop-blur rounded-xl border border-white/80 text-left flex items-center gap-3">
-                        <span>📦</span>
+                        <span></span>
                         <span className="text-zinc-700 font-medium">Moving</span>
                     </div>
                     <div className="p-4 bg-white/60 backdrop-blur rounded-xl border border-white/80 text-left flex items-center gap-3">
-                        <span>🛂</span>
+                        <span></span>
                         <span className="text-zinc-700 font-medium">Visa Assistance</span>
                     </div>
                     <div className="p-4 bg-white/60 backdrop-blur rounded-xl border border-white/80 text-left flex items-center gap-3">
-                        <span>🏫</span>
+                        <span></span>
                         <span className="text-zinc-700 font-medium">School Search</span>
                     </div>
                 </div>

@@ -46,19 +46,19 @@ export default function VerificationPage() {
                             <h2 className="text-lg font-semibold text-gray-900 mb-4">Verification Progress</h2>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div className="text-center p-4 bg-green-50 rounded-lg">
-                                    <div className="text-3xl mb-2">✅</div>
+                                    <div className="text-3xl mb-2"></div>
                                     <div className="text-sm font-medium text-gray-700">Email</div>
                                     <div className="text-xs text-green-600">Verified</div>
                                 </div>
                                 <div className={`text-center p-4 rounded-lg ${user.identity_verified ? 'bg-green-50' : 'bg-yellow-50'}`}>
-                                    <div className="text-3xl mb-2">{user.identity_verified ? '✅' : '⏳'}</div>
+                                    <div className="text-3xl mb-2">{user.identity_verified ? '' : '⏳'}</div>
                                     <div className="text-sm font-medium text-gray-700">Identity</div>
                                     <div className={`text-xs ${user.identity_verified ? 'text-green-600' : 'text-yellow-600'}`}>
                                         {user.identity_verified ? 'Verified' : 'Pending'}
                                     </div>
                                 </div>
                                 <div className={`text-center p-4 rounded-lg ${user.employment_verified ? 'bg-green-50' : 'bg-yellow-50'}`}>
-                                    <div className="text-3xl mb-2">{user.employment_verified ? '✅' : '⏳'}</div>
+                                    <div className="text-3xl mb-2">{user.employment_verified ? '' : '⏳'}</div>
                                     <div className="text-sm font-medium text-gray-700">Employment</div>
                                     <div className={`text-xs ${user.employment_verified ? 'text-green-600' : 'text-yellow-600'}`}>
                                         {user.employment_verified ? 'Verified' : 'Pending'}
@@ -70,7 +70,7 @@ export default function VerificationPage() {
                                 <div className="flex items-center gap-3">
                                     <div className="flex-1 bg-gray-200 rounded-full h-3">
                                         <div
-                                            className="bg-gradient-to-r from-blue-500 to-indigo-600 h-3 rounded-full transition-all duration-500"
+                                            className="bg-zinc-100 dark:bg-zinc-800 h-3 rounded-full transition-all duration-500"
                                             style={{ width: `${user.trust_score}%` }}
                                         />
                                     </div>
@@ -98,7 +98,7 @@ export default function VerificationPage() {
                                         : 'text-gray-600 hover:text-gray-900'
                                         }`}
                                 >
-                                    💼 Employment Verification
+                                     Employment Verification
                                 </button>
                             </div>
                         </div>
@@ -115,7 +115,7 @@ export default function VerificationPage() {
                             )}
                             {activeTab === 'identity' && user.identity_verified && (
                                 <div className="text-center py-12">
-                                    <div className="text-6xl mb-4">✅</div>
+                                    <div className="text-6xl mb-4"></div>
                                     <h3 className="text-2xl font-bold text-gray-900 mb-2">Identity Verified!</h3>
                                     <p className="text-gray-600">Your identity has been successfully verified.</p>
                                 </div>
@@ -131,7 +131,7 @@ export default function VerificationPage() {
                             )}
                             {activeTab === 'employment' && user.employment_verified && (
                                 <div className="text-center py-12">
-                                    <div className="text-6xl mb-4">✅</div>
+                                    <div className="text-6xl mb-4"></div>
                                     <h3 className="text-2xl font-bold text-gray-900 mb-2">Employment Verified!</h3>
                                     <p className="text-gray-600">Your employment has been successfully verified.</p>
                                 </div>

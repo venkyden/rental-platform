@@ -68,7 +68,7 @@ export default function InventoryPage() {
 
                         // 500m threshold (generous for GPS drift)
                         if (distance > 500) {
-                            const proceeded = window.confirm(`⚠️ Location Warning\n\nYou seem to be ${distance.toFixed(0)}m away from the property.\n\nAre you sure you want to upload this photo?`);
+                            const proceeded = window.confirm(`️ Location Warning\n\nYou seem to be ${distance.toFixed(0)}m away from the property.\n\nAre you sure you want to upload this photo?`);
                             if (!proceeded) {
                                 setLoading(false);
                                 setUploading(false);
@@ -188,7 +188,7 @@ export default function InventoryPage() {
 
                     <button
                         onClick={() => setStep('sign')}
-                        className="w-full py-4 bg-green-600 text-white rounded-xl font-bold shadow-lg mt-8"
+                        className="w-full py-4 bg-green-600 text-white rounded-xl font-bold shadow-sm mt-8"
                     >
                         Finish & Sign
                     </button>
@@ -240,7 +240,7 @@ export default function InventoryPage() {
                     <button
                         onClick={handleSign}
                         disabled={!tenantSig || !landlordSig}
-                        className="w-full py-4 bg-black text-white rounded-xl font-bold shadow-lg disabled:opacity-50 hover:bg-gray-800 transition-colors"
+                        className="w-full py-4 bg-black text-white rounded-xl font-bold shadow-sm disabled:opacity-50 hover:bg-gray-800 transition-colors"
                     >
                         Confirm & Submit Inventory
                     </button>

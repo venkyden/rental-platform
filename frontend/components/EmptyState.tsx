@@ -53,7 +53,7 @@ export default function EmptyState({
             >
                 <motion.div
                     variants={float}
-                    className="w-24 h-24 bg-gradient-to-br from-teal-50 to-teal-100/50 dark:from-teal-500/10 dark:to-teal-500/5 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner ring-4 ring-white dark:ring-zinc-900"
+                    className="w-24 h-24 bg-zinc-100 dark:from-teal-500/10 dark:to-teal-500/5 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner ring-4 ring-white dark:ring-zinc-900"
                 >
                     <div className="text-5xl text-teal-600 dark:text-teal-400 translate-y-1 flex items-center justify-center">
                         {icon}
@@ -74,7 +74,7 @@ export default function EmptyState({
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={onAction}
-                    className="inline-flex items-center justify-center px-8 py-3.5 bg-teal-600 text-white font-semibold rounded-xl hover:bg-teal-700 hover:shadow-lg hover:shadow-teal-500/30 transition-all"
+                    className="inline-flex items-center justify-center px-8 py-3.5 bg-teal-600 text-white font-semibold rounded-xl hover:bg-teal-700 hover:shadow-sm hover: transition-all"
                 >
                     {actionLabel}
                 </motion.button>

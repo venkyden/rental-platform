@@ -36,6 +36,10 @@ export default function AccountSettingsPage() {
     const [emailPassword, setEmailPassword] = useState('');
     const [isChangingEmail, setIsChangingEmail] = useState(false);
     const [emailMessage, setEmailMessage] = useState({ text: '', type: '' });
+    
+    // Resend Verification State
+    const [isResending, setIsResending] = useState(false);
+    const [resendMessage, setResendMessage] = useState('');
 
     const handleProfileUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -128,6 +132,21 @@ export default function AccountSettingsPage() {
         }
     };
 
+    const handleResendVerification = async () => {
+        setIsResending(true);
+        setResendMessage('');
+        try {
+            await apiClient.client.post('/auth/resend-verification');
+            setResendMessage('Verification email sent! Please check your inbox.');
+        } catch (error: any) {
+            let errorMsg = error.response?.data?.detail || 'Failed to resend verification';
+            if (Array.isArray(errorMsg)) errorMsg = errorMsg[0].msg;
+            setResendMessage(errorMsg);
+        } finally {
+            setIsResending(false);
+        }
+    };
+
     if (!user) {
         return (
             <PremiumLayout>
@@ -147,11 +166,33 @@ export default function AccountSettingsPage() {
                     transition={{ duration: 0.5 }}
                 >
                     <div className="mb-8">
-                        <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
+                        <h1 className="text-3xl font-bold text-zinc-900 dark:text-white dark:from-white dark:to-gray-400">
                             Account Settings
                         </h1>
                         <p className="text-gray-500 mt-2">Manage your profile, security, and preferences.</p>
                     </div>
+
+                    {!user.email_verified && (
+                        <div className="mb-6 p-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-orange-100 dark:bg-orange-800/50 rounded-lg">
+                                    <Mail className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-bold text-orange-800 dark:text-orange-300">Your email address is unverified</h3>
+                                    <p className="text-sm text-orange-700 dark:text-orange-400">Please verify your email ({user.email}) to unlock all features.</p>
+                                    {resendMessage && <p className="text-sm font-medium mt-1 text-orange-900 dark:text-orange-200">{resendMessage}</p>}
+                                </div>
+                            </div>
+                            <button 
+                                onClick={handleResendVerification}
+                                disabled={isResending}
+                                className="whitespace-nowrap px-4 py-2 bg-white dark:bg-zinc-800 border border-orange-200 dark:border-orange-700 text-orange-700 dark:text-orange-400 rounded-lg text-sm font-medium hover:bg-orange-50 dark:hover:bg-zinc-700 transition-colors disabled:opacity-50"
+                            >
+                                {isResending ? 'Sending...' : 'Resend Email'}
+                            </button>
+                        </div>
+                    )}
 
                     {/* Custom Tabs */}
                     <div className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-md p-1 flex gap-2 rounded-xl mb-8">
@@ -174,7 +215,7 @@ export default function AccountSettingsPage() {
                     {/* PROFILE TAB */}
                     {activeTab === 'profile' && (
                         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            <div className="border border-gray-100 dark:border-gray-800 shadow-xl shadow-gray-200/50 dark:shadow-gray-900/50 rounded-2xl overflow-hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl">
+                            <div className="border border-gray-100 dark:border-gray-800 shadow-sm  dark: rounded-2xl overflow-hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl">
                                 <div className="border-b border-gray-100 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50 px-6 py-4">
                                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Profile Details</h3>
                                     <p className="text-sm text-gray-500 dark:text-gray-400">This information will be displayed publicly on your profile.</p>
@@ -183,11 +224,11 @@ export default function AccountSettingsPage() {
                                     <div className="flex flex-col md:flex-row gap-8">
                                         {/* Avatar Section */}
                                         <div className="flex flex-col items-center space-y-4">
-                                            <div className="relative group rounded-full overflow-hidden border-4 border-white dark:border-gray-800 shadow-lg w-32 h-32">
+                                            <div className="relative group rounded-full overflow-hidden border-4 border-white dark:border-gray-800 shadow-sm w-32 h-32">
                                                 {user.profile_picture_url ? (
                                                     <img src={user.profile_picture_url} alt="Profile" className="w-full h-full object-cover" />
                                                 ) : (
-                                                    <div className="w-full h-full bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/50 dark:to-purple-900/50 flex items-center justify-center text-indigo-500 text-4xl font-semibold">
+                                                    <div className="w-full h-full bg-zinc-100 dark:bg-zinc-800 dark:from-indigo-900/50 dark:to-purple-900/50 flex items-center justify-center text-indigo-500 text-4xl font-semibold">
                                                         {user.full_name?.charAt(0) || user.email?.charAt(0).toUpperCase()}
                                                     </div>
                                                 )}
@@ -226,7 +267,7 @@ export default function AccountSettingsPage() {
                                                 )}
 
                                                 <div className="flex justify-end pt-2">
-                                                    <button type="submit" disabled={isUpdatingProfile} className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20">
+                                                    <button type="submit" disabled={isUpdatingProfile} className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white shadow-md ">
                                                         {isUpdatingProfile ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving...</> : 'Save Changes'}
                                                     </button>
                                                 </div>
@@ -242,7 +283,7 @@ export default function AccountSettingsPage() {
                     {activeTab === 'security' && (
                         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             {/* Password Section */}
-                            <div className="border border-gray-100 dark:border-gray-800 shadow-xl shadow-gray-200/50 dark:shadow-gray-900/50 rounded-2xl overflow-hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl">
+                            <div className="border border-gray-100 dark:border-gray-800 shadow-sm  dark: rounded-2xl overflow-hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl">
                                 <div className="border-b border-gray-100 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50 px-6 py-4">
                                     <div className="flex items-center gap-2">
                                         <Key className="w-5 h-5 text-indigo-500" />
@@ -274,7 +315,7 @@ export default function AccountSettingsPage() {
                                         )}
 
                                         <div className="pt-2">
-                                            <button type="submit" disabled={isChangingPassword || !oldPassword || !newPassword} className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20">
+                                            <button type="submit" disabled={isChangingPassword || !oldPassword || !newPassword} className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white shadow-md ">
                                                 {isChangingPassword ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
                                                 Update Password
                                             </button>
@@ -284,7 +325,7 @@ export default function AccountSettingsPage() {
                             </div>
 
                             {/* Email Section */}
-                            <div className="border border-gray-100 dark:border-gray-800 shadow-xl shadow-gray-200/50 dark:shadow-gray-900/50 rounded-2xl overflow-hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl">
+                            <div className="border border-gray-100 dark:border-gray-800 shadow-sm  dark: rounded-2xl overflow-hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl">
                                 <div className="border-b border-gray-100 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50 px-6 py-4">
                                     <div className="flex items-center gap-2">
                                         <Mail className="w-5 h-5 text-indigo-500" />

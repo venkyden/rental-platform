@@ -3,6 +3,7 @@ import { apiClient } from '@/lib/api';
 import DocumentCapture from './DocumentCapture';
 import { QRCodeSVG } from 'qrcode.react';
 import { motion, Variants } from 'framer-motion';
+import { useLanguage } from '@/lib/LanguageContext';
 
 const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -20,7 +21,8 @@ const itemVariants: Variants = {
 };
 
 interface VerificationUploadProps {
-    verificationType: 'identity' | 'employment';
+    verificationType: 'identity' | 'employment' | 'property';
+    propertyId?: string; // For property verification
     onSuccess: () => void;
     user?: any; // Contains user.preferences.contract_type etc.
 }
@@ -31,13 +33,17 @@ function isMobileDevice(): boolean {
         || (navigator.maxTouchPoints > 0 && window.innerWidth < 1024);
 }
 
-export default function VerificationUpload({ verificationType, onSuccess, user }: VerificationUploadProps) {
+export default function VerificationUpload({ verificationType, propertyId, onSuccess, user }: VerificationUploadProps) {
+    const { t } = useLanguage();
     const [files, setFiles] = useState<File[]>([]);
     const [documentType, setDocumentType] = useState('');
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState('');
     const [showCamera, setShowCamera] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
+    
+    // Support for "No Guarantor" flow
+    const [hasGuarantor, setHasGuarantor] = useState<boolean | null>(null);
 
     // QR code session state (desktop identity only)
     const [qrSession, setQrSession] = useState<{ code: string; captureUrl: string; expiresAt: string } | null>(null);
@@ -104,41 +110,62 @@ export default function VerificationUpload({ verificationType, onSuccess, user }
 
         if (contractType === 'student' || situation === 'student_budget' || contractType === 'internship') {
             return [
-                { value: 'student_id', label: '🎓 Carte d\'Étudiant / Certificat de scolarité', captures: 1 },
-                { value: 'internship_contract', label: '📝 Convention de stage', captures: 1 },
-                { value: 'scholarship', label: '💶 Avis d\'attribution de bourse', captures: 1 },
-                { value: 'caf', label: '🏠 Simulation d\'aides (CAF/MSA)', captures: 1 },
+                { value: 'student_id', label: t('docs.student_id', ' Student ID / Enrollment Certificate'), captures: 1 },
+                { value: 'internship_contract', label: t('docs.internship_contract', ' Internship Agreement'), captures: 1 },
+                { value: 'scholarship', label: t('docs.scholarship', ' Scholarship Notice'), captures: 1 },
+                { value: 'caf', label: t('docs.caf', ' Housing Aid Simulation (CAF/MSA)'), captures: 1 },
+                { value: 'visale_certificate', label: t('docs.visale', ' Visale Guarantee Certificate'), captures: 1 },
+                { value: 'garantme_certificate', label: t('docs.garantme', ' Garantme Certificate'), captures: 1 },
+                { value: 'bank_funds_certificate', label: t('docs.bank_funds', ' Blocked Bank Funds Certificate'), captures: 1 },
             ];
         } else if (contractType === 'self_employed' || situation === 'flexibility_relocation') {
             return [
-                { value: 'kbis', label: '🏢 Extrait K/Kbis (moins de 3 mois)', captures: 1 },
-                { value: 'tax_return', label: '📄 Dernier avis d\'imposition', captures: 1 },
-                { value: 'accounting', label: '📊 Dernier bilan comptable', captures: 1 },
+                { value: 'kbis', label: t('docs.kbis', ' Kbis Extract (less than 3 months)'), captures: 1 },
+                { value: 'tax_return', label: t('docs.tax_return', ' Latest Tax Return'), captures: 1 },
+                { value: 'accounting', label: t('docs.accounting', ' Latest Accounting Balance'), captures: 1 },
+                { value: 'garantme_certificate', label: t('docs.garantme', ' Garantme Certificate'), captures: 1 },
+            ];
+        } else if (contractType === 'cdd' || contractType === 'interim') {
+            return [
+                { value: 'employer_certificate', label: t('docs.employer_cert', ' Employer Certificate / Job Promise'), captures: 1 },
+                { value: 'contract', label: t('docs.contract', ' Employment Contract'), captures: 1 },
+                { value: 'payslip', label: t('docs.payslip', ' Last 3 Payslips (if available)'), captures: 3 },
             ];
         } else if (contractType === 'other' || situation === 'other') {
             return [
-                { value: 'tax_return', label: '📄 Dernier avis d\'imposition', captures: 1 },
-                { value: 'benefits', label: '💶 Prestations sociales / familiales', captures: 1 },
-                { value: 'pension', label: '👴 Justificatif de pension/retraite', captures: 1 },
+                { value: 'tax_return', label: t('docs.tax_return', ' Latest Tax Return'), captures: 1 },
+                { value: 'benefits', label: t('docs.benefits', ' Social / Family Benefits'), captures: 1 },
+                { value: 'pension', label: t('docs.pension', ' Pension Proof'), captures: 1 },
+                { value: 'foreign_tax_return', label: t('docs.foreign_tax', ' Foreign Tax Return'), captures: 1 },
             ];
         }
         
         // Default to employee
         return [
-            { value: 'payslip', label: '📄 3 Derniers bulletins de salaire', captures: 3 },
-            { value: 'contract', label: '💼 Contrat de travail / Attestation employeur', captures: 1 },
-            { value: 'tax_return', label: '📄 Dernier avis d\'imposition', captures: 1 },
+            { value: 'payslip', label: t('docs.payslip', ' Last 3 Payslips'), captures: 3 },
+            { value: 'contract', label: t('docs.contract', ' Employment Contract / Certificate'), captures: 1 },
+            { value: 'tax_return', label: t('docs.tax_return', ' Latest Tax Return'), captures: 1 },
         ];
     };
 
-    const documentTypes = verificationType === 'identity'
-        ? [
-            { value: 'passport', label: '📘 Passport / Passeport', captures: 1 },
-            { value: 'id_card', label: '🪪 Carte Nationale d\'Identité', captures: 2 },
-            { value: 'drivers_license', label: '🚗 Permis de conduire', captures: 2 },
-            { value: 'residence_permit', label: '🌍 Titre de séjour', captures: 2 },
-        ]
-        : getEmploymentDocumentTypes();
+    const getDocumentTypes = () => {
+        if (verificationType === 'identity') {
+            return [
+                { value: 'passport', label: t('docs.passport', ' Passport'), captures: 1 },
+                { value: 'id_card', label: t('docs.id_card', ' National ID Card'), captures: 2 },
+                { value: 'drivers_license', label: t('docs.drivers_license', ' Driver\'s License'), captures: 2 },
+                { value: 'residence_permit', label: t('docs.residence_permit', ' Residence Permit / Receipt'), captures: 2 },
+            ];
+        } else if (verificationType === 'property') {
+            return [
+                { value: 'property_deed', label: 'Property Deed (Titre de propriété)', captures: 1 },
+                { value: 'property_tax_notice', label: 'Property Tax Notice (Taxe foncière)', captures: 1 },
+            ];
+        }
+        return getEmploymentDocumentTypes();
+    };
+
+    const documentTypes = getDocumentTypes();
 
     const selectedDocType = documentTypes.find(dt => dt.value === documentType);
 
@@ -176,14 +203,17 @@ export default function VerificationUpload({ verificationType, onSuccess, user }
 
                 const endpoint = verificationType === 'identity'
                     ? '/verification/identity/upload'
-                    : '/verification/employment/upload';
+                    : verificationType === 'property' 
+                        ? '/verification/property/upload'
+                        : '/verification/employment/upload';
 
                 await apiClient.client.post(endpoint, formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
                     },
                     params: {
-                        document_type: documentType
+                        document_type: documentType,
+                        ...(verificationType === 'property' && { property_id: propertyId })
                     }
                 });
             }
@@ -208,7 +238,7 @@ export default function VerificationUpload({ verificationType, onSuccess, user }
                 <motion.div variants={itemVariants} className="text-center sm:text-left mb-6">
                     <h3 className="text-2xl font-extrabold text-zinc-900 dark:text-white tracking-tight">Identity Verification</h3>
                     <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-                        🔒 For security, capture live photos of your ID using your phone's camera
+                         For security, capture live photos of your ID using your phone's camera
                     </p>
                 </motion.div>
 
@@ -260,7 +290,7 @@ export default function VerificationUpload({ verificationType, onSuccess, user }
 
                         {/* Instructions */}
                         <motion.div variants={itemVariants} className="w-full bg-teal-50/50 dark:bg-teal-900/10 border border-teal-100 dark:border-teal-900/30 rounded-xl p-5">
-                            <p className="text-sm font-semibold text-teal-800 dark:text-teal-300 mb-3">📱 How it works:</p>
+                            <p className="text-sm font-semibold text-teal-800 dark:text-teal-300 mb-3"> How it works:</p>
                             <ol className="text-sm text-teal-700/80 dark:text-teal-400/80 space-y-2 list-decimal list-inside ml-1">
                                 <li>Scan the QR code with your phone camera</li>
                                 <li>Select your document type</li>
@@ -287,7 +317,7 @@ export default function VerificationUpload({ verificationType, onSuccess, user }
 
                 <motion.div variants={itemVariants} className="mt-6 p-4 bg-zinc-50 dark:bg-zinc-800/30 rounded-xl border border-zinc-100 dark:border-zinc-800/50">
                     <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed text-center sm:text-left">
-                        🔒 Your documents are encrypted and stored securely. We use industry-standard security practices to protect your privacy.
+                         Your documents are encrypted and stored securely. We use industry-standard security practices to protect your privacy.
                     </p>
                 </motion.div>
             </motion.div>
@@ -313,16 +343,66 @@ export default function VerificationUpload({ verificationType, onSuccess, user }
             >
                 <motion.div variants={itemVariants} className="text-center sm:text-left mb-8">
                     <h3 className="text-2xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
-                        {verificationType === 'identity' ? 'Identity Verification' : 'Employment Verification'}
+                        {verificationType === 'identity' 
+                            ? 'Identity Verification' 
+                            : verificationType === 'property' 
+                                ? 'Property Ownership Verification'
+                                : 'Employment & Resource Verification'}
                     </h3>
                     <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
                         {verificationType === 'identity'
-                            ? '🔒 For security, please capture live photos of your government-issued ID'
-                            : 'Upload a recent payslip or employment document'}
+                            ? ' For security, please capture live photos of your government-issued ID'
+                            : verificationType === 'property'
+                                ? ' Please upload proof that you own this property (Deed or Tax Notice)'
+                                : 'Upload your professional or financial documents'}
                     </p>
                 </motion.div>
 
-                <motion.form variants={containerVariants} onSubmit={handleSubmit} className="space-y-6">
+                {/* Guarantor Prompt Logic for Employment/Resources */}
+                {verificationType === 'employment' && hasGuarantor === null && (
+                    <motion.div variants={itemVariants} className="mb-6 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-6 border border-zinc-200 dark:border-zinc-700">
+                        <h4 className="text-lg font-semibold text-zinc-900 dark:text-white mb-2">Do you have a guarantor?</h4>
+                        <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">A guarantor is highly recommended in France. If you don't have one, you can use institutional services.</p>
+                        <div className="flex flex-col sm:flex-row gap-3">
+                            <button
+                                onClick={() => setHasGuarantor(true)}
+                                className="flex-1 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm font-medium text-zinc-900 dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                            >
+                                Yes, I have documents
+                            </button>
+                            <button
+                                onClick={() => setHasGuarantor(false)}
+                                className="flex-1 py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-lg text-sm font-medium hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-colors"
+                            >
+                                No, I need options
+                            </button>
+                        </div>
+                    </motion.div>
+                )}
+
+                {verificationType === 'employment' && hasGuarantor === false && (
+                    <motion.div variants={itemVariants} className="mb-8 grid gap-4 sm:grid-cols-2">
+                        <div className="bg-blue-50/50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-900/30 rounded-xl p-5 flex flex-col">
+                            <h5 className="font-bold text-blue-900 dark:text-blue-300 mb-1">Visale (Free)</h5>
+                            <p className="text-xs text-blue-700 dark:text-blue-400 mb-4 flex-1">A free state guarantee for under 30s or new hires. Obtain your certificate and upload it here.</p>
+                            <a href="https://www.visale.fr/" target="_blank" rel="noopener noreferrer" className="text-center py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
+                                Apply on Visale
+                            </a>
+                        </div>
+                        <div className="bg-teal-50/50 dark:bg-teal-900/10 border border-teal-200 dark:border-teal-900/30 rounded-xl p-5 flex flex-col">
+                            <h5 className="font-bold text-teal-900 dark:text-teal-300 mb-1">Garantme (Paid)</h5>
+                            <p className="text-xs text-teal-700 dark:text-teal-400 mb-4 flex-1">Ideal for international students or freelancers. Get approved in 24h.</p>
+                            <a href="https://garantme.fr/" target="_blank" rel="noopener noreferrer" className="text-center py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded-lg transition-colors">
+                                Apply on Garantme
+                            </a>
+                        </div>
+                        <div className="col-span-full pt-2">
+                            <p className="text-xs text-center text-zinc-500">Already have your certificate? Select it from the dropdown below to upload.</p>
+                        </div>
+                    </motion.div>
+                )}
+
+                <motion.form variants={containerVariants} onSubmit={handleSubmit} className={`space-y-6 ${(verificationType === 'employment' && hasGuarantor === null) ? 'opacity-50 pointer-events-none' : ''}`}>
                     {error && (
                         <motion.div variants={itemVariants} className="rounded-xl bg-red-50/50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/30 p-4">
                             <p className="text-sm font-medium text-red-800 dark:text-red-400">{error}</p>
@@ -372,7 +452,7 @@ export default function VerificationUpload({ verificationType, onSuccess, user }
                                         className="w-full py-8 border-2 border-dashed border-teal-300 dark:border-teal-900/50 rounded-xl hover:bg-teal-50/50 dark:hover:bg-teal-900/10 hover:border-teal-500 transition-all flex flex-col items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed group"
                                     >
                                         <div className="w-12 h-12 bg-teal-100 dark:bg-teal-900/40 text-teal-600 dark:text-teal-400 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                                            <span className="text-2xl">📷</span>
+                                            <span className="text-2xl"></span>
                                         </div>
                                         <span className="font-semibold text-teal-700 dark:text-teal-400">Take Photo of Document</span>
                                     </button>
@@ -381,7 +461,7 @@ export default function VerificationUpload({ verificationType, onSuccess, user }
                                         <div className="bg-teal-50/50 dark:bg-teal-900/10 border border-teal-200 dark:border-teal-900/30 rounded-xl p-4">
                                             <div className="flex items-center gap-2 mb-3">
                                                 <div className="w-8 h-8 rounded-full bg-teal-100 dark:bg-teal-900/50 flex items-center justify-center text-teal-600 dark:text-teal-400">
-                                                    ✓
+                                                    
                                                 </div>
                                                 <p className="text-sm font-semibold text-teal-900 dark:text-teal-300">
                                                     {files.length} photo{files.length > 1 ? 's' : ''} captured
@@ -411,7 +491,7 @@ export default function VerificationUpload({ verificationType, onSuccess, user }
                                     </div>
                                 )}
                                 <p className="text-xs text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5 pt-1">
-                                    <span>🔒</span> Live capture prevents fraud and ensures document authenticity
+                                    <span></span> Live capture prevents fraud and ensures document authenticity
                                 </p>
                             </div>
                         ) : (
@@ -438,7 +518,7 @@ export default function VerificationUpload({ verificationType, onSuccess, user }
                         <motion.div variants={itemVariants} className="bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700/50 rounded-xl p-4 flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-lg bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center text-zinc-600 dark:text-zinc-300">
-                                    📎
+                                    
                                 </div>
                                 <div>
                                     <p className="text-sm font-medium text-zinc-900 dark:text-white truncate max-w-[200px]">
@@ -472,7 +552,7 @@ export default function VerificationUpload({ verificationType, onSuccess, user }
 
                 <motion.div variants={itemVariants} className="mt-6 pt-6 border-t border-zinc-100 dark:border-zinc-800/50">
                     <p className="text-xs text-zinc-500 dark:text-zinc-400 text-center sm:text-left leading-relaxed">
-                        🔒 Your documents are encrypted and stored securely. We use industry-standard security practices to protect your privacy.
+                         Your documents are encrypted and stored securely. We use industry-standard security practices to protect your privacy.
                     </p>
                 </motion.div>
             </motion.div>

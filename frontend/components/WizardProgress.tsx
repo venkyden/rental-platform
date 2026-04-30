@@ -34,7 +34,7 @@ export default function WizardProgress({ steps, currentStep }: WizardProgressPro
                                     }`}
                             >
                                 {isCompleted ? (
-                                    <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }}>✓</motion.span>
+                                    <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }}></motion.span>
                                 ) : (
                                     stepNum
                                 )}

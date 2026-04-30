@@ -146,14 +146,14 @@ export default function TeamManager() {
                     onClick={() => setShowInviteModal(true)}
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium flex items-center gap-2"
                 >
-                    ➕ Invite a Member
+                     Invite a Member
                 </button>
             </div>
 
             {/* Team Members List */}
             {members.length === 0 ? (
                 <div className="bg-white rounded-xl shadow-md p-8 text-center">
-                    <span className="text-5xl mb-4 block">👥</span>
+                    <span className="text-5xl mb-4 block"></span>
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">
                         No members on your team
                     </h3>
@@ -184,7 +184,7 @@ export default function TeamManager() {
                                 <tr key={member.id} className="hover:bg-gray-50">
                                     <td className="px-4 py-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white font-bold">
+                                            <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-white font-bold">
                                                 {(member.name || member.email).charAt(0).toUpperCase()}
                                             </div>
                                             <div>
@@ -230,7 +230,7 @@ export default function TeamManager() {
             {/* Invite Modal */}
             {showInviteModal && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+                    <div className="bg-white rounded-xl shadow-sm max-w-lg w-full max-h-[90vh] overflow-y-auto">
                         <div className="p-6 border-b">
                             <div className="flex items-center justify-between">
                                 <h3 className="text-xl font-bold text-gray-900">
@@ -243,7 +243,7 @@ export default function TeamManager() {
                                     }}
                                     className="text-gray-400 hover:text-gray-600"
                                 >
-                                    ✕
+                                    
                                 </button>
                             </div>
                         </div>
@@ -251,7 +251,7 @@ export default function TeamManager() {
                         {inviteLink ? (
                             <div className="p-6">
                                 <div className="text-center mb-6">
-                                    <span className="text-5xl mb-4 block">✅</span>
+                                    <span className="text-5xl mb-4 block"></span>
                                     <h4 className="text-lg font-semibold text-gray-900">
                                         Invitation Created!
                                     </h4>
@@ -274,7 +274,7 @@ export default function TeamManager() {
                                         onClick={copyInviteLink}
                                         className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
                                     >
-                                        📋 Copy Link
+                                         Copy Link
                                     </button>
                                     <button
                                         onClick={() => {

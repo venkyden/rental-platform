@@ -4,10 +4,10 @@ import { useToast } from '@/lib/ToastContext';
 import { useEffect } from 'react';
 
 const icons = {
-    success: '✅',
-    error: '❌',
+    success: '',
+    error: '',
     info: 'ℹ️',
-    warning: '⚠️',
+    warning: '️',
 };
 
 const colors = {
@@ -25,7 +25,7 @@ export default function ToastContainer() {
             {toasts.map(toast => (
                 <div
                     key={toast.id}
-                    className={`${colors[toast.type]} border-2 rounded-lg shadow-lg p-4 flex items-start gap-3 animate-slide-in`}
+                    className={`${colors[toast.type]} border-2 rounded-lg shadow-sm p-4 flex items-start gap-3 animate-slide-in`}
                 >
                     <span className="text-2xl flex-shrink-0">{icons[toast.type]}</span>
                     <p className="flex-1 font-medium">{toast.message}</p>

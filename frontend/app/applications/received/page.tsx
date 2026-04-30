@@ -74,9 +74,9 @@ export default function ReceivedApplicationsPage() {
         return (
             <ProtectedRoute>
                 <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-8 text-center">
-                        <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center text-4xl mx-auto mb-6">
-                            🔐
+                    <div className="bg-white rounded-2xl shadow-sm max-w-md w-full p-8 text-center">
+                        <div className="w-20 h-20 bg-blue-600 rounded-2xl flex items-center justify-center text-4xl mx-auto mb-6">
+                            
                         </div>
                         <h2 className="text-2xl font-bold text-gray-900 mb-3">
                             Verify Your Identity
@@ -89,15 +89,15 @@ export default function ReceivedApplicationsPage() {
                         <div className="bg-gray-50 rounded-xl p-4 mb-6 text-left">
                             <ul className="space-y-2 text-sm">
                                 <li className="flex items-start gap-2 text-gray-700">
-                                    <span className="text-green-600">✓</span>
+                                    <span className="text-green-600"></span>
                                     <span>Access full tenant profiles and documents</span>
                                 </li>
                                 <li className="flex items-start gap-2 text-gray-700">
-                                    <span className="text-green-600">✓</span>
+                                    <span className="text-green-600"></span>
                                     <span>Get a "Verified Landlord" badge on your listings</span>
                                 </li>
                                 <li className="flex items-start gap-2 text-gray-700">
-                                    <span className="text-green-600">✓</span>
+                                    <span className="text-green-600"></span>
                                     <span>Build trust with prospective tenants</span>
                                 </li>
                             </ul>
@@ -105,13 +105,13 @@ export default function ReceivedApplicationsPage() {
 
                         <button
                             onClick={() => router.push('/verification/identity')}
-                            className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-bold hover:shadow-lg transition-all"
+                            className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold hover:shadow-sm transition-all"
                         >
                             Verify Now
                         </button>
 
                         <p className="text-xs text-gray-400 mt-4">
-                            🔒 Your data is encrypted and never shared without consent
+                             Your data is encrypted and never shared without consent
                         </p>
                     </div>
                 </div>
@@ -138,7 +138,7 @@ export default function ReceivedApplicationsPage() {
                         </div>
                     ) : applications.length === 0 ? (
                         <div className="text-center py-12 bg-white rounded-xl shadow">
-                            <span className="text-4xl block mb-2">📭</span>
+                            <span className="text-4xl block mb-2"></span>
                             <h3 className="text-lg font-medium text-gray-900">No new applications</h3>
                             <p className="text-gray-500">Your listings might be too quiet?</p>
                         </div>
@@ -184,13 +184,13 @@ export default function ReceivedApplicationsPage() {
                                                 onClick={() => handleStatusUpdate(app.id, 'approved')}
                                                 className="px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors shadow-sm"
                                             >
-                                                ✅ Accept
+                                                 Accept
                                             </button>
                                             <button
                                                 onClick={() => handleStatusUpdate(app.id, 'rejected')}
                                                 className="px-4 py-2 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-red-50 hover:text-red-700 hover:border-red-200 transition-colors"
                                             >
-                                                ❌ Reject
+                                                 Reject
                                             </button>
                                         </div>
                                     )}

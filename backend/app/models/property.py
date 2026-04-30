@@ -96,6 +96,10 @@ class Property(Base):
         String(20), default="draft"
     )  # 'draft', 'active', 'rented', 'inactive'
 
+    # Verification
+    ownership_verified = Column(Boolean, default=False)
+    ownership_data = Column(JSONB)
+
     # Metadata
     created_at = Column(TIMESTAMP, server_default=func.now())
     updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())

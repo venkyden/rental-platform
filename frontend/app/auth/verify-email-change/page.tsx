@@ -47,7 +47,7 @@ function VerifyEmailChangeContent() {
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl p-8 rounded-2xl shadow-xl shadow-gray-200/50 dark:shadow-gray-900/50 text-center border border-gray-100 dark:border-gray-700"
+                className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl p-8 rounded-2xl shadow-sm  dark: text-center border border-gray-100 dark:border-gray-700"
             >
                 {status === 'loading' && (
                     <div className="flex flex-col items-center">
@@ -85,7 +85,7 @@ function VerifyEmailChangeContent() {
                         <p className="text-gray-500 dark:text-gray-400 mb-6">{message}</p>
                         <button
                             onClick={() => router.push('/settings/account')}
-                            className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors font-medium shadow-md shadow-indigo-600/20"
+                            className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors font-medium shadow-md "
                         >
                             Return to Settings
                         </button>

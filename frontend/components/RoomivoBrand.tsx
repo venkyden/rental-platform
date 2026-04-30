@@ -35,7 +35,7 @@ export default function RoomivoBrand({
         <div className={`flex flex-col items-center gap-2 ${className}`}>
             {/* Logo Mark — House + People + Graduation Cap */}
             <div
-                className={`${s.icon} flex items-center justify-center shadow-lg ${animate ? 'animate-bounce-in' : ''
+                className={`${s.icon} flex items-center justify-center shadow-sm ${animate ? 'animate-bounce-in' : ''
                     }`}
                 style={{ borderRadius: s.radius, background: 'linear-gradient(135deg, #3DD6D0, #22B8B8)' }}
             >

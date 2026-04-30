@@ -61,11 +61,11 @@ export default function CookieConsentBanner() {
 
     return (
         <div className="fixed bottom-0 left-0 right-0 z-50 p-4">
-            <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden">
+            <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 {/* Main banner */}
                 <div className="p-5">
                     <div className="flex items-start gap-3">
-                        <span className="text-2xl" aria-hidden="true">🍪</span>
+                        <span className="text-2xl" aria-hidden="true"></span>
                         <div className="flex-1">
                             <h3 className="text-base font-semibold text-gray-900 mb-1">
                                 Cookie Preferences

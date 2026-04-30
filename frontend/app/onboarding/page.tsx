@@ -12,6 +12,9 @@ export default function OnboardingPage() {
     const [step, setStep] = useState<'welcome' | 'questionnaire'>('welcome');
     const { user, loading } = useAuth();
     const router = useRouter();
+    const [fullName, setFullName] = useState('');
+    const [isSavingName, setIsSavingName] = useState(false);
+    const [error, setError] = useState('');
 
     const userType = (user?.role === 'landlord' || user?.role === 'property_manager') ? 'landlord' : 'tenant';
 
@@ -22,6 +25,28 @@ export default function OnboardingPage() {
         } catch (error) {
             console.error('Failed to complete onboarding:', error);
         }
+    };
+
+    const handleStart = async () => {
+        if (!user?.full_name && !fullName.trim()) {
+            setError('Please enter your full name to continue.');
+            return;
+        }
+
+        if (!user?.full_name && fullName.trim()) {
+            try {
+                setIsSavingName(true);
+                await apiClient.client.put('/auth/me', { full_name: fullName.trim() });
+                // We don't strictly need to mutate user state here since we just move to the next step,
+                // but if there's a mutate() function we could call it.
+            } catch (err) {
+                setError('Failed to save name. Please try again.');
+                setIsSavingName(false);
+                return;
+            }
+        }
+        
+        setStep('questionnaire');
     };
 
     if (loading) {
@@ -50,27 +75,49 @@ export default function OnboardingPage() {
                     <div className="flex justify-center mb-8">
                         <RoomivoBrand variant="wordmark" size="lg" />
                     </div>
-                    <div className="text-6xl mb-6">🏠</div>
+                    <div className="text-6xl mb-6"></div>
                     <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
                         Welcome to Roomivo!
                     </h1>
-                    <p className="text-xl text-gray-600 dark:text-zinc-400 mb-8">
-                        We'll ask you a few quick questions to personalize your experience.
-                        <br />
-                        <span className="text-sm text-gray-500 dark:text-zinc-500 mt-2 block">This takes about 2 minutes.</span>
-                    </p>
+                    
+                    {!user?.full_name ? (
+                        <div className="mb-8 max-w-sm mx-auto text-left">
+                            <p className="text-gray-600 dark:text-zinc-400 mb-4 text-center">
+                                Please enter your full name to get started.
+                            </p>
+                            <input
+                                type="text"
+                                placeholder="e.g. Jean Dupont"
+                                value={fullName}
+                                onChange={(e) => { setFullName(e.target.value); setError(''); }}
+                                className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-teal-500 focus:outline-none"
+                            />
+                            {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+                        </div>
+                    ) : (
+                        <p className="text-xl text-gray-600 dark:text-zinc-400 mb-8">
+                            We'll ask you a few quick questions to personalize your experience.
+                            <br />
+                            <span className="text-sm text-gray-500 dark:text-zinc-500 mt-2 block">This takes about 2 minutes.</span>
+                        </p>
+                    )}
+
                     <button
-                        onClick={() => setStep('questionnaire')}
-                        className="w-full sm:w-auto px-12 py-4 bg-teal-600 hover:bg-teal-700 text-white text-lg font-medium rounded-2xl shadow-lg hover:shadow-teal-500/25 transition-all transform hover:-translate-y-0.5"
+                        onClick={handleStart}
+                        disabled={isSavingName}
+                        className="w-full sm:w-auto px-12 py-4 bg-teal-600 hover:bg-teal-700 text-white text-lg font-medium rounded-2xl shadow-sm hover: transition-all transform hover:-translate-y-0.5 disabled:opacity-70"
                     >
-                        Let's get started →
+                        {isSavingName ? 'Saving...' : 'Let\'s get started →'}
                     </button>
-                    <button
-                        onClick={() => router.push('/dashboard')}
-                        className="block w-full mt-6 text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 text-sm transition-colors"
-                    >
-                        Skip for now
-                    </button>
+                    
+                    {user?.full_name && (
+                        <button
+                            onClick={() => router.push('/dashboard')}
+                            className="block w-full mt-6 text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 text-sm transition-colors"
+                        >
+                            Skip for now
+                        </button>
+                    )}
                 </motion.div>
             </div>
         );

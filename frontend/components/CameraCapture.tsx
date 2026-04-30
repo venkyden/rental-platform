@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import { useLanguage } from '@/lib/LanguageContext';
 
 interface CameraCaptureProps {
     onCapture: (file: File) => void;
@@ -8,6 +9,7 @@ interface CameraCaptureProps {
 }
 
 export default function CameraCapture({ onCapture, onCancel }: CameraCaptureProps) {
+    const { t } = useLanguage();
     const [stream, setStream] = useState<MediaStream | null>(null);
     const [capturing, setCapturing] = useState(false);
     const [error, setError] = useState('');
@@ -31,7 +33,7 @@ export default function CameraCapture({ onCapture, onCancel }: CameraCaptureProp
             }
             setCapturing(true);
         } catch (err: any) {
-            setError('Camera access denied. Please allow camera access to verify your identity.');
+            setError(t('cameraCapture.accessDenied', 'Camera access denied. Please allow camera access to verify your identity.'));
             console.error('Camera error:', err);
         }
     };
@@ -86,7 +88,7 @@ export default function CameraCapture({ onCapture, onCancel }: CameraCaptureProp
             <div className="bg-white rounded-lg max-w-2xl w-full p-6">
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-xl font-bold text-gray-900">
-                        📸 Capture Identity Document
+                         {t('cameraCapture.title', 'Capture Identity Document')}
                     </h3>
                     <button
                         onClick={handleCancel}
@@ -104,20 +106,20 @@ export default function CameraCapture({ onCapture, onCancel }: CameraCaptureProp
 
                 {!capturing && !error && (
                     <div className="text-center py-8">
-                        <div className="text-6xl mb-4">📷</div>
+                        <div className="text-6xl mb-4"></div>
                         <h4 className="text-lg font-semibold text-gray-900 mb-2">
-                            Live Document Capture
+                            {t('cameraCapture.liveCaptureTitle', 'Live Document Capture')}
                         </h4>
                         <p className="text-gray-600 mb-6">
-                            For security, we require a live photo of your ID document.
+                            {t('cameraCapture.liveCaptureDesc', 'For security, we require a live photo of your ID document.')}
                             <br />
-                            <span className="text-sm">Position your document clearly and ensure all text is readable.</span>
+                            <span className="text-sm">{t('cameraCapture.liveCaptureTip', 'Position your document clearly and ensure all text is readable.')}</span>
                         </p>
                         <button
                             onClick={startCamera}
-                            className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg hover:shadow-lg transform hover:scale-105 transition-all"
+                            className="px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:shadow-sm transform hover:scale-105 transition-all"
                         >
-                            Open Camera
+                            {t('cameraCapture.openCamera', 'Open Camera')}
                         </button>
                     </div>
                 )}
@@ -142,19 +144,19 @@ export default function CameraCapture({ onCapture, onCancel }: CameraCaptureProp
                                 onClick={handleCancel}
                                 className="flex-1 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors"
                             >
-                                Cancel
+                                {t('cameraCapture.cancel', 'Cancel')}
                             </button>
                             <button
                                 onClick={capturePhoto}
-                                className="flex-1 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg hover:shadow-lg transform hover:scale-105 transition-all"
+                                className="flex-1 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:shadow-sm transform hover:scale-105 transition-all"
                             >
-                                📸 Capture Photo
+                                 {t('cameraCapture.captureButton', 'Capture Photo')}
                             </button>
                         </div>
 
                         <div className="p-3 bg-blue-50 rounded-md">
                             <p className="text-xs text-blue-800">
-                                💡 Tip: Ensure your document is well-lit and all corners are visible within the blue frame.
+                                 {t('cameraCapture.frameTip', 'Tip: Ensure your document is well-lit and all corners are visible within the blue frame.')}
                             </p>
                         </div>
                     </div>

@@ -49,7 +49,7 @@ export default function LogoutPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 1.05 }}
                 transition={{ duration: 0.4, ease: "easeOut" }}
-                className="w-full max-w-sm bg-white rounded-2xl shadow-xl shadow-zinc-200/50 p-8 text-center border border-zinc-100 relative overflow-hidden"
+                className="w-full max-w-sm bg-white rounded-2xl shadow-sm  p-8 text-center border border-zinc-100 relative overflow-hidden"
             >
                 {/* Decorative background glow */}
                 <div className="absolute -top-24 -right-24 w-48 h-48 bg-teal-50 rounded-full blur-3xl opacity-60" />

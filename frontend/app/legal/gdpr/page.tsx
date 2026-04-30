@@ -25,7 +25,7 @@ export default function GDPRPage() {
                 <div className="grid sm:grid-cols-2 gap-6 mt-6 not-prose">
                     <div className="bg-zinc-50 border border-zinc-200 rounded-xl p-6">
                         <div className="flex items-center gap-3 mb-2">
-                            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-teal-100 text-teal-700">🔍</span>
+                            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-teal-100 text-teal-700"></span>
                             <h3 className="text-lg font-bold text-zinc-900">Access & Portability</h3>
                         </div>
                         <p className="text-zinc-600 text-sm">
@@ -35,7 +35,7 @@ export default function GDPRPage() {
 
                     <div className="bg-zinc-50 border border-zinc-200 rounded-xl p-6">
                         <div className="flex items-center gap-3 mb-2">
-                            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-teal-100 text-teal-700">✏️</span>
+                            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-teal-100 text-teal-700">️</span>
                             <h3 className="text-lg font-bold text-zinc-900">Rectification</h3>
                         </div>
                         <p className="text-zinc-600 text-sm">
@@ -45,7 +45,7 @@ export default function GDPRPage() {
 
                     <div className="bg-zinc-50 border border-zinc-200 rounded-xl p-6 sm:col-span-2">
                         <div className="flex items-center gap-3 mb-2">
-                            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-red-700">🗑️</span>
+                            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-red-700">️</span>
                             <h3 className="text-lg font-bold text-zinc-900">The Right to be Forgotten</h3>
                         </div>
                         <p className="text-zinc-600 text-sm">

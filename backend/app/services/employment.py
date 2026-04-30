@@ -169,6 +169,8 @@ Important Context:
 - If this is a payslip, extract 'Salaire brut' (gross) and 'Net à payer' (net).
 - If this is a student ID or enrollment certificate, 'net_salary' and 'gross_salary' should be 0.00, 'employment_type' should be 'Student', 'employer_name' should be the University.
 - If this is a tax return or KBIS, extract relevant identifiers, incomes as salaried, and company names.
+- If this is an institutional guarantee (Visale, Garantme), extract the guaranteed amount as 'net_salary', 'employer_name' as the institution, and 'employment_type' as 'Guarantor'.
+- If this is a bank funds certificate, extract the total blocked funds as 'net_salary', 'employer_name' as the Bank.
 
 Return ONLY the JSON, no explanation."""
 
@@ -236,14 +238,15 @@ Return ONLY the JSON, no explanation."""
             }
         )
 
-        is_student_or_kbis = document_type in (
+        is_non_salaried = document_type in (
             "student_id", "kbis", "urssaf", "scholarship", 
-            "tax_return", "contract", "internship_contract",
-            "caf", "benefits", "pension", "accounting",
+            "tax_return", "foreign_tax_return", "contract", "internship_contract",
+            "caf", "benefits", "pension", "accounting", "bank_funds_certificate",
+            "visale_certificate", "garantme_certificate", "employer_certificate"
         )
 
         # 2. Salary sanity check
-        if is_student_or_kbis:
+        if is_non_salaried:
             salary_valid = True
         else:
             salary_valid = data.net_salary > 0 and data.net_salary < 100000
@@ -259,7 +262,7 @@ Return ONLY the JSON, no explanation."""
         )
 
         # 3. Recent payslip check
-        if is_student_or_kbis:
+        if is_non_salaried:
             pay_period_recent = True
         else:
             pay_period_recent = self._is_recent_payslip(data.pay_period)
@@ -269,13 +272,13 @@ Return ONLY the JSON, no explanation."""
                 "name": "recent_document",
                 "description": "Payslip from last 3 months or not applicable",
                 "passed": pay_period_recent,
-                "critical": not is_student_or_kbis,
+                "critical": not is_non_salaried,
                 "details": f"Pay period: {data.pay_period}",
             }
         )
 
         # 4. Employment type check
-        if is_student_or_kbis:
+        if is_non_salaried:
             stable_employment = True
         else:
             stable_employment = data.employment_type.upper() in ["CDI", "FONCTIONNAIRE"]

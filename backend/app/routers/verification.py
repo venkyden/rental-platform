@@ -335,16 +335,13 @@ async def upload_identity_mobile(
 
 @router.post("/employment/upload")
 async def upload_employment_document(
-    document_type: str,  # "payslip", "contract", "tax_return"
+    document_type: str,
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Upload employment document for verification.
-
-    For MVP: Simulates employment verification
-    For Production: Integrate with income verification API
+    Upload professional/resources document for verification.
     """
 
     # Validate file type
@@ -442,6 +439,166 @@ async def get_verification_status(current_user: User = Depends(get_current_user)
         "identity_data": current_user.identity_data,
         "employment_data": current_user.employment_data,
         "trust_score": current_user.trust_score,
+    }
+
+@router.post("/guarantor/upload")
+async def upload_guarantor_document(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Minimalist endpoint for Guarantor Dossier upload.
+    Accepts a single combined PDF and stores it.
+    """
+    from app.models.document import Document, DocumentType
+    import os
+    import secrets
+
+    allowed_types = ["image/jpeg", "image/png", "image/jpg", "application/pdf"]
+    if file.content_type not in allowed_types:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid file type: {file.content_type}. Please upload JPEG, PNG, or PDF",
+        )
+
+    content = await file.read()
+    
+    upload_dir = "uploads/verification/guarantor"
+    os.makedirs(upload_dir, exist_ok=True)
+    
+    file_extension = os.path.splitext(file.filename)[1]
+    filename = f"guarantor_{current_user.id}_{secrets.token_urlsafe(8)}{file_extension}"
+    file_path = os.path.join(upload_dir, filename)
+    
+    with open(file_path, "wb") as f:
+        f.write(content)
+
+    file_url = f"/uploads/verification/guarantor/{filename}"
+
+    new_doc = Document(
+        user_id=current_user.id,
+        document_type=DocumentType.GUARANTOR_FORM,
+        file_url=file_url,
+        filename=file.filename,
+        mime_type=file.content_type,
+        status="pending",
+    )
+    
+    db.add(new_doc)
+    await db.commit()
+
+    return {
+        "message": "Guarantor dossier uploaded successfully",
+        "file_url": file_url
+    }
+
+
+@router.post("/property/upload")
+async def upload_property_document(
+    property_id: str,
+    document_type: str,
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Upload property ownership document (Titre de propriété or Taxe foncière).
+    """
+    from app.models.property import Property
+    
+    # 1. Validate property
+    import uuid
+    try:
+        prop_uuid = uuid.UUID(property_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid property ID")
+        
+    result = await db.execute(select(Property).where(Property.id == prop_uuid))
+    property_obj = result.scalar_one_or_none()
+    
+    if not property_obj:
+        raise HTTPException(status_code=404, detail="Property not found")
+        
+    if property_obj.landlord_id != current_user.id:
+        raise HTTPException(status_code=403, detail="You do not own this property")
+
+    # 2. Validate file type
+    allowed_types = ["image/jpeg", "image/png", "image/jpg", "application/pdf"]
+    if file.content_type not in allowed_types:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid file type: {file.content_type}. Please upload JPEG, PNG, or PDF",
+        )
+
+    # 3. Read content
+    content = await file.read()
+
+    # 4. Verify Document via AI
+    from app.services.property import property_verification_service
+    
+    try:
+        verification_result = await property_verification_service.verify_document(
+            file_content=content,
+            file_type=file.content_type,
+            expected_owner_name=current_user.full_name,
+            expected_address=property_obj.address_line1,
+            document_type=document_type,
+        )
+    except Exception as e:
+        logger.error(f"Property verification crashed: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Verification processing error: {str(e)}",
+        )
+
+    if not verification_result["verified"] and verification_result["status"] == "rejected":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Verification failed: {verification_result.get('rejection_reason')}",
+        )
+
+    # 5. Save file to disk
+    import os
+    import secrets
+    
+    upload_dir = "uploads/verification/property"
+    os.makedirs(upload_dir, exist_ok=True)
+    
+    file_extension = os.path.splitext(file.filename)[1]
+    filename = f"prop_{property_id}_{secrets.token_urlsafe(8)}{file_extension}"
+    file_path = os.path.join(upload_dir, filename)
+    
+    with open(file_path, "wb") as f:
+        f.write(content)
+
+    file_url = f"/uploads/verification/property/{filename}"
+
+    # 6. Update property
+    property_obj.ownership_verified = verification_result["verified"]
+    property_obj.ownership_data = {
+        "verified": verification_result["verified"],
+        "upload_date": datetime.utcnow().isoformat(),
+        "filename": file.filename,
+        "file_url": file_url,
+        "status": verification_result["status"],
+        "extracted_data": verification_result.get("data"),
+        "checks": verification_result.get("validation_checks"),
+    }
+    
+    # Update landlord trust score if verified
+    if verification_result["verified"]:
+        current_user.trust_score = min(100, current_user.trust_score + 20)
+
+    await db.commit()
+    await db.refresh(property_obj)
+    await db.refresh(current_user)
+
+    return {
+        "message": "Property document processed",
+        "verified": verification_result["verified"],
+        "status": verification_result["status"],
+        "details": verification_result.get("rejection_reason") or "Verification successful",
     }
 
 

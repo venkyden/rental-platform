@@ -48,7 +48,7 @@ export default function IncidentReportPage() {
 
                         // 500m threshold
                         if (distance > 500) {
-                            const proceeded = window.confirm(`⚠️ Location Warning\n\nYou seem to be ${distance.toFixed(0)}m away from the property.\n\nAre you sure you want to submit this report?`);
+                            const proceeded = window.confirm(`️ Location Warning\n\nYou seem to be ${distance.toFixed(0)}m away from the property.\n\nAre you sure you want to submit this report?`);
                             if (!proceeded) {
                                 setLoading(false);
                                 return;
@@ -201,7 +201,7 @@ export default function IncidentReportPage() {
                 <button
                     onClick={handleSubmit}
                     disabled={!category || !title || loading}
-                    className="w-full py-4 bg-black text-white rounded-xl font-bold shadow-lg disabled:opacity-50"
+                    className="w-full py-4 bg-black text-white rounded-xl font-bold shadow-sm disabled:opacity-50"
                 >
                     {loading ? "Submitting..." : "Submit Report"}
                 </button>

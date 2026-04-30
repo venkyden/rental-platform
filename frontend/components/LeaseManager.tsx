@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { apiClient } from '@/lib/api';
+import { useLanguage } from '@/lib/LanguageContext';
 
 interface LeaseManagerProps {
     propertyId: string;
@@ -19,42 +20,44 @@ interface LeaseTypeInfo {
     depositInfo: string;
 }
 
-const LEASE_TYPES: Record<string, LeaseTypeInfo> = {
+const getLeaseTypes = (t: any): Record<string, LeaseTypeInfo> => ({
     meuble: {
-        name: 'Location Meublée',
-        description: 'Bail standard pour logement meublé',
-        duration: '1 an (reconductible)',
-        tenantNotice: '1 mois',
-        landlordNotice: '3 mois',
-        depositInfo: '2 mois max'
+        name: t('lease.meuble.name', 'Furnished Rental'),
+        description: t('lease.meuble.desc', 'Standard lease for furnished property'),
+        duration: t('lease.meuble.duration', '1 year (renewable)'),
+        tenantNotice: t('lease.meuble.tenantNotice', '1 month'),
+        landlordNotice: t('lease.meuble.landlordNotice', '3 months'),
+        depositInfo: t('lease.meuble.depositInfo', '2 months max')
     },
     vide: {
-        name: 'Location Vide',
-        description: 'Bail pour logement non meublé',
-        duration: '3 ans (reconductible)',
-        tenantNotice: '3 mois',
-        landlordNotice: '6 mois',
-        depositInfo: '1 mois max'
+        name: t('lease.vide.name', 'Unfurnished Rental'),
+        description: t('lease.vide.desc', 'Lease for unfurnished property'),
+        duration: t('lease.vide.duration', '3 years (renewable)'),
+        tenantNotice: t('lease.vide.tenantNotice', '3 months'),
+        landlordNotice: t('lease.vide.landlordNotice', '6 months'),
+        depositInfo: t('lease.vide.depositInfo', '1 month max')
     },
     mobilite: {
-        name: 'Bail Mobilité',
-        description: 'Court terme (étudiants, stagiaires, mutation)',
-        duration: '1-10 mois (non reconductible)',
-        tenantNotice: '1 mois',
-        landlordNotice: 'Non applicable',
-        depositInfo: 'Interdit'
+        name: t('lease.mobilite.name', 'Mobility Lease'),
+        description: t('lease.mobilite.desc', 'Short term (students, interns, relocation)'),
+        duration: t('lease.mobilite.duration', '1-10 months (non-renewable)'),
+        tenantNotice: t('lease.mobilite.tenantNotice', '1 month'),
+        landlordNotice: t('lease.mobilite.landlordNotice', 'Not applicable'),
+        depositInfo: t('lease.mobilite.depositInfo', 'Forbidden')
     },
     etudiant: {
-        name: 'Bail Étudiant',
-        description: 'Spécifique aux étudiants',
-        duration: '9 mois (non reconductible)',
-        tenantNotice: '1 mois',
-        landlordNotice: 'Non applicable',
-        depositInfo: '2 mois max'
+        name: t('lease.etudiant.name', 'Student Lease'),
+        description: t('lease.etudiant.desc', 'Specific for students'),
+        duration: t('lease.etudiant.duration', '9 months (non-renewable)'),
+        tenantNotice: t('lease.etudiant.tenantNotice', '1 month'),
+        landlordNotice: t('lease.etudiant.landlordNotice', 'Not applicable'),
+        depositInfo: t('lease.etudiant.depositInfo', '2 months max')
     }
-};
+});
 
 export default function LeaseManager({ propertyId, monthlyRent, deposit, charges }: LeaseManagerProps) {
+    const { t } = useLanguage();
+    const LEASE_TYPES = getLeaseTypes(t);
     const [tenantEmail, setTenantEmail] = useState('');
     const [startDate, setStartDate] = useState('');
     const [leaseType, setLeaseType] = useState('meuble');
@@ -69,7 +72,7 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
 
     const handleGenerate = async () => {
         if (!tenantEmail || !startDate) {
-            setError('Veuillez remplir tous les champs obligatoires');
+            setError(t('lease.error.missingFields', 'Please fill all required fields'));
             return;
         }
 
@@ -92,7 +95,7 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
                 leaseType: response.data.lease_type
             });
         } catch (err: any) {
-            setError(err.response?.data?.detail || 'Erreur lors de la génération du contrat');
+            setError(err.response?.data?.detail || t('lease.error.generationFailed', 'Error generating lease'));
         } finally {
             setLoading(false);
         }
@@ -101,13 +104,13 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
     return (
         <div className="mt-6 border-t pt-6">
             <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                📄 Générer un Bail
+                 {t('lease.title', 'Generate a Lease')}
             </h3>
 
             {/* Lease Type Selection */}
             <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Type de bail *
+                    {t('lease.leaseType', 'Lease Type')} *
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                     {Object.entries(LEASE_TYPES).map(([key, info]) => (
@@ -131,16 +134,16 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
                 <div className="font-semibold text-gray-900 mb-2">{selectedType.name}</div>
                 <div className="grid grid-cols-2 gap-2 text-gray-600">
                     <div>
-                        <span className="font-medium">Durée:</span> {selectedType.duration}
+                        <span className="font-medium">{t('lease.duration', 'Duration')}:</span> {selectedType.duration}
                     </div>
                     <div>
-                        <span className="font-medium">Dépôt:</span> {selectedType.depositInfo}
+                        <span className="font-medium">{t('lease.deposit', 'Deposit')}:</span> {selectedType.depositInfo}
                     </div>
                     <div>
-                        <span className="font-medium">Préavis locataire:</span> {selectedType.tenantNotice}
+                        <span className="font-medium">{t('lease.tenantNotice', 'Tenant Notice')}:</span> {selectedType.tenantNotice}
                     </div>
                     <div>
-                        <span className="font-medium">Préavis bailleur:</span> {selectedType.landlordNotice}
+                        <span className="font-medium">{t('lease.landlordNotice', 'Landlord Notice')}:</span> {selectedType.landlordNotice}
                     </div>
                 </div>
             </div>
@@ -149,7 +152,7 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
             {leaseType === 'mobilite' && (
                 <div className="mb-4">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Durée (1-10 mois) *
+                        {t('lease.mobiliteDuration', 'Duration (1-10 months)')} *
                     </label>
                     <input
                         type="number"
@@ -165,7 +168,7 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
             {/* Tenant Email */}
             <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email du locataire *
+                    {t('lease.tenantEmail', 'Tenant Email')} *
                 </label>
                 <input
                     type="email"
@@ -179,7 +182,7 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
             {/* Start Date */}
             <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Date de début du bail *
+                    {t('lease.startDate', 'Lease Start Date')} *
                 </label>
                 <input
                     type="date"
@@ -191,14 +194,14 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
 
             {/* Financial Details */}
             <div className="mb-4 p-3 bg-blue-50 rounded-lg">
-                <div className="text-sm font-medium text-blue-900 mb-2">Conditions financières</div>
+                <div className="text-sm font-medium text-blue-900 mb-2">{t('lease.financialConditions', 'Financial Conditions')}</div>
                 <div className="grid grid-cols-2 gap-3">
                     <div>
-                        <label className="block text-xs text-blue-700 mb-1">Loyer mensuel</label>
+                        <label className="block text-xs text-blue-700 mb-1">{t('lease.monthlyRent', 'Monthly Rent')}</label>
                         <div className="font-bold text-blue-900">{monthlyRent} €</div>
                     </div>
                     <div>
-                        <label className="block text-xs text-blue-700 mb-1">Charges</label>
+                        <label className="block text-xs text-blue-700 mb-1">{t('lease.charges', 'Charges')}</label>
                         <input
                             type="number"
                             value={customCharges || ''}
@@ -210,7 +213,7 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
                     {leaseType !== 'mobilite' && (
                         <div className="col-span-2">
                             <label className="block text-xs text-blue-700 mb-1">
-                                Dépôt de garantie ({selectedType.depositInfo})
+                                {t('lease.securityDeposit', 'Security Deposit')} ({selectedType.depositInfo})
                             </label>
                             <input
                                 type="number"
@@ -233,7 +236,7 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
             <button
                 onClick={handleGenerate}
                 disabled={loading || !tenantEmail || !startDate}
-                className="w-full py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold rounded-lg hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-3 bg-zinc-100 dark:bg-zinc-800 text-white font-bold rounded-lg hover:shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
                 {loading ? (
                     <span className="flex items-center justify-center gap-2">
@@ -241,21 +244,20 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                         </svg>
-                        Génération en cours...
+                        {t('lease.generating', 'Generating...')}
                     </span>
                 ) : (
-                    '📝 Générer le Contrat de Bail'
+                    ` ${t('lease.generateButton', 'Generate Lease Contract')}`
                 )}
             </button>
 
             {result?.downloadUrl && (
                 <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
                     <div className="flex items-center gap-2 text-green-800 font-semibold mb-2">
-                        ✅ Bail {LEASE_TYPES[result.leaseType || 'meuble'].name} généré!
+                         {t('lease.success', 'Lease generated!')} ({LEASE_TYPES[result.leaseType || 'meuble'].name})
                     </div>
                     <p className="text-sm text-green-700 mb-3">
-                        Le contrat inclut tous les clauses légales françaises: préavis, fin de bail,
-                        dépôt de garantie, obligations des parties, état des lieux, et clause résolutoire.
+                        {t('lease.successDesc', 'The contract includes all required clauses: notice periods, end of lease conditions, security deposit, obligations of both parties, inventory, and termination clause.')}
                     </p>
                     <a
                         href={result.downloadUrl ? (
@@ -267,7 +269,7 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                     >
-                        📥 Télécharger le PDF
+                         {t('lease.downloadPdf', 'Download PDF')}
                     </a>
                 </div>
             )}

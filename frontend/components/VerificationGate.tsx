@@ -76,29 +76,29 @@ export default function VerificationGate({
             switch (requires) {
                 case 'identity':
                     return {
-                        title: '🔐 Verify Your Identity to Apply',
+                        title: ' Verify Your Identity to Apply',
                         description: 'Landlords trust verified tenants. Complete ID verification to submit your application.',
                         benefits: [
-                            '✓ Stand out with a verified badge',
-                            '✓ Landlords respond 3x faster to verified applicants',
-                            '✓ Takes only 2 minutes with your ID'
+                            ' Stand out with a verified badge',
+                            ' Landlords respond 3x faster to verified applicants',
+                            ' Takes only 2 minutes with your ID'
                         ],
                         buttonText: 'Verify Now'
                     };
                 case 'income':
                     return {
-                        title: '💼 Verify Your Income',
+                        title: ' Verify Your Income',
                         description: 'Show landlords you can afford this property.',
                         benefits: [
-                            '✓ Secure bank connection or pay stub upload',
-                            '✓ Your data is encrypted and private',
-                            '✓ Increases approval chances significantly'
+                            ' Secure bank connection or pay stub upload',
+                            ' Your data is encrypted and private',
+                            ' Increases approval chances significantly'
                         ],
                         buttonText: 'Verify Income'
                     };
                 default:
                     return {
-                        title: '🔐 Verification Required',
+                        title: ' Verification Required',
                         description: 'Complete verification to continue.',
                         benefits: [],
                         buttonText: 'Verify Now'
@@ -109,29 +109,29 @@ export default function VerificationGate({
             switch (requires) {
                 case 'identity':
                     return {
-                        title: '🔐 Verify Your Identity',
+                        title: ' Verify Your Identity',
                         description: 'Tenants only share their verified profiles with verified landlords.',
                         benefits: [
-                            '✓ Access full tenant profiles and documents',
-                            '✓ Get a "Verified Landlord" badge on your listings',
-                            '✓ Build trust with prospective tenants'
+                            ' Access full tenant profiles and documents',
+                            ' Get a "Verified Landlord" badge on your listings',
+                            ' Build trust with prospective tenants'
                         ],
                         buttonText: 'Verify Now'
                     };
                 case 'property_docs':
                     return {
-                        title: '📄 Verify Property Ownership',
+                        title: ' Verify Property Ownership',
                         description: 'Upload proof of ownership to accept applications.',
                         benefits: [
-                            '✓ Title deed or property certificate',
-                            '✓ Required before signing leases',
-                            '✓ Protects both you and tenants'
+                            ' Title deed or property certificate',
+                            ' Required before signing leases',
+                            ' Protects both you and tenants'
                         ],
                         buttonText: 'Upload Documents'
                     };
                 default:
                     return {
-                        title: '🔐 Verification Required',
+                        title: ' Verification Required',
                         description: 'Complete verification to continue.',
                         benefits: [],
                         buttonText: 'Verify Now'
@@ -175,10 +175,10 @@ export default function VerificationGate({
             {/* Verification Modal */}
             {showModal && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200">
+                    <div className="bg-white rounded-2xl shadow-sm max-w-md w-full p-6 animate-in fade-in zoom-in duration-200">
                         <div className="text-center mb-6">
-                            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4">
-                                🔐
+                            <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4">
+                                
                             </div>
                             <h2 className="text-2xl font-bold text-gray-900 mb-2">
                                 {content.title}
@@ -210,14 +210,14 @@ export default function VerificationGate({
                             </button>
                             <button
                                 onClick={handleVerifyNow}
-                                className="flex-1 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-bold hover:shadow-lg transition-all"
+                                className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold hover:shadow-sm transition-all"
                             >
                                 {content.buttonText}
                             </button>
                         </div>
 
                         <p className="text-xs text-gray-400 text-center mt-4">
-                            🔒 Your data is encrypted and never shared without consent
+                             Your data is encrypted and never shared without consent
                         </p>
                     </div>
                 </div>

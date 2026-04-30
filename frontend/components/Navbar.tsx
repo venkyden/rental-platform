@@ -17,12 +17,12 @@ export default function Navbar() {
     if (!user) return null;
 
     const navLinks = [
-        { href: '/dashboard', label: 'Dashboard', icon: '🏠' },
+        { href: '/dashboard', label: 'Dashboard', icon: '' },
         ...(user.role === 'landlord'
-            ? [{ href: '/properties', label: 'Properties', icon: '🏢' }]
-            : [{ href: '/search', label: 'Search', icon: '🔍' }]),
-        { href: '/inbox', label: 'Inbox', icon: '📬' },
-        { href: '/verification', label: 'Verification', icon: '✅' },
+            ? [{ href: '/properties', label: 'Properties', icon: '' }]
+            : [{ href: '/search', label: 'Search', icon: '' }]),
+        { href: '/inbox', label: 'Inbox', icon: '' },
+        { href: '/verification', label: 'Verification', icon: '' },
     ];
 
     return (
@@ -31,7 +31,7 @@ export default function Navbar() {
                 {/* Logo & Brand */}
                 <div className="flex items-center gap-8">
                     <Link href="/dashboard" className="flex items-center gap-3 group">
-                        <div className="w-10 h-10 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform" style={{ borderRadius: 10, background: 'linear-gradient(135deg, #3DD6D0, #22B8B8)' }}>
+                        <div className="w-10 h-10 flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform" style={{ borderRadius: 10, background: 'linear-gradient(135deg, #3DD6D0, #22B8B8)' }}>
                             <svg width="24" height="24" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Roomivo logo">
                                 <path d="M32 10L8 30H14V52H50V30H56L32 10Z" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none" />
                                 <circle cx="25" cy="32" r="4.5" fill="white" />

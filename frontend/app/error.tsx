@@ -20,7 +20,7 @@ export default function GlobalError({
                 <div className="absolute top-0 w-full h-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-teal-50/50 via-slate-50 to-white"></div>
             </div>
             <div className="z-10 max-w-md w-full text-center">
-                <div className="text-6xl mb-6">⚠️</div>
+                <div className="text-6xl mb-6">️</div>
                 <h1 className="text-2xl font-bold text-zinc-900 mb-3">Something went wrong</h1>
                 <p className="text-zinc-500 mb-8 leading-relaxed">
                     An unexpected error occurred. Our team has been notified. Please try again.
@@ -28,7 +28,7 @@ export default function GlobalError({
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                     <button
                         onClick={() => reset()}
-                        className="px-6 py-3 text-sm font-semibold text-white rounded-xl shadow-md transition-all hover:shadow-lg hover:-translate-y-0.5"
+                        className="px-6 py-3 text-sm font-semibold text-white rounded-xl shadow-md transition-all hover:shadow-sm hover:-translate-y-0.5"
                         style={{ background: 'linear-gradient(135deg, #3DD6D0, #22B8B8)' }}
                     >
                         Try again

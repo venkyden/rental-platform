@@ -17,10 +17,10 @@ export default function VerifyCaptureePage() {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const documentTypes = [
-        { value: 'passport', label: '📘 Passport / Passeport', description: '1 photo of bio page' },
-        { value: 'id_card', label: '🪪 National ID Card / CNI', description: 'Front side photo' },
-        { value: 'drivers_license', label: '🚗 Driver\'s License / Permis', description: 'Front side photo' },
-        { value: 'residence_permit', label: '🌍 Titre de séjour', description: 'Front side photo' },
+        { value: 'passport', label: ' Passport / Passeport', description: '1 photo of bio page' },
+        { value: 'id_card', label: ' National ID Card / CNI', description: 'Front side photo' },
+        { value: 'drivers_license', label: ' Driver\'s License / Permis', description: 'Front side photo' },
+        { value: 'residence_permit', label: ' Titre de séjour', description: 'Front side photo' },
     ];
 
     // Validate session on load
@@ -111,7 +111,7 @@ export default function VerifyCaptureePage() {
         return (
             <div className="min-h-screen bg-red-50 flex items-center justify-center p-6">
                 <div className="text-center max-w-md">
-                    <div className="text-6xl mb-4">❌</div>
+                    <div className="text-6xl mb-4"></div>
                     <h1 className="text-2xl font-bold text-gray-900 mb-3">Link Invalid</h1>
                     <p className="text-gray-600">{errorMessage}</p>
                 </div>
@@ -124,8 +124,8 @@ export default function VerifyCaptureePage() {
         return (
             <div className="min-h-screen bg-green-50 flex items-center justify-center p-6">
                 <div className="text-center max-w-md">
-                    <div className="bg-white rounded-full p-6 shadow-lg mb-6 inline-block">
-                        <span className="text-6xl">✅</span>
+                    <div className="bg-white rounded-full p-6 shadow-sm mb-6 inline-block">
+                        <span className="text-6xl"></span>
                     </div>
                     <h1 className="text-3xl font-bold text-gray-900 mb-4">Identity Verified!</h1>
                     <p className="text-gray-600 mb-2">
@@ -152,7 +152,7 @@ export default function VerifyCaptureePage() {
                 {step === 'select' && (
                     <div className="w-full">
                         <div className="text-center mb-6">
-                            <div className="text-5xl mb-3">🛂</div>
+                            <div className="text-5xl mb-3"></div>
                             <h2 className="text-2xl font-bold text-gray-900 mb-2">Capture Your ID</h2>
                             <p className="text-gray-600 text-sm">
                                 Select your document type and take a clear photo
@@ -177,7 +177,7 @@ export default function VerifyCaptureePage() {
 
                         {/* Tips */}
                         <div className="bg-blue-50 rounded-lg p-4 mb-6">
-                            <p className="text-sm font-medium text-blue-900 mb-2">📷 Tips:</p>
+                            <p className="text-sm font-medium text-blue-900 mb-2"> Tips:</p>
                             <ul className="text-xs text-blue-800 space-y-1">
                                 <li>• Place document on a flat, well-lit surface</li>
                                 <li>• Ensure all text is clearly readable</li>
@@ -188,9 +188,9 @@ export default function VerifyCaptureePage() {
 
                         <button
                             onClick={startCapture}
-                            className="w-full bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-teal-700 transition transform active:scale-95 flex items-center justify-center gap-2"
+                            className="w-full bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-sm hover:bg-teal-700 transition transform active:scale-95 flex items-center justify-center gap-2"
                         >
-                            <span>📷</span> Take Photo
+                            <span></span> Take Photo
                         </button>
                     </div>
                 )}
@@ -206,7 +206,7 @@ export default function VerifyCaptureePage() {
                 {/* Step: Preview */}
                 {step === 'preview' && previewUrl && (
                     <div className="w-full flex-1 flex flex-col">
-                        <div className="relative flex-1 bg-black rounded-lg overflow-hidden shadow-xl mb-6">
+                        <div className="relative flex-1 bg-black rounded-lg overflow-hidden shadow-sm mb-6">
                             <img src={previewUrl} alt="Document preview" className="w-full h-full object-contain" />
                         </div>
 

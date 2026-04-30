@@ -19,7 +19,7 @@ export default function NotificationSettingsPage() {
                         <ArrowLeft className="w-4 h-4" />
                         Back
                     </button>
-                    <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
+                    <h1 className="text-3xl font-bold text-zinc-900 dark:text-white dark:from-white dark:to-gray-400">
                         Notification Settings
                     </h1>
                     <p className="text-gray-500 mt-2">Manage how you receive notifications and updates.</p>

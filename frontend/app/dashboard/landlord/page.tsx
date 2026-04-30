@@ -47,7 +47,7 @@ export default function LandlordDashboard() {
                     <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 dark:bg-blue-500/5 rounded-full blur-[60px] -translate-y-1/2 translate-x-1/2"></div>
                     <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center gap-4">
                         <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-blue-100 dark:bg-blue-900/50 rounded-2xl text-2xl">
-                            💡
+                            
                         </div>
                         <div className="flex-grow text-left">
                             <h3 className="text-lg font-bold text-blue-900 dark:text-blue-100">Getting Started</h3>
@@ -163,7 +163,7 @@ export default function LandlordDashboard() {
                         </button>
                     </div>
                     <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl shadow-sm border border-white/50 dark:border-white/10 p-8 text-center py-12">
-                        <div className="text-4xl mb-3 opacity-50">📬</div>
+                        <div className="text-4xl mb-3 opacity-50"></div>
                         <p className="text-base font-medium text-zinc-500 dark:text-zinc-400">No new messages yet.</p>
                     </div>
                 </section>
