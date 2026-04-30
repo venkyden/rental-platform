@@ -33,9 +33,14 @@ function VerifyEmailContent() {
             setStatus('success');
             setMessage(response.data.message || 'Email verified successfully!');
 
-            // Redirect to login after 3 seconds
+            // Redirect based on login status after 3 seconds
             setTimeout(() => {
-                router.push('/auth/login');
+                const accessToken = localStorage.getItem('access_token');
+                if (accessToken) {
+                    router.push('/dashboard');
+                } else {
+                    router.push('/auth/login');
+                }
             }, 3000);
         } catch (error: any) {
             setStatus('error');
@@ -85,7 +90,7 @@ function VerifyEmailContent() {
                             </h3>
                             <p className="mt-2 text-sm text-gray-600">{message}</p>
                             <p className="mt-4 text-sm text-gray-500">
-                                Redirecting to login page...
+                                Redirecting you...
                             </p>
                         </div>
                     )}

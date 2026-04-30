@@ -54,6 +54,15 @@ export default function LoginPage() {
 
     const scriptLoadedRef = useRef(false);
 
+    /* ---------- Auto-redirect if already logged in ---------- */
+    useEffect(() => {
+        const token = localStorage.getItem('access_token');
+        // Only redirect if there's no "expired" query param
+        if (token && !window.location.search.includes('expired=1')) {
+            router.push('/dashboard');
+        }
+    }, [router]);
+
     /* ---------- Google callback ---------- */
     const handleGoogleResponse = useCallback(
         async (response: { credential?: string }) => {

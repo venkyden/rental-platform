@@ -202,6 +202,70 @@ class EmailService:
 
         return await self.send_email(to_email, subject, html_content, text_content)
 
+    async def send_forgot_email_reminder(self, to_email: str, full_name: str) -> bool:
+        """Send an email reminder to the user with their registered email address"""
+        subject = "Your Rental Platform Account Email"
+
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                .header {{ background-color: #4F46E5; color: white; padding: 20px; text-align: center; }}
+                .content {{ background-color: #f9fafb; padding: 30px; }}
+                .button {{ 
+                    display: inline-block; 
+                    padding: 12px 30px; 
+                    background-color: #4F46E5; 
+                    color: white; 
+                    text-decoration: none; 
+                    border-radius: 5px;
+                    margin: 20px 0;
+                }}
+                .footer {{ text-align: center; padding: 20px; color: #6b7280; font-size: 12px; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1 style="color: white; margin: 0;">Account Recovery</h1>
+                </div>
+                <div class="content">
+                    <h2>Hi {full_name},</h2>
+                    <p>We received a request to recover the email address associated with your Rental Platform account.</p>
+                    <p>This is the email address registered to your account:</p>
+                    <p style="font-size: 18px; font-weight: bold; text-align: center; color: #4F46E5; background: #eef2ff; padding: 15px; border-radius: 8px;">{to_email}</p>
+                    <p style="text-align: center;">
+                        <a href="{self.frontend_url}/auth/login" class="button">Log In Now</a>
+                    </p>
+                    <p>If you did not request this, please ignore this email. Your account remains secure.</p>
+                </div>
+                <div class="footer">
+                    <p>© 2026 Rental Platform. All rights reserved.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+
+        text_content = f"""
+        Hi {full_name},
+        
+        We received a request to recover the email address associated with your Rental Platform account.
+        
+        This is the email address registered to your account: {to_email}
+        
+        You can log in here: {self.frontend_url}/auth/login
+        
+        If you did not request this, please ignore this email.
+        
+        © 2026 Rental Platform
+        """
+
+        return await self.send_email(to_email, subject, html_content, text_content)
+
     async def send_email_change_verification(
         self, to_email: str, token: str, full_name: str
     ) -> bool:

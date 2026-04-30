@@ -562,9 +562,15 @@ async def forgot_email(
     else:
         masked_email = user.email
 
+    # Send email reminder
+    await email_service.send_forgot_email_reminder(
+        to_email=user.email,
+        full_name=user.full_name or "User"
+    )
+
     audit_logger.info(f"FORGOT_EMAIL_SUCCESS masked_email={masked_email} ip={request.client.host}")
 
-    return {"message": "Account found", "masked_email": masked_email}
+    return {"message": "Account found and email reminder sent", "masked_email": masked_email}
 
 
 @router.post("/forgot-password")
