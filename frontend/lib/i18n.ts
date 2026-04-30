@@ -196,7 +196,33 @@ export const translations = {
                     yesterday: "Yesterday"
                 }
             },
-            verification: {
+            
+            globalFooter: {
+                terms: "Terms of Service",
+                privacy: "Privacy & CNIL",
+                cookies: "Cookie Policy",
+                gdpr: "GDPR Rights",
+                help: "Help Center",
+                rights: "All rights reserved."
+            },
+            landing: {
+                trustBadges: {
+                    gdpr: "GDPR Compliant",
+                    frenchLaw: "French Law Compliant",
+                    stripe: "Secured by Stripe"
+                },
+                footer: {
+                    slogan: "Rent securely in France",
+                    platform: "Platform",
+                    legal: "Legal",
+                    support: "Support",
+                    terms: "Terms of Sale",
+                    privacy: "Privacy Policy",
+                    notices: "Legal Notices",
+                    help: "Help"
+                }
+            },
+verification: {
                 title: "Verification Status",
                 email: "Email Verification",
                 identity: "Identity Verification",
@@ -906,7 +932,33 @@ export const translations = {
                     yesterday: "Hier"
                 }
             },
-            verification: {
+            
+            globalFooter: {
+                terms: "Conditions Générales",
+                privacy: "Confidentialité & CNIL",
+                cookies: "Politique des Cookies",
+                gdpr: "Droits RGPD",
+                help: "Centre d'Aide",
+                rights: "Tous droits réservés."
+            },
+            landing: {
+                trustBadges: {
+                    gdpr: "Conforme RGPD",
+                    frenchLaw: "Conforme à la loi ALUR",
+                    stripe: "Sécurisé par Stripe"
+                },
+                footer: {
+                    slogan: "Louez en toute sécurité en France",
+                    platform: "Plateforme",
+                    legal: "Légal",
+                    support: "Support",
+                    terms: "Conditions Générales de Vente",
+                    privacy: "Politique de Confidentialité",
+                    notices: "Mentions Légales",
+                    help: "Aide"
+                }
+            },
+verification: {
                 title: "Statut de Vérification",
                 email: "Vérification E-mail",
                 identity: "Vérification d'Identité",

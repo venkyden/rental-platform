@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useLanguage } from '@/lib/LanguageContext';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 export default function HomePage() {
   const { t, language } = useLanguage();
@@ -29,6 +30,8 @@ export default function HomePage() {
             <span className="text-xl font-bold" style={{ color: '#22B8B8' }}>Roomivo</span>
           </Link>
           <div className="flex items-center gap-3">
+            <LanguageSwitcher />
+            <div className="h-5 w-px bg-gray-200 mx-1 hidden sm:block"></div>
             <Link href="/auth/login" className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
               {t('landing.signIn', undefined, undefined)}
             </Link>
@@ -92,15 +95,15 @@ export default function HomePage() {
           <div className="flex flex-wrap items-center justify-center gap-8 text-gray-400 text-sm">
             <div className="flex items-center gap-2">
               <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
-              GDPR Compliant
+              {t('landing.trustBadges.gdpr', undefined, 'GDPR Compliant')}
             </div>
             <div className="flex items-center gap-2">
               <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
-              French Law Compliant
+              {t('landing.trustBadges.frenchLaw', undefined, 'French Law Compliant')}
             </div>
             <div className="flex items-center gap-2">
               <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
-              Secured by Stripe
+              {t('landing.trustBadges.stripe', undefined, 'Secured by Stripe')}
             </div>
           </div>
         </div>
@@ -229,10 +232,10 @@ export default function HomePage() {
                 </div>
                 <span className="font-bold" style={{ color: '#22B8B8' }}>Roomivo</span>
               </div>
-              <p className="text-sm text-gray-400">Rent securely in France</p>
+              <p className="text-sm text-gray-400">{t('landing.footer.slogan', undefined, 'Rent securely in France')}</p>
             </div>
             <div>
-              <h4 className="font-semibold text-gray-900 mb-3 text-sm">Platform</h4>
+              <h4 className="font-semibold text-gray-900 mb-3 text-sm">{t('landing.footer.platform', undefined, 'Platform')}</h4>
               <div className="space-y-2 text-sm text-gray-500">
                 <Link href="/search" className="block hover:text-gray-900 transition-colors">{t('dashboard.quickActions.browse.title', undefined, undefined)}</Link>
                 <Link href="/properties" className="block hover:text-gray-900 transition-colors">{t('dashboard.stats.properties', undefined, undefined)}</Link>
@@ -240,24 +243,23 @@ export default function HomePage() {
               </div>
             </div>
             <div>
-              <h4 className="font-semibold text-gray-900 mb-3 text-sm">Legal</h4>
+              <h4 className="font-semibold text-gray-900 mb-3 text-sm">{t('landing.footer.legal', undefined, 'Legal')}</h4>
               <div className="space-y-2 text-sm text-gray-500">
-                <Link href="/legal/cgv" className="block hover:text-gray-900 transition-colors">Terms of Sale</Link>
-                <Link href="/legal/privacy" className="block hover:text-gray-900 transition-colors">Privacy Policy</Link>
-                <Link href="/legal/mentions-legales" className="block hover:text-gray-900 transition-colors">Legal Notices</Link>
+                <Link href="/legal/cgv" className="block hover:text-gray-900 transition-colors">{t('landing.footer.terms', undefined, 'Terms of Sale')}</Link>
+                <Link href="/legal/privacy" className="block hover:text-gray-900 transition-colors">{t('landing.footer.privacy', undefined, 'Privacy Policy')}</Link>
+                <Link href="/legal/mentions-legales" className="block hover:text-gray-900 transition-colors">{t('landing.footer.notices', undefined, 'Legal Notices')}</Link>
               </div>
             </div>
             <div>
-              <h4 className="font-semibold text-gray-900 mb-3 text-sm">Support</h4>
+              <h4 className="font-semibold text-gray-900 mb-3 text-sm">{t('landing.footer.support', undefined, 'Support')}</h4>
               <div className="space-y-2 text-sm text-gray-500">
-                <Link href="/support" className="block hover:text-gray-900 transition-colors">Help</Link>
+                <Link href="/support" className="block hover:text-gray-900 transition-colors">{t('landing.footer.help', undefined, 'Help')}</Link>
                 <a href="mailto:contact@roomivo.com" className="block hover:text-gray-900 transition-colors">contact@roomivo.com</a>
               </div>
             </div>
           </div>
           <div className="border-t border-gray-100 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-400">
-            <span>© {new Date().getFullYear()} Roomivo. All rights reserved.</span>
-            <span>Made with ️ in France</span>
+            <span>© {new Date().getFullYear()} Roomivo. {t('globalFooter.rights', undefined, 'All rights reserved.')}</span>
           </div>
         </div>
       </footer>

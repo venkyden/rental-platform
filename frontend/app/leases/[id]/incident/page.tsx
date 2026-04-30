@@ -84,7 +84,7 @@ export default function IncidentReportingPage() {
             // 2. Submit report
             await disputeApi.create({
                 lease_id: leaseId,
-                accused_id: lease?.landlord_id || "",
+                accused_id: lease?.landlord_id || undefined,
                 title,
                 description,
                 category,

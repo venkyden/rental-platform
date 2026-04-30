@@ -1,7 +1,9 @@
 import Link from 'next/link';
 import RoomivoBrand from './RoomivoBrand';
+import { useLanguage } from '@/lib/LanguageContext';
 
 export default function GlobalFooter() {
+    const { t } = useLanguage();
     const currentYear = new Date().getFullYear();
 
     return (
@@ -14,29 +16,26 @@ export default function GlobalFooter() {
 
                     <div className="flex flex-wrap justify-center gap-x-6 gap-y-4 md:justify-end">
                         <Link href="/legal/terms" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
-                            Terms of Service
+                            {t('globalFooter.terms', undefined, 'Terms of Service')}
                         </Link>
                         <Link href="/legal/privacy" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
-                            Privacy & CNIL
+                            {t('globalFooter.privacy', undefined, 'Privacy & CNIL')}
                         </Link>
                         <Link href="/legal/cookies" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
-                            Cookie Policy
+                            {t('globalFooter.cookies', undefined, 'Cookie Policy')}
                         </Link>
                         <Link href="/legal/gdpr" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
-                            GDPR Rights
+                            {t('globalFooter.gdpr', undefined, 'GDPR Rights')}
                         </Link>
                         <Link href="/support" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
-                            Help Center
+                            {t('globalFooter.help', undefined, 'Help Center')}
                         </Link>
                     </div>
                 </div>
 
                 <div className="mt-8 border-t border-gray-100 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
                     <p>
-                        &copy; {currentYear} Roomivo SAS. All rights reserved.
-                    </p>
-                    <p className="mt-2 md:mt-0">
-                        Made with <span className="text-red-500"></span> in France
+                        &copy; {currentYear} Roomivo SAS. {t('globalFooter.rights', undefined, 'All rights reserved.')}
                     </p>
                 </div>
             </div>
