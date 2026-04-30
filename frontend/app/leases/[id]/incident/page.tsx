@@ -31,7 +31,7 @@ export default function IncidentReportingPage() {
     const [submitting, setSubmitting] = useState(false);
 
     // Form State
-    const [category, setCategory] = useState<string>('appliance_failure');
+    const [category, setCategory] = useState<DisputeCategory>('appliance_failure');
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [estimatedCost, setEstimatedCost] = useState("");
@@ -109,7 +109,7 @@ export default function IncidentReportingPage() {
         );
     }
 
-    const categories = [
+    const categories: { id: DisputeCategory; icon: React.ReactNode }[] = [
         { id: 'appliance_failure', icon: <Wrench className="w-5 h-5" /> },
         { id: 'damage', icon: <AlertTriangle className="w-5 h-5" /> },
         { id: 'cleaning', icon: <Sparkles className="w-5 h-5" /> },
