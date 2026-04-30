@@ -47,6 +47,7 @@ export default function RegisterPage() {
         password: '',
         confirmPassword: '',
         full_name: '',
+        phone: '',
         role: 'tenant' as 'tenant' | 'landlord' | 'property_manager',
         gdprConsent: false,
         marketingConsent: false,
@@ -202,6 +203,7 @@ export default function RegisterPage() {
                 email: formData.email,
                 password: formData.password,
                 full_name: formData.full_name,
+                phone: formData.phone || undefined,
                 role: formData.role,
                 marketing_consent: formData.marketingConsent,
             });
@@ -326,6 +328,27 @@ export default function RegisterPage() {
                             value={formData.full_name}
                             onChange={handleChange}
                         />
+                    </motion.div>
+
+                    <motion.div variants={itemVariants} className="col-span-1 sm:col-span-2">
+                        <label
+                            htmlFor="phone"
+                            className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-1.5"
+                        >
+                            Phone Number <span className="text-zinc-400 dark:text-zinc-500 font-normal">(optional)</span>
+                        </label>
+                        <input
+                            id="phone"
+                            name="phone"
+                            type="tel"
+                            className="block w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-900 dark:text-white placeholder-zinc-500 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
+                            placeholder="+33 6 12 34 56 78"
+                            value={formData.phone}
+                            onChange={handleChange}
+                        />
+                        <p className="mt-1.5 text-xs text-zinc-400 dark:text-zinc-500">
+                            Used to recover your account if you forget your email
+                        </p>
                     </motion.div>
 
                     <motion.div variants={itemVariants} className="col-span-1 sm:col-span-2">

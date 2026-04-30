@@ -10,6 +10,7 @@ class UserRegister(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8, max_length=128)
     full_name: str
+    phone: Optional[str] = Field(None, max_length=20)
     role: str = Field(pattern="^(tenant|landlord|property_manager)$")
     marketing_consent: bool = False
 

@@ -114,6 +114,7 @@ async def register(
         email=user_data.email,
         hashed_password=hashed_password,
         full_name=user_data.full_name,
+        phone=user_data.phone.strip() if user_data.phone else None,
         role=user_data.role,
         marketing_consent=user_data.marketing_consent,
         marketing_consent_at=datetime.utcnow() if user_data.marketing_consent else None,

@@ -93,6 +93,7 @@ class ApiClient {
         email: string;
         password: string;
         full_name: string;
+        phone?: string;
         role: 'tenant' | 'landlord' | 'property_manager';
         marketing_consent?: boolean;
     }) {
