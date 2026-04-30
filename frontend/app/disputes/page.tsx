@@ -119,7 +119,7 @@ function MyDisputesContent() {
                     </div>
 
                     <button 
-                        onClick={() => toast.error(t('disputes.reportToast', undefined, undefined))}
+                        onClick={() => router.push('/disputes/new')}
                         className="flex items-center gap-2 bg-teal-600 hover:bg-teal-500 text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-teal-600/20 transition-all active:scale-95"
                     >
                         <Plus className="w-5 h-5" />

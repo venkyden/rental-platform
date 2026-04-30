@@ -57,6 +57,8 @@ class UserResponse(BaseModel):
     email_verified: bool
     identity_verified: bool
     employment_verified: bool
+    kbis_verified: Optional[bool] = False
+    carte_g_verified: Optional[bool] = False
     trust_score: int
     segment: Optional[str] = None
     preferences: Optional[Dict[str, Any]] = None

@@ -192,6 +192,20 @@ class ApiClient {
         return response.data;
     }
 
+    // Generic media upload
+    async uploadMedia(file: File, folder: string = 'general') {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('folder', folder);
+
+        const response = await this.client.post('/media/upload', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        return response.data;
+    }
+
     async updateOnboardingPreferences(responses: Record<string, any>) {
         const response = await this.client.put('/onboarding/preferences', { responses });
         return response.data;

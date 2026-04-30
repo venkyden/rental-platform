@@ -53,6 +53,8 @@ class User(Base):
     email_verified = Column(Boolean, default=False)
     identity_verified = Column(Boolean, default=False)
     employment_verified = Column(Boolean, default=False)
+    kbis_verified = Column(Boolean, default=False)
+    carte_g_verified = Column(Boolean, default=False)
 
     # Identity verification data (JSONB for flexibility)
     identity_data = Column(

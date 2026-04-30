@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/useAuth';
 import { useSegment, QuickActions, SegmentBadge } from '@/lib/SegmentContext';
+import { CheckCircle2, Clock, ShieldCheck, FileText, Building } from 'lucide-react';
 
 export default function AgencyDashboard() {
     const { user, logout, loading: authLoading } = useAuth();
@@ -40,12 +41,20 @@ export default function AgencyDashboard() {
                         </div>
                         <span className="text-sm text-gray-400">Admin Console</span>
                     </div>
-                    <button
-                        onClick={logout}
-                        className="text-gray-400 hover:text-white"
-                    >
-                        Logout
-                    </button>
+                    <div className="flex items-center gap-4">
+                        <button
+                            onClick={() => router.push('/dashboard')}
+                            className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm transition-colors"
+                        >
+                            Personal Mode
+                        </button>
+                        <button
+                            onClick={logout}
+                            className="text-gray-400 hover:text-white"
+                        >
+                            Logout
+                        </button>
+                    </div>
                 </div>
             </header>
 
@@ -95,11 +104,11 @@ export default function AgencyDashboard() {
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                         <div className="bg-gray-800 p-4 rounded-xl border border-gray-700">
                             <div className="text-3xl font-bold text-white">0</div>
-                            <div className="text-sm text-gray-400">Managed Properties</div>
+                            <div className="text-sm text-gray-400">Active Mandates</div>
                         </div>
                         <div className="bg-gray-800 p-4 rounded-xl border border-gray-700">
                             <div className="text-3xl font-bold text-green-400">0</div>
-                            <div className="text-sm text-gray-400">Active</div>
+                            <div className="text-sm text-gray-400">Leased</div>
                         </div>
                         <div className="bg-gray-800 p-4 rounded-xl border border-gray-700">
                             <div className="text-3xl font-bold text-blue-400">0</div>
@@ -140,7 +149,7 @@ export default function AgencyDashboard() {
                             </div>
                             <div>
                                 <div className="text-2xl font-bold text-white">0€</div>
-                                <div className="text-xs text-gray-400">Monthly Revenue</div>
+                                <div className="text-xs text-gray-400">Managed Revenue</div>
                             </div>
                         </div>
                     </div>
@@ -149,8 +158,79 @@ export default function AgencyDashboard() {
                 {/* Recent Activity */}
                 <section>
                     <h2 className="text-lg font-semibold text-white mb-4">Recent Activity</h2>
-                    <div className="bg-gray-800 rounded-xl border border-gray-700 p-6 text-center text-gray-400">
+                    <div className="bg-gray-800 rounded-xl border border-gray-700 p-6 text-center text-gray-400 mb-8">
                         <p>No recent activity</p>
+                    </div>
+                </section>
+
+                {/* Compliance & Verification */}
+                <section>
+                    <div className="flex items-center gap-2 mb-4">
+                        <ShieldCheck className="w-5 h-5 text-purple-400" />
+                        <h2 className="text-lg font-semibold text-white">Compliance & Verifications</h2>
+                    </div>
+                    <div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
+                        <div className="space-y-6">
+                            
+                            {/* Kbis Verification */}
+                            <div className="flex items-start justify-between">
+                                <div className="flex items-start gap-3">
+                                    <div className="mt-0.5">
+                                        {(user as any)?.kbis_verified ? (
+                                            <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                                        ) : (
+                                            <Clock className="w-5 h-5 text-amber-500" />
+                                        )}
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-white">Kbis Registration</p>
+                                        <p className="text-xs text-gray-400 mt-0.5">
+                                            {(user as any)?.kbis_verified ? 'Verified Company Status' : 'Extract less than 3 months old required'}
+                                        </p>
+                                    </div>
+                                </div>
+                                {!(user as any)?.kbis_verified && (
+                                    <button
+                                        onClick={() => router.push('/verification')}
+                                        className="text-xs font-medium text-purple-400 hover:text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+                                    >
+                                        <Building className="w-4 h-4" />
+                                        Upload Kbis
+                                    </button>
+                                )}
+                            </div>
+
+                            <div className="w-full h-px bg-gray-700"></div>
+
+                            {/* Carte G Verification */}
+                            <div className="flex items-start justify-between">
+                                <div className="flex items-start gap-3">
+                                    <div className="mt-0.5">
+                                        {(user as any)?.carte_g_verified ? (
+                                            <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                                        ) : (
+                                            <Clock className="w-5 h-5 text-amber-500" />
+                                        )}
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-white">Carte G (Professional License)</p>
+                                        <p className="text-xs text-gray-400 mt-0.5">
+                                            {(user as any)?.carte_g_verified ? 'Verified Property Management License' : 'Required for property management in France'}
+                                        </p>
+                                    </div>
+                                </div>
+                                {!(user as any)?.carte_g_verified && (
+                                    <button
+                                        onClick={() => router.push('/verification')}
+                                        className="text-xs font-medium text-purple-400 hover:text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+                                    >
+                                        <FileText className="w-4 h-4" />
+                                        Upload Carte G
+                                    </button>
+                                )}
+                            </div>
+
+                        </div>
                     </div>
                 </section>
             </main>

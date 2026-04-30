@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Eye, EyeOff, User, Home } from 'lucide-react';
+import { Eye, EyeOff, User, Home, Building } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { motion, Variants } from 'framer-motion';
 import { useLanguage } from '@/lib/LanguageContext';
@@ -263,10 +263,11 @@ export default function RegisterPage() {
                 <label className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-3 text-center sm:text-left">
                     {t('auth.register.role.question', undefined, undefined)}
                 </label>
-                <div className="grid grid-cols-2 gap-3 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
                     {[
                         { id: 'tenant', label: t('auth.register.role.tenant', undefined, undefined), icon: <User className="w-6 h-6" /> },
                         { id: 'landlord', label: t('auth.register.role.landlord', undefined, undefined), icon: <Home className="w-6 h-6" /> },
+                        { id: 'property_manager', label: t('auth.register.role.agency', undefined, 'Agency / Property Manager'), icon: <Building className="w-6 h-6" /> },
                     ].map((role) => (
                         <button
                             key={role.id}
