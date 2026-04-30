@@ -22,36 +22,36 @@ interface LeaseTypeInfo {
 
 const getLeaseTypes = (t: any): Record<string, LeaseTypeInfo> => ({
     meuble: {
-        name: t('lease.meuble.name', 'Furnished Rental'),
-        description: t('lease.meuble.desc', 'Standard lease for furnished property'),
-        duration: t('lease.meuble.duration', '1 year (renewable)'),
-        tenantNotice: t('lease.meuble.tenantNotice', '1 month'),
-        landlordNotice: t('lease.meuble.landlordNotice', '3 months'),
-        depositInfo: t('lease.meuble.depositInfo', '2 months max')
+        name: t('lease.meuble.name', undefined, 'Furnished Rental'),
+        description: t('lease.meuble.desc', undefined, 'Standard lease for furnished property'),
+        duration: t('lease.meuble.duration', undefined, '1 year (renewable)'),
+        tenantNotice: t('lease.meuble.tenantNotice', undefined, '1 month'),
+        landlordNotice: t('lease.meuble.landlordNotice', undefined, '3 months'),
+        depositInfo: t('lease.meuble.depositInfo', undefined, '2 months max')
     },
     vide: {
-        name: t('lease.vide.name', 'Unfurnished Rental'),
-        description: t('lease.vide.desc', 'Lease for unfurnished property'),
-        duration: t('lease.vide.duration', '3 years (renewable)'),
-        tenantNotice: t('lease.vide.tenantNotice', '3 months'),
-        landlordNotice: t('lease.vide.landlordNotice', '6 months'),
-        depositInfo: t('lease.vide.depositInfo', '1 month max')
+        name: t('lease.vide.name', undefined, 'Unfurnished Rental'),
+        description: t('lease.vide.desc', undefined, 'Lease for unfurnished property'),
+        duration: t('lease.vide.duration', undefined, '3 years (renewable)'),
+        tenantNotice: t('lease.vide.tenantNotice', undefined, '3 months'),
+        landlordNotice: t('lease.vide.landlordNotice', undefined, '6 months'),
+        depositInfo: t('lease.vide.depositInfo', undefined, '1 month max')
     },
     mobilite: {
-        name: t('lease.mobilite.name', 'Mobility Lease'),
-        description: t('lease.mobilite.desc', 'Short term (students, interns, relocation)'),
-        duration: t('lease.mobilite.duration', '1-10 months (non-renewable)'),
-        tenantNotice: t('lease.mobilite.tenantNotice', '1 month'),
-        landlordNotice: t('lease.mobilite.landlordNotice', 'Not applicable'),
-        depositInfo: t('lease.mobilite.depositInfo', 'Forbidden')
+        name: t('lease.mobilite.name', undefined, 'Mobility Lease'),
+        description: t('lease.mobilite.desc', undefined, 'Short term (students, interns, relocation)'),
+        duration: t('lease.mobilite.duration', undefined, '1-10 months (non-renewable)'),
+        tenantNotice: t('lease.mobilite.tenantNotice', undefined, '1 month'),
+        landlordNotice: t('lease.mobilite.landlordNotice', undefined, 'Not applicable'),
+        depositInfo: t('lease.mobilite.depositInfo', undefined, 'Forbidden')
     },
     etudiant: {
-        name: t('lease.etudiant.name', 'Student Lease'),
-        description: t('lease.etudiant.desc', 'Specific for students'),
-        duration: t('lease.etudiant.duration', '9 months (non-renewable)'),
-        tenantNotice: t('lease.etudiant.tenantNotice', '1 month'),
-        landlordNotice: t('lease.etudiant.landlordNotice', 'Not applicable'),
-        depositInfo: t('lease.etudiant.depositInfo', '2 months max')
+        name: t('lease.etudiant.name', undefined, 'Student Lease'),
+        description: t('lease.etudiant.desc', undefined, 'Specific for students'),
+        duration: t('lease.etudiant.duration', undefined, '9 months (non-renewable)'),
+        tenantNotice: t('lease.etudiant.tenantNotice', undefined, '1 month'),
+        landlordNotice: t('lease.etudiant.landlordNotice', undefined, 'Not applicable'),
+        depositInfo: t('lease.etudiant.depositInfo', undefined, '2 months max')
     }
 });
 
@@ -72,7 +72,7 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
 
     const handleGenerate = async () => {
         if (!tenantEmail || !startDate) {
-            setError(t('lease.error.missingFields', 'Please fill all required fields'));
+            setError(t('lease.error.missingFields', undefined, 'Please fill all required fields'));
             return;
         }
 
@@ -95,7 +95,7 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
                 leaseType: response.data.lease_type
             });
         } catch (err: any) {
-            setError(err.response?.data?.detail || t('lease.error.generationFailed', 'Error generating lease'));
+            setError(err.response?.data?.detail || t('lease.error.generationFailed', undefined, 'Error generating lease'));
         } finally {
             setLoading(false);
         }
@@ -104,13 +104,13 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
     return (
         <div className="mt-6 border-t pt-6">
             <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                 {t('lease.title', 'Generate a Lease')}
+                 {t('lease.title', undefined, 'Generate a Lease')}
             </h3>
 
             {/* Lease Type Selection */}
             <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {t('lease.leaseType', 'Lease Type')} *
+                    {t('lease.leaseType', undefined, 'Lease Type')} *
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                     {Object.entries(LEASE_TYPES).map(([key, info]) => (
@@ -134,16 +134,16 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
                 <div className="font-semibold text-gray-900 mb-2">{selectedType.name}</div>
                 <div className="grid grid-cols-2 gap-2 text-gray-600">
                     <div>
-                        <span className="font-medium">{t('lease.duration', 'Duration')}:</span> {selectedType.duration}
+                        <span className="font-medium">{t('lease.duration', undefined, 'Duration')}:</span> {selectedType.duration}
                     </div>
                     <div>
-                        <span className="font-medium">{t('lease.deposit', 'Deposit')}:</span> {selectedType.depositInfo}
+                        <span className="font-medium">{t('lease.deposit', undefined, 'Deposit')}:</span> {selectedType.depositInfo}
                     </div>
                     <div>
-                        <span className="font-medium">{t('lease.tenantNotice', 'Tenant Notice')}:</span> {selectedType.tenantNotice}
+                        <span className="font-medium">{t('lease.tenantNotice', undefined, 'Tenant Notice')}:</span> {selectedType.tenantNotice}
                     </div>
                     <div>
-                        <span className="font-medium">{t('lease.landlordNotice', 'Landlord Notice')}:</span> {selectedType.landlordNotice}
+                        <span className="font-medium">{t('lease.landlordNotice', undefined, 'Landlord Notice')}:</span> {selectedType.landlordNotice}
                     </div>
                 </div>
             </div>
@@ -152,7 +152,7 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
             {leaseType === 'mobilite' && (
                 <div className="mb-4">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                        {t('lease.mobiliteDuration', 'Duration (1-10 months)')} *
+                        {t('lease.mobiliteDuration', undefined, 'Duration (1-10 months)')} *
                     </label>
                     <input
                         type="number"
@@ -168,7 +168,7 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
             {/* Tenant Email */}
             <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {t('lease.tenantEmail', 'Tenant Email')} *
+                    {t('lease.tenantEmail', undefined, 'Tenant Email')} *
                 </label>
                 <input
                     type="email"
@@ -182,7 +182,7 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
             {/* Start Date */}
             <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {t('lease.startDate', 'Lease Start Date')} *
+                    {t('lease.startDate', undefined, 'Lease Start Date')} *
                 </label>
                 <input
                     type="date"
@@ -194,14 +194,14 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
 
             {/* Financial Details */}
             <div className="mb-4 p-3 bg-blue-50 rounded-lg">
-                <div className="text-sm font-medium text-blue-900 mb-2">{t('lease.financialConditions', 'Financial Conditions')}</div>
+                <div className="text-sm font-medium text-blue-900 mb-2">{t('lease.financialConditions', undefined, 'Financial Conditions')}</div>
                 <div className="grid grid-cols-2 gap-3">
                     <div>
-                        <label className="block text-xs text-blue-700 mb-1">{t('lease.monthlyRent', 'Monthly Rent')}</label>
+                        <label className="block text-xs text-blue-700 mb-1">{t('lease.monthlyRent', undefined, 'Monthly Rent')}</label>
                         <div className="font-bold text-blue-900">{monthlyRent} €</div>
                     </div>
                     <div>
-                        <label className="block text-xs text-blue-700 mb-1">{t('lease.charges', 'Charges')}</label>
+                        <label className="block text-xs text-blue-700 mb-1">{t('lease.charges', undefined, 'Charges')}</label>
                         <input
                             type="number"
                             value={customCharges || ''}
@@ -213,7 +213,7 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
                     {leaseType !== 'mobilite' && (
                         <div className="col-span-2">
                             <label className="block text-xs text-blue-700 mb-1">
-                                {t('lease.securityDeposit', 'Security Deposit')} ({selectedType.depositInfo})
+                                {t('lease.securityDeposit', undefined, 'Security Deposit')} ({selectedType.depositInfo})
                             </label>
                             <input
                                 type="number"
@@ -244,20 +244,20 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                         </svg>
-                        {t('lease.generating', 'Generating...')}
+                        {t('lease.generating', undefined, 'Generating...')}
                     </span>
                 ) : (
-                    ` ${t('lease.generateButton', 'Generate Lease Contract')}`
+                    ` ${t('lease.generateButton', undefined, 'Generate Lease Contract')}`
                 )}
             </button>
 
             {result?.downloadUrl && (
                 <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
                     <div className="flex items-center gap-2 text-green-800 font-semibold mb-2">
-                         {t('lease.success', 'Lease generated!')} ({LEASE_TYPES[result.leaseType || 'meuble'].name})
+                         {t('lease.success', undefined, 'Lease generated!')} ({LEASE_TYPES[result.leaseType || 'meuble'].name})
                     </div>
                     <p className="text-sm text-green-700 mb-3">
-                        {t('lease.successDesc', 'The contract includes all required clauses: notice periods, end of lease conditions, security deposit, obligations of both parties, inventory, and termination clause.')}
+                        {t('lease.successDesc', undefined, 'The contract includes all required clauses: notice periods, end of lease conditions, security deposit, obligations of both parties, inventory, and termination clause.')}
                     </p>
                     <a
                         href={result.downloadUrl ? (
@@ -269,7 +269,7 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                     >
-                         {t('lease.downloadPdf', 'Download PDF')}
+                         {t('lease.downloadPdf', undefined, 'Download PDF')}
                     </a>
                 </div>
             )}

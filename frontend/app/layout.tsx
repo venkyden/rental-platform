@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/lib/ToastContext";
 import { SegmentProvider } from "@/lib/SegmentContext";
@@ -8,15 +7,7 @@ import ToastContainer from "@/components/ToastContainer";
 import GlobalFooter from "@/components/GlobalFooter";
 import { BRAND } from "@/lib/constants";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: BRAND.title,
@@ -48,7 +39,7 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}
+        className={`font-sans antialiased`}
       >
         <LanguageProvider>
           <ToastProvider>

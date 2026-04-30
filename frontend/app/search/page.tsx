@@ -95,7 +95,7 @@ export default function SearchPage() {
                 setProperties(response.data);
             } catch (err) {
                 console.error('Error fetching properties:', err);
-                setError(t('search.status.error'));
+                setError(t('search.status.error', undefined, undefined));
             } finally {
                 setLoading(false);
             }
@@ -109,7 +109,7 @@ export default function SearchPage() {
         return () => clearTimeout(timeoutId);
     }, [priceRange, location, furnished, colocation]);
 
-    if (segmentLoading || authLoading) return <div className="p-8 text-center text-zinc-500">{t('search.status.loading')}</div>;
+    if (segmentLoading || authLoading) return <div className="p-8 text-center text-zinc-500">{t('search.status.loading', undefined, undefined)}</div>;
 
     return (
         <PremiumLayout>
@@ -117,7 +117,7 @@ export default function SearchPage() {
             <header className="mb-8 p-6 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] border border-white/50 dark:border-white/10 flex items-center justify-between">
                 <div className="flex items-center gap-4">
                     <button onClick={() => router.push(isAuthenticated ? '/dashboard' : '/')} className="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 flex items-center gap-2 transition-colors">
-                        ← {isAuthenticated ? t('dashboard.title') : t('navbar.home', undefined, 'Home')}
+                        ← {isAuthenticated ? t('dashboard.title', undefined, undefined) : t('navbar.home', undefined, 'Home')}
                     </button>
                     <motion.h1
                         initial={{ opacity: 0, y: 10 }}
@@ -135,8 +135,8 @@ export default function SearchPage() {
                 )}
                 {!isAuthenticated && (
                     <div className="flex gap-4">
-                        <button onClick={() => router.push('/auth/login')} className="text-sm font-medium text-teal-600 hover:text-teal-700 dark:text-teal-400 px-4 py-2 bg-teal-50 dark:bg-teal-900/30 rounded-xl hover:bg-teal-100 dark:hover:bg-teal-900/50 transition-colors">{t('landing.signIn')}</button>
-                        <button onClick={() => router.push('/auth/register')} className="text-sm font-medium px-6 py-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-white rounded-xl shadow-md hover:shadow-sm transition-all transform hover:-translate-y-0.5">{t('landing.getStarted')}</button>
+                        <button onClick={() => router.push('/auth/login')} className="text-sm font-medium text-teal-600 hover:text-teal-700 dark:text-teal-400 px-4 py-2 bg-teal-50 dark:bg-teal-900/30 rounded-xl hover:bg-teal-100 dark:hover:bg-teal-900/50 transition-colors">{t('landing.signIn', undefined, undefined)}</button>
+                        <button onClick={() => router.push('/auth/register')} className="text-sm font-medium px-6 py-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-white rounded-xl shadow-md hover:shadow-sm transition-all transform hover:-translate-y-0.5">{t('landing.getStarted', undefined, undefined)}</button>
                     </div>
                 )}
             </header>
@@ -149,10 +149,10 @@ export default function SearchPage() {
                     className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl shadow-sm border border-white/50 dark:border-white/10 p-6 mb-8 flex flex-wrap gap-6 items-center"
                 >
                     <div className="flex-1 min-w-[200px]">
-                        <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-2">{t('search.filters.location')}</label>
+                        <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-2">{t('search.filters.location', undefined, undefined)}</label>
                         <input
                             type="text"
-                            placeholder={t('search.filters.locationPlaceholder')}
+                            placeholder={t('search.filters.locationPlaceholder', undefined, undefined)}
                             className="w-full border-zinc-200 dark:border-zinc-700 bg-white/50 dark:bg-zinc-800/50 rounded-xl px-4 py-3 shadow-sm focus:ring-teal-500 focus:border-teal-500 text-slate-900 dark:text-white transition-all backdrop-blur-sm"
                             value={location}
                             onChange={(e) => setLocation(e.target.value)}
@@ -160,7 +160,7 @@ export default function SearchPage() {
                     </div>
 
                     <div className="w-64">
-                        <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-2">{t('search.filters.maxBudget')}: <span translate="no" className="notranslate text-teal-600 dark:text-teal-400">{priceRange}€</span></label>
+                        <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-2">{t('search.filters.maxBudget', undefined, undefined)}: <span translate="no" className="notranslate text-teal-600 dark:text-teal-400">{priceRange}€</span></label>
                         <input
                             type="range"
                             min="300"
@@ -180,7 +180,7 @@ export default function SearchPage() {
                                 onChange={(e) => setFurnished(e.target.checked)}
                                 className="w-5 h-5 rounded text-teal-600 focus:ring-teal-500 border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 transition-colors"
                             />
-                            <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">{t('search.filters.furnished')}</span>
+                            <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">{t('search.filters.furnished', undefined, undefined)}</span>
                         </label>
 
                         <label className="flex items-center gap-3 cursor-pointer group">
@@ -190,25 +190,25 @@ export default function SearchPage() {
                                 onChange={(e) => setColocation(e.target.checked)}
                                 className="w-5 h-5 rounded text-teal-600 focus:ring-teal-500 border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 transition-colors"
                             />
-                            <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">{t('search.filters.colocation')}</span>
+                            <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">{t('search.filters.colocation', undefined, undefined)}</span>
                         </label>
                     </div>
 
                     <button className="ml-auto px-8 py-3 bg-zinc-900 dark:bg-white dark:text-zinc-900 text-white rounded-xl hover:bg-zinc-800 dark:hover:bg-zinc-100 font-bold transition-colors shadow-md">
-                        {t('search.filters.searchButton')}
+                        {t('search.filters.searchButton', undefined, undefined)}
                     </button>
                 </motion.div>
 
                 {/* Results Grid */}
                 {loading ? (
-                    <div className="text-center py-12 text-zinc-500 dark:text-zinc-400">{t('search.status.loading')}</div>
+                    <div className="text-center py-12 text-zinc-500 dark:text-zinc-400">{t('search.status.loading', undefined, undefined)}</div>
                 ) : error ? (
                     <div className="text-center py-12 text-red-500">{error}</div>
                 ) : properties.length === 0 ? (
                     <div className="text-center py-12 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md rounded-3xl border border-dashed border-zinc-300 dark:border-zinc-700">
                         <div className="text-4xl mb-2"></div>
-                        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{t('search.status.noResults')}</h3>
-                        <p className="text-zinc-500 dark:text-zinc-400">{t('search.status.noResultsDesc')}</p>
+                        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{t('search.status.noResults', undefined, undefined)}</h3>
+                        <p className="text-zinc-500 dark:text-zinc-400">{t('search.status.noResultsDesc', undefined, undefined)}</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -217,7 +217,7 @@ export default function SearchPage() {
                                 {!isAuthenticated && (
                                     <div className="absolute inset-0 bg-white/40 dark:bg-black/40 backdrop-blur-[4px] z-10 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl">
                                         <button onClick={() => router.push('/auth/login')} className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl shadow-sm transition-transform transform hover:scale-105 mb-2">
-                                            {t('search.property.loginToView')}
+                                            {t('search.property.loginToView', undefined, undefined)}
                                         </button>
                                     </div>
                                 )}
@@ -228,7 +228,7 @@ export default function SearchPage() {
                                         <div className="w-full h-full flex items-center justify-center text-zinc-400 dark:text-zinc-600 text-4xl"></div>
                                     )}
                                     <div className="absolute top-3 right-3 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md px-4 py-1.5 rounded-full text-xs font-bold text-teal-700 dark:text-teal-400 shadow-sm">
-                                        {t('search.property.available')}
+                                        {t('search.property.available', undefined, undefined)}
                                     </div>
                                 </div>
                                 <div className="p-5 pt-3 flex flex-col flex-1">
@@ -237,16 +237,16 @@ export default function SearchPage() {
                                         <div className="text-right whitespace-nowrap">
                                             <span translate="no" className="notranslate text-teal-600 dark:text-teal-400 font-black text-xl">{property.monthly_rent}€</span>
                                             <span className={`ml-1 text-xs font-bold px-1.5 py-0.5 rounded-full ${property.charges_included ? 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'}`}>
-                                                {property.charges_included ? t('search.property.chargesIncluded') : t('search.property.chargesExcluded')}
+                                                {property.charges_included ? t('search.property.chargesIncluded', undefined, undefined) : t('search.property.chargesExcluded', undefined, undefined)}
                                             </span>
                                             {!property.charges_included && property.charges && (
-                                                <div translate="no" className="notranslate text-xs font-medium text-zinc-500 dark:text-zinc-400">{t('search.property.plusCharges', { amount: property.charges })}</div>
+                                                <div translate="no" className="notranslate text-xs font-medium text-zinc-500 dark:text-zinc-400">{t('search.property.plusCharges', { amount: property.charges }, undefined)}</div>
                                             )}
                                         </div>
                                     </div>
-                                    <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-4">{property.city} • <span translate="no" className="notranslate">{t('search.property.size', { size: property.size_sqm })}</span> • {t('search.property.beds', { count: property.bedrooms })}</p>
+                                    <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-4">{property.city} • <span translate="no" className="notranslate">{t('search.property.size', { size: property.size_sqm }, undefined)}</span> • {t('search.property.beds', { count: property.bedrooms }, undefined)}</p>
                                     {property.deposit && (
-                                        <p className="text-xs font-medium text-zinc-400 dark:text-zinc-500 mb-4">{t('search.property.deposit')}: <span translate="no" className="notranslate">{property.deposit}€</span></p>
+                                        <p className="text-xs font-medium text-zinc-400 dark:text-zinc-500 mb-4">{t('search.property.deposit', undefined, undefined)}: <span translate="no" className="notranslate">{property.deposit}€</span></p>
                                     )}
                                     <div className="flex gap-2 flex-wrap mt-auto pt-2">
                                         {property.dpe_rating && (
@@ -259,12 +259,12 @@ export default function SearchPage() {
                                                                     'bg-red-700'
                                                 }`}>DPE {property.dpe_rating}</span>
                                         )}
-                                        {property.furnished ? <span className="px-2 py-1 bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 rounded-lg text-xs font-semibold shadow-sm border border-purple-100 dark:border-purple-900/50">{t('search.property.furnished')}</span> : <span className="px-2 py-1 bg-zinc-50 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400 rounded-lg text-xs font-semibold shadow-sm">{t('search.property.unfurnished')}</span>}
-                                        {property.amenities?.includes('colocation') && <span className="px-2 py-1 bg-teal-50 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300 rounded-lg text-xs font-semibold shadow-sm border border-teal-100 dark:border-teal-900/50">{t('search.property.colocOk')}</span>}
+                                        {property.furnished ? <span className="px-2 py-1 bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 rounded-lg text-xs font-semibold shadow-sm border border-purple-100 dark:border-purple-900/50">{t('search.property.furnished', undefined, undefined)}</span> : <span className="px-2 py-1 bg-zinc-50 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400 rounded-lg text-xs font-semibold shadow-sm">{t('search.property.unfurnished', undefined, undefined)}</span>}
+                                        {property.amenities?.includes('colocation') && <span className="px-2 py-1 bg-teal-50 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300 rounded-lg text-xs font-semibold shadow-sm border border-teal-100 dark:border-teal-900/50">{t('search.property.colocOk', undefined, undefined)}</span>}
                                         {property.guarantor_required ? (
-                                            <span className="px-2 py-1 bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 rounded-lg text-xs font-semibold shadow-sm border border-indigo-100 dark:border-indigo-900/50">️ {t('search.property.guarantorReq')}</span>
+                                            <span className="px-2 py-1 bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 rounded-lg text-xs font-semibold shadow-sm border border-indigo-100 dark:border-indigo-900/50">️ {t('search.property.guarantorReq', undefined, undefined)}</span>
                                         ) : (
-                                            <span className="px-2 py-1 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 rounded-lg text-xs font-semibold shadow-sm border border-emerald-100 dark:border-emerald-900/50"> {t('search.property.noGuarantor')}</span>
+                                            <span className="px-2 py-1 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 rounded-lg text-xs font-semibold shadow-sm border border-emerald-100 dark:border-emerald-900/50"> {t('search.property.noGuarantor', undefined, undefined)}</span>
                                         )}
                                     </div>
                                 </div>

@@ -5,9 +5,11 @@ import { useAuth } from '@/lib/useAuth';
 import { useRouter } from 'next/navigation';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import VerificationUpload from '@/components/VerificationUpload';
+import { useLanguage } from '@/lib/LanguageContext';
 
 export default function VerificationPage() {
     const { user } = useAuth();
+    const { t } = useLanguage();
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<'identity' | 'employment'>('identity');
     const [refreshKey, setRefreshKey] = useState(0);
@@ -28,12 +30,12 @@ export default function VerificationPage() {
                 {/* Header */}
                 <header className="bg-white shadow">
                     <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-                        <h1 className="text-3xl font-bold text-gray-900">Verification</h1>
+                        <h1 className="text-3xl font-bold text-gray-900">{t('dashboard.verification.verification.pageTitle', undefined, 'Verification')}</h1>
                         <button
                             onClick={() => router.push('/dashboard')}
                             className="text-gray-600 hover:text-gray-900"
                         >
-                            ← Back to Dashboard
+                            ← {t('dashboard.verification.verification.actions.back', undefined, 'Back to Dashboard')}
                         </button>
                     </div>
                 </header>
@@ -43,30 +45,30 @@ export default function VerificationPage() {
                     <div className="px-4 py-6 sm:px-0">
                         {/* Progress Overview */}
                         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-                            <h2 className="text-lg font-semibold text-gray-900 mb-4">Verification Progress</h2>
+                            <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('dashboard.verification.verification.progress.title', undefined, 'Verification Progress')}</h2>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div className="text-center p-4 bg-green-50 rounded-lg">
                                     <div className="text-3xl mb-2"></div>
-                                    <div className="text-sm font-medium text-gray-700">Email</div>
-                                    <div className="text-xs text-green-600">Verified</div>
+                                    <div className="text-sm font-medium text-gray-700">{t('dashboard.verification.verification.progress.email', undefined, 'Email')}</div>
+                                    <div className="text-xs text-green-600">{t('dashboard.verification.verification.verified', undefined, 'Verified')}</div>
                                 </div>
                                 <div className={`text-center p-4 rounded-lg ${user.identity_verified ? 'bg-green-50' : 'bg-yellow-50'}`}>
                                     <div className="text-3xl mb-2">{user.identity_verified ? '' : '⏳'}</div>
-                                    <div className="text-sm font-medium text-gray-700">Identity</div>
+                                    <div className="text-sm font-medium text-gray-700">{t('dashboard.verification.verification.progress.identity', undefined, 'Identity')}</div>
                                     <div className={`text-xs ${user.identity_verified ? 'text-green-600' : 'text-yellow-600'}`}>
-                                        {user.identity_verified ? 'Verified' : 'Pending'}
+                                        {user.identity_verified ? t('dashboard.verification.verification.verified', undefined, 'Verified') : t('dashboard.verification.verification.pending', undefined, 'Pending')}
                                     </div>
                                 </div>
                                 <div className={`text-center p-4 rounded-lg ${user.employment_verified ? 'bg-green-50' : 'bg-yellow-50'}`}>
                                     <div className="text-3xl mb-2">{user.employment_verified ? '' : '⏳'}</div>
-                                    <div className="text-sm font-medium text-gray-700">Employment</div>
+                                    <div className="text-sm font-medium text-gray-700">{t('dashboard.verification.verification.progress.employment', undefined, 'Employment')}</div>
                                     <div className={`text-xs ${user.employment_verified ? 'text-green-600' : 'text-yellow-600'}`}>
-                                        {user.employment_verified ? 'Verified' : 'Pending'}
+                                        {user.employment_verified ? t('dashboard.verification.verification.verified', undefined, 'Verified') : t('dashboard.verification.verification.pending', undefined, 'Pending')}
                                     </div>
                                 </div>
                             </div>
                             <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                                <div className="text-sm text-gray-700 mb-1">Trust Score</div>
+                                <div className="text-sm text-gray-700 mb-1">{t('dashboard.verification.verification.progress.trustScore', undefined, 'Trust Score')}</div>
                                 <div className="flex items-center gap-3">
                                     <div className="flex-1 bg-gray-200 rounded-full h-3">
                                         <div
@@ -89,7 +91,7 @@ export default function VerificationPage() {
                                         : 'text-gray-600 hover:text-gray-900'
                                         }`}
                                 >
-                                    🆔 Identity Verification
+                                    🆔 {t('dashboard.verification.verification.tabs.identity', undefined, 'Identity Verification')}
                                 </button>
                                 <button
                                     onClick={() => setActiveTab('employment')}
@@ -98,7 +100,7 @@ export default function VerificationPage() {
                                         : 'text-gray-600 hover:text-gray-900'
                                         }`}
                                 >
-                                     Employment Verification
+                                     {t('dashboard.verification.verification.tabs.employment', undefined, 'Employment Verification')}
                                 </button>
                             </div>
                         </div>
@@ -116,8 +118,8 @@ export default function VerificationPage() {
                             {activeTab === 'identity' && user.identity_verified && (
                                 <div className="text-center py-12">
                                     <div className="text-6xl mb-4"></div>
-                                    <h3 className="text-2xl font-bold text-gray-900 mb-2">Identity Verified!</h3>
-                                    <p className="text-gray-600">Your identity has been successfully verified.</p>
+                                    <h3 className="text-2xl font-bold text-gray-900 mb-2">{t('dashboard.verification.verification.success.identity', undefined, 'Identity Verified!')}</h3>
+                                    <p className="text-gray-600">{t('dashboard.verification.verification.success.identityMsg', undefined, 'Your identity has been successfully verified.')}</p>
                                 </div>
                             )}
 
@@ -132,8 +134,8 @@ export default function VerificationPage() {
                             {activeTab === 'employment' && user.employment_verified && (
                                 <div className="text-center py-12">
                                     <div className="text-6xl mb-4"></div>
-                                    <h3 className="text-2xl font-bold text-gray-900 mb-2">Employment Verified!</h3>
-                                    <p className="text-gray-600">Your employment has been successfully verified.</p>
+                                    <h3 className="text-2xl font-bold text-gray-900 mb-2">{t('dashboard.verification.verification.success.employment', undefined, 'Employment Verified!')}</h3>
+                                    <p className="text-gray-600">{t('dashboard.verification.verification.success.employmentMsg', undefined, 'Your employment has been successfully verified.')}</p>
                                 </div>
                             )}
                         </div>

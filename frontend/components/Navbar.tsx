@@ -17,12 +17,12 @@ export default function Navbar() {
     if (!user) return null;
 
     const navLinks = [
-        { href: '/dashboard', label: t('dashboard.title'), icon: '' },
+        { href: '/dashboard', label: t('dashboard.title', undefined, undefined), icon: '' },
         ...(user.role === 'landlord'
-            ? [{ href: '/properties', label: t('dashboard.stats.properties'), icon: '' }]
-            : [{ href: '/search', label: t('dashboard.quickActions.browse.title'), icon: '' }]),
-        { href: '/inbox', label: t('dashboard.inbox.title'), icon: '' },
-        { href: '/verification', label: t('dashboard.verification.verification.pageTitle'), icon: '' },
+            ? [{ href: '/properties', label: t('dashboard.stats.properties', undefined, undefined), icon: '' }]
+            : [{ href: '/search', label: t('dashboard.quickActions.browse.title', undefined, undefined), icon: '' }]),
+        { href: '/inbox', label: t('dashboard.inbox.title', undefined, undefined), icon: '' },
+        { href: '/verification', label: t('dashboard.verification.verification.pageTitle', undefined, undefined), icon: '' },
     ];
 
     return (
@@ -89,7 +89,7 @@ export default function Navbar() {
                         </Link>
                         <button
                             onClick={logout}
-                            title={t('dashboard.logout')}
+                            title={t('dashboard.logout', undefined, undefined)}
                             className="p-2 rounded-lg text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 transition-all duration-200 border border-red-200 dark:border-red-900/30"
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

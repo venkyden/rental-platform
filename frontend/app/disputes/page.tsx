@@ -32,7 +32,7 @@ function MyDisputesContent() {
 
     useEffect(() => {
         if (success) {
-            toast.success(t('disputes.incident.messages.success'));
+            toast.success(t('disputes.incident.messages.success', undefined, undefined));
         }
         loadDisputes();
     }, [success]);
@@ -43,7 +43,7 @@ function MyDisputesContent() {
             setDisputes(data);
         } catch (err) {
             console.error(err);
-            toast.error(t('disputes.messages.loadError'));
+            toast.error(t('disputes.messages.loadError', undefined, undefined));
         } finally {
             setLoading(false);
         }
@@ -70,7 +70,7 @@ function MyDisputesContent() {
     };
 
     const getStatusLabel = (status: string) => {
-        return t(`disputes.status.${status}` as any);
+        return t(`disputes.status.${status}` as any, undefined, undefined);
     };
 
     if (loading) {
@@ -87,8 +87,8 @@ function MyDisputesContent() {
             <div className="bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 sticky top-0 z-20">
                 <div className="max-w-5xl mx-auto px-4 h-20 flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-extrabold tracking-tight">{t('disputes.title')}</h1>
-                        <p className="text-sm text-zinc-500 dark:text-zinc-400">{t('disputes.subtitle')}</p>
+                        <h1 className="text-2xl font-extrabold tracking-tight">{t('disputes.title', undefined, undefined)}</h1>
+                        <p className="text-sm text-zinc-500 dark:text-zinc-400">{t('disputes.subtitle', undefined, undefined)}</p>
                     </div>
                     <button 
                         onClick={() => router.push('/dashboard')}
@@ -113,17 +113,17 @@ function MyDisputesContent() {
                                     : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
                                 }`}
                             >
-                                {f === 'all' ? t('inbox.filters.all') : t(`disputes.status.${f}` as any)}
+                                {f === 'all' ? t('inbox.filters.all', undefined, undefined) : t(`disputes.status.${f}` as any, undefined, undefined)}
                             </button>
                         ))}
                     </div>
 
                     <button 
-                        onClick={() => toast.error(t('disputes.reportToast'))}
+                        onClick={() => toast.error(t('disputes.reportToast', undefined, undefined))}
                         className="flex items-center gap-2 bg-teal-600 hover:bg-teal-500 text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-teal-600/20 transition-all active:scale-95"
                     >
                         <Plus className="w-5 h-5" />
-                        <span>{t('disputes.report')}</span>
+                        <span>{t('disputes.report', undefined, undefined)}</span>
                     </button>
                 </div>
 
@@ -133,9 +133,9 @@ function MyDisputesContent() {
                         <div className="w-20 h-20 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-6">
                             <FileText className="w-10 h-10 text-zinc-400" />
                         </div>
-                        <h2 className="text-xl font-bold mb-2">{t('disputes.noReports')}</h2>
+                        <h2 className="text-xl font-bold mb-2">{t('disputes.noReports', undefined, undefined)}</h2>
                         <p className="text-zinc-500 dark:text-zinc-400 max-w-sm mx-auto mb-8">
-                            {t('disputes.noReportsDesc')}
+                            {t('disputes.noReportsDesc', undefined, undefined)}
                         </p>
                     </div>
                 ) : (
@@ -171,7 +171,7 @@ function MyDisputesContent() {
                                     <div className="flex items-center gap-4 mt-4 text-[10px] font-bold uppercase tracking-tighter text-zinc-400">
                                         <div className="flex items-center gap-1">
                                             <ImageIcon className="w-3.5 h-3.5" />
-                                            <span>{dispute.evidence_urls.length} {t('disputes.evidence')}</span>
+                                            <span>{dispute.evidence_urls.length} {t('disputes.evidence', undefined, undefined)}</span>
                                         </div>
                                         {dispute.amount_claimed && (
                                             <div className="flex items-center gap-1">
@@ -182,7 +182,7 @@ function MyDisputesContent() {
                                         {dispute.response_description && (
                                             <div className="flex items-center gap-1 text-teal-600 dark:text-teal-400">
                                                 <MessageSquare className="w-3.5 h-3.5" />
-                                                <span>{t('disputes.responseReceived')}</span>
+                                                <span>{t('disputes.responseReceived', undefined, undefined)}</span>
                                             </div>
                                         )}
                                     </div>
@@ -203,10 +203,10 @@ function MyDisputesContent() {
                     <div className="relative z-10">
                         <div className="flex items-center gap-3 mb-4">
                             <Shield className="w-6 h-6 text-teal-400 dark:text-teal-600" />
-                            <h2 className="text-xl font-bold">{t('disputes.platformRoleTitle')}</h2>
+                            <h2 className="text-xl font-bold">{t('disputes.platformRoleTitle', undefined, undefined)}</h2>
                         </div>
                         <p className="text-zinc-300 dark:text-zinc-600 leading-relaxed max-w-2xl">
-                            {t('disputes.platformRoleDesc')}
+                            {t('disputes.platformRoleDesc', undefined, undefined)}
                         </p>
                     </div>
                 </div>

@@ -107,37 +107,37 @@ export default function DashboardPage() {
     const quickActions = [
         {
             icon: <Home className="w-8 h-8 text-teal-600 dark:text-teal-400" />,
-            title: t('dashboard.quickActions.newProperty.title'),
-            description: t('dashboard.quickActions.newProperty.desc'),
+            title: t('dashboard.quickActions.newProperty.title', undefined, undefined),
+            description: t('dashboard.quickActions.newProperty.desc', undefined, undefined),
             action: () => router.push('/properties/new'),
             show: user.role === 'landlord',
         },
         {
             icon: <Search className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />,
-            title: t('dashboard.quickActions.browse.title'),
-            description: t('dashboard.quickActions.browse.desc'),
+            title: t('dashboard.quickActions.browse.title', undefined, undefined),
+            description: t('dashboard.quickActions.browse.desc', undefined, undefined),
             action: () => router.push(user.role === 'tenant' ? '/search' : '/properties'),
             show: true,
         },
         {
             icon: <ShieldCheck className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />,
-            title: t('dashboard.quickActions.verify.title'),
-            description: t('dashboard.quickActions.verify.desc'),
+            title: t('dashboard.quickActions.verify.title', undefined, undefined),
+            description: t('dashboard.quickActions.verify.desc', undefined, undefined),
             action: () => router.push('/verification'),
             show: !user.identity_verified || !user.employment_verified,
         },
         {
             icon: <Mail className="w-8 h-8 text-blue-600 dark:text-blue-400" />,
-            title: t('dashboard.quickActions.messages.title'),
-            description: unreadCount > 0 ? `${unreadCount} ${t('dashboard.inbox.unread', undefined, 'unread')}` : t('dashboard.quickActions.messages.desc'),
+            title: t('dashboard.quickActions.messages.title', undefined, undefined),
+            description: unreadCount > 0 ? `${unreadCount} ${t('dashboard.inbox.unread', undefined, 'unread')}` : t('dashboard.quickActions.messages.desc', undefined, undefined),
             action: () => router.push('/inbox'),
             show: true,
             badge: unreadCount > 0 ? unreadCount : null,
         },
         {
             icon: <UserCircle className="w-8 h-8 text-purple-600 dark:text-purple-400" />,
-            title: t('dashboard.quickActions.onboarding.title'),
-            description: t('dashboard.quickActions.onboarding.desc'),
+            title: t('dashboard.quickActions.onboarding.title', undefined, undefined),
+            description: t('dashboard.quickActions.onboarding.desc', undefined, undefined),
             action: () => router.push('/onboarding'),
             show: !user.onboarding_completed,
         },
@@ -157,9 +157,9 @@ export default function DashboardPage() {
                 <header className="sticky top-0 z-30 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800">
                     <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
                         <div className="flex items-center gap-4">
-                            <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">{t('dashboard.title')}</h1>
+                            <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">{t('dashboard.title', undefined, undefined)}</h1>
                             <span className="hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200">
-                                {t(`dashboard.role.${user.role}`)}
+                                {t(`dashboard.role.${user.role}`, undefined, undefined)}
                             </span>
                         </div>
                         <button
@@ -167,7 +167,7 @@ export default function DashboardPage() {
                             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400 transition-colors rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800"
                         >
                             <LogOut className="w-4 h-4" />
-                            <span className="hidden sm:inline">{t('dashboard.logout')}</span>
+                            <span className="hidden sm:inline">{t('dashboard.logout', undefined, undefined)}</span>
                         </button>
                     </div>
                 </header>
@@ -187,7 +187,7 @@ export default function DashboardPage() {
                             </div>
                             <div className="relative z-10 px-8 py-10 sm:p-12 mix-blend-normal">
                                 <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2">
-                                    {t('dashboard.landlord.welcome', { name: user.full_name.split(' ')[0] })}
+                                    {t('dashboard.landlord.welcome', { name: user.full_name.split(' ')[0] }, undefined)}
                                 </h2>
                                 <p className="text-lg text-zinc-500 dark:text-zinc-400 max-w-2xl">
                                     {t('dashboard.welcome_desc', undefined, "Here's what's happening with your rental journey today.")}
@@ -209,38 +209,38 @@ export default function DashboardPage() {
                                     <>
                                         <motion.div variants={itemVariants} className="bg-white rounded-xl shadow-md p-6 hover:shadow-sm transition">
                                             <div className="flex items-center justify-between mb-2">
-                                                <h3 className="text-gray-600 text-sm font-medium">{t('dashboard.stats.properties')}</h3>
+                                                <h3 className="text-gray-600 text-sm font-medium">{t('dashboard.stats.properties', undefined, undefined)}</h3>
                                                 <span className="text-2xl"></span>
                                             </div>
                                             <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
-                                            <p className="text-xs text-gray-500 mt-1">{t('dashboard.stats.propertiesDesc')}</p>
+                                            <p className="text-xs text-gray-500 mt-1">{t('dashboard.stats.propertiesDesc', undefined, undefined)}</p>
                                         </motion.div>
 
                                         <motion.div variants={itemVariants} className="bg-white rounded-xl shadow-md p-6 hover:shadow-sm transition">
                                             <div className="flex items-center justify-between mb-2">
-                                                <h3 className="text-gray-600 text-sm font-medium">{t('dashboard.stats.activeListings')}</h3>
+                                                <h3 className="text-gray-600 text-sm font-medium">{t('dashboard.stats.activeListings', undefined, undefined)}</h3>
                                                 <span className="text-2xl"></span>
                                             </div>
                                             <p className="text-3xl font-bold text-green-600">{stats.active}</p>
-                                            <p className="text-xs text-gray-500 mt-1">{t('dashboard.stats.activeDesc')}</p>
+                                            <p className="text-xs text-gray-500 mt-1">{t('dashboard.stats.activeDesc', undefined, undefined)}</p>
                                         </motion.div>
 
                                         <motion.div variants={itemVariants} className="bg-white rounded-xl shadow-md p-6 hover:shadow-sm transition">
                                             <div className="flex items-center justify-between mb-2">
-                                                <h3 className="text-gray-600 text-sm font-medium">{t('dashboard.stats.drafts')}</h3>
+                                                <h3 className="text-gray-600 text-sm font-medium">{t('dashboard.stats.drafts', undefined, undefined)}</h3>
                                                 <span className="text-2xl"></span>
                                             </div>
                                             <p className="text-3xl font-bold text-yellow-600">{stats.draft}</p>
-                                            <p className="text-xs text-gray-500 mt-1">{t('dashboard.stats.draftsDesc')}</p>
+                                            <p className="text-xs text-gray-500 mt-1">{t('dashboard.stats.draftsDesc', undefined, undefined)}</p>
                                         </motion.div>
 
                                         <motion.div variants={itemVariants} className="bg-white rounded-xl shadow-md p-6 hover:shadow-sm transition">
                                             <div className="flex items-center justify-between mb-2">
-                                                <h3 className="text-gray-600 text-sm font-medium">{t('dashboard.stats.views')}</h3>
+                                                <h3 className="text-gray-600 text-sm font-medium">{t('dashboard.stats.views', undefined, undefined)}</h3>
                                                 <span className="text-2xl">️</span>
                                             </div>
                                             <p className="text-3xl font-bold text-blue-600">{stats.total_views}</p>
-                                            <p className="text-xs text-gray-500 mt-1">{t('dashboard.stats.viewsDesc')}</p>
+                                            <p className="text-xs text-gray-500 mt-1">{t('dashboard.stats.viewsDesc', undefined, undefined)}</p>
                                         </motion.div>
                                     </>
                                 ) : null}
@@ -249,7 +249,7 @@ export default function DashboardPage() {
 
                         {/* Quick Actions */}
                         <motion.div variants={itemVariants}>
-                            <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-4">{t('dashboard.quickActions.title')}</h3>
+                            <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-4">{t('dashboard.quickActions.title', undefined, undefined)}</h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                                 {quickActions.filter(action => action.show).map((action, idx) => (
                                     <motion.button
@@ -278,13 +278,13 @@ export default function DashboardPage() {
                             <div className="lg:col-span-2 space-y-4">
                                 <div className="flex items-center justify-between">
                                     <h3 className="text-xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-                                        <Mail className="w-5 h-5 text-zinc-500" /> {t('dashboard.inbox.title')}
+                                        <Mail className="w-5 h-5 text-zinc-500" /> {t('dashboard.inbox.title', undefined, undefined)}
                                     </h3>
                                     <button
                                         onClick={() => router.push('/inbox')}
                                         className="text-sm font-medium text-teal-600 hover:text-teal-500 dark:text-teal-400 transition-colors flex items-center gap-1"
                                     >
-                                        {t('dashboard.inbox.viewAll')} <span aria-hidden="true">&rarr;</span>
+                                        {t('dashboard.inbox.viewAll', undefined, undefined)} <span aria-hidden="true">&rarr;</span>
                                     </button>
                                 </div>
 
@@ -327,8 +327,8 @@ export default function DashboardPage() {
                                     <div className="py-8">
                                         <EmptyState
                                             icon=""
-                                            title={t('dashboard.inbox.empty')}
-                                            description={t('dashboard.inbox.emptyDesc')}
+                                            title={t('dashboard.inbox.empty', undefined, undefined)}
+                                            description={t('dashboard.inbox.emptyDesc', undefined, undefined)}
                                             layout="transparent"
                                         />
                                     </div>
@@ -341,7 +341,7 @@ export default function DashboardPage() {
                                 <div className="bg-white dark:bg-zinc-900 overflow-hidden shadow-sm border border-zinc-200 dark:border-zinc-800 rounded-2xl">
                                     <div className="px-6 py-6 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50">
                                         <h3 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-                                            <ShieldCheck className="w-5 h-5 text-emerald-500" /> {t('dashboard.verification.verification.progress')}
+                                            <ShieldCheck className="w-5 h-5 text-emerald-500" /> {t('dashboard.verification.verification.progressLabel', undefined, 'Verification Progress')}
                                         </h3>
                                     </div>
                                     <div className="p-6 space-y-5">
@@ -356,9 +356,9 @@ export default function DashboardPage() {
                                                     )}
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm font-medium text-zinc-900 dark:text-white">{t('dashboard.verification.email')}</p>
+                                                    <p className="text-sm font-medium text-zinc-900 dark:text-white">{t('dashboard.verification.email', undefined, undefined)}</p>
                                                     <p className="text-xs text-zinc-500 dark:text-zinc-500 mt-0.5">
-                                                        {user.email_verified ? t('dashboard.verification.verified') : t('dashboard.verification.pending')}
+                                                        {user.email_verified ? t('dashboard.verification.verified', undefined, undefined) : t('dashboard.verification.pending', undefined, undefined)}
                                                     </p>
                                                 </div>
                                             </div>
@@ -368,7 +368,7 @@ export default function DashboardPage() {
                                                     disabled={resendingEmail}
                                                     className="text-xs font-medium text-teal-600 hover:text-teal-700 bg-teal-50 hover:bg-teal-100 dark:bg-teal-500/10 dark:hover:bg-teal-500/20 dark:text-teal-400 px-3 py-1.5 rounded-full transition-colors disabled:opacity-50"
                                                 >
-                                                    {resendingEmail ? t('dashboard.verification.verification.sending') : t('dashboard.verification.verification.resend')}
+                                                    {resendingEmail ? t('dashboard.verification.verification.sending', undefined, undefined) : t('dashboard.verification.verification.resend', undefined, undefined)}
                                                 </button>
                                             )}
                                         </div>
@@ -384,9 +384,9 @@ export default function DashboardPage() {
                                                     )}
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm font-medium text-zinc-900 dark:text-white">{t('dashboard.verification.identity')}</p>
+                                                    <p className="text-sm font-medium text-zinc-900 dark:text-white">{t('dashboard.verification.identity', undefined, undefined)}</p>
                                                     <p className="text-xs text-zinc-500 dark:text-zinc-500 mt-0.5">
-                                                        {user.identity_verified ? t('dashboard.verification.verified') : t('dashboard.verification.start')}
+                                                        {user.identity_verified ? t('dashboard.verification.verified', undefined, undefined) : t('dashboard.verification.start', undefined, undefined)}
                                                     </p>
                                                 </div>
                                             </div>
@@ -395,7 +395,7 @@ export default function DashboardPage() {
                                                     onClick={() => router.push('/verification')}
                                                     className="text-xs font-medium text-teal-600 hover:text-teal-700 bg-teal-50 hover:bg-teal-100 dark:bg-teal-500/10 dark:hover:bg-teal-500/20 dark:text-teal-400 px-3 py-1.5 rounded-full transition-colors"
                                                 >
-                                                    {t('dashboard.verification.start')}
+                                                    {t('dashboard.verification.start', undefined, undefined)}
                                                 </button>
                                             )}
                                         </div>
@@ -411,9 +411,9 @@ export default function DashboardPage() {
                                                     )}
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm font-medium text-zinc-900 dark:text-white">{t('dashboard.verification.employment')}</p>
+                                                    <p className="text-sm font-medium text-zinc-900 dark:text-white">{t('dashboard.verification.employment', undefined, undefined)}</p>
                                                     <p className="text-xs text-zinc-500 dark:text-zinc-500 mt-0.5">
-                                                        {user.employment_verified ? t('dashboard.verification.verified') : t('dashboard.verification.start')}
+                                                        {user.employment_verified ? t('dashboard.verification.verified', undefined, undefined) : t('dashboard.verification.start', undefined, undefined)}
                                                     </p>
                                                 </div>
                                             </div>
@@ -422,7 +422,7 @@ export default function DashboardPage() {
                                                     onClick={() => router.push('/verification')}
                                                     className="text-xs font-medium text-teal-600 hover:text-teal-700 bg-teal-50 hover:bg-teal-100 dark:bg-teal-500/10 dark:hover:bg-teal-500/20 dark:text-teal-400 px-3 py-1.5 rounded-full transition-colors"
                                                 >
-                                                    {t('dashboard.verification.start')}
+                                                    {t('dashboard.verification.start', undefined, undefined)}
                                                 </button>
                                             )}
                                         </div>
@@ -433,7 +433,7 @@ export default function DashboardPage() {
                                 <div className="bg-white dark:bg-zinc-900 overflow-hidden shadow-sm border border-zinc-200 dark:border-zinc-800 rounded-2xl">
                                     <div className="px-6 py-6 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50">
                                         <h3 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-                                            {t('dashboard.stats.trustScore')}
+                                            {t('dashboard.stats.trustScore', undefined, undefined)}
                                         </h3>
                                     </div>
                                     <div className="flex flex-col items-center justify-center py-8">
@@ -467,14 +467,14 @@ export default function DashboardPage() {
                                             </div>
                                         </div>
                                         <p className="mt-4 text-sm text-center text-zinc-500 dark:text-zinc-400 px-6">
-                                            {user.trust_score < 100 ? t('dashboard.stats.complete') : t('dashboard.stats.verified')}
+                                            {user.trust_score < 100 ? t('dashboard.stats.complete', undefined, undefined) : t('dashboard.stats.verified', undefined, undefined)}
                                         </p>
                                         {user.trust_score < 100 && (
                                             <button
                                                 onClick={() => router.push('/verification')}
                                                 className="mt-6 px-4 py-2 text-sm font-medium text-white bg-teal-600 rounded-lg hover:bg-teal-700 transition-colors"
                                             >
-                                                {t('dashboard.stats.improve')} &rarr;
+                                                {t('dashboard.stats.improve', undefined, undefined)} &rarr;
                                             </button>
                                         )}
                                     </div>

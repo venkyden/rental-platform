@@ -58,7 +58,7 @@ export default function LoginPage() {
     const handleGoogleResponse = useCallback(
         async (response: { credential?: string }) => {
             if (!response.credential) {
-                setError(t('auth.login.error.google'));
+                setError(t('auth.login.error.google', undefined, undefined));
                 return;
             }
 
@@ -75,7 +75,7 @@ export default function LoginPage() {
                 setError(
                     typeof detail === 'string'
                         ? detail
-                        : t('auth.login.error.googleFail'),
+                        : t('auth.login.error.googleFail', undefined, undefined),
                 );
             } finally {
                 setGoogleLoading(false);
@@ -127,7 +127,7 @@ export default function LoginPage() {
 
         script.onerror = () => {
             console.warn('Failed to load Google Sign-In script');
-            setError(t('auth.login.error.googleScript'));
+            setError(t('auth.login.error.googleScript', undefined, undefined));
         };
 
         document.body.appendChild(script);
@@ -145,7 +145,7 @@ export default function LoginPage() {
         } catch (err: unknown) {
             const axiosErr = err as { response?: { data?: { detail?: string | Array<{ msg?: string; message?: string }> | { msg?: string; message?: string } } } };
             const detail = axiosErr?.response?.data?.detail;
-            let errorMessage = t('auth.login.error.loginFail');
+            let errorMessage = t('auth.login.error.loginFail', undefined, undefined);
             if (typeof detail === 'string') errorMessage = detail;
             else if (Array.isArray(detail))
                 errorMessage = detail.map((d) => d.msg || d.message).join(', ');
@@ -162,15 +162,15 @@ export default function LoginPage() {
         <motion.div variants={containerVariants} initial="hidden" animate="show" className="w-full">
             <motion.div variants={itemVariants} className="text-center sm:text-left mb-8">
                 <h2 className="text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
-                    {t('auth.login.title')}
+                    {t('auth.login.title', undefined, undefined)}
                 </h2>
                 <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-                    {t('auth.login.noAccount')}{' '}
+                    {t('auth.login.noAccount', undefined, undefined)}{' '}
                     <Link
                         href="/auth/register"
                         className="font-semibold text-teal-600 hover:text-teal-500 transition-colors"
                     >
-                        {t('auth.login.signUp')}
+                        {t('auth.login.signUp', undefined, undefined)}
                     </Link>
                 </p>
             </motion.div>
@@ -191,7 +191,7 @@ export default function LoginPage() {
                 </div>
                 {googleLoading && (
                     <p className="text-sm text-zinc-600 mt-3 text-center animate-pulse">
-                        {t('auth.login.connectingGoogle')}
+                        {t('auth.login.connectingGoogle', undefined, undefined)}
                     </p>
                 )}
             </motion.div>
@@ -203,7 +203,7 @@ export default function LoginPage() {
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
                     <span className="bg-white dark:bg-zinc-900 px-3 text-zinc-500 dark:text-zinc-400">
-                        {t('auth.login.divider')}
+                        {t('auth.login.divider', undefined, undefined)}
                     </span>
                 </div>
             </motion.div>
@@ -215,13 +215,13 @@ export default function LoginPage() {
                             htmlFor="email"
                             className="block text-sm font-medium text-zinc-800 dark:text-zinc-300"
                         >
-                            {t('auth.login.email')}
+                            {t('auth.login.email', undefined, undefined)}
                         </label>
                         <Link
                             href="/auth/forgot-email"
                             className="text-sm font-semibold text-teal-600 hover:text-teal-500 transition-colors"
                         >
-                            {t('auth.login.forgotEmail')}
+                            {t('auth.login.forgotEmail', undefined, undefined)}
                         </Link>
                     </div>
                     <input
@@ -243,13 +243,13 @@ export default function LoginPage() {
                             htmlFor="password"
                             className="block text-sm font-medium text-zinc-800 dark:text-zinc-300"
                         >
-                            {t('auth.login.password')}
+                            {t('auth.login.password', undefined, undefined)}
                         </label>
                         <Link
                             href="/auth/forgot-password"
                             className="text-sm font-semibold text-teal-600 hover:text-teal-500 transition-colors"
                         >
-                            {t('auth.login.forgotPassword')}
+                            {t('auth.login.forgotPassword', undefined, undefined)}
                         </Link>
                     </div>
                     <div className="relative">
@@ -283,10 +283,10 @@ export default function LoginPage() {
                         {loading ? (
                             <span className="flex items-center gap-2">
                                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                {t('auth.login.signingIn')}
+                                {t('auth.login.signingIn', undefined, undefined)}
                             </span>
                         ) : (
-                            t('auth.login.signIn')
+                            t('auth.login.signIn', undefined, undefined)
                         )}
                     </button>
                 </motion.div>

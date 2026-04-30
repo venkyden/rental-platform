@@ -71,7 +71,7 @@ export default function RegisterPage() {
     const handleGoogleResponse = useCallback(
         async (response: { credential?: string }) => {
             if (!response.credential) {
-                setError(t('auth.login.error.google'));
+                setError(t('auth.login.error.google', undefined, undefined));
                 return;
             }
 
@@ -88,7 +88,7 @@ export default function RegisterPage() {
                 setError(
                     typeof detail === 'string'
                         ? detail
-                        : t('auth.login.error.googleFail'),
+                        : t('auth.login.error.googleFail', undefined, undefined),
                 );
             } finally {
                 setGoogleLoading(false);
@@ -140,7 +140,7 @@ export default function RegisterPage() {
 
         script.onerror = () => {
             console.warn('Failed to load Google Sign-In script');
-            setError(t('auth.login.error.googleScript'));
+            setError(t('auth.login.error.googleScript', undefined, undefined));
         };
 
         document.body.appendChild(script);
@@ -186,15 +186,15 @@ export default function RegisterPage() {
         setError('');
 
         if (!formData.gdprConsent) {
-            setError(t('auth.register.error.privacy'));
+            setError(t('auth.register.error.privacy', undefined, undefined));
             return;
         }
         if (formData.password !== formData.confirmPassword) {
-            setError(t('auth.register.error.mismatch'));
+            setError(t('auth.register.error.mismatch', undefined, undefined));
             return;
         }
         if (!validatePassword(formData.password)) {
-            setError(t('auth.register.error.security'));
+            setError(t('auth.register.error.security', undefined, undefined));
             return;
         }
 
@@ -214,7 +214,7 @@ export default function RegisterPage() {
         } catch (err: unknown) {
             const axiosErr = err as { response?: { data?: { detail?: string | Array<{ msg?: string; message?: string }> | { msg?: string; message?: string } } } };
             const detail = axiosErr?.response?.data?.detail;
-            let errorMessage = t('auth.register.error.fail');
+            let errorMessage = t('auth.register.error.fail', undefined, undefined);
             if (typeof detail === 'string') errorMessage = detail;
             else if (Array.isArray(detail))
                 errorMessage = detail.map((d) => d.msg || d.message).join(', ');
@@ -236,15 +236,15 @@ export default function RegisterPage() {
         >
             <motion.div variants={itemVariants} className="text-center sm:text-left mb-8">
                 <h2 className="text-3xl font-extrabold text-zinc-900 tracking-tight">
-                    {t('auth.register.title')}
+                    {t('auth.register.title', undefined, undefined)}
                 </h2>
                 <p className="mt-2 text-sm text-zinc-600">
-                    {t('auth.register.hasAccount')}{' '}
+                    {t('auth.register.hasAccount', undefined, undefined)}{' '}
                     <Link
                         href="/auth/login"
                         className="font-semibold text-teal-600 hover:text-teal-500 transition-colors"
                     >
-                        {t('auth.register.signIn')}
+                        {t('auth.register.signIn', undefined, undefined)}
                     </Link>
                 </p>
             </motion.div>
@@ -261,12 +261,12 @@ export default function RegisterPage() {
             {/* Role selector + Google sign-up */}
             <motion.div variants={itemVariants} className="mb-6">
                 <label className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-3 text-center sm:text-left">
-                    {t('auth.register.role.question')}
+                    {t('auth.register.role.question', undefined, undefined)}
                 </label>
                 <div className="grid grid-cols-2 gap-3 mb-6">
                     {[
-                        { id: 'tenant', label: t('auth.register.role.tenant'), icon: <User className="w-6 h-6" /> },
-                        { id: 'landlord', label: t('auth.register.role.landlord'), icon: <Home className="w-6 h-6" /> },
+                        { id: 'tenant', label: t('auth.register.role.tenant', undefined, undefined), icon: <User className="w-6 h-6" /> },
+                        { id: 'landlord', label: t('auth.register.role.landlord', undefined, undefined), icon: <Home className="w-6 h-6" /> },
                     ].map((role) => (
                         <button
                             key={role.id}
@@ -289,7 +289,7 @@ export default function RegisterPage() {
                 </div>
                 {googleLoading && (
                     <p className="text-sm text-zinc-600 mt-3 text-center animate-pulse">
-                        {t('auth.register.connectingGoogle')}
+                        {t('auth.register.connectingGoogle', undefined, undefined)}
                     </p>
                 )}
             </motion.div>
@@ -301,7 +301,7 @@ export default function RegisterPage() {
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
                     <span className="bg-white dark:bg-zinc-900 px-3 text-zinc-500 dark:text-zinc-400">
-                        {t('auth.register.divider')}
+                        {t('auth.register.divider', undefined, undefined)}
                     </span>
                 </div>
             </motion.div>
@@ -318,7 +318,7 @@ export default function RegisterPage() {
                             htmlFor="full_name"
                             className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-1.5"
                         >
-                            {t('auth.register.fullName')}
+                            {t('auth.register.fullName', undefined, undefined)}
                         </label>
                         <input
                             id="full_name"
@@ -337,7 +337,7 @@ export default function RegisterPage() {
                             htmlFor="phone"
                             className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-1.5"
                         >
-                            {t('auth.register.phone')} <span className="text-zinc-400 dark:text-zinc-500 font-normal">{t('auth.register.optional')}</span>
+                            {t('auth.register.phone', undefined, undefined)} <span className="text-zinc-400 dark:text-zinc-500 font-normal">{t('auth.register.optional', undefined, undefined)}</span>
                         </label>
                         <input
                             id="phone"
@@ -349,7 +349,7 @@ export default function RegisterPage() {
                             onChange={handleChange}
                         />
                         <p className="mt-1.5 text-xs text-zinc-400 dark:text-zinc-500">
-                            {t('auth.register.phoneDesc')}
+                            {t('auth.register.phoneDesc', undefined, undefined)}
                         </p>
                     </motion.div>
 
@@ -358,7 +358,7 @@ export default function RegisterPage() {
                             htmlFor="email"
                             className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-1.5"
                         >
-                            {t('auth.register.email')}
+                            {t('auth.register.email', undefined, undefined)}
                         </label>
                         <input
                             id="email"
@@ -378,7 +378,7 @@ export default function RegisterPage() {
                             htmlFor="password"
                             className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-1.5"
                         >
-                            {t('auth.register.password')}
+                            {t('auth.register.password', undefined, undefined)}
                         </label>
                         <div className="relative">
                             <input
@@ -416,7 +416,7 @@ export default function RegisterPage() {
                             htmlFor="confirmPassword"
                             className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-1.5"
                         >
-                            {t('auth.register.confirmPassword')}
+                            {t('auth.register.confirmPassword', undefined, undefined)}
                         </label>
                         <div className="relative">
                             <input
@@ -462,19 +462,19 @@ export default function RegisterPage() {
                                 htmlFor="gdprConsent"
                                 className="font-medium text-zinc-800 dark:text-zinc-300"
                             >
-                                {t('auth.register.accept')}{' '}
+                                {t('auth.register.accept', undefined, undefined)}{' '}
                                 <Link
                                     href="/legal/privacy"
                                     className="text-teal-600 hover:text-teal-500 underline"
                                 >
-                                    {t('auth.register.privacy')}
+                                    {t('auth.register.privacy', undefined, undefined)}
                                 </Link>{' '}
-                                {t('auth.register.and')}{' '}
+                                {t('auth.register.and', undefined, undefined)}{' '}
                                 <Link
                                     href="/legal/terms"
                                     className="text-teal-600 hover:text-teal-500 underline"
                                 >
-                                    {t('auth.register.terms')}
+                                    {t('auth.register.terms', undefined, undefined)}
                                 </Link>
                                 <span className="text-red-500"> *</span>
                             </label>
@@ -491,10 +491,10 @@ export default function RegisterPage() {
                         {loading ? (
                             <span className="flex items-center gap-2">
                                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                {t('auth.register.signingUp')}
+                                {t('auth.register.signingUp', undefined, undefined)}
                             </span>
                         ) : (
-                            t('auth.register.signUp')
+                            t('auth.register.signUp', undefined, undefined)
                         )}
                     </button>
                 </motion.div>

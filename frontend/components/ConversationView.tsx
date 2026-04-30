@@ -143,7 +143,7 @@ export default function ConversationView({ conversationId, onClose, onArchive }:
     if (!conversation) {
         return (
             <div className="flex items-center justify-center h-full text-gray-500">
-                {t('conversation.notFound', 'Conversation not found')}
+                {t('conversation.notFound', undefined, 'Conversation not found')}
             </div>
         );
     }
@@ -184,7 +184,7 @@ export default function ConversationView({ conversationId, onClose, onArchive }:
                                 onClick={handleArchive}
                                 className="px-3 py-1 text-sm bg-white/20 hover:bg-white/30 rounded-lg transition-colors"
                             >
-                                 {t('conversation.archiveButton', 'Archive')}
+                                 {t('conversation.archiveButton', undefined, 'Archive')}
                             </button>
                         )}
                     </div>
@@ -195,11 +195,11 @@ export default function ConversationView({ conversationId, onClose, onArchive }:
             <div className="px-4 py-3 bg-gray-50 border-b flex items-center justify-between text-sm">
                 <div className="flex items-center gap-4">
                     <div>
-                        <span className="text-gray-500">{t('conversation.landlord', 'Landlord')}:</span>{' '}
+                        <span className="text-gray-500">{t('conversation.landlord', undefined, 'Landlord')}:</span>{' '}
                         <span className="font-medium">{conversation.landlord_name}</span>
                     </div>
                     <div>
-                        <span className="text-gray-500">{t('conversation.tenant', 'Tenant')}:</span>{' '}
+                        <span className="text-gray-500">{t('conversation.tenant', undefined, 'Tenant')}:</span>{' '}
                         <span className="font-medium">{conversation.tenant_name}</span>
                     </div>
                 </div>
@@ -207,7 +207,7 @@ export default function ConversationView({ conversationId, onClose, onArchive }:
                     href={`/properties/${conversation.property_id}`}
                     className="text-blue-600 hover:underline"
                 >
-                    {t('conversation.viewProperty', 'View Property →')}
+                    {t('conversation.viewProperty', undefined, 'View Property →')}
                 </a>
             </div>
 
@@ -264,7 +264,7 @@ export default function ConversationView({ conversationId, onClose, onArchive }:
                                                 rel="noopener noreferrer"
                                                 className={`mt-2 inline-block text-sm ${isOwn ? 'text-white/80 hover:text-white' : 'text-blue-600 hover:underline'}`}
                                             >
-                                                 {t('conversation.downloadLease', 'Download Lease')}
+                                                 {t('conversation.downloadLease', undefined, 'Download Lease')}
                                             </a>
                                         )}
 
@@ -291,7 +291,7 @@ export default function ConversationView({ conversationId, onClose, onArchive }:
                             value={newMessage}
                             onChange={(e) => setNewMessage(e.target.value)}
                             onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-                            placeholder={t('conversation.writeMessage', 'Write a message...')}
+                            placeholder={t('conversation.writeMessage', undefined, 'Write a message...')}
                             className="flex-1 px-4 py-3 border rounded-full focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             disabled={sending}
                         />
@@ -316,7 +316,7 @@ export default function ConversationView({ conversationId, onClose, onArchive }:
             {/* Archived notice */}
             {conversation.status === 'archived' && (
                 <div className="p-4 border-t bg-gray-100 text-center text-gray-500 text-sm">
-                    {t('conversation.archivedNotice', 'This conversation is archived')}
+                    {t('conversation.archivedNotice', undefined, 'This conversation is archived')}
                 </div>
             )}
         </div>

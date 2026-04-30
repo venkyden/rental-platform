@@ -33,7 +33,7 @@ export default function CameraCapture({ onCapture, onCancel }: CameraCaptureProp
             }
             setCapturing(true);
         } catch (err: any) {
-            setError(t('cameraCapture.accessDenied', 'Camera access denied. Please allow camera access to verify your identity.'));
+            setError(t('cameraCapture.accessDenied', undefined, 'Camera access denied. Please allow camera access to verify your identity.'));
             console.error('Camera error:', err);
         }
     };
@@ -88,7 +88,7 @@ export default function CameraCapture({ onCapture, onCancel }: CameraCaptureProp
             <div className="bg-white rounded-lg max-w-2xl w-full p-6">
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-xl font-bold text-gray-900">
-                         {t('cameraCapture.title', 'Capture Identity Document')}
+                         {t('cameraCapture.title', undefined, 'Capture Identity Document')}
                     </h3>
                     <button
                         onClick={handleCancel}
@@ -108,18 +108,18 @@ export default function CameraCapture({ onCapture, onCancel }: CameraCaptureProp
                     <div className="text-center py-8">
                         <div className="text-6xl mb-4"></div>
                         <h4 className="text-lg font-semibold text-gray-900 mb-2">
-                            {t('cameraCapture.liveCaptureTitle', 'Live Document Capture')}
+                            {t('cameraCapture.liveCaptureTitle', undefined, 'Live Document Capture')}
                         </h4>
                         <p className="text-gray-600 mb-6">
-                            {t('cameraCapture.liveCaptureDesc', 'For security, we require a live photo of your ID document.')}
+                            {t('cameraCapture.liveCaptureDesc', undefined, 'For security, we require a live photo of your ID document.')}
                             <br />
-                            <span className="text-sm">{t('cameraCapture.liveCaptureTip', 'Position your document clearly and ensure all text is readable.')}</span>
+                            <span className="text-sm">{t('cameraCapture.liveCaptureTip', undefined, 'Position your document clearly and ensure all text is readable.')}</span>
                         </p>
                         <button
                             onClick={startCamera}
                             className="px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:shadow-sm transform hover:scale-105 transition-all"
                         >
-                            {t('cameraCapture.openCamera', 'Open Camera')}
+                            {t('cameraCapture.openCamera', undefined, 'Open Camera')}
                         </button>
                     </div>
                 )}
@@ -144,19 +144,19 @@ export default function CameraCapture({ onCapture, onCancel }: CameraCaptureProp
                                 onClick={handleCancel}
                                 className="flex-1 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors"
                             >
-                                {t('cameraCapture.cancel', 'Cancel')}
+                                {t('cameraCapture.cancel', undefined, 'Cancel')}
                             </button>
                             <button
                                 onClick={capturePhoto}
                                 className="flex-1 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:shadow-sm transform hover:scale-105 transition-all"
                             >
-                                 {t('cameraCapture.captureButton', 'Capture Photo')}
+                                 {t('cameraCapture.captureButton', undefined, 'Capture Photo')}
                             </button>
                         </div>
 
                         <div className="p-3 bg-blue-50 rounded-md">
                             <p className="text-xs text-blue-800">
-                                 {t('cameraCapture.frameTip', 'Tip: Ensure your document is well-lit and all corners are visible within the blue frame.')}
+                                 {t('cameraCapture.frameTip', undefined, 'Tip: Ensure your document is well-lit and all corners are visible within the blue frame.')}
                             </p>
                         </div>
                     </div>

@@ -84,7 +84,7 @@ export default function UnifiedInbox({ onSelectConversation, selectedConversatio
         if (diffDays === 0) {
             return date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
         } else if (diffDays === 1) {
-            return t('inbox.time.yesterday');
+            return t('inbox.time.yesterday', undefined, undefined);
         } else if (diffDays < 7) {
             return date.toLocaleDateString('en-GB', { weekday: 'short' });
         } else {
@@ -132,7 +132,7 @@ export default function UnifiedInbox({ onSelectConversation, selectedConversatio
             <div className="p-4 border-b bg-blue-600">
                 <div className="flex items-center justify-between mb-3">
                     <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                         {t('inbox.title')}
+                         {t('inbox.title', undefined, undefined)}
                         {totalUnread > 0 && (
                             <span className="px-2 py-0.5 bg-red-500 text-white text-sm rounded-full">
                                 {totalUnread}
@@ -145,7 +145,7 @@ export default function UnifiedInbox({ onSelectConversation, selectedConversatio
                 <div className="relative">
                     <input
                         type="text"
-                        placeholder={t('inbox.searchPlaceholder')}
+                        placeholder={t('inbox.searchPlaceholder', undefined, undefined)}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full px-4 py-2 pl-10 rounded-lg bg-white/20 text-white placeholder-white/70 focus:bg-white focus:text-gray-900 focus:placeholder-gray-400 transition-colors"
@@ -157,9 +157,9 @@ export default function UnifiedInbox({ onSelectConversation, selectedConversatio
             {/* Filter Tabs */}
             <div className="flex border-b">
                 {[
-                    { key: 'all', label: t('inbox.filters.all') },
-                    { key: 'active', label: t('inbox.filters.active') },
-                    { key: 'archived', label: t('inbox.filters.archived') }
+                    { key: 'all', label: t('inbox.filters.all', undefined, undefined) },
+                    { key: 'active', label: t('inbox.filters.active', undefined, undefined) },
+                    { key: 'archived', label: t('inbox.filters.archived', undefined, undefined) }
                 ].map(({ key, label }) => (
                     <button
                         key={key}
@@ -185,8 +185,8 @@ export default function UnifiedInbox({ onSelectConversation, selectedConversatio
                     <div className="py-16">
                         <EmptyState
                             icon=""
-                            title={t('inbox.status.noConversations')}
-                            description={t('inbox.status.noConversationsDesc')}
+                            title={t('inbox.status.noConversations', undefined, undefined)}
+                            description={t('inbox.status.noConversationsDesc', undefined, undefined)}
                             layout="transparent"
                         />
                     </div>
@@ -196,7 +196,7 @@ export default function UnifiedInbox({ onSelectConversation, selectedConversatio
                             {/* Property Header */}
                             <div className="px-4 py-2 bg-gray-50 border-b">
                                 <div className="font-medium text-gray-900 text-sm">
-                                     {group.property_title || t('search.property')}
+                                     {group.property_title || t('search.property', undefined, undefined)}
                                 </div>
                                 <div className="text-xs text-gray-500">
                                     {group.property_address}

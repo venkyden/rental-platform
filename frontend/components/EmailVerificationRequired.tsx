@@ -40,7 +40,7 @@ export default function EmailVerificationRequired({ children }: EmailVerificatio
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                    <p className="mt-4 text-gray-600">{t('emailVerification.loading', 'Loading...')}</p>
+                    <p className="mt-4 text-gray-600">{t('emailVerification.loading', undefined, 'Loading...')}</p>
                 </div>
             </div>
         );
@@ -54,16 +54,16 @@ export default function EmailVerificationRequired({ children }: EmailVerificatio
                     <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
                         <span className="text-4xl"></span>
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('emailVerification.title', 'Verify Your Email')}</h2>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('emailVerification.title', undefined, 'Verify Your Email')}</h2>
                     <p className="text-gray-600 mb-6">
-                        {t('emailVerification.sentMessage1', "We've sent a verification link to")} <span className="font-semibold text-gray-800">{user.email}</span>.
-                        {t('emailVerification.sentMessage2', ' Please check your inbox and click the link to continue.')}
+                        {t('emailVerification.sentMessage1', undefined, "We've sent a verification link to")} <span className="font-semibold text-gray-800">{user.email}</span>.
+                        {t('emailVerification.sentMessage2', undefined, ' Please check your inbox and click the link to continue.')}
                     </p>
 
                     <div className="space-y-3">
                         {resendSuccess ? (
                             <div className="py-3 px-4 bg-green-50 text-green-700 rounded-xl font-medium flex items-center justify-center gap-2">
-                                <span></span> {t('emailVerification.success', 'Verification email sent!')}
+                                <span></span> {t('emailVerification.success', undefined, 'Verification email sent!')}
                             </div>
                         ) : (
                             <button
@@ -71,7 +71,7 @@ export default function EmailVerificationRequired({ children }: EmailVerificatio
                                 disabled={resending}
                                 className="w-full py-3 px-4 bg-zinc-900 dark:bg-white text-white font-semibold rounded-xl hover:shadow-sm transition-all disabled:opacity-50"
                             >
-                                {resending ? t('emailVerification.sending', 'Sending...') : t('emailVerification.resendButton', 'Resend Verification Email')}
+                                {resending ? t('emailVerification.sending', undefined, 'Sending...') : t('emailVerification.resendButton', undefined, 'Resend Verification Email')}
                             </button>
                         )}
 
@@ -79,19 +79,19 @@ export default function EmailVerificationRequired({ children }: EmailVerificatio
                             onClick={() => window.location.reload()}
                             className="w-full py-3 px-4 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition-all"
                         >
-                            {t('emailVerification.alreadyVerified', "I've verified my email →")}
+                            {t('emailVerification.alreadyVerified', undefined, "I've verified my email →")}
                         </button>
 
                         <button
                             onClick={() => router.push('/auth/login')}
                             className="w-full py-2 text-sm text-gray-500 hover:text-gray-700"
                         >
-                            {t('emailVerification.differentAccount', 'Sign in with a different account')}
+                            {t('emailVerification.differentAccount', undefined, 'Sign in with a different account')}
                         </button>
                     </div>
 
                     <p className="mt-6 text-xs text-gray-400">
-                        {t('emailVerification.spamFolder', "Can't find the email? Check your spam folder or request a new one.")}
+                        {t('emailVerification.spamFolder', undefined, "Can't find the email? Check your spam folder or request a new one.")}
                     </p>
                 </div>
             </div>

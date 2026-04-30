@@ -93,7 +93,7 @@ export default function PropertiesPage() {
         <ProtectedRoute>
             <PremiumLayout withNavbar={true}>
                 <header className="mb-8 p-6 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl shadow-sm border border-white/50 dark:border-white/10 flex justify-between items-center">
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('property.landlord.title')}</h1>
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('property.landlord.title', undefined, undefined)}</h1>
                     <div className="flex gap-3">
                         <button
                             onClick={() => router.push('/dashboard')}
@@ -105,7 +105,7 @@ export default function PropertiesPage() {
                             onClick={() => router.push('/properties/new')}
                             className="px-6 py-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-white font-semibold rounded-xl hover:shadow-sm hover: transform hover:-translate-y-0.5 transition-all"
                         >
-                            {t('property.landlord.newProperty')}
+                            {t('property.landlord.newProperty', undefined, undefined)}
                         </button>
                     </div>
                 </header>
@@ -122,7 +122,7 @@ export default function PropertiesPage() {
                                     : 'bg-white/60 dark:bg-zinc-800/60 backdrop-blur-md text-gray-700 dark:text-gray-300 hover:bg-white/80 dark:hover:bg-zinc-800/80 border border-white/20'
                                     }`}
                             >
-                                {t(`property.landlord.${status}` as any)}
+                                {t(`property.landlord.${status}` as any, undefined, undefined)}
                             </button>
                         ))}
                     </div>
@@ -136,9 +136,9 @@ export default function PropertiesPage() {
                         <div className="py-12">
                             <EmptyState
                                 icon=""
-                                title={t('property.landlord.emptyTitle')}
-                                description={t('property.landlord.emptyDesc')}
-                                actionLabel={t('property.landlord.createBtn')}
+                                title={t('property.landlord.emptyTitle', undefined, undefined)}
+                                description={t('property.landlord.emptyDesc', undefined, undefined)}
+                                actionLabel={t('property.landlord.createBtn', undefined, undefined)}
                                 onAction={() => router.push('/properties/new')}
                                 layout="transparent"
                             />
@@ -189,7 +189,7 @@ export default function PropertiesPage() {
                                                 <span className="text-sm font-medium text-gray-500 dark:text-gray-400">/{t('property.price.perMonthShort', undefined, 'mo')}</span>
                                             </div>
                                             <div className="text-sm font-semibold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-zinc-800 px-3 py-1 rounded-lg">
-                                                ️ {property.bedrooms} {t(property.bedrooms !== 1 ? 'property.bedrooms' : 'property.bedroom')}
+                                                ️ {property.bedrooms} {t(property.bedrooms !== 1 ? 'property.bedrooms' : 'property.bedroom', undefined, undefined)}
                                             </div>
                                         </div>
 
@@ -198,7 +198,7 @@ export default function PropertiesPage() {
                                             {property.ownership_verified ? (
                                                 <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/10 px-2.5 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-900/30">
                                                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                                    {t('property.landlord.ownershipVerified')}
+                                                    {t('property.landlord.ownershipVerified', undefined, undefined)}
                                                 </div>
                                             ) : (
                                                  <button 
@@ -206,7 +206,7 @@ export default function PropertiesPage() {
                                                     className="flex items-center gap-1.5 text-xs font-semibold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/10 px-2.5 py-1.5 rounded-lg border border-orange-200 dark:border-orange-900/30 hover:bg-orange-100 dark:hover:bg-orange-900/20 transition-colors w-full justify-center"
                                                 >
                                                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                                                    {t('property.landlord.verifyPrompt')}
+                                                    {t('property.landlord.verifyPrompt', undefined, undefined)}
                                                 </button>
                                             )}
                                         </div>
@@ -217,7 +217,7 @@ export default function PropertiesPage() {
                                                 onClick={() => router.push(`/properties/${property.id}/edit`)}
                                                 className="flex-1 py-2.5 bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-zinc-700 font-semibold transition-colors"
                                             >
-                                                {t('property.actions.edit')}
+                                                {t('property.actions.edit', undefined, undefined)}
                                             </button>
                                             <button
                                                 onClick={() => router.push(`/properties/${property.id}`)}

@@ -41,7 +41,7 @@ export default function InboxPage() {
                                 ← Dashboard
                             </button>
                             <h1 className="text-2xl font-bold text-gray-900">
-                                 {t('inbox.title')}
+                                 {t('inbox.title', undefined, undefined)}
                             </h1>
                         </div>
                     </div>
@@ -69,9 +69,9 @@ export default function InboxPage() {
                             ) : (
                                 <div className="h-full bg-white rounded-xl shadow-sm flex flex-col items-center justify-center text-gray-400">
                                     <span className="text-6xl mb-4"></span>
-                                    <p className="text-lg">{t('inbox.selectPrompt')}</p>
+                                    <p className="text-lg">{t('inbox.selectPrompt', undefined, undefined)}</p>
                                     <p className="text-sm mt-2">
-                                        {t('inbox.selectDesc')}
+                                        {t('inbox.selectDesc', undefined, undefined)}
                                     </p>
                                 </div>
                             )}

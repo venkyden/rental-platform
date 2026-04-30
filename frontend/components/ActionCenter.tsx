@@ -84,8 +84,8 @@ export default function ActionCenter() {
         return (
             <div className="premium-card p-8 text-center">
                 <span className="text-5xl block mb-3"></span>
-                <p className="text-lg font-semibold text-gray-700">{t('actionCenter.allInOrder', 'All is in order')}</p>
-                <p className="text-sm text-gray-500 mt-1">{t('actionCenter.noUrgentAction', 'No urgent action required')}</p>
+                <p className="text-lg font-semibold text-gray-700">{t('actionCenter.allInOrder', undefined, 'All is in order')}</p>
+                <p className="text-sm text-gray-500 mt-1">{t('actionCenter.noUrgentAction', undefined, 'No urgent action required')}</p>
             </div>
         );
     }

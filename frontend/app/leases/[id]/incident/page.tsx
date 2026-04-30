@@ -46,7 +46,7 @@ export default function IncidentReportingPage() {
                 setLease(data);
             } catch (err) {
                 console.error(err);
-                toast.error(t('disputes.incident.messages.loadLeaseError'));
+                toast.error(t('disputes.incident.messages.loadLeaseError', undefined, undefined));
             } finally {
                 setLoading(false);
             }
@@ -58,7 +58,7 @@ export default function IncidentReportingPage() {
         const file = e.target.files?.[0];
         if (file) {
             if (photos.length >= 5) {
-                toast.error(t('disputes.incident.messages.maxPhotos'));
+                toast.error(t('disputes.incident.messages.maxPhotos', undefined, undefined));
                 return;
             }
             setPhotos([...photos, file]);
@@ -68,7 +68,7 @@ export default function IncidentReportingPage() {
 
     const handleSubmit = async () => {
         if (!title || !description) {
-            toast.error(t('disputes.incident.messages.requiredFields'));
+            toast.error(t('disputes.incident.messages.requiredFields', undefined, undefined));
             return;
         }
 
@@ -95,7 +95,7 @@ export default function IncidentReportingPage() {
             router.push('/disputes?success=true');
         } catch (err) {
             console.error(err);
-            toast.error(t('disputes.messages.addEvidenceError'));
+            toast.error(t('disputes.messages.addEvidenceError', undefined, undefined));
         } finally {
             setSubmitting(false);
         }
@@ -125,7 +125,7 @@ export default function IncidentReportingPage() {
                     <button onClick={() => router.back()} className="p-2 -ml-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors">
                         <ChevronLeft className="w-6 h-6" />
                     </button>
-                    <h1 className="text-lg font-extrabold tracking-tight">{t('disputes.incident.title')}</h1>
+                    <h1 className="text-lg font-extrabold tracking-tight">{t('disputes.incident.title', undefined, undefined)}</h1>
                     <div className="w-10"></div>
                 </div>
             </div>
@@ -137,17 +137,17 @@ export default function IncidentReportingPage() {
                     <div className="relative z-10">
                         <div className="flex items-center gap-2 mb-2 text-teal-400 dark:text-teal-600">
                             <Shield className="w-5 h-5" />
-                            <span className="text-[10px] font-extrabold uppercase tracking-widest">{t('disputes.incident.dutyTitle')}</span>
+                            <span className="text-[10px] font-extrabold uppercase tracking-widest">{t('disputes.incident.dutyTitle', undefined, undefined)}</span>
                         </div>
                         <p className="text-sm text-zinc-300 dark:text-zinc-600 leading-relaxed font-medium">
-                            {t('disputes.incident.dutyDesc')}
+                            {t('disputes.incident.dutyDesc', undefined, undefined)}
                         </p>
                     </div>
                 </section>
 
                 {/* Step 1: Category */}
                 <section className="space-y-4">
-                    <h2 className="text-xl font-bold px-1">{t('disputes.incident.step1')}</h2>
+                    <h2 className="text-xl font-bold px-1">{t('disputes.incident.step1', undefined, undefined)}</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {categories.map((cat) => (
                             <button
@@ -163,8 +163,8 @@ export default function IncidentReportingPage() {
                                     {cat.icon}
                                 </div>
                                 <div>
-                                    <div className="font-bold">{t(`disputes.incident.categories.${cat.id}.label` as any)}</div>
-                                    <div className="text-xs text-zinc-500">{t(`disputes.incident.categories.${cat.id}.desc` as any)}</div>
+                                    <div className="font-bold">{t(`disputes.incident.categories.${cat.id}.label` as any, undefined, undefined)}</div>
+                                    <div className="text-xs text-zinc-500">{t(`disputes.incident.categories.${cat.id}.desc` as any, undefined, undefined)}</div>
                                 </div>
                                 {category === cat.id && <CheckCircle2 className="w-5 h-5 ml-auto text-teal-600" />}
                             </button>
@@ -174,38 +174,38 @@ export default function IncidentReportingPage() {
 
                 {/* Step 2: Details */}
                 <section className="space-y-6">
-                    <h2 className="text-xl font-bold px-1">{t('disputes.incident.step2')}</h2>
+                    <h2 className="text-xl font-bold px-1">{t('disputes.incident.step2', undefined, undefined)}</h2>
                     
                     <div className="space-y-4">
                         <div>
-                            <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-2 block px-1">{t('disputes.incident.form.title')}</label>
+                            <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-2 block px-1">{t('disputes.incident.form.title', undefined, undefined)}</label>
                             <input 
                                 type="text"
                                 className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 font-bold outline-none focus:border-zinc-900 dark:focus:border-white transition-all shadow-sm"
-                                placeholder={t('disputes.incident.form.titlePlaceholder')}
+                                placeholder={t('disputes.incident.form.titlePlaceholder', undefined, undefined)}
                                 value={title}
                                 onChange={e => setTitle(e.target.value)}
                             />
                         </div>
 
                         <div>
-                            <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-2 block px-1">{t('disputes.incident.form.desc')}</label>
+                            <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-2 block px-1">{t('disputes.incident.form.desc', undefined, undefined)}</label>
                             <textarea 
                                 className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 font-medium outline-none focus:border-zinc-900 dark:focus:border-white transition-all shadow-sm min-h-[120px]"
-                                placeholder={t('disputes.incident.form.descPlaceholder')}
+                                placeholder={t('disputes.incident.form.descPlaceholder', undefined, undefined)}
                                 value={description}
                                 onChange={e => setDescription(e.target.value)}
                             />
                         </div>
 
                         <div>
-                            <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-2 block px-1">{t('disputes.incident.form.cost')}</label>
+                            <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-2 block px-1">{t('disputes.incident.form.cost', undefined, undefined)}</label>
                             <div className="relative">
                                 <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-zinc-400">€</span>
                                 <input 
                                     type="number"
                                     className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 pl-8 font-bold outline-none focus:border-zinc-900 dark:focus:border-white transition-all shadow-sm"
-                                    placeholder={t('disputes.incident.form.costPlaceholder')}
+                                    placeholder={t('disputes.incident.form.costPlaceholder', undefined, undefined)}
                                     value={estimatedCost}
                                     onChange={e => setEstimatedCost(e.target.value)}
                                 />
@@ -216,7 +216,7 @@ export default function IncidentReportingPage() {
 
                 {/* Step 3: Evidence */}
                 <section className="space-y-4">
-                    <h2 className="text-xl font-bold px-1">{t('disputes.incident.step3')}</h2>
+                    <h2 className="text-xl font-bold px-1">{t('disputes.incident.step3', undefined, undefined)}</h2>
                     
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                         {previews.map((src, i) => (
@@ -242,7 +242,7 @@ export default function IncidentReportingPage() {
                                 <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
                                     <Camera className="w-5 h-5" />
                                 </div>
-                                <span className="text-[10px] font-bold uppercase">{t('disputes.detail.addPhoto')}</span>
+                                <span className="text-[10px] font-bold uppercase">{t('disputes.detail.addPhoto', undefined, undefined)}</span>
                             </button>
                         )}
                     </div>
@@ -259,7 +259,7 @@ export default function IncidentReportingPage() {
                     <div className="flex gap-2 p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/50 rounded-2xl">
                         <Info className="w-5 h-5 text-amber-600 shrink-0" />
                         <p className="text-xs text-amber-800 dark:text-amber-200 leading-relaxed font-medium">
-                            {t('disputes.incident.form.photoTip')}
+                            {t('disputes.incident.form.photoTip', undefined, undefined)}
                         </p>
                     </div>
                 </section>
@@ -274,17 +274,17 @@ export default function IncidentReportingPage() {
                         {submitting ? (
                             <>
                                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                                <span>{t('disputes.incident.messages.loading')}</span>
+                                <span>{t('disputes.incident.messages.loading', undefined, undefined)}</span>
                             </>
                         ) : (
                             <>
                                 <CheckCircle2 className="w-6 h-6" />
-                                <span>{t('disputes.incident.form.submit')}</span>
+                                <span>{t('disputes.incident.form.submit', undefined, undefined)}</span>
                             </>
                         )}
                     </button>
                     <p className="text-[10px] text-zinc-400 text-center mt-4 font-bold uppercase tracking-widest">
-                        {t('disputes.incident.form.sharingNotice')}
+                        {t('disputes.incident.form.sharingNotice', undefined, undefined)}
                     </p>
                 </div>
             </main>

@@ -105,6 +105,43 @@ export const translations = {
             }
         },
 
+        actionCenter: {
+            allInOrder: "All is in order",
+            noUrgentAction: "No urgent action required"
+        },
+        emailVerification: {
+            loading: "Loading...",
+            title: "Verify Your Email",
+            sentMessage1: "We've sent a verification link to",
+            sentMessage2: " Please check your inbox and click the link to continue.",
+            success: "Verification email sent!",
+            sending: "Sending...",
+            resendButton: "Resend Verification Email",
+            alreadyVerified: "I've verified my email →",
+            differentAccount: "Sign in with a different account",
+            spamFolder: "Can't find the email? Check your spam folder or request a new one."
+        },
+
+        visitBooking: {
+            title: "Schedule a Visit",
+            success: { booked: "Visit booked successfully!" },
+            error: { bookingFailed: "Booking failed. Slot might be taken." },
+            confirmed: {
+                title: "Visit Confirmed!",
+                desc: "Your virtual tour is scheduled. You will receive an email confirmation.",
+                joinButton: "Join Video Call",
+                secureLink: "Secure link via Jitsi Meet"
+            },
+            selectRoomDesc: "Which room would you like to visit?",
+            slotsAvailable: "slot{{count}} available",
+            backToRooms: "Back to rooms",
+            noSlots: "No availability listed yet.",
+            bookingInProgress: "Booking...",
+            confirmButton: "Confirm Visit",
+            reserveInstantly: "Reserve this slot instantly.",
+            selectTimeSlot: "Select a time slot."
+        },
+
         // Dashboard
         dashboard: {
             title: "Dashboard",
@@ -169,7 +206,7 @@ export const translations = {
                     title: "Verification Status",
                     pageTitle: "Verification",
                     backToDashboard: "Back to Dashboard",
-                    progress: "Verification Progress",
+                    progressLabel: "Verification Progress",
                     email: "Email",
                     identity: "Identity",
                     employment: "Employment",
@@ -185,8 +222,34 @@ export const translations = {
                     success: {
                         identity: "Identity Verified!",
                         identityMsg: "Your identity has been successfully verified.",
-                        employment: "Employment Verified!",
+                        employment: "Employment Verification",
                         employmentMsg: "Your employment has been successfully verified."
+                    },
+                    property_title: "Property Ownership Verification",
+                    property_desc: "Please upload proof that you own this property (Deed or Tax Notice)",
+                    identity_desc: "For security, please capture live photos of your government-issued ID",
+                    employment_desc: "Upload your professional or financial documents",
+                    legalDisclaimerDesc: "Your documents are encrypted and stored securely. We use industry-standard security practices to protect your privacy.",
+                    progress: {
+                        title: "Verification Progress",
+                        email: "Email",
+                        identity: "Identity",
+                        employment: "Employment",
+                        trustScore: "Trust Score"
+                    },
+                    actions: {
+                        back: "Back to Dashboard",
+                        retake: "Retake photos",
+                        uploadSecurely: "Upload & Verify Securely",
+                        uploading: "Uploading & Verifying...",
+                        mobileWaiting: "Waiting for mobile capture...",
+                        generatingSession: "Generating secure session...",
+                        copy: "Copy",
+                        howItWorks: "How it works:",
+                        scanQr: "Scan the QR code with your phone camera",
+                        selectDoc: "Select your document type",
+                        takePhoto: "Take a clear photo of your document",
+                        autoUpdate: "This page will update automatically"
                     }
                 }
             },
@@ -428,44 +491,6 @@ export const translations = {
                         "item5": "Reservation Check"
                 }
         },
-        "emailVerification": {
-                "loading": "Loading...",
-                "title": "Verify Your Email",
-                "sentMessage1": "We've sent a verification link to",
-                "sentMessage2": " Please check your inbox and click the link to continue.",
-                "success": "Verification email sent!",
-                "sending": "Sending...",
-                "resendButton": "Resend Verification Email",
-                "alreadyVerified": "I've verified my email →",
-                "differentAccount": "Sign in with a different account",
-                "spamFolder": "Can't find the email? Check your spam folder or request a new one."
-        },
-        "actionCenter": {
-                "allInOrder": "All is in order",
-                "noUrgentAction": "No urgent action required"
-        },
-        "visitBooking": {
-                "success": {
-                        "booked": "Visit booked successfully!"
-                },
-                "error": {
-                        "bookingFailed": "Booking failed. Slot might be taken."
-                },
-                "confirmed": {
-                        "title": "Visit Confirmed!",
-                        "desc": "Your virtual tour is scheduled. You will receive an email confirmation.",
-                        "joinButton": "Join Video Call",
-                        "secureLink": "Secure link via Jitsi Meet"
-                },
-                "title": "Schedule a Visit",
-                "slotsAvailable": "slots available",
-                "backToRooms": "Back to rooms",
-                "noSlots": "No availability listed yet.",
-                "bookingInProgress": "Booking...",
-                "confirmButton": "Confirm Visit",
-                "reserveInstantly": "Reserve this slot instantly.",
-                "selectTimeSlot": "Select a time slot."
-        },
         "cameraCapture": {
                 "accessDenied": "Camera access denied. Please allow camera access to verify your identity.",
                 "title": "Capture Identity Document",
@@ -544,20 +569,26 @@ export const translations = {
                 "downloadPdf": "Download PDF"
         },
         "docs": {
-                "student_id": " Student ID / Enrollment Certificate",
-                "internship_contract": " Internship Agreement",
-                "scholarship": " Scholarship Notice",
-                "caf": " Housing Aid Simulation (CAF/MSA)",
-                "kbis": " Kbis Extract (less than 3 months)",
-                "tax_return": " Latest Tax Return",
-                "accounting": " Latest Accounting Balance",
-                "benefits": " Social / Family Benefits",
-                "pension": " Pension Proof",
-                "payslip": " Last 3 Payslips",
-                "contract": " Employment Contract / Certificate",
-                "passport": " Passport",
-                "id_card": " National ID Card",
-                "residence_permit": " Residence Permit"
+                "student_id": "Student ID / Enrollment Certificate",
+                "internship_contract": "Internship Agreement",
+                "scholarship": "Scholarship Notice",
+                "caf": "Housing Aid Simulation (CAF/MSA)",
+                "kbis": "Kbis Extract (less than 3 months)",
+                "tax_return": "Latest Tax Return",
+                "accounting": "Latest Accounting Balance",
+                "benefits": "Social / Family Benefits",
+                "pension": "Pension Proof",
+                "payslip": "Last 3 Payslips",
+                "contract": "Employment Contract / Certificate",
+                "passport": "Passport",
+                "id_card": "National ID Card",
+                "residence_permit": "Residence Permit",
+                "drivers_license": "Driver's License",
+                "visale": "Visale Guarantee Certificate",
+                "garantme": "Garantme Certificate",
+                "bank_funds": "Blocked Bank Funds Certificate",
+                "employer_cert": "Employer Certificate / Job Promise",
+                "foreign_tax": "Foreign Tax Return"
         },
         search: {
             title: "Find your next home",
@@ -591,14 +622,6 @@ export const translations = {
                 loginToView: "Log in to View Details"
             }
         },
-        disputes: {
-            report: "Report Incident",
-            desc: "Log property issues"
-        },
-
-
-
-
         disputes: {
             title: "Incident Reports",
             subtitle: "Track and manage your property disputes",
@@ -792,6 +815,43 @@ export const translations = {
             }
         },
 
+        actionCenter: {
+            allInOrder: "Tout est en ordre",
+            noUrgentAction: "Aucune action urgente requise"
+        },
+        emailVerification: {
+            loading: "Chargement...",
+            title: "Vérifiez votre e-mail",
+            sentMessage1: "Nous avons envoyé un lien de vérification à",
+            sentMessage2: " Veuillez vérifier votre boîte de réception et cliquer sur le lien pour continuer.",
+            success: "E-mail de vérification envoyé !",
+            sending: "Envoi...",
+            resendButton: "Renvoyer l'e-mail de vérification",
+            alreadyVerified: "J'ai vérifié mon e-mail →",
+            differentAccount: "Se connecter avec un autre compte",
+            spamFolder: "Vous ne trouvez pas l'e-mail ? Vérifiez vos spams ou demandez-en un nouveau."
+        },
+
+        visitBooking: {
+            title: "Planifier une visite",
+            success: { booked: "Visite réservée avec succès !" },
+            error: { bookingFailed: "Échec de la réservation. Le créneau est peut-être déjà pris." },
+            confirmed: {
+                title: "Visite confirmée !",
+                desc: "Votre visite virtuelle est planifiée. Vous recevrez un e-mail de confirmation.",
+                joinButton: "Rejoindre l'appel vidéo",
+                secureLink: "Lien sécurisé via Jitsi Meet"
+            },
+            selectRoomDesc: "Quelle chambre souhaitez-vous visiter ?",
+            slotsAvailable: "créneau{{count}} disponible",
+            backToRooms: "Retour aux chambres",
+            noSlots: "Aucune disponibilité répertoriée pour le moment.",
+            bookingInProgress: "Réservation...",
+            confirmButton: "Confirmer la visite",
+            reserveInstantly: "Réservez ce créneau instantanément.",
+            selectTimeSlot: "Sélectionnez un créneau horaire."
+        },
+
         // Dashboard
         dashboard: {
             title: "Tableau de bord",
@@ -848,16 +908,59 @@ export const translations = {
             },
             verification: {
                 title: "Statut de Vérification",
-                email: "Adresse E-mail",
-                identity: "Identité Gouv.",
-                employment: "Emploi",
-                verified: "Vérifié en toute sécurité",
-                pending: "En attente de vérification",
+                email: "Vérification E-mail",
+                identity: "Vérification d'Identité",
+                employment: "Vérification d'Emploi",
                 start: "Démarrer",
                 verification: {
-                    progress: "Validations",
+                    title: "Statut de Vérification",
+                    pageTitle: "Vérification",
+                    backToDashboard: "Retour au tableau de bord",
+                    progressLabel: "Progression des vérifications",
+                    email: "Email",
+                    identity: "Identité",
+                    employment: "Emploi",
+                    verified: "Vérifié",
+                    pending: "En attente",
+                    start: "Démarrer",
+                    resend: "Renvoyer",
                     sending: "Envoi...",
-                    resend: "Renvoyer le lien"
+                    tabs: {
+                        identity: "Vérification d'Identité",
+                        employment: "Vérification d'Emploi"
+                    },
+                    success: {
+                        identity: "Identité Vérifiée !",
+                        identityMsg: "Votre identité a été vérifiée avec succès.",
+                        employment: "Vérification d'Emploi",
+                        employmentMsg: "Votre emploi a été vérifié avec succès."
+                    },
+                    property_title: "Vérification de la propriété",
+                    property_desc: "Veuillez télécharger une preuve de propriété (acte de vente ou taxe foncière)",
+                    identity_desc: "Par sécurité, veuillez capturer des photos en direct de votre pièce d'identité officielle",
+                    employment_desc: "Téléchargez vos documents professionnels ou financiers",
+                    legalDisclaimerDesc: "Vos documents sont cryptés et stockés en toute sécurité. Nous utilisons les meilleures pratiques de sécurité pour protéger votre vie privée.",
+                    progress: {
+                        title: "Progression des vérifications",
+                        email: "Email",
+                        identity: "Identité",
+                        employment: "Emploi",
+                        trustScore: "Score de Confiance"
+                    },
+                    actions: {
+                        back: "Retour au tableau de bord",
+                        retake: "Reprendre les photos",
+                        uploadSecurely: "Télécharger et vérifier en toute sécurité",
+                        uploading: "Téléchargement et vérification...",
+                        mobileWaiting: "En attente de la capture mobile...",
+                        generatingSession: "Génération d'une session sécurisée...",
+                        copy: "Copier",
+                        howItWorks: "Comment ça marche :",
+                        scanQr: "Scannez le code QR avec votre téléphone",
+                        selectDoc: "Sélectionnez votre type de document",
+                        takePhoto: "Prenez une photo claire du document",
+                        autoUpdate: "Cette page se mettra à jour automatiquement"
+                    }
                 }
             },
             landlord: {
@@ -1098,44 +1201,6 @@ export const translations = {
                         "item5": "Chèque de réservation"
                 }
         },
-        "emailVerification": {
-                "loading": "Chargement...",
-                "title": "Vérifiez votre e-mail",
-                "sentMessage1": "Nous avons envoyé un lien de vérification à",
-                "sentMessage2": " Veuillez vérifier votre boîte de réception et cliquer sur le lien pour continuer.",
-                "success": "E-mail de vérification envoyé !",
-                "sending": "Envoi en cours...",
-                "resendButton": "Renvoyer l'e-mail de vérification",
-                "alreadyVerified": "J'ai vérifié mon e-mail →",
-                "differentAccount": "Se connecter avec un autre compte",
-                "spamFolder": "Vous ne trouvez pas l'e-mail ? Vérifiez vos spams ou demandez-en un nouveau."
-        },
-        "actionCenter": {
-                "allInOrder": "Tout est en ordre",
-                "noUrgentAction": "Aucune action urgente requise"
-        },
-        "visitBooking": {
-                "success": {
-                        "booked": "Visite réservée avec succès !"
-                },
-                "error": {
-                        "bookingFailed": "Échec de la réservation. Le créneau est peut-être pris."
-                },
-                "confirmed": {
-                        "title": "Visite confirmée !",
-                        "desc": "Votre visite virtuelle est programmée. Vous recevrez une confirmation par e-mail.",
-                        "joinButton": "Rejoindre l'appel vidéo",
-                        "secureLink": "Lien sécurisé via Jitsi Meet"
-                },
-                "title": "Programmer une visite",
-                "slotsAvailable": "créneaux disponibles",
-                "backToRooms": "Retour aux chambres",
-                "noSlots": "Aucune disponibilité pour le moment.",
-                "bookingInProgress": "Réservation...",
-                "confirmButton": "Confirmer la visite",
-                "reserveInstantly": "Réservez ce créneau instantanément.",
-                "selectTimeSlot": "Sélectionnez un créneau horaire."
-        },
         "cameraCapture": {
                 "accessDenied": "Accès à la caméra refusé. Veuillez autoriser l'accès pour vérifier votre identité.",
                 "title": "Capturer une pièce d'identité",
@@ -1214,20 +1279,26 @@ export const translations = {
                 "downloadPdf": "Télécharger le PDF"
         },
         "docs": {
-                "student_id": " Carte étudiante / Certificat de scolarité",
-                "internship_contract": " Convention de stage",
-                "scholarship": " Avis de bourse",
-                "caf": " Simulation d'aide au logement (CAF/MSA)",
-                "kbis": " Extrait Kbis (moins de 3 mois)",
-                "tax_return": " Dernier avis d'imposition",
-                "accounting": " Dernier bilan comptable",
-                "benefits": " Prestations sociales / familiales",
-                "pension": " Justificatif de retraite",
-                "payslip": " 3 derniers bulletins de paie",
-                "contract": " Contrat de travail / Attestation employeur",
-                "passport": " Passeport",
-                "id_card": " Carte nationale d'identité",
-                "residence_permit": " Titre de séjour"
+                "student_id": "Carte étudiante / Certificat de scolarité",
+                "internship_contract": "Convention de stage",
+                "scholarship": "Avis de bourse",
+                "caf": "Simulation d'aide au logement (CAF/MSA)",
+                "kbis": "Extrait Kbis (moins de 3 mois)",
+                "tax_return": "Dernier avis d'imposition",
+                "accounting": "Dernier bilan comptable",
+                "benefits": "Prestations sociales / familiales",
+                "pension": "Justificatif de retraite",
+                "payslip": "3 derniers bulletins de paie",
+                "contract": "Contrat de travail / Attestation employeur",
+                "passport": "Passeport",
+                "id_card": "Carte nationale d'identité",
+                "residence_permit": "Titre de séjour",
+                "drivers_license": "Permis de conduire",
+                "visale": "Certificat de garantie Visale",
+                "garantme": "Certificat Garantme",
+                "bank_funds": "Certificat de blocage de fonds bancaires",
+                "employer_cert": "Attestation employeur / Promesse d'embauche",
+                "foreign_tax": "Avis d'imposition étranger"
         },
         search: {
             title: "Trouvez votre futur chez-vous",
@@ -1261,14 +1332,6 @@ export const translations = {
                 loginToView: "Connectez-vous pour voir les détails"
             }
         },
-        disputes: {
-            report: "Signaler un incident",
-            desc: "Déclarer un problème"
-        },
-
-
-
-
         disputes: {
             title: "Signalements d'incidents",
             subtitle: "Suivez et gérez vos litiges immobiliers",
