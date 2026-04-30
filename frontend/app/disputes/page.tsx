@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { disputeApi, Dispute } from '@/app/lib/api/dispute';
 import { 
@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
-export default function MyDisputesPage() {
+function MyDisputesContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const success = searchParams.get('success');
@@ -213,5 +213,17 @@ export default function MyDisputesPage() {
                 </div>
             </main>
         </div>
+    );
+}
+
+export default function MyDisputesPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-black">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
+            </div>
+        }>
+            <MyDisputesContent />
+        </Suspense>
     );
 }
