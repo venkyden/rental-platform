@@ -1,3 +1,5 @@
+"use client";
+
 import Link from 'next/link';
 import RoomivoBrand from './RoomivoBrand';
 import { useLanguage } from '@/lib/LanguageContext';
