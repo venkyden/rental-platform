@@ -180,7 +180,7 @@ export default function PropertiesPage() {
                                              {property.city}
                                         </p>
                                         <div className="flex items-center justify-between mb-6 mt-auto">
-                                            <div className="text-2xl font-black text-teal-600 dark:text-teal-400">
+                                            <div translate="no" className="notranslate text-2xl font-black text-teal-600 dark:text-teal-400">
                                                 €{property.monthly_rent}
                                                 <span className="text-sm font-medium text-gray-500 dark:text-gray-400">/mo</span>
                                             </div>

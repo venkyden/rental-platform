@@ -32,3 +32,14 @@ body {
 .animate-slide-in {
   animation: slide-in 0.3s ease-out;
 }
+
+/*
+ * Google Translate / Browser Translation Protection
+ * --------------------------------------------------
+ * Dynamic values (slider numbers, €, m², kWh, etc.) must be wrapped with:
+ *   <span translate="no" className="notranslate">...</span>
+ *
+ * - `translate="no"` is the HTML5 standard attribute
+ * - `.notranslate` is the Google Translate-specific class
+ * Both are needed for full cross-browser translation service compatibility.
+ */

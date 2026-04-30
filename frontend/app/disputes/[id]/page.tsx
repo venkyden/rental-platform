@@ -1,0 +1,412 @@
+"use client";
+
+import { useState, useEffect, useRef } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { disputeApi, Dispute, DisputeCategory, DisputeStatus } from '@/app/lib/api/dispute';
+import { mediaApi } from '@/app/lib/api/media';
+import { useAuth } from '@/lib/useAuth';
+import { 
+    ChevronLeft, 
+    Clock, 
+    CheckCircle2, 
+    AlertTriangle, 
+    Shield, 
+    ExternalLink, 
+    MessageSquare, 
+    Camera, 
+    Image as ImageIcon,
+    User,
+    Calendar,
+    Euro,
+    X,
+    Info,
+    Gavel
+} from 'lucide-react';
+import { toast } from 'react-hot-toast';
+
+export default function DisputeDetailPage() {
+    const params = useParams();
+    const id = params.id as string;
+    const router = useRouter();
+    const { user: currentUser } = useAuth();
+
+    const [dispute, setDispute] = useState<Dispute | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [submitting, setSubmitting] = useState(false);
+
+    // Response State
+    const [responseDesc, setResponseDesc] = useState("");
+    const [responseFiles, setResponseFiles] = useState<File[]>([]);
+    const [responsePreviews, setResponsePreviews] = useState<string[]>([]);
+    const responseInputRef = useRef<HTMLInputElement>(null);
+
+    // Additional Evidence State (for reporter)
+    const [extraFiles, setExtraFiles] = useState<File[]>([]);
+    const [extraPreviews, setExtraPreviews] = useState<string[]>([]);
+    const extraInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        loadDispute();
+    }, [id]);
+
+    const loadDispute = async () => {
+        try {
+            const data = await disputeApi.getDetail(id);
+            setDispute(data);
+        } catch (err) {
+            console.error(err);
+            toast.error("Failed to load dispute details");
+            router.push('/disputes');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleAddEvidence = async () => {
+        if (extraFiles.length === 0) return;
+        setSubmitting(true);
+        try {
+            const urls: string[] = [];
+            for (const file of extraFiles) {
+                const url = await mediaApi.upload(file, 'disputes');
+                urls.push(url);
+            }
+            await disputeApi.addEvidence(id, urls);
+            toast.success("Evidence added successfully");
+            setExtraFiles([]);
+            setExtraPreviews([]);
+            loadDispute();
+        } catch (err) {
+            console.error(err);
+            toast.error("Failed to add evidence");
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const handleRespond = async () => {
+        if (!responseDesc) return;
+        setSubmitting(true);
+        try {
+            const urls: string[] = [];
+            for (const file of responseFiles) {
+                const url = await mediaApi.upload(file, 'disputes');
+                urls.push(url);
+            }
+            await disputeApi.respond(id, {
+                response_description: responseDesc,
+                response_evidence_urls: urls
+            });
+            toast.success("Response submitted");
+            setResponseDesc("");
+            setResponseFiles([]);
+            setResponsePreviews([]);
+            loadDispute();
+        } catch (err) {
+            console.error(err);
+            toast.error("Failed to submit response");
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const isReporter = currentUser?.id === dispute?.raised_by_id;
+    const isAccused = currentUser?.id === dispute?.accused_id;
+
+    if (loading || !dispute) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-black">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
+            </div>
+        );
+    }
+
+    const getStatusLabel = (status: string) => {
+        return status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+    };
+
+    const getStatusStyles = (status: string) => {
+        switch (status) {
+            case 'open': return 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20';
+            case 'awaiting_response': return 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20';
+            case 'under_review': return 'text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20';
+            case 'closed': return 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20';
+            default: return 'text-zinc-600 bg-zinc-50';
+        }
+    };
+
+    return (
+        <div className="min-h-screen bg-zinc-50 dark:bg-black text-zinc-900 dark:text-zinc-100 pb-24">
+            {/* Sticky Header */}
+            <div className="sticky top-0 z-30 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border-b border-zinc-200 dark:border-zinc-800">
+                <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+                    <button 
+                        onClick={() => router.push('/disputes')}
+                        className="p-2 -ml-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors flex items-center gap-2"
+                    >
+                        <ChevronLeft className="w-5 h-5" />
+                        <span className="text-sm font-bold">Back</span>
+                    </button>
+                    <div className={`px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest border border-current ${getStatusStyles(dispute.status)}`}>
+                        {getStatusLabel(dispute.status)}
+                    </div>
+                </div>
+            </div>
+
+            <main className="max-w-4xl mx-auto px-4 pt-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+                
+                {/* Left Column: Details */}
+                <div className="md:col-span-2 space-y-8">
+                    {/* Title & Meta */}
+                    <section>
+                        <h1 className="text-3xl font-extrabold tracking-tight mb-4">{dispute.title}</h1>
+                        <div className="flex flex-wrap gap-4 text-xs font-bold text-zinc-400 uppercase tracking-widest">
+                            <div className="flex items-center gap-1.5">
+                                <Calendar className="w-4 h-4" />
+                                <span>{new Date(dispute.created_at).toLocaleDateString('fr-FR', { month: 'long', day: '2-digit', year: 'numeric' })}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                                <Info className="w-4 h-4" />
+                                <span>{dispute.category.replace('_', ' ')}</span>
+                            </div>
+                            {dispute.amount_claimed && (
+                                <div className="flex items-center gap-1.5 text-zinc-900 dark:text-white">
+                                    <Euro className="w-4 h-4" />
+                                    <span>€{dispute.amount_claimed.toLocaleString()} claimed</span>
+                                </div>
+                            )}
+                        </div>
+                    </section>
+
+                    {/* Description */}
+                    <section className="bg-white dark:bg-zinc-900 rounded-[2rem] p-8 border border-zinc-200 dark:border-zinc-800 shadow-sm relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-zinc-50 dark:bg-zinc-800/50 rounded-bl-[2rem] flex items-center justify-center">
+                            <MessageSquare className="w-8 h-8 opacity-10" />
+                        </div>
+                        <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-400 mb-4">Description</h3>
+                        <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed whitespace-pre-wrap">
+                            {dispute.description}
+                        </p>
+                    </section>
+
+                    {/* Reporter Evidence Gallery */}
+                    <section>
+                        <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-400 mb-4 px-1">Reporter Evidence</h3>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                            {dispute.evidence_urls.map((url, idx) => (
+                                <a 
+                                    key={idx} 
+                                    href={url} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="aspect-square rounded-[1.5rem] overflow-hidden border border-zinc-200 dark:border-zinc-800 group relative"
+                                >
+                                    <img src={url} alt={`Evidence ${idx}`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                        <ExternalLink className="text-white w-6 h-6" />
+                                    </div>
+                                </a>
+                            ))}
+                            
+                            {/* Add More Evidence (Reporter only) */}
+                            {isReporter && dispute.status !== 'closed' && dispute.evidence_urls.length < 5 && (
+                                <div className="space-y-3">
+                                    <button 
+                                        onClick={() => extraInputRef.current?.click()}
+                                        className="w-full aspect-square rounded-[1.5rem] border-2 border-dashed border-zinc-200 dark:border-zinc-800 flex flex-col items-center justify-center gap-2 hover:bg-white dark:hover:bg-zinc-900 transition-all group"
+                                    >
+                                        <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                            <Camera className="w-5 h-5 text-zinc-500" />
+                                        </div>
+                                        <span className="text-[10px] font-bold text-zinc-400 uppercase">Add Photo</span>
+                                    </button>
+                                    <input 
+                                        ref={extraInputRef} type="file" accept="image/*" capture="environment" className="hidden" 
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0];
+                                            if (file) {
+                                                setExtraFiles([...extraFiles, file]);
+                                                setExtraPreviews([...extraPreviews, URL.createObjectURL(file)]);
+                                            }
+                                        }}
+                                    />
+                                    {extraFiles.length > 0 && (
+                                        <button 
+                                            onClick={handleAddEvidence}
+                                            disabled={submitting}
+                                            className="w-full py-2 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-xl text-xs font-bold uppercase"
+                                        >
+                                            {submitting ? "Uploading..." : "Save Evidence"}
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </section>
+
+                    {/* Counter-Response Section */}
+                    {(dispute.responded_at || isAccused) && (
+                        <section className="bg-teal-50 dark:bg-teal-950/20 border border-teal-100 dark:border-teal-900/50 rounded-[2rem] p-8">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="w-10 h-10 rounded-xl bg-teal-100 dark:bg-teal-900/50 flex items-center justify-center text-teal-600 dark:text-teal-400">
+                                    <MessageSquare className="w-5 h-5" />
+                                </div>
+                                <h3 className="text-xl font-bold text-teal-900 dark:text-teal-100">Accused Party Response</h3>
+                            </div>
+
+                            {dispute.responded_at ? (
+                                <div className="space-y-6">
+                                    <p className="text-teal-800/80 dark:text-teal-200/80 leading-relaxed whitespace-pre-wrap">
+                                        {dispute.response_description}
+                                    </p>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                                        {dispute.response_evidence_urls.map((url, idx) => (
+                                            <a key={idx} href={url} target="_blank" rel="noopener noreferrer" className="aspect-square rounded-2xl overflow-hidden border border-teal-200 dark:border-teal-800 group relative">
+                                                <img src={url} alt="Counter Evidence" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                                            </a>
+                                        ))}
+                                    </div>
+                                    <div className="text-[10px] font-bold uppercase tracking-widest text-teal-600/60 dark:text-teal-400/60">
+                                        Submitted {new Date(dispute.responded_at).toLocaleDateString('fr-FR', { month: 'long', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' } as any)}
+                                    </div>
+                                </div>
+                            ) : isAccused && dispute.status !== 'closed' ? (
+                                <div className="space-y-4">
+                                    <p className="text-sm text-teal-800 dark:text-teal-200 mb-4">
+                                        You have been named as the accused party. Use this section to provide your side of the story and any counter-evidence.
+                                    </p>
+                                    <textarea 
+                                        className="w-full bg-white dark:bg-zinc-900 border border-teal-200 dark:border-teal-800 focus:border-teal-500 outline-none rounded-2xl p-4 min-h-[120px] transition-all"
+                                        placeholder="Explain what happened from your perspective..."
+                                        value={responseDesc}
+                                        onChange={e => setResponseDesc(e.target.value)}
+                                    />
+                                    <div className="flex flex-wrap gap-2">
+                                        {responsePreviews.map((p, i) => (
+                                            <div key={i} className="w-16 h-16 rounded-xl overflow-hidden border border-teal-200 relative">
+                                                <img src={p} className="w-full h-full object-cover" />
+                                            </div>
+                                        ))}
+                                        {responseFiles.length < 5 && (
+                                            <button 
+                                                onClick={() => responseInputRef.current?.click()}
+                                                className="w-16 h-16 rounded-xl border-2 border-dashed border-teal-200 flex items-center justify-center text-teal-400 hover:bg-white transition-colors"
+                                            >
+                                                <Camera className="w-6 h-6" />
+                                            </button>
+                                        )}
+                                    </div>
+                                    <input ref={responseInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) {
+                                            setResponseFiles([...responseFiles, file]);
+                                            setResponsePreviews([...responsePreviews, URL.createObjectURL(file)]);
+                                        }
+                                    }} />
+                                    <button 
+                                        onClick={handleRespond}
+                                        disabled={!responseDesc || submitting}
+                                        className="w-full py-4 bg-teal-600 hover:bg-teal-500 text-white rounded-2xl font-bold shadow-lg shadow-teal-600/20 transition-all flex items-center justify-center gap-2"
+                                    >
+                                        {submitting ? "Submitting..." : "Submit My Response"}
+                                    </button>
+                                </div>
+                            ) : null}
+                        </section>
+                    )}
+                </div>
+
+                {/* Right Column: Status & Facilitation */}
+                <div className="space-y-6">
+                    {/* Status Card */}
+                    <section className="bg-white dark:bg-zinc-900 rounded-[2rem] p-8 border border-zinc-200 dark:border-zinc-800 shadow-sm">
+                        <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-6">Current Status</h3>
+                        
+                        <div className="space-y-6">
+                            <div className="flex gap-4">
+                                <div className={`w-1 bg-zinc-100 dark:bg-zinc-800 rounded-full relative`}>
+                                    <div className={`absolute top-0 left-0 w-full rounded-full ${getStatusStyles(dispute.status).split(' ')[0]} transition-all duration-1000`} style={{ height: 
+                                        dispute.status === 'open' ? '25%' : 
+                                        dispute.status === 'awaiting_response' ? '50%' :
+                                        dispute.status === 'under_review' ? '75%' : '100%' 
+                                    }}></div>
+                                </div>
+                                <div className="space-y-8 py-2">
+                                    {[
+                                        { id: 'open', label: 'Report Filed', desc: 'Timestamped and preserved' },
+                                        { id: 'awaiting_response', label: 'Other Party Notified', desc: 'Awaiting counter-evidence' },
+                                        { id: 'under_review', label: 'Facilitation', desc: 'Admin reviewing both sides' },
+                                        { id: 'closed', label: 'Closed', desc: 'Process completed' }
+                                    ].map((step, idx) => {
+                                        const isDone = ['open', 'awaiting_response', 'under_review', 'closed'].indexOf(dispute.status) >= idx;
+                                        return (
+                                            <div key={step.id} className={`flex items-start gap-3 ${isDone ? 'opacity-100' : 'opacity-30'}`}>
+                                                <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${isDone ? 'bg-zinc-900 dark:bg-white text-white dark:text-black' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'}`}>
+                                                    {isDone ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Clock className="w-3.5 h-3.5" />}
+                                                </div>
+                                                <div>
+                                                    <div className="text-xs font-bold tracking-tight">{step.label}</div>
+                                                    <div className="text-[10px] text-zinc-400">{step.desc}</div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* Facilitation Info */}
+                    <section className="bg-indigo-600 rounded-[2rem] p-8 text-white shadow-xl shadow-indigo-600/20">
+                        <div className="flex items-center gap-3 mb-4">
+                            <Gavel className="w-6 h-6 text-indigo-200" />
+                            <h3 className="text-lg font-bold">Roomivo Facilitation</h3>
+                        </div>
+                        
+                        {dispute.admin_observations ? (
+                            <div className="space-y-4">
+                                <div className="p-4 bg-white/10 rounded-2xl border border-white/10 text-xs leading-relaxed italic">
+                                    "{dispute.admin_observations}"
+                                </div>
+                            </div>
+                        ) : (
+                            <p className="text-xs text-indigo-100 leading-relaxed">
+                                Our admin team is monitoring this incident to ensure all evidence is collected correctly. 
+                                We act as a neutral party to preserve the record.
+                            </p>
+                        )}
+
+                        {dispute.mediation_redirect_url && (
+                            <div className="mt-6 pt-6 border-t border-white/10">
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-200 mb-3">Recommended Action</p>
+                                <a 
+                                    href={dispute.mediation_redirect_url} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="flex items-center justify-between p-4 bg-white text-indigo-600 rounded-2xl font-bold text-xs hover:bg-indigo-50 transition-colors"
+                                >
+                                    <span>Proceed to Mediation</span>
+                                    <ExternalLink className="w-4 h-4" />
+                                </a>
+                                <p className="text-[9px] text-indigo-200 mt-3 text-center opacity-80 uppercase tracking-tighter">
+                                    Official EU Online Dispute Resolution Platform
+                                </p>
+                            </div>
+                        )}
+                    </section>
+
+                    {/* Legal Context */}
+                    <section className="bg-zinc-100 dark:bg-zinc-900 rounded-[2rem] p-8 border border-zinc-200 dark:border-zinc-800">
+                        <h4 className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-zinc-400 mb-4">Legal Disclaimer</h4>
+                        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 leading-relaxed uppercase tracking-tighter">
+                            Roomivo facilitates evidence collection and inventory comparison. 
+                            The platform does not adjudicate disputes or render binding verdicts. 
+                            Per Loi ALUR, landlords have 1-2 months post-lease to return deposits. 
+                            Deductions for normal wear and tear are prohibited.
+                        </p>
+                    </section>
+                </div>
+            </main>
+        </div>
+    );
+}

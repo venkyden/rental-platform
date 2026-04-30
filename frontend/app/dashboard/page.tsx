@@ -139,6 +139,13 @@ export default function DashboardPage() {
             action: () => router.push('/onboarding'),
             show: !user.onboarding_completed,
         },
+        {
+            icon: <ShieldCheck className="w-8 h-8 text-red-600 dark:text-red-400" />,
+            title: 'Report Incident',
+            description: 'Log property issues',
+            action: () => router.push('/disputes'),
+            show: true,
+        },
     ];
 
     return (

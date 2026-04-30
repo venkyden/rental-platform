@@ -91,6 +91,13 @@ export default function LandlordDashboard() {
                         <div className="text-4xl font-extrabold text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform">0</div>
                         <div className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mt-2">Messages</div>
                     </div>
+                    <div 
+                        onClick={() => router.push('/disputes')}
+                        className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl p-6 rounded-3xl shadow-sm border border-white/50 dark:border-white/10 flex flex-col items-center justify-center text-center group hover:bg-white dark:hover:bg-zinc-900 transition-colors cursor-pointer"
+                    >
+                        <div className="text-4xl font-extrabold text-red-600 dark:text-red-400 group-hover:scale-110 transition-transform">0</div>
+                        <div className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mt-2">Active Disputes</div>
+                    </div>
                 </div>
             </section>
 

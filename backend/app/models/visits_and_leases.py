@@ -93,5 +93,6 @@ class Lease(Base):
         "Inventory", back_populates="lease", cascade="all, delete-orphan"
     )
     disputes = relationship(
-        "Dispute", back_populates="lease", cascade="all, delete-orphan"
-    )
+        "Dispute", back_populates="lease", cascade="save-update, merge",
+        passive_deletes=True
+    )  # Disputes must survive lease deletion — they contain legal evidence

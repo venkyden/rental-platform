@@ -257,7 +257,7 @@ export default function QuestionRenderer({
                                     <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">Search Area Size</h3>
                                     <p className="text-xs text-zinc-500 dark:text-zinc-400">Maximum commute distance</p>
                                 </div>
-                                <div className="text-lg font-bold text-teal-600 dark:text-teal-400">
+                                <div translate="no" className="notranslate text-lg font-bold text-teal-600 dark:text-teal-400">
                                     {mapRadius >= 1000 ? `${+(mapRadius / 1000).toFixed(1)} km` : `${mapRadius} m`}
                                 </div>
                             </div>
@@ -271,8 +271,8 @@ export default function QuestionRenderer({
                                 className="w-full h-2 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-teal-600"
                             />
                             <div className="flex justify-between text-xs text-zinc-400 mt-2 font-medium">
-                                <span>500m</span>
-                                <span>20km</span>
+                                <span translate="no" className="notranslate">500m</span>
+                                <span translate="no" className="notranslate">20km</span>
                             </div>
                         </div>
 
@@ -302,11 +302,11 @@ export default function QuestionRenderer({
                         className="w-full h-3 bg-zinc-200 dark:bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-teal-600"
                     />
                     <div className="flex justify-between mt-4">
-                        <span className="text-zinc-500 dark:text-zinc-400">{question.unit}{question.min}</span>
-                        <span className="text-2xl font-bold text-teal-600 dark:text-teal-400">
+                        <span translate="no" className="notranslate text-zinc-500 dark:text-zinc-400">{question.unit}{question.min}</span>
+                        <span translate="no" className="notranslate text-2xl font-bold text-teal-600 dark:text-teal-400">
                             {question.unit}{responses[question.id] || question.min}
                         </span>
-                        <span className="text-zinc-500 dark:text-zinc-400">{question.unit}{question.max}+</span>
+                        <span translate="no" className="notranslate text-zinc-500 dark:text-zinc-400">{question.unit}{question.max}+</span>
                     </div>
                     <button
                         onClick={() => onAnswer(responses[question.id] || question.min)}

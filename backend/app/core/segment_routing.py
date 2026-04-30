@@ -38,6 +38,7 @@ COMMON_FEATURES = [
     # Legal & Compliance
     "gdpr_export",  # Data export (GDPR)
     "privacy_settings",  # Privacy controls
+    "disputes",  # Incident reporting and facilitation
 ]
 
 
@@ -78,6 +79,12 @@ SEGMENT_CONFIGS: Dict[str, SegmentConfig] = {
                 "icon": "📖",
                 "path": "/guide/tenant",
             },
+            {
+                "id": "disputes",
+                "label": "My Disputes",
+                "icon": "🛡️",
+                "path": "/disputes",
+            },
         ],
         settings={
             "verification_flow": "guarantor",  # Prompt for Guarantor
@@ -112,6 +119,12 @@ SEGMENT_CONFIGS: Dict[str, SegmentConfig] = {
                 "label": "My Documents",
                 "icon": "📁",
                 "path": "/documents",
+            },
+            {
+                "id": "disputes",
+                "label": "My Disputes",
+                "icon": "🛡️",
+                "path": "/disputes",
             },
         ],
         settings={
@@ -149,6 +162,12 @@ SEGMENT_CONFIGS: Dict[str, SegmentConfig] = {
                 "icon": "🔒",
                 "path": "/documents",
             },
+            {
+                "id": "disputes",
+                "label": "My Disputes",
+                "icon": "🛡️",
+                "path": "/disputes",
+            },
         ],
         settings={
             "verification_flow": "identity",  # Prompt for Visa/Passport
@@ -182,6 +201,12 @@ SEGMENT_CONFIGS: Dict[str, SegmentConfig] = {
                 "label": "Pricing Guide",
                 "icon": "💰",
                 "path": "/guide/pricing",
+            },
+            {
+                "id": "disputes",
+                "label": "Property Disputes",
+                "icon": "🛡️",
+                "path": "/disputes",
             },
         ],
         settings={
@@ -217,6 +242,12 @@ SEGMENT_CONFIGS: Dict[str, SegmentConfig] = {
                 "label": "Analytics",
                 "icon": "📊",
                 "path": "/analytics",
+            },
+            {
+                "id": "disputes",
+                "label": "Disputes",
+                "icon": "🛡️",
+                "path": "/disputes",
             },
         ],
         settings={

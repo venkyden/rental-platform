@@ -158,7 +158,7 @@ export default function SearchPage() {
                     </div>
 
                     <div className="w-64">
-                        <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-2">Max Budget: <span className="text-teal-600 dark:text-teal-400">{priceRange}€</span></label>
+                        <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-2">Max Budget: <span translate="no" className="notranslate text-teal-600 dark:text-teal-400">{priceRange}€</span></label>
                         <input
                             type="range"
                             min="300"
@@ -233,18 +233,18 @@ export default function SearchPage() {
                                     <div className="flex justify-between items-start mb-2">
                                         <h3 className="text-xl font-bold text-slate-900 dark:text-white truncate pr-2">{property.title}</h3>
                                         <div className="text-right whitespace-nowrap">
-                                            <span className="text-teal-600 dark:text-teal-400 font-black text-xl">{property.monthly_rent}€</span>
+                                            <span translate="no" className="notranslate text-teal-600 dark:text-teal-400 font-black text-xl">{property.monthly_rent}€</span>
                                             <span className={`ml-1 text-xs font-bold px-1.5 py-0.5 rounded-full ${property.charges_included ? 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'}`}>
                                                 {property.charges_included ? 'CC' : 'HC'}
                                             </span>
                                             {!property.charges_included && property.charges && (
-                                                <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400">+{property.charges}€ charges</div>
+                                                <div translate="no" className="notranslate text-xs font-medium text-zinc-500 dark:text-zinc-400">+{property.charges}€ charges</div>
                                             )}
                                         </div>
                                     </div>
-                                    <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-4">{property.city} • {property.size_sqm}m² • {property.bedrooms} beds</p>
+                                    <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-4">{property.city} • <span translate="no" className="notranslate">{property.size_sqm}m²</span> • {property.bedrooms} beds</p>
                                     {property.deposit && (
-                                        <p className="text-xs font-medium text-zinc-400 dark:text-zinc-500 mb-4">Deposit: {property.deposit}€</p>
+                                        <p className="text-xs font-medium text-zinc-400 dark:text-zinc-500 mb-4">Deposit: <span translate="no" className="notranslate">{property.deposit}€</span></p>
                                     )}
                                     <div className="flex gap-2 flex-wrap mt-auto pt-2">
                                         {property.dpe_rating && (

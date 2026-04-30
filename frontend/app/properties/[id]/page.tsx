@@ -304,7 +304,7 @@ export default function PropertyDetailPage() {
                                             <span className="text-2xl"></span>
                                             <div>
                                                 <div className="text-sm text-zinc-600 dark:text-zinc-400">Size</div>
-                                                <div className="font-semibold">{property.size_sqm}m²</div>
+                                                <div translate="no" className="notranslate font-semibold">{property.size_sqm}m²</div>
                                             </div>
                                         </div>
                                         {property.floor_number !== null && property.floor_number !== undefined && (
@@ -340,7 +340,7 @@ export default function PropertyDetailPage() {
                                                                         property.dpe_rating === 'F' ? 'bg-red-500' :
                                                                             'bg-red-700'
                                                         }`}>{property.dpe_rating}</div>
-                                                    {property.dpe_value && <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">{property.dpe_value} kWh/m²/an</div>}
+                                                    {property.dpe_value && <div translate="no" className="notranslate text-xs text-zinc-500 dark:text-zinc-400 mt-1">{property.dpe_value} kWh/m²/an</div>}
                                                 </div>
                                                 {property.ges_rating && (
                                                     <div className="flex-1">
@@ -353,7 +353,7 @@ export default function PropertyDetailPage() {
                                                                             property.ges_rating === 'F' ? 'bg-purple-800' :
                                                                                 'bg-purple-900'
                                                             }`}>{property.ges_rating}</div>
-                                                        {property.ges_value && <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">{property.ges_value} kgCO₂/m²/an</div>}
+                                                        {property.ges_value && <div translate="no" className="notranslate text-xs text-zinc-500 dark:text-zinc-400 mt-1">{property.ges_value} kgCO₂/m²/an</div>}
                                                     </div>
                                                 )}
                                             </div>
@@ -416,7 +416,7 @@ export default function PropertyDetailPage() {
                                                     <div className="flex items-center justify-between mb-3">
                                                         <h3 className="font-semibold text-zinc-900 dark:text-white">Bedroom {index + 1}</h3>
                                                         <div className="flex gap-2 text-xs text-zinc-500 dark:text-zinc-400">
-                                                            {room.surface && <span>{room.surface}m²</span>}
+                                                            {room.surface && <span translate="no" className="notranslate">{room.surface}m²</span>}
                                                             {room.capacity && <span>• {room.capacity} person{room.capacity > 1 ? 's' : ''}</span>}
                                                             {room.bedding && room.bedding !== 'None' && <span>• {room.bedding} bed</span>}
                                                         </div>
@@ -476,7 +476,7 @@ export default function PropertyDetailPage() {
                             <div className="lg:col-span-1 space-y-6">
                                 <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] border border-white/50 dark:border-white/10 p-6 sticky top-6">
                                     <div className="text-center mb-6">
-                                        <div className="text-4xl font-bold text-teal-600 dark:text-teal-400 mb-1">€{property.monthly_rent}</div>
+                                        <div translate="no" className="notranslate text-4xl font-bold text-teal-600 dark:text-teal-400 mb-1">€{property.monthly_rent}</div>
                                         <div className="text-zinc-600 dark:text-zinc-400">
                                             per month {property.charges_included ? (
                                                 <span className="inline-block px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-bold ml-1">CC</span>
@@ -486,7 +486,7 @@ export default function PropertyDetailPage() {
                                         </div>
                                         {!property.charges_included && property.charges && (
                                             <div className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-                                                Total: <span className="font-semibold text-zinc-800 dark:text-zinc-200">€{(Number(property.monthly_rent) + Number(property.charges)).toFixed(0)}/mo</span>
+                                                Total: <span translate="no" className="notranslate font-semibold text-zinc-800 dark:text-zinc-200">€{(Number(property.monthly_rent) + Number(property.charges)).toFixed(0)}/mo</span>
                                             </div>
                                         )}
                                     </div>
@@ -494,13 +494,13 @@ export default function PropertyDetailPage() {
                                         {property.deposit && (
                                             <div className="flex justify-between">
                                                 <span className="text-zinc-600 dark:text-zinc-400">Dépôt de garantie:</span>
-                                                <span className="font-semibold">€{property.deposit}</span>
+                                                <span translate="no" className="notranslate font-semibold">€{property.deposit}</span>
                                             </div>
                                         )}
                                         {property.charges && (
                                             <div className="flex justify-between">
                                                 <span className="text-zinc-600 dark:text-zinc-400">Charges:</span>
-                                                <span className="font-semibold">€{property.charges}/mo {property.charges_included ? '(incluses)' : '(en sus)'}</span>
+                                                <span translate="no" className="notranslate font-semibold">€{property.charges}/mo {property.charges_included ? '(incluses)' : '(en sus)'}</span>
                                             </div>
                                         )}
                                         {property.charges_description && (

@@ -128,9 +128,9 @@ function EditModal({ isOpen, title, currentValue, options, type, min, max, unit,
                             className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
                         />
                         <div className="flex justify-between mt-2 text-gray-600">
-                            <span>{unit}{min}</span>
-                            <span className="text-xl font-bold text-blue-600">{unit}{value}</span>
-                            <span>{unit}{max}+</span>
+                            <span translate="no" className="notranslate">{unit}{min}</span>
+                            <span translate="no" className="notranslate text-xl font-bold text-blue-600">{unit}{value}</span>
+                            <span translate="no" className="notranslate">{unit}{max}+</span>
                         </div>
                     </div>
                 )}

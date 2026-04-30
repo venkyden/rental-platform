@@ -104,7 +104,7 @@ export default function GLIQuoteWidget({ monthlyRent, propertyId }: GLIQuoteWidg
                 {/* Rent display */}
                 <div className="bg-gray-50 rounded-lg p-3">
                     <div className="text-sm text-gray-500">Monthly Rent</div>
-                    <div className="text-2xl font-bold text-gray-900">{monthlyRent.toLocaleString('fr-FR')} €</div>
+                    <div translate="no" className="notranslate text-2xl font-bold text-gray-900">{monthlyRent.toLocaleString('fr-FR')} €</div>
                 </div>
 
                 {/* Tenant income */}
@@ -121,7 +121,7 @@ export default function GLIQuoteWidget({ monthlyRent, propertyId }: GLIQuoteWidg
                         />
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">€</span>
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p translate="no" className="notranslate text-xs text-gray-500 mt-1">
                         Ratio: {(tenantIncome / monthlyRent).toFixed(1)}x the rent
                         {tenantIncome / monthlyRent >= 3 ? ' ' : ' ️ (minimum 3x)'}
                     </p>
@@ -196,19 +196,19 @@ export default function GLIQuoteWidget({ monthlyRent, propertyId }: GLIQuoteWidg
                                 <div className="grid grid-cols-2 gap-3 mb-4">
                                     <div className="bg-white rounded-lg p-3 text-center">
                                         <div className="text-sm text-gray-500">Monthly Premium</div>
-                                        <div className="text-xl font-bold text-green-700">
+                                        <div translate="no" className="notranslate text-xl font-bold text-green-700">
                                             {quote.monthly_premium?.toLocaleString('fr-FR')} €
                                         </div>
                                     </div>
                                     <div className="bg-white rounded-lg p-3 text-center">
                                         <div className="text-sm text-gray-500">Annual Premium</div>
-                                        <div className="text-xl font-bold text-green-700">
+                                        <div translate="no" className="notranslate text-xl font-bold text-green-700">
                                             {quote.annual_premium?.toLocaleString('fr-FR')} €
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="text-sm text-gray-600 mb-3">
+                                <div translate="no" className="notranslate text-sm text-gray-600 mb-3">
                                     <div> Rate: {quote.premium_rate}% of rent</div>
                                     <div>️ Coverage: {quote.coverage_amount?.toLocaleString('fr-FR')} € ({quote.coverage_months} months)</div>
                                     <div> Quote valid until: {quote.quote_valid_until}</div>
