@@ -55,7 +55,7 @@ SEGMENT_CONFIGS: Dict[str, SegmentConfig] = {
         segment="D1",
         segment_name="First-Time Tenant",
         segment_type="demand",
-        dashboard_path="/dashboard/tenant",
+        dashboard_path="/dashboard",
         features=[
             "search",
             "favorites",
@@ -96,7 +96,7 @@ SEGMENT_CONFIGS: Dict[str, SegmentConfig] = {
         segment="D2",
         segment_name="Experienced Tenant",
         segment_type="demand",
-        dashboard_path="/dashboard/tenant",
+        dashboard_path="/dashboard",
         features=[
             "search",
             "favorites",
@@ -137,7 +137,7 @@ SEGMENT_CONFIGS: Dict[str, SegmentConfig] = {
         segment="D3",
         segment_name="Mobile Professional",
         segment_type="demand",
-        dashboard_path="/dashboard/tenant",
+        dashboard_path="/dashboard",
         features=[
             "search",
             "favorites",
@@ -315,7 +315,7 @@ def get_redirect_path(segment: Optional[str], role: str) -> str:
     # Fallback based on role
     if role in ["landlord", "property_manager"]:
         return "/dashboard/landlord"
-    return "/dashboard/tenant"
+    return "/dashboard"
 
 
 def has_feature(segment: Optional[str], feature: str) -> bool:
