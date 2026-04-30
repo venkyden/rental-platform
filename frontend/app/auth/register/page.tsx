@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Eye, EyeOff, User, Home } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { motion, Variants } from 'framer-motion';
+import { useLanguage } from '@/lib/LanguageContext';
 
 /* ----------------------------------------------------------------
    Google Identity Services type declaration
@@ -58,6 +59,7 @@ export default function RegisterPage() {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [passwordStrength, setPasswordStrength] = useState({ valid: false, message: '' });
     const [googleLoading, setGoogleLoading] = useState(false);
+    const { t } = useLanguage();
     const router = useRouter();
 
     const scriptLoadedRef = useRef(false);
@@ -69,7 +71,7 @@ export default function RegisterPage() {
     const handleGoogleResponse = useCallback(
         async (response: { credential?: string }) => {
             if (!response.credential) {
-                setError('Google sign-up did not return a credential. Please try again.');
+                setError(t('auth.login.error.google'));
                 return;
             }
 
@@ -86,7 +88,7 @@ export default function RegisterPage() {
                 setError(
                     typeof detail === 'string'
                         ? detail
-                        : 'Google sign-up failed. Please try again.',
+                        : t('auth.login.error.googleFail'),
                 );
             } finally {
                 setGoogleLoading(false);
@@ -138,7 +140,7 @@ export default function RegisterPage() {
 
         script.onerror = () => {
             console.warn('Failed to load Google Sign-In script');
-            setError('Could not load Google Sign-In. Please use email registration.');
+            setError(t('auth.login.error.googleScript'));
         };
 
         document.body.appendChild(script);
@@ -184,15 +186,15 @@ export default function RegisterPage() {
         setError('');
 
         if (!formData.gdprConsent) {
-            setError('You must accept the Privacy Policy to create an account');
+            setError(t('auth.register.error.privacy'));
             return;
         }
         if (formData.password !== formData.confirmPassword) {
-            setError('Passwords do not match');
+            setError(t('auth.register.error.mismatch'));
             return;
         }
         if (!validatePassword(formData.password)) {
-            setError('Password does not meet security requirements');
+            setError(t('auth.register.error.security'));
             return;
         }
 
@@ -212,7 +214,7 @@ export default function RegisterPage() {
         } catch (err: unknown) {
             const axiosErr = err as { response?: { data?: { detail?: string | Array<{ msg?: string; message?: string }> | { msg?: string; message?: string } } } };
             const detail = axiosErr?.response?.data?.detail;
-            let errorMessage = 'Registration failed. Please try again.';
+            let errorMessage = t('auth.register.error.fail');
             if (typeof detail === 'string') errorMessage = detail;
             else if (Array.isArray(detail))
                 errorMessage = detail.map((d) => d.msg || d.message).join(', ');
@@ -234,15 +236,15 @@ export default function RegisterPage() {
         >
             <motion.div variants={itemVariants} className="text-center sm:text-left mb-8">
                 <h2 className="text-3xl font-extrabold text-zinc-900 tracking-tight">
-                    Create your account
+                    {t('auth.register.title')}
                 </h2>
                 <p className="mt-2 text-sm text-zinc-600">
-                    Already have an account?{' '}
+                    {t('auth.register.hasAccount')}{' '}
                     <Link
                         href="/auth/login"
                         className="font-semibold text-teal-600 hover:text-teal-500 transition-colors"
                     >
-                        Sign in
+                        {t('auth.register.signIn')}
                     </Link>
                 </p>
             </motion.div>
@@ -259,12 +261,12 @@ export default function RegisterPage() {
             {/* Role selector + Google sign-up */}
             <motion.div variants={itemVariants} className="mb-6">
                 <label className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-3 text-center sm:text-left">
-                    I am a
+                    {t('auth.register.role.question')}
                 </label>
                 <div className="grid grid-cols-2 gap-3 mb-6">
                     {[
-                        { id: 'tenant', label: 'Tenant', icon: <User className="w-6 h-6" /> },
-                        { id: 'landlord', label: 'Landlord', icon: <Home className="w-6 h-6" /> },
+                        { id: 'tenant', label: t('auth.register.role.tenant'), icon: <User className="w-6 h-6" /> },
+                        { id: 'landlord', label: t('auth.register.role.landlord'), icon: <Home className="w-6 h-6" /> },
                     ].map((role) => (
                         <button
                             key={role.id}
@@ -287,7 +289,7 @@ export default function RegisterPage() {
                 </div>
                 {googleLoading && (
                     <p className="text-sm text-zinc-600 mt-3 text-center animate-pulse">
-                        Creating account with Google...
+                        {t('auth.register.connectingGoogle')}
                     </p>
                 )}
             </motion.div>
@@ -299,7 +301,7 @@ export default function RegisterPage() {
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
                     <span className="bg-white dark:bg-zinc-900 px-3 text-zinc-500 dark:text-zinc-400">
-                        or create with email
+                        {t('auth.register.divider')}
                     </span>
                 </div>
             </motion.div>
@@ -316,7 +318,7 @@ export default function RegisterPage() {
                             htmlFor="full_name"
                             className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-1.5"
                         >
-                            Full Name
+                            {t('auth.register.fullName')}
                         </label>
                         <input
                             id="full_name"
@@ -335,7 +337,7 @@ export default function RegisterPage() {
                             htmlFor="phone"
                             className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-1.5"
                         >
-                            Phone Number <span className="text-zinc-400 dark:text-zinc-500 font-normal">(optional)</span>
+                            {t('auth.register.phone')} <span className="text-zinc-400 dark:text-zinc-500 font-normal">{t('auth.register.optional')}</span>
                         </label>
                         <input
                             id="phone"
@@ -347,7 +349,7 @@ export default function RegisterPage() {
                             onChange={handleChange}
                         />
                         <p className="mt-1.5 text-xs text-zinc-400 dark:text-zinc-500">
-                            Used to recover your account if you forget your email
+                            {t('auth.register.phoneDesc')}
                         </p>
                     </motion.div>
 
@@ -356,7 +358,7 @@ export default function RegisterPage() {
                             htmlFor="email"
                             className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-1.5"
                         >
-                            Email address
+                            {t('auth.register.email')}
                         </label>
                         <input
                             id="email"
@@ -376,7 +378,7 @@ export default function RegisterPage() {
                             htmlFor="password"
                             className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-1.5"
                         >
-                            Password
+                            {t('auth.register.password')}
                         </label>
                         <div className="relative">
                             <input
@@ -414,7 +416,7 @@ export default function RegisterPage() {
                             htmlFor="confirmPassword"
                             className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-1.5"
                         >
-                            Confirm Password
+                            {t('auth.register.confirmPassword')}
                         </label>
                         <div className="relative">
                             <input
@@ -460,19 +462,19 @@ export default function RegisterPage() {
                                 htmlFor="gdprConsent"
                                 className="font-medium text-zinc-800 dark:text-zinc-300"
                             >
-                                I accept the{' '}
+                                {t('auth.register.accept')}{' '}
                                 <Link
                                     href="/legal/privacy"
                                     className="text-teal-600 hover:text-teal-500 underline"
                                 >
-                                    Privacy Policy
+                                    {t('auth.register.privacy')}
                                 </Link>{' '}
-                                and{' '}
+                                {t('auth.register.and')}{' '}
                                 <Link
                                     href="/legal/terms"
                                     className="text-teal-600 hover:text-teal-500 underline"
                                 >
-                                    Terms of Service
+                                    {t('auth.register.terms')}
                                 </Link>
                                 <span className="text-red-500"> *</span>
                             </label>
@@ -489,10 +491,10 @@ export default function RegisterPage() {
                         {loading ? (
                             <span className="flex items-center gap-2">
                                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                Creating account...
+                                {t('auth.register.signingUp')}
                             </span>
                         ) : (
-                            'Create account'
+                            t('auth.register.signUp')
                         )}
                     </button>
                 </motion.div>

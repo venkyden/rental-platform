@@ -15,6 +15,7 @@ export interface Lease {
         lat: number;
         lng: number;
     };
+    landlord_id: string;
 }
 
 export const leaseApi = {

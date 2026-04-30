@@ -5,11 +5,13 @@ import { useRouter } from 'next/navigation';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import UnifiedInbox from '@/components/UnifiedInbox';
 import ConversationView from '@/components/ConversationView';
+import { useLanguage } from '@/lib/LanguageContext';
 
 export default function InboxPage() {
     const router = useRouter();
     const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
     const [isMobileViewingConversation, setIsMobileViewingConversation] = useState(false);
+    const { t } = useLanguage();
 
     const handleSelectConversation = (conversationId: string) => {
         setSelectedConversationId(conversationId);
@@ -39,7 +41,7 @@ export default function InboxPage() {
                                 ← Dashboard
                             </button>
                             <h1 className="text-2xl font-bold text-gray-900">
-                                 Boîte de réception
+                                 {t('inbox.title')}
                             </h1>
                         </div>
                     </div>
@@ -67,9 +69,9 @@ export default function InboxPage() {
                             ) : (
                                 <div className="h-full bg-white rounded-xl shadow-sm flex flex-col items-center justify-center text-gray-400">
                                     <span className="text-6xl mb-4"></span>
-                                    <p className="text-lg">Sélectionnez une conversation</p>
+                                    <p className="text-lg">{t('inbox.selectPrompt')}</p>
                                     <p className="text-sm mt-2">
-                                        Cliquez sur une conversation pour voir les messages
+                                        {t('inbox.selectDesc')}
                                     </p>
                                 </div>
                             )}

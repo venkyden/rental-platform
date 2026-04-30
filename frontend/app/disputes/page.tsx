@@ -18,7 +18,10 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
+import { useLanguage } from '@/lib/LanguageContext';
+
 function MyDisputesContent() {
+    const { t, language } = useLanguage();
     const router = useRouter();
     const searchParams = useSearchParams();
     const success = searchParams.get('success');
@@ -29,7 +32,7 @@ function MyDisputesContent() {
 
     useEffect(() => {
         if (success) {
-            toast.success("Incident reported successfully");
+            toast.success(t('disputes.incident.messages.success'));
         }
         loadDisputes();
     }, [success]);
@@ -40,9 +43,8 @@ function MyDisputesContent() {
             setDisputes(data);
         } catch (err) {
             console.error(err);
-            toast.error("Failed to load your disputes");
+            toast.error(t('disputes.messages.loadError'));
         } finally {
-            setLoading(true); // Wait, should be false
             setLoading(false);
         }
     };
@@ -68,7 +70,7 @@ function MyDisputesContent() {
     };
 
     const getStatusLabel = (status: string) => {
-        return status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+        return t(`disputes.status.${status}` as any);
     };
 
     if (loading) {
@@ -85,8 +87,8 @@ function MyDisputesContent() {
             <div className="bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 sticky top-0 z-20">
                 <div className="max-w-5xl mx-auto px-4 h-20 flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-extrabold tracking-tight">Incident Reports</h1>
-                        <p className="text-sm text-zinc-500 dark:text-zinc-400">Track and manage your property disputes</p>
+                        <h1 className="text-2xl font-extrabold tracking-tight">{t('disputes.title')}</h1>
+                        <p className="text-sm text-zinc-500 dark:text-zinc-400">{t('disputes.subtitle')}</p>
                     </div>
                     <button 
                         onClick={() => router.push('/dashboard')}
@@ -100,28 +102,28 @@ function MyDisputesContent() {
             <main className="max-w-5xl mx-auto px-4 py-8">
                 {/* Actions & Filters */}
                 <div className="flex flex-col sm:flex-row gap-4 mb-8 justify-between items-start sm:items-center">
-                    <div className="flex bg-white dark:bg-zinc-900 p-1 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
+                    <div className="flex bg-white dark:bg-zinc-900 p-1 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm overflow-x-auto no-scrollbar">
                         {['all', 'open', 'awaiting_response', 'under_review', 'closed'].map((f) => (
                             <button
                                 key={f}
                                 onClick={() => setFilter(f)}
-                                className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+                                className={`px-4 py-2 rounded-xl text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
                                     filter === f 
                                     ? 'bg-zinc-900 dark:bg-white text-white dark:text-black shadow-md' 
                                     : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
                                 }`}
                             >
-                                {f.replace('_', ' ')}
+                                {f === 'all' ? t('inbox.filters.all') : t(`disputes.status.${f}` as any)}
                             </button>
                         ))}
                     </div>
 
                     <button 
-                        onClick={() => toast.error("Select a lease from your dashboard to report an incident")}
+                        onClick={() => toast.error(t('disputes.reportToast'))}
                         className="flex items-center gap-2 bg-teal-600 hover:bg-teal-500 text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-teal-600/20 transition-all active:scale-95"
                     >
                         <Plus className="w-5 h-5" />
-                        <span>Report Incident</span>
+                        <span>{t('disputes.report')}</span>
                     </button>
                 </div>
 
@@ -131,9 +133,9 @@ function MyDisputesContent() {
                         <div className="w-20 h-20 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-6">
                             <FileText className="w-10 h-10 text-zinc-400" />
                         </div>
-                        <h2 className="text-xl font-bold mb-2">No reports found</h2>
+                        <h2 className="text-xl font-bold mb-2">{t('disputes.noReports')}</h2>
                         <p className="text-zinc-500 dark:text-zinc-400 max-w-sm mx-auto mb-8">
-                            You haven't filed any incident reports yet. These reports help protect your deposit by creating a timestamped record of issues.
+                            {t('disputes.noReportsDesc')}
                         </p>
                     </div>
                 ) : (
@@ -156,7 +158,7 @@ function MyDisputesContent() {
                                             {getStatusLabel(dispute.status)}
                                         </span>
                                         <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
-                                            {new Date(dispute.created_at).toLocaleDateString('fr-FR', { month: 'short', day: '2-digit', year: 'numeric' })}
+                                            {new Date(dispute.created_at).toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US', { month: 'short', day: '2-digit', year: 'numeric' })}
                                         </span>
                                     </div>
                                     <h3 className="text-lg font-bold truncate group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
@@ -169,7 +171,7 @@ function MyDisputesContent() {
                                     <div className="flex items-center gap-4 mt-4 text-[10px] font-bold uppercase tracking-tighter text-zinc-400">
                                         <div className="flex items-center gap-1">
                                             <ImageIcon className="w-3.5 h-3.5" />
-                                            <span>{dispute.evidence_urls.length} Evidence</span>
+                                            <span>{dispute.evidence_urls.length} {t('disputes.evidence')}</span>
                                         </div>
                                         {dispute.amount_claimed && (
                                             <div className="flex items-center gap-1">
@@ -180,7 +182,7 @@ function MyDisputesContent() {
                                         {dispute.response_description && (
                                             <div className="flex items-center gap-1 text-teal-600 dark:text-teal-400">
                                                 <MessageSquare className="w-3.5 h-3.5" />
-                                                <span>Response received</span>
+                                                <span>{t('disputes.responseReceived')}</span>
                                             </div>
                                         )}
                                     </div>
@@ -201,13 +203,10 @@ function MyDisputesContent() {
                     <div className="relative z-10">
                         <div className="flex items-center gap-3 mb-4">
                             <Shield className="w-6 h-6 text-teal-400 dark:text-teal-600" />
-                            <h2 className="text-xl font-bold">Platform Role</h2>
+                            <h2 className="text-xl font-bold">{t('disputes.platformRoleTitle')}</h2>
                         </div>
                         <p className="text-zinc-300 dark:text-zinc-600 leading-relaxed max-w-2xl">
-                            Roomivo acts as a neutral facilitator to collect and preserve timestamped evidence. 
-                            We do not adjudicate disputes or render binding verdicts. For legal assistance, 
-                            we recommend contacting the <strong>Conciliateur de Justice</strong> or using the 
-                            <strong> EU Online Dispute Resolution</strong> platform.
+                            {t('disputes.platformRoleDesc')}
                         </p>
                     </div>
                 </div>

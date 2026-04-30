@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/useAuth';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import PremiumLayout from '@/components/PremiumLayout';
 import WizardProgress from '@/components/WizardProgress';
+import { useLanguage } from '@/lib/LanguageContext';
 import { apiClient } from '@/lib/api';
 import QRCodeDisplay from '@/components/QRCodeDisplay';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
@@ -104,6 +105,7 @@ const ROOM_AMENITY_SUGGESTIONS = [
 export default function NewPropertyPage() {
     const router = useRouter();
     const { user } = useAuth();
+    const { t } = useLanguage();
     const [currentStep, setCurrentStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [enriching, setEnriching] = useState(false);
@@ -175,10 +177,10 @@ export default function NewPropertyPage() {
                 nearby_landmarks: response.data.nearby_landmarks || []
             });
 
-            alert('Location enriched successfully! Public transport and landmarks detected.');
+            alert(t('property.create.validation.enrichSuccess'));
         } catch (error) {
             console.error('Enrichment error:', error);
-            alert('Failed to enrich location. Please try again.');
+            alert(t('property.create.validation.enrichFail'));
         } finally {
             setEnriching(false);
         }
@@ -292,7 +294,7 @@ export default function NewPropertyPage() {
         if (validateStep(currentStep)) {
             setCurrentStep(prev => prev + 1);
         } else {
-            alert('Please fill in all required fields');
+            alert(t('property.create.validation.required'));
         }
     };
 
@@ -315,10 +317,10 @@ export default function NewPropertyPage() {
                             onClick={() => router.push('/properties')}
                             className="text-teal-600 hover:text-teal-500 mb-4 font-medium transition-colors"
                         >
-                            ← Back to Properties
+                            {t('property.create.back')}
                         </button>
-                        <h1 className="text-4xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-2">Create New Property</h1>
-                        <p className="text-zinc-500 dark:text-zinc-400">Fill in the details to list your property</p>
+                        <h1 className="text-4xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-2">{t('property.create.title')}</h1>
+                        <p className="text-zinc-500 dark:text-zinc-400">{t('property.create.subtitle')}</p>
                     </motion.div>
 
                     {/* Progress Bar */}
@@ -331,13 +333,13 @@ export default function NewPropertyPage() {
                         >
                             <WizardProgress
                                 steps={[
-                                    'Basic Info',
-                                    'Location',
-                                    'Details',
-                                    'Rooms & Layout',
-                                    'Pricing',
-                                    'Features',
-                                    'Review'
+                                    t('property.create.steps.basic'),
+                                    t('property.create.steps.location'),
+                                    t('property.create.steps.details'),
+                                    t('property.create.steps.layout'),
+                                    t('property.create.steps.pricing'),
+                                    t('property.create.steps.features'),
+                                    t('property.create.steps.review')
                                 ]}
                                 currentStep={currentStep}
                             />
@@ -353,20 +355,20 @@ export default function NewPropertyPage() {
                     >
                         {currentStep === 1 && (
                             <motion.div variants={itemVariants}>
-                                <h2 className="text-2xl font-bold mb-6 text-zinc-900 dark:text-white">Basic Information</h2>
+                                <h2 className="text-2xl font-bold mb-6 text-zinc-900 dark:text-white">{t('property.create.basic.title')}</h2>
                                 <div className="space-y-4">
                                     <div>
-                                        <label className="block text-sm font-medium mb-1.5 text-zinc-800 dark:text-zinc-300">Property Title *</label>
+                                        <label className="block text-sm font-medium mb-1.5 text-zinc-800 dark:text-zinc-300">{t('property.create.basic.propertyTitle')}</label>
                                         <input
                                             type="text"
                                             value={formData.title}
                                             onChange={(e) => updateFormData({ title: e.target.value })}
                                             className="block w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-900 dark:text-white placeholder-zinc-500 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
-                                            placeholder="e.g., Bright 2BR Apartment in Central Paris"
+                                            placeholder={t('property.create.basic.propertyTitlePlaceholder')}
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium mb-1.5 text-zinc-800 dark:text-zinc-300">Property Type *</label>
+                                        <label className="block text-sm font-medium mb-1.5 text-zinc-800 dark:text-zinc-300">{t('property.create.basic.propertyType')}</label>
                                         <select
                                             value={formData.property_type}
                                             onChange={(e) => updateFormData({ property_type: e.target.value })}
@@ -374,19 +376,19 @@ export default function NewPropertyPage() {
                                         >
                                             {PROPERTY_TYPES.map(type => (
                                                 <option key={type} value={type}>
-                                                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                                                    {t(`property.type.${type}`)}
                                                 </option>
                                             ))}
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium mb-1.5 text-zinc-800 dark:text-zinc-300">Description *</label>
+                                        <label className="block text-sm font-medium mb-1.5 text-zinc-800 dark:text-zinc-300">{t('property.create.basic.description')}</label>
                                         <textarea
                                             value={formData.description}
                                             onChange={(e) => updateFormData({ description: e.target.value })}
                                             className="block w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-900 dark:text-white placeholder-zinc-500 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
                                             rows={4}
-                                            placeholder="Describe your property..."
+                                            placeholder={t('property.create.basic.descriptionPlaceholder')}
                                         />
                                     </div>
                                 </div>
@@ -395,10 +397,10 @@ export default function NewPropertyPage() {
 
                         {currentStep === 2 && (
                             <div>
-                                <h2 className="text-2xl font-bold mb-6 text-zinc-900 dark:text-white">Location</h2>
+                                <h2 className="text-2xl font-bold mb-6 text-zinc-900 dark:text-white">{t('property.create.location.title')}</h2>
                                 <div className="space-y-4">
                                     <div>
-                                        <label className="block text-sm font-medium mb-2">Address *</label>
+                                        <label className="block text-sm font-medium mb-2">{t('property.create.location.address')}</label>
                                         <AddressAutocomplete
                                             onSelectAction={(result) => {
                                                 updateFormData({
@@ -411,23 +413,23 @@ export default function NewPropertyPage() {
                                             }}
                                             countryCode="fr"
                                             initialValue={formData.address_line1}
-                                            placeholder="Start typing an address in France…"
+                                            placeholder={t('property.create.location.addressPlaceholder')}
                                             variant="form"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">Address Line 2</label>
+                                        <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">{t('property.create.location.addressLine2')}</label>
                                         <input
                                             type="text"
                                             value={formData.address_line2}
                                             onChange={(e) => updateFormData({ address_line2: e.target.value })}
                                             className="w-full px-4 py-2.5 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-zinc-900 dark:text-white placeholder:text-zinc-400 bg-white"
-                                            placeholder="Apartment, suite, etc. (optional)"
+                                            placeholder={t('property.create.location.addressLine2Placeholder')}
                                         />
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">City *</label>
+                                            <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">{t('property.create.location.city')}</label>
                                             <input
                                                 type="text"
                                                 value={formData.city}
@@ -436,7 +438,7 @@ export default function NewPropertyPage() {
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">Postal Code *</label>
+                                            <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">{t('property.create.location.postalCode')}</label>
                                             <input
                                                 type="text"
                                                 value={formData.postal_code}
@@ -448,9 +450,9 @@ export default function NewPropertyPage() {
 
                                     {/* Location Enrichment */}
                                     <div className="bg-teal-50/50 dark:bg-teal-900/10 border border-teal-200 dark:border-teal-800 rounded-xl p-4 mt-6">
-                                        <h3 className="font-semibold mb-2 text-zinc-900 dark:text-white">️ Auto-Detect Nearby Transport & Landmarks</h3>
+                                        <h3 className="font-semibold mb-2 text-zinc-900 dark:text-white">️ {t('property.create.location.autoDetect')}</h3>
                                         <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-3">
-                                            Automatically find nearby metro stations, bus stops, schools, supermarkets, and more!
+                                            {t('property.create.location.autoDetectDesc')}
                                         </p>
                                         <button
                                             onClick={handleEnrichLocation}
@@ -460,17 +462,17 @@ export default function NewPropertyPage() {
                                             {enriching ? (
                                                 <>
                                                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-                                                    Detecting... (~3s)
+                                                    {t('property.create.location.detecting')}
                                                 </>
                                             ) : (
-                                                ' Auto-Detect Location Data'
+                                                t('property.create.location.autoDetectBtn')
                                             )}
                                         </button>
 
                                         {formData.public_transport.length > 0 && (
                                             <div className="mt-4 text-sm">
-                                                <p className="font-medium text-emerald-600 dark:text-emerald-400"> {formData.public_transport.length} transport options found!</p>
-                                                <p className="font-medium text-emerald-600 dark:text-emerald-400"> {formData.nearby_landmarks.length} landmarks found!</p>
+                                                <p className="font-medium text-emerald-600 dark:text-emerald-400"> {t('property.create.location.found', { count: formData.public_transport.length })}</p>
+                                                <p className="font-medium text-emerald-600 dark:text-emerald-400"> {t('property.create.location.foundLandmarks', { count: formData.nearby_landmarks.length })}</p>
                                             </div>
                                         )}
                                     </div>
@@ -480,11 +482,11 @@ export default function NewPropertyPage() {
 
                         {currentStep === 3 && (
                             <div>
-                                <h2 className="text-2xl font-bold mb-6 text-zinc-900 dark:text-white">Property Details</h2>
+                                <h2 className="text-2xl font-bold mb-6 text-zinc-900 dark:text-white">{t('property.create.details.title')}</h2>
                                 <div className="space-y-4">
                                     <div className="grid grid-cols-3 gap-4">
                                         <div>
-                                            <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">Bedrooms *</label>
+                                            <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">{t('property.create.details.bedrooms')}</label>
                                             <input
                                                 type="number"
                                                 value={formData.bedrooms}
@@ -494,7 +496,7 @@ export default function NewPropertyPage() {
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">Bathrooms *</label>
+                                            <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">{t('property.create.details.bathrooms')}</label>
                                             <input
                                                 type="number"
                                                 step="0.5"
@@ -505,7 +507,7 @@ export default function NewPropertyPage() {
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">Size (m²) *</label>
+                                            <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">{t('property.create.details.size')}</label>
                                             <input
                                                 type="number"
                                                 value={formData.size_sqm}
@@ -516,7 +518,7 @@ export default function NewPropertyPage() {
                                         </div>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">Floor Number (optional)</label>
+                                        <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">{t('property.create.details.floor')}</label>
                                         <input
                                             type="number"
                                             value={formData.floor_number || ''}
@@ -531,71 +533,71 @@ export default function NewPropertyPage() {
                                             onChange={(e) => updateFormData({ furnished: e.target.checked })}
                                             className="w-5 h-5 text-teal-600 dark:text-teal-400"
                                         />
-                                        <label className="ml-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">Furnished</label>
+                                        <label className="ml-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">{t('property.create.details.furnished')}</label>
                                     </div>
 
                                     {/* French Compliance - DPE/GES (Loi ALUR) */}
                                     <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
                                         <h3 className="font-semibold text-amber-800 mb-3">
-                                            🇫🇷 French Energy Rating (Required by Law)
+                                            {t('property.create.details.energyRatingTitle')}
                                         </h3>
                                         <p className="text-sm text-amber-700 mb-4">
-                                            DPE (Diagnostic de Performance Énergétique) is mandatory for all rental listings in France.
+                                            {t('property.create.details.energyRatingDesc')}
                                         </p>
 
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">DPE Rating (A-G) *</label>
+                                                <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">{t('property.create.details.dpeLabel')}</label>
                                                 <select
                                                     value={formData.dpe_rating}
                                                     onChange={(e) => updateFormData({ dpe_rating: e.target.value })}
                                                     className="w-full px-4 py-2.5 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-zinc-900 dark:text-white bg-white"
                                                     required
                                                 >
-                                                    <option value="">Select rating</option>
-                                                    <option value="A">A - Excellent (&lt;50 kWh/m²)</option>
-                                                    <option value="B">B - Very Good (51-90)</option>
-                                                    <option value="C">C - Good (91-150)</option>
-                                                    <option value="D">D - Average (151-230)</option>
-                                                    <option value="E">E - Below Average (231-330)</option>
-                                                    <option value="F">F - Poor (331-450)</option>
-                                                    <option value="G">G - Very Poor (&gt;450)</option>
+                                                    <option value="">{t('property.create.details.dpePlaceholder')}</option>
+                                                    <option value="A">A - {t('property.energy.rating.A', undefined, 'Excellent')} (&lt;50 kWh/m²)</option>
+                                                    <option value="B">B - {t('property.energy.rating.B', undefined, 'Very Good')} (51-90)</option>
+                                                    <option value="C">C - {t('property.energy.rating.C', undefined, 'Good')} (91-150)</option>
+                                                    <option value="D">D - {t('property.energy.rating.D', undefined, 'Average')} (151-230)</option>
+                                                    <option value="E">E - {t('property.energy.rating.E', undefined, 'Below Average')} (231-330)</option>
+                                                    <option value="F">F - {t('property.energy.rating.F', undefined, 'Poor')} (331-450)</option>
+                                                    <option value="G">G - {t('property.energy.rating.G', undefined, 'Very Poor')} (&gt;450)</option>
                                                 </select>
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">GES Rating (A-G)</label>
+                                                <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">{t('property.create.details.gesLabel')}</label>
                                                 <select
                                                     value={formData.ges_rating}
                                                     onChange={(e) => updateFormData({ ges_rating: e.target.value })}
                                                     className="w-full px-4 py-2.5 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-zinc-900 dark:text-white bg-white"
                                                 >
-                                                    <option value="">Select rating</option>
-                                                    <option value="A">A - Excellent (&lt;5 kg CO2)</option>
-                                                    <option value="B">B - Very Good (6-10)</option>
-                                                    <option value="C">C - Good (11-20)</option>
-                                                    <option value="D">D - Average (21-35)</option>
-                                                    <option value="E">E - Below Average (36-55)</option>
-                                                    <option value="F">F - Poor (56-80)</option>
-                                                    <option value="G">G - Very Poor (&gt;80)</option>
+                                                    <option value="">{t('property.create.details.dpePlaceholder')}</option>
+                                                    <option value="A">A - {t('property.energy.rating.A', undefined, 'Excellent')} (&lt;5 kg CO2)</option>
+                                                    <option value="B">B - {t('property.energy.rating.B', undefined, 'Very Good')} (6-10)</option>
+                                                    <option value="C">C - {t('property.energy.rating.C', undefined, 'Good')} (11-20)</option>
+                                                    <option value="D">D - {t('property.energy.rating.D', undefined, 'Average')} (21-35)</option>
+                                                    <option value="E">E - {t('property.energy.rating.E', undefined, 'Below Average')} (36-55)</option>
+                                                    <option value="F">F - {t('property.energy.rating.F', undefined, 'Poor')} (56-80)</option>
+                                                    <option value="G">G - {t('property.energy.rating.G', undefined, 'Very Poor')} (&gt;80)</option>
                                                 </select>
                                             </div>
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-4 mt-4">
                                             <div>
-                                                <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">Surface Type</label>
+                                                <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">{t('property.create.details.surfaceType')}</label>
                                                 <select
                                                     value={formData.surface_type}
                                                     onChange={(e) => updateFormData({ surface_type: e.target.value })}
                                                     className="w-full px-4 py-2.5 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-zinc-900 dark:text-white bg-white"
                                                 >
-                                                    <option value="standard">Standard</option>
-                                                    <option value="loi_carrez">Loi Carrez (Copropriété)</option>
+                                                    <option value="standard">{t('property.surface.standard')}</option>
+                                                    <option value="loi_carrez">{t('property.surface.loi_carrez')}</option>
                                                 </select>
-                                                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Loi Carrez is required for apartments in condos</p>
+                                                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">{t('property.create.details.loiCarrezDesc')}</p>
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">Construction Year</label>
+                                                <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">{t('property.create.details.constructionYear')}</label>
                                                 <input
                                                     type="number"
                                                     value={formData.construction_year || ''}
@@ -614,15 +616,15 @@ export default function NewPropertyPage() {
 
                         {currentStep === 4 && (
                             <div>
-                                <h2 className="text-2xl font-bold mb-6 text-zinc-900 dark:text-white">Rooms & Layout</h2>
+                                <h2 className="text-2xl font-bold mb-6 text-zinc-900 dark:text-white">{t('property.create.layout.title')}</h2>
 
                                 <div className="space-y-8">
                                     {/* Global Accommodation Details */}
                                     <div className="bg-white/60 dark:bg-zinc-800/60 backdrop-blur-md p-6 rounded-xl border border-zinc-200 dark:border-zinc-800">
-                                        <h3 className="text-lg font-semibold mb-4 text-zinc-800 dark:text-zinc-200">Global Details</h3>
+                                        <h3 className="text-lg font-semibold mb-4 text-zinc-800 dark:text-zinc-200">{t('property.create.layout.globalTitle')}</h3>
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">Accommodation capacity *</label>
+                                                <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">{t('property.create.layout.capacity')}</label>
                                                 <input
                                                     type="number"
                                                     value={formData.accommodation_capacity}
@@ -632,7 +634,7 @@ export default function NewPropertyPage() {
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">Number of pieces *</label>
+                                                <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">{t('property.create.layout.pieces')}</label>
                                                 <input
                                                     type="number"
                                                     value={formData.rooms_count}
@@ -645,18 +647,18 @@ export default function NewPropertyPage() {
 
                                         {formData.property_type === 'studio' && (
                                             <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-sm">
-                                                <strong>ℹ️ Decency Standards:</strong> According to the decree of January 30, 2002 on decency standards, a decent dwelling must have a minimum living area of at least 9m².
+                                                {t('property.create.layout.decencyNotice')}
                                             </div>
                                         )}
                                     </div>
 
                                     {/* Shared / Private configuration */}
                                     <div className="bg-white/60 dark:bg-zinc-800/60 backdrop-blur-md p-6 rounded-xl border border-zinc-200 dark:border-zinc-800">
-                                        <h3 className="text-lg font-semibold mb-4 text-zinc-800 dark:text-zinc-200">Common Areas</h3>
+                                        <h3 className="text-lg font-semibold mb-4 text-zinc-800 dark:text-zinc-200">{t('property.create.layout.commonAreas')}</h3>
                                         <div className="grid grid-cols-2 gap-8">
                                             {/* Living Room */}
                                             <div>
-                                                <label className="block text-sm font-bold mb-3 text-zinc-700 dark:text-zinc-300">Living room</label>
+                                                <label className="block text-sm font-bold mb-3 text-zinc-700 dark:text-zinc-300">{t('property.create.layout.livingRoom')}</label>
                                                 <div className="space-y-2">
                                                     {['Private', 'Common', 'None'].map(type => (
                                                         <label key={`lr-${type}`} className="flex items-center space-x-2">
@@ -668,7 +670,7 @@ export default function NewPropertyPage() {
                                                                 onChange={() => updateFormData({ living_room_type: type as any })}
                                                                 className="w-4 h-4 text-teal-600 dark:text-teal-400 focus:ring-teal-500/10 focus:border-teal-500"
                                                             />
-                                                            <span className="text-sm text-zinc-700 dark:text-zinc-300">{type}</span>
+                                                            <span className="text-sm text-zinc-700 dark:text-zinc-300">{t(`property.layout.type.${type.toLowerCase()}`)}</span>
                                                         </label>
                                                     ))}
                                                 </div>
@@ -676,7 +678,7 @@ export default function NewPropertyPage() {
 
                                             {/* Kitchen */}
                                             <div>
-                                                <label className="block text-sm font-bold mb-3 text-zinc-700 dark:text-zinc-300">Kitchen</label>
+                                                <label className="block text-sm font-bold mb-3 text-zinc-700 dark:text-zinc-300">{t('property.create.layout.kitchen')}</label>
                                                 <div className="space-y-2">
                                                     {['Private', 'Municipality', 'None'].map(type => (
                                                         <label key={`k-${type}`} className="flex items-center space-x-2">
@@ -688,7 +690,7 @@ export default function NewPropertyPage() {
                                                                 onChange={() => updateFormData({ kitchen_type: type as any })}
                                                                 className="w-4 h-4 text-teal-600 dark:text-teal-400 focus:ring-teal-500/10 focus:border-teal-500"
                                                             />
-                                                            <span className="text-sm text-zinc-700 dark:text-zinc-300">{type}</span>
+                                                            <span className="text-sm text-zinc-700 dark:text-zinc-300">{t(`property.layout.type.${type.toLowerCase()}`)}</span>
                                                         </label>
                                                     ))}
                                                 </div>
@@ -698,16 +700,16 @@ export default function NewPropertyPage() {
 
                                     {/* Bedroom Deep Dive */}
                                     <div className="space-y-4">
-                                        <h3 className="text-xl font-bold text-zinc-900 dark:text-white border-b pb-2">Bedrooms Details</h3>
-                                        <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4">Please detail the features for the {formData.bedrooms} bedrooms you indicated.</p>
+                                        <h3 className="text-xl font-bold text-zinc-900 dark:text-white border-b pb-2">{t('property.create.layout.bedroomDetails')}</h3>
+                                        <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4">{t('property.create.layout.bedroomDesc', { count: formData.bedrooms })}</p>
 
                                         {formData.room_details.map((room, index) => (
                                             <div key={`room-${index}`} className="bg-zinc-50 dark:bg-zinc-800/50 p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
-                                                <h4 className="font-semibold text-lg text-teal-700 dark:text-teal-300 mb-4">Bedroom {index + 1}</h4>
+                                                <h4 className="font-semibold text-lg text-teal-700 dark:text-teal-300 mb-4">{t('property.create.layout.bedroomTitle', { index: index + 1 })}</h4>
 
                                                 <div className="grid grid-cols-2 gap-4 mb-4">
                                                     <div>
-                                                        <label className="block text-sm font-medium mb-1 text-zinc-700 dark:text-zinc-300">Surface (m²) *</label>
+                                                        <label className="block text-sm font-medium mb-1 text-zinc-700 dark:text-zinc-300">{t('property.create.layout.surface')}</label>
                                                         <input
                                                             type="number"
                                                             value={room.surface}
@@ -721,7 +723,7 @@ export default function NewPropertyPage() {
                                                         />
                                                     </div>
                                                     <div>
-                                                        <label className="block text-sm font-medium mb-1 text-zinc-700 dark:text-zinc-300">Accommodation capacity *</label>
+                                                        <label className="block text-sm font-medium mb-1 text-zinc-700 dark:text-zinc-300">{t('property.create.layout.roomCapacity')}</label>
                                                         <input
                                                             type="number"
                                                             value={room.capacity}
@@ -737,7 +739,7 @@ export default function NewPropertyPage() {
                                                 </div>
 
                                                 <div className="mb-4">
-                                                    <label className="block text-sm font-medium mb-1 text-zinc-700 dark:text-zinc-300">Describe this room</label>
+                                                    <label className="block text-sm font-medium mb-1 text-zinc-700 dark:text-zinc-300">{t('property.create.layout.roomDescLabel')}</label>
                                                     <input
                                                         type="text"
                                                         value={room.description}
@@ -746,16 +748,16 @@ export default function NewPropertyPage() {
                                                             newDetails[index].description = e.target.value;
                                                             updateFormData({ room_details: newDetails });
                                                         }}
-                                                        placeholder="e.g. Master suite with large window"
+                                                        placeholder={t('property.create.layout.roomDescPlaceholder')}
                                                         className="w-full px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-zinc-900 dark:text-white"
                                                     />
                                                 </div>
 
-                                                <h5 className="font-medium text-sm text-zinc-800 dark:text-zinc-200 mb-3 border-b pb-1">Room amenities</h5>
+                                                <h5 className="font-medium text-sm text-zinc-800 dark:text-zinc-200 mb-3 border-b pb-1">{t('property.create.layout.amenities')}</h5>
 
                                                 <div className="space-y-4">
                                                     <div>
-                                                        <label className="block text-xs font-semibold mb-1 text-zinc-500 dark:text-zinc-400 uppercase">Bedding</label>
+                                                        <label className="block text-xs font-semibold mb-1 text-zinc-500 dark:text-zinc-400 uppercase">{t('property.create.layout.bedding')}</label>
                                                         <select
                                                             value={room.bedding}
                                                             onChange={(e) => {
@@ -765,13 +767,9 @@ export default function NewPropertyPage() {
                                                             }}
                                                             className="w-full px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-1 focus:ring-teal-500/10 focus:border-teal-500 text-sm text-zinc-900 dark:text-white"
                                                         >
-                                                            <option value="Single">Single</option>
-                                                            <option value="Double">Double</option>
-                                                            <option value="Queen">Queen</option>
-                                                            <option value="King">King</option>
-                                                            <option value="Bunk Bed">Bunk Bed</option>
-                                                            <option value="Sofa Bed">Sofa Bed</option>
-                                                            <option value="None">None</option>
+                                                            {['Single', 'Double', 'Queen', 'King', 'Bunk Bed', 'Sofa Bed', 'None'].map(b => (
+                                                                <option key={b} value={b}>{t(`property.bedding.${b.toLowerCase().replace(' ', '_')}`)}</option>
+                                                            ))}
                                                         </select>
                                                     </div>
 
@@ -840,7 +838,7 @@ export default function NewPropertyPage() {
                                                                         setRoomAmenityInputs(prev => ({ ...prev, [index]: '' }));
                                                                     }
                                                                 }}
-                                                                placeholder="Add custom amenity..."
+                                                                placeholder={t('property.create.layout.amenityPlaceholder', undefined, 'Add custom amenity...') }
                                                                 className="flex-1 px-3 py-1.5 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-1 focus:ring-teal-500/10 focus:border-teal-500 text-sm text-zinc-900 dark:text-white bg-white dark:bg-zinc-800"
                                                             />
                                                             <button
@@ -856,7 +854,7 @@ export default function NewPropertyPage() {
                                                                 }}
                                                                 className="px-3 py-1.5 bg-teal-600 text-white rounded-xl text-sm hover:bg-teal-700 transition-colors"
                                                             >
-                                                                Add
+                                                                {t('property.create.features.addAmenity')}
                                                             </button>
                                                         </div>
                                                     </div>
@@ -870,10 +868,10 @@ export default function NewPropertyPage() {
 
                         {currentStep === 5 && (
                             <div>
-                                <h2 className="text-2xl font-bold mb-6 text-zinc-900 dark:text-white">Pricing & Availability</h2>
+                                <h2 className="text-2xl font-bold mb-6 text-zinc-900 dark:text-white">{t('property.create.pricing.title')}</h2>
                                 <div className="space-y-4">
                                     <div>
-                                        <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">Monthly Rent (€) *</label>
+                                        <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">{t('property.create.pricing.monthlyRent')} (€) *</label>
                                         <input
                                             type="number"
                                             value={formData.monthly_rent}
@@ -884,11 +882,11 @@ export default function NewPropertyPage() {
                                         {/* Rent control warning for zones tendues */}
                                         {['75', '92', '93', '94', '69', '13', '59', '31', '33', '34', '06'].some(code => formData.postal_code.startsWith(code)) && (
                                             <div className="mt-2 p-3 bg-teal-50/50 dark:bg-teal-900/10 border border-teal-200 dark:border-teal-800 rounded text-sm">
-                                                <span className="font-semibold text-teal-700 dark:text-teal-300">ℹ️ Zone Tendue:</span>
+                                                <span className="font-semibold text-teal-700 dark:text-teal-300">ℹ️ {t('property.pricing.rentControl.title', undefined, 'Zone Tendue')}:</span>
                                                 <span className="text-teal-700 ml-1">
-                                                    This area may have rent control (encadrement des loyers).
+                                                    {t('property.pricing.rentControl.desc', undefined, 'This area may have rent control (encadrement des loyers).')}
                                                     <a href="https://www.service-public.fr/particuliers/vosdroits/F1314" target="_blank" rel="noopener noreferrer" className="underline ml-1">
-                                                        Check limits →
+                                                        {t('property.pricing.rentControl.link', undefined, 'Check limits →')}
                                                     </a>
                                                 </span>
                                             </div>
@@ -896,9 +894,9 @@ export default function NewPropertyPage() {
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">
-                                            Deposit (€)
+                                            {t('property.create.pricing.deposit')} (€)
                                             <span className="text-zinc-500 dark:text-zinc-400 text-xs ml-2">
-                                                Max: {formData.furnished ? '2 months' : '1 month'} rent by law
+                                                {t('property.pricing.depositLimit', { limit: formData.furnished ? '2 months' : '1 month' }, 'Max: {{limit}} rent by law')}
                                             </span>
                                         </label>
                                         <input
@@ -920,13 +918,13 @@ export default function NewPropertyPage() {
                                                 : formData.deposit > formData.monthly_rent
                                         ) && (
                                                 <p className="text-red-600 text-sm mt-1">
-                                                    ️ French law limits deposit to {formData.furnished ? '2 months' : '1 month'} rent
-                                                    (max €{formData.furnished ? formData.monthly_rent * 2 : formData.monthly_rent})
+                                                    ️ {t('property.pricing.depositWarning', { limit: formData.furnished ? '2 months' : '1 month' }, 'French law limits deposit to {{limit}} rent')}
+                                                    ({t('property.pricing.maxLabel', undefined, 'max')} €{formData.furnished ? formData.monthly_rent * 2 : formData.monthly_rent})
                                                 </p>
                                             )}
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">Charges mensuelles (€)</label>
+                                        <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">{t('property.create.pricing.charges')} (€)</label>
                                         <input
                                             type="number"
                                             value={formData.charges || ''}
@@ -938,7 +936,7 @@ export default function NewPropertyPage() {
 
                                     {/* CC / HC Toggle */}
                                     <div className="col-span-2">
-                                        <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">Type de loyer</label>
+                                        <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">{t('property.pricing.typeLabel', undefined, 'Type de loyer')}</label>
                                         <div className="flex gap-3">
                                             <button
                                                 type="button"
@@ -949,7 +947,7 @@ export default function NewPropertyPage() {
                                                     }`}
                                             >
                                                 <div className="text-lg">CC</div>
-                                                <div className="text-xs text-zinc-500 dark:text-zinc-400">Charges Comprises</div>
+                                                <div className="text-xs text-zinc-500 dark:text-zinc-400">{t('property.pricing.ccFull', undefined, 'Charges Comprises')}</div>
                                             </button>
                                             <button
                                                 type="button"
@@ -960,13 +958,13 @@ export default function NewPropertyPage() {
                                                     }`}
                                             >
                                                 <div className="text-lg">HC</div>
-                                                <div className="text-xs text-zinc-500 dark:text-zinc-400">Hors Charges</div>
+                                                <div className="text-xs text-zinc-500 dark:text-zinc-400">{t('property.pricing.hcFull', undefined, 'Hors Charges')}</div>
                                             </button>
                                         </div>
                                         <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
                                             {formData.charges_included
-                                                ? 'Le loyer affiché inclut les charges (eau, entretien, etc.)'
-                                                : 'Les charges s\'ajoutent au loyer mensuel'
+                                                ? t('property.pricing.ccDesc', undefined, 'Le loyer affiché inclut les charges (eau, entretien, etc.)')
+                                                : t('property.pricing.hcDesc', undefined, 'Les charges s\'ajoutent au loyer mensuel')
                                             }
                                         </p>
                                     </div>
@@ -974,11 +972,11 @@ export default function NewPropertyPage() {
                                     {/* Charges Description */}
                                     {formData.charges && Number(formData.charges) > 0 && (
                                         <div className="col-span-2">
-                                            <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">Détail des charges</label>
+                                            <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">{t('property.create.pricing.chargesDesc')}</label>
                                             <textarea
                                                 value={formData.charges_description || ''}
                                                 onChange={(e) => updateFormData({ charges_description: e.target.value })}
-                                                placeholder="Ex: Eau froide, entretien parties communes, ordures ménagères, assurance immeuble..."
+                                                placeholder={t('property.pricing.chargesPlaceholder', undefined, 'Ex: Eau froide, entretien parties communes, ordures ménagères, assurance immeuble...') }
                                                 className="w-full px-4 py-2.5 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-sm text-zinc-900 dark:text-white placeholder:text-zinc-400 bg-white"
                                                 rows={2}
                                             />
@@ -986,7 +984,7 @@ export default function NewPropertyPage() {
                                     )}
 
                                     <div>
-                                        <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">Disponible à partir du</label>
+                                        <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">{t('property.create.pricing.availableFrom')}</label>
                                         <input
                                             type="date"
                                             value={formData.available_from || ''}
@@ -998,7 +996,7 @@ export default function NewPropertyPage() {
 
                                 {/* Guarantor Preferences */}
                                 <div className="mt-6 pt-6 border-t">
-                                    <h3 className="text-lg font-bold mb-4 text-zinc-900 dark:text-white">️ Garantie locative</h3>
+                                    <h3 className="text-lg font-bold mb-4 text-zinc-900 dark:text-white">️ {t('property.pricing.guarantor.title', undefined, 'Garantie locative')}</h3>
                                     <div className="flex items-center gap-3 mb-4">
                                         <label className="relative inline-flex items-center cursor-pointer">
                                             <input
@@ -1020,7 +1018,7 @@ export default function NewPropertyPage() {
 
                                     {formData.guarantor_required && (
                                         <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-4">
-                                            <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-3">Types de garant acceptés:</p>
+                                            <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-3">{t('property.pricing.guarantor.typesLabel', undefined, 'Types de garant acceptés:')}</p>
                                             <div className="space-y-2">
                                                 {[
                                                     { value: 'visale', label: '️ Visale (Action Logement)', forced: true },
@@ -1042,12 +1040,12 @@ export default function NewPropertyPage() {
                                                             }}
                                                             className="rounded border-zinc-200 dark:border-zinc-700 text-teal-600 dark:text-teal-400 focus:ring-teal-500/10 focus:border-teal-500"
                                                         />
-                                                        <span className="text-sm text-zinc-700 dark:text-zinc-300">{opt.label}</span>
-                                                        {opt.forced && <span className="text-xs text-emerald-600 dark:text-emerald-400 italic">(obligatoire par la loi)</span>}
+                                                        <span className="text-sm text-zinc-700 dark:text-zinc-300">{t(`property.guarantor.type.${opt.value}`, undefined, opt.label)}</span>
+                                                        {opt.forced && <span className="text-xs text-emerald-600 dark:text-emerald-400 italic">({t('common.requiredByLaw', undefined, 'obligatoire par la loi')})</span>}
                                                     </label>
                                                 ))}
                                             </div>
-                                            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-3">️ Loi ELAN: Visale ne peut pas être refusé.</p>
+                                            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-3">️ {t('property.pricing.guarantor.elanNotice', undefined, 'Loi ELAN: Visale ne peut pas être refusé.')}</p>
                                         </div>
                                     )}
                                 </div>
@@ -1056,10 +1054,10 @@ export default function NewPropertyPage() {
 
                         {currentStep === 6 && (
                             <div>
-                                <h2 className="text-2xl font-bold mb-6 text-zinc-900 dark:text-white">Amenities & Features</h2>
+                                <h2 className="text-2xl font-bold mb-6 text-zinc-900 dark:text-white">{t('property.create.features.title')}</h2>
                                 <div className="space-y-6">
                                     <div>
-                                        <label className="block text-sm font-medium mb-3 text-zinc-700 dark:text-zinc-300">Standard Amenities</label>
+                                        <label className="block text-sm font-medium mb-3 text-zinc-700 dark:text-zinc-300">{t('property.create.features.amenities')}</label>
                                         <div className="grid grid-cols-3 gap-3">
                                             {STANDARD_AMENITIES.map(amenity => (
                                                 <label key={amenity} className="flex items-center space-x-2 cursor-pointer">
@@ -1075,14 +1073,14 @@ export default function NewPropertyPage() {
                                                         }}
                                                         className="w-4 h-4 text-teal-600 dark:text-teal-400"
                                                     />
-                                                    <span className="text-sm text-zinc-700 dark:text-zinc-300">{amenity}</span>
+                                                    <span className="text-sm text-zinc-700 dark:text-zinc-300">{t(`property.amenities.${amenity.toLowerCase()}`, undefined, amenity)}</span>
                                                 </label>
                                             ))}
                                         </div>
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">Custom Amenities</label>
+                                        <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">{t('property.create.features.customAmenities')}</label>
                                         <div className="space-y-2">
                                             {formData.custom_amenities.map((amenity, idx) => (
                                                 <div key={idx} className="flex gap-2">
@@ -1104,7 +1102,7 @@ export default function NewPropertyPage() {
                                                         }}
                                                         className="px-3 py-2 bg-red-100 text-red-600 rounded-xl hover:bg-red-200"
                                                     >
-                                                        Remove
+                                                        {t('common.remove', undefined, 'Remove')}
                                                     </button>
                                                 </div>
                                             ))}
@@ -1112,7 +1110,7 @@ export default function NewPropertyPage() {
                                                 onClick={() => updateFormData({ custom_amenities: [...formData.custom_amenities, ''] })}
                                                 className="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-xl hover:bg-zinc-200 dark:hover:bg-zinc-700"
                                             >
-                                                + Add Custom Amenity
+                                                + {t('property.create.features.addAmenity')}
                                             </button>
                                         </div>
                                     </div>
@@ -1120,7 +1118,7 @@ export default function NewPropertyPage() {
                                     {/* Display enriched data */}
                                     {formData.public_transport.length > 0 && (
                                         <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-                                            <h3 className="font-semibold mb-2 text-zinc-900 dark:text-white"> Public Transport ({formData.public_transport.length})</h3>
+                                            <h3 className="font-semibold mb-2 text-zinc-900 dark:text-white"> {t('property.create.features.transport')} ({formData.public_transport.length})</h3>
                                             <ul className="text-sm space-y-1">
                                                 {formData.public_transport.slice(0, 5).map((t, i) => (
                                                     <li key={i} className="text-zinc-700 dark:text-zinc-300">{t}</li>
@@ -1131,7 +1129,7 @@ export default function NewPropertyPage() {
 
                                     {formData.nearby_landmarks.length > 0 && (
                                         <div className="bg-teal-50/50 dark:bg-teal-900/10 border border-teal-200 dark:border-teal-800 rounded-xl p-4">
-                                            <h3 className="font-semibold mb-2 text-zinc-900 dark:text-white"> Nearby Landmarks ({formData.nearby_landmarks.length})</h3>
+                                            <h3 className="font-semibold mb-2 text-zinc-900 dark:text-white"> {t('property.create.features.landmarks')} ({formData.nearby_landmarks.length})</h3>
                                             <ul className="text-sm space-y-1 grid grid-cols-2 gap-1">
                                                 {formData.nearby_landmarks.slice(0, 8).map((l, i) => (
                                                     <li key={i} className="text-zinc-700 dark:text-zinc-300">{l}</li>
@@ -1145,7 +1143,7 @@ export default function NewPropertyPage() {
 
                         {currentStep === 7 && (
                             <div>
-                                <h2 className="text-2xl font-bold mb-6 text-zinc-900 dark:text-white">Review & Submit</h2>
+                                <h2 className="text-2xl font-bold mb-6 text-zinc-900 dark:text-white">{t('property.create.review.title')}</h2>
                                 <div className="space-y-4 text-sm">
                                     <div className="bg-zinc-50 dark:bg-zinc-800/50 p-4 rounded-xl">
                                         <h3 className="font-bold mb-2 text-zinc-900 dark:text-white">{formData.title}</h3>
@@ -1153,22 +1151,22 @@ export default function NewPropertyPage() {
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="bg-zinc-50 dark:bg-zinc-800/50 p-4 rounded-xl">
-                                            <p className="font-medium text-zinc-900 dark:text-white">Type: {formData.property_type}</p>
-                                            <p>Address: {formData.address_line1}, {formData.city}</p>
-                                            <p>{formData.bedrooms} bed • {formData.bathrooms} bath • {formData.size_sqm}m²</p>
+                                            <p className="font-medium text-zinc-900 dark:text-white">{t('property.create.basic.type')}: {t(`property.type.${formData.property_type}`, undefined, formData.property_type)}</p>
+                                            <p>{t('property.create.location.address')}: {formData.address_line1}, {formData.city}</p>
+                                            <p>{formData.bedrooms} {t('property.create.details.bedrooms')} • {formData.bathrooms} {t('property.create.details.bathrooms')} • {formData.size_sqm}m²</p>
                                         </div>
                                         <div className="bg-zinc-50 dark:bg-zinc-800/50 p-4 rounded-xl">
                                             <p className="font-bold text-xl text-teal-600 dark:text-teal-400">€{formData.monthly_rent}/mo</p>
-                                            {formData.deposit && <p>Deposit: €{formData.deposit}</p>}
-                                            {formData.charges && <p>Charges: €{formData.charges}/mo</p>}
+                                            {formData.deposit && <p>{t('property.create.pricing.deposit')}: €{formData.deposit}</p>}
+                                            {formData.charges && <p>{t('property.create.pricing.charges')}: €{formData.charges}/mo</p>}
                                         </div>
                                     </div>
                                     <div className="bg-zinc-50 dark:bg-zinc-800/50 p-4 rounded-xl">
-                                        <p className="font-medium mb-2 text-zinc-900 dark:text-white">Amenities:</p>
+                                        <p className="font-medium mb-2 text-zinc-900 dark:text-white">{t('property.create.features.amenities')}:</p>
                                         <div className="flex flex-wrap gap-2">
                                             {[...formData.amenities, ...formData.custom_amenities].map((a, i) => (
                                                 <span key={i} className="px-3 py-1 bg-teal-50 dark:bg-teal-900/20 text-teal-700 rounded-full text-xs">
-                                                    {a}
+                                                    {t(`property.amenities.${a.toLowerCase()}`, undefined, a)}
                                                 </span>
                                             ))}
                                         </div>
@@ -1180,13 +1178,13 @@ export default function NewPropertyPage() {
                         {currentStep === 8 && mediaSession && (
                             <div className="text-center">
                                 <div className="text-6xl mb-4"></div>
-                                <h2 className="text-3xl font-bold text-zinc-900 dark:text-white mb-2">Property Saved as Draft</h2>
-                                <p className="text-zinc-600 dark:text-zinc-400 mb-6">Upload photos & videos for each room using the QR codes below to publish your listing.</p>
+                                <h2 className="text-3xl font-bold text-zinc-900 dark:text-white mb-2">{t('property.create.media.draftSaved')}</h2>
+                                <p className="text-zinc-600 dark:text-zinc-400 mb-6">{t('property.create.media.uploadDesc')}</p>
 
                                 {/* Per-Room Media Progress */}
                                 {formData.room_details.length > 0 && (
                                     <div className="mb-6">
-                                        <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-3 uppercase tracking-wider">Room Media Progress</h3>
+                                        <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-3 uppercase tracking-wider">{t('property.create.media.roomProgress')}</h3>
                                         <div className="flex flex-wrap gap-2 justify-center mb-4">
                                             {formData.room_details.map((_, i) => {
                                                 const count = roomMediaCounts[i] || 0;
@@ -1198,8 +1196,8 @@ export default function NewPropertyPage() {
                                                             : 'bg-amber-50 text-amber-700 border-amber-200'
                                                             }`}
                                                     >
-                                                        {count > 0 ? '' : '️'} Bedroom {i + 1}
-                                                        <span className="ml-1.5 text-xs opacity-75">({count} files)</span>
+                                                        {count > 0 ? '' : '️'} {t('property.create.layout.bedroomTitle', { index: i + 1 })}
+                                                        <span className="ml-1.5 text-xs opacity-75">({t('property.create.media.fileCount', { count })})</span>
                                                     </div>
                                                 );
                                             })}
@@ -1218,16 +1216,16 @@ export default function NewPropertyPage() {
                                         <div className="flex items-center gap-3">
                                             <span className="text-3xl"></span>
                                             <div>
-                                                <p className="font-bold text-green-800">Property Published!</p>
-                                                <p className="text-sm text-green-700">Your listing is now live and visible to tenants.</p>
+                                                <p className="font-bold text-green-800">{t('property.create.media.publishedTitle')}</p>
+                                                <p className="text-sm text-green-700">{t('property.create.media.publishedDesc')}</p>
                                             </div>
                                         </div>
                                     ) : mediaVerified ? (
                                         <div className="flex items-center gap-3">
                                             <span className="text-3xl"></span>
                                             <div>
-                                                <p className="font-bold text-teal-700 dark:text-teal-300">{mediaCount} media file{mediaCount !== 1 ? 's' : ''} uploaded</p>
-                                                <p className="text-sm text-teal-700">All rooms have media — ready to publish!</p>
+                                                <p className="font-bold text-teal-700 dark:text-teal-300">{t('property.create.media.filesUploaded', { count: mediaCount })}</p>
+                                                <p className="text-sm text-teal-700">{t('property.create.media.readyToPublish')}</p>
                                             </div>
                                         </div>
                                     ) : (
@@ -1236,11 +1234,11 @@ export default function NewPropertyPage() {
                                             <div>
                                                 <p className="font-bold text-amber-800">
                                                     {formData.room_details.length > 0
-                                                        ? `${formData.room_details.filter((_, i) => (roomMediaCounts[i] || 0) === 0).length} room(s) still need media`
-                                                        : 'No media uploaded yet'}
+                                                        ? t('property.create.media.roomsMissing', { count: formData.room_details.filter((_, i) => (roomMediaCounts[i] || 0) === 0).length })
+                                                        : t('property.create.media.noMedia')}
                                                 </p>
                                                 <p className="text-sm text-amber-700">
-                                                    Scan the QR code with your phone. You can select which room to photograph on your phone.
+                                                    {t('property.create.media.qrInstructions')}
                                                 </p>
                                             </div>
                                         </div>
@@ -1266,7 +1264,7 @@ export default function NewPropertyPage() {
                                                 onClick={checkMediaStatus}
                                                 className="px-6 py-3 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-xl hover:bg-zinc-200 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 font-medium transition-all"
                                             >
-                                                 Check for Uploaded Media
+                                                 {t('property.create.media.checkStatus')}
                                             </button>
                                             <button
                                                 onClick={handlePublish}
@@ -1275,9 +1273,9 @@ export default function NewPropertyPage() {
                                                     ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-white hover:shadow-sm cursor-pointer'
                                                     : 'bg-zinc-200 dark:bg-zinc-700 text-zinc-400 cursor-not-allowed'
                                                     }`}
-                                                title={!mediaVerified ? 'Upload media for all rooms to publish' : ''}
+                                                title={!mediaVerified ? t('property.create.media.uploadAllToPublish') : ''}
                                             >
-                                                {publishing ? 'Publishing...' : ' Publish Property'}
+                                                {publishing ? t('property.create.media.publishing') : t('property.create.media.publishBtn')}
                                             </button>
                                         </>
                                     )}
@@ -1285,13 +1283,13 @@ export default function NewPropertyPage() {
                                         onClick={() => router.push(`/properties/${propertyId}`)}
                                         className="px-6 py-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-white rounded-xl hover:shadow-sm hover: font-medium transition-all"
                                     >
-                                        View Property
+                                        {t('property.create.media.viewBtn')}
                                     </button>
                                     <button
                                         onClick={() => router.push('/properties')}
                                         className="px-6 py-3 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-xl hover:bg-zinc-200 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 font-medium transition-all"
                                     >
-                                        Back to Properties
+                                        {t('property.create.media.backToProperties')}
                                     </button>
                                 </div>
                             </div>
@@ -1305,18 +1303,18 @@ export default function NewPropertyPage() {
                                         onClick={prevStep}
                                         className="px-6 py-2.5 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800 font-medium transition-all"
                                     >
-                                        ← Back
+                                        ← {t('common.back', undefined, 'Back')}
                                     </button>
                                 ) : (
                                     <button
                                         onClick={() => {
-                                            if (confirm('Are you sure you want to cancel?')) {
+                                            if (confirm(t('common.confirmCancel', undefined, 'Are you sure you want to cancel?'))) {
                                                 router.push('/properties');
                                             }
                                         }}
                                         className="px-6 py-2.5 text-red-600 hover:text-red-700 font-medium transition-colors"
                                     >
-                                        Cancel
+                                        {t('common.cancel', undefined, 'Cancel')}
                                     </button>
                                 )}
 
@@ -1325,7 +1323,7 @@ export default function NewPropertyPage() {
                                         onClick={nextStep}
                                         className="px-6 py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-white rounded-xl hover:shadow-sm hover: font-semibold transform hover:-translate-y-0.5 transition-all"
                                     >
-                                        Next →
+                                        {t('common.next', undefined, 'Next')} →
                                     </button>
                                 ) : (
                                     <button
@@ -1336,10 +1334,10 @@ export default function NewPropertyPage() {
                                         {loading ? (
                                             <span className="flex items-center gap-2">
                                                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                                Creating...
+                                                {t('property.create.status.creating', undefined, 'Creating...')}
                                             </span>
                                         ) : (
-                                            ' Create Property'
+                                            t('property.create.btn', undefined, 'Create Property')
                                         )}
                                     </button>
                                 )}

@@ -4,6 +4,7 @@ Property listing API endpoints.
 
 import os
 import secrets
+import logging
 from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import List, Optional
@@ -27,6 +28,7 @@ from app.models.user import User
 from app.routers.auth import get_current_user
 
 router = APIRouter(prefix="/properties", tags=["Properties"])
+logger = logging.getLogger(__name__)
 
 # Upload directory
 UPLOAD_DIR = os.environ.get("UPLOAD_DIR_PROPS", "uploads/properties")

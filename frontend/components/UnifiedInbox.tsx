@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import EmptyState from '@/components/EmptyState';
 import { apiClient } from '@/lib/api';
 import { motion, Variants } from 'framer-motion';
+import { useLanguage } from '@/lib/LanguageContext';
 
 const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -46,6 +47,7 @@ export default function UnifiedInbox({ onSelectConversation, selectedConversatio
     const [filter, setFilter] = useState<'all' | 'active' | 'archived'>('all');
     const [searchQuery, setSearchQuery] = useState('');
     const [totalUnread, setTotalUnread] = useState(0);
+    const { t } = useLanguage();
 
     useEffect(() => {
         loadConversations();
@@ -82,7 +84,7 @@ export default function UnifiedInbox({ onSelectConversation, selectedConversatio
         if (diffDays === 0) {
             return date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
         } else if (diffDays === 1) {
-            return 'Yesterday';
+            return t('inbox.time.yesterday');
         } else if (diffDays < 7) {
             return date.toLocaleDateString('en-GB', { weekday: 'short' });
         } else {
@@ -130,7 +132,7 @@ export default function UnifiedInbox({ onSelectConversation, selectedConversatio
             <div className="p-4 border-b bg-blue-600">
                 <div className="flex items-center justify-between mb-3">
                     <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                         Inbox
+                         {t('inbox.title')}
                         {totalUnread > 0 && (
                             <span className="px-2 py-0.5 bg-red-500 text-white text-sm rounded-full">
                                 {totalUnread}
@@ -143,7 +145,7 @@ export default function UnifiedInbox({ onSelectConversation, selectedConversatio
                 <div className="relative">
                     <input
                         type="text"
-                        placeholder="Search..."
+                        placeholder={t('inbox.searchPlaceholder')}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full px-4 py-2 pl-10 rounded-lg bg-white/20 text-white placeholder-white/70 focus:bg-white focus:text-gray-900 focus:placeholder-gray-400 transition-colors"
@@ -155,9 +157,9 @@ export default function UnifiedInbox({ onSelectConversation, selectedConversatio
             {/* Filter Tabs */}
             <div className="flex border-b">
                 {[
-                    { key: 'all', label: 'All' },
-                    { key: 'active', label: 'Active' },
-                    { key: 'archived', label: 'Archived' }
+                    { key: 'all', label: t('inbox.filters.all') },
+                    { key: 'active', label: t('inbox.filters.active') },
+                    { key: 'archived', label: t('inbox.filters.archived') }
                 ].map(({ key, label }) => (
                     <button
                         key={key}
@@ -183,8 +185,8 @@ export default function UnifiedInbox({ onSelectConversation, selectedConversatio
                     <div className="py-16">
                         <EmptyState
                             icon=""
-                            title="No Conversations"
-                            description="You don't have any messages yet. Tenant inquiries will appear here."
+                            title={t('inbox.status.noConversations')}
+                            description={t('inbox.status.noConversationsDesc')}
                             layout="transparent"
                         />
                     </div>
@@ -194,7 +196,7 @@ export default function UnifiedInbox({ onSelectConversation, selectedConversatio
                             {/* Property Header */}
                             <div className="px-4 py-2 bg-gray-50 border-b">
                                 <div className="font-medium text-gray-900 text-sm">
-                                     {group.property_title || 'Property'}
+                                     {group.property_title || t('search.property')}
                                 </div>
                                 <div className="text-xs text-gray-500">
                                     {group.property_address}

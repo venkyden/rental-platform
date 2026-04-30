@@ -6,7 +6,7 @@ import { translations, Language } from './i18n';
 interface LanguageContextType {
     language: Language;
     setLanguage: (lang: Language) => void;
-    t: (key: string, fallback?: string) => string;
+    t: (key: string, params?: Record<string, string | number>, fallback?: string) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -27,7 +27,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('app-language', lang);
     };
 
-    const t = (key: string, fallback?: string): string => {
+    const t = (key: string, params?: Record<string, string | number>, fallback?: string): string => {
         const keys = key.split('.');
         let value: any = translations[language];
 
@@ -35,11 +35,20 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
             if (value && typeof value === 'object' && k in value) {
                 value = value[k];
             } else {
-                return fallback || key; // Fallback to key if not found
+                return fallback || key;
             }
         }
 
-        return typeof value === 'string' ? value : (fallback || key);
+        if (typeof value !== 'string') return fallback || key;
+
+        // Simple interpolation: replaces {{name}} with params.name
+        if (params) {
+            Object.entries(params).forEach(([k, v]) => {
+                value = value.replace(new RegExp(`{{${k}}}`, 'g'), String(v));
+            });
+        }
+
+        return value;
     };
 
     return (

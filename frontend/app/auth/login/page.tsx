@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Eye, EyeOff } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { motion, Variants } from 'framer-motion';
+import { useLanguage } from '@/lib/LanguageContext';
 
 /* ----------------------------------------------------------------
    Google Identity Services type declaration
@@ -48,6 +49,7 @@ export default function LoginPage() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [googleLoading, setGoogleLoading] = useState(false);
+    const { t } = useLanguage();
     const router = useRouter();
 
     const scriptLoadedRef = useRef(false);
@@ -56,7 +58,7 @@ export default function LoginPage() {
     const handleGoogleResponse = useCallback(
         async (response: { credential?: string }) => {
             if (!response.credential) {
-                setError('Google sign-in did not return a credential. Please try again.');
+                setError(t('auth.login.error.google'));
                 return;
             }
 
@@ -73,7 +75,7 @@ export default function LoginPage() {
                 setError(
                     typeof detail === 'string'
                         ? detail
-                        : 'Google sign-in failed. Please try again.',
+                        : t('auth.login.error.googleFail'),
                 );
             } finally {
                 setGoogleLoading(false);
@@ -125,7 +127,7 @@ export default function LoginPage() {
 
         script.onerror = () => {
             console.warn('Failed to load Google Sign-In script');
-            setError('Could not load Google Sign-In. Please use email login.');
+            setError(t('auth.login.error.googleScript'));
         };
 
         document.body.appendChild(script);
@@ -143,7 +145,7 @@ export default function LoginPage() {
         } catch (err: unknown) {
             const axiosErr = err as { response?: { data?: { detail?: string | Array<{ msg?: string; message?: string }> | { msg?: string; message?: string } } } };
             const detail = axiosErr?.response?.data?.detail;
-            let errorMessage = 'Login failed. Please try again.';
+            let errorMessage = t('auth.login.error.loginFail');
             if (typeof detail === 'string') errorMessage = detail;
             else if (Array.isArray(detail))
                 errorMessage = detail.map((d) => d.msg || d.message).join(', ');
@@ -160,15 +162,15 @@ export default function LoginPage() {
         <motion.div variants={containerVariants} initial="hidden" animate="show" className="w-full">
             <motion.div variants={itemVariants} className="text-center sm:text-left mb-8">
                 <h2 className="text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
-                    Welcome back
+                    {t('auth.login.title')}
                 </h2>
                 <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-                    Don&apos;t have an account?{' '}
+                    {t('auth.login.noAccount')}{' '}
                     <Link
                         href="/auth/register"
                         className="font-semibold text-teal-600 hover:text-teal-500 transition-colors"
                     >
-                        Create one now
+                        {t('auth.login.signUp')}
                     </Link>
                 </p>
             </motion.div>
@@ -189,7 +191,7 @@ export default function LoginPage() {
                 </div>
                 {googleLoading && (
                     <p className="text-sm text-zinc-600 mt-3 text-center animate-pulse">
-                        Connecting to Google...
+                        {t('auth.login.connectingGoogle')}
                     </p>
                 )}
             </motion.div>
@@ -201,7 +203,7 @@ export default function LoginPage() {
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
                     <span className="bg-white dark:bg-zinc-900 px-3 text-zinc-500 dark:text-zinc-400">
-                        or sign in with email
+                        {t('auth.login.divider')}
                     </span>
                 </div>
             </motion.div>
@@ -213,13 +215,13 @@ export default function LoginPage() {
                             htmlFor="email"
                             className="block text-sm font-medium text-zinc-800 dark:text-zinc-300"
                         >
-                            Email address
+                            {t('auth.login.email')}
                         </label>
                         <Link
                             href="/auth/forgot-email"
                             className="text-sm font-semibold text-teal-600 hover:text-teal-500 transition-colors"
                         >
-                            Forgot email?
+                            {t('auth.login.forgotEmail')}
                         </Link>
                     </div>
                     <input
@@ -241,13 +243,13 @@ export default function LoginPage() {
                             htmlFor="password"
                             className="block text-sm font-medium text-zinc-800 dark:text-zinc-300"
                         >
-                            Password
+                            {t('auth.login.password')}
                         </label>
                         <Link
                             href="/auth/forgot-password"
                             className="text-sm font-semibold text-teal-600 hover:text-teal-500 transition-colors"
                         >
-                            Forgot password?
+                            {t('auth.login.forgotPassword')}
                         </Link>
                     </div>
                     <div className="relative">
@@ -281,10 +283,10 @@ export default function LoginPage() {
                         {loading ? (
                             <span className="flex items-center gap-2">
                                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                Signing in...
+                                {t('auth.login.signingIn')}
                             </span>
                         ) : (
-                            'Sign in securely'
+                            t('auth.login.signIn')
                         )}
                     </button>
                 </motion.div>

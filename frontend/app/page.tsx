@@ -1,6 +1,11 @@
+'use client';
+
 import Link from 'next/link';
+import { useLanguage } from '@/lib/LanguageContext';
 
 export default function HomePage() {
+  const { t, language } = useLanguage();
+
   return (
     <div className="min-h-screen bg-[#fafbfc] text-gray-900" style={{ fontFamily: 'var(--font-geist-sans), system-ui, sans-serif' }}>
 
@@ -25,14 +30,14 @@ export default function HomePage() {
           </Link>
           <div className="flex items-center gap-3">
             <Link href="/auth/login" className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
-              Sign In
+              {t('landing.signIn')}
             </Link>
             <Link
               href="/auth/register"
               className="px-5 py-2.5 text-sm font-semibold text-white rounded-xl shadow-md hover:shadow-sm transition-all hover:-translate-y-0.5"
               style={{ background: 'linear-gradient(135deg, #3DD6D0, #22B8B8)' }}
             >
-              Get Started
+              {t('landing.getStarted')}
             </Link>
           </div>
         </div>
@@ -46,16 +51,22 @@ export default function HomePage() {
 
         <div className="max-w-7xl mx-auto px-6 pt-24 pb-20 text-center relative">
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.08] mb-6">
-            Find your{' '}
-            <span className="bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(135deg, #3DD6D0, #22B8B8)' }}>
-              perfect home
-            </span>
-            <br />
-            with confidence
+            {t('landing.hero.title').split(language === 'fr' ? 'foyer idéal' : 'perfect home').map((part, i) => (
+              i === 0 ? (
+                <span key={i}>
+                  {part}
+                  <span className="bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(135deg, #3DD6D0, #22B8B8)' }}>
+                    {language === 'fr' ? 'foyer idéal' : 'perfect home'}
+                  </span>
+                </span>
+              ) : (
+                <span key={i}>{part}</span>
+              )
+            ))}
           </h1>
 
           <p className="text-lg sm:text-xl text-gray-500 max-w-2xl mx-auto mb-10 leading-relaxed">
-            Identity verification, smart matching, and digital leases — everything you need to rent safely in France.
+            {t('landing.subtitle')}
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
@@ -64,7 +75,7 @@ export default function HomePage() {
               className="group px-8 py-4 text-base font-semibold text-white rounded-2xl shadow-sm hover:shadow-sm transition-all hover:-translate-y-0.5 flex items-center gap-2"
               style={{ background: 'linear-gradient(135deg, #3DD6D0, #1CA8A8)' }}
             >
-              Get Started for Free
+              {t('landing.getStarted')}
               <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
@@ -73,7 +84,7 @@ export default function HomePage() {
               href="/search"
               className="px-8 py-4 text-base font-semibold text-gray-700 bg-white border-2 border-gray-200 rounded-2xl hover:border-gray-300 hover:shadow-md transition-all"
             >
-              Browse Listings
+              {t('dashboard.quickActions.browse.title')}
             </Link>
           </div>
 
@@ -101,8 +112,8 @@ export default function HomePage() {
       <section className="py-24">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-4">How It Works</h2>
-            <p className="text-gray-500 text-lg max-w-xl mx-auto">Three simple steps to find your ideal home or perfect tenant.</p>
+            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-4">{t('landing.howItWorks.title')}</h2>
+            <p className="text-gray-500 text-lg max-w-xl mx-auto">{t('landing.howItWorks.subtitle')}</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
@@ -114,8 +125,8 @@ export default function HomePage() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                   </svg>
                 ),
-                title: 'Create Your Profile',
-                description: 'Sign up and verify your identity in minutes with our Stripe Identity integration.'
+                title: t('landing.howItWorks.steps.profile.title'),
+                description: t('landing.howItWorks.steps.profile.desc')
               },
               {
                 step: '02',
@@ -124,8 +135,8 @@ export default function HomePage() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
                   </svg>
                 ),
-                title: 'Smart Matching',
-                description: 'Our algorithm analyzes your preferences and criteria to suggest the best matches for you.'
+                title: t('landing.howItWorks.steps.matching.title'),
+                description: t('landing.howItWorks.steps.matching.desc')
               },
               {
                 step: '03',
@@ -134,8 +145,8 @@ export default function HomePage() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                   </svg>
                 ),
-                title: 'Digital Lease',
-                description: 'Generate a legally-compliant French lease contract in a few clicks and sign electronically.'
+                title: t('landing.howItWorks.steps.lease.title'),
+                description: t('landing.howItWorks.steps.lease.desc')
               }
             ].map((item) => (
               <div key={item.step} className="relative group">
@@ -153,35 +164,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ─── Features Grid ─── */}
-      <section className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-4">Why Roomivo?</h2>
-            <p className="text-gray-500 text-lg max-w-xl mx-auto">Built specifically for the French rental market, with trust at its core.</p>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              { emoji: '', title: 'Identity Verification', desc: 'Stripe Identity + OCR to verify IDs and supporting documents in real time.' },
-              { emoji: '', title: 'Trust Score', desc: 'A transparent score based on verifications, history, and platform behavior.' },
-              { emoji: '', title: 'Compliant Leases', desc: 'Auto-generated contracts that comply with French ELAN and ALUR laws.' },
-              { emoji: '️', title: 'GLI & Visale', desc: 'Built-in rental guarantee integrations to protect both landlords and tenants.' },
-              { emoji: '', title: 'Built-in Messaging', desc: 'Communicate directly with candidates and landlords without leaving the platform.' },
-              { emoji: '', title: 'DPE & Charges', desc: 'Compliant energy performance display and transparent fee breakdowns (CC/HC).' },
-            ].map((feature) => (
-              <div key={feature.title} className="flex gap-4 p-6 rounded-2xl border border-gray-100 bg-gray-50/50 hover:bg-white hover:shadow-sm hover:border-gray-200 transition-all duration-300">
-                <span className="text-3xl flex-shrink-0">{feature.emoji}</span>
-                <div>
-                  <h3 className="font-bold text-gray-900 mb-1">{feature.title}</h3>
-                  <p className="text-sm text-gray-500 leading-relaxed">{feature.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ─── Dual CTA ─── */}
       <section className="py-24">
         <div className="max-w-5xl mx-auto px-6">
@@ -191,15 +173,15 @@ export default function HomePage() {
               <div className="absolute top-0 right-0 w-40 h-40 rounded-full bg-white/10 -translate-y-1/2 translate-x-1/2" />
               <div className="relative">
                 <div className="text-4xl mb-4"></div>
-                <h3 className="text-2xl font-bold mb-3">Looking for a home?</h3>
+                <h3 className="text-2xl font-bold mb-3">{t('landing.cta.tenant.title')}</h3>
                 <p className="text-white/80 mb-6 leading-relaxed">
-                  Build your digital dossier, get your trust score, and apply to listings in one click.
+                  {t('landing.cta.tenant.desc')}
                 </p>
                 <Link
                   href="/auth/register?role=tenant"
                   className="inline-flex items-center gap-2 px-6 py-3 bg-white text-gray-900 font-semibold rounded-xl hover:shadow-sm transition-all"
                 >
-                  I&apos;m a tenant →
+                  {t('landing.cta.tenant.button')} →
                 </Link>
               </div>
             </div>
@@ -209,16 +191,16 @@ export default function HomePage() {
               <div className="absolute bottom-0 left-0 w-40 h-40 rounded-full bg-white/5 translate-y-1/2 -translate-x-1/2" />
               <div className="relative">
                 <div className="text-4xl mb-4"></div>
-                <h3 className="text-2xl font-bold mb-3">Are you a landlord?</h3>
+                <h3 className="text-2xl font-bold mb-3">{t('landing.cta.landlord.title')}</h3>
                 <p className="text-gray-400 mb-6 leading-relaxed">
-                  List your properties, receive verified applications, and generate leases in minutes.
+                  {t('landing.cta.landlord.desc')}
                 </p>
                 <Link
                   href="/auth/register?role=landlord"
                   className="inline-flex items-center gap-2 px-6 py-3 font-semibold rounded-xl hover:shadow-sm transition-all"
                   style={{ background: 'linear-gradient(135deg, #3DD6D0, #22B8B8)', color: 'white' }}
                 >
-                  I&apos;m a landlord →
+                  {t('landing.cta.landlord.button')} →
                 </Link>
               </div>
             </div>
@@ -252,9 +234,9 @@ export default function HomePage() {
             <div>
               <h4 className="font-semibold text-gray-900 mb-3 text-sm">Platform</h4>
               <div className="space-y-2 text-sm text-gray-500">
-                <Link href="/search" className="block hover:text-gray-900 transition-colors">Search</Link>
-                <Link href="/properties" className="block hover:text-gray-900 transition-colors">My Properties</Link>
-                <Link href="/auth/register" className="block hover:text-gray-900 transition-colors">Sign Up</Link>
+                <Link href="/search" className="block hover:text-gray-900 transition-colors">{t('dashboard.quickActions.browse.title')}</Link>
+                <Link href="/properties" className="block hover:text-gray-900 transition-colors">{t('dashboard.stats.properties')}</Link>
+                <Link href="/auth/register" className="block hover:text-gray-900 transition-colors">{t('landing.getStarted')}</Link>
               </div>
             </div>
             <div>
@@ -282,3 +264,4 @@ export default function HomePage() {
     </div>
   );
 }
+

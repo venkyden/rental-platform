@@ -17,12 +17,12 @@ export default function Navbar() {
     if (!user) return null;
 
     const navLinks = [
-        { href: '/dashboard', label: 'Dashboard', icon: '' },
+        { href: '/dashboard', label: t('dashboard.title'), icon: '' },
         ...(user.role === 'landlord'
-            ? [{ href: '/properties', label: 'Properties', icon: '' }]
-            : [{ href: '/search', label: 'Search', icon: '' }]),
-        { href: '/inbox', label: 'Inbox', icon: '' },
-        { href: '/verification', label: 'Verification', icon: '' },
+            ? [{ href: '/properties', label: t('dashboard.stats.properties'), icon: '' }]
+            : [{ href: '/search', label: t('dashboard.quickActions.browse.title'), icon: '' }]),
+        { href: '/inbox', label: t('dashboard.inbox.title'), icon: '' },
+        { href: '/verification', label: t('dashboard.verification.verification.pageTitle'), icon: '' },
     ];
 
     return (

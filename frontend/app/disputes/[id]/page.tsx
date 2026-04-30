@@ -24,7 +24,10 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
+import { useLanguage } from '@/lib/LanguageContext';
+
 export default function DisputeDetailPage() {
+    const { t, language } = useLanguage();
     const params = useParams();
     const id = params.id as string;
     const router = useRouter();
@@ -55,7 +58,7 @@ export default function DisputeDetailPage() {
             setDispute(data);
         } catch (err) {
             console.error(err);
-            toast.error("Failed to load dispute details");
+            toast.error(t('disputes.messages.loadDetailError'));
             router.push('/disputes');
         } finally {
             setLoading(false);
@@ -72,13 +75,13 @@ export default function DisputeDetailPage() {
                 urls.push(url);
             }
             await disputeApi.addEvidence(id, urls);
-            toast.success("Evidence added successfully");
+            toast.success(t('disputes.messages.addEvidenceSuccess'));
             setExtraFiles([]);
             setExtraPreviews([]);
             loadDispute();
         } catch (err) {
             console.error(err);
-            toast.error("Failed to add evidence");
+            toast.error(t('disputes.messages.addEvidenceError'));
         } finally {
             setSubmitting(false);
         }
@@ -97,14 +100,14 @@ export default function DisputeDetailPage() {
                 response_description: responseDesc,
                 response_evidence_urls: urls
             });
-            toast.success("Response submitted");
+            toast.success(t('disputes.messages.responseSuccess'));
             setResponseDesc("");
             setResponseFiles([]);
             setResponsePreviews([]);
             loadDispute();
         } catch (err) {
             console.error(err);
-            toast.error("Failed to submit response");
+            toast.error(t('disputes.messages.responseError'));
         } finally {
             setSubmitting(false);
         }
@@ -122,7 +125,7 @@ export default function DisputeDetailPage() {
     }
 
     const getStatusLabel = (status: string) => {
-        return status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+        return t(`disputes.status.${status}` as any);
     };
 
     const getStatusStyles = (status: string) => {
@@ -145,7 +148,7 @@ export default function DisputeDetailPage() {
                         className="p-2 -ml-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors flex items-center gap-2"
                     >
                         <ChevronLeft className="w-5 h-5" />
-                        <span className="text-sm font-bold">Back</span>
+                        <span className="text-sm font-bold">{t('disputes.detail.back')}</span>
                     </button>
                     <div className={`px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest border border-current ${getStatusStyles(dispute.status)}`}>
                         {getStatusLabel(dispute.status)}
@@ -163,16 +166,16 @@ export default function DisputeDetailPage() {
                         <div className="flex flex-wrap gap-4 text-xs font-bold text-zinc-400 uppercase tracking-widest">
                             <div className="flex items-center gap-1.5">
                                 <Calendar className="w-4 h-4" />
-                                <span>{new Date(dispute.created_at).toLocaleDateString('fr-FR', { month: 'long', day: '2-digit', year: 'numeric' })}</span>
+                                <span>{new Date(dispute.created_at).toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US', { month: 'long', day: '2-digit', year: 'numeric' })}</span>
                             </div>
                             <div className="flex items-center gap-1.5">
                                 <Info className="w-4 h-4" />
-                                <span>{dispute.category.replace('_', ' ')}</span>
+                                <span>{t(`disputes.incident.categories.${dispute.category}.label` as any)}</span>
                             </div>
                             {dispute.amount_claimed && (
                                 <div className="flex items-center gap-1.5 text-zinc-900 dark:text-white">
                                     <Euro className="w-4 h-4" />
-                                    <span>€{dispute.amount_claimed.toLocaleString()} claimed</span>
+                                    <span>€{dispute.amount_claimed.toLocaleString()} {t('disputes.detail.claimed')}</span>
                                 </div>
                             )}
                         </div>
@@ -183,7 +186,7 @@ export default function DisputeDetailPage() {
                         <div className="absolute top-0 right-0 w-32 h-32 bg-zinc-50 dark:bg-zinc-800/50 rounded-bl-[2rem] flex items-center justify-center">
                             <MessageSquare className="w-8 h-8 opacity-10" />
                         </div>
-                        <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-400 mb-4">Description</h3>
+                        <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-400 mb-4">{t('disputes.detail.description')}</h3>
                         <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed whitespace-pre-wrap">
                             {dispute.description}
                         </p>
@@ -191,7 +194,7 @@ export default function DisputeDetailPage() {
 
                     {/* Reporter Evidence Gallery */}
                     <section>
-                        <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-400 mb-4 px-1">Reporter Evidence</h3>
+                        <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-400 mb-4 px-1">{t('disputes.detail.reporterEvidence')}</h3>
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                             {dispute.evidence_urls.map((url, idx) => (
                                 <a 
@@ -218,7 +221,7 @@ export default function DisputeDetailPage() {
                                         <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center group-hover:scale-110 transition-transform">
                                             <Camera className="w-5 h-5 text-zinc-500" />
                                         </div>
-                                        <span className="text-[10px] font-bold text-zinc-400 uppercase">Add Photo</span>
+                                        <span className="text-[10px] font-bold text-zinc-400 uppercase">{t('disputes.detail.addPhoto')}</span>
                                     </button>
                                     <input 
                                         ref={extraInputRef} type="file" accept="image/*" capture="environment" className="hidden" 
@@ -236,7 +239,7 @@ export default function DisputeDetailPage() {
                                             disabled={submitting}
                                             className="w-full py-2 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-xl text-xs font-bold uppercase"
                                         >
-                                            {submitting ? "Uploading..." : "Save Evidence"}
+                                            {submitting ? t('disputes.messages.uploading') : t('disputes.detail.saveEvidence')}
                                         </button>
                                     )}
                                 </div>
@@ -251,7 +254,7 @@ export default function DisputeDetailPage() {
                                 <div className="w-10 h-10 rounded-xl bg-teal-100 dark:bg-teal-900/50 flex items-center justify-center text-teal-600 dark:text-teal-400">
                                     <MessageSquare className="w-5 h-5" />
                                 </div>
-                                <h3 className="text-xl font-bold text-teal-900 dark:text-teal-100">Accused Party Response</h3>
+                                <h3 className="text-xl font-bold text-teal-900 dark:text-teal-100">{t('disputes.detail.accusedResponseTitle')}</h3>
                             </div>
 
                             {dispute.responded_at ? (
@@ -267,17 +270,17 @@ export default function DisputeDetailPage() {
                                         ))}
                                     </div>
                                     <div className="text-[10px] font-bold uppercase tracking-widest text-teal-600/60 dark:text-teal-400/60">
-                                        Submitted {new Date(dispute.responded_at).toLocaleDateString('fr-FR', { month: 'long', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' } as any)}
+                                        {t('disputes.detail.submittedOn', { date: new Date(dispute.responded_at).toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US', { month: 'long', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' } as any) })}
                                     </div>
                                 </div>
                             ) : isAccused && dispute.status !== 'closed' ? (
                                 <div className="space-y-4">
                                     <p className="text-sm text-teal-800 dark:text-teal-200 mb-4">
-                                        You have been named as the accused party. Use this section to provide your side of the story and any counter-evidence.
+                                        {t('disputes.detail.accusedResponsePrompt')}
                                     </p>
                                     <textarea 
                                         className="w-full bg-white dark:bg-zinc-900 border border-teal-200 dark:border-teal-800 focus:border-teal-500 outline-none rounded-2xl p-4 min-h-[120px] transition-all"
-                                        placeholder="Explain what happened from your perspective..."
+                                        placeholder={t('disputes.detail.accusedResponsePlaceholder')}
                                         value={responseDesc}
                                         onChange={e => setResponseDesc(e.target.value)}
                                     />
@@ -308,7 +311,7 @@ export default function DisputeDetailPage() {
                                         disabled={!responseDesc || submitting}
                                         className="w-full py-4 bg-teal-600 hover:bg-teal-500 text-white rounded-2xl font-bold shadow-lg shadow-teal-600/20 transition-all flex items-center justify-center gap-2"
                                     >
-                                        {submitting ? "Submitting..." : "Submit My Response"}
+                                        {submitting ? t('disputes.messages.submitting') : t('disputes.detail.submitResponse')}
                                     </button>
                                 </div>
                             ) : null}
@@ -320,7 +323,7 @@ export default function DisputeDetailPage() {
                 <div className="space-y-6">
                     {/* Status Card */}
                     <section className="bg-white dark:bg-zinc-900 rounded-[2rem] p-8 border border-zinc-200 dark:border-zinc-800 shadow-sm">
-                        <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-6">Current Status</h3>
+                        <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-6">{t('disputes.detail.currentStatus')}</h3>
                         
                         <div className="space-y-6">
                             <div className="flex gap-4">
@@ -333,10 +336,10 @@ export default function DisputeDetailPage() {
                                 </div>
                                 <div className="space-y-8 py-2">
                                     {[
-                                        { id: 'open', label: 'Report Filed', desc: 'Timestamped and preserved' },
-                                        { id: 'awaiting_response', label: 'Other Party Notified', desc: 'Awaiting counter-evidence' },
-                                        { id: 'under_review', label: 'Facilitation', desc: 'Admin reviewing both sides' },
-                                        { id: 'closed', label: 'Closed', desc: 'Process completed' }
+                                        { id: 'open' },
+                                        { id: 'awaiting_response' },
+                                        { id: 'under_review' },
+                                        { id: 'closed' }
                                     ].map((step, idx) => {
                                         const isDone = ['open', 'awaiting_response', 'under_review', 'closed'].indexOf(dispute.status) >= idx;
                                         return (
@@ -345,8 +348,8 @@ export default function DisputeDetailPage() {
                                                     {isDone ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Clock className="w-3.5 h-3.5" />}
                                                 </div>
                                                 <div>
-                                                    <div className="text-xs font-bold tracking-tight">{step.label}</div>
-                                                    <div className="text-[10px] text-zinc-400">{step.desc}</div>
+                                                    <div className="text-xs font-bold tracking-tight">{t(`disputes.detail.steps.${step.id}.label` as any)}</div>
+                                                    <div className="text-[10px] text-zinc-400">{t(`disputes.detail.steps.${step.id}.desc` as any)}</div>
                                                 </div>
                                             </div>
                                         );
@@ -360,7 +363,7 @@ export default function DisputeDetailPage() {
                     <section className="bg-indigo-600 rounded-[2rem] p-8 text-white shadow-xl shadow-indigo-600/20">
                         <div className="flex items-center gap-3 mb-4">
                             <Gavel className="w-6 h-6 text-indigo-200" />
-                            <h3 className="text-lg font-bold">Roomivo Facilitation</h3>
+                            <h3 className="text-lg font-bold">{t('disputes.detail.facilitationTitle')}</h3>
                         </div>
                         
                         {dispute.admin_observations ? (
@@ -371,25 +374,24 @@ export default function DisputeDetailPage() {
                             </div>
                         ) : (
                             <p className="text-xs text-indigo-100 leading-relaxed">
-                                Our admin team is monitoring this incident to ensure all evidence is collected correctly. 
-                                We act as a neutral party to preserve the record.
+                                {t('disputes.detail.facilitationDesc')}
                             </p>
                         )}
 
                         {dispute.mediation_redirect_url && (
                             <div className="mt-6 pt-6 border-t border-white/10">
-                                <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-200 mb-3">Recommended Action</p>
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-200 mb-3">{t('disputes.detail.recommendedAction')}</p>
                                 <a 
                                     href={dispute.mediation_redirect_url} 
                                     target="_blank" 
                                     rel="noopener noreferrer"
                                     className="flex items-center justify-between p-4 bg-white text-indigo-600 rounded-2xl font-bold text-xs hover:bg-indigo-50 transition-colors"
                                 >
-                                    <span>Proceed to Mediation</span>
+                                    <span>{t('disputes.detail.proceedMediation')}</span>
                                     <ExternalLink className="w-4 h-4" />
                                 </a>
                                 <p className="text-[9px] text-indigo-200 mt-3 text-center opacity-80 uppercase tracking-tighter">
-                                    Official EU Online Dispute Resolution Platform
+                                    {t('disputes.detail.mediationPlatform')}
                                 </p>
                             </div>
                         )}
@@ -397,12 +399,9 @@ export default function DisputeDetailPage() {
 
                     {/* Legal Context */}
                     <section className="bg-zinc-100 dark:bg-zinc-900 rounded-[2rem] p-8 border border-zinc-200 dark:border-zinc-800">
-                        <h4 className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-zinc-400 mb-4">Legal Disclaimer</h4>
+                        <h4 className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-zinc-400 mb-4">{t('disputes.detail.legalDisclaimerTitle')}</h4>
                         <p className="text-[10px] text-zinc-500 dark:text-zinc-400 leading-relaxed uppercase tracking-tighter">
-                            Roomivo facilitates evidence collection and inventory comparison. 
-                            The platform does not adjudicate disputes or render binding verdicts. 
-                            Per Loi ALUR, landlords have 1-2 months post-lease to return deposits. 
-                            Deductions for normal wear and tear are prohibited.
+                            {t('disputes.detail.legalDisclaimerDesc')}
                         </p>
                     </section>
                 </div>

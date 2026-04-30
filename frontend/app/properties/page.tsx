@@ -10,6 +10,8 @@ import { apiClient } from '@/lib/api';
 import { motion, Variants } from 'framer-motion';
 import { resolveMediaUrl } from '@/lib/mediaUrl';
 import VerificationUpload from '@/components/VerificationUpload';
+import { useLanguage } from '@/lib/LanguageContext';
+import { toast } from 'react-hot-toast';
 
 const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -39,8 +41,9 @@ interface Property {
 }
 
 export default function PropertiesPage() {
-    const { user } = useAuth();
+    const { user, isAuthenticated } = useAuth();
     const router = useRouter();
+    const { t } = useLanguage();
     const [properties, setProperties] = useState<Property[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState<'all' | 'draft' | 'active'>('all');
@@ -75,11 +78,12 @@ export default function PropertiesPage() {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Are you sure you want to delete this property?')) return;
+        if (!confirm(t('property.landlord.deleteConfirm', undefined, 'Are you sure you want to delete this property?'))) return;
 
         try {
             await apiClient.client.delete(`/properties/${id}`);
             loadProperties();
+            toast.success(t('property.error.deleteSuccess', undefined, 'Property deleted successfully'));
         } catch (error) {
             alert('Error deleting property');
         }
@@ -89,19 +93,19 @@ export default function PropertiesPage() {
         <ProtectedRoute>
             <PremiumLayout withNavbar={true}>
                 <header className="mb-8 p-6 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl shadow-sm border border-white/50 dark:border-white/10 flex justify-between items-center">
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">My Properties</h1>
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('property.landlord.title')}</h1>
                     <div className="flex gap-3">
                         <button
                             onClick={() => router.push('/dashboard')}
                             className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
                         >
-                            ← Dashboard
+                            ← {isAuthenticated ? t('dashboard.title', undefined, 'Dashboard') : t('navbar.home', undefined, 'Home')}
                         </button>
                         <button
                             onClick={() => router.push('/properties/new')}
                             className="px-6 py-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-white font-semibold rounded-xl hover:shadow-sm hover: transform hover:-translate-y-0.5 transition-all"
                         >
-                            + New Property
+                            {t('property.landlord.newProperty')}
                         </button>
                     </div>
                 </header>
@@ -118,7 +122,7 @@ export default function PropertiesPage() {
                                     : 'bg-white/60 dark:bg-zinc-800/60 backdrop-blur-md text-gray-700 dark:text-gray-300 hover:bg-white/80 dark:hover:bg-zinc-800/80 border border-white/20'
                                     }`}
                             >
-                                {status.charAt(0).toUpperCase() + status.slice(1)}
+                                {t(`property.landlord.${status}` as any)}
                             </button>
                         ))}
                     </div>
@@ -132,9 +136,9 @@ export default function PropertiesPage() {
                         <div className="py-12">
                             <EmptyState
                                 icon=""
-                                title="No properties yet"
-                                description="Create your first property listing to get started and manage your rentals."
-                                actionLabel="Create Property"
+                                title={t('property.landlord.emptyTitle')}
+                                description={t('property.landlord.emptyDesc')}
+                                actionLabel={t('property.landlord.createBtn')}
                                 onAction={() => router.push('/properties/new')}
                                 layout="transparent"
                             />
@@ -182,10 +186,10 @@ export default function PropertiesPage() {
                                         <div className="flex items-center justify-between mb-6 mt-auto">
                                             <div translate="no" className="notranslate text-2xl font-black text-teal-600 dark:text-teal-400">
                                                 €{property.monthly_rent}
-                                                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">/mo</span>
+                                                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">/{t('property.price.perMonthShort', undefined, 'mo')}</span>
                                             </div>
                                             <div className="text-sm font-semibold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-zinc-800 px-3 py-1 rounded-lg">
-                                                ️ {property.bedrooms} bed{property.bedrooms !== 1 ? 's' : ''}
+                                                ️ {property.bedrooms} {t(property.bedrooms !== 1 ? 'property.bedrooms' : 'property.bedroom')}
                                             </div>
                                         </div>
 
@@ -194,15 +198,15 @@ export default function PropertiesPage() {
                                             {property.ownership_verified ? (
                                                 <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/10 px-2.5 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-900/30">
                                                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                                    Ownership Verified
+                                                    {t('property.landlord.ownershipVerified')}
                                                 </div>
                                             ) : (
-                                                <button 
+                                                 <button 
                                                     onClick={() => setVerifyingProperty(property.id)}
                                                     className="flex items-center gap-1.5 text-xs font-semibold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/10 px-2.5 py-1.5 rounded-lg border border-orange-200 dark:border-orange-900/30 hover:bg-orange-100 dark:hover:bg-orange-900/20 transition-colors w-full justify-center"
                                                 >
                                                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                                                    Verify Ownership to Publish
+                                                    {t('property.landlord.verifyPrompt')}
                                                 </button>
                                             )}
                                         </div>
@@ -213,13 +217,13 @@ export default function PropertiesPage() {
                                                 onClick={() => router.push(`/properties/${property.id}/edit`)}
                                                 className="flex-1 py-2.5 bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-zinc-700 font-semibold transition-colors"
                                             >
-                                                Edit
+                                                {t('property.actions.edit')}
                                             </button>
                                             <button
                                                 onClick={() => router.push(`/properties/${property.id}`)}
                                                 className="flex-1 py-2.5 bg-zinc-900 text-white rounded-xl hover:bg-zinc-800 font-semibold transition-colors"
                                             >
-                                                View
+                                                {t('property.actions.view', undefined, 'View')}
                                             </button>
                                             <button
                                                 onClick={() => handleDelete(property.id)}

@@ -68,5 +68,6 @@ export function useAuth() {
         login,
         register,
         logout,
+        isAuthenticated: !!user,
     };
 }

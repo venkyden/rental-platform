@@ -12,6 +12,7 @@ import { useToast } from '@/lib/ToastContext';
 import VisitScheduler from '@/components/VisitScheduler';
 import VisitBookingWizard from '@/components/VisitBookingWizard';
 import LeaseManager from '@/components/LeaseManager';
+import { useLanguage } from '@/lib/LanguageContext';
 import { motion } from 'framer-motion';
 
 interface Property {
@@ -63,6 +64,7 @@ export default function PropertyDetailPage() {
     const params = useParams();
     const { user } = useAuth();
     const toast = useToast();
+    const { t } = useLanguage();
     const [property, setProperty] = useState<Property | null>(null);
     const [loading, setLoading] = useState(true);
     const [publishing, setPublishing] = useState(false);
@@ -85,7 +87,7 @@ export default function PropertyDetailPage() {
         } catch (error: any) {
             console.error('Error loading property:', error);
             if (error.response?.status === 404) {
-                toast.error('Property not found');
+                toast.error(t('property.error.notFound'));
                 router.push('/properties');
             }
         } finally {
@@ -94,14 +96,14 @@ export default function PropertyDetailPage() {
     };
 
     const handleDelete = async () => {
-        if (!confirm('Are you sure you want to delete this property?')) return;
+        if (!confirm(t('property.actions.deleteConfirm'))) return;
 
         try {
             await apiClient.client.delete(`/properties/${propertyId}`);
-            toast.success('Property deleted successfully');
+            toast.success(t('property.error.deleteSuccess', undefined, 'Property deleted successfully'));
             router.push('/properties');
         } catch (error) {
-            toast.error('Error deleting property');
+            toast.error(t('property.error.deleteFail'));
         }
     };
 
@@ -109,10 +111,10 @@ export default function PropertyDetailPage() {
         setPublishing(true);
         try {
             await apiClient.client.post(`/properties/${propertyId}/publish`);
-            toast.success('Property published successfully!');
+            toast.success(t('property.error.publishSuccess'));
             loadProperty();
         } catch (error: any) {
-            toast.error(error.response?.data?.detail || 'Error publishing property');
+            toast.error(error.response?.data?.detail || t('property.error.publishFail'));
         } finally {
             setPublishing(false);
         }
@@ -125,11 +127,11 @@ export default function PropertyDetailPage() {
                 property_id: propertyId,
                 cover_letter: coverLetter
             });
-            toast.success('Your application has been submitted successfully! ');
+            toast.success(t('property.apply.success'));
             setIsApplying(false);
             setCoverLetter('');
         } catch (error: any) {
-            const msg = error.response?.data?.detail || 'Failed to submit application';
+            const msg = error.response?.data?.detail || t('property.apply.error');
             toast.error(msg);
             if (msg.includes('already applied')) {
                 setIsApplying(false);
@@ -179,7 +181,7 @@ export default function PropertyDetailPage() {
                             onClick={() => router.push('/properties')}
                             className="text-teal-600 hover:text-teal-500 font-medium transition-colors"
                         >
-                            ← Back to Properties
+                            ← {t('property.actions.back')}
                         </button>
                         {isOwner && (
                             <div className="flex gap-3">
@@ -187,22 +189,22 @@ export default function PropertyDetailPage() {
                                     onClick={() => router.push(`/properties/${propertyId}/edit`)}
                                     className="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-xl hover:bg-zinc-200 dark:hover:bg-zinc-700 font-medium transition-colors"
                                 >
-                                    ️ Edit
+                                    ️ {t('property.actions.edit')}
                                 </button>
                                 {property.status === 'draft' && (
                                     <button
                                         onClick={handlePublish}
                                         disabled={publishing}
-                                        className="px-4 py-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-white rounded-xl hover:shadow-sm hover: font-medium disabled:opacity-50 transition-all"
+                                        className="px-4 py-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-xl hover:shadow-sm font-medium disabled:opacity-50 transition-all"
                                     >
-                                        {publishing ? 'Publishing...' : ' Publish'}
+                                        {publishing ? t('property.actions.publishing') : t('property.actions.publish')}
                                     </button>
                                 )}
                                 <button
                                     onClick={handleDelete}
                                     className="px-4 py-2 bg-red-50/50 dark:bg-red-900/10 text-red-600 dark:text-red-400 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/20 font-medium transition-colors border border-red-200 dark:border-red-900/30"
                                 >
-                                    ️ Delete
+                                    ️ {t('property.actions.delete')}
                                 </button>
                             </div>
                         )}
@@ -212,7 +214,7 @@ export default function PropertyDetailPage() {
                         {/* Status Badge */}
                         <div className="mb-4">
                             <span className={`inline-block px-4 py-1.5 rounded-full text-xs font-bold backdrop-blur-md shadow-sm ${property.status === 'active' ? 'bg-emerald-500/90 text-white' : 'bg-amber-500/90 text-white'}`}>
-                                {property.status === 'active' ? ' Published' : ' Draft'}
+                                {property.status === 'active' ? t('property.status.published') : t('property.status.draft')}
                             </span>
                         </div>
 
@@ -284,26 +286,26 @@ export default function PropertyDetailPage() {
 
                                 {/* Property Details */}
                                 <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] border border-white/50 dark:border-white/10 p-6">
-                                    <h2 className="text-xl font-bold mb-4">Property Details</h2>
+                                    <h2 className="text-xl font-bold mb-4">{t('property.detailsTitle')}</h2>
                                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                                         <div className="flex items-center gap-2">
                                             <span className="text-2xl">️</span>
                                             <div>
-                                                <div className="text-sm text-zinc-600 dark:text-zinc-400">Bedrooms</div>
+                                                <div className="text-sm text-zinc-600 dark:text-zinc-400">{t('property.bedrooms')}</div>
                                                 <div className="font-semibold">{property.bedrooms}</div>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <span className="text-2xl"></span>
                                             <div>
-                                                <div className="text-sm text-zinc-600 dark:text-zinc-400">Bathrooms</div>
+                                                <div className="text-sm text-zinc-600 dark:text-zinc-400">{t('property.bathrooms')}</div>
                                                 <div className="font-semibold">{property.bathrooms}</div>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <span className="text-2xl"></span>
                                             <div>
-                                                <div className="text-sm text-zinc-600 dark:text-zinc-400">Size</div>
+                                                <div className="text-sm text-zinc-600 dark:text-zinc-400">{t('property.size')}</div>
                                                 <div translate="no" className="notranslate font-semibold">{property.size_sqm}m²</div>
                                             </div>
                                         </div>
@@ -311,7 +313,7 @@ export default function PropertyDetailPage() {
                                             <div className="flex items-center gap-2">
                                                 <span className="text-2xl"></span>
                                                 <div>
-                                                    <div className="text-sm text-zinc-600 dark:text-zinc-400">Floor</div>
+                                                    <div className="text-sm text-zinc-600 dark:text-zinc-400">{t('property.floor')}</div>
                                                     <div className="font-semibold">{property.floor_number}</div>
                                                 </div>
                                             </div>
@@ -319,8 +321,8 @@ export default function PropertyDetailPage() {
                                         <div className="flex items-center gap-2">
                                             <span className="text-2xl">️</span>
                                             <div>
-                                                <div className="text-sm text-zinc-600 dark:text-zinc-400">Meublé</div>
-                                                <div className="font-semibold">{property.furnished ? 'Oui' : 'Non'}</div>
+                                                <div className="text-sm text-zinc-600 dark:text-zinc-400">{t('property.furnished')}</div>
+                                                <div className="font-semibold">{property.furnished ? t('property.yes') : t('property.no')}</div>
                                             </div>
                                         </div>
                                     </div>
@@ -328,7 +330,7 @@ export default function PropertyDetailPage() {
                                     {/* DPE / GES Energy Ratings */}
                                     {property.dpe_rating && (
                                         <div className="mt-6 pt-6 border-t">
-                                            <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-3"> Diagnostic Énergétique (DPE / GES)</h3>
+                                            <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-3"> {t('property.energyTitle')}</h3>
                                             <div className="flex gap-4">
                                                 <div className="flex-1">
                                                     <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">DPE</div>
@@ -363,10 +365,10 @@ export default function PropertyDetailPage() {
 
                                 {/* Utilities & CAF Eligibility */}
                                 <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] border border-white/50 dark:border-white/10 p-6">
-                                    <h2 className="text-xl font-bold mb-4"> Utilities &amp; Eligibility</h2>
+                                    <h2 className="text-xl font-bold mb-4"> {t('property.utilitiesTitle')}</h2>
                                     <div className="space-y-4">
                                         <div>
-                                            <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-2">Included in Rent:</h3>
+                                            <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-2">{t('property.includedInRent')}</h3>
                                             <div className="flex gap-4">
                                                 <div className={`text-center p-2 rounded-xl ${property.utilities_included?.includes('electricity') ? 'bg-yellow-50 text-yellow-700' : 'bg-zinc-50 dark:bg-zinc-800/50 text-zinc-400 opacity-50'}`}>
                                                     <div className="text-2xl"></div>
@@ -382,11 +384,11 @@ export default function PropertyDetailPage() {
                                                 </div>
                                                 <div className={`text-center p-2 rounded-xl ${property.utilities_included?.includes('internet') ? 'bg-purple-50 text-purple-700' : 'bg-zinc-50 dark:bg-zinc-800/50 text-zinc-400 opacity-50'}`}>
                                                     <div className="text-2xl"></div>
-                                                    <div className="text-xs font-medium">Wifi</div>
+                                                    <div className="text-xs font-medium">{t('property.utilities.wifi')}</div>
                                                 </div>
                                             </div>
                                             <div className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
-                                                {property.utilities_included?.length ? 'Highlighted items are included.' : 'Tenant handles all utility contracts.'}
+                                                {property.utilities_included?.length ? t('property.utilities.includedDesc') : t('property.utilities.notIncludedDesc')}
                                             </div>
                                         </div>
                                     </div>
@@ -395,7 +397,7 @@ export default function PropertyDetailPage() {
                                 {/* Amenities */}
                                 {(amenities.length > 0 || customAmenities.length > 0) && (
                                     <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] border border-white/50 dark:border-white/10 p-6">
-                                        <h2 className="text-xl font-bold mb-4 text-zinc-900 dark:text-white">Amenities</h2>
+                                        <h2 className="text-xl font-bold mb-4 text-zinc-900 dark:text-white">{t('property.amenities')}</h2>
                                         <div className="flex flex-wrap gap-2">
                                             {[...amenities, ...customAmenities].map((amenity: string, idx: number) => (
                                                 <span key={idx} className="px-3 py-1 bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300 rounded-full text-sm font-medium">
@@ -409,16 +411,16 @@ export default function PropertyDetailPage() {
                                 {/* Rooms & Layout */}
                                 {property.room_details && property.room_details.length > 0 && (
                                     <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] border border-white/50 dark:border-white/10 p-6">
-                                        <h2 className="text-xl font-bold mb-4 text-zinc-900 dark:text-white">️ Rooms & Layout</h2>
+                                        <h2 className="text-xl font-bold mb-4 text-zinc-900 dark:text-white">️ {t('property.layout')}</h2>
                                         <div className="space-y-4">
                                             {property.room_details.map((room: any, index: number) => (
                                                 <div key={index} className="p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-zinc-100 dark:border-zinc-700/50">
                                                     <div className="flex items-center justify-between mb-3">
-                                                        <h3 className="font-semibold text-zinc-900 dark:text-white">Bedroom {index + 1}</h3>
+                                                        <h3 className="font-semibold text-zinc-900 dark:text-white">{t('property.bedroom')} {index + 1}</h3>
                                                         <div className="flex gap-2 text-xs text-zinc-500 dark:text-zinc-400">
                                                             {room.surface && <span translate="no" className="notranslate">{room.surface}m²</span>}
-                                                            {room.capacity && <span>• {room.capacity} person{room.capacity > 1 ? 's' : ''}</span>}
-                                                            {room.bedding && room.bedding !== 'None' && <span>• {room.bedding} bed</span>}
+                                                            {room.capacity && <span>• {t(room.capacity > 1 ? 'property.persons' : 'property.person', { count: room.capacity })}</span>}
+                                                            {room.bedding && room.bedding !== 'None' && <span>• {t('property.bed', { count: 1 })}</span>}
                                                         </div>
                                                     </div>
                                                     {room.description && (
@@ -441,11 +443,11 @@ export default function PropertyDetailPage() {
 
                                 {/* Location & Transport */}
                                 <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] border border-white/50 dark:border-white/10 p-6">
-                                    <h2 className="text-xl font-bold mb-4"> Location</h2>
+                                    <h2 className="text-xl font-bold mb-4"> {t('property.location')}</h2>
                                     <p className="text-zinc-700 dark:text-zinc-300 mb-4">{fullAddress}</p>
                                     {publicTransport.length > 0 && (
                                         <div className="mb-4">
-                                            <h3 className="font-semibold text-zinc-900 dark:text-white mb-2"> Public Transport</h3>
+                                            <h3 className="font-semibold text-zinc-900 dark:text-white mb-2"> {t('property.transport')}</h3>
                                             <ul className="space-y-1">
                                                 {publicTransport.slice(0, 10).map((transport: string, idx: number) => (
                                                     <li key={idx} className="text-sm text-zinc-600 dark:text-zinc-400 flex items-start gap-2">
@@ -458,7 +460,7 @@ export default function PropertyDetailPage() {
                                     )}
                                     {nearbyLandmarks.length > 0 && (
                                         <div>
-                                            <h3 className="font-semibold text-zinc-900 dark:text-white mb-2"> Nearby Landmarks</h3>
+                                            <h3 className="font-semibold text-zinc-900 dark:text-white mb-2"> {t('property.landmarks')}</h3>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
                                                 {nearbyLandmarks.slice(0, 12).map((landmark: string, idx: number) => (
                                                     <div key={idx} className="text-sm text-zinc-600 dark:text-zinc-400 flex items-start gap-2">
@@ -478,7 +480,7 @@ export default function PropertyDetailPage() {
                                     <div className="text-center mb-6">
                                         <div translate="no" className="notranslate text-4xl font-bold text-teal-600 dark:text-teal-400 mb-1">€{property.monthly_rent}</div>
                                         <div className="text-zinc-600 dark:text-zinc-400">
-                                            per month {property.charges_included ? (
+                                            {t('property.price.perMonth')} {property.charges_included ? (
                                                 <span className="inline-block px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-bold ml-1">CC</span>
                                             ) : (
                                                 <span className="inline-block px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full text-xs font-bold ml-1">HC</span>
@@ -486,21 +488,21 @@ export default function PropertyDetailPage() {
                                         </div>
                                         {!property.charges_included && property.charges && (
                                             <div className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-                                                Total: <span translate="no" className="notranslate font-semibold text-zinc-800 dark:text-zinc-200">€{(Number(property.monthly_rent) + Number(property.charges)).toFixed(0)}/mo</span>
+                                                {t('property.price.total')} <span translate="no" className="notranslate font-semibold text-zinc-800 dark:text-zinc-200">€{(Number(property.monthly_rent) + Number(property.charges)).toFixed(0)}/{t('property.price.perMonth')}</span>
                                             </div>
                                         )}
                                     </div>
                                     <div className="space-y-3 mb-6 text-sm">
                                         {property.deposit && (
                                             <div className="flex justify-between">
-                                                <span className="text-zinc-600 dark:text-zinc-400">Dépôt de garantie:</span>
+                                                <span className="text-zinc-600 dark:text-zinc-400">{t('property.price.deposit')}</span>
                                                 <span translate="no" className="notranslate font-semibold">€{property.deposit}</span>
                                             </div>
                                         )}
                                         {property.charges && (
                                             <div className="flex justify-between">
-                                                <span className="text-zinc-600 dark:text-zinc-400">Charges:</span>
-                                                <span translate="no" className="notranslate font-semibold">€{property.charges}/mo {property.charges_included ? '(incluses)' : '(en sus)'}</span>
+                                                <span className="text-zinc-600 dark:text-zinc-400">{t('property.price.charges')}</span>
+                                                <span translate="no" className="notranslate font-semibold">€{property.charges}/{t('property.price.perMonth')} {property.charges_included ? t('property.price.included') : t('property.price.excluded')}</span>
                                             </div>
                                         )}
                                         {property.charges_description && (
@@ -510,20 +512,20 @@ export default function PropertyDetailPage() {
                                         )}
                                         {property.available_from && (
                                             <div className="flex justify-between">
-                                                <span className="text-zinc-600 dark:text-zinc-400">Disponible:</span>
-                                                <span className="font-semibold">{new Date(property.available_from).toLocaleDateString('fr-FR')}</span>
+                                                <span className="text-zinc-600 dark:text-zinc-400">{t('property.status.available')}</span>
+                                                <span className="font-semibold">{new Date(property.available_from).toLocaleDateString(t('landing.lang') === 'fr' ? 'fr-FR' : 'en-GB')}</span>
                                             </div>
                                         )}
                                         {/* Guarantor Info */}
                                         <div className="flex justify-between">
-                                            <span className="text-zinc-600 dark:text-zinc-400">Garant:</span>
-                                            <span className="font-semibold">{property.guarantor_required ? 'Requis' : 'Non requis'}</span>
+                                            <span className="text-zinc-600 dark:text-zinc-400">{t('property.guarantor.title')}</span>
+                                            <span className="font-semibold">{property.guarantor_required ? t('property.guarantor.required') : t('property.guarantor.notRequired')}</span>
                                         </div>
                                         {property.guarantor_required && property.accepted_guarantor_types && (
                                             <div className="flex flex-wrap gap-1 mt-1">
                                                 {(Array.isArray(property.accepted_guarantor_types) ? property.accepted_guarantor_types : []).map((type: string) => (
                                                     <span key={type} className="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded text-xs">
-                                                        {type === 'visale' ? '️ Visale' : type === 'garantme' ? ' GarantMe' : type === 'physical' ? ' Personne physique' : type === 'organisation' ? ' Organisme' : type}
+                                                        {type === 'visale' ? t('property.guarantor.visale') : type === 'garantme' ? t('property.guarantor.garantme') : type === 'physical' ? t('property.guarantor.physical') : type === 'organisation' ? t('property.guarantor.organisation') : type}
                                                     </span>
                                                 ))}
                                             </div>
@@ -532,17 +534,17 @@ export default function PropertyDetailPage() {
                                     {!isOwner && (
                                         <div className="space-y-3">
                                             <button onClick={() => setIsApplying(true)} className="w-full py-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-white font-bold rounded-xl hover:shadow-sm transition-all hover:scale-[1.02]">
-                                                 Apply Now
+                                                 {t('property.actions.apply')}
                                             </button>
                                             <button className="w-full py-3 bg-white border-2 border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 font-bold rounded-xl hover:bg-zinc-50 dark:bg-zinc-800/50 transition-all">
-                                                 Message Landlord
+                                                 {t('property.actions.message')}
                                             </button>
                                         </div>
                                     )}
                                     {isOwner && property.status === 'draft' && (
                                         <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
                                             <p className="text-sm text-yellow-800 mb-2">
-                                                ️ This property is not published yet. Click &quot;Publish&quot; to make it visible to tenants.
+                                                ️ {t('property.status.notPublishedNotice')}
                                             </p>
                                         </div>
                                     )}
@@ -570,19 +572,19 @@ export default function PropertyDetailPage() {
                                     )}
                                 </div>
                                 <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] border border-white/50 dark:border-white/10 p-6">
-                                    <h3 className="font-semibold text-zinc-900 dark:text-white mb-3">Property Stats</h3>
+                                    <h3 className="font-semibold text-zinc-900 dark:text-white mb-3">{t('property.status.stats')}</h3>
                                     <div className="space-y-2 text-sm">
                                         <div className="flex justify-between">
-                                            <span className="text-zinc-600 dark:text-zinc-400">Views:</span>
+                                            <span className="text-zinc-600 dark:text-zinc-400">{t('property.status.views')}</span>
                                             <span className="font-semibold">{property.views_count}</span>
                                         </div>
                                         <div className="flex justify-between">
-                                            <span className="text-zinc-600 dark:text-zinc-400">Listed:</span>
-                                            <span className="font-semibold">{new Date(property.created_at).toLocaleDateString()}</span>
+                                            <span className="text-zinc-600 dark:text-zinc-400">{t('property.status.listed')}</span>
+                                            <span className="font-semibold">{new Date(property.created_at).toLocaleDateString(t('landing.lang') === 'fr' ? 'fr-FR' : 'en-GB')}</span>
                                         </div>
                                         {property.published_at && (
                                             <div className="flex justify-between">
-                                                <span className="text-zinc-600 dark:text-zinc-400">Published:</span>
+                                                <span className="text-zinc-600 dark:text-zinc-400">{t('property.status.publishedAt')}</span>
                                                 <span className="font-semibold">{new Date(property.published_at).toLocaleDateString()}</span>
                                             </div>
                                         )}
@@ -596,21 +598,21 @@ export default function PropertyDetailPage() {
                         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
                             <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl rounded-3xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.3)] max-w-lg w-full p-8 border border-white/50 dark:border-white/10">
                                 <div className="flex justify-between items-center mb-4">
-                                    <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">Apply for this Home </h2>
+                                    <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">{t('property.apply.title')} </h2>
                                     <button onClick={() => setIsApplying(false)} className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"></button>
                                 </div>
                                 <p className="text-zinc-600 dark:text-zinc-400 mb-6">
-                                    The landlord will receive your verified profile and documents automatically. Add a personal note to stand out!
+                                    {t('property.apply.desc')}
                                 </p>
                                 <textarea
                                     value={coverLetter}
                                     onChange={(e) => setCoverLetter(e.target.value)}
-                                    placeholder="Hello, I love this apartment because..."
+                                    placeholder={t('property.apply.placeholder')}
                                     className="w-full h-32 px-4 py-3 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900/50 text-zinc-900 dark:text-white placeholder-zinc-500 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 mb-6 resize-none transition-all"
                                 />
                                 <div className="flex gap-3">
                                     <button onClick={() => setIsApplying(false)} className="flex-1 py-3 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl font-medium transition-colors">
-                                        Cancel
+                                        {t('property.apply.cancel')}
                                     </button>
                                     <button
                                         onClick={handleApply}
@@ -618,9 +620,9 @@ export default function PropertyDetailPage() {
                                         className="flex-1 py-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-white rounded-xl font-bold hover:shadow-sm hover: transition-all disabled:opacity-50 flex justify-center items-center gap-2"
                                     >
                                         {submittingApp ? (
-                                            <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Sending...</>
+                                            <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> {t('property.apply.sending')}</>
                                         ) : (
-                                            <><span></span> Send Application</>
+                                            <><span></span> {t('property.apply.send')}</>
                                         )}
                                     </button>
                                 </div>
