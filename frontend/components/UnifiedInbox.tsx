@@ -96,7 +96,7 @@ export default function UnifiedInbox({ onSelectConversation, selectedConversatio
         if (!searchQuery) return true;
         const query = searchQuery.toLowerCase();
         return (
-            conv.other_party_name.toLowerCase().includes(query) ||
+            conv.other_party_name?.toLowerCase().includes(query) ||
             conv.property_title?.toLowerCase().includes(query) ||
             conv.subject?.toLowerCase().includes(query)
         );
@@ -214,7 +214,7 @@ export default function UnifiedInbox({ onSelectConversation, selectedConversatio
                                     <div className="flex items-start gap-3">
                                         {/* Avatar */}
                                         <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-white font-bold">
-                                            {conv.other_party_name.charAt(0).toUpperCase()}
+                                            {conv.other_party_name?.charAt(0).toUpperCase() || '?'}
                                         </div>
 
                                         <div className="flex-1 min-w-0">
