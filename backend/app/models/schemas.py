@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Any, Dict, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
 
 
 class UserRegister(BaseModel):
@@ -62,6 +62,8 @@ class UserResponse(BaseModel):
     trust_score: int
     segment: Optional[str] = None
     preferences: Optional[Dict[str, Any]] = None
+    available_roles: list[str] = ["tenant"]
+    onboarding_status: dict = {}
     onboarding_completed: bool = False
     marketing_consent: bool = False
     contact_preferences: Optional[Dict[str, Any]] = None
@@ -69,6 +71,17 @@ class UserResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+    @model_validator(mode="after")
+    def compute_onboarding(self) -> 'UserResponse':
+        role_str = self.role.value if hasattr(self.role, "value") else str(self.role)
+        if self.onboarding_status is not None:
+            # Override onboarding_completed based on active role
+            self.onboarding_completed = self.onboarding_status.get(role_str, False)
+        return self
+
+class SwitchRoleRequest(BaseModel):
+    role: str
 
 class UserUpdate(BaseModel):
     full_name: Optional[str] = Field(None, min_length=2, max_length=100)

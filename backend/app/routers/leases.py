@@ -39,7 +39,7 @@ class LeaseGenerateRequest(BaseModel):
 class LeaseResponse(BaseModel):
     id: UUID
     property_id: UUID
-    tenant_id: UUID
+    tenant_id: Optional[UUID] = None
     status: str
     start_date: Optional[str] = None
     rent_amount: Optional[float] = None
@@ -313,8 +313,10 @@ async def list_leases(
         # Get all leases where user is landlord or tenant
         from sqlalchemy import or_
 
-        landlord_props = select(Property.id).where(
-            Property.landlord_id == current_user.id
+        landlord_props = (
+            select(Property.id)
+            .where(Property.landlord_id == current_user.id)
+            .scalar_subquery()
         )
         query = query.where(
             or_(
@@ -326,6 +328,16 @@ async def list_leases(
     result = await db.execute(query.order_by(Lease.created_at.desc()))
     leases = result.scalars().all()
 
-    # Quick fix for list response location injection (optional for now, mainly need single get)
-    # Ensuring lazy load doesn't fail
-    return leases
+    # Construct response list and inject location
+    response_list = []
+    for lease in leases:
+        res = LeaseResponse.model_validate(lease)
+        prop = lease.property
+        if prop and prop.latitude and prop.longitude:
+            res.property_location = {
+                "lat": float(prop.latitude),
+                "lng": float(prop.longitude),
+            }
+        response_list.append(res)
+
+    return response_list

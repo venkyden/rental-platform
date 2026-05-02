@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/useAuth';
 import { useSegment, QuickActions, SegmentBadge } from '@/lib/SegmentContext';
 import { CheckCircle2, Clock, ShieldCheck, FileText, Building } from 'lucide-react';
+import RoleSwitcher from '@/components/dashboard/RoleSwitcher';
 
 export default function AgencyDashboard() {
     const { user, logout, loading: authLoading } = useAuth();
@@ -27,36 +28,7 @@ export default function AgencyDashboard() {
 
     return (
         <div className="min-h-screen bg-gray-900">
-            {/* Header - Dark theme for enterprise */}
-            <header className="bg-gray-800 shadow-sm border-b border-gray-700">
-                <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-                    <div>
-                        <div className="flex items-center gap-3">
-                            <h1 className="text-2xl font-bold text-white">
-                                {user?.full_name || 'Agency'}
-                            </h1>
-                            <span className="px-2 py-1 bg-purple-600 text-white text-xs rounded-full">
-                                Enterprise 
-                            </span>
-                        </div>
-                        <span className="text-sm text-gray-400">Admin Console</span>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <button
-                            onClick={() => router.push('/dashboard')}
-                            className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm transition-colors"
-                        >
-                            Personal Mode
-                        </button>
-                        <button
-                            onClick={logout}
-                            className="text-gray-400 hover:text-white"
-                        >
-                            Logout
-                        </button>
-                    </div>
-                </div>
-            </header>
+
 
             <main className="max-w-7xl mx-auto px-4 py-8">
                 {/* Enterprise Quick Actions */}

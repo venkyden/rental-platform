@@ -7,6 +7,7 @@ from sqlalchemy import Float, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import relationship
 
+from sqlalchemy.sql import func
 from app.core.database import Base
 
 
@@ -83,6 +84,10 @@ class Lease(Base):
     signature_data = Column(JSONB, nullable=True)
     landlord_signature = Column(String, nullable=True)  # Base64 PNG
     tenant_signature = Column(String, nullable=True)  # Base64 PNG
+
+    # Metadata
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     # Relationships
     property = relationship("Property", back_populates="leases")

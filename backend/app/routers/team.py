@@ -135,6 +135,36 @@ async def get_team_members(
     return response
 
 
+@router.get("/my-invites", response_model=List[dict])
+async def get_my_invites(
+    current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
+):
+    """Get all pending team invites for the current user."""
+    result = await db.execute(
+        select(TeamMember)
+        .where(
+            and_(
+                TeamMember.email.ilike(current_user.email),
+                TeamMember.status == InviteStatus.PENDING,
+            )
+        )
+    )
+    invites = result.scalars().all()
+
+    response = []
+    for invite in invites:
+        landlord = (await db.execute(select(User).where(User.id == invite.landlord_id))).scalar_one_or_none()
+        response.append({
+            "id": str(invite.id),
+            "landlord_name": landlord.full_name if landlord else "Unknown",
+            "permission_level": invite.permission_level.value,
+            "token": invite.invite_token,
+            "created_at": invite.created_at,
+        })
+    
+    return response
+
+
 @router.post("/members", response_model=TeamMemberDetailResponse)
 async def invite_team_member(
     data: InviteTeamMemberRequest,
@@ -461,6 +491,15 @@ async def accept_invite(
     member.member_user_id = current_user.id
     member.status = InviteStatus.ACTIVE
     member.accepted_at = datetime.utcnow()
+
+    # Unlock Landlord role for the team member if not already unlocked
+    current_roles = list(current_user.available_roles or ["tenant"])
+    if "landlord" not in current_roles:
+        current_roles.append("landlord")
+        current_user.available_roles = current_roles
+        # Also mark landlord onboarding as completed if they are just a team member?
+        # Actually, maybe they should still see the landlord onboarding, or a subset.
+        # For now, let's just unlock the role.
 
     await db.commit()
 

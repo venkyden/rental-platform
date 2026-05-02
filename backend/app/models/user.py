@@ -71,6 +71,13 @@ class User(Base):
     # Onboarding & Segmentation
     segment = Column(String, nullable=True)  # D1/D2/D3/S1/S2/S3
     preferences = Column(JSON, nullable=True)  # User preferences from questionnaire
+    
+    # Track which roles the user has unlocked
+    available_roles = Column(JSON, default=lambda: ["tenant"])
+    # Track onboarding completion per role (e.g. {"tenant": True, "property_manager": False})
+    onboarding_status = Column(JSON, default=dict)
+    
+    # Deprecated: use onboarding_status instead. Kept for backward compatibility
     onboarding_completed = Column(Boolean, default=False)
 
     # GDPR consent tracking

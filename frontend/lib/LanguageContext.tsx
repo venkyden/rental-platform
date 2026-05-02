@@ -6,7 +6,7 @@ import { translations, Language } from './i18n';
 interface LanguageContextType {
     language: Language;
     setLanguage: (lang: Language) => void;
-    t: (key: string, params: Record<string, string | number> | undefined, fallback: string | undefined) => string;
+    t: (key: string, params?: Record<string, string | number>, fallback?: string) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -27,7 +27,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('app-language', lang);
     };
 
-    const t = (key: string, params: Record<string, string | number> | undefined, fallback: string | undefined): string => {
+    const t = (key: string, params?: Record<string, string | number>, fallback?: string): string => {
         const keys = key.split('.');
         let value: any = translations[language];
 

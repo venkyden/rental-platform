@@ -15,7 +15,8 @@ from app.models.schemas import (ForgotPasswordRequest, ForgotEmailRequest, Googl
                                 ResetPasswordRequest, Token, UserLogin,
                                 UserRegister, UserResponse, UserUpdate,
                                 ChangePasswordRequest, RequestEmailChangeRequest,
-                                ConfirmEmailChangeRequest, ContactPreferencesUpdate)
+                                ConfirmEmailChangeRequest, ContactPreferencesUpdate,
+                                SwitchRoleRequest)
 from app.models.user import User
 from app.services.email import email_service
 
@@ -116,6 +117,7 @@ async def register(
         full_name=user_data.full_name,
         phone=user_data.phone.strip() if user_data.phone else None,
         role=user_data.role,
+        available_roles=[user_data.role],
         marketing_consent=user_data.marketing_consent,
         marketing_consent_at=datetime.utcnow() if user_data.marketing_consent else None,
     )
@@ -183,15 +185,14 @@ async def login(
     # Get segment-based redirect
     from app.core.segment_routing import get_redirect_path, get_segment_config
 
-    redirect_path = get_redirect_path(
-        user.segment, user.role.value if hasattr(user.role, "value") else user.role
-    )
-    segment_config = get_segment_config(
-        user.segment, role=user.role.value if hasattr(user.role, "value") else user.role
-    )
+    role_value = user.role.value if hasattr(user.role, "value") else user.role
+    redirect_path = get_redirect_path(user.segment, role_value)
+    segment_config = get_segment_config(user.segment, role=role_value)
 
-    # Redirect users who haven't completed onboarding
-    if not user.onboarding_completed:
+    # Redirect users who haven't completed onboarding for their active role
+    onboarding_status = user.onboarding_status or {}
+    role_onboarded = onboarding_status.get(role_value, False)
+    if not role_onboarded:
         redirect_path = "/onboarding"
 
     audit_logger.info(f"LOGIN_SUCCESS email={user.email} segment={user.segment}")
@@ -201,6 +202,34 @@ async def login(
         "redirect_path": redirect_path,
         "segment": user.segment,
         "segment_name": segment_config.segment_name if segment_config else None,
+        "available_roles": user.available_roles or [role_value],
+    }
+
+
+@router.post("/refresh", response_model=Token)
+async def refresh_token(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Refresh JWT token"""
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": current_user.email, "user_id": str(current_user.id)},
+        expires_delta=access_token_expires,
+    )
+    
+    from app.core.segment_routing import get_redirect_path, get_segment_config
+    role_value = current_user.role.value if hasattr(current_user.role, "value") else current_user.role
+    redirect_path = get_redirect_path(current_user.segment, role_value)
+    segment_config = get_segment_config(current_user.segment, role=role_value)
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "redirect_path": redirect_path,
+        "segment": current_user.segment,
+        "segment_name": segment_config.segment_name if segment_config else None,
+        "available_roles": current_user.available_roles or [role_value],
     }
 
 
@@ -428,6 +457,13 @@ async def google_auth(
 
     # ---- Step 2: Find or create user ----
     try:
+        from app.models.user import UserRole
+        role_str = auth_data.role or "tenant"
+        try:
+            role_enum = UserRole(role_str)
+        except ValueError:
+            role_enum = UserRole.TENANT
+
         result = await db.execute(select(User).where(User.google_id == google_id))
         user = result.scalar_one_or_none()
 
@@ -436,32 +472,41 @@ async def google_auth(
             result = await db.execute(select(User).where(User.email == email))
             user = result.scalar_one_or_none()
 
-            if user:
-                # Link Google account to existing user
+        if user:
+            # Link Google account to existing user if not already linked
+            if not user.google_id:
                 user.google_id = google_id
-                if email_verified:
-                    user.email_verified = True
                 audit_logger.info(f"GOOGLE_LINK email={email}")
-            else:
-                # Create new user — convert role string to UserRole enum
-                from app.models.user import UserRole
+            if email_verified:
+                user.email_verified = True
+            
+            # Contextual Onboarding: Check if they requested a new role
+            requested_role_str = role_enum.value
+            current_roles = user.available_roles or ["tenant"]
+            
+            # If they requested a new role, unlock it and switch to it
+            if requested_role_str not in current_roles:
+                current_roles.append(requested_role_str)
+                # We have to re-assign to trigger SQLAlchemy JSON mutation detection
+                user.available_roles = list(current_roles)
+                audit_logger.info(f"ROLE_UNLOCKED email={email} new_role={requested_role_str}")
+            
+            # Switch their active role to the requested one
+            user.role = role_enum
 
-                role_str = auth_data.role or "tenant"
-                try:
-                    role_enum = UserRole(role_str)
-                except ValueError:
-                    role_enum = UserRole.TENANT
-
-                user = User(
-                    email=email,
-                    google_id=google_id,
-                    full_name=None, # Force user to enter name manually in onboarding
-                    role=role_enum,
-                    email_verified=email_verified,
-                    hashed_password=None,
-                )
-                db.add(user)
-                audit_logger.info(f"GOOGLE_REGISTER email={email} role={role_str}")
+        else:
+            # Create new user
+            user = User(
+                email=email,
+                google_id=google_id,
+                full_name=None, # Force user to enter name manually in onboarding
+                role=role_enum,
+                available_roles=[role_enum.value],
+                email_verified=email_verified,
+                hashed_password=None,
+            )
+            db.add(user)
+            audit_logger.info(f"GOOGLE_REGISTER email={email} role={role_str}")
 
         if user.is_active is False:
             raise HTTPException(
@@ -501,8 +546,10 @@ async def google_auth(
         redirect_path = get_redirect_path(user.segment, role_value)
         segment_config = get_segment_config(user.segment, role=role_value)
 
-        # Redirect users who haven't completed onboarding
-        if not user.onboarding_completed:
+        # Redirect users who haven't completed onboarding for their active role
+        onboarding_status = user.onboarding_status or {}
+        role_onboarded = onboarding_status.get(role_value, False)
+        if not role_onboarded:
             redirect_path = "/onboarding"
 
         audit_logger.info(f"GOOGLE_LOGIN_SUCCESS email={user.email} segment={user.segment}")
@@ -512,6 +559,7 @@ async def google_auth(
             "redirect_path": redirect_path,
             "segment": user.segment,
             "segment_name": segment_config.segment_name if segment_config else None,
+            "available_roles": user.available_roles or [role_value],
         }
     except Exception as e:
         tb = traceback.format_exc()
@@ -715,4 +763,76 @@ async def get_my_segment_config(current_user: User = Depends(get_current_user)):
             "employment_verified": current_user.employment_verified,
             "onboarding_completed": current_user.onboarding_completed,
         },
+    }
+
+
+@router.post("/switch-role")
+async def switch_role(
+    request: SwitchRoleRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Switch the active role for a multi-role user.
+    Returns a fresh access token bound to the new role context."""
+    from app.models.user import UserRole
+    from app.core.segment_routing import get_redirect_path, get_segment_config
+
+    target_role_str = request.role
+    current_roles = current_user.available_roles or []
+
+    # Validate the role exists and is unlocked
+    try:
+        target_role_enum = UserRole(target_role_str)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid role: {target_role_str}",
+        )
+
+    if target_role_str not in current_roles:
+        # Auto-unlock standard roles for existing users
+        if target_role_str in ["tenant", "landlord", "property_manager"]:
+            current_roles.append(target_role_str)
+            current_user.available_roles = current_roles
+            # We don't commit yet, we'll commit below
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Role '{target_role_str}' is restricted and cannot be auto-unlocked.",
+            )
+
+    # Switch the active role
+    current_user.role = target_role_enum
+    await db.commit()
+    await db.refresh(current_user)
+
+    # Generate a fresh JWT token
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": current_user.email, "user_id": str(current_user.id)},
+        expires_delta=access_token_expires,
+    )
+
+    # Compute redirect path based on onboarding status for the new role
+    onboarding_status = current_user.onboarding_status or {}
+    role_onboarded = onboarding_status.get(target_role_str, False)
+
+    if not role_onboarded:
+        redirect_path = "/onboarding"
+    else:
+        role_value = current_user.role.value if hasattr(current_user.role, "value") else current_user.role
+        redirect_path = get_redirect_path(current_user.segment, role_value)
+
+    segment_config = get_segment_config(current_user.segment, role=target_role_str)
+
+    audit_logger.info(f"ROLE_SWITCH email={current_user.email} new_role={target_role_str}")
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "redirect_path": redirect_path,
+        "active_role": target_role_str,
+        "available_roles": current_roles,
+        "segment": current_user.segment,
+        "segment_name": segment_config.segment_name if segment_config else None,
     }

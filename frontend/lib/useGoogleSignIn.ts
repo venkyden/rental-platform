@@ -1,0 +1,115 @@
+import { useEffect, useRef, useCallback } from 'react';
+
+declare global {
+  interface Window {
+    google?: {
+      accounts: {
+        id: {
+          initialize: (config: Record<string, unknown>) => void;
+          renderButton: (element: HTMLElement, config: Record<string, unknown>) => void;
+          prompt: () => void;
+          cancel: () => void;
+        };
+      };
+    };
+    __GSI_INITIALIZED__?: boolean;
+  }
+}
+
+interface UseGoogleSignInOptions {
+  clientId: string | undefined;
+  onSuccess: (credential: string) => void;
+  onError: (error: string) => void;
+  buttonId: string;
+  buttonText?: 'signin_with' | 'signup_with';
+}
+
+export function useGoogleSignIn({
+  clientId,
+  onSuccess,
+  onError,
+  buttonId,
+  buttonText = 'signin_with',
+}: UseGoogleSignInOptions) {
+  const scriptLoadedRef = useRef(false);
+
+  const handleGoogleResponse = useCallback(
+    (response: { credential?: string }) => {
+      if (response.credential) {
+        onSuccess(response.credential);
+      } else {
+        onError('No credential received from Google');
+      }
+    },
+    [onSuccess, onError]
+  );
+
+  useEffect(() => {
+    if (!clientId) return;
+    if (scriptLoadedRef.current) return;
+    scriptLoadedRef.current = true;
+
+    const initializeGSI = () => {
+      if (!window.google) return;
+
+      // Only initialize if not already done globally
+      if (!window.__GSI_INITIALIZED__) {
+        window.google.accounts.id.initialize({
+          client_id: clientId,
+          callback: handleGoogleResponse,
+          auto_select: false,
+          cancel_on_tap_outside: true,
+          ux_mode: 'popup',
+          itp_support: true,
+        });
+        window.__GSI_INITIALIZED__ = true;
+      }
+
+      const buttonDiv = document.getElementById(buttonId);
+      if (buttonDiv) {
+        const containerWidth = buttonDiv.parentElement?.clientWidth || 300;
+        const buttonWidth = Math.max(200, Math.min(400, Math.floor(containerWidth)));
+
+        window.google.accounts.id.renderButton(buttonDiv, {
+          theme: 'outline',
+          size: 'large',
+          width: buttonWidth,
+          text: buttonText,
+          shape: 'pill',
+        });
+      }
+    };
+
+    // Check if script already exists
+    if (document.querySelector('script[src="https://accounts.google.com/gsi/client"]')) {
+      if (window.google) {
+        initializeGSI();
+      } else {
+        // Script is there but google object not yet ready
+        const script = document.querySelector('script[src="https://accounts.google.com/gsi/client"]') as HTMLScriptElement;
+        const existingOnload = script.onload;
+        script.onload = (e) => {
+          if (existingOnload) (existingOnload as any)(e);
+          initializeGSI();
+        };
+      }
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    script.onload = initializeGSI;
+    script.onerror = () => {
+      console.warn('Failed to load Google Sign-In script');
+      onError('Failed to load Google Sign-In script');
+    };
+
+    document.body.appendChild(script);
+
+    return () => {
+        // Cleanup if necessary, though GSI usually stays
+    };
+  }, [clientId, handleGoogleResponse, buttonId, buttonText, onError]);
+}

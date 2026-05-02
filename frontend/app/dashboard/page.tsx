@@ -12,6 +12,7 @@ import { useToast } from '@/lib/ToastContext';
 import { motion, Variants } from 'framer-motion';
 import { Home, Search, ShieldCheck, Mail, UserCircle, LogOut, CheckCircle2, Clock, Building } from 'lucide-react';
 import TenantFeatures from '@/components/dashboard/TenantFeatures';
+import RoleSwitcher from '@/components/dashboard/RoleSwitcher';
 
 const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -154,43 +155,7 @@ export default function DashboardPage() {
     return (
         <ProtectedRoute>
             <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 selection:bg-teal-500/30">
-                {/* Header */}
-                <header className="sticky top-0 z-30 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800">
-                    <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-                        <div className="flex items-center gap-4">
-                            <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">{t('dashboard.title', undefined, undefined)}</h1>
-                            <span className="hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200">
-                                {t(`dashboard.role.${user.role}`, undefined, undefined)}
-                            </span>
-                            {user.role === 'property_manager' && (
-                                <button
-                                    onClick={() => router.push('/dashboard/agency')}
-                                    className="hidden sm:flex items-center gap-2 px-3 py-1 text-sm font-bold text-purple-600 bg-purple-50 hover:bg-purple-100 dark:bg-purple-900/30 dark:hover:bg-purple-900/50 rounded-lg transition-colors ml-2"
-                                >
-                                    <Building className="w-4 h-4" />
-                                    Agency Mode
-                                </button>
-                            )}
-                        </div>
-                        <div className="flex items-center gap-2">
-                            {user.role === 'property_manager' && (
-                                <button
-                                    onClick={() => router.push('/dashboard/agency')}
-                                    className="sm:hidden p-2 text-purple-600 bg-purple-50 dark:bg-purple-900/30 rounded-lg"
-                                >
-                                    <Building className="w-4 h-4" />
-                                </button>
-                            )}
-                            <button
-                                onClick={logout}
-                                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400 transition-colors rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                            >
-                                <LogOut className="w-4 h-4" />
-                                <span className="hidden sm:inline">{t('dashboard.logout', undefined, undefined)}</span>
-                            </button>
-                        </div>
-                    </div>
-                </header>
+
 
                 {/* Main content */}
                 <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">

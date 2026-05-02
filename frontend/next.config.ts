@@ -27,8 +27,10 @@ const nextConfig: NextConfig = {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=(self)',
           },
-          // COOP and COEP headers intentionally omitted —
-          // they conflict with Google Sign-In (GSI) popup/iframe communication.
+          {
+            key: 'Cross-Origin-Opener-Policy',
+            value: 'same-origin-allow-popups',
+          },
         ],
       },
     ];

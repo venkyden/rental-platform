@@ -14,6 +14,8 @@ interface User {
     employment_verified: boolean;
     trust_score: number;
     onboarding_completed?: boolean;
+    available_roles?: string[];
+    onboarding_status?: Record<string, boolean>;
     preferences?: Record<string, any>;
     bio?: string;
     profile_picture_url?: string;
@@ -62,12 +64,24 @@ export function useAuth() {
         router.push('/auth/login');
     }
 
+    async function switchRole(targetRole: string) {
+        const data = await apiClient.switchRole(targetRole);
+        // Re-fetch user profile with updated role context
+        await checkAuth();
+        // Navigate to the redirect path returned by the server
+        if (data.redirect_path) {
+            router.push(data.redirect_path);
+        }
+        return data;
+    }
+
     return {
         user,
         loading,
         login,
         register,
         logout,
+        switchRole,
         isAuthenticated: !!user,
     };
 }

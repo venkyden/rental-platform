@@ -1,30 +1,13 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Eye, EyeOff } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { motion, Variants } from 'framer-motion';
 import { useLanguage } from '@/lib/LanguageContext';
-
-/* ----------------------------------------------------------------
-   Google Identity Services type declaration
-   ---------------------------------------------------------------- */
-declare global {
-    interface Window {
-        google?: {
-            accounts: {
-                id: {
-                    initialize: (config: Record<string, unknown>) => void;
-                    renderButton: (element: HTMLElement, config: Record<string, unknown>) => void;
-                    prompt: () => void;
-                    cancel: () => void;
-                };
-            };
-        };
-    }
-}
+import { useGoogleSignIn } from '@/lib/useGoogleSignIn';
 
 /* ----------------------------------------------------------------
    Framer-motion variants
@@ -52,8 +35,6 @@ export default function LoginPage() {
     const { t } = useLanguage();
     const router = useRouter();
 
-    const scriptLoadedRef = useRef(false);
-
     /* ---------- Auto-redirect if already logged in ---------- */
     useEffect(() => {
         const token = localStorage.getItem('access_token');
@@ -65,17 +46,12 @@ export default function LoginPage() {
 
     /* ---------- Google callback ---------- */
     const handleGoogleResponse = useCallback(
-        async (response: { credential?: string }) => {
-            if (!response.credential) {
-                setError(t('auth.login.error.google', undefined, undefined));
-                return;
-            }
-
+        async (credential: string) => {
             setError('');
             setGoogleLoading(true);
 
             try {
-                const result = await apiClient.googleLogin(response.credential);
+                const result = await apiClient.googleLogin(credential);
                 const redirectPath = result.redirect_path || '/dashboard';
                 router.push(redirectPath);
             } catch (err: unknown) {
@@ -90,57 +66,24 @@ export default function LoginPage() {
                 setGoogleLoading(false);
             }
         },
-        [router],
+        [router, t],
     );
 
-    /* ---------- Load Google GSI script ---------- */
-    useEffect(() => {
-        if (scriptLoadedRef.current) return;
-        scriptLoadedRef.current = true;
-
-        const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-        if (!clientId) return;
-
-        const script = document.createElement('script');
-        script.src = 'https://accounts.google.com/gsi/client';
-        script.async = true;
-        script.defer = true;
-
-        script.onload = () => {
-            if (!window.google) return;
-
-            window.google.accounts.id.initialize({
-                client_id: clientId,
-                callback: handleGoogleResponse,
-                auto_select: false,
-                cancel_on_tap_outside: true,
-                ux_mode: 'popup',
-                itp_support: true,
-            });
-
-            const buttonDiv = document.getElementById('google-signin-btn');
-            if (buttonDiv) {
-                const containerWidth =
-                    buttonDiv.parentElement?.clientWidth || window.innerWidth - 64;
-                const buttonWidth = Math.max(200, Math.min(400, Math.floor(containerWidth)));
-
-                window.google.accounts.id.renderButton(buttonDiv, {
-                    theme: 'outline',
-                    size: 'large',
-                    width: buttonWidth,
-                    text: 'signin_with',
-                    shape: 'pill',
-                });
+    /* ---------- Setup Google Sign-In ---------- */
+    useGoogleSignIn({
+        clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+        buttonId: 'google-signin-btn',
+        buttonText: 'signin_with',
+        onSuccess: handleGoogleResponse,
+        onError: (msg: string) => {
+            // Only show error if it's not just a script loading issue (could be adblock)
+            if (msg.includes('script')) {
+                 console.warn(msg);
+            } else {
+                 setError(msg);
             }
-        };
-
-        script.onerror = () => {
-            console.warn('Failed to load Google Sign-In script');
-            setError(t('auth.login.error.googleScript', undefined, undefined));
-        };
-
-        document.body.appendChild(script);
-    }, [handleGoogleResponse]);
+        },
+    });
 
     /* ---------- Email/password submit ---------- */
     async function handleSubmit(e: React.FormEvent) {

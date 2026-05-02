@@ -6,6 +6,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useToast } from '@/lib/ToastContext';
 import NotificationBell from '@/components/NotificationBell';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import RoleSwitcher from '@/components/dashboard/RoleSwitcher';
 import Link from 'next/link';
 
 export default function Navbar() {
@@ -69,6 +70,10 @@ export default function Navbar() {
 
                 {/* Right Side Actions */}
                 <div className="flex items-center gap-4">
+                    <RoleSwitcher 
+                        currentRole={user.role} 
+                        availableRoles={user.available_roles || ["tenant"]} 
+                    />
                     <LanguageSwitcher />
                     <NotificationBell />
 

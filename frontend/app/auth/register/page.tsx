@@ -7,24 +7,7 @@ import { Eye, EyeOff, User, Home, Building } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { motion, Variants } from 'framer-motion';
 import { useLanguage } from '@/lib/LanguageContext';
-
-/* ----------------------------------------------------------------
-   Google Identity Services type declaration
-   ---------------------------------------------------------------- */
-declare global {
-    interface Window {
-        google?: {
-            accounts: {
-                id: {
-                    initialize: (config: Record<string, unknown>) => void;
-                    renderButton: (element: HTMLElement, config: Record<string, unknown>) => void;
-                    prompt: () => void;
-                    cancel: () => void;
-                };
-            };
-        };
-    }
-}
+import { useGoogleSignIn } from '@/lib/useGoogleSignIn';
 
 /* ----------------------------------------------------------------
    Framer-motion variants
@@ -62,25 +45,19 @@ export default function RegisterPage() {
     const { t } = useLanguage();
     const router = useRouter();
 
-    const scriptLoadedRef = useRef(false);
     // Use a ref so the GSI callback always reads the latest role
     const roleRef = useRef(formData.role);
     roleRef.current = formData.role;
 
     /* ---------- Google callback ---------- */
     const handleGoogleResponse = useCallback(
-        async (response: { credential?: string }) => {
-            if (!response.credential) {
-                setError(t('auth.login.error.google', undefined, undefined));
-                return;
-            }
-
+        async (credential: string) => {
             setError('');
             setGoogleLoading(true);
 
             try {
                 const roleToUse = roleRef.current || 'tenant';
-                const result = await apiClient.googleLogin(response.credential, roleToUse);
+                const result = await apiClient.googleLogin(credential, roleToUse);
                 router.push(result.redirect_path || '/dashboard');
             } catch (err: unknown) {
                 const axiosErr = err as { response?: { data?: { detail?: string } } };
@@ -94,57 +71,23 @@ export default function RegisterPage() {
                 setGoogleLoading(false);
             }
         },
-        [router],
+        [router, t],
     );
 
-    /* ---------- Load Google GSI script ---------- */
-    useEffect(() => {
-        if (scriptLoadedRef.current) return;
-        scriptLoadedRef.current = true;
-
-        const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-        if (!clientId) return;
-
-        const script = document.createElement('script');
-        script.src = 'https://accounts.google.com/gsi/client';
-        script.async = true;
-        script.defer = true;
-
-        script.onload = () => {
-            if (!window.google) return;
-
-            window.google.accounts.id.initialize({
-                client_id: clientId,
-                callback: handleGoogleResponse,
-                auto_select: false,
-                cancel_on_tap_outside: true,
-                ux_mode: 'popup',
-                itp_support: true,
-            });
-
-            const buttonDiv = document.getElementById('google-signup-btn');
-            if (buttonDiv) {
-                const containerWidth =
-                    buttonDiv.parentElement?.clientWidth || window.innerWidth - 64;
-                const buttonWidth = Math.max(200, Math.min(400, Math.floor(containerWidth)));
-
-                window.google.accounts.id.renderButton(buttonDiv, {
-                    theme: 'outline',
-                    size: 'large',
-                    width: buttonWidth,
-                    text: 'signup_with',
-                    shape: 'pill',
-                });
+    /* ---------- Setup Google Sign-In ---------- */
+    useGoogleSignIn({
+        clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+        buttonId: 'google-signup-btn',
+        buttonText: 'signup_with',
+        onSuccess: handleGoogleResponse,
+        onError: (msg: string) => {
+            if (msg.includes('script')) {
+                console.warn(msg);
+            } else {
+                setError(msg);
             }
-        };
-
-        script.onerror = () => {
-            console.warn('Failed to load Google Sign-In script');
-            setError(t('auth.login.error.googleScript', undefined, undefined));
-        };
-
-        document.body.appendChild(script);
-    }, [handleGoogleResponse]);
+        },
+    });
 
     /* ---------- Form helpers ---------- */
     function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
@@ -272,14 +215,14 @@ export default function RegisterPage() {
                         <button
                             key={role.id}
                             type="button"
-                            onClick={() => setFormData({ ...formData, role: role.id as 'tenant' | 'landlord' })}
+                            onClick={() => setFormData({ ...formData, role: role.id as any })}
                             className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${
                                 formData.role === role.id
                                     ? 'border-teal-500 bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-300'
                                     : 'border-zinc-200 dark:border-zinc-800 hover:border-teal-200 dark:hover:border-teal-800 text-zinc-700 dark:text-zinc-400'
                             }`}
                         >
-                            <div className="mb-2 text-zinc-500 dark:text-zinc-400 group-hover:text-teal-500 transition-colors">{role.icon}</div>
+                            <div className="mb-2 text-zinc-500 dark:text-zinc-400 transition-colors">{role.icon}</div>
                             <span className="text-sm font-medium">{role.label}</span>
                         </button>
                     ))}

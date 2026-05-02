@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import OnboardingQuestionnaire from '@/components/OnboardingQuestionnaire';
@@ -95,11 +95,16 @@ export default function OnboardingPage() {
                             {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
                         </div>
                     ) : (
-                        <p className="text-xl text-gray-600 dark:text-zinc-400 mb-8">
-                            We'll ask you a few quick questions to personalize your experience.
-                            <br />
-                            <span className="text-sm text-gray-500 dark:text-zinc-500 mt-2 block">This takes about 2 minutes.</span>
-                        </p>
+                        <>
+                            <p className="text-xl text-gray-600 dark:text-zinc-400 mb-8">
+                                We'll ask you a few quick questions to personalize your experience.
+                                <br />
+                                <span className="text-sm text-gray-500 dark:text-zinc-500 mt-2 block">This takes about 2 minutes.</span>
+                            </p>
+
+                            {/* Pending Invites Section */}
+                            <PendingInvitesSection />
+                        </>
                     )}
 
                     <button
@@ -128,4 +133,43 @@ export default function OnboardingPage() {
     }
 
     return null;
+}
+
+function PendingInvitesSection() {
+    const [invites, setInvites] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const router = useRouter();
+
+    useEffect(() => {
+        apiClient.client.get('/team/my-invites')
+            .then(res => setInvites(res.data))
+            .catch(err => console.error('Failed to fetch invites:', err))
+            .finally(() => setLoading(false));
+    }, []);
+
+    if (loading || invites.length === 0) return null;
+
+    return (
+        <div className="mb-8 p-4 bg-teal-50 dark:bg-teal-900/20 border border-teal-100 dark:border-teal-900/50 rounded-2xl text-left">
+            <h3 className="text-sm font-bold text-teal-900 dark:text-teal-100 mb-2 flex items-center gap-2">
+                <span className="flex h-2 w-2 rounded-full bg-teal-500 animate-pulse"></span>
+                Pending Invitations
+            </h3>
+            <div className="space-y-3">
+                {invites.map(invite => (
+                    <div key={invite.id} className="flex items-center justify-between gap-4">
+                        <div className="text-sm text-teal-800 dark:text-teal-200">
+                            <strong>{invite.landlord_name}</strong> invited you to join their team.
+                        </div>
+                        <button
+                            onClick={() => router.push(`/invite/${invite.token}`)}
+                            className="px-3 py-1.5 bg-teal-600 text-white text-xs font-bold rounded-lg hover:bg-teal-700 transition-colors whitespace-nowrap"
+                        >
+                            View Invite
+                        </button>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
 }

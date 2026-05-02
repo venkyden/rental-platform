@@ -29,7 +29,7 @@ export default function RoomivoBrand({
         lg: { icon: 'w-20 h-20', text: 'text-4xl', tagline: 'text-base', svg: 52, radius: 16 },
     };
 
-    const s = sizes[size];
+    const s = sizes[size] || sizes.md;
 
     return (
         <div className={`flex flex-col items-center gap-2 ${className}`}>

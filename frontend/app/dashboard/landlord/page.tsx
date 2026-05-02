@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/useAuth';
 import { useSegment, QuickActions, SegmentBadge, FeatureGate } from '@/lib/SegmentContext';
+import RoleSwitcher from '@/components/dashboard/RoleSwitcher';
 
 export default function LandlordDashboard() {
     const { user, loading: authLoading } = useAuth();
@@ -38,6 +39,7 @@ export default function LandlordDashboard() {
                             <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Landlord Dashboard</span>
                         </div>
                     </div>
+
                 </div>
             </div>
 

@@ -143,14 +143,32 @@ async def list_properties(
             # Note: This depends on how amenities are stored (list of strings)
             filters.append(Property.amenities.contains([amenity]))
 
-    if landlord_id:
-        filters.append(Property.landlord_id == landlord_id)
-
-    # Status filtering: users can only see their own drafts
-    if current_user and status == "draft":
-        filters.append(
-            and_(Property.status == "draft", Property.landlord_id == current_user.id)
+    # Default behavior for landlords/team members: show properties they own or are members of
+    is_management_role = current_user and current_user.role in ["landlord", "property_manager"]
+    
+    if is_management_role and not landlord_id:
+        # If no specific landlord_id is requested, show EVERYTHING the user has access to
+        from app.models.team import TeamMember, TeamMemberProperty
+        
+        # Subquery for properties via team membership
+        team_prop_ids = select(TeamMemberProperty.property_id).join(
+            TeamMember, TeamMember.id == TeamMemberProperty.team_member_id
+        ).where(
+            and_(
+                TeamMember.member_user_id == current_user.id,
+                TeamMember.status == "active"
+            )
         )
+        
+        # Combine owned properties and team properties
+        filters.append(
+            and_(
+                (Property.landlord_id == current_user.id) | (Property.id.in_(team_prop_ids)),
+                Property.status == (status if status else "active")
+            )
+        )
+    elif landlord_id:
+        filters.append(Property.landlord_id == landlord_id)
     elif status:
         filters.append(Property.status == status)
     else:
@@ -232,11 +250,35 @@ async def update_property(
             status_code=status.HTTP_404_NOT_FOUND, detail="Property not found"
         )
 
-    # Check ownership
-    if property_obj.landlord_id != current_user.id:
+    # Check ownership or team permissions
+    has_permission = property_obj.landlord_id == current_user.id
+    
+    if not has_permission:
+        # Check team access with FULL_ACCESS permission
+        from app.models.team import TeamMember, TeamMemberProperty, PermissionLevel
+        
+        team_access = (await db.execute(
+            select(TeamMemberProperty).join(
+                TeamMember, TeamMember.id == TeamMemberProperty.team_member_id
+            ).where(
+                and_(
+                    TeamMember.member_user_id == current_user.id,
+                    TeamMemberProperty.property_id == property_id,
+                    TeamMember.status == "active"
+                )
+            )
+        )).scalar_one_or_none()
+        
+        if team_access:
+            # Use override if exists, otherwise default member level
+            perm = team_access.permission_override or team_access.team_member.permission_level
+            if perm == PermissionLevel.FULL_ACCESS:
+                has_permission = True
+
+    if not has_permission:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You can only edit your own properties",
+            detail="You do not have permission to edit this property",
         )
 
     # Update fields
@@ -300,11 +342,34 @@ async def publish_property(
             status_code=status.HTTP_404_NOT_FOUND, detail="Property not found"
         )
 
-    # Check ownership
-    if property_obj.landlord_id != current_user.id:
+    # Check ownership or team permissions
+    has_permission = property_obj.landlord_id == current_user.id
+    
+    if not has_permission:
+        # Check team access with FULL_ACCESS permission
+        from app.models.team import TeamMember, TeamMemberProperty, PermissionLevel
+        
+        team_access = (await db.execute(
+            select(TeamMemberProperty).join(
+                TeamMember, TeamMember.id == TeamMemberProperty.team_member_id
+            ).where(
+                and_(
+                    TeamMember.member_user_id == current_user.id,
+                    TeamMemberProperty.property_id == property_id,
+                    TeamMember.status == "active"
+                )
+            )
+        )).scalar_one_or_none()
+        
+        if team_access:
+            perm = team_access.permission_override or team_access.team_member.permission_level
+            if perm == PermissionLevel.FULL_ACCESS:
+                has_permission = True
+
+    if not has_permission:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You can only publish your own properties",
+            detail="You do not have permission to publish this property",
         )
 
     # Check per-room media coverage

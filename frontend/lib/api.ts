@@ -137,6 +137,18 @@ class ApiClient {
         return response.data;
     }
 
+    async switchRole(targetRole: string) {
+        const response = await this.client.post('/auth/switch-role', {
+            role: targetRole,
+        });
+
+        if (response.data.access_token) {
+            this.setToken(response.data.access_token);
+        }
+
+        return response.data;
+    }
+
     async forgotPassword(email: string) {
         const response = await this.client.post('/auth/forgot-password', { email });
         return response.data;

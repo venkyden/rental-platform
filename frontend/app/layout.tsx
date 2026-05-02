@@ -31,6 +31,8 @@ export const viewport: Viewport = {
   maximumScale: 1,
 };
 
+import Script from "next/script";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -38,6 +40,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr">
+      <head>
+        {/* Load Google Identity Services script once */}
+        <Script 
+          src="https://accounts.google.com/gsi/client" 
+          strategy="afterInteractive"
+        />
+      </head>
       <body
         className={`font-sans antialiased`}
       >
