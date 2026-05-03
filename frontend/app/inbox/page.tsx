@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import PremiumLayout from '@/components/PremiumLayout';
 import UnifiedInbox from '@/components/UnifiedInbox';
 import ConversationView from '@/components/ConversationView';
 import { Mail } from 'lucide-react';

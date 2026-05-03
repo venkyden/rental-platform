@@ -1,6 +1,9 @@
 import { motion } from 'framer-motion';
 import { ChevronRight, Shield, Zap, Globe, Mail, Building, Users, FileText } from 'lucide-react';
 import { BRAND } from '@/lib/constants';
+import { useLanguage } from '@/lib/LanguageContext';
+import Navbar from '@/components/Navbar';
+import Link from 'next/link';
 
 export default function HomePage() {
   const { t, language } = useLanguage();

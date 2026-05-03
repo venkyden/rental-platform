@@ -209,3 +209,8 @@ class MediaUploadMetadata(BaseModel):
     watermark_address: str = ""
     room_index: Optional[int] = None  # which room this media belongs to
     room_label: Optional[str] = None
+
+class PropertyMatchResponse(PropertyResponse):
+    """Schema for property response with match details"""
+    match_score: int
+    match_breakdown: dict

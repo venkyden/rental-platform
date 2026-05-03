@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { apiClient } from '@/lib/api';
 import { useLanguage } from '@/lib/LanguageContext';
-import { X } from 'lucide-react';
+import { X, ShieldCheck, CheckCircle2 } from 'lucide-react';
 
 interface GLIQuoteWidgetProps {
     monthlyRent: number;

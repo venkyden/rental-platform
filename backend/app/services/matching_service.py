@@ -5,7 +5,8 @@ Implements "Soft Scoring" logic (Weighted Preferences) as per Differentiation St
 """
 
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
+from decimal import Decimal
 
 from app.models.property import Property
 from app.models.user import User
@@ -39,80 +40,64 @@ class MatchingService:
     def calculate_match_details(self, tenant: User, property: Property) -> dict:
         """
         Calculate detailed match score breakdown.
-        Returns: {
-            "score": int,
-            "breakdown": {
-                "preference": "perfect" | "partial" | "mismatch",
-                "affordability": "great" | "stretch" | "expensive",
-                "location": "exact" | "nearby" | "miss",
-                "timing": "perfect" | "late" | "early"
-            }
-        }
+        Weights (Total 100 points):
+        - Affordability: 30
+        - Location: 20
+        - Tenant Type: 20
+        - CAF Match: 10
+        - Guarantor Match: 10
+        - Timing: 10
+        - Bonuses (Amenities, Surface Area): Extra points clamped to 100
         """
         score = 0.0
         breakdown = {}
+        prefs = tenant.preferences or {}
 
-        # 1. Tenant Preference (30 points)
+        # 1. Tenant Preference / Identity (20 points)
         accepted_types = property.accepted_tenant_types or []
+        tenant_type = self._map_situation_to_type(prefs)
 
         if not accepted_types:
-            score += 30
+            score += 20
             breakdown["preference"] = "perfect"
-        elif self._map_situation_to_type(tenant.preferences or {}) in accepted_types:
-            score += 30
+        elif tenant_type in accepted_types:
+            score += 20
             breakdown["preference"] = "perfect"
         else:
-            score += 10
+            # Check for partial matches or fallback
+            score += 5
             breakdown["preference"] = "partial"
 
-        # 2. Affordability (40 points)
-        tenant_budget = (tenant.preferences or {}).get("budget", 0)
-        # Total rent: for CC, charges already included in monthly_rent
+        # 2. Affordability (30 points)
+        tenant_budget = float(prefs.get("budget") or 0)
+        # Total rent calculation
         if getattr(property, "charges_included", False):
             rent = float(property.monthly_rent or 0)
         else:
             rent = float(property.monthly_rent or 0) + float(property.charges or 0)
 
-        if rent <= tenant_budget:
-            score += 40
-            breakdown["affordability"] = "great"
-        elif rent <= tenant_budget * 1.15:
-            score += 25
-            breakdown["affordability"] = "stretch"
-        elif rent <= tenant_budget * 1.3:
-            score += 10
-            breakdown["affordability"] = "expensive"
+        if tenant_budget > 0:
+            if rent <= tenant_budget:
+                score += 30
+                breakdown["affordability"] = "great"
+            elif rent <= tenant_budget * 1.15:
+                score += 15
+                breakdown["affordability"] = "stretch"
+            elif rent <= tenant_budget * 1.3:
+                score += 5
+                breakdown["affordability"] = "expensive"
+            else:
+                score += 0
+                breakdown["affordability"] = "impossible"
         else:
-            score += 0
-            breakdown["affordability"] = "impossible"
+            # No budget set? Default score
+            score += 15
+            breakdown["affordability"] = "unknown"
 
-        # 3. Location (15 points)
-        # Check both standard location and university city (from onboarding)
-        wanted_location = (tenant.preferences or {}).get("location", "").lower()
-
-        # New Radius Preference from Onboarding
-        location_preference = (tenant.preferences or {}).get("location_preference")
-
-        university_info = (tenant.preferences or {}).get("university", {})
-        university_city = (
-            university_info.get("city", "").lower()
-            if isinstance(university_info, dict)
-            else ""
-        )
-        university_name = (
-            university_info.get("university_name", "").lower()
-            if isinstance(university_info, dict)
-            else ""
-        )
-        office_location = (tenant.preferences or {}).get("office_location", "").lower()
-
-        prop_city = (property.city or "").lower()
-        prop_landmarks = str(property.nearby_landmarks or "").lower()
-        prop_transport = str(property.public_transport or "").lower()
-
+        # 3. Location (20 points)
+        location_preference = prefs.get("location_preference")
         location_match = False
 
-        # Priority 1: Geospatial Radius Match (The "Uber" Logic)
         if (
             location_preference
             and isinstance(location_preference, dict)
@@ -121,7 +106,6 @@ class MatchingService:
         ):
             target_lat = location_preference.get("lat")
             target_lng = location_preference.get("lng")
-            # Enforce Max Radius of 50km (50,000m) to prevent abuse
             raw_radius = location_preference.get("radius", 5000)
             radius = min(int(raw_radius), 50000)
 
@@ -131,165 +115,142 @@ class MatchingService:
                 )
 
                 if distance <= radius:
-                    score += 15
+                    score += 20
                     breakdown["location"] = "exact_geo"
                     location_match = True
                 elif distance <= radius * 1.5:
-                    score += 10
+                    score += 12
                     breakdown["location"] = "nearby_geo"
                     location_match = True
 
-        # Priority 2: Text-based fallback (if no geospatial match found yet)
         if not location_match:
-            if not wanted_location and not university_city and not office_location:
-                # No preference at all? (Shouldn't happen with new onboarding, but failsafe)
+            # Text-based fallback
+            wanted_location = str(prefs.get("location") or "").lower()
+            prop_city = (property.city or "").lower()
+            
+            if wanted_location and wanted_location in prop_city:
+                score += 15
+                breakdown["location"] = "exact_city"
+            else:
+                score += 0
+                breakdown["location"] = "miss"
+
+        # 4. CAF Eligibility Match (10 points)
+        # Tenant preference: 'yes', 'no'
+        tenant_caf_pref = prefs.get("caf_preference")
+        prop_caf_eligible = getattr(property, "caf_eligible", False)
+
+        if tenant_caf_pref == "yes":
+            if prop_caf_eligible:
+                score += 10
+                breakdown["caf"] = "match"
+            else:
+                # Penalty for not being eligible when user wants it
+                score -= 5
+                breakdown["caf"] = "mismatch"
+        elif tenant_caf_pref == "no":
+            if not prop_caf_eligible:
+                score += 5  # Small boost for matching "no" preference
+                breakdown["caf"] = "match_no"
+            else:
+                breakdown["caf"] = "neutral"
+        else:
+            # If not specified, neutral or slight boost if property is eligible (added value)
+            if prop_caf_eligible:
                 score += 5
-                breakdown["location"] = "broad"
-                location_match = True
-            elif university_city and university_city in prop_city:
-                score += 15
-                breakdown["location"] = "exact_city"
-                location_match = True
-            elif wanted_location in prop_city or prop_city in wanted_location:
-                score += 15
-                breakdown["location"] = "exact_city"
-                location_match = True
-            elif office_location and office_location in prop_city:
-                score += 12
-                breakdown["location"] = "nearby_city"
-                location_match = True
+            breakdown["caf"] = "not_specified"
 
-        if not location_match:
-            score += 0  # Explicit 0 for miss
-            breakdown["location"] = "miss"
+        # 5. Guarantor Match (10 points)
+        # Check tenant's guarantor types against property accepted types
+        tenant_guarantors = prefs.get("accepted_guarantees") or []
+        if not isinstance(tenant_guarantors, list):
+            tenant_guarantors = []
+            
+        prop_guarantors = property.accepted_guarantor_types or []
+        prop_guarantor_required = getattr(property, "guarantor_required", False)
 
-        # Bonus: Check if university/school name appears in property landmarks or transport
-        # This helps match manual entries with API-enriched property data
-        if university_name and len(university_name) > 3:
-            # Split name into words and check for significant matches
-            uni_keywords = [word for word in university_name.split() if len(word) > 3]
-            for keyword in uni_keywords:
-                if keyword in prop_landmarks or keyword in prop_transport:
-                    score += 8  # Bonus for school proximity match
-                    breakdown["school_proximity"] = "match"
-                    break
+        if not prop_guarantor_required:
+            score += 10
+            breakdown["guarantor"] = "not_required"
+        elif any(g in prop_guarantors for g in tenant_guarantors):
+            score += 10
+            breakdown["guarantor"] = "match"
+        elif not tenant_guarantors:
+            score += 0
+            breakdown["guarantor"] = "missing_tenant_info"
+        else:
+            score -= 5
+            breakdown["guarantor"] = "mismatch"
 
-        # 4. Availability (15 points)
-        move_in_req = (tenant.preferences or {}).get("move_in_timeline", "flexible")
+        # 6. Timing (10 points)
+        move_in_req = prefs.get("move_in_timeline", "flexible")
         avail_date = property.available_from
 
         if not avail_date:
-            score += 15
-            breakdown["timing"] = "perfect"
+            score += 10
+            breakdown["timing"] = "flexible"
         else:
             days_until_avail = (avail_date - datetime.utcnow().date()).days
             if move_in_req == "asap" and days_until_avail > 14:
-                score -= 10  # Penality but NOT hidden
-                breakdown["timing"] = "late"
-            elif move_in_req == "soon" and days_until_avail > 45:
                 score -= 5
                 breakdown["timing"] = "late"
             else:
-                score += 15
+                score += 10
                 breakdown["timing"] = "perfect"
 
-        # 5. Granular Features (Bonus Points: +2 per match)
-        # "The number should explain itself. If it's 50%, what specs matched?"
+        # --- Bonuses ---
 
-        # Support both 'amenities' and 'must_have_amenities' (from onboarding questionnaire)
-        wanted_amenities = (tenant.preferences or {}).get("amenities", []) or (
-            tenant.preferences or {}
-        ).get("must_have_amenities", [])
-        wanted_landmarks = (tenant.preferences or {}).get(
-            "landmarks", []
-        )  # e.g. ['hospital', 'metro']
+        # 7. Surface Area Bonus (Max 10 points)
+        min_surface = float(prefs.get("min_surface_area") or 0)
+        prop_surface = float(property.size_sqm or 0)
+        if min_surface > 0 and prop_surface > 0:
+            if prop_surface >= min_surface:
+                # Score based on how much it exceeds or meets
+                score += min(10, (prop_surface / min_surface) * 2)
+                breakdown["surface"] = "match"
+            else:
+                # Penalty for being too small
+                score -= min(10, (1 - (prop_surface / min_surface)) * 20)
+                breakdown["surface"] = "too_small"
 
-        prop_amenities = (property.amenities or []) + (
-            property.utilities_included or []
-        )
-        # Simplify amenities to lowercase set for matching
-        prop_feat_set = {str(a).lower() for a in prop_amenities}
-
-        # Check Amenities
-        matched_feats = []
-        missing_feats = []
-
+        # 8. Amenities Bonus (+2 per match)
+        wanted_amenities = prefs.get("must_have_amenities") or []
+        prop_amenities = (property.amenities or [])
+        
+        matched_amenities = []
         for want in wanted_amenities:
-            # Fuzzy match? strictly text for now
-            if want.lower() in prop_feat_set:
-                score += 5  # High value for specific requests
-                matched_feats.append(want)
-            else:
-                missing_feats.append(want)
+            if want in prop_amenities:
+                score += 2
+                matched_amenities.append(want)
+        
+        breakdown["matched_features"] = matched_amenities
 
-        # Check Landmarks (Simple Keyword check in JSONB)
-        prop_landmarks = (
-            str(property.nearby_landmarks or "").lower()
-            + str(property.public_transport or "").lower()
-        )
-        for want in wanted_landmarks:
-            if want.lower() in prop_landmarks:
-                score += 5
-                matched_feats.append(want)
-            else:
-                missing_feats.append(want)
+        # Final score clamping
+        final_score = max(0, min(100, int(score)))
+        
+        return {
+            "score": final_score,
+            "breakdown": breakdown
+        }
 
-        # 6. Transport & Services Matching (NEW - Smart Onboarding)
-        # Check if tenant's required transport/services are near the property
-        tenant_transport_needs = (tenant.preferences or {}).get("transport_needs", [])
-        tenant_service_needs = (tenant.preferences or {}).get("service_needs", [])
-
-        prop_transport_text = str(property.public_transport or "").lower()
-        prop_landmarks_text = str(property.nearby_landmarks or "").lower()
-
-        for transport in tenant_transport_needs:
-            if transport.lower() in prop_transport_text:
-                score += 5
-                matched_feats.append(f"🚇 {transport}")
-
-        for service in tenant_service_needs:
-            if service.lower() in prop_landmarks_text:
-                score += 5
-                matched_feats.append(f"🏪 {service}")
-
-        breakdown["matched_features"] = matched_feats
-        breakdown["missing_features"] = missing_feats
-
-        # Calculate final score with clear breakdown
-        # Base score (preference, affordability, location, timing) max = 100
-        # Bonus features and penalties adjust relative to 100
-        base_score = max(0, min(100, int(score)))
-
-        # Store raw score for debugging if needed
-        breakdown["raw_score"] = int(score)
-        breakdown["clamped"] = score != base_score
-
-        return {"score": base_score, "breakdown": breakdown}
-
-    # Backward compatibility wrapper if needed, but we'll update usage
     def calculate_match_score(self, tenant: User, property: Property) -> int:
         return self.calculate_match_details(tenant, property)["score"]
 
     def _map_situation_to_type(self, prefs: dict) -> str:
         """Map questionnaire preferences to expected property accepted types"""
-        contract = prefs.get("contract_type", "").lower()
-        situation = prefs.get("situation", "").lower()
-
-        # Priority 1: Clear Contract Type Match
+        contract = str(prefs.get("contract_type") or "").lower()
+        
+        # CDI/CDD -> employee
         if contract in ["cdi", "cdd"]:
             return "employee"
-        if contract == "self_employed":
+        # freelancer/self_employed -> freelancer
+        if contract in ["freelancer", "self_employed"]:
             return "freelancer"
+        # student/internship -> student
         if contract in ["student", "internship"]:
             return "student"
 
-        # Priority 2: Fallback to Situation
-        mapping = {
-            "student_budget": "student",
-            "family_stability": "employee",
-            "flexibility_relocation": "freelancer",
-        }
-        return mapping.get(situation, "other")
+        return "other"
 
 
 matching_service = MatchingService()

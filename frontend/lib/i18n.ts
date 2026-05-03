@@ -338,10 +338,6 @@ export const translations = {
                 property_disputes: "Property Disputes",
                 disputes: "Disputes",
                 applications: "Applications",
-                messages: "Messages",
-                search: "Search",
-                team: "Team",
-                analytics: "Analytics",
                 browse: { title: "Browse Properties", desc: "Find your next home" },
                 newProperty: { title: "New Property", desc: "List a new property" },
                 verify: { title: "Complete Verification", desc: "Verify your identity" },
@@ -447,7 +443,12 @@ export const translations = {
                     discover: "Discover",
                     recentSearches: "Recent Searches",
                     noSearches: "You haven't made any searches yet.",
-                    searchButton: "Search for a property"
+                    searchButton: "Search for a property",
+                    smartMatches: "Smart Matches",
+                    smartMatchesDesc: "Top properties perfectly matching your profile",
+                    matchScore: "{{score}}% Match",
+                    loadingMatches: "Finding your perfect home...",
+                    noMatches: "Complete your onboarding to see personalized matches"
                 },
                 landlord: {
                     welcome: "Welcome, {{name}}",
@@ -566,7 +567,6 @@ export const translations = {
                     }
                 }
             },
-        },
         analytics: {
             subtitle: "Track your property performance and financial growth.",
             totalViews: "Total Views",
@@ -1099,11 +1099,7 @@ export const translations = {
             chargesIncluded: "CC",
             chargesExcluded: "HC",
             plusCharges: "+{{amount}}€ charges",
-            size: "{{size}}m²",
             beds: "{{count}} beds",
-            deposit: "Deposit",
-            furnished: "Furnished",
-            unfurnished: "Unfurnished",
             colocOk: "Coloc OK",
             guarantorReq: "Guarantor Req.",
             noGuarantor: "No Guarantor",
@@ -1840,10 +1836,7 @@ export const translations = {
                 property_disputes: "Litiges Immobiliers",
                 disputes: "Litiges",
                 applications: "Candidatures",
-                messages: "Messages",
                 search: "Rechercher",
-                team: "Équipe",
-                analytics: "Analyses",
                 browse: { title: "Parcourir les Biens", desc: "Trouvez votre prochain foyer" },
                 newProperty: { title: "Nouveau Bien", desc: "Listez un nouveau bien" },
                 verify: { title: "Compléter la Vérification", desc: "Vérifiez votre identité" },
@@ -1949,7 +1942,12 @@ export const translations = {
                     discover: "Découvrir",
                     recentSearches: "Recherches récentes",
                     noSearches: "Vous n'avez pas encore effectué de recherche.",
-                    searchButton: "Rechercher un bien"
+                    searchButton: "Rechercher un bien",
+                    smartMatches: "Matchs Intelligents",
+                    smartMatchesDesc: "Les meilleurs biens correspondant à votre profil",
+                    matchScore: "{{score}}% de Match",
+                    loadingMatches: "Recherche de votre foyer idéal...",
+                    noMatches: "Complétez votre onboarding pour voir vos matchs personnalisés"
                 },
                 landlord: {
                     welcome: "Bienvenue, {{name}}",
@@ -2458,7 +2456,6 @@ export const translations = {
             detailsTitle: "Détails du Bien",
             bedrooms: "Chambres",
             bathrooms: "Salles de Bain",
-            size: "Surface",
             floor: "Étage",
             furnished: "Meublé",
             yes: "Oui",
@@ -2584,11 +2581,7 @@ export const translations = {
             chargesIncluded: "CC",
             chargesExcluded: "HC",
             plusCharges: "+{{amount}}€ charges",
-            size: "{{size}}m²",
             beds: "{{count}} lits",
-            deposit: "Dépôt",
-            furnished: "Meublé",
-            unfurnished: "Non-meublé",
             colocOk: "Coloc OK",
             guarantorReq: "Garant requis",
             noGuarantor: "Sans garant",
@@ -2958,7 +2951,10 @@ export const translations = {
                     bank: "Banque",
                     noSmoking: "Non-fumeur",
                     noPets: "Pas d'animaux",
-                    noParties: "Pas de fêtes"
+                    noParties: "Pas de fêtes",
+                    yes: "Oui",
+                    no: "Non",
+                    notSure: "Pas sûr"
                 }
             },
             notifications: {

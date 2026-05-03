@@ -131,6 +131,7 @@ function PendingInvitesSection() {
     const [invites, setInvites] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
+    const { t } = useLanguage();
 
     useEffect(() => {
         apiClient.client.get('/team/my-invites')

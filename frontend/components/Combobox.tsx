@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, ChevronDown, Check, X } from 'lucide-react';
 
-import { useLanguage } from '@/lib/i18n';
+import { useLanguage } from '@/lib/LanguageContext';
 
 interface Option {
     label: string;

@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useLanguage } from '@/lib/LanguageContext';
+import { motion } from 'framer-motion';
 import RadiusLocationPicker from '../RadiusLocationPicker';
 import AddressAutocomplete, { AddressResult } from '../AddressAutocomplete';
 import Combobox from '../Combobox';

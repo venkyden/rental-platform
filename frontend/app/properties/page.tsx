@@ -7,7 +7,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import PremiumLayout from '@/components/PremiumLayout';
 import EmptyState from '@/components/EmptyState';
 import { apiClient } from '@/lib/api';
-import { motion, Variants } from 'framer-motion';
+import { motion, Variants, AnimatePresence } from 'framer-motion';
 import { resolveMediaUrl } from '@/lib/mediaUrl';
 import VerificationUpload from '@/components/VerificationUpload';
 import { useLanguage } from '@/lib/LanguageContext';

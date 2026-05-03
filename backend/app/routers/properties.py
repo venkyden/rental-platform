@@ -23,9 +23,11 @@ from app.models.property import Property, PropertyMedia, PropertyMediaSession
 from app.models.property_schemas import (MediaSessionCreate,
                                          MediaSessionResponse,
                                          MediaUploadMetadata, PropertyCreate,
-                                         PropertyResponse, PropertyUpdate)
+                                         PropertyResponse, PropertyUpdate,
+                                         PropertyMatchResponse)
 from app.models.user import User
 from app.routers.auth import get_current_user
+from app.services.matching_service import matching_service
 
 router = APIRouter(prefix="/properties", tags=["Properties"])
 logger = logging.getLogger(__name__)
@@ -192,6 +194,48 @@ async def list_properties(
     properties = result.scalars().all()
 
     return properties
+
+
+@router.get("/recommendations", response_model=List[PropertyMatchResponse])
+async def get_recommendations(
+    limit: int = 10,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Get personalized property recommendations for the current tenant.
+    Calculates scores using the MatchingService.
+    """
+    if current_user.role != "tenant":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Recommendations are only available for tenants",
+        )
+
+    # 1. Fetch active properties
+    # In a real production app, we would pre-filter by city or budget for performance
+    query = select(Property).where(Property.status == "active").limit(100)
+    result = await db.execute(query)
+    all_properties = result.scalars().all()
+
+    # 2. Calculate scores
+    scored_properties = []
+    for prop in all_properties:
+        match_data = matching_service.calculate_match_details(current_user, prop)
+        
+        # Attach match details to the property object for the response schema
+        # We use a wrapper or dynamic attribute because Property is an ORM model
+        prop_dict = PropertyMatchResponse.model_validate(prop).model_dump()
+        prop_dict["match_score"] = match_data["score"]
+        prop_dict["match_breakdown"] = match_data["breakdown"]
+        
+        scored_properties.append(prop_dict)
+
+    # 3. Sort by score descending
+    scored_properties.sort(key=lambda x: x["match_score"], reverse=True)
+
+    # 4. Return top N
+    return scored_properties[:limit]
 
 
 @router.get("/{property_id}", response_model=PropertyResponse)

@@ -2,6 +2,10 @@ import { User, Settings, Bell, Shield, LogOut, ChevronRight } from 'lucide-react
 import { useLanguage } from '@/lib/LanguageContext';
 import PremiumLayout from '@/components/PremiumLayout';
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/useAuth';
+import ProtectedRoute from '@/components/ProtectedRoute';
+import Link from 'next/link';
 
 export default function ProfilePage() {
     const router = useRouter();
@@ -57,7 +61,7 @@ export default function ProfilePage() {
                                             </div>
                                             <div className="p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-zinc-100 dark:border-zinc-700/50">
                                                 <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest block mb-1">Max Budget</span>
-                                                <span className="font-bold text-teal-600 dark:text-teal-400" translate="no" className="notranslate">{user.preferences.budget ? `${user.preferences.budget}€` : 'Any'}</span>
+                                                <span className="font-bold text-teal-600 dark:text-teal-400 notranslate" translate="no">{user.preferences.budget ? `${user.preferences.budget}€` : 'Any'}</span>
                                             </div>
                                         </>
                                     ) : (

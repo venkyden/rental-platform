@@ -11,6 +11,7 @@ import PremiumLayout from '@/components/PremiumLayout';
 import { useLanguage } from '@/lib/LanguageContext';
 import { resolveMediaUrl } from '@/lib/mediaUrl';
 import { PropertyCardSkeleton } from '@/components/SkeletonLoaders';
+import { Search } from 'lucide-react';
 
 interface Property {
     id: string;
