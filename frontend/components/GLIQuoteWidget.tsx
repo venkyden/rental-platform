@@ -2,21 +2,25 @@
 
 import { useState } from 'react';
 import { apiClient } from '@/lib/api';
+import { useLanguage } from '@/lib/LanguageContext';
+import { X } from 'lucide-react';
 
 interface GLIQuoteWidgetProps {
     monthlyRent: number;
     propertyId: string;
 }
 
-const EMPLOYMENT_TYPES = [
-    { value: 'cdi', label: 'CDI (Permanent Contract)' },
-    { value: 'cdd', label: 'CDD (Fixed-term Contract)' },
-    { value: 'freelance', label: 'Self-employed / Freelance' },
-    { value: 'retired', label: 'Retired' },
-    { value: 'student', label: 'Student' },
+const getEmploymentTypes = (t: any) => [
+    { value: 'cdi', label: t('auth.register.role.cdi', undefined, 'CDI (Permanent Contract)') },
+    { value: 'cdd', label: t('auth.register.role.cdd', undefined, 'CDD (Fixed-term Contract)') },
+    { value: 'freelance', label: t('auth.register.role.self_employed', undefined, 'Self-employed / Freelance') },
+    { value: 'retired', label: t('auth.register.role.retired', undefined, 'Retired') },
+    { value: 'student', label: t('auth.register.role.student', undefined, 'Student') },
 ];
 
 export default function GLIQuoteWidget({ monthlyRent, propertyId }: GLIQuoteWidgetProps) {
+    const { t } = useLanguage();
+    const EMPLOYMENT_TYPES = getEmploymentTypes(t);
     const [showForm, setShowForm] = useState(false);
     const [loading, setLoading] = useState(false);
     const [quote, setQuote] = useState<any>(null);
@@ -71,9 +75,9 @@ export default function GLIQuoteWidget({ monthlyRent, propertyId }: GLIQuoteWidg
         return (
             <button
                 onClick={() => setShowForm(true)}
-                className="w-full py-3 px-4 bg-zinc-900 dark:bg-white text-white rounded-lg hover:from-green-600 hover:to-emerald-700 font-medium flex items-center justify-center gap-2 shadow-md"
+                className="w-full py-3 px-4 bg-zinc-900 dark:bg-zinc-800 text-white rounded-xl hover:shadow-lg font-bold flex items-center justify-center gap-2 transition-all active:scale-95"
             >
-                ️ Get GLI Quote
+                {t('dashboard.widgets.gli.button', undefined, '️ Get GLI Quote')}
             </button>
         );
     }
@@ -81,20 +85,22 @@ export default function GLIQuoteWidget({ monthlyRent, propertyId }: GLIQuoteWidg
     return (
         <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
             {/* Header */}
-            <div className="bg-zinc-900 dark:bg-white text-white p-4">
+            <div className="bg-zinc-900 dark:bg-zinc-800 text-white p-6">
                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <span className="text-2xl">️</span>
+                    <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+                            <ShieldCheck className="w-6 h-6 text-white" />
+                        </div>
                         <div>
-                            <h3 className="font-bold">Rent Guarantee Insurance</h3>
-                            <p className="text-sm text-green-100">Protection against unpaid rent</p>
+                            <h3 className="font-bold">{t('dashboard.widgets.gli.title', undefined, 'Rent Guarantee Insurance')}</h3>
+                            <p className="text-xs text-white/60">{t('dashboard.widgets.gli.subtitle', undefined, 'Protection against unpaid rent')}</p>
                         </div>
                     </div>
                     <button
                         onClick={() => setShowForm(false)}
-                        className="text-white/70 hover:text-white"
+                        className="p-2 hover:bg-white/10 rounded-full transition-colors"
                     >
-                        
+                        <X className="w-5 h-5 text-white/70" />
                     </button>
                 </div>
             </div>
@@ -102,43 +108,43 @@ export default function GLIQuoteWidget({ monthlyRent, propertyId }: GLIQuoteWidg
             {/* Form */}
             <div className="p-4 space-y-4">
                 {/* Rent display */}
-                <div className="bg-gray-50 rounded-lg p-3">
-                    <div className="text-sm text-gray-500">Monthly Rent</div>
-                    <div translate="no" className="notranslate text-2xl font-bold text-gray-900">{monthlyRent.toLocaleString('fr-FR')} €</div>
+                <div className="bg-gray-50 dark:bg-zinc-800/50 rounded-xl p-4">
+                    <div className="text-xs font-black uppercase tracking-widest text-zinc-400 mb-1">{t('dashboard.widgets.gli.rent', undefined, 'Monthly Rent')}</div>
+                    <div translate="no" className="notranslate text-2xl font-black text-zinc-900 dark:text-white">{monthlyRent.toLocaleString('fr-FR')} €</div>
                 </div>
 
                 {/* Tenant income */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Tenant Monthly Income
+                    <label className="block text-xs font-black uppercase tracking-widest text-zinc-400 mb-2">
+                        {t('dashboard.widgets.gli.income', undefined, 'Tenant Monthly Income')}
                     </label>
-                    <div className="relative">
+                    <div className="relative group">
                         <input
                             type="number"
                             value={tenantIncome}
                             onChange={(e) => setTenantIncome(Number(e.target.value))}
-                            className="w-full px-3 py-2 border rounded-lg pr-8"
+                            className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl font-bold text-zinc-900 dark:text-white focus:ring-2 focus:ring-teal-500/50 transition-all"
                         />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">€</span>
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-zinc-400">€</span>
                     </div>
-                    <p translate="no" className="notranslate text-xs text-gray-500 mt-1">
-                        Ratio: {(tenantIncome / monthlyRent).toFixed(1)}x the rent
-                        {tenantIncome / monthlyRent >= 3 ? ' ' : ' ️ (minimum 3x)'}
+                    <p translate="no" className="notranslate text-[10px] font-black uppercase tracking-widest text-zinc-500 mt-2">
+                        {t('dashboard.widgets.gli.ratio', { ratio: (tenantIncome / monthlyRent).toFixed(1) }, `Ratio: ${(tenantIncome / monthlyRent).toFixed(1)}x rent`)}
+                        {tenantIncome / monthlyRent < 3 && <span className="text-red-500 ml-2">{t('dashboard.widgets.gli.min_ratio', undefined, '(min 3x)')}</span>}
                     </p>
                 </div>
 
                 {/* Employment type */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Employment Type
+                    <label className="block text-xs font-black uppercase tracking-widest text-zinc-400 mb-2">
+                        {t('dashboard.widgets.gli.contract', undefined, 'Employment Type')}
                     </label>
                     <select
                         value={employmentType}
                         onChange={(e) => setEmploymentType(e.target.value)}
-                        className="w-full px-3 py-2 border rounded-lg"
+                        className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl font-bold text-zinc-900 dark:text-white focus:ring-2 focus:ring-teal-500/50 transition-all appearance-none cursor-pointer"
                     >
                         {EMPLOYMENT_TYPES.map(type => (
-                            <option key={type.value} value={type.value}>
+                            <option key={type.value} value={type.value} className="bg-white dark:bg-zinc-900">
                                 {type.label}
                             </option>
                         ))}
@@ -171,9 +177,9 @@ export default function GLIQuoteWidget({ monthlyRent, propertyId }: GLIQuoteWidg
                 <button
                     onClick={getQuote}
                     disabled={loading}
-                    className="w-full py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium disabled:opacity-50"
+                    className="w-full py-4 bg-teal-500 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-teal-600 transition-all active:scale-95 disabled:opacity-50 shadow-xl shadow-teal-500/20"
                 >
-                    {loading ? 'Calculating...' : 'Calculate Quote'}
+                    {loading ? t('dashboard.widgets.gli.calculating', undefined, 'Calculating...') : t('dashboard.widgets.gli.calculate', undefined, 'Calculate Quote')}
                 </button>
 
                 {/* Error */}
@@ -188,38 +194,46 @@ export default function GLIQuoteWidget({ monthlyRent, propertyId }: GLIQuoteWidg
                     <div className={`rounded-lg p-4 ${quote.eligible ? 'bg-green-50 border border-green-200' : 'bg-yellow-50 border border-yellow-200'}`}>
                         {quote.eligible ? (
                             <>
-                                <div className="flex items-center gap-2 mb-3">
-                                    <span className="text-xl"></span>
-                                    <span className="font-bold text-green-800">Eligible for GLI</span>
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center">
+                                        <CheckCircle2 className="w-6 h-6 text-white" />
+                                    </div>
+                                    <span className="font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
+                                        {t('dashboard.widgets.gli.eligible', undefined, 'Eligible for GLI')}
+                                    </span>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-3 mb-4">
-                                    <div className="bg-white rounded-lg p-3 text-center">
-                                        <div className="text-sm text-gray-500">Monthly Premium</div>
-                                        <div translate="no" className="notranslate text-xl font-bold text-green-700">
+                                <div className="grid grid-cols-2 gap-4 mb-6">
+                                    <div className="bg-white dark:bg-zinc-900 rounded-2xl p-4 text-center border border-emerald-100 dark:border-emerald-900/30">
+                                        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 mb-1">
+                                            {t('dashboard.widgets.gli.premium_monthly', undefined, 'Monthly Premium')}
+                                        </div>
+                                        <div translate="no" className="notranslate text-2xl font-black text-emerald-600 dark:text-emerald-400">
                                             {quote.monthly_premium?.toLocaleString('fr-FR')} €
                                         </div>
                                     </div>
-                                    <div className="bg-white rounded-lg p-3 text-center">
-                                        <div className="text-sm text-gray-500">Annual Premium</div>
-                                        <div translate="no" className="notranslate text-xl font-bold text-green-700">
+                                    <div className="bg-white dark:bg-zinc-900 rounded-2xl p-4 text-center border border-emerald-100 dark:border-emerald-900/30">
+                                        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 mb-1">
+                                            {t('dashboard.widgets.gli.premium_annual', undefined, 'Annual Premium')}
+                                        </div>
+                                        <div translate="no" className="notranslate text-2xl font-black text-emerald-600 dark:text-emerald-400">
                                             {quote.annual_premium?.toLocaleString('fr-FR')} €
                                         </div>
                                     </div>
                                 </div>
 
-                                <div translate="no" className="notranslate text-sm text-gray-600 mb-3">
-                                    <div> Rate: {quote.premium_rate}% of rent</div>
-                                    <div>️ Coverage: {quote.coverage_amount?.toLocaleString('fr-FR')} € ({quote.coverage_months} months)</div>
-                                    <div> Quote valid until: {quote.quote_valid_until}</div>
+                                <div translate="no" className="notranslate text-xs font-bold text-zinc-500 space-y-2 mb-8">
+                                    <div className="flex justify-between"><span>Rate:</span> <span>{quote.premium_rate}%</span></div>
+                                    <div className="flex justify-between"><span>Coverage:</span> <span>{quote.coverage_amount?.toLocaleString('fr-FR')} €</span></div>
+                                    <div className="flex justify-between"><span>Validity:</span> <span>{quote.quote_valid_until}</span></div>
                                 </div>
 
                                 <button
                                     onClick={handleApply}
                                     disabled={loading}
-                                    className="w-full py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
+                                    className="w-full py-4 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-2xl font-black uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-[0.98] transition-all"
                                 >
-                                    Subscribe Now
+                                    {t('dashboard.widgets.gli.subscribe', undefined, 'Subscribe Now')}
                                 </button>
                             </>
                         ) : (

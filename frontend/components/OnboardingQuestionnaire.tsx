@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getTenantQuestions, getLandlordQuestions } from './onboarding/onboardingQuestions';
 import QuestionRenderer from './onboarding/QuestionRenderer';
+import { useLanguage } from '@/lib/LanguageContext';
 
 interface QuestionnaireProps {
     userType: 'tenant' | 'landlord';
@@ -13,6 +14,7 @@ interface QuestionnaireProps {
 }
 
 export default function OnboardingQuestionnaire({ userType, initialResponses, onComplete }: QuestionnaireProps) {
+    const { t } = useLanguage();
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
     const [responses, setResponses] = useState<Record<string, any>>(initialResponses || {});
     const [multiSelectValues, setMultiSelectValues] = useState<string[]>(() => {
@@ -172,7 +174,7 @@ export default function OnboardingQuestionnaire({ userType, initialResponses, on
                         />
                     </div>
                     <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2 text-center font-medium">
-                        Question {currentVisibleStepCount} of {totalVisibleQuestions}
+                        {t('onboarding.step', { current: currentVisibleStepCount, total: totalVisibleQuestions }, `Question ${currentVisibleStepCount} of ${totalVisibleQuestions}`)}
                     </p>
                 </div>
 
@@ -193,7 +195,7 @@ export default function OnboardingQuestionnaire({ userType, initialResponses, on
                                     <div className="text-center mb-8">
                                         <div className="text-6xl mb-4 animate-bounce">{q.emoji}</div>
                                         <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">
-                                            {q.question}
+                                            {t(q.question, undefined, q.question)}
                                         </h2>
                                     </div>
 
@@ -215,7 +217,7 @@ export default function OnboardingQuestionnaire({ userType, initialResponses, on
                                                 onClick={handleBack}
                                                 className="text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 font-medium flex items-center gap-2 transition-colors"
                                             >
-                                                ← Back
+                                                ← {t('onboarding.back')}
                                             </button>
                                         ) : (
                                             <div />
@@ -224,7 +226,7 @@ export default function OnboardingQuestionnaire({ userType, initialResponses, on
                                             onClick={handleSkip}
                                             className="text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-400 text-sm transition-colors"
                                         >
-                                            Skip Question
+                                            {t('onboarding.skip')}
                                         </button>
                                     </div>
                                 </motion.div>

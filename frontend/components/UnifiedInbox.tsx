@@ -6,6 +6,9 @@ import { apiClient } from '@/lib/api';
 import { motion, Variants } from 'framer-motion';
 import { useLanguage } from '@/lib/LanguageContext';
 
+import { ListSkeleton } from '@/components/SkeletonLoaders';
+import { Search } from 'lucide-react';
+
 const containerVariants: Variants = {
     hidden: { opacity: 0 },
     show: {
@@ -102,7 +105,6 @@ export default function UnifiedInbox({ onSelectConversation, selectedConversatio
         );
     });
 
-    // Group conversations by property
     const groupedByProperty = filteredConversations.reduce((acc, conv) => {
         const key = conv.property_id;
         if (!acc[key]) {
@@ -118,23 +120,27 @@ export default function UnifiedInbox({ onSelectConversation, selectedConversatio
 
     if (loading) {
         return (
-            <div className="animate-pulse space-y-4 p-4">
-                {[1, 2, 3].map(i => (
-                    <div key={i} className="h-20 bg-gray-200 rounded-lg" />
-                ))}
+            <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl border border-white/50 dark:border-white/10 overflow-hidden h-full">
+                <div className="p-6 border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/50">
+                    <div className="h-8 bg-zinc-200 dark:bg-zinc-800 rounded-lg w-1/3 mb-4 animate-pulse" />
+                    <div className="h-10 bg-zinc-200 dark:bg-zinc-800 rounded-xl w-full animate-pulse" />
+                </div>
+                <div className="p-4">
+                    <ListSkeleton count={6} />
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="flex flex-col h-full bg-white rounded-xl shadow-sm overflow-hidden">
+        <div className="flex flex-col h-full bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-white/50 dark:border-white/10 rounded-3xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] overflow-hidden">
             {/* Header */}
-            <div className="p-4 border-b bg-blue-600">
-                <div className="flex items-center justify-between mb-3">
-                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
+            <div className="p-6 border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/50">
+                <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-xl font-bold text-zinc-900 dark:text-white flex items-center gap-3">
                          {t('inbox.title', undefined, undefined)}
                         {totalUnread > 0 && (
-                            <span className="px-2 py-0.5 bg-red-500 text-white text-sm rounded-full">
+                            <span className="px-2.5 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full">
                                 {totalUnread}
                             </span>
                         )}
@@ -143,19 +149,19 @@ export default function UnifiedInbox({ onSelectConversation, selectedConversatio
 
                 {/* Search */}
                 <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
                     <input
                         type="text"
                         placeholder={t('inbox.searchPlaceholder', undefined, undefined)}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full px-4 py-2 pl-10 rounded-lg bg-white/20 text-white placeholder-white/70 focus:bg-white focus:text-gray-900 focus:placeholder-gray-400 transition-colors"
+                        className="w-full px-4 py-2.5 pl-10 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white placeholder-zinc-400 border border-zinc-200 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
                     />
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2"></span>
                 </div>
             </div>
 
             {/* Filter Tabs */}
-            <div className="flex border-b">
+            <div className="flex px-2 pt-2 border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/30 dark:bg-zinc-800/30">
                 {[
                     { key: 'all', label: t('inbox.filters.all', undefined, undefined) },
                     { key: 'active', label: t('inbox.filters.active', undefined, undefined) },
@@ -164,12 +170,18 @@ export default function UnifiedInbox({ onSelectConversation, selectedConversatio
                     <button
                         key={key}
                         onClick={() => setFilter(key as typeof filter)}
-                        className={`flex-1 py-3 text-sm font-medium transition-colors ${filter === key
-                            ? 'text-blue-600 border-b-2 border-blue-600'
-                            : 'text-gray-500 hover:text-gray-700'
+                        className={`flex-1 py-3 text-sm font-semibold transition-all relative ${filter === key
+                            ? 'text-teal-600 dark:text-teal-400'
+                            : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
                             }`}
                     >
                         {label}
+                        {filter === key && (
+                            <motion.div
+                                layoutId="inbox-filter-tab"
+                                className="absolute bottom-0 left-4 right-4 h-0.5 bg-teal-500 rounded-full"
+                            />
+                        )}
                     </button>
                 ))}
             </div>

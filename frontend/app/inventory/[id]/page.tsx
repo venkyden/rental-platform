@@ -5,11 +5,13 @@ import { useParams, useRouter } from 'next/navigation';
 import { inventoryApi, Inventory, InventoryItem } from '@/app/lib/api/inventory';
 // import { SignaturePad } from '@/components/inventory/SignaturePad'; // Removed
 import { Loader2, Camera, CheckCircle, FileText } from 'lucide-react';
+import { useLanguage } from '@/lib/LanguageContext';
 
 export default function InventoryPage() {
     const params = useParams();
     const id = params.id as string;
     const router = useRouter();
+    const { t } = useLanguage();
 
     const [inventory, setInventory] = useState<Inventory | null>(null);
     const [loading, setLoading] = useState(true);
@@ -145,7 +147,7 @@ export default function InventoryPage() {
                         <div className="space-y-3">
                             <input
                                 className="w-full p-2 border rounded"
-                                placeholder="e.g. Kitchen Sink"
+                                placeholder={t('common.placeholders.kitchenSink')}
                                 value={newItemName}
                                 onChange={e => setNewItemName(e.target.value)}
                             />

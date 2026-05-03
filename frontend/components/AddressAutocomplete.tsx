@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useLanguage } from '@/lib/LanguageContext';
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -75,6 +76,7 @@ export default function AddressAutocomplete({
     variant = 'form',
     allowManualEntry = true,
 }: AddressAutocompleteProps) {
+    const { t } = useLanguage();
     const [query, setQuery] = useState(initialValue);
     const [results, setResults] = useState<AddressResult[]>([]);
     const [isOpen, setIsOpen] = useState(false);
@@ -274,7 +276,7 @@ export default function AddressAutocomplete({
                     onChange={(e) => handleInputChange(e.target.value)}
                     onKeyDown={handleKeyDown}
                     onFocus={() => results.length > 0 && setIsOpen(true)}
-                    placeholder={placeholder}
+                    placeholder={placeholder || t('common.placeholders.address')}
                     className={inputClassName || baseInput}
                     autoComplete="off"
                 />

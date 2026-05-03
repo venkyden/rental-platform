@@ -1,21 +1,96 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    
+    --primary: 174 100% 29%; /* Teal-700 */
+    --primary-foreground: 0 0% 100%;
+    
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    
+    --radius: 1.5rem;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    
+    --primary: 174 100% 29%;
+    --primary-foreground: 0 0% 100%;
+    
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+  }
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --font-sans: var(--font-outfit), ui-sans-serif, system-ui;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 2rem;
 }
 
-
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+/* Typography Standards */
+h1, h2, h3, h4 {
+  @apply tracking-tight font-bold text-zinc-900 dark:text-white;
+}
+
+h1 { @apply text-4xl lg:text-5xl; }
+h2 { @apply text-3xl lg:text-4xl; }
+
+/* Glassmorphism Utilities (Apple-Inspired) */
+.glass {
+  @apply bg-white/70 dark:bg-zinc-900/70 backdrop-blur-2xl border border-white/40 dark:border-white/5 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)];
+}
+
+.glass-card {
+  @apply glass rounded-[2.5rem] p-8 transition-all duration-500 ease-out hover:shadow-[0_30px_60px_-12px_rgba(0,0,0,0.12)] hover:-translate-y-2 hover:bg-white/80 dark:hover:bg-zinc-900/80;
+}
+
+/* Vibrancy Background (Apple-Inspired) */
+.vibrancy-bg {
+  @apply fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-teal-50 via-zinc-50 to-white dark:from-teal-950/20 dark:via-zinc-950 dark:to-black;
+}
+
+/* Standardized Button (Google/Apple Hybrid) */
+.btn-primary {
+  @apply px-8 py-4 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-2xl font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:scale-95 transition-all duration-300;
+}
+
+.btn-secondary {
+  @apply px-8 py-4 bg-white/50 dark:bg-zinc-800/50 backdrop-blur-md border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white rounded-2xl font-bold hover:bg-white dark:hover:bg-zinc-800 transition-all duration-300;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-zinc-200 dark:bg-zinc-800 rounded-full hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors;
 }
 
 @keyframes slide-in {

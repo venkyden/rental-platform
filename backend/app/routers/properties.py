@@ -115,7 +115,7 @@ async def list_properties(
         from sqlalchemy import case
 
         total_rent = Property.monthly_rent + case(
-            (Property.charges_included == True, 0),
+            [(Property.charges_included == True, 0)],
             else_=func.coalesce(Property.charges, 0),
         )
         if min_rent:
@@ -148,22 +148,25 @@ async def list_properties(
     
     if is_management_role and not landlord_id:
         # If no specific landlord_id is requested, show EVERYTHING the user has access to
-        from app.models.team import TeamMember, TeamMemberProperty
+        from app.models.team import InviteStatus, TeamMember, TeamMemberProperty
         
         # Subquery for properties via team membership
-        team_prop_ids = select(TeamMemberProperty.property_id).join(
-            TeamMember, TeamMember.id == TeamMemberProperty.team_member_id
-        ).where(
-            and_(
-                TeamMember.member_user_id == current_user.id,
-                TeamMember.status == "active"
+        # In SQLAlchemy 2.0, we use subquery() for use with in_()
+        team_prop_subquery = (
+            select(TeamMemberProperty.property_id)
+            .join(TeamMember, TeamMember.id == TeamMemberProperty.team_member_id)
+            .where(
+                and_(
+                    TeamMember.member_user_id == current_user.id,
+                    TeamMember.status == InviteStatus.ACTIVE
+                )
             )
-        )
+        ).subquery()
         
         # Combine owned properties and team properties
         filters.append(
             and_(
-                (Property.landlord_id == current_user.id) | (Property.id.in_(team_prop_ids)),
+                (Property.landlord_id == current_user.id) | (Property.id.in_(select(team_prop_subquery))),
                 Property.status == (status if status else "active")
             )
         )

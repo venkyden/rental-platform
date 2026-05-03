@@ -1,14 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { User, Shield, Bell, Settings, ArrowLeft, Trash2, ShieldAlert, X, AlertTriangle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/lib/useAuth';
 import { apiClient } from '@/lib/api';
 import { useToast } from '@/lib/ToastContext';
-import Link from 'next/link';
+import PremiumLayout from '@/components/PremiumLayout';
+import { useLanguage } from '@/lib/LanguageContext';
 
 export default function PrivacySettingsPage() {
+    const { t } = useLanguage();
     const router = useRouter();
     const { logout } = useAuth();
     const { success, error: showError } = useToast();
@@ -17,138 +20,155 @@ export default function PrivacySettingsPage() {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deleteConfirmation, setDeleteConfirmation] = useState('');
 
+    const deleteTarget = t('common.placeholders.delete');
+
     const handleDeleteAccount = async () => {
-        if (deleteConfirmation !== 'DELETE') {
-            showError('Please type DELETE to confirm.');
+        if (deleteConfirmation.toUpperCase() !== deleteTarget.toUpperCase()) {
+            showError(t('auth.register.gdpr.error'));
             return;
         }
 
         setIsDeleting(true);
         try {
             await apiClient.client.delete('/gdpr/delete');
-            success('Account successfully deleted.');
+            success(t('auth.login.error.success'));
             logout();
         } catch (error) {
             console.error('Failed to delete account:', error);
-            showError('Failed to delete account. Please try again or contact support.');
+            showError(t('auth.login.error.loginFail'));
             setIsDeleting(false);
             setShowDeleteModal(false);
         }
     };
 
     return (
-        <ProtectedRoute>
-            <div className="min-h-screen bg-gray-50 flex flex-col">
-                <header className="bg-white shadow sticky top-0 z-10">
-                    <div className="max-w-3xl mx-auto py-4 px-4 flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <button onClick={() => router.back()} className="text-gray-500 hover:text-gray-900 transition-colors">
-                                ← Back
-                            </button>
-                            <h1 className="text-xl font-bold text-gray-900">Privacy & GDPR</h1>
+        <PremiumLayout withNavbar={true}>
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+                <div className="flex flex-col md:flex-row gap-16">
+                    {/* Sidebar */}
+                    <div className="w-full md:w-80 shrink-0">
+                        <div className="mb-12">
+                            <h1 className="text-4xl font-black tracking-tighter mb-4 bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 to-zinc-500 dark:from-white dark:to-zinc-400">Settings</h1>
+                            <p className="text-zinc-500 font-medium">Manage your digital identity and security preferences.</p>
                         </div>
-                    </div>
-                </header>
 
-                <main className="flex-grow max-w-3xl w-full mx-auto py-8 px-4 space-y-8">
-                    {/* General Privacy Information */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                        <div className="flex items-center gap-3 mb-4">
-                            <span className="text-2xl">️</span>
-                            <h2 className="text-lg font-bold text-gray-900">Data & Privacy</h2>
-                        </div>
-                        <p className="text-gray-600 mb-4 leading-relaxed">
-                            We take your privacy seriously. Your data is handled in accordance with the General Data Protection Regulation (GDPR).
-                            You have the right to access, rectify, or erase your personal data at any time.
-                        </p>
-                        <ul className="space-y-3 text-sm text-gray-600">
-                            <li className="flex items-start gap-2">
-                                <span className="text-green-500 mt-0.5"></span>
-                                <div><strong>Right to Access:</strong> You can request a copy of your data at any time.</div>
-                            </li>
-                            <li className="flex items-start gap-2">
-                                <span className="text-green-500 mt-0.5"></span>
-                                <div><strong>Right to Portability:</strong> We provide your data in a machine-readable format.</div>
-                            </li>
-                            <li className="flex items-start gap-2">
-                                <span className="text-green-500 mt-0.5"></span>
-                                <div><strong>Right to be Forgotten:</strong> You can permanently delete your account and anonymize your data.</div>
-                            </li>
-                        </ul>
-                    </div>
-
-                    {/* Danger Zone */}
-                    <div className="bg-red-50 rounded-2xl border border-red-100 p-6 mt-8">
-                        <div className="flex items-center gap-3 mb-4">
-                            <span className="text-2xl">️</span>
-                            <h2 className="text-lg font-bold text-red-700">Danger Zone</h2>
-                        </div>
-                        <p className="text-red-600/80 mb-6 text-sm">
-                            Permanently delete your account. This action is irreversible. Your profile, properties, preferences, and personal information will be completely anonymized or removed, and you will immediately lose access to the platform.
-                        </p>
-
-                        <button
-                            onClick={() => setShowDeleteModal(true)}
-                            className="bg-red-600 text-white font-medium px-6 py-3 rounded-xl hover:bg-red-700 transition-colors shadow-sm w-full md:w-auto"
-                        >
-                            Delete Account
-                        </button>
-                    </div>
-                </main>
-
-                {/* Delete Confirmation Modal */}
-                {showDeleteModal && (
-                    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-                        <div className="bg-white rounded-2xl max-w-md w-full shadow-sm p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-200">
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">Delete Account?</h3>
-                            <p className="text-gray-600 mb-6 text-sm">
-                                This action cannot be undone. All your personal data will be anonymized per GDPR Article 17.
-                                <br /><br />
-                                Please type <strong className="text-red-600 select-none">DELETE</strong> to confirm.
-                            </p>
-
-                            <input
-                                type="text"
-                                value={deleteConfirmation}
-                                onChange={(e) => setDeleteConfirmation(e.target.value)}
-                                placeholder="Type DELETE"
-                                className="w-full px-4 py-3 border-2 border-red-100 focus:border-red-500 bg-red-50/50 rounded-xl outline-none transition-all mb-6 text-center font-bold"
-                            />
-
-                            <div className="flex gap-3">
-                                <button
-                                    onClick={() => {
-                                        setShowDeleteModal(false);
-                                        setDeleteConfirmation('');
-                                    }}
-                                    disabled={isDeleting}
-                                    className="flex-1 px-4 py-3 font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors disabled:opacity-50"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleDeleteAccount}
-                                    disabled={deleteConfirmation !== 'DELETE' || isDeleting}
-                                    className={`flex-1 px-4 py-3 font-medium text-white rounded-xl transition-colors flex items-center justify-center gap-2
-                                        ${deleteConfirmation === 'DELETE' && !isDeleting
-                                            ? 'bg-red-600 hover:bg-red-700 shadow-md '
-                                            : 'bg-red-300 cursor-not-allowed'
+                        <div className="flex flex-col gap-2 p-1.5 bg-zinc-100 dark:bg-zinc-800/50 rounded-[2rem] border border-zinc-200/50 dark:border-zinc-700/30 backdrop-blur-xl">
+                            {[
+                                { id: 'account', icon: User, label: 'Profile', path: '/settings/account' },
+                                { id: 'notifications', icon: Bell, label: 'Notifications', path: '/settings/notifications' },
+                                { id: 'privacy', icon: Shield, label: 'Privacy', path: '/settings/privacy' },
+                                { id: 'preferences', icon: Settings, label: 'Preferences', path: '/settings/preferences' }
+                            ].map((tab) => (
+                                <div key={tab.id} className="flex flex-col">
+                                    <button
+                                        onClick={() => router.push(tab.path)}
+                                        className={`flex items-center gap-4 px-6 py-4 rounded-[1.5rem] text-sm font-black uppercase tracking-widest transition-all duration-500 ${
+                                            tab.id === 'privacy' 
+                                            ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-xl scale-100' 
+                                            : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'
                                         }`}
-                                >
-                                    {isDeleting ? (
-                                        <>
-                                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                            Deleting...
-                                        </>
-                                    ) : (
-                                        'Delete Forever'
+                                    >
+                                        <tab.icon className={`w-4 h-4 ${tab.id === 'privacy' ? 'text-teal-500' : ''}`} />
+                                        {tab.label}
+                                    </button>
+                                    
+                                    {tab.id === 'privacy' && (
+                                        <div className="px-6 py-4 flex flex-col gap-4">
+                                            <button 
+                                                className="text-[10px] font-black uppercase tracking-widest text-left text-teal-500"
+                                            >
+                                                GDPR & Data
+                                            </button>
+                                        </div>
                                     )}
-                                </button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1 max-w-2xl">
+                        <div className="space-y-12">
+                            <div className="glass-card !p-10">
+                                <div className="flex items-center gap-4 mb-8">
+                                    <div className="p-3 bg-teal-500/10 rounded-2xl">
+                                        <Shield className="w-6 h-6 text-teal-500" />
+                                    </div>
+                                    <h2 className="text-2xl font-black tracking-tight">{t('settings.account.privacy.dataTitle', undefined, 'Data & Privacy')}</h2>
+                                </div>
+                                <p className="text-zinc-500 font-bold leading-relaxed mb-12">
+                                    {t('settings.account.privacy.dataDesc', undefined, 'We take your privacy seriously. Your data is handled in accordance with the General Data Protection Regulation (GDPR). You have the right to access, rectify, or erase your personal data at any time.')}
+                                </p>
+
+                                <div className="p-8 bg-zinc-50 dark:bg-zinc-800/50 rounded-[2rem] border border-zinc-100 dark:border-zinc-700/50">
+                                    <div className="flex items-center gap-4 mb-6">
+                                        <div className="p-3 bg-red-500/10 rounded-xl">
+                                            <AlertTriangle className="w-5 h-5 text-red-500" />
+                                        </div>
+                                        <h3 className="text-sm font-black uppercase tracking-widest text-red-500">{t('settings.account.privacy.dangerTitle', undefined, 'Danger Zone')}</h3>
+                                    </div>
+                                    <p className="text-xs font-bold text-zinc-500 mb-8 leading-relaxed">
+                                        {t('settings.account.privacy.dangerDesc', undefined, 'Permanently delete your account. This action is irreversible. Your profile, properties, preferences, and personal information will be completely anonymized or removed.')}
+                                    </p>
+                                    <button
+                                        onClick={() => setShowDeleteModal(true)}
+                                        className="w-full py-4 bg-red-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-red-500/20 hover:scale-[1.02] transition-all"
+                                    >
+                                        {t('common.delete')}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                )}
+                </div>
             </div>
-        </ProtectedRoute>
+
+            {/* Modal */}
+            <AnimatePresence>
+                {showDeleteModal && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-zinc-950/80 backdrop-blur-xl z-[100] flex items-center justify-center p-6">
+                        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="bg-white dark:bg-zinc-900 rounded-[2.5rem] max-w-md w-full p-10 shadow-2xl relative overflow-hidden">
+                            <div className="absolute top-0 right-0 p-6">
+                                <button onClick={() => setShowDeleteModal(false)} className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-all"><X className="w-5 h-5 text-zinc-400" /></button>
+                            </div>
+                            
+                            <div className="mb-8">
+                                <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-2xl flex items-center justify-center mb-6">
+                                    <Trash2 className="w-8 h-8 text-red-500" />
+                                </div>
+                                <h3 className="text-2xl font-black tracking-tight mb-2">{t('settings.account.privacy.deleteConfirmTitle', undefined, 'Delete Account?')}</h3>
+                                <p className="text-zinc-500 font-bold text-sm leading-relaxed">
+                                    {t('settings.account.privacy.deleteConfirmDesc', undefined, 'This action cannot be undone. All your personal data will be anonymized per GDPR Article 17.')}
+                                </p>
+                            </div>
+
+                            <div className="space-y-6">
+                                <div className="space-y-2">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">Type <span className="text-red-500">{deleteTarget}</span> to confirm</p>
+                                    <input
+                                        type="text"
+                                        value={deleteConfirmation}
+                                        onChange={(e) => setDeleteConfirmation(e.target.value)}
+                                        placeholder={deleteTarget}
+                                        className="w-full bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl px-6 py-4 text-center font-black text-red-500 uppercase tracking-widest focus:ring-2 focus:ring-red-500/20 transition-all"
+                                    />
+                                </div>
+
+                                <div className="flex gap-4">
+                                    <button onClick={() => setShowDeleteModal(false)} className="flex-1 py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-zinc-200 transition-all">Cancel</button>
+                                    <button
+                                        onClick={handleDeleteAccount}
+                                        disabled={deleteConfirmation.toUpperCase() !== deleteTarget.toUpperCase() || isDeleting}
+                                        className="flex-1 py-4 bg-red-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-red-500/20 disabled:opacity-50 hover:scale-105 transition-all"
+                                    >
+                                        {isDeleting ? 'Deleting...' : 'Delete'}
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </PremiumLayout>
     );
 }

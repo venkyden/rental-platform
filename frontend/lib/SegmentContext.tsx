@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { apiClient } from '@/lib/api';
+import { useLanguage } from '@/lib/LanguageContext';
 
 interface QuickAction {
     id: string;
@@ -162,8 +163,15 @@ export function CommonFeatureGate({
 // Quick actions component - renders segment-specific actions
 export function QuickActions({ className = '' }: { className?: string }) {
     const { config, loading } = useSegment();
-
+    const { t } = useLanguage();
+    
     if (loading || !config) return null;
+
+    // Helper to translate backend labels if a translation exists
+    const translateLabel = (label: string) => {
+        const key = `dashboard.quickActions.${label.toLowerCase().replace(/\s+/g, '_')}`;
+        return t(key, undefined, label);
+    };
 
     return (
         <div className={`grid grid-cols-2 md:grid-cols-4 gap-4 ${className}`}>
@@ -175,7 +183,7 @@ export function QuickActions({ className = '' }: { className?: string }) {
                 >
                     <span className="text-2xl mb-2">{action.icon}</span>
                     <span className="text-sm text-center font-medium text-gray-700">
-                        {action.label}
+                        {translateLabel(action.label)}
                     </span>
                 </a>
             ))}
@@ -186,34 +194,35 @@ export function QuickActions({ className = '' }: { className?: string }) {
 // Common actions bar - shows platform-wide actions (verification, profile, etc.)
 export function CommonActionsBar({ className = '' }: { className?: string }) {
     const { verificationStatus, loading } = useSegment();
+    const { t } = useLanguage();
 
     if (loading) return null;
 
     const commonActions = [
         {
             id: 'profile',
-            label: 'My Profile',
+            label: t('common.actions.profile', undefined, 'My Profile'),
             icon: '',
             path: '/profile',
             always: true
         },
         {
             id: 'id_verification',
-            label: 'ID Verification',
+            label: t('common.actions.verification', undefined, 'ID Verification'),
             icon: verificationStatus?.id_verified ? '' : '🆔',
             path: '/verify/identity',
-            badge: !verificationStatus?.id_verified ? 'To complete' : undefined
+            badge: !verificationStatus?.id_verified ? t('common.actions.toComplete', undefined, 'To complete') : undefined
         },
         {
             id: 'documents',
-            label: 'Documents',
+            label: t('common.actions.documents', undefined, 'Documents'),
             icon: '',
             path: '/documents',
             always: true
         },
         {
             id: 'support',
-            label: 'Help',
+            label: t('common.actions.help', undefined, 'Help'),
             icon: '',
             path: '/support',
             always: true
@@ -262,14 +271,15 @@ export function SegmentBadge() {
 // Verification progress component - shows what's completed
 export function VerificationProgress() {
     const { verificationStatus, loading } = useSegment();
+    const { t } = useLanguage();
 
     if (loading || !verificationStatus) return null;
 
     const steps = [
-        { key: 'email_verified', label: 'Email', done: verificationStatus.email_verified },
-        { key: 'onboarding_completed', label: 'Questionnaire', done: verificationStatus.onboarding_completed },
-        { key: 'id_verified', label: 'Identity', done: verificationStatus.id_verified },
-        { key: 'employment_verified', label: 'Employment', done: verificationStatus.employment_verified },
+        { key: 'email_verified', label: t('common.verification.email', undefined, 'Email'), done: verificationStatus.email_verified },
+        { key: 'onboarding_completed', label: t('common.verification.questionnaire', undefined, 'Questionnaire'), done: verificationStatus.onboarding_completed },
+        { key: 'id_verified', label: t('common.verification.identity', undefined, 'Identity'), done: verificationStatus.id_verified },
+        { key: 'employment_verified', label: t('common.verification.employment', undefined, 'Employment'), done: verificationStatus.employment_verified },
     ];
 
     const completed = steps.filter(s => s.done).length;
@@ -278,7 +288,9 @@ export function VerificationProgress() {
     return (
         <div className="bg-white rounded-xl p-4 shadow-sm border">
             <div className="flex justify-between items-center mb-2">
-                <span className="font-medium text-gray-900">Profile Verification</span>
+                <span className="font-medium text-gray-900">
+                    {t('common.verification.title', undefined, 'Profile Verification')}
+                </span>
                 <span className="text-sm text-gray-500">{percentage}%</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2 mb-3">

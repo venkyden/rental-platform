@@ -20,6 +20,7 @@ class NotificationType(str, enum.Enum):
     MATCH = "match"
     VERIFICATION = "verification"
     SYSTEM = "system"
+    DISPUTE = "dispute"
 
 
 class Notification(Base):

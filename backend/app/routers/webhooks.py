@@ -130,34 +130,58 @@ async def verification_webhook(
     return {"status": "acknowledged", "event": event}
 
 
-@router.post("/payment/callback")
-async def payment_webhook(
+import stripe
+
+@router.post("/stripe")
+async def stripe_webhook(
     request: Request,
     stripe_signature: str = Header(None, alias="Stripe-Signature"),
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Webhook endpoint for payment provider callbacks (Stripe, etc.)
-    For future monetization features.
+    Webhook endpoint for Stripe callbacks.
+    Handles Identity Verification and Payment events.
     """
-    body = await request.body()
-
-    # Verify Stripe signature
-    stripe_secret = os.getenv("STRIPE_WEBHOOK_SECRET")
-    if stripe_secret and stripe_signature:
-        # Stripe uses a different signature format
-        # In production, use stripe.Webhook.construct_event()
-        pass
+    payload = await request.body()
+    endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
 
     try:
-        payload = json.loads(body)
-    except json.JSONDecodeError:
-        raise HTTPException(status_code=400, detail="Invalid JSON payload")
+        if endpoint_secret and stripe_signature:
+            event = stripe.Webhook.construct_event(
+                payload, stripe_signature, endpoint_secret
+            )
+        else:
+            # Fallback for dev if secret not configured (CAUTION: non-secure)
+            data = json.loads(payload)
+            event = stripe.Event.construct_from(data, stripe.api_key)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Webhook Error: {str(e)}")
 
-    event_type = payload.get("type")
+    event_type = event["type"]
+    event_data = event["data"]["object"]
 
-    # Handle different event types
-    if event_type == "checkout.session.completed":
+    # 1. Handle Identity Verification
+    if event_type == "identity.verification_session.verified":
+        session_id = event_data["id"]
+        # In a real app, you'd map session_id to user_id in your DB
+        # For now, we'll assume the client_reference_id or metadata contains user_id
+        user_id = event_data.get("metadata", {}).get("user_id")
+        if user_id:
+            result = await db.execute(select(User).where(User.id == user_id))
+            user = result.scalar_one_or_none()
+            if user:
+                user.identity_verified = True
+                user.trust_score = min(100, user.trust_score + 40) # Verified ID is high value
+                await db.commit()
+                
+                await email_service.send_verification_success_email(
+                    to_email=user.email,
+                    full_name=user.full_name or "User",
+                    verification_type="identity"
+                )
+
+    # 2. Handle Payments
+    elif event_type == "checkout.session.completed":
         # Handle successful payment
         return {"status": "processed", "action": "payment_recorded"}
 

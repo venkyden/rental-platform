@@ -74,10 +74,8 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                 captureUrl: data.capture_url,
                 expiresAt: data.expires_at,
             });
-            // Start polling for completion
             startPolling(data.verification_code);
         } catch (err) {
-            console.error('Failed to create verification session', err);
             setError('Failed to create verification session');
         } finally {
             setQrLoading(false);
@@ -94,7 +92,6 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                     onSuccess();
                 }
             } catch {
-                // Session expired or error — stop polling
                 if (pollRef.current) clearInterval(pollRef.current);
             }
         }, 3000);
@@ -102,6 +99,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
 
     const copyToClipboard = (url: string) => {
         navigator.clipboard.writeText(url);
+        toast.success('Link copied');
     };
 
     const getEmploymentDocumentTypes = () => {
@@ -140,7 +138,6 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
             ];
         }
         
-        // Default to employee
         return [
             { value: 'payslip', label: t('docs.payslip', undefined, 'Last 3 Payslips'), captures: 3 },
             { value: 'contract', label: t('docs.contract', undefined, 'Employment Contract / Certificate'), captures: 1 },
@@ -166,7 +163,6 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
     };
 
     const documentTypes = getDocumentTypes();
-
     const selectedDocType = documentTypes.find(dt => dt.value === documentType);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -184,40 +180,24 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
         if (!files.length || !documentType) {
             setError('Please select a document type and capture/upload all required photos');
             return;
         }
-
         setUploading(true);
         setError('');
-
         try {
-            // Upload all files
             for (let i = 0; i < files.length; i++) {
                 const formData = new FormData();
                 formData.append('file', files[i]);
                 formData.append('document_type', documentType);
                 formData.append('side', i === 0 ? 'front' : 'back');
-
-                const endpoint = verificationType === 'identity'
-                    ? '/verification/identity/upload'
-                    : verificationType === 'property' 
-                        ? '/verification/property/upload'
-                        : '/verification/employment/upload';
-
+                const endpoint = verificationType === 'identity' ? '/verification/identity/upload' : verificationType === 'property' ? '/verification/property/upload' : '/verification/employment/upload';
                 await apiClient.client.post(endpoint, formData, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                    },
-                    params: {
-                        document_type: documentType,
-                        ...(verificationType === 'property' && { property_id: propertyId })
-                    }
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                    params: { document_type: documentType, ...(verificationType === 'property' && { property_id: propertyId }) }
                 });
             }
-
             onSuccess();
         } catch (err: any) {
             setError(err.response?.data?.detail || 'Upload failed. Please try again.');
@@ -226,107 +206,69 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
         }
     };
 
-    // ─── Desktop Identity: show QR code ───
     if (verificationType === 'identity' && !isMobile) {
         return (
-            <motion.div
-                variants={containerVariants}
-                initial="hidden"
-                animate="show"
-                className="w-full bg-white dark:bg-zinc-900/50 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 p-6 md:p-8"
-            >
-                <motion.div variants={itemVariants} className="text-center sm:text-left mb-6">
-                    <h3 className="text-2xl font-extrabold text-zinc-900 dark:text-white tracking-tight">{t('dashboard.verification.verification.tabs.identity', undefined, 'Identity Verification')}</h3>
-                    <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-                         {t('cameraCapture.liveCaptureDesc', undefined, 'For security, capture live photos of your ID using your phone\'s camera')}
-                    </p>
-                </motion.div>
+            <div className="w-full">
+                <div className="text-center mb-12">
+                    <h3 className="text-4xl font-black tracking-tighter mb-4">{t('dashboard.verification.verification.tabs.identity', undefined, 'Identity Verification')}</h3>
+                    <p className="text-zinc-500 font-medium max-w-md mx-auto">For security, capture live photos of your ID using your phone's camera.</p>
+                </div>
 
                 {qrLoading && (
-                    <motion.div variants={itemVariants} className="text-center py-12">
-                        <div className="w-10 h-10 border-4 border-teal-500/30 border-t-teal-500 rounded-full animate-spin mx-auto mb-4" />
-                        <p className="text-zinc-500 dark:text-zinc-400">{t('dashboard.verification.verification.actions.generatingSession', undefined, 'Generating secure session...')}</p>
-                    </motion.div>
-                )}
-
-                {error && (
-                    <motion.div variants={itemVariants} className="mb-6 rounded-xl bg-red-50/50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/30 p-4">
-                        <p className="text-sm font-medium text-red-800 dark:text-red-400">{error}</p>
-                    </motion.div>
+                    <div className="py-12 flex flex-col items-center">
+                        <div className="w-12 h-12 border-4 border-teal-500/30 border-t-teal-500 rounded-full animate-spin mb-4" />
+                        <p className="text-zinc-400 font-black text-xs uppercase tracking-widest">Securing Session...</p>
+                    </div>
                 )}
 
                 {qrSession && (
-                    <motion.div variants={containerVariants} className="space-y-6 flex flex-col items-center sm:items-stretch">
-                        {/* QR Code */}
-                        <motion.div variants={itemVariants} className="flex justify-center">
-                            <div className="p-4 bg-white rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-800">
-                                <QRCodeSVG
-                                    value={qrSession.captureUrl}
-                                    size={200}
-                                    level="H"
-                                    includeMargin={true}
-                                />
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-12">
+                        <div className="flex justify-center">
+                            <div className="p-8 bg-white dark:bg-zinc-800 rounded-[2.5rem] shadow-2xl shadow-zinc-200/50 dark:shadow-black/50 border border-zinc-100 dark:border-zinc-700/30">
+                                <QRCodeSVG value={qrSession.captureUrl} size={220} level="H" includeMargin={true} />
                             </div>
-                        </motion.div>
+                        </div>
 
-                        {/* Copy Link */}
-                        <motion.div variants={itemVariants} className="w-full bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-4 border border-zinc-100 dark:border-zinc-800">
-                            <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">Or copy this link:</p>
-                            <div className="flex gap-2">
-                                <input
-                                    type="text"
-                                    value={qrSession.captureUrl}
-                                    readOnly
-                                    className="flex-1 px-4 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm text-zinc-600 dark:text-zinc-300 focus:outline-none"
-                                />
-                                <button
-                                    onClick={() => copyToClipboard(qrSession.captureUrl)}
-                                    className="px-5 py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-medium rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-colors text-sm shadow-sm"
-                                >
-                                    Copy
-                                </button>
+                        <div className="grid md:grid-cols-2 gap-8">
+                            <div className="glass-card !p-8">
+                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-teal-600 mb-6">Instructions</h4>
+                                <ul className="space-y-4">
+                                    {[
+                                        'Scan QR code with your phone',
+                                        'Select your ID type',
+                                        'Capture clear photos',
+                                        'Watch this screen update'
+                                    ].map((step, i) => (
+                                        <li key={i} className="flex items-center gap-4 text-sm font-bold text-zinc-700 dark:text-zinc-300">
+                                            <span className="w-6 h-6 rounded-lg bg-teal-50 dark:bg-teal-900/30 flex items-center justify-center text-teal-600 text-[10px] font-black">{i + 1}</span>
+                                            {step}
+                                        </li>
+                                    ))}
+                                </ul>
                             </div>
-                        </motion.div>
 
-                        {/* Instructions */}
-                        <motion.div variants={itemVariants} className="w-full bg-teal-50/50 dark:bg-teal-900/10 border border-teal-100 dark:border-teal-900/30 rounded-xl p-5">
-                            <p className="text-sm font-semibold text-teal-800 dark:text-teal-300 mb-3"> {t('dashboard.verification.verification.actions.howItWorks', undefined, 'How it works:')}</p>
-                            <ol className="text-sm text-teal-700/80 dark:text-teal-400/80 space-y-2 list-decimal list-inside ml-1">
-                                <li>{t('dashboard.verification.verification.actions.scanQr', undefined, 'Scan the QR code with your phone camera')}</li>
-                                <li>{t('dashboard.verification.verification.actions.selectDoc', undefined, 'Select your document type')}</li>
-                                <li>{t('dashboard.verification.verification.actions.takePhoto', undefined, 'Take a clear photo of your document')}</li>
-                                <li>{t('dashboard.verification.verification.actions.autoUpdate', undefined, 'This page will update automatically')}</li>
-                            </ol>
-                        </motion.div>
-
-                        {/* Waiting indicator */}
-                        <motion.div variants={itemVariants} className="flex items-center justify-center gap-3 text-zinc-500 dark:text-zinc-400 text-sm font-medium py-2">
-                            <span className="relative flex h-3 w-3">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-3 w-3 bg-teal-500"></span>
-                            </span>
-                            {t('dashboard.verification.verification.actions.mobileWaiting', undefined, 'Waiting for mobile capture...')}
-                        </motion.div>
-
-                        {/* Expiry */}
-                        <motion.p variants={itemVariants} className="text-xs text-zinc-400 dark:text-zinc-500 text-center font-medium">
-                            Session expires: {new Date(qrSession.expiresAt).toLocaleTimeString()}
-                        </motion.p>
+                            <div className="glass-card !p-8 flex flex-col justify-center">
+                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 mb-6">Waiting for capture</h4>
+                                <div className="flex items-center gap-4 py-4">
+                                    <div className="relative flex h-4 w-4">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-4 w-4 bg-teal-500"></span>
+                                    </div>
+                                    <p className="text-sm font-black uppercase tracking-widest text-zinc-900 dark:text-white animate-pulse">Live Sync Active</p>
+                                </div>
+                                <p className="mt-auto text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+                                    Session Expires: {new Date(qrSession.expiresAt).toLocaleTimeString()}
+                                </p>
+                            </div>
+                        </div>
                     </motion.div>
                 )}
-
-                <motion.div variants={itemVariants} className="mt-6 p-4 bg-zinc-50 dark:bg-zinc-800/30 rounded-xl border border-zinc-100 dark:border-zinc-800/50">
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed text-center sm:text-left">
-                         {t('dashboard.verification.verification.legalDisclaimerDesc', undefined, 'Your documents are encrypted and stored securely. We use industry-standard security practices to protect your privacy.')}
-                    </p>
-                </motion.div>
-            </motion.div>
+            </div>
         );
     }
 
-    // ─── Mobile Identity / Employment: standard flow ───
     return (
-        <>
+        <div className="w-full">
             {showCamera && (
                 <DocumentCapture
                     documentType={documentType}
@@ -335,227 +277,74 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                 />
             )}
 
-            <motion.div
-                variants={containerVariants}
-                initial="hidden"
-                animate="show"
-                className="w-full bg-white dark:bg-zinc-900/50 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 p-6 md:p-8"
-            >
-                <motion.div variants={itemVariants} className="text-center sm:text-left mb-8">
-                    <h3 className="text-2xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
-                        {verificationType === 'identity' 
-                            ? t('dashboard.verification.verification.tabs.identity', undefined, 'Identity Verification')
-                            : verificationType === 'property' 
-                                ? t('dashboard.verification.verification.property_title', undefined, 'Property Ownership Verification')
-                                : t('dashboard.verification.verification.tabs.employment', undefined, 'Employment & Resource Verification')}
-                    </h3>
-                    <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-                        {verificationType === 'identity'
-                            ? t('dashboard.verification.verification.identity_desc', undefined, 'For security, please capture live photos of your government-issued ID')
-                            : verificationType === 'property'
-                                ? t('dashboard.verification.verification.property_desc', undefined, 'Please upload proof that you own this property (Deed or Tax Notice)')
-                                : t('dashboard.verification.verification.employment_desc', undefined, 'Upload your professional or financial documents')}
-                    </p>
-                </motion.div>
+            <div className="text-center mb-12">
+                <h3 className="text-3xl font-black tracking-tighter mb-4">
+                    {verificationType === 'identity' ? 'Identity Verification' : verificationType === 'property' ? 'Ownership Verification' : 'Resource Verification'}
+                </h3>
+                <p className="text-zinc-500 font-medium max-w-md mx-auto">
+                    {verificationType === 'identity' ? 'Capture live photos of your government-issued ID.' : verificationType === 'property' ? 'Upload proof of ownership for this listing.' : 'Upload your professional or financial documents.'}
+                </p>
+            </div>
 
-                {/* Guarantor Prompt Logic for Employment/Resources */}
-                {verificationType === 'employment' && hasGuarantor === null && (
-                    <motion.div variants={itemVariants} className="mb-6 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-6 border border-zinc-200 dark:border-zinc-700">
-                        <h4 className="text-lg font-semibold text-zinc-900 dark:text-white mb-2">Do you have a guarantor?</h4>
-                        <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">A guarantor is highly recommended in France. If you don't have one, you can use institutional services.</p>
-                        <div className="flex flex-col sm:flex-row gap-3">
-                            <button
-                                onClick={() => setHasGuarantor(true)}
-                                className="flex-1 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm font-medium text-zinc-900 dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
-                            >
-                                Yes, I have documents
-                            </button>
-                            <button
-                                onClick={() => setHasGuarantor(false)}
-                                className="flex-1 py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-lg text-sm font-medium hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-colors"
-                            >
-                                No, I need options
-                            </button>
-                        </div>
-                    </motion.div>
-                )}
+            <form onSubmit={handleSubmit} className="space-y-10">
+                <div className="glass-card !p-8 border-none shadow-xl">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 block mb-4">Document Type</label>
+                    <select
+                        value={documentType}
+                        onChange={(e) => { setDocumentType(e.target.value); setFiles([]); }}
+                        className="w-full bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-zinc-900 dark:text-white focus:ring-2 focus:ring-teal-500/50 transition-all"
+                        required
+                    >
+                        <option value="">Select type...</option>
+                        {documentTypes.map((type) => <option key={type.value} value={type.value}>{type.label}</option>)}
+                    </select>
+                </div>
 
-                {verificationType === 'employment' && hasGuarantor === false && (
-                    <motion.div variants={itemVariants} className="mb-8 grid gap-4 sm:grid-cols-2">
-                        <div className="bg-blue-50/50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-900/30 rounded-xl p-5 flex flex-col">
-                            <h5 className="font-bold text-blue-900 dark:text-blue-300 mb-1">Visale (Free)</h5>
-                            <p className="text-xs text-blue-700 dark:text-blue-400 mb-4 flex-1">A free state guarantee for under 30s or new hires. Obtain your certificate and upload it here.</p>
-                            <a href="https://www.visale.fr/" target="_blank" rel="noopener noreferrer" className="text-center py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
-                                Apply on Visale
-                            </a>
-                        </div>
-                        <div className="bg-teal-50/50 dark:bg-teal-900/10 border border-teal-200 dark:border-teal-900/30 rounded-xl p-5 flex flex-col">
-                            <h5 className="font-bold text-teal-900 dark:text-teal-300 mb-1">Garantme (Paid)</h5>
-                            <p className="text-xs text-teal-700 dark:text-teal-400 mb-4 flex-1">Ideal for international students or freelancers. Get approved in 24h.</p>
-                            <a href="https://garantme.fr/" target="_blank" rel="noopener noreferrer" className="text-center py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded-lg transition-colors">
-                                Apply on Garantme
-                            </a>
-                        </div>
-                        <div className="col-span-full pt-2">
-                            <p className="text-xs text-center text-zinc-500">Already have your certificate? Select it from the dropdown below to upload.</p>
-                        </div>
-                    </motion.div>
-                )}
-
-                <motion.form variants={containerVariants} onSubmit={handleSubmit} className={`space-y-6 ${(verificationType === 'employment' && hasGuarantor === null) ? 'opacity-50 pointer-events-none' : ''}`}>
-                    {error && (
-                        <motion.div variants={itemVariants} className="rounded-xl bg-red-50/50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/30 p-4">
-                            <p className="text-sm font-medium text-red-800 dark:text-red-400">{error}</p>
-                        </motion.div>
-                    )}
-
-                    <motion.div variants={itemVariants}>
-                        <label htmlFor="documentType" className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-1.5">
-                            Document Type
-                        </label>
-                        <select
-                            id="documentType"
-                            value={documentType}
-                            onChange={(e) => {
-                                setDocumentType(e.target.value);
-                                setFiles([]); // Reset files when document type changes
-                            }}
-                            className="block w-full px-4 py-3 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900/50 text-zinc-900 dark:text-white focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 transition-all shadow-sm"
-                            required
-                        >
-                            <option value="">Select document type...</option>
-                            {documentTypes.map((type) => (
-                                <option key={type.value} value={type.value}>
-                                    {type.label}
-                                </option>
-                            ))}
-                        </select>
-                    </motion.div>
-
-                    <motion.div variants={itemVariants}>
-                        {verificationType === 'identity' ? (
-                            <div className="space-y-3">
-                                <label className="block text-sm font-medium text-zinc-800 dark:text-zinc-300">
-                                    Capture Document {selectedDocType && <span className="text-zinc-500 font-normal">({selectedDocType.captures} photo{selectedDocType.captures > 1 ? 's' : ''})</span>}
-                                </label>
-                                {files.length === 0 ? (
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            if (!documentType) {
-                                                setError('Please select a document type first');
-                                                return;
-                                            }
-                                            setShowCamera(true);
-                                        }}
-                                        disabled={!documentType}
-                                        className="w-full py-8 border-2 border-dashed border-teal-300 dark:border-teal-900/50 rounded-xl hover:bg-teal-50/50 dark:hover:bg-teal-900/10 hover:border-teal-500 transition-all flex flex-col items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed group"
-                                    >
-                                        <div className="w-12 h-12 bg-teal-100 dark:bg-teal-900/40 text-teal-600 dark:text-teal-400 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                                            <span className="text-2xl"></span>
-                                        </div>
-                                        <span className="font-semibold text-teal-700 dark:text-teal-400">Take Photo of Document</span>
-                                    </button>
-                                ) : (
-                                    <div className="space-y-4">
-                                        <div className="bg-teal-50/50 dark:bg-teal-900/10 border border-teal-200 dark:border-teal-900/30 rounded-xl p-4">
-                                            <div className="flex items-center gap-2 mb-3">
-                                                <div className="w-8 h-8 rounded-full bg-teal-100 dark:bg-teal-900/50 flex items-center justify-center text-teal-600 dark:text-teal-400">
-                                                    
-                                                </div>
-                                                <p className="text-sm font-semibold text-teal-900 dark:text-teal-300">
-                                                    {files.length} photo{files.length > 1 ? 's' : ''} captured
-                                                </p>
-                                            </div>
-                                            <div className="space-y-2">
-                                                {files.map((file, index) => (
-                                                    <div key={index} className="flex justify-between items-center bg-white dark:bg-zinc-900/60 p-2.5 rounded-lg border border-teal-100 dark:border-teal-900/20">
-                                                        <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300 truncate max-w-[200px]">{index + 1}. {file.name}</span>
-                                                        <span className="text-xs text-zinc-500">{(file.size / 1024).toFixed(0)} KB</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                        <div className="flex justify-end">
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    setFiles([]);
-                                                    setShowCamera(true);
-                                                }}
-                                                className="text-sm font-medium text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
-                                            >
-                                                ↻ Retake photos
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-                                <p className="text-xs text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5 pt-1">
-                                    <span></span> Live capture prevents fraud and ensures document authenticity
-                                </p>
-                            </div>
-                        ) : (
-                            <div className="space-y-2">
-                                <label htmlFor="file" className="block text-sm font-medium text-zinc-800 dark:text-zinc-300">
-                                    Upload Document
-                                </label>
-                                <input
-                                    type="file"
-                                    id="file"
-                                    onChange={handleFileChange}
-                                    accept="image/jpeg,image/png,image/jpg,application/pdf"
-                                    className="block w-full text-sm text-zinc-500 dark:text-zinc-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-zinc-100 dark:file:bg-zinc-800 file:text-zinc-700 dark:file:text-zinc-300 hover:file:bg-zinc-200 dark:hover:file:bg-zinc-700/80 focus:outline-none transition-all cursor-pointer"
-                                    required
-                                />
-                                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-2">
-                                    Accepted formats: JPEG, PNG, PDF (Max 10MB)
-                                </p>
-                            </div>
-                        )}
-                    </motion.div>
-
-                    {files.length > 0 && verificationType === 'employment' && (
-                        <motion.div variants={itemVariants} className="bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700/50 rounded-xl p-4 flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-lg bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center text-zinc-600 dark:text-zinc-300">
-                                    
-                                </div>
-                                <div>
-                                    <p className="text-sm font-medium text-zinc-900 dark:text-white truncate max-w-[200px]">
-                                        {files[0].name}
-                                    </p>
-                                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                                        {(files[0].size / 1024 / 1024).toFixed(2)} MB
-                                    </p>
-                                </div>
-                            </div>
-                        </motion.div>
-                    )}
-
-                    <motion.div variants={itemVariants} className="pt-2">
+                <div className="glass-card !p-8 border-none shadow-xl">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 block mb-6">File Upload</label>
+                    
+                    {verificationType === 'identity' ? (
                         <button
-                            type="submit"
-                            disabled={uploading || files.length === 0}
-                            className="w-full flex items-center justify-center py-3.5 px-4 rounded-xl text-sm font-bold text-white bg-teal-600 hover:bg-teal-500 focus:outline-none focus:ring-4 focus:ring-teal-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm active:scale-[0.98]"
+                            type="button"
+                            onClick={() => documentType ? setShowCamera(true) : setError('Select type first')}
+                            className="w-full py-16 border-2 border-dashed border-zinc-200 dark:border-zinc-700/50 rounded-[2rem] hover:border-teal-500/50 hover:bg-teal-50/5 dark:hover:bg-teal-900/5 transition-all group"
                         >
-                            {uploading ? (
-                                <span className="flex items-center gap-2">
-                                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                    Uploading & Verifying...
-                                </span>
-                            ) : (
-                                'Upload & Verify Securely'
-                            )}
+                            <div className="flex flex-col items-center gap-4">
+                                <div className="w-16 h-16 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-400 group-hover:bg-teal-500 group-hover:text-white transition-all">
+                                    <Camera className="w-8 h-8" />
+                                </div>
+                                <p className="text-sm font-black uppercase tracking-widest text-zinc-900 dark:text-white">Capture ID Photo</p>
+                            </div>
                         </button>
-                    </motion.div>
-                </motion.form>
+                    ) : (
+                        <div className="relative">
+                            <input
+                                type="file"
+                                onChange={handleFileChange}
+                                accept="image/*,application/pdf"
+                                className="absolute inset-0 opacity-0 cursor-pointer"
+                                required
+                            />
+                            <div className="w-full py-12 border-2 border-dashed border-zinc-200 dark:border-zinc-700/50 rounded-[2rem] flex flex-col items-center gap-4">
+                                <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-400">
+                                    <Upload className="w-6 h-6" />
+                                </div>
+                                <p className="text-xs font-black uppercase tracking-widest text-zinc-400">{files.length > 0 ? files[0].name : 'Select or drop file'}</p>
+                            </div>
+                        </div>
+                    )}
+                </div>
 
-                <motion.div variants={itemVariants} className="mt-6 pt-6 border-t border-zinc-100 dark:border-zinc-800/50">
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 text-center sm:text-left leading-relaxed">
-                         {t('dashboard.verification.verification.legalDisclaimerDesc', undefined, 'Your documents are encrypted and stored securely. We use industry-standard security practices to protect your privacy.')}
-                    </p>
-                </motion.div>
-            </motion.div>
-        </>
+                {error && <p className="text-center text-red-500 text-[10px] font-black uppercase tracking-widest">{error}</p>}
+
+                <button
+                    type="submit"
+                    disabled={uploading || files.length === 0}
+                    className="btn-primary !w-full !py-5 !rounded-2xl !text-sm uppercase tracking-[0.2em] shadow-2xl shadow-teal-500/20 active:scale-95 transition-all"
+                >
+                    {uploading ? 'Processing Securely...' : 'Submit Verification'}
+                </button>
+            </form>
+        </div>
     );
 }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { apiClient } from '@/lib/api';
+import { useLanguage } from '@/lib/LanguageContext';
 
 interface TeamMember {
     id: string;
@@ -50,6 +51,7 @@ export default function TeamManager() {
     const [loading, setLoading] = useState(true);
     const [showInviteModal, setShowInviteModal] = useState(false);
     const [inviteLink, setInviteLink] = useState<string | null>(null);
+    const { t } = useLanguage();
 
     // Invite form state
     const [inviteEmail, setInviteEmail] = useState('');
@@ -298,7 +300,7 @@ export default function TeamManager() {
                                         type="email"
                                         value={inviteEmail}
                                         onChange={(e) => setInviteEmail(e.target.value)}
-                                        placeholder="collaborator@email.com"
+                                        placeholder={t('common.placeholders.email')}
                                         className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                                     />
                                 </div>
@@ -312,7 +314,7 @@ export default function TeamManager() {
                                         type="text"
                                         value={inviteName}
                                         onChange={(e) => setInviteName(e.target.value)}
-                                        placeholder="John Doe"
+                                        placeholder={t('common.placeholders.fullName')}
                                         className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                                     />
                                 </div>

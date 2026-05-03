@@ -183,7 +183,7 @@ export default function LoginPage() {
                         autoComplete="email"
                         required
                         className="block w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-900 dark:text-white placeholder-zinc-500 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
-                        placeholder="name@company.com"
+                        placeholder={t('common.placeholders.email')}
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                     />
@@ -212,7 +212,7 @@ export default function LoginPage() {
                             autoComplete="current-password"
                             required
                             className="block w-full px-4 py-3 pr-12 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-900 dark:text-white placeholder-zinc-500 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
-                            placeholder="••••••••"
+                            placeholder={t('common.placeholders.password')}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                         />

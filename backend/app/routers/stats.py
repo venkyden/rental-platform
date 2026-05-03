@@ -87,7 +87,12 @@ async def get_landlord_stats(
             Property.landlord_id == current_user.id
         )
     )
-    total_views, potential_revenue = result_views_rev.fetchone()
+    row = result_views_rev.fetchone()
+    if row:
+        total_views, potential_revenue = row
+    else:
+        total_views, potential_revenue = 0, 0.0
+    
     total_views = total_views or 0
     potential_revenue = potential_revenue or 0.0
 

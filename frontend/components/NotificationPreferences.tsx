@@ -21,6 +21,9 @@ const DEFAULT_PREFERENCES: ContactPreferences = {
     preferred_contact: 'email'
 };
 
+import { motion } from 'framer-motion';
+import { Mail, MessageSquare, Phone, Bell, ShieldCheck, Clock, Check } from 'lucide-react';
+
 export default function NotificationPreferences() {
     const { user } = useAuth();
     const toast = useToast();
@@ -55,155 +58,140 @@ export default function NotificationPreferences() {
     };
 
     return (
-        <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between mb-6">
-                <div>
-                    <h2 className="text-xl font-bold text-gray-900">Contact Preferences</h2>
-                    <p className="text-sm text-gray-500">How would you like to be notified?</p>
+        <div className="space-y-12">
+            <div className="glass-card !p-10">
+                <div className="flex items-center justify-between mb-12">
+                    <div>
+                        <h2 className="text-2xl font-black tracking-tight">Contact Preferences</h2>
+                        <p className="text-sm font-medium text-zinc-500 mt-1">Control how Roomivo communicates with you.</p>
+                    </div>
+                    {hasChanges && (
+                        <button
+                            onClick={handleSave}
+                            disabled={saving}
+                            className="px-6 py-3 bg-teal-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-teal-500/20 hover:scale-105 transition-all disabled:opacity-50"
+                        >
+                            {saving ? 'Saving...' : 'Save Changes'}
+                        </button>
+                    )}
                 </div>
-                {hasChanges && (
-                    <button
-                        onClick={handleSave}
-                        disabled={saving}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50"
-                    >
-                        {saving ? 'Saving...' : 'Save Changes'}
-                    </button>
+
+                {/* Notification Channels */}
+                <div className="space-y-6 mb-12">
+                    <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-6">Channels</h3>
+
+                    <div className="flex items-center justify-between p-6 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-transparent hover:border-zinc-200 dark:hover:border-zinc-700 transition-all">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-white dark:bg-zinc-700 rounded-xl shadow-sm">
+                                <Bell className="w-5 h-5 text-teal-500" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-black text-zinc-900 dark:text-white uppercase tracking-wider">In-App</p>
+                                <p className="text-xs font-bold text-zinc-500">Real-time alerts within the platform</p>
+                            </div>
+                        </div>
+                        <span className="text-[10px] font-black text-teal-500 uppercase tracking-widest">Always On</span>
+                    </div>
+
+                    {[
+                        { key: 'email_notifications', label: 'Email', desc: 'Critical updates and activity', icon: Mail },
+                        { key: 'sms_notifications', label: 'WhatsApp', desc: 'Instant mobile notifications', icon: MessageSquare }
+                    ].map((channel) => (
+                        <div key={channel.key} className="flex items-center justify-between p-6 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-transparent hover:border-zinc-200 dark:hover:border-zinc-700 transition-all">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-white dark:bg-zinc-700 rounded-xl shadow-sm">
+                                    <channel.icon className="w-5 h-5 text-zinc-400" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-black text-zinc-900 dark:text-white uppercase tracking-wider">{channel.label}</p>
+                                    <p className="text-xs font-bold text-zinc-500">{channel.desc}</p>
+                                </div>
+                            </div>
+                            <label className="relative inline-flex items-center cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={preferences[channel.key as keyof ContactPreferences] as boolean}
+                                    onChange={(e) => handleChange(channel.key as keyof ContactPreferences, e.target.checked)}
+                                    className="sr-only peer"
+                                />
+                                <div className="w-12 h-6 bg-zinc-200 dark:bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-500"></div>
+                            </label>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Email Frequency */}
+                {preferences.email_notifications && (
+                    <div className="mb-12">
+                        <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-6">Frequency</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            {[
+                                { value: 'instant', label: 'Instant', icon: Clock },
+                                { value: 'daily', label: 'Daily', icon: Clock },
+                                { value: 'weekly', label: 'Weekly', icon: Clock }
+                            ].map(option => (
+                                <button
+                                    key={option.value}
+                                    onClick={() => handleChange('email_frequency', option.value)}
+                                    className={`p-6 rounded-2xl border-2 text-left transition-all duration-500 ${preferences.email_frequency === option.value
+                                        ? 'border-teal-500 bg-teal-50/50 dark:bg-teal-900/10'
+                                        : 'border-transparent bg-zinc-50 dark:bg-zinc-800/50 hover:bg-zinc-100'
+                                        }`}
+                                >
+                                    <div className="flex justify-between items-start mb-4">
+                                        <option.icon className={`w-5 h-5 ${preferences.email_frequency === option.value ? 'text-teal-500' : 'text-zinc-400'}`} />
+                                        {preferences.email_frequency === option.value && <div className="bg-teal-500 rounded-full p-1"><Check className="w-3 h-3 text-white" /></div>}
+                                    </div>
+                                    <p className={`text-xs font-black uppercase tracking-widest ${preferences.email_frequency === option.value ? 'text-teal-600' : 'text-zinc-900 dark:text-white'}`}>
+                                        {option.label}
+                                    </p>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
                 )}
-            </div>
 
-            {/* Notification Channels */}
-            <div className="space-y-4 mb-8">
-                <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">
-                    Notification Channels
-                </h3>
-
-                {/* In-App (Always on) */}
-                <div className="flex items-center justify-between py-3 border-b border-gray-100">
-                    <div className="flex items-center gap-3">
-                        <span className="text-xl"></span>
-                        <div>
-                            <p className="font-medium text-gray-900">In-App Notifications</p>
-                            <p className="text-sm text-gray-500">Always on - see notifications in the app</p>
-                        </div>
-                    </div>
-                    <span className="text-green-600 text-sm font-medium">Always On</span>
-                </div>
-
-                {/* Email */}
-                <div className="flex items-center justify-between py-3 border-b border-gray-100">
-                    <div className="flex items-center gap-3">
-                        <span className="text-xl"></span>
-                        <div>
-                            <p className="font-medium text-gray-900">Email Notifications</p>
-                            <p className="text-sm text-gray-500">Receive updates via email</p>
-                        </div>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                            type="checkbox"
-                            checked={preferences.email_notifications}
-                            onChange={(e) => handleChange('email_notifications', e.target.checked)}
-                            className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                    </label>
-                </div>
-
-                {/* WhatsApp */}
-                <div className="flex items-center justify-between py-3 border-b border-gray-100">
-                    <div className="flex items-center gap-3">
-                        <span className="text-xl"></span>
-                        <div>
-                            <p className="font-medium text-gray-900">WhatsApp Notifications</p>
-                            <p className="text-sm text-gray-500">Receive messages via WhatsApp (requires phone number)</p>
-                        </div>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                            type="checkbox"
-                            checked={preferences.sms_notifications}
-                            onChange={(e) => handleChange('sms_notifications', e.target.checked)}
-                            className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
-                    </label>
-                </div>
-            </div>
-
-            {/* Email Frequency */}
-            {preferences.email_notifications && (
-                <div className="mb-8">
-                    <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4">
-                        Email Frequency
-                    </h3>
-                    <div className="grid grid-cols-3 gap-3">
+                {/* Preferred Contact Method */}
+                <div>
+                    <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-6">Primary Method</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         {[
-                            { value: 'instant', label: 'Instant', desc: 'As they happen' },
-                            { value: 'daily', label: 'Daily Digest', desc: 'Once per day' },
-                            { value: 'weekly', label: 'Weekly', desc: 'Once per week' }
+                            { value: 'in_app', label: 'In-App', icon: Bell },
+                            { value: 'email', label: 'Email', icon: Mail },
+                            { value: 'phone', label: 'WhatsApp', icon: MessageSquare }
                         ].map(option => (
                             <button
                                 key={option.value}
-                                onClick={() => handleChange('email_frequency', option.value)}
-                                className={`p-4 rounded-xl border-2 text-left transition-all ${preferences.email_frequency === option.value
-                                    ? 'border-blue-500 bg-blue-50'
-                                    : 'border-gray-200 hover:border-gray-300'
+                                onClick={() => handleChange('preferred_contact', option.value)}
+                                className={`p-6 rounded-2xl border-2 text-left transition-all duration-500 ${preferences.preferred_contact === option.value
+                                    ? 'border-teal-500 bg-teal-50/50 dark:bg-teal-900/10'
+                                    : 'border-transparent bg-zinc-50 dark:bg-zinc-800/50 hover:bg-zinc-100'
                                     }`}
                             >
-                                <p className={`font-medium ${preferences.email_frequency === option.value ? 'text-blue-700' : 'text-gray-900'}`}>
+                                <div className="flex justify-between items-start mb-4">
+                                    <option.icon className={`w-5 h-5 ${preferences.preferred_contact === option.value ? 'text-teal-500' : 'text-zinc-400'}`} />
+                                    {preferences.preferred_contact === option.value && <div className="bg-teal-500 rounded-full p-1"><Check className="w-3 h-3 text-white" /></div>}
+                                </div>
+                                <p className={`text-xs font-black uppercase tracking-widest ${preferences.preferred_contact === option.value ? 'text-teal-600' : 'text-zinc-900 dark:text-white'}`}>
                                     {option.label}
                                 </p>
-                                <p className="text-sm text-gray-500">{option.desc}</p>
                             </button>
                         ))}
                     </div>
                 </div>
-            )}
 
-            {/* Preferred Contact Method */}
-            <div>
-                <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4">
-                    Preferred Contact Method
-                </h3>
-                <p className="text-sm text-gray-500 mb-4">
-                    How should landlords/tenants contact you?
-                    <span className="text-amber-600 font-medium"> Contact info is only shared after both parties are verified.</span>
-                </p>
-                <div className="grid grid-cols-3 gap-3">
-                    {[
-                        { value: 'in_app', label: 'In-App Messages', icon: '' },
-                        { value: 'email', label: 'Email', icon: '' },
-                        { value: 'phone', label: 'Phone/WhatsApp', icon: '' }
-                    ].map(option => (
-                        <button
-                            key={option.value}
-                            onClick={() => handleChange('preferred_contact', option.value)}
-                            className={`p-4 rounded-xl border-2 text-center transition-all ${preferences.preferred_contact === option.value
-                                ? 'border-blue-500 bg-blue-50'
-                                : 'border-gray-200 hover:border-gray-300'
-                                }`}
-                        >
-                            <span className="text-2xl block mb-1">{option.icon}</span>
-                            <p className={`font-medium text-sm ${preferences.preferred_contact === option.value ? 'text-blue-700' : 'text-gray-900'}`}>
-                                {option.label}
+                {/* Privacy Notice */}
+                <div className="mt-12 p-8 bg-zinc-900 dark:bg-zinc-800/80 rounded-3xl text-white">
+                    <div className="flex items-start gap-4">
+                        <div className="p-3 bg-zinc-800 dark:bg-zinc-700 rounded-2xl">
+                            <ShieldCheck className="w-6 h-6 text-teal-400" />
+                        </div>
+                        <div>
+                            <p className="text-sm font-black uppercase tracking-widest mb-2">Privacy Protected</p>
+                            <p className="text-xs font-bold text-zinc-400 leading-relaxed">
+                                Your personal contact details are only shared with verified parties after mutual identification. All initial communication is secured via Roomivo messaging.
                             </p>
-                        </button>
-                    ))}
-                </div>
-            </div>
-
-            {/* Privacy Notice */}
-            <div className="mt-8 p-4 bg-gray-50 rounded-xl">
-                <div className="flex items-start gap-3">
-                    <span className="text-xl"></span>
-                    <div>
-                        <p className="font-medium text-gray-900 text-sm">Privacy Protected</p>
-                        <p className="text-sm text-gray-600">
-                            Your contact details (phone, email) are only shared with the other party
-                            after <strong>both of you complete ID verification</strong>. Until then,
-                            all communication happens through our secure in-app messaging.
-                        </p>
+                        </div>
                     </div>
                 </div>
             </div>

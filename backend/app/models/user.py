@@ -89,6 +89,7 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     last_login = Column(DateTime, nullable=True)
+    refresh_token_version = Column(Integer, default=1)
 
     # Soft delete
     is_active = Column(Boolean, default=True)

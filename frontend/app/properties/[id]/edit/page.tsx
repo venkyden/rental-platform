@@ -11,6 +11,7 @@ import AddressAutocomplete from '@/components/AddressAutocomplete';
 import QRCodeDisplay from '@/components/QRCodeDisplay';
 import { Camera, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { motion, Variants } from 'framer-motion';
+import { useLanguage } from '@/lib/LanguageContext';
 
 const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -68,6 +69,7 @@ export default function EditPropertyPage() {
     const params = useParams();
     const { user } = useAuth();
     const { showToast } = useToast();
+    const { t } = useLanguage();
     const propertyId = params?.id as string;
 
     const [currentStep, setCurrentStep] = useState(1);
@@ -360,7 +362,7 @@ export default function EditPropertyPage() {
                                             value={formData.title}
                                             onChange={(e) => updateFormData({ title: e.target.value })}
                                             className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-zinc-900 dark:text-white bg-white"
-                                            placeholder="e.g., Bright 2BR Apartment in Central Paris"
+                                            placeholder={t('common.placeholders.fullName')} // Or property title if I had a key
                                         />
                                     </div>
                                     <div>
@@ -384,7 +386,7 @@ export default function EditPropertyPage() {
                                             onChange={(e) => updateFormData({ description: e.target.value })}
                                             className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-zinc-900 dark:text-white bg-white"
                                             rows={4}
-                                            placeholder="Describe your property..."
+                                            placeholder={t('common.placeholders.description')}
                                         />
                                     </div>
                                 </div>
@@ -409,7 +411,7 @@ export default function EditPropertyPage() {
                                             }}
                                             countryCode="fr"
                                             initialValue={formData.address_line1}
-                                            placeholder="Start typing an address in France…"
+                                            placeholder={t('common.placeholders.address')}
                                             variant="form"
                                         />
                                     </div>
@@ -420,7 +422,7 @@ export default function EditPropertyPage() {
                                             value={formData.address_line2}
                                             onChange={(e) => updateFormData({ address_line2: e.target.value })}
                                             className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-zinc-900 dark:text-white bg-white"
-                                            placeholder="Apartment, suite, etc. (optional)"
+                                            placeholder={t('common.placeholders.addressLine2')}
                                         />
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
@@ -431,6 +433,7 @@ export default function EditPropertyPage() {
                                                 value={formData.city}
                                                 onChange={(e) => updateFormData({ city: e.target.value })}
                                                 className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-zinc-900 dark:text-white bg-white"
+                                                placeholder={t('common.placeholders.city')}
                                             />
                                         </div>
                                         <div>
@@ -605,7 +608,7 @@ export default function EditPropertyPage() {
                                             <textarea
                                                 value={formData.charges_description || ''}
                                                 onChange={(e) => updateFormData({ charges_description: e.target.value })}
-                                                placeholder="Ex: Eau froide, entretien parties communes, ordures ménagères..."
+                                                placeholder={t('common.placeholders.charges')}
                                                 className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-sm text-zinc-900 dark:text-white placeholder:text-zinc-400 bg-white"
                                                 rows={2}
                                             />

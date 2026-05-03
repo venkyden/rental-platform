@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
     # Redis Cache
     REDIS_URL: Optional[str] = None
@@ -35,6 +36,7 @@ class Settings(BaseSettings):
     # Stripe (Identity verification)
     STRIPE_SECRET_KEY: Optional[str] = None
     STRIPE_IDENTITY_WEBHOOK_SECRET: Optional[str] = None
+    STRIPE_WEBHOOK_SECRET: Optional[str] = None
 
     # Monitoring
     SENTRY_DSN: Optional[str] = None

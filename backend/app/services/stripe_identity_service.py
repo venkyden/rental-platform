@@ -1,9 +1,12 @@
 import os
+import logging
 from typing import Any, Dict, Optional
 
 import stripe
 
 from app.core.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 class StripeIdentityService:
@@ -18,6 +21,12 @@ class StripeIdentityService:
         If NO API Key is present (Free/Mock mode), returns a simulated session.
         """
         if not self.api_key:
+            # Prevent Mock mode in Production
+            if settings.ENVIRONMENT == "production":
+                logger.error("Stripe API key missing in production!")
+                raise ValueError("Stripe API key is required in production environment")
+            
+            logger.info(f"Creating mock verification session for user {user_id}")
             # Zero Cost / Mock Mode
             return {
                 "id": "vs_mock_" + user_id,
@@ -43,7 +52,7 @@ class StripeIdentityService:
             )
             return session
         except Exception as e:
-            print(f"Stripe Session Create Error: {e}")
+            logger.error(f"Stripe Session Create Error for user {user_id}: {e}")
             raise e
 
     def construct_event(self, payload: bytes, sig_header: str):
@@ -51,6 +60,7 @@ class StripeIdentityService:
         Verify webhook signature to ensure request comes from Stripe.
         """
         if not self.webhook_secret:
+            logger.error("Stripe Webhook Secret not configured")
             raise ValueError("Stripe Webhook Secret not configured")
 
         return stripe.Webhook.construct_event(payload, sig_header, self.webhook_secret)

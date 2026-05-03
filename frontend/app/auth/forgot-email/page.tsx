@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { motion, Variants } from 'framer-motion';
 import { ArrowLeft, UserSearch, CheckCircle2 } from 'lucide-react';
+import { useLanguage } from '@/lib/LanguageContext';
 import { apiClient } from '@/lib/api';
 
 const containerVariants: Variants = {
@@ -28,6 +29,7 @@ export default function ForgotEmailPage() {
     const [status, setStatus] = useState<'idle' | 'loading' | 'success'>('idle');
     const [error, setError] = useState('');
     const [maskedEmail, setMaskedEmail] = useState('');
+    const { t } = useLanguage();
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -58,26 +60,26 @@ export default function ForgotEmailPage() {
                     )}
                 </div>
                 <h2 className="text-3xl font-extrabold text-zinc-900 dark:text-white mb-3 tracking-tight">
-                    {status === 'success' ? 'Account Found' : 'Find your email'}
+                    {status === 'success' ? t('auth.forgotEmail.successTitle', undefined, 'Account Found') : t('auth.login.forgotEmail', undefined, 'Find your email')}
                 </h2>
                 <p className="text-zinc-500 dark:text-zinc-400 text-sm max-w-sm mx-auto leading-relaxed">
                     {status === 'success'
-                        ? 'We found an account matching your details.'
-                        : "Enter your registered full name and phone number and we'll help you find your email address."}
+                        ? t('auth.forgotEmail.successDesc', undefined, 'We found an account matching your details.')
+                        : t('auth.forgotEmail.desc', undefined, "Enter your registered full name and phone number and we'll help you find your email address.")}
                 </p>
             </motion.div>
 
             {status === 'success' ? (
                 <motion.div variants={itemVariants} className="space-y-6">
                     <div className="bg-teal-50 dark:bg-teal-900/10 border border-teal-100 dark:border-teal-900/30 rounded-xl p-6 text-center">
-                        <p className="text-sm text-teal-800 dark:text-teal-300 mb-2">Your email address is</p>
+                        <p className="text-sm text-teal-800 dark:text-teal-300 mb-2">{t('auth.forgotEmail.resultLabel', undefined, 'Your email address is')}</p>
                         <p className="text-2xl font-bold text-teal-900 dark:text-teal-100">{maskedEmail}</p>
                     </div>
                     <Link
                         href="/auth/login"
                         className="flex w-full justify-center px-4 py-3 rounded-xl border border-transparent text-sm font-semibold text-white bg-zinc-900 dark:bg-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-100 focus:outline-none focus:ring-4 focus:ring-zinc-500/20 transition-all shadow-sm"
                     >
-                        Return to login
+                        {t('common.back', undefined, 'Return to login')}
                     </Link>
                 </motion.div>
             ) : (
@@ -100,7 +102,7 @@ export default function ForgotEmailPage() {
                             type="text"
                             required
                             className="block w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-900 dark:text-white placeholder-zinc-500 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
-                            placeholder="e.g. Jean Dupont"
+                            placeholder={t('common.placeholders.fullName')}
                             value={fullName}
                             onChange={(e) => setFullName(e.target.value)}
                         />
@@ -118,7 +120,7 @@ export default function ForgotEmailPage() {
                             type="tel"
                             required
                             className="block w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-900 dark:text-white placeholder-zinc-500 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
-                            placeholder="+33 6 12 34 56 78"
+                            placeholder={t('common.placeholders.phone')}
                             value={phone}
                             onChange={(e) => setPhone(e.target.value)}
                         />
@@ -129,7 +131,7 @@ export default function ForgotEmailPage() {
                         disabled={status === 'loading' || !fullName || !phone}
                         className="flex w-full justify-center px-4 py-3 rounded-xl border border-transparent text-sm font-semibold text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-4 focus:ring-teal-500/20 transition-all shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
                     >
-                        {status === 'loading' ? 'Searching...' : 'Find Email'}
+                        {status === 'loading' ? t('common.loading') : t('auth.login.forgotEmail', undefined, 'Find Email')}
                     </button>
                     
                     <div className="flex justify-center mt-6">
@@ -138,7 +140,7 @@ export default function ForgotEmailPage() {
                             className="inline-flex items-center text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors"
                         >
                             <ArrowLeft className="w-4 h-4 mr-2" />
-                            Back to login
+                            {t('common.back', undefined, 'Back to login')}
                         </Link>
                     </div>
                 </motion.form>

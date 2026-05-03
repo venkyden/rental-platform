@@ -19,6 +19,7 @@ import {
 import { toast } from 'react-hot-toast';
 
 import { useLanguage } from '@/lib/LanguageContext';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 function MyDisputesContent() {
     const { t, language } = useLanguage();
@@ -90,12 +91,15 @@ function MyDisputesContent() {
                         <h1 className="text-2xl font-extrabold tracking-tight">{t('disputes.title', undefined, undefined)}</h1>
                         <p className="text-sm text-zinc-500 dark:text-zinc-400">{t('disputes.subtitle', undefined, undefined)}</p>
                     </div>
-                    <button 
-                        onClick={() => router.push('/dashboard')}
-                        className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
-                    >
-                        <Shield className="w-6 h-6" />
-                    </button>
+                    <div className="flex items-center gap-3">
+                        <LanguageSwitcher />
+                        <button 
+                            onClick={() => router.push('/dashboard')}
+                            className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
+                        >
+                            <Shield className="w-6 h-6" />
+                        </button>
+                    </div>
                 </div>
             </div>
 

@@ -40,6 +40,8 @@ const ROLE_CONFIG: Record<string, { label: string; labelFr: string; icon: React.
 
 const UNLOCKABLE_ROLES = ['tenant', 'landlord', 'property_manager'];
 
+import { motion, AnimatePresence } from 'framer-motion';
+
 export default function RoleSwitcher({ currentRole, availableRoles, onSwitch }: RoleSwitcherProps) {
     const [open, setOpen] = useState(false);
     const [switching, setSwitching] = useState<string | null>(null);
@@ -82,9 +84,6 @@ export default function RoleSwitcher({ currentRole, availableRoles, onSwitch }: 
         if (unlocking) return;
         setUnlocking(true);
         try {
-            // Unlock + switch in one call — the backend will add the role to available_roles
-            // We use googleLogin-like flow but for email/password users we call switch-role directly
-            // First unlock by switching (the backend handles appending to available_roles)
             const data = await apiClient.switchRole(targetRole);
             setOpen(false);
             onSwitch?.();
@@ -92,8 +91,6 @@ export default function RoleSwitcher({ currentRole, availableRoles, onSwitch }: 
                 router.push(data.redirect_path);
             }
         } catch (err: any) {
-            // If the role isn't unlocked yet, we need to unlock it via a different mechanism
-            // For now, show an error — this case is handled by the Google signup flow
             console.error('Role unlock failed:', err);
             alert('To unlock this role, please sign up again using the role selector on the registration page.');
         } finally {
@@ -101,88 +98,106 @@ export default function RoleSwitcher({ currentRole, availableRoles, onSwitch }: 
         }
     }
 
-    // Don't render if there's only one possible role and no others to unlock
     if (availableRoles.length <= 1 && lockableRoles.length === 0) {
         return null;
     }
 
     return (
-        <div ref={dropdownRef} className="relative inline-block">
-            {/* Trigger Button */}
+        <div ref={dropdownRef} className="relative">
+            {/* Trigger Button - Apple Style Pill */}
             <button
                 onClick={() => setOpen(!open)}
-                className={`inline-flex items-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-xl border transition-all duration-200 ${currentConfig.color} ${currentConfig.bgColor} border-transparent hover:border-current/20 hover:shadow-sm`}
+                className="flex items-center gap-3 px-5 py-2.5 bg-zinc-100 dark:bg-zinc-800/50 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-2xl transition-all duration-300 border border-zinc-200/50 dark:border-zinc-700/50 group active:scale-95 shadow-sm"
                 id="role-switcher-trigger"
             >
-                {currentConfig.icon}
-                <span className="hidden sm:inline">{currentConfig.label}</span>
-                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+                <div className={`p-1.5 rounded-lg bg-white dark:bg-zinc-700 shadow-sm ${currentConfig.color}`}>
+                    {currentConfig.icon}
+                </div>
+                <span className="text-sm font-black text-zinc-900 dark:text-white uppercase tracking-widest hidden sm:inline">
+                    {currentConfig.label}
+                </span>
+                <ChevronDown className={`w-4 h-4 text-zinc-400 transition-transform duration-300 ${open ? 'rotate-180' : ''}`} />
             </button>
 
             {/* Dropdown */}
-            {open && (
-                <div className="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-zinc-200 dark:border-zinc-700 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                    {/* Current role indicator */}
-                    <div className="px-4 py-3 border-b border-zinc-100 dark:border-zinc-800">
-                        <p className="text-[11px] font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-1">
-                            Active Role
-                        </p>
-                        <div className={`flex items-center gap-2 ${currentConfig.color}`}>
-                            {currentConfig.icon}
-                            <span className="font-semibold text-sm">{currentConfig.label}</span>
-                            <Check className="w-3.5 h-3.5 ml-auto" />
+            <AnimatePresence>
+                {open && (
+                    <motion.div 
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
+                        className="absolute right-0 top-full mt-4 w-72 glass-card !p-2 z-[60] shadow-2xl origin-top-right border-zinc-200/50 dark:border-zinc-700/50"
+                    >
+                        {/* Current Role */}
+                        <div className="px-4 py-3 mb-2 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl flex items-center justify-between">
+                            <div className="flex flex-col">
+                                <span className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-1">Current Session</span>
+                                <div className={`flex items-center gap-2 ${currentConfig.color}`}>
+                                    <span className="font-black text-sm uppercase tracking-wider">{currentConfig.label}</span>
+                                </div>
+                            </div>
+                            <div className="w-6 h-6 rounded-full bg-teal-500 text-white flex items-center justify-center">
+                                <Check className="w-3.5 h-3.5" />
+                            </div>
                         </div>
-                    </div>
 
-                    {/* Other unlocked roles */}
-                    {otherRoles.length > 0 && (
-                        <div className="p-2">
-                            <p className="px-2 py-1 text-[11px] font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
-                                Switch to
-                            </p>
-                            {otherRoles.map((role) => {
-                                const config = ROLE_CONFIG[role];
-                                const isSwitching = switching === role;
-                                return (
-                                    <button
-                                        key={role}
-                                        onClick={() => handleSwitch(role)}
-                                        disabled={!!switching}
-                                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors ${config.color} hover:${config.bgColor} disabled:opacity-50`}
-                                    >
-                                        {isSwitching ? <Loader2 className="w-4 h-4 animate-spin" /> : config.icon}
-                                        <span className="font-medium">{config.label}</span>
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    )}
+                        {/* Switch Options */}
+                        {otherRoles.length > 0 && (
+                            <div className="space-y-1 mb-2">
+                                <p className="px-4 py-2 text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">Switch To</p>
+                                {otherRoles.map((role) => {
+                                    const config = ROLE_CONFIG[role];
+                                    const isSwitching = switching === role;
+                                    return (
+                                        <button
+                                            key={role}
+                                            onClick={() => handleSwitch(role)}
+                                            disabled={!!switching}
+                                            className="w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all group disabled:opacity-50"
+                                        >
+                                            <div className={`p-2 rounded-lg bg-zinc-100 dark:bg-zinc-700 group-hover:bg-white dark:group-hover:bg-zinc-600 transition-colors ${config.color}`}>
+                                                {isSwitching ? <Loader2 className="w-4 h-4 animate-spin" /> : config.icon}
+                                            </div>
+                                            <span className="text-sm font-bold text-zinc-700 dark:text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-white">
+                                                {config.label}
+                                            </span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
 
-                    {/* Unlock new roles */}
-                    {lockableRoles.length > 0 && (
-                        <div className="p-2 border-t border-zinc-100 dark:border-zinc-800">
-                            <p className="px-2 py-1 text-[11px] font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
-                                Unlock Role
-                            </p>
-                            {lockableRoles.map((role) => {
-                                const config = ROLE_CONFIG[role];
-                                return (
-                                    <button
-                                        key={role}
-                                        onClick={() => handleUnlock(role)}
-                                        disabled={unlocking}
-                                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50"
-                                    >
-                                        {unlocking ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-                                        <span className="font-medium">{config.label}</span>
-                                        <span className="ml-auto text-[10px] text-zinc-400">+ Add</span>
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    )}
-                </div>
-            )}
+                        {/* Unlockable */}
+                        {lockableRoles.length > 0 && (
+                            <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800 space-y-1">
+                                <p className="px-4 py-2 text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">Unlock New Role</p>
+                                {lockableRoles.map((role) => {
+                                    const config = ROLE_CONFIG[role];
+                                    return (
+                                        <button
+                                            key={role}
+                                            onClick={() => handleUnlock(role)}
+                                            disabled={unlocking}
+                                            className="w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-all group disabled:opacity-50"
+                                        >
+                                            <div className="p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 group-hover:bg-white dark:group-hover:bg-zinc-700 transition-colors text-zinc-400 group-hover:text-teal-600">
+                                                {unlocking ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                                            </div>
+                                            <div className="flex flex-col items-start">
+                                                <span className="text-sm font-bold text-zinc-500 dark:text-zinc-400 group-hover:text-teal-700 dark:group-hover:text-teal-400">
+                                                    {config.label}
+                                                </span>
+                                                <span className="text-[10px] text-zinc-400">Unlock Workspace</span>
+                                            </div>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

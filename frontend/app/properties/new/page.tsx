@@ -603,7 +603,7 @@ export default function NewPropertyPage() {
                                                     value={formData.construction_year || ''}
                                                     onChange={(e) => updateFormData({ construction_year: e.target.value ? parseInt(e.target.value) : undefined })}
                                                     className="w-full px-4 py-2.5 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-zinc-900 dark:text-white placeholder:text-zinc-400 bg-white"
-                                                    placeholder="e.g., 1985"
+                                                    placeholder={t('common.placeholders.year')}
                                                     min="1800"
                                                     max="2026"
                                                 />
@@ -775,7 +775,7 @@ export default function NewPropertyPage() {
 
                                                     {/* Custom Amenities Tags */}
                                                     <div>
-                                                        <label className="block text-xs font-semibold mb-2 text-zinc-500 dark:text-zinc-400 uppercase">Amenities</label>
+                                                        <label className="block text-xs font-semibold mb-2 text-zinc-500 dark:text-zinc-400 uppercase">{t('property.create.layout.amenities', undefined, 'Amenities')}</label>
 
                                                         {/* Current amenity tags */}
                                                         <div className="flex flex-wrap gap-2 mb-3">
@@ -946,7 +946,7 @@ export default function NewPropertyPage() {
                                                     : 'border-zinc-200 dark:border-zinc-800 hover:border-zinc-200 dark:border-zinc-700'
                                                     }`}
                                             >
-                                                <div className="text-lg">CC</div>
+                                                <div className="text-lg">{t('property.pricing.ccFull', undefined, 'CC')}</div>
                                                 <div className="text-xs text-zinc-500 dark:text-zinc-400">{t('property.pricing.ccFull', undefined, 'Charges Comprises')}</div>
                                             </button>
                                             <button
@@ -957,7 +957,7 @@ export default function NewPropertyPage() {
                                                     : 'border-zinc-200 dark:border-zinc-800 hover:border-zinc-200 dark:border-zinc-700'
                                                     }`}
                                             >
-                                                <div className="text-lg">HC</div>
+                                                <div className="text-lg">{t('property.pricing.hcFull', undefined, 'HC')}</div>
                                                 <div className="text-xs text-zinc-500 dark:text-zinc-400">{t('property.pricing.hcFull', undefined, 'Hors Charges')}</div>
                                             </button>
                                         </div>
@@ -1013,7 +1013,7 @@ export default function NewPropertyPage() {
                                             />
                                             <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-200 dark:border-zinc-700 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                                         </label>
-                                        <span className="font-medium text-zinc-900 dark:text-white">Garant requis</span>
+                                        <span className="font-medium text-zinc-900 dark:text-white">{t('property.pricing.guarantor.title', undefined, 'Guarantor Required')}</span>
                                     </div>
 
                                     {formData.guarantor_required && (

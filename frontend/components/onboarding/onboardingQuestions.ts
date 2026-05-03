@@ -174,13 +174,13 @@ export function getTenantQuestions(): Question[] {
     return [
         {
             id: 'situation',
-            question: 'What best describes you?',
+            question: 'onboarding.questions.tenant.situation.question',
             emoji: '',
             options: [
-                { value: 'student_budget', label: ' Student', segment: 'D1' },
-                { value: 'family_stability', label: '‍‍ Employee/Family', segment: 'D2' },
-                { value: 'flexibility_relocation', label: ' Freelancer/Remote', segment: 'D3' },
-                { value: 'other', label: ' Other' },
+                { value: 'student_budget', label: 'onboarding.questions.tenant.situation.options.student_budget', segment: 'D1' },
+                { value: 'family_stability', label: 'onboarding.questions.tenant.situation.options.family_stability', segment: 'D2' },
+                { value: 'flexibility_relocation', label: 'onboarding.questions.tenant.situation.options.flexibility_relocation', segment: 'D3' },
+                { value: 'other', label: 'onboarding.questions.tenant.situation.options.other' },
             ],
         },
         {
@@ -240,10 +240,10 @@ export function getTenantQuestions(): Question[] {
         },
         {
             id: 'workplace',
-            question: 'Where do you work?',
+            question: 'onboarding.questions.tenant.workplace.question',
             emoji: '',
             type: 'address_autocomplete',
-            placeholder: 'Start typing your workplace address...',
+            placeholder: 'common.placeholders.workplaceAddress',
             showIf: (r) => !(r.situation === 'student_budget' || r.contract_type === 'student' || r.contract_type === 'internship'),
         },
         {

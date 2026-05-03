@@ -12,6 +12,7 @@ import { resolveMediaUrl } from '@/lib/mediaUrl';
 import VerificationUpload from '@/components/VerificationUpload';
 import { useLanguage } from '@/lib/LanguageContext';
 import { toast } from 'react-hot-toast';
+import { PropertyCardSkeleton } from '@/components/SkeletonLoaders';
 
 const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -85,151 +86,131 @@ export default function PropertiesPage() {
             loadProperties();
             toast.success(t('property.error.deleteSuccess', undefined, 'Property deleted successfully'));
         } catch (error) {
-            alert('Error deleting property');
+            toast.error('Error deleting property');
         }
     };
 
     return (
         <ProtectedRoute>
             <PremiumLayout withNavbar={true}>
-                <header className="mb-8 p-6 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl shadow-sm border border-white/50 dark:border-white/10 flex justify-between items-center">
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('property.landlord.title', undefined, undefined)}</h1>
-                    <div className="flex gap-3">
-                        <button
-                            onClick={() => router.push('/dashboard')}
-                            className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
-                        >
-                            ← {isAuthenticated ? t('dashboard.title', undefined, 'Dashboard') : t('navbar.home', undefined, 'Home')}
-                        </button>
-                        <button
-                            onClick={() => router.push('/properties/new')}
-                            className="px-6 py-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-white font-semibold rounded-xl hover:shadow-sm hover: transform hover:-translate-y-0.5 transition-all"
-                        >
-                            {t('property.landlord.newProperty', undefined, undefined)}
-                        </button>
-                    </div>
-                </header>
-
-                <main className="">
-                    {/* Filters */}
-                    <div className="mb-6 flex gap-2">
-                        {['all', 'draft', 'active'].map((status) => (
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                    {/* Header */}
+                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
+                        <div>
+                            <h1 className="text-4xl sm:text-6xl font-black tracking-tighter mb-4 bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 to-zinc-500 dark:from-white dark:to-zinc-400">
+                                {t('property.landlord.title', undefined, 'Your Portfolio')}
+                            </h1>
+                            <p className="text-lg text-zinc-500 dark:text-zinc-400 font-medium">
+                                Manage your properties and tracking listing performance.
+                            </p>
+                        </div>
+                        
+                        <div className="flex items-center gap-3">
                             <button
-                                key={status}
-                                onClick={() => setFilter(status as any)}
-                                className={`px-5 py-2.5 rounded-xl font-medium transition-all duration-200 ${filter === status
-                                    ? 'bg-teal-600 text-white shadow-md '
-                                    : 'bg-white/60 dark:bg-zinc-800/60 backdrop-blur-md text-gray-700 dark:text-gray-300 hover:bg-white/80 dark:hover:bg-zinc-800/80 border border-white/20'
-                                    }`}
+                                onClick={() => router.push('/properties/new')}
+                                className="btn-primary !py-4 !px-10 !rounded-2xl !text-sm uppercase tracking-widest shadow-2xl shadow-teal-500/20"
                             >
-                                {t(`property.landlord.${status}` as any, undefined, undefined)}
+                                + {t('property.landlord.add', undefined, 'Add Property')}
                             </button>
-                        ))}
+                        </div>
                     </div>
 
-                    {/* Properties List */}
+                    {/* Filters */}
+                    <div className="flex items-center justify-between mb-12">
+                        <div className="flex p-1.5 bg-zinc-100 dark:bg-zinc-800/50 backdrop-blur-xl rounded-[1.5rem] border border-zinc-200/50 dark:border-zinc-700/30">
+                            {['all', 'draft', 'active'].map((status) => (
+                                <button
+                                    key={status}
+                                    onClick={() => setFilter(status as any)}
+                                    className={`px-8 py-2.5 rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-500 ${
+                                        filter === status 
+                                        ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-xl scale-100' 
+                                        : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'
+                                    }`}
+                                >
+                                    {status}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Content */}
                     {loading ? (
-                        <div className="text-center py-12">
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto"></div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                            {[1, 2, 3, 4, 5, 6].map(i => <PropertyCardSkeleton key={i} />)}
                         </div>
                     ) : properties.length === 0 ? (
-                        <div className="py-12">
-                            <EmptyState
-                                icon=""
-                                title={t('property.landlord.emptyTitle', undefined, undefined)}
-                                description={t('property.landlord.emptyDesc', undefined, undefined)}
-                                actionLabel={t('property.landlord.createBtn', undefined, undefined)}
-                                onAction={() => router.push('/properties/new')}
-                                layout="transparent"
-                            />
+                        <div className="py-32 text-center glass-card border-none">
+                            <h3 className="text-2xl font-black mb-2">{t('property.landlord.emptyTitle', undefined, 'No properties yet')}</h3>
+                            <p className="text-zinc-500 font-medium">{t('property.landlord.emptyDesc', undefined, 'Start by adding your first listing to the platform.')}</p>
+                            <button onClick={() => router.push('/properties/new')} className="mt-8 text-teal-600 font-black uppercase tracking-widest text-xs">Create Listing →</button>
                         </div>
                     ) : (
                         <motion.div
                             variants={containerVariants}
-                            initial="hidden"
-                            animate="show"
-                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                            initial="hidden" animate="show"
+                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10"
                         >
                             {properties.map((property) => (
-                                <motion.div variants={itemVariants} key={property.id} className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-white/50 dark:border-white/10 rounded-3xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] overflow-hidden hover:shadow-sm transition-all hover:-translate-y-1 flex flex-col group p-2">
-                                    {/* Property Image */}
-                                    <div className="h-48 bg-zinc-100 dark:bg-zinc-800 dark:from-zinc-800 dark:to-zinc-700 relative rounded-2xl overflow-hidden m-2">
-                                        {property.photos && property.photos.length > 0 ? (
-                                            <img
-                                                src={resolveMediaUrl(property.photos[0].url)}
-                                                alt={property.title}
-                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                            />
+                                <motion.div 
+                                    variants={itemVariants} 
+                                    key={property.id} 
+                                    className="group glass-card !p-0 overflow-hidden flex flex-col border-white/40 dark:border-zinc-800/50 hover:shadow-2xl transition-all duration-500"
+                                >
+                                    <div className="aspect-[16/10] bg-zinc-100 dark:bg-zinc-800 relative overflow-hidden">
+                                        {property.photos?.[0] ? (
+                                            <img src={resolveMediaUrl(property.photos[0].url)} alt={property.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
                                         ) : (
-                                            <div className="flex items-center justify-center h-full text-gray-400">
-                                                <span className="text-6xl"></span>
-                                            </div>
+                                            <div className="w-full h-full flex items-center justify-center text-zinc-300 font-black italic">NO PHOTO</div>
                                         )}
-                                        <div className="absolute top-3 right-3">
-                                            <span className={`px-4 py-1.5 rounded-full text-xs font-bold backdrop-blur-md shadow-sm ${property.status === 'active'
-                                                ? 'bg-emerald-500/90 text-white'
-                                                : 'bg-amber-500/90 text-white'
-                                                }`}>
-                                                {property.status.toUpperCase()}
-                                            </span>
+                                        <div className="absolute top-4 right-4">
+                                            <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest backdrop-blur-md ${property.status === 'active' ? 'bg-emerald-500/90 text-white' : 'bg-amber-500/90 text-white'}`}>
+                                                {property.status}
+                                            </div>
                                         </div>
                                     </div>
 
-                                    {/* Property Info */}
-                                    <div className="p-5 pt-3 flex flex-col flex-1">
-                                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 line-clamp-1">
-                                            {property.title}
-                                        </h3>
-                                        <p className="text-gray-500 dark:text-gray-400 text-sm mb-4 font-medium">
-                                             {property.city}
-                                        </p>
-                                        <div className="flex items-center justify-between mb-6 mt-auto">
-                                            <div translate="no" className="notranslate text-2xl font-black text-teal-600 dark:text-teal-400">
-                                                €{property.monthly_rent}
-                                                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">/{t('property.price.perMonthShort', undefined, 'mo')}</span>
-                                            </div>
-                                            <div className="text-sm font-semibold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-zinc-800 px-3 py-1 rounded-lg">
-                                                ️ {property.bedrooms} {t(property.bedrooms !== 1 ? 'property.bedrooms' : 'property.bedroom', undefined, undefined)}
+                                    <div className="p-8 flex flex-col flex-1">
+                                        <div className="flex justify-between items-start mb-4">
+                                            <h3 className="text-2xl font-black text-zinc-900 dark:text-white truncate tracking-tight pr-4">{property.title}</h3>
+                                            <div className="text-right">
+                                                <p className="text-xl font-black text-teal-600 dark:text-teal-400 leading-none">€{property.monthly_rent}</p>
+                                                <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mt-1">/ Month</p>
                                             </div>
                                         </div>
-
-                                        {/* Ownership Verification Badge */}
-                                        <div className="mb-4">
+                                        
+                                        <p className="text-zinc-500 dark:text-zinc-400 font-bold text-xs uppercase tracking-wider mb-8">{property.city} • {property.bedrooms} Bedrooms</p>
+                                        
+                                        {/* Verification Status */}
+                                        <div className="mb-8">
                                             {property.ownership_verified ? (
-                                                <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/10 px-2.5 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-900/30">
-                                                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                                    {t('property.landlord.ownershipVerified', undefined, undefined)}
+                                                <div className="flex items-center gap-2 text-[10px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/10 px-4 py-2 rounded-xl border border-emerald-100 dark:border-emerald-900/30 uppercase tracking-widest">
+                                                    <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                                                    Verified Listing
                                                 </div>
                                             ) : (
-                                                 <button 
+                                                <button 
                                                     onClick={() => setVerifyingProperty(property.id)}
-                                                    className="flex items-center gap-1.5 text-xs font-semibold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/10 px-2.5 py-1.5 rounded-lg border border-orange-200 dark:border-orange-900/30 hover:bg-orange-100 dark:hover:bg-orange-900/20 transition-colors w-full justify-center"
+                                                    className="w-full flex items-center justify-center gap-2 text-[10px] font-black text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/10 px-4 py-2 rounded-xl border border-amber-100 dark:border-amber-900/30 uppercase tracking-widest hover:bg-amber-100 transition-all"
                                                 >
-                                                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                                                    {t('property.landlord.verifyPrompt', undefined, undefined)}
+                                                    <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                                                    Verify Ownership
                                                 </button>
                                             )}
                                         </div>
 
-                                        {/* Actions */}
-                                        <div className="flex gap-2">
+                                        <div className="mt-auto grid grid-cols-2 gap-3">
                                             <button
                                                 onClick={() => router.push(`/properties/${property.id}/edit`)}
-                                                className="flex-1 py-2.5 bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-zinc-700 font-semibold transition-colors"
+                                                className="py-3 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all"
                                             >
-                                                {t('property.actions.edit', undefined, undefined)}
+                                                Edit
                                             </button>
                                             <button
                                                 onClick={() => router.push(`/properties/${property.id}`)}
-                                                className="flex-1 py-2.5 bg-zinc-900 text-white rounded-xl hover:bg-zinc-800 font-semibold transition-colors"
+                                                className="py-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] hover:scale-105 transition-all"
                                             >
-                                                {t('property.actions.view', undefined, 'View')}
-                                            </button>
-                                            <button
-                                                onClick={() => handleDelete(property.id)}
-                                                className="px-4 py-2.5 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 font-semibold transition-colors"
-                                            >
-                                                ️
+                                                Preview
                                             </button>
                                         </div>
                                     </div>
@@ -237,39 +218,37 @@ export default function PropertiesPage() {
                             ))}
                         </motion.div>
                     )}
-                </main>
+                </div>
 
                 {/* Verification Modal */}
-                {verifyingProperty && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/40 dark:bg-black/60 backdrop-blur-sm">
-                        <motion.div 
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            className="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto p-2"
-                        >
-                            <div className="flex justify-end p-2 pb-0">
-                                <button 
-                                    onClick={() => setVerifyingProperty(null)}
-                                    className="p-2 text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
-                                >
-                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
-                            </div>
-                            <div className="px-6 pb-8">
-                                <VerificationUpload 
-                                    verificationType="property"
-                                    propertyId={verifyingProperty}
-                                    onSuccess={() => {
-                                        setVerifyingProperty(null);
-                                        loadProperties();
-                                    }}
-                                />
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
+                <AnimatePresence>
+                    {verifyingProperty && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                            <motion.div 
+                                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                                onClick={() => setVerifyingProperty(null)}
+                                className="absolute inset-0 bg-zinc-900/60 dark:bg-black/80 backdrop-blur-md"
+                            />
+                            <motion.div 
+                                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                                className="relative bg-white dark:bg-zinc-900 rounded-[2.5rem] shadow-2xl max-w-xl w-full max-h-[90vh] overflow-hidden"
+                            >
+                                <div className="p-12">
+                                    <VerificationUpload 
+                                        verificationType="property"
+                                        propertyId={verifyingProperty}
+                                        onSuccess={() => {
+                                            setVerifyingProperty(null);
+                                            loadProperties();
+                                        }}
+                                    />
+                                </div>
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>
             </PremiumLayout>
         </ProtectedRoute>
     );

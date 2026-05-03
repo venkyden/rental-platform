@@ -69,7 +69,9 @@ LEASE_MEUBLE_HTML = """
         <div class="signatures">
             <div class="sig-box">
                 <p><strong>LE BAILLEUR</strong></p>
+                {% if landlord_img %}
                 {{ landlord_img }}
+                {% endif %}
             </div>
             <div class="sig-box"><p><strong>LE PRENEUR</strong></p></div>
         </div>
@@ -135,10 +137,12 @@ LEASE_COLOCATION_HTML = """
         <p>Fait à {{ property_city }}, le {{ today_date }}</p>
         <div class="signatures">
             <div class="sig-box">
-                <p><strong>LE BAILLEUR</strong><br>Lu et approuvé</p>
+                <p><strong>LE BAILLEUR</strong></p>
+                {% if landlord_img %}
                 {{ landlord_img }}
+                {% endif %}
             </div>
-            <div class="sig-box"><p><strong>LE LOCATAIRE</strong><br>Lu et approuvé</p></div>
+            <div class="sig-box"><p><strong>LE LOCATAIRE</strong></p></div>
         </div>
     </div>
 </body>
@@ -196,7 +200,9 @@ LEASE_CODE_CIVIL_HTML = """
             <tr>
                 <td style="width: 50%;">
                     <strong>Le Bailleur</strong><br>
+                    {% if landlord_img %}
                     {{ landlord_img }}
+                    {% endif %}
                 </td>
                 <td style="width: 50%;"><strong>Le Preneur</strong></td>
             </tr>
@@ -247,7 +253,9 @@ LEASE_SIMPLE_HTML = """
         <tr>
             <td style="width: 50%;">
                 <p>Signature Bailleur :</p>
+                {% if landlord_img %}
                 {{ landlord_img }}
+                {% endif %}
             </td>
             <td style="width: 50%;">
                 <p>Signature Locataire :</p>
@@ -319,7 +327,9 @@ RENT_RECEIPT_HTML = """
         <p>Fait à {{ property_city }}, le {{ today_date }}</p>
         <br>
         <p><strong>Le Bailleur</strong></p>
-        <img src="" alt="Signature" style="max-height: 50px;"> <!-- Placeholder for signature -->
+        {% if landlord_img %}
+        {{ landlord_img }}
+        {% endif %}
     </div>
 </body>
 </html>
@@ -372,6 +382,9 @@ EXIT_ATTESTATION_HTML = """
 
     <div class="signature">
         <p><strong>{{ landlord_name }}</strong></p>
+        {% if landlord_img %}
+        {{ landlord_img }}
+        {% endif %}
     </div>
 </body>
 </html>

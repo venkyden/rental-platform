@@ -2,14 +2,14 @@ import logging
 import httpx
 from datetime import datetime, timedelta
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.database import get_db
-from app.core.security import (create_access_token, get_password_hash,
+from app.core.security import (create_access_token, create_refresh_token, get_password_hash,
                                verify_password, verify_token)
 from app.models.schemas import (ForgotPasswordRequest, ForgotEmailRequest, GoogleAuthRequest,
                                 ResetPasswordRequest, Token, UserLogin,
@@ -145,6 +145,7 @@ async def register(
 @limiter.limit("5/minute")  # Rate limit: 5 login attempts per minute per IP
 async def login(
     request: Request,
+    response: Response,
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(get_db),
 ):
@@ -178,6 +179,22 @@ async def login(
         expires_delta=access_token_expires,
     )
 
+    # Create refresh token
+    refresh_token = create_refresh_token(
+        data={"sub": user.email, "version": user.refresh_token_version}
+    )
+
+    # Set refresh token cookie
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        httponly=True,
+        max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
+        expires=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
+        samesite="lax",
+        secure=settings.ENVIRONMENT == "production",
+    )
+
     # Update last login
     user.last_login = datetime.utcnow()
     await db.commit()
@@ -208,29 +225,79 @@ async def login(
 
 @router.post("/refresh", response_model=Token)
 async def refresh_token(
-    current_user: User = Depends(get_current_user),
+    request: Request,
+    response: Response,
     db: AsyncSession = Depends(get_db)
 ):
-    """Refresh JWT token"""
+    """Refresh JWT access token using refresh token cookie"""
+    refresh_token = request.cookies.get("refresh_token")
+    if not refresh_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token missing",
+        )
+
+    payload = verify_token(refresh_token)
+    if payload is None or payload.get("type") != "refresh":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired refresh token",
+        )
+
+    email = payload.get("sub")
+    version = payload.get("version")
+    
+    result = await db.execute(select(User).where(User.email == email))
+    user = result.scalar_one_or_none()
+    
+    if not user or not user.is_active or user.refresh_token_version != version:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found, inactive, or session revoked",
+        )
+
+    # Issue new access token
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": current_user.email, "user_id": str(current_user.id)},
+        data={"sub": user.email, "user_id": str(user.id)},
         expires_delta=access_token_expires,
     )
     
     from app.core.segment_routing import get_redirect_path, get_segment_config
-    role_value = current_user.role.value if hasattr(current_user.role, "value") else current_user.role
-    redirect_path = get_redirect_path(current_user.segment, role_value)
-    segment_config = get_segment_config(current_user.segment, role=role_value)
+    role_value = user.role.value if hasattr(user.role, "value") else user.role
+    redirect_path = get_redirect_path(user.segment, role_value)
+    segment_config = get_segment_config(user.segment, role=role_value)
 
     return {
         "access_token": access_token,
         "token_type": "bearer",
         "redirect_path": redirect_path,
-        "segment": current_user.segment,
+        "segment": user.segment,
         "segment_name": segment_config.segment_name if segment_config else None,
-        "available_roles": current_user.available_roles or [role_value],
+        "available_roles": user.available_roles or [role_value],
     }
+
+
+@router.post("/logout")
+async def logout(
+    response: Response,
+    current_user: User = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db)
+):
+    """Logout user and revoke sessions"""
+    if current_user:
+        # Increment version to invalidate all current refresh tokens
+        current_user.refresh_token_version += 1
+        await db.commit()
+        audit_logger.info(f"LOGOUT_SUCCESS email={current_user.email}")
+    
+    response.delete_cookie(
+        key="refresh_token",
+        httponly=True,
+        samesite="lax",
+        secure=settings.ENVIRONMENT == "production",
+    )
+    return {"message": "Successfully logged out"}
 
 
 @router.get("/me", response_model=UserResponse)
@@ -396,7 +463,10 @@ async def confirm_email_change(
 
 @router.post("/google", response_model=Token)
 async def google_auth(
-    request: Request, auth_data: GoogleAuthRequest, db: AsyncSession = Depends(get_db)
+    request: Request,
+    response: Response,
+    auth_data: GoogleAuthRequest,
+    db: AsyncSession = Depends(get_db)
 ):
     """Authenticate with Google. Verifies Google ID token, finds or creates user."""
     import asyncio
@@ -409,9 +479,6 @@ async def google_auth(
         )
 
     # ---- Step 1: Verify Google ID token ----
-    # verify_oauth2_token is synchronous — it fetches Google certs over HTTP
-    # using requests.Session. We MUST create the transport inside the thread
-    # to avoid sharing a Session across threads.
     def _verify_google_token(credential: str, client_id: str):
         from google.oauth2 import id_token as google_id_token
         from google.auth.transport import requests as google_requests
@@ -440,7 +507,6 @@ async def google_auth(
 
     google_id = google_data.get("sub")
     email = google_data.get("email")
-    full_name = google_data.get("name")
 
     email_verified_raw = google_data.get("email_verified", False)
     email_verified = (
@@ -468,38 +534,32 @@ async def google_auth(
         user = result.scalar_one_or_none()
 
         if not user:
-            # Check by email (existing user linking Google account)
+            # Check by email
             result = await db.execute(select(User).where(User.email == email))
             user = result.scalar_one_or_none()
 
         if user:
-            # Link Google account to existing user if not already linked
             if not user.google_id:
                 user.google_id = google_id
                 audit_logger.info(f"GOOGLE_LINK email={email}")
             if email_verified:
                 user.email_verified = True
             
-            # Contextual Onboarding: Check if they requested a new role
             requested_role_str = role_enum.value
             current_roles = user.available_roles or ["tenant"]
             
-            # If they requested a new role, unlock it and switch to it
             if requested_role_str not in current_roles:
                 current_roles.append(requested_role_str)
-                # We have to re-assign to trigger SQLAlchemy JSON mutation detection
                 user.available_roles = list(current_roles)
                 audit_logger.info(f"ROLE_UNLOCKED email={email} new_role={requested_role_str}")
             
-            # Switch their active role to the requested one
             user.role = role_enum
-
         else:
             # Create new user
             user = User(
                 email=email,
                 google_id=google_id,
-                full_name=None, # Force user to enter name manually in onboarding
+                full_name=None,
                 role=role_enum,
                 available_roles=[role_enum.value],
                 email_verified=email_verified,
@@ -518,7 +578,7 @@ async def google_auth(
         await db.commit()
         await db.refresh(user)
     except HTTPException:
-        raise  # Re-raise HTTP exceptions as-is
+        raise
     except Exception as e:
         tb = traceback.format_exc()
         audit_logger.error(f"GOOGLE_AUTH_DB_ERROR email={email} error={e}\n{tb}")
@@ -531,12 +591,31 @@ async def google_auth(
             detail="Account setup failed. Please try again.",
         )
 
-    # ---- Step 3: Create JWT and return ----
+    # ---- Step 3: Create tokens and return ----
     try:
+        audit_logger.info(f"GOOGLE_LOGIN_SUCCESS email={user.email} segment={user.segment}")
+        
+        # Create access token
         access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = create_access_token(
             data={"sub": user.email, "user_id": str(user.id)},
             expires_delta=access_token_expires,
+        )
+
+        # Create refresh token
+        refresh_token = create_refresh_token(
+            data={"sub": user.email, "version": user.refresh_token_version}
+        )
+
+        # Set refresh token cookie
+        response.set_cookie(
+            key="refresh_token",
+            value=refresh_token,
+            httponly=True,
+            max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
+            expires=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
+            samesite="lax",
+            secure=settings.ENVIRONMENT == "production",
         )
 
         # Get segment-based redirect
@@ -552,7 +631,6 @@ async def google_auth(
         if not role_onboarded:
             redirect_path = "/onboarding"
 
-        audit_logger.info(f"GOOGLE_LOGIN_SUCCESS email={user.email} segment={user.segment}")
         return {
             "access_token": access_token,
             "token_type": "bearer",

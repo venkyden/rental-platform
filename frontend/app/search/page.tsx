@@ -10,8 +10,8 @@ import { motion } from 'framer-motion';
 import PremiumLayout from '@/components/PremiumLayout';
 import { useLanguage } from '@/lib/LanguageContext';
 import { resolveMediaUrl } from '@/lib/mediaUrl';
+import { PropertyCardSkeleton } from '@/components/SkeletonLoaders';
 
-// Define property interface based on API response
 interface Property {
     id: string;
     title: string;
@@ -43,18 +43,15 @@ export default function SearchPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
-    // Filter States (Unified - All available to everyone)
+    // Filter States
     const [priceRange, setPriceRange] = useState<number>(3000);
     const [location, setLocation] = useState('');
     const [furnished, setFurnished] = useState(false);
     const [colocation, setColocation] = useState(false);
 
-    // Initialize defaults based on Segment Context
     useEffect(() => {
         if (!config) return;
-
         const mode = config.settings.default_filter_mode;
-
         if (mode === 'budget') {
             setPriceRange(800);
             setColocation(true);
@@ -66,213 +63,165 @@ export default function SearchPage() {
         }
     }, [config]);
 
-    // Fetch Properties whenever filters change
     useEffect(() => {
         const fetchProperties = async () => {
             try {
                 setLoading(true);
                 setError('');
-
-                const params: any = {
-                    status: 'active',
-                    max_rent: priceRange,
-                };
-
-                if (location.length > 2) {
-                    params.city = location;
-                }
-
-                if (furnished) {
-                    params.furnished = true;
-                }
-
-                if (colocation) {
-                    // Pass amenity filter based on backend logic
-                    params.amenities = ['colocation'];
-                }
-
+                const params: any = { status: 'active', max_rent: priceRange };
+                if (location.length > 2) params.city = location;
+                if (furnished) params.furnished = true;
+                if (colocation) params.amenities = ['colocation'];
                 const response = await apiClient.client.get('/properties', { params });
                 setProperties(response.data);
             } catch (err) {
-                console.error('Error fetching properties:', err);
                 setError(t('search.status.error', undefined, undefined));
             } finally {
                 setLoading(false);
             }
         };
-
-        // Debounce fetch to avoid too many calls while sliding
-        const timeoutId = setTimeout(() => {
-            fetchProperties();
-        }, 500);
-
+        const timeoutId = setTimeout(() => fetchProperties(), 500);
         return () => clearTimeout(timeoutId);
     }, [priceRange, location, furnished, colocation]);
 
     if (segmentLoading || authLoading) return <div className="p-8 text-center text-zinc-500">{t('search.status.loading', undefined, undefined)}</div>;
 
     return (
-        <PremiumLayout>
-            {/* Header */}
-            <header className="mb-8 p-6 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] border border-white/50 dark:border-white/10 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <button onClick={() => router.push(isAuthenticated ? '/dashboard' : '/')} className="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 flex items-center gap-2 transition-colors">
-                        ← {isAuthenticated ? t('dashboard.title', undefined, undefined) : t('navbar.home', undefined, 'Home')}
-                    </button>
-                    <motion.h1
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, ease: "easeOut" }}
-                        className="text-2xl font-bold text-zinc-900 dark:text-white dark:from-white dark:to-zinc-400"
-                    >
-                        {BRAND.tagline}
-                    </motion.h1>
+        <PremiumLayout withNavbar={true}>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                {/* Search Header */}
+                <div className="mb-12">
+                    <h1 className="text-4xl sm:text-5xl font-black tracking-tighter mb-4 bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 to-zinc-500 dark:from-white dark:to-zinc-400">
+                        {t('search.subtitle', undefined, 'Find your next home in France')}
+                    </h1>
+                    <p className="text-lg text-zinc-500 dark:text-zinc-400 font-medium">
+                        Explore {properties.length} curated listings tailored to your preferences.
+                    </p>
                 </div>
-                {isAuthenticated && (
-                    <div className="text-sm text-zinc-500 hover:text-teal-600 transition-colors">
-                        Mode: <span className="font-medium text-slate-900 dark:text-teal-400 capitalize">{config?.settings.default_filter_mode || 'Standard'}</span>
-                    </div>
-                )}
-                {!isAuthenticated && (
-                    <div className="flex gap-4">
-                        <button onClick={() => router.push('/auth/login')} className="text-sm font-medium text-teal-600 hover:text-teal-700 dark:text-teal-400 px-4 py-2 bg-teal-50 dark:bg-teal-900/30 rounded-xl hover:bg-teal-100 dark:hover:bg-teal-900/50 transition-colors">{t('landing.signIn', undefined, undefined)}</button>
-                        <button onClick={() => router.push('/auth/register')} className="text-sm font-medium px-6 py-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-white rounded-xl shadow-md hover:shadow-sm transition-all transform hover:-translate-y-0.5">{t('landing.getStarted', undefined, undefined)}</button>
-                    </div>
-                )}
-            </header>
 
-            <main className="">
-                {/* Unified Filter Bar */}
-                <motion.div
-                    initial={{ opacity: 0, y: 10 }}
+                {/* Filter Bar */}
+                <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl shadow-sm border border-white/50 dark:border-white/10 p-6 mb-8 flex flex-wrap gap-6 items-center"
+                    className="glass-card !p-3 mb-16 flex flex-wrap lg:flex-nowrap items-center gap-2 border-white/40 dark:border-zinc-800/50 shadow-2xl rounded-[2.5rem]"
                 >
-                    <div className="flex-1 min-w-[200px]">
-                        <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-2">{t('search.filters.location', undefined, undefined)}</label>
+                    <div className="flex-1 min-w-[240px] px-4 py-2 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl flex items-center gap-3 group border border-transparent focus-within:border-teal-500/30 transition-all">
+                        <Search className="w-5 h-5 text-zinc-400" />
                         <input
                             type="text"
-                            placeholder={t('search.filters.locationPlaceholder', undefined, undefined)}
-                            className="w-full border-zinc-200 dark:border-zinc-700 bg-white/50 dark:bg-zinc-800/50 rounded-xl px-4 py-3 shadow-sm focus:ring-teal-500 focus:border-teal-500 text-slate-900 dark:text-white transition-all backdrop-blur-sm"
+                            placeholder={t('search.filters.locationPlaceholder', undefined, 'Enter city...')}
+                            className="w-full bg-transparent border-none focus:ring-0 text-sm font-bold text-zinc-900 dark:text-white placeholder:text-zinc-400 placeholder:font-medium"
                             value={location}
                             onChange={(e) => setLocation(e.target.value)}
                         />
                     </div>
 
-                    <div className="w-64">
-                        <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-2">{t('search.filters.maxBudget', undefined, undefined)}: <span translate="no" className="notranslate text-teal-600 dark:text-teal-400">{priceRange}€</span></label>
+                    <div className="flex-1 min-w-[200px] px-6 py-2">
+                        <div className="flex justify-between mb-2">
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Budget</span>
+                            <span className="text-[10px] font-black uppercase text-teal-600 dark:text-teal-400">{priceRange}€</span>
+                        </div>
                         <input
-                            type="range"
-                            min="300"
-                            max="5000"
-                            step="100"
-                            value={priceRange}
+                            type="range" min="300" max="5000" step="100" value={priceRange}
                             onChange={(e) => setPriceRange(Number(e.target.value))}
-                            className="w-full h-2 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-teal-600"
+                            className="w-full h-1.5 bg-zinc-200 dark:bg-zinc-800 rounded-full appearance-none cursor-pointer accent-teal-600"
                         />
                     </div>
 
-                    <div className="flex items-center gap-6 border-l border-zinc-200 dark:border-zinc-700 pl-6 h-12">
-                        <label className="flex items-center gap-3 cursor-pointer group">
-                            <input
-                                type="checkbox"
-                                checked={furnished}
-                                onChange={(e) => setFurnished(e.target.checked)}
-                                className="w-5 h-5 rounded text-teal-600 focus:ring-teal-500 border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 transition-colors"
-                            />
-                            <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">{t('search.filters.furnished', undefined, undefined)}</span>
-                        </label>
-
-                        <label className="flex items-center gap-3 cursor-pointer group">
-                            <input
-                                type="checkbox"
-                                checked={colocation}
-                                onChange={(e) => setColocation(e.target.checked)}
-                                className="w-5 h-5 rounded text-teal-600 focus:ring-teal-500 border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 transition-colors"
-                            />
-                            <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">{t('search.filters.colocation', undefined, undefined)}</span>
-                        </label>
+                    <div className="flex items-center gap-2">
+                        <button 
+                            onClick={() => setFurnished(!furnished)}
+                            className={`px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${furnished ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400'}`}
+                        >
+                            Furnished
+                        </button>
+                        <button 
+                            onClick={() => setColocation(!colocation)}
+                            className={`px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${colocation ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400'}`}
+                        >
+                            Colocation
+                        </button>
                     </div>
 
-                    <button className="ml-auto px-8 py-3 bg-zinc-900 dark:bg-white dark:text-zinc-900 text-white rounded-xl hover:bg-zinc-800 dark:hover:bg-zinc-100 font-bold transition-colors shadow-md">
-                        {t('search.filters.searchButton', undefined, undefined)}
+                    <button className="btn-primary !rounded-2xl !py-3 !px-8 text-xs uppercase tracking-widest ml-auto">
+                        Search
                     </button>
                 </motion.div>
 
-                {/* Results Grid */}
+                {/* Results */}
                 {loading ? (
-                    <div className="text-center py-12 text-zinc-500 dark:text-zinc-400">{t('search.status.loading', undefined, undefined)}</div>
-                ) : error ? (
-                    <div className="text-center py-12 text-red-500">{error}</div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                        {[1, 2, 3, 4, 5, 6].map(i => <PropertyCardSkeleton key={i} />)}
+                    </div>
                 ) : properties.length === 0 ? (
-                    <div className="text-center py-12 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md rounded-3xl border border-dashed border-zinc-300 dark:border-zinc-700">
-                        <div className="text-4xl mb-2"></div>
-                        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{t('search.status.noResults', undefined, undefined)}</h3>
-                        <p className="text-zinc-500 dark:text-zinc-400">{t('search.status.noResultsDesc', undefined, undefined)}</p>
+                    <div className="py-32 text-center glass-card border-none">
+                        <h3 className="text-2xl font-black mb-2">{t('search.status.noResults', undefined, 'No matches found')}</h3>
+                        <p className="text-zinc-500 font-medium">{t('search.status.noResultsDesc', undefined, 'Try adjusting your filters to see more results.')}</p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                         {properties.map((property) => (
-                            <div key={property.id} className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-white/50 dark:border-white/10 rounded-3xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] overflow-hidden hover:shadow-sm transition-all hover:-translate-y-1 relative group p-2 flex flex-col">
-                                {!isAuthenticated && (
-                                    <div className="absolute inset-0 bg-white/40 dark:bg-black/40 backdrop-blur-[4px] z-10 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl">
-                                        <button onClick={() => router.push('/auth/login')} className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl shadow-sm transition-transform transform hover:scale-105 mb-2">
-                                            {t('search.property.loginToView', undefined, undefined)}
-                                        </button>
-                                    </div>
-                                )}
-                                <div className="h-48 bg-zinc-200 dark:bg-zinc-800 relative rounded-2xl overflow-hidden m-2">
+                            <motion.div 
+                                key={property.id} 
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="group glass-card !p-0 overflow-hidden flex flex-col border-white/40 dark:border-zinc-800/50 hover:shadow-2xl transition-all duration-500"
+                            >
+                                <div className="aspect-[4/3] bg-zinc-100 dark:bg-zinc-800 relative overflow-hidden">
                                     {property.photos?.[0] ? (
-                                        <img src={resolveMediaUrl(property.photos[0].url)} alt={property.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                        <img src={resolveMediaUrl(property.photos[0].url)} alt={property.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
                                     ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-zinc-400 dark:text-zinc-600 text-4xl"></div>
+                                        <div className="w-full h-full flex items-center justify-center text-zinc-300 font-black text-2xl italic">ROOMIVO</div>
                                     )}
-                                    <div className="absolute top-3 right-3 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md px-4 py-1.5 rounded-full text-xs font-bold text-teal-700 dark:text-teal-400 shadow-sm">
-                                        {t('search.property.available', undefined, undefined)}
+                                    <div className="absolute top-4 left-4 flex gap-2">
+                                        {property.dpe_rating && (
+                                            <div className="px-3 py-1 bg-zinc-900/80 backdrop-blur-md text-white text-[10px] font-black rounded-lg">DPE {property.dpe_rating}</div>
+                                        )}
+                                        {property.furnished && (
+                                            <div className="px-3 py-1 bg-white/80 backdrop-blur-md text-zinc-900 text-[10px] font-black rounded-lg">FURNISHED</div>
+                                        )}
+                                    </div>
+                                    <div className="absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-black/60 to-transparent" />
+                                    <div className="absolute bottom-4 left-6">
+                                        <p className="text-3xl font-black text-white tracking-tighter">
+                                            {property.monthly_rent}€<span className="text-sm font-medium text-white/70 ml-1">/mo</span>
+                                        </p>
                                     </div>
                                 </div>
-                                <div className="p-5 pt-3 flex flex-col flex-1">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <h3 className="text-xl font-bold text-slate-900 dark:text-white truncate pr-2">{property.title}</h3>
-                                        <div className="text-right whitespace-nowrap">
-                                            <span translate="no" className="notranslate text-teal-600 dark:text-teal-400 font-black text-xl">{property.monthly_rent}€</span>
-                                            <span className={`ml-1 text-xs font-bold px-1.5 py-0.5 rounded-full ${property.charges_included ? 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'}`}>
-                                                {property.charges_included ? t('search.property.chargesIncluded', undefined, undefined) : t('search.property.chargesExcluded', undefined, undefined)}
-                                            </span>
-                                            {!property.charges_included && property.charges && (
-                                                <div translate="no" className="notranslate text-xs font-medium text-zinc-500 dark:text-zinc-400">{t('search.property.plusCharges', { amount: property.charges }, undefined)}</div>
+
+                                <div className="p-8 flex flex-col flex-1">
+                                    <h3 className="text-2xl font-black text-zinc-900 dark:text-white mb-2 truncate tracking-tight">{property.title}</h3>
+                                    <p className="text-zinc-500 dark:text-zinc-400 font-bold text-sm uppercase tracking-wider mb-6">{property.city} • {property.size_sqm}m² • {property.bedrooms} Bed</p>
+                                    
+                                    <div className="mt-auto pt-6 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
+                                        <div className="flex -space-x-2">
+                                            {property.amenities?.slice(0, 3).map((amenity, i) => (
+                                                <div key={i} className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 border-2 border-white dark:border-zinc-900 flex items-center justify-center text-[10px] text-zinc-400 font-black uppercase">
+                                                    {amenity.charAt(0)}
+                                                </div>
+                                            ))}
+                                            {property.amenities?.length > 3 && (
+                                                <div className="w-8 h-8 rounded-full bg-teal-500 border-2 border-white dark:border-zinc-900 flex items-center justify-center text-[10px] text-white font-black">
+                                                    +{property.amenities.length - 3}
+                                                </div>
                                             )}
                                         </div>
-                                    </div>
-                                    <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-4">{property.city} • <span translate="no" className="notranslate">{t('search.property.size', { size: property.size_sqm }, undefined)}</span> • {t('search.property.beds', { count: property.bedrooms }, undefined)}</p>
-                                    {property.deposit && (
-                                        <p className="text-xs font-medium text-zinc-400 dark:text-zinc-500 mb-4">{t('search.property.deposit', undefined, undefined)}: <span translate="no" className="notranslate">{property.deposit}€</span></p>
-                                    )}
-                                    <div className="flex gap-2 flex-wrap mt-auto pt-2">
-                                        {property.dpe_rating && (
-                                            <span className={`px-2 py-1 rounded-lg text-xs font-bold text-white shadow-sm ${property.dpe_rating === 'A' ? 'bg-teal-500' :
-                                                property.dpe_rating === 'B' ? 'bg-emerald-500' :
-                                                    property.dpe_rating === 'C' ? 'bg-lime-400 !text-slate-800' :
-                                                        property.dpe_rating === 'D' ? 'bg-amber-400 !text-slate-800' :
-                                                            property.dpe_rating === 'E' ? 'bg-orange-500' :
-                                                                property.dpe_rating === 'F' ? 'bg-red-500' :
-                                                                    'bg-red-700'
-                                                }`}>DPE {property.dpe_rating}</span>
-                                        )}
-                                        {property.furnished ? <span className="px-2 py-1 bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 rounded-lg text-xs font-semibold shadow-sm border border-purple-100 dark:border-purple-900/50">{t('search.property.furnished', undefined, undefined)}</span> : <span className="px-2 py-1 bg-zinc-50 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400 rounded-lg text-xs font-semibold shadow-sm">{t('search.property.unfurnished', undefined, undefined)}</span>}
-                                        {property.amenities?.includes('colocation') && <span className="px-2 py-1 bg-teal-50 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300 rounded-lg text-xs font-semibold shadow-sm border border-teal-100 dark:border-teal-900/50">{t('search.property.colocOk', undefined, undefined)}</span>}
-                                        {property.guarantor_required ? (
-                                            <span className="px-2 py-1 bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 rounded-lg text-xs font-semibold shadow-sm border border-indigo-100 dark:border-indigo-900/50">️ {t('search.property.guarantorReq', undefined, undefined)}</span>
-                                        ) : (
-                                            <span className="px-2 py-1 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 rounded-lg text-xs font-semibold shadow-sm border border-emerald-100 dark:border-emerald-900/50"> {t('search.property.noGuarantor', undefined, undefined)}</span>
-                                        )}
+                                        <button 
+                                            onClick={() => router.push(`/properties/${property.id}`)}
+                                            className="text-xs font-black uppercase tracking-widest text-teal-600 hover:text-teal-500 transition-colors"
+                                        >
+                                            View Details →
+                                        </button>
                                     </div>
                                 </div>
-                            </div>
+                            </motion.div>
                         ))}
                     </div>
                 )}
-            </main>
+            </div>
         </PremiumLayout>
+    );
+}
+out>
     );
 }

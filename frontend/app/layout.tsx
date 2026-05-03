@@ -33,13 +33,20 @@ export const viewport: Viewport = {
 
 import Script from "next/script";
 
+import { Outfit } from "next/font/google";
+
+const outfit = Outfit({
+  subsets: ["latin"],
+  variable: "--font-outfit",
+});
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr">
+    <html lang="fr" className={`${outfit.variable}`}>
       <head>
         {/* Load Google Identity Services script once */}
         <Script 
@@ -48,7 +55,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`font-sans antialiased`}
+        className={`font-sans antialiased bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 min-h-screen selection:bg-teal-100 dark:selection:bg-teal-900/30 selection:text-teal-900 dark:selection:text-teal-100`}
       >
         <LanguageProvider>
           <ToastProvider>

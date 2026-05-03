@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/useAuth';
 import WizardProgress from '@/components/WizardProgress';
 import { apiClient } from '@/lib/api';
 import { useToast } from '@/lib/ToastContext';
+import { useLanguage } from '@/lib/LanguageContext';
 import SignatureCanvas from 'react-signature-canvas';
 
 interface Property {
@@ -32,6 +33,7 @@ interface Application {
 
 
 export default function LeaseWizard() {
+    const { t } = useLanguage();
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
     const toast = useToast();
@@ -331,7 +333,7 @@ export default function LeaseWizard() {
                                                 type="text"
                                                 value={guarantorName}
                                                 onChange={(e) => setGuarantorName(e.target.value)}
-                                                placeholder="Guarantor full name (Optional)"
+                                                placeholder={t('common.placeholders.guarantorName')}
                                                 className="w-full px-4 py-3 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500"
                                             />
                                             <p className="text-xs text-amber-700 mt-1">Laissez vide si pas de garant.</p>

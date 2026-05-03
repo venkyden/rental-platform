@@ -95,27 +95,6 @@ async def list_documents(
 # Specialized Verification Endpoints
 
 
-@router.post("/verify/guarantor", status_code=status.HTTP_201_CREATED)
-async def submit_guarantor(
-    file: UploadFile = File(...),
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    """Submit Guarantor Form/Visale Certificate"""
-    doc = await upload_document(
-        file=file, document_type="guarantor_form", current_user=current_user, db=db
-    )
-
-    # Trigger 'Pending Verification' logic (Mock)
-    doc.verification_status = "pending"
-    await db.commit()
-
-    return {
-        "message": "Guarantor document submitted for verification",
-        "document_id": str(doc.id),
-    }
-
-
 @router.post("/verify/income", status_code=status.HTTP_201_CREATED)
 async def submit_income_proof(
     file: UploadFile = File(...),

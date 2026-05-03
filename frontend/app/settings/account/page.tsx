@@ -2,17 +2,21 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, Shield, Key, Mail, Camera, Loader2, CheckCircle2 } from 'lucide-react';
+import { User, Shield, Key, Mail, Camera, Loader2, CheckCircle2, Bell, Settings } from 'lucide-react';
 import { useAuth } from '@/lib/useAuth';
+import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api';
+import { useLanguage } from '@/lib/LanguageContext';
 import PremiumLayout from '@/components/PremiumLayout';
 
 
 
 export default function AccountSettingsPage() {
     const { user } = useAuth();
+    const { t } = useLanguage();
+    const router = useRouter();
 
-    // Tab State
+    // Tab State for internal account sections
     const [activeTab, setActiveTab] = useState('profile');
 
     // Profile State
@@ -48,9 +52,8 @@ export default function AccountSettingsPage() {
 
         try {
             await apiClient.client.put('/auth/me', { full_name: fullName, bio });
-            // Refresh user data (would normally call mutate here)
-            window.location.reload();
             setProfileMessage({ text: 'Profile updated successfully!', type: 'success' });
+            setTimeout(() => window.location.reload(), 1000);
         } catch (error: any) {
             let errorMsg = error.response?.data?.detail || 'Failed to update profile';
             if (Array.isArray(errorMsg)) errorMsg = errorMsg[0].msg;
@@ -72,11 +75,9 @@ export default function AccountSettingsPage() {
             await apiClient.client.post('/auth/me/avatar', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
-            // Refresh user data to show new avatar
             window.location.reload();
         } catch (error) {
             console.error("Avatar upload failed:", error);
-            alert("Failed to upload avatar. Please try again.");
         } finally {
             setIsUploadingAvatar(false);
         }
@@ -97,7 +98,7 @@ export default function AccountSettingsPage() {
                 old_password: oldPassword,
                 new_password: newPassword,
             });
-            setPasswordMessage({ text: 'Password changed successfully', type: 'success' });
+            setPasswordMessage({ text: 'Password updated successfully', type: 'success' });
             setOldPassword('');
             setNewPassword('');
             setConfirmPassword('');
@@ -120,7 +121,7 @@ export default function AccountSettingsPage() {
                 new_email: newEmail,
                 password: emailPassword,
             });
-            setEmailMessage({ text: `Verification link sent to ${newEmail}. Please check your inbox.`, type: 'success' });
+            setEmailMessage({ text: `Verification link sent to ${newEmail}`, type: 'success' });
             setNewEmail('');
             setEmailPassword('');
         } catch (error: any) {
@@ -137,9 +138,9 @@ export default function AccountSettingsPage() {
         setResendMessage('');
         try {
             await apiClient.client.post('/auth/resend-verification');
-            setResendMessage('Verification email sent! Please check your inbox.');
+            setResendMessage('Verification email sent!');
         } catch (error: any) {
-            let errorMsg = error.response?.data?.detail || 'Failed to resend verification';
+            let errorMsg = error.response?.data?.detail || 'Failed to resend';
             if (Array.isArray(errorMsg)) errorMsg = errorMsg[0].msg;
             setResendMessage(errorMsg);
         } finally {
@@ -147,224 +148,177 @@ export default function AccountSettingsPage() {
         }
     };
 
-    if (!user) {
-        return (
-            <PremiumLayout>
-                <div className="flex justify-center items-center py-20">
-                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                </div>
-            </PremiumLayout>
-        );
-    }
+    if (!user) return <PremiumLayout><div className="flex justify-center items-center py-20"><Loader2 className="w-8 h-8 animate-spin text-teal-500" /></div></PremiumLayout>;
 
     return (
-        <PremiumLayout>
-            <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                >
-                    <div className="mb-8">
-                        <h1 className="text-3xl font-bold text-zinc-900 dark:text-white dark:from-white dark:to-gray-400">
-                            Account Settings
-                        </h1>
-                        <p className="text-gray-500 mt-2">Manage your profile, security, and preferences.</p>
-                    </div>
-
-                    {!user.email_verified && (
-                        <div className="mb-6 p-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-orange-100 dark:bg-orange-800/50 rounded-lg">
-                                    <Mail className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-                                </div>
-                                <div>
-                                    <h3 className="text-sm font-bold text-orange-800 dark:text-orange-300">Your email address is unverified</h3>
-                                    <p className="text-sm text-orange-700 dark:text-orange-400">Please verify your email ({user.email}) to unlock all features.</p>
-                                    {resendMessage && <p className="text-sm font-medium mt-1 text-orange-900 dark:text-orange-200">{resendMessage}</p>}
-                                </div>
-                            </div>
-                            <button 
-                                onClick={handleResendVerification}
-                                disabled={isResending}
-                                className="whitespace-nowrap px-4 py-2 bg-white dark:bg-zinc-800 border border-orange-200 dark:border-orange-700 text-orange-700 dark:text-orange-400 rounded-lg text-sm font-medium hover:bg-orange-50 dark:hover:bg-zinc-700 transition-colors disabled:opacity-50"
-                            >
-                                {isResending ? 'Sending...' : 'Resend Email'}
-                            </button>
+        <PremiumLayout withNavbar={true}>
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+                <div className="flex flex-col md:flex-row gap-16">
+                    {/* Sidebar */}
+                    <div className="w-full md:w-80 shrink-0">
+                        <div className="mb-12">
+                            <h1 className="text-4xl font-black tracking-tighter mb-4 bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 to-zinc-500 dark:from-white dark:to-zinc-400">Settings</h1>
+                            <p className="text-zinc-500 font-medium">Manage your digital identity and security preferences.</p>
                         </div>
-                    )}
 
-                    {/* Custom Tabs */}
-                    <div className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-md p-1 flex gap-2 rounded-xl mb-8">
-                        <button
-                            onClick={() => setActiveTab('profile')}
-                            className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'profile' ? 'bg-white dark:bg-gray-700 shadow-sm text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400 hover:bg-white/40 dark:hover:bg-gray-700/40'}`}
-                        >
-                            <User className="w-4 h-4 mr-2" />
-                            Profile
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('security')}
-                            className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'security' ? 'bg-white dark:bg-gray-700 shadow-sm text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400 hover:bg-white/40 dark:hover:bg-gray-700/40'}`}
-                        >
-                            <Shield className="w-4 h-4 mr-2" />
-                            Security
-                        </button>
+                        <div className="flex flex-col gap-2 p-1.5 bg-zinc-100 dark:bg-zinc-800/50 rounded-[2rem] border border-zinc-200/50 dark:border-zinc-700/30 backdrop-blur-xl">
+                            {[
+                                { id: 'account', icon: User, label: 'Profile', path: '/settings/account' },
+                                { id: 'notifications', icon: Bell, label: 'Notifications', path: '/settings/notifications' },
+                                { id: 'privacy', icon: Shield, label: 'Privacy', path: '/settings/privacy' },
+                                { id: 'preferences', icon: Settings, label: 'Preferences', path: '/settings/preferences' }
+                            ].map((tab) => (
+                                <div key={tab.id} className="flex flex-col">
+                                    <button
+                                        onClick={() => router.push(tab.path)}
+                                        className={`flex items-center gap-4 px-6 py-4 rounded-[1.5rem] text-sm font-black uppercase tracking-widest transition-all duration-500 ${
+                                            tab.id === 'account' 
+                                            ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-xl scale-100' 
+                                            : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'
+                                        }`}
+                                    >
+                                        <tab.icon className={`w-4 h-4 ${tab.id === 'account' ? 'text-teal-500' : ''}`} />
+                                        {tab.label}
+                                    </button>
+                                    
+                                    {tab.id === 'account' && (
+                                        <div className="px-6 py-4 flex flex-col gap-4">
+                                            <button 
+                                                onClick={() => setActiveTab('profile')}
+                                                className={`text-[10px] font-black uppercase tracking-widest text-left transition-all ${activeTab === 'profile' ? 'text-teal-500' : 'text-zinc-400 hover:text-zinc-500'}`}
+                                            >
+                                                General
+                                            </button>
+                                            <button 
+                                                onClick={() => setActiveTab('security')}
+                                                className={`text-[10px] font-black uppercase tracking-widest text-left transition-all ${activeTab === 'security' ? 'text-teal-500' : 'text-zinc-400 hover:text-zinc-500'}`}
+                                            >
+                                                Security
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
                     </div>
 
-                    {/* PROFILE TAB */}
-                    {activeTab === 'profile' && (
-                        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            <div className="border border-gray-100 dark:border-gray-800 shadow-sm  dark: rounded-2xl overflow-hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl">
-                                <div className="border-b border-gray-100 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50 px-6 py-4">
-                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Profile Details</h3>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">This information will be displayed publicly on your profile.</p>
+                    {/* Content */}
+                    <div className="flex-1 max-w-2xl">
+                        {!user.email_verified && (
+                            <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-12 glass-card border-amber-200 dark:border-amber-900/30 !bg-amber-50/30 dark:!bg-amber-900/10 flex flex-col sm:flex-row items-center justify-between gap-6 p-8">
+                                <div className="flex items-center gap-4 text-center sm:text-left">
+                                    <div className="p-3 bg-amber-100 dark:bg-amber-900/50 rounded-2xl">
+                                        <Mail className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-sm font-black text-amber-900 dark:text-amber-300 uppercase tracking-widest">Verify Email</h3>
+                                        <p className="text-xs font-bold text-amber-700 dark:text-amber-400 mt-1">Unlock full platform access by verifying your email.</p>
+                                    </div>
                                 </div>
-                                <div className="p-6">
-                                    <div className="flex flex-col md:flex-row gap-8">
-                                        {/* Avatar Section */}
-                                        <div className="flex flex-col items-center space-y-4">
-                                            <div className="relative group rounded-full overflow-hidden border-4 border-white dark:border-gray-800 shadow-sm w-32 h-32">
-                                                {user.profile_picture_url ? (
-                                                    <img src={user.profile_picture_url} alt="Profile" className="w-full h-full object-cover" />
-                                                ) : (
-                                                    <div className="w-full h-full bg-zinc-100 dark:bg-zinc-800 dark:from-indigo-900/50 dark:to-purple-900/50 flex items-center justify-center text-indigo-500 text-4xl font-semibold">
-                                                        {user.full_name?.charAt(0) || user.email?.charAt(0).toUpperCase()}
-                                                    </div>
-                                                )}
-                                                <label className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                                                    {isUploadingAvatar ? (
-                                                        <Loader2 className="w-6 h-6 text-white animate-spin" />
+                                <button onClick={handleResendVerification} disabled={isResending} className="px-6 py-3 bg-white dark:bg-zinc-800 text-amber-700 dark:text-amber-400 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm hover:scale-105 transition-all">
+                                    {isResending ? 'Sending...' : 'Resend link'}
+                                </button>
+                            </motion.div>
+                        )}
+
+                        <AnimatePresence mode="wait">
+                            {activeTab === 'profile' && (
+                                <motion.div key="profile" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-12">
+                                    <div className="glass-card !p-10">
+                                        <h3 className="text-2xl font-black tracking-tight mb-8">Profile Details</h3>
+                                        
+                                        <div className="flex flex-col sm:flex-row items-center gap-10 mb-12">
+                                            <div className="relative group shrink-0">
+                                                <div className="w-32 h-32 rounded-[2.5rem] overflow-hidden border-4 border-white dark:border-zinc-800 shadow-2xl relative">
+                                                    {user.profile_picture_url ? (
+                                                        <img src={user.profile_picture_url} alt="Profile" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                                                     ) : (
-                                                        <>
-                                                            <Camera className="w-6 h-6 text-white mb-1" />
-                                                            <span className="text-white text-xs font-medium">Change</span>
-                                                        </>
+                                                        <div className="w-full h-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-3xl font-black text-zinc-300">
+                                                            {user.full_name?.charAt(0) || user.email?.charAt(0).toUpperCase()}
+                                                        </div>
                                                     )}
-                                                    <input type="file" className="hidden" accept="image/*" onChange={handleAvatarUpload} disabled={isUploadingAvatar} />
+                                                    {isUploadingAvatar && <div className="absolute inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-sm flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-teal-500" /></div>}
+                                                </div>
+                                                <label className="absolute -bottom-2 -right-2 p-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-2xl shadow-xl cursor-pointer hover:scale-110 transition-all">
+                                                    <Camera className="w-4 h-4" />
+                                                    <input type="file" className="hidden" accept="image/*" onChange={handleAvatarUpload} />
                                                 </label>
                                             </div>
-                                            <p className="text-xs text-center text-gray-500 max-w-[120px]">Allowed: JPG, PNG, WEBP. Max size: 2MB.</p>
+                                            <div className="flex-1 text-center sm:text-left">
+                                                <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-2">Avatar Format</p>
+                                                <p className="text-xs font-bold text-zinc-500">Allowed: JPG, PNG, WEBP. Max size: 2MB.</p>
+                                            </div>
                                         </div>
 
-                                        {/* Form Section */}
-                                        <div className="flex-1">
-                                            <form onSubmit={handleProfileUpdate} className="space-y-4">
-                                                <div className="space-y-2">
-                                                    <label htmlFor="fullName" className="text-sm font-medium text-gray-700 dark:text-gray-300">Full Name</label>
-                                                    <input id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="John Doe" className="flex h-10 w-full rounded-md border border-zinc-300 bg-transparent px-3 py-2 text-sm placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-50 dark:focus:ring-zinc-400 dark:focus:ring-offset-zinc-900 bg-white dark:bg-gray-900" />
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <label htmlFor="bio" className="text-sm font-medium text-gray-700 dark:text-gray-300">Bio</label>
-                                                    <textarea id="bio" value={bio} onChange={(e) => setBio(e.target.value)} placeholder="A bit about yourself..." rows={4} className="flex min-h-[80px] w-full rounded-md border border-zinc-300 bg-transparent px-3 py-2 text-sm placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-50 dark:focus:ring-zinc-400 dark:focus:ring-offset-zinc-900 bg-white dark:bg-gray-900 resize-none" />
-                                                </div>
+                                        <form onSubmit={handleProfileUpdate} className="space-y-8">
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Full Name</label>
+                                                <input value={fullName} onChange={(e) => setFullName(e.target.value)} className="w-full bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-zinc-900 dark:text-white focus:ring-2 focus:ring-teal-500/50 transition-all" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Bio</label>
+                                                <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={4} className="w-full bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-zinc-900 dark:text-white focus:ring-2 focus:ring-teal-500/50 transition-all resize-none" />
+                                            </div>
 
-                                                {profileMessage.text && (
-                                                    <div className={`p-3 rounded-lg flex items-center gap-2 text-sm ${profileMessage.type === 'success' ? 'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
-                                                        {profileMessage.type === 'success' && <CheckCircle2 className="w-4 h-4" />}
-                                                        {profileMessage.text}
+                                            {profileMessage.text && <p className={`text-[10px] font-black uppercase tracking-widest ${profileMessage.type === 'success' ? 'text-emerald-500' : 'text-red-500'}`}>{profileMessage.text}</p>}
+
+                                            <button type="submit" disabled={isUpdatingProfile} className="btn-primary !w-full !py-4 !rounded-2xl !text-xs uppercase tracking-[0.2em] shadow-xl shadow-teal-500/10">
+                                                {isUpdatingProfile ? 'Saving...' : 'Save Changes'}
+                                            </button>
+                                        </form>
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {activeTab === 'security' && (
+                                <motion.div key="security" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-12">
+                                    <div className="glass-card !p-10">
+                                        <h3 className="text-2xl font-black tracking-tight mb-8">Security</h3>
+                                        
+                                        <form onSubmit={handleChangePassword} className="space-y-8 mb-16">
+                                            <div className="space-y-6">
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Current Password</label>
+                                                    <input type="password" value={oldPassword} onChange={(e) => setOldPassword(e.target.value)} className="w-full bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-zinc-900 dark:text-white focus:ring-2 focus:ring-teal-500/50 transition-all" />
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="space-y-2">
+                                                        <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">New</label>
+                                                        <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-zinc-900 dark:text-white focus:ring-2 focus:ring-teal-500/50 transition-all" />
                                                     </div>
-                                                )}
-
-                                                <div className="flex justify-end pt-2">
-                                                    <button type="submit" disabled={isUpdatingProfile} className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white shadow-md ">
-                                                        {isUpdatingProfile ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving...</> : 'Save Changes'}
-                                                    </button>
+                                                    <div className="space-y-2">
+                                                        <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Confirm</label>
+                                                        <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="w-full bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-zinc-900 dark:text-white focus:ring-2 focus:ring-teal-500/50 transition-all" />
+                                                    </div>
                                                 </div>
+                                            </div>
+                                            {passwordMessage.text && <p className={`text-[10px] font-black uppercase tracking-widest ${passwordMessage.type === 'success' ? 'text-emerald-500' : 'text-red-500'}`}>{passwordMessage.text}</p>}
+                                            <button type="submit" disabled={isChangingPassword} className="btn-primary !w-full !py-4 !rounded-2xl !text-xs uppercase tracking-[0.2em] shadow-xl shadow-teal-500/10">Update Password</button>
+                                        </form>
+
+                                        <div className="pt-12 border-t border-zinc-100 dark:border-zinc-800">
+                                            <h4 className="text-sm font-black uppercase tracking-widest mb-8">Email Address</h4>
+                                            <form onSubmit={handleRequestEmailChange} className="space-y-8">
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="space-y-2">
+                                                        <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">New Email</label>
+                                                        <input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} className="w-full bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-zinc-900 dark:text-white focus:ring-2 focus:ring-teal-500/50 transition-all" />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Password</label>
+                                                        <input type="password" value={emailPassword} onChange={(e) => setEmailPassword(e.target.value)} className="w-full bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-zinc-900 dark:text-white focus:ring-2 focus:ring-teal-500/50 transition-all" />
+                                                    </div>
+                                                </div>
+                                                {emailMessage.text && <p className={`text-[10px] font-black uppercase tracking-widest ${emailMessage.type === 'success' ? 'text-emerald-500' : 'text-red-500'}`}>{emailMessage.text}</p>}
+                                                <button type="submit" disabled={isChangingEmail} className="py-4 px-8 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all w-full">Request Email Change</button>
                                             </form>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* SECURITY TAB */}
-                    {activeTab === 'security' && (
-                        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            {/* Password Section */}
-                            <div className="border border-gray-100 dark:border-gray-800 shadow-sm  dark: rounded-2xl overflow-hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl">
-                                <div className="border-b border-gray-100 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50 px-6 py-4">
-                                    <div className="flex items-center gap-2">
-                                        <Key className="w-5 h-5 text-indigo-500" />
-                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Change Password</h3>
-                                    </div>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Ensure your account is using a long, random password to stay secure.</p>
-                                </div>
-                                <div className="p-6">
-                                    <form onSubmit={handleChangePassword} className="space-y-4 max-w-xl">
-                                        <div className="space-y-2">
-                                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Current Password</label>
-                                            <input type="password" value={oldPassword} onChange={(e) => setOldPassword(e.target.value)} required className="flex h-10 w-full rounded-md border border-zinc-300 bg-transparent px-3 py-2 text-sm placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-50 dark:focus:ring-zinc-400 dark:focus:ring-offset-zinc-900 bg-white dark:bg-gray-900" />
-                                        </div>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">New Password</label>
-                                                <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required className="flex h-10 w-full rounded-md border border-zinc-300 bg-transparent px-3 py-2 text-sm placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-50 dark:focus:ring-zinc-400 dark:focus:ring-offset-zinc-900 bg-white dark:bg-gray-900" />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Confirm Password</label>
-                                                <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required className="flex h-10 w-full rounded-md border border-zinc-300 bg-transparent px-3 py-2 text-sm placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-50 dark:focus:ring-zinc-400 dark:focus:ring-offset-zinc-900 bg-white dark:bg-gray-900" />
-                                            </div>
-                                        </div>
-
-                                        {passwordMessage.text && (
-                                            <div className={`p-3 rounded-lg flex items-center gap-2 text-sm ${passwordMessage.type === 'success' ? 'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
-                                                {passwordMessage.text}
-                                            </div>
-                                        )}
-
-                                        <div className="pt-2">
-                                            <button type="submit" disabled={isChangingPassword || !oldPassword || !newPassword} className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white shadow-md ">
-                                                {isChangingPassword ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                                                Update Password
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-
-                            {/* Email Section */}
-                            <div className="border border-gray-100 dark:border-gray-800 shadow-sm  dark: rounded-2xl overflow-hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl">
-                                <div className="border-b border-gray-100 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50 px-6 py-4">
-                                    <div className="flex items-center gap-2">
-                                        <Mail className="w-5 h-5 text-indigo-500" />
-                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Change Email Address</h3>
-                                    </div>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">We will send a verification link to the new email address.</p>
-                                </div>
-                                <div className="p-6">
-                                    <form onSubmit={handleRequestEmailChange} className="space-y-4 max-w-xl">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">New Email Address</label>
-                                                <input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} required placeholder="new@example.com" className="flex h-10 w-full rounded-md border border-zinc-300 bg-transparent px-3 py-2 text-sm placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-50 dark:focus:ring-zinc-400 dark:focus:ring-offset-zinc-900 bg-white dark:bg-gray-900" />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Current Password</label>
-                                                <input type="password" value={emailPassword} onChange={(e) => setEmailPassword(e.target.value)} required placeholder="Required for security" className="flex h-10 w-full rounded-md border border-zinc-300 bg-transparent px-3 py-2 text-sm placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-50 dark:focus:ring-zinc-400 dark:focus:ring-offset-zinc-900 bg-white dark:bg-gray-900" />
-                                            </div>
-                                        </div>
-
-                                        {emailMessage.text && (
-                                            <div className={`p-3 rounded-lg flex items-center gap-2 text-sm ${emailMessage.type === 'success' ? 'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
-                                                {emailMessage.type === 'success' && <CheckCircle2 className="w-4 h-4" />}
-                                                {emailMessage.text}
-                                            </div>
-                                        )}
-
-                                        <div className="pt-2">
-                                            <button type="submit" disabled={isChangingEmail || !newEmail || !emailPassword} className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700 shadow-sm border border-zinc-200 dark:border-zinc-700">
-                                                {isChangingEmail ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                                                Request Verification Link
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </motion.div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+                </div>
             </div>
         </PremiumLayout>
     );

@@ -3,6 +3,7 @@ Team Management API router.
 Allows landlords to invite team members, manage permissions, and assign properties.
 """
 
+import logging
 import secrets
 from datetime import datetime, timedelta
 from typing import List, Optional
@@ -22,6 +23,7 @@ from app.routers.auth import get_current_user
 from app.services.email import email_service
 
 router = APIRouter(prefix="/team", tags=["Team Management"])
+logger = logging.getLogger(__name__)
 
 
 # --- Schemas ---
@@ -140,29 +142,45 @@ async def get_my_invites(
     current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
 ):
     """Get all pending team invites for the current user."""
-    result = await db.execute(
-        select(TeamMember)
-        .where(
-            and_(
-                TeamMember.email.ilike(current_user.email),
-                TeamMember.status == InviteStatus.PENDING,
+    try:
+        # Fetch invites where the current user is the recipient (by email)
+        # Using .outerjoin to ensure we get the invite even if the landlord user record is missing
+        query = (
+            select(TeamMember, User)
+            .outerjoin(User, User.id == TeamMember.landlord_id)
+            .where(
+                and_(
+                    TeamMember.email.ilike(current_user.email),
+                    TeamMember.status == InviteStatus.PENDING,
+                )
             )
+            .order_by(TeamMember.created_at.desc())
         )
-    )
-    invites = result.scalars().all()
+        
+        result = await db.execute(query)
+        rows = result.all()
 
-    response = []
-    for invite in invites:
-        landlord = (await db.execute(select(User).where(User.id == invite.landlord_id))).scalar_one_or_none()
-        response.append({
-            "id": str(invite.id),
-            "landlord_name": landlord.full_name if landlord else "Unknown",
-            "permission_level": invite.permission_level.value,
-            "token": invite.invite_token,
-            "created_at": invite.created_at,
-        })
-    
-    return response
+        response = []
+        for invite, landlord in rows:
+            # Safely extract permission level value
+            perm_level = invite.permission_level
+            if hasattr(perm_level, "value"):
+                perm_level = perm_level.value
+            
+            response.append({
+                "id": str(invite.id),
+                "landlord_name": landlord.full_name if landlord else "Unknown Landlord",
+                "permission_level": str(perm_level),
+                "token": invite.invite_token,
+                "created_at": invite.created_at,
+            })
+
+        return response
+    except Exception as e:
+        logger.exception(f"Critical error fetching invites for {current_user.email}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to fetch invites due to a server error. Please try again later."
+        )
 
 
 @router.post("/members", response_model=TeamMemberDetailResponse)

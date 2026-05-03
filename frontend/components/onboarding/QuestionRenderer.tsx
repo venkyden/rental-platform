@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useLanguage } from '@/lib/LanguageContext';
 import RadiusLocationPicker from '../RadiusLocationPicker';
 import AddressAutocomplete, { AddressResult } from '../AddressAutocomplete';
+import Combobox from '../Combobox';
 import { Question, FRENCH_UNIVERSITIES } from './onboardingQuestions';
 
 interface QuestionRendererProps {
@@ -22,12 +24,31 @@ export default function QuestionRenderer({
     onMultiSelectToggle,
     sanitizeInput,
 }: QuestionRendererProps) {
+    const { t } = useLanguage();
     const [showManualUniversityInput, setShowManualUniversityInput] = useState(false);
     const [manualUniName, setManualUniName] = useState('');
     const [manualUniCity, setManualUniCity] = useState('');
     const [selectedAddress, setSelectedAddress] = useState<AddressResult | null>(null);
     const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number } | null>(null);
     const [mapRadius, setMapRadius] = useState<number>(2000);
+
+    // Prepare university options for Combobox
+    const universityOptions = useMemo(() => {
+        const options = FRENCH_UNIVERSITIES.flatMap(cityGroup => 
+            cityGroup.universities.map(uni => ({
+                label: uni.label,
+                value: `${uni.value}|${cityGroup.city}|${uni.label}`,
+                group: cityGroup.city
+            }))
+        );
+        // Add manual input option
+        options.push({
+            label: 'Other / My school isn\'t listed',
+            value: 'other|other|other',
+            group: 'Other'
+        });
+        return options;
+    }, []);
 
     return (
         <div className="space-y-4">
@@ -37,7 +58,7 @@ export default function QuestionRenderer({
                     <AddressAutocomplete
                         onSelectAction={(result) => setSelectedAddress(result)}
                         restrictToCities={question.restrictToCities || []}
-                        placeholder={question.placeholder || 'Start typing an address…'}
+                        placeholder={question.placeholder || t('common.placeholders.address')}
                         variant="onboarding"
                     />
                     {selectedAddress && (
@@ -63,7 +84,7 @@ export default function QuestionRenderer({
                         disabled={!selectedAddress}
                         className="w-full mt-8 py-4 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl shadow-sm hover: transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        Continue →
+                        {t('common.back')} →
                     </button>
                 </div>
             )}
@@ -88,25 +109,20 @@ export default function QuestionRenderer({
                         }}
                         className="w-full mt-8 py-4 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl shadow-sm hover: transition-all transform hover:-translate-y-0.5"
                     >
-                        Continue →
+                        {t('common.next')} →
                     </button>
                 </div>
             )}
 
-            {/* Select Dropdown */}
+            {/* Select Dropdown (Using Combobox) */}
             {question.type === 'select' && (
                 <div>
-                    <select
-                        className="w-full px-6 py-4 text-lg text-gray-900 dark:text-white bg-white/50 dark:bg-zinc-800/50 border-2 border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-teal-500 dark:focus:border-teal-400 transition-colors"
-                        onChange={(e) => {
-                            if (e.target.value) onAnswer(e.target.value);
-                        }}
-                    >
-                        <option value="">Select an option...</option>
-                        {question.selectOptions?.map((option, i) => (
-                            <option key={i} value={option.value}>{option.label}</option>
-                        ))}
-                    </select>
+                    <Combobox
+                        options={question.selectOptions || []}
+                        value={responses[question.id] || ''}
+                        onChange={(val) => onAnswer(val)}
+                        placeholder={t('common.placeholders.selectOption')}
+                    />
                     {question.id === 'nationality' && (
                         <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400 text-center">
                             This field is collected strictly for demographic surveys. It is <strong>never</strong> used in matching or shared with landlords.
@@ -115,86 +131,84 @@ export default function QuestionRenderer({
                 </div>
             )}
 
-            {/* University Select Dropdown (Grouped by City) + Manual Input */}
+            {/* University Select (Using Combobox) */}
             {question.type === 'university_select' && (
                 <div>
-                    <select
-                        id="university-select"
-                        className="w-full px-6 py-4 text-lg text-gray-900 dark:text-white bg-white/50 dark:bg-zinc-800/50 border-2 border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-teal-500 dark:focus:border-teal-400 transition-colors"
-                        onChange={(e) => {
-                            if (e.target.value === 'other|other') {
+                    <Combobox
+                        options={universityOptions}
+                        value="" // Reset after each selection logic
+                        onChange={(val) => {
+                            if (val === 'other|other|other') {
                                 setShowManualUniversityInput(true);
-                            } else if (e.target.value) {
+                            } else {
+                                const [uniId, city, label] = val.split('|');
                                 setShowManualUniversityInput(false);
-                                const [uniId, city] = e.target.value.split('|');
-                                let uniName = uniId;
-                                for (const cityGroup of FRENCH_UNIVERSITIES) {
-                                    const found = cityGroup.universities.find(u => u.value === uniId);
-                                    if (found) {
-                                        uniName = found.label;
-                                        break;
-                                    }
-                                }
-                                onAnswer({ university_id: sanitizeInput(uniId), university_name: sanitizeInput(uniName), city: sanitizeInput(city) });
+                                onAnswer({ 
+                                    university_id: sanitizeInput(uniId), 
+                                    university_name: sanitizeInput(label), 
+                                    city: sanitizeInput(city) 
+                                });
                             }
                         }}
-                    >
-                        <option value="">Select your university...</option>
-                        {FRENCH_UNIVERSITIES.map((cityGroup, cityIndex) => (
-                            <optgroup key={cityIndex} label={` ${cityGroup.city}`} className="dark:bg-zinc-800">
-                                {cityGroup.universities.map((uni, uniIndex) => (
-                                    <option key={uniIndex} value={`${uni.value}|${cityGroup.city}`}>
-                                        {uni.label}
-                                    </option>
-                                ))}
-                            </optgroup>
-                        ))}
-                        <optgroup label=" Other" className="dark:bg-zinc-800">
-                            <option value="other|other">My school isn't listed - Enter manually</option>
-                        </optgroup>
-                    </select>
+                        placeholder={t('common.placeholders.selectUniversity')}
+                    />
 
                     {showManualUniversityInput && (
-                        <div className="mt-4 space-y-3">
-                            <input
-                                type="text"
-                                value={manualUniName}
-                                onChange={(e) => setManualUniName(e.target.value)}
-                                placeholder="Enter your school/university name"
-                                className="w-full px-6 py-4 text-lg text-gray-900 dark:text-white bg-white/50 dark:bg-zinc-800/50 border-2 border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-teal-500 dark:focus:border-teal-400 transition-colors"
-                                maxLength={100}
-                            />
-                            <input
-                                type="text"
-                                value={manualUniCity}
-                                onChange={(e) => setManualUniCity(e.target.value)}
-                                placeholder="City (e.g., Paris, Lyon...)"
-                                className="w-full px-6 py-4 text-lg text-gray-900 dark:text-white bg-white/50 dark:bg-zinc-800/50 border-2 border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-teal-500 dark:focus:border-teal-400 transition-colors"
-                                maxLength={50}
-                            />
-                            <button
-                                onClick={() => {
-                                    if (manualUniName.trim() && manualUniCity.trim()) {
-                                        onAnswer({
-                                            university_id: 'custom',
-                                            university_name: sanitizeInput(manualUniName),
-                                            city: sanitizeInput(manualUniCity)
-                                        });
-                                        setManualUniName('');
-                                        setManualUniCity('');
-                                        setShowManualUniversityInput(false);
-                                    }
-                                }}
-                                disabled={!manualUniName.trim() || !manualUniCity.trim()}
-                                className="w-full mt-8 py-4 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl shadow-sm hover: transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                Continue →
-                            </button>
-                        </div>
+                        <motion.div 
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="mt-4 p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-lg space-y-4"
+                        >
+                            <h3 className="font-semibold text-zinc-900 dark:text-white">{t('onboarding.university.manualTitle', undefined, 'Manual University Entry')}</h3>
+                            <div className="space-y-3">
+                                <input
+                                    type="text"
+                                    value={manualUniName}
+                                    onChange={(e) => setManualUniName(e.target.value)}
+                                    placeholder={t('common.placeholders.universityName', undefined, 'University Name')}
+                                    className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border-2 border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-teal-500 transition-colors"
+                                    maxLength={100}
+                                />
+                                <input
+                                    type="text"
+                                    value={manualUniCity}
+                                    onChange={(e) => setManualUniCity(e.target.value)}
+                                    placeholder={t('common.placeholders.city')}
+                                    className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border-2 border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-teal-500 transition-colors"
+                                    maxLength={50}
+                                />
+                            </div>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => setShowManualUniversityInput(false)}
+                                    className="flex-1 py-3 text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 font-medium transition-colors"
+                                >
+                                    {t('common.cancel')}
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        if (manualUniName.trim() && manualUniCity.trim()) {
+                                            onAnswer({
+                                                university_id: 'custom',
+                                                university_name: sanitizeInput(manualUniName),
+                                                city: sanitizeInput(manualUniCity)
+                                            });
+                                            setManualUniName('');
+                                            setManualUniCity('');
+                                            setShowManualUniversityInput(false);
+                                        }
+                                    }}
+                                    disabled={!manualUniName.trim() || !manualUniCity.trim()}
+                                    className="flex-[2] py-3 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl shadow-sm transition-all disabled:opacity-50"
+                                >
+                                    {t('common.next')} →
+                                </button>
+                            </div>
+                        </motion.div>
                     )}
 
                     <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-4 text-center">
-                        This helps us find properties near your campus
+                        {t('onboarding.university.help', undefined, 'This helps us find properties near your campus')}
                     </p>
                 </div>
             )}
@@ -237,12 +251,12 @@ export default function QuestionRenderer({
                 const currentLat = mapCenter?.lat ?? defaultLat;
                 const currentLng = mapCenter?.lng ?? defaultLng;
 
-                const centerText = uniCity ? `Centered on ${uniCity} — ` : (workplaceResponse ? 'Centered on your workplace — ' : '');
+                const centerText = uniCity ? t('onboarding.radius.centeredOn', { city: uniCity }, `Centered on ${uniCity} — `) : (workplaceResponse ? t('onboarding.radius.centeredWorkplace', undefined, 'Centered on your workplace — ') : '');
 
                 return (
                     <div className="space-y-6">
                         <p className="text-zinc-600 dark:text-zinc-400 text-center px-4">
-                            {centerText}drag the pin to select your target search area, and use the slider to adjust your commute radius.
+                            {centerText}{t('onboarding.radius.help', undefined, 'drag the pin to select your target search area, and use the slider to adjust your commute radius.')}
                         </p>
                         <RadiusLocationPicker
                             initialLat={currentLat}
@@ -254,8 +268,8 @@ export default function QuestionRenderer({
                         <div className="bg-white/50 dark:bg-zinc-800/50 p-6 rounded-xl border border-zinc-200 dark:border-zinc-700 mx-1">
                             <div className="flex justify-between items-end mb-4">
                                 <div>
-                                    <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">Search Area Size</h3>
-                                    <p className="text-xs text-zinc-500 dark:text-zinc-400">Maximum commute distance</p>
+                                    <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">{t('onboarding.radius.areaSize', undefined, 'Search Area Size')}</h3>
+                                    <p className="text-xs text-zinc-500 dark:text-zinc-400">{t('onboarding.radius.commuteDesc', undefined, 'Maximum commute distance')}</p>
                                 </div>
                                 <div translate="no" className="notranslate text-lg font-bold text-teal-600 dark:text-teal-400">
                                     {mapRadius >= 1000 ? `${+(mapRadius / 1000).toFixed(1)} km` : `${mapRadius} m`}
@@ -280,7 +294,7 @@ export default function QuestionRenderer({
                             onClick={() => onAnswer({ lat: currentLat, lng: currentLng, radius: mapRadius })}
                             className="w-full mt-6 py-4 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl shadow-sm hover: transition-all transform hover:-translate-y-0.5"
                         >
-                            Continue →
+                            {t('common.next')} →
                         </button>
                     </div>
                 );
@@ -312,7 +326,7 @@ export default function QuestionRenderer({
                         onClick={() => onAnswer(responses[question.id] || question.min)}
                         className="w-full mt-8 py-4 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl shadow-sm hover: transition-all transform hover:-translate-y-0.5"
                     >
-                        Continue →
+                        {t('common.next')} →
                     </button>
                 </div>
             )}
@@ -330,7 +344,7 @@ export default function QuestionRenderer({
                                     : 'bg-zinc-50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:border-teal-300 dark:hover:border-teal-700'
                                     }`}
                             >
-                                <span className="font-medium text-sm sm:text-base">{option.label}</span>
+                                <span className="font-medium text-sm sm:text-base">{t(option.label, undefined, option.label)}</span>
                             </button>
                         ))}
                     </div>
@@ -339,7 +353,7 @@ export default function QuestionRenderer({
                             onClick={() => onAnswer(multiSelectValues)}
                             className="w-full mt-8 py-4 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl shadow-sm hover: transition-all transform hover:-translate-y-0.5"
                         >
-                            Continue ({multiSelectValues.length} selected) →
+                            {t('common.next')} ({multiSelectValues.length} {t('common.selected', undefined, 'selected')}) →
                         </button>
                     )}
                 </div>
@@ -353,7 +367,7 @@ export default function QuestionRenderer({
                     className="w-full text-left px-6 py-5 bg-zinc-50 hover:bg-teal-50 dark:bg-zinc-800/50 dark:hover:bg-teal-900/20 rounded-xl border-2 border-transparent hover:border-teal-500 dark:hover:border-teal-400 transition-all transform hover:-translate-y-0.5 hover:shadow-md group"
                 >
                     <span className="text-lg font-medium text-zinc-800 dark:text-zinc-200 group-hover:text-teal-700 dark:group-hover:text-teal-300">
-                        {option.label}
+                        {t(option.label, undefined, option.label)}
                     </span>
                 </button>
             ))}

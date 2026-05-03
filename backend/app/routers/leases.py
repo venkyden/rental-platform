@@ -3,6 +3,8 @@ Leases Router - Lease Generation and Management.
 Provides endpoints for generating, downloading, and managing lease documents.
 """
 
+import os
+import tempfile
 from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
@@ -240,18 +242,41 @@ async def download_lease_pdf(
     tenant_result = await db.execute(select(User).where(User.id == lease.tenant_id))
     tenant = tenant_result.scalar_one()
 
-    # Generate HTML
-    html = lease_generator.generate_html(
-        property=property_obj,
-        landlord=landlord,
-        tenant=tenant,
-        start_date=lease.start_date.strftime("%Y-%m-%d"),
-        rent=float(lease.rent_amount or 0),
-        lease_type=lease.lease_type or "meuble",
-        deposit=float(lease.deposit_amount or 0),
-    )
+    # Generate PDF
+    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+        tmp_path = tmp.name
 
-    return HTMLResponse(content=html)
+    try:
+        lease_generator.generate_pdf(
+            property=property_obj,
+            landlord=landlord,
+            tenant=tenant,
+            start_date=lease.start_date.strftime("%Y-%m-%d"),
+            rent=float(lease.rent_amount or 0),
+            output_path=tmp_path,
+            lease_type=lease.lease_type or "meuble",
+            deposit=float(lease.deposit_amount or 0),
+        )
+
+        with open(tmp_path, "rb") as f:
+            pdf_content = f.read()
+
+        os.remove(tmp_path)
+
+        filename = f"Bail_{property_obj.city.replace(' ', '_')}_{lease.start_date.strftime('%Y%m%d')}.pdf"
+        return Response(
+            content=pdf_content,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"attachment; filename={filename}"
+            },
+        )
+    except Exception as e:
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
+        raise HTTPException(
+            status_code=500, detail=f"Failed to generate PDF: {str(e)}"
+        )
 
 
 @router.get("/{lease_id}", response_model=LeaseResponse)

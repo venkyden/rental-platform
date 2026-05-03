@@ -174,7 +174,7 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
                     type="email"
                     value={tenantEmail}
                     onChange={(e) => setTenantEmail(e.target.value)}
-                    placeholder="locataire@email.com"
+                    placeholder={t('common.placeholders.tenantEmail')}
                     className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                 />
             </div>

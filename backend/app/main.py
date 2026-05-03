@@ -11,6 +11,14 @@ from app.core.config import settings
 logger = logging.getLogger(__name__)
 
 # ------------------------------------------------------------------
+# Stripe initialization
+# ------------------------------------------------------------------
+import stripe
+if settings.STRIPE_SECRET_KEY:
+    stripe.api_key = settings.STRIPE_SECRET_KEY
+    logger.info("Stripe initialized")
+
+# ------------------------------------------------------------------
 # Sentry (optional)
 # ------------------------------------------------------------------
 try:

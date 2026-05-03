@@ -9,6 +9,7 @@ import { leaseApi, Lease } from '@/app/lib/api/lease';
 import { disputeApi, DisputeCategory } from '@/app/lib/api/dispute';
 import { apiClient } from '@/lib/api';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { ShieldAlert, ArrowLeft, UploadCloud, X, Loader2 } from 'lucide-react';
 
 export default function NewDisputePage() {
@@ -109,13 +110,16 @@ export default function NewDisputePage() {
         <ProtectedRoute>
             <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 py-8 px-4 sm:px-6 lg:px-8 text-zinc-900 dark:text-zinc-100">
                 <div className="max-w-3xl mx-auto">
-                    <button
-                        onClick={() => router.back()}
-                        className="flex items-center text-sm font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-white mb-6 transition-colors"
-                    >
-                        <ArrowLeft className="w-4 h-4 mr-2" />
-                        {t('disputes.back', undefined, 'Back to incidents')}
-                    </button>
+                    <div className="flex justify-between items-center mb-6">
+                        <button
+                            onClick={() => router.back()}
+                            className="flex items-center text-sm font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors"
+                        >
+                            <ArrowLeft className="w-4 h-4 mr-2" />
+                            {t('disputes.back', undefined, 'Back to incidents')}
+                        </button>
+                        <LanguageSwitcher />
+                    </div>
 
                     <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-sm border border-zinc-200 dark:border-zinc-800 overflow-hidden">
                         <div className="px-6 py-8 border-b border-zinc-200 dark:border-zinc-800 bg-red-50/50 dark:bg-red-900/10">

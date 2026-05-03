@@ -214,6 +214,44 @@ class NotificationService:
             action_url="/profile/verification",
         )
 
+    async def notify_dispute_created(
+        self, recipient_id: UUID, reporter_name: str, title: str, dispute_id: UUID
+    ):
+        """Notify party about a new incident report/dispute"""
+        action_url = f"/disputes/{dispute_id}"
+        await self.create_notification(
+            user_id=recipient_id,
+            notification_type=NotificationType.DISPUTE.value,
+            title="New Incident Report",
+            message=f"⚠️ {reporter_name} reported an incident: {title}",
+            action_url=action_url,
+        )
+        await self._send_via_preferred_channels(
+            user_id=recipient_id,
+            subject=f"⚠️ New Incident Report: {title}",
+            message=f"{reporter_name} has filed an incident report regarding your lease. View in app to respond.",
+            action_url=action_url,
+        )
+
+    async def notify_dispute_responded(
+        self, recipient_id: UUID, responder_name: str, title: str, dispute_id: UUID
+    ):
+        """Notify reporter that the other party has responded"""
+        action_url = f"/disputes/{dispute_id}"
+        await self.create_notification(
+            user_id=recipient_id,
+            notification_type=NotificationType.DISPUTE.value,
+            title="Response to Incident Report",
+            message=f"ℹ️ {responder_name} responded to your report: {title}",
+            action_url=action_url,
+        )
+        await self._send_via_preferred_channels(
+            user_id=recipient_id,
+            subject=f"ℹ️ Response received for: {title}",
+            message=f"{responder_name} has submitted a response to your incident report. View in app for details.",
+            action_url=action_url,
+        )
+
     async def get_user_notifications(
         self, user_id: UUID, unread_only: bool = False, limit: int = 20
     ) -> List[Notification]:

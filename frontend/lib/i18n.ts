@@ -26,6 +26,61 @@ export const translations = {
                 landlord: { title: "Are you a landlord?", desc: "List your properties and receive verified applications.", button: "I'm a landlord" }
             }
         },
+        common: {
+            save: "Save",
+            cancel: "Cancel",
+            delete: "Delete",
+            edit: "Edit",
+            view: "View",
+            manage: "Manage",
+            viewAll: "View all",
+            back: "Back",
+            next: "Next",
+            submit: "Submit",
+            loading: "Loading...",
+            requiredByLaw: "Required by Law",
+            actions: {
+                profile: "My Profile",
+                verification: "ID Verification",
+                documents: "Documents",
+                help: "Help",
+                toComplete: "To complete"
+            },
+            verification: {
+                title: "Profile Verification",
+                email: "Email",
+                questionnaire: "Questionnaire",
+                identity: "Identity",
+                employment: "Employment"
+            },
+            placeholders: {
+                fullName: "John Doe",
+                bio: "A bit about yourself...",
+                email: "name@company.com",
+                phone: "+33 6 12 34 56 78",
+                password: "••••••••",
+                newPassword: "Enter new password",
+                confirmPassword: "Confirm new password",
+                delete: "Type DELETE",
+                address: "Start typing an address in France…",
+                addressLine2: "Apartment, suite, etc. (optional)",
+                description: "Describe your property...",
+                kitchenSink: "e.g. Kitchen Sink",
+                school: "Enter your school/university name",
+                city: "City (e.g., Paris, Lyon...)",
+                guarantorName: "Guarantor full name (Optional)",
+                guarantorEmail: "guarantor@email.com",
+                tenantEmail: "tenant@email.com",
+                workplaceAddress: "Start typing your workplace address...",
+                year: "e.g., 1985",
+                charges: "Ex: Eau froide, entretien parties communes...",
+                disputeObservations: "Enter factual observations about the evidence...",
+                search: "Search...",
+                selectOption: "Select an option...",
+                selectUniversity: "Select your university...",
+                url: "https://..."
+            }
+        },
         // Onboarding
         onboarding: {
             title: "Welcome to Rental Platform",
@@ -39,10 +94,14 @@ export const translations = {
                     situation: {
                         question: "What describes your situation best?",
                         options: {
-                            student_budget: "I'm a student / Price-sensitive (D1)",
-                            family_stability: "I want long-term stability (Family/Senior) (D2)",
-                            flexibility_relocation: "I need flexibility (Remote Worker/International Student) (D3)"
+                            student_budget: "🎓 Student",
+                            family_stability: "👨‍👩‍👧‍👦 Employee/Family",
+                            flexibility_relocation: "💻 Freelancer/Remote",
+                            other: "❓ Other"
                         }
+                    },
+                    workplace: {
+                        question: "Where do you work?"
                     },
                     location: {
                         question: "Where are you looking to rent?",
@@ -168,66 +227,36 @@ export const translations = {
             },
             quickActions: {
                 title: "Quick Actions",
+                my_disputes: "My Disputes",
+                property_disputes: "Property Disputes",
+                disputes: "Disputes",
+                applications: "Applications",
+                messages: "Messages",
+                search: "Search",
+                team: "Team",
+                analytics: "Analytics",
                 browse: { title: "Browse Properties", desc: "Find your next home" },
                 newProperty: { title: "New Property", desc: "List a new property" },
                 verify: { title: "Complete Verification", desc: "Verify your identity" },
                 messages: { title: "Messages", desc: "View inbox" },
-                onboarding: { title: "Onboarding", desc: "Complete your profile" }
+                onboarding: { title: "Onboarding", desc: "Complete your profile" },
+                team: { title: "Team Management", desc: "Manage collaborators" },
+                analytics: { title: "Analytics", desc: "Portfolio performance" },
+                gli: { title: "Rent Guarantee", desc: "Protect your income" }
             },
-            inbox: {
-                title: "Inbox",
-                unread: "unread",
-                viewAll: "View all",
-                empty: "No messages yet",
-                emptyDesc: "Your conversation history with tenants and landlords will appear here.",
-                selectPrompt: "Select a conversation",
-                selectDesc: "Click on a conversation to see messages",
-                searchPlaceholder: "Search...",
-                filters: {
-                    all: "All",
-                    active: "Active",
-                    archived: "Archived"
-                },
-                status: {
-                    noConversations: "No Conversations",
-                    noConversationsDesc: "You don't have any messages yet. Tenant inquiries will appear here."
-                },
-                time: {
-                    yesterday: "Yesterday"
-                }
-            },
-            
-            globalFooter: {
-                terms: "Terms of Service",
-                privacy: "Privacy & CNIL",
-                cookies: "Cookie Policy",
-                gdpr: "GDPR Rights",
-                help: "Help Center",
-                rights: "All rights reserved."
-            },
-            landing: {
-                trustBadges: {
-                    gdpr: "GDPR Compliant",
-                    frenchLaw: "French Law Compliant",
-                    stripe: "Secured by Stripe"
-                },
-                footer: {
-                    slogan: "Rent securely in France",
-                    platform: "Platform",
-                    legal: "Legal",
-                    support: "Support",
-                    terms: "Terms of Sale",
-                    privacy: "Privacy Policy",
-                    notices: "Legal Notices",
-                    help: "Help"
-                }
-            },
-verification: {
-                title: "Verification Status",
+            verification: {
                 email: "Email Verification",
                 identity: "Identity Verification",
                 employment: "Employment Verification",
-                start: "Start",
+                verified: "Verified",
+                pending: "Pending",
+                start: "Start Verification",
+                progressLabel: "Verification Progress",
+                resend: "Resend Email",
+                sending: "Sending...",
+                toast: {
+                    success: "Verification email sent! Check your inbox."
+                },
                 verification: {
                     title: "Verification Status",
                     pageTitle: "Verification",
@@ -252,10 +281,10 @@ verification: {
                         employmentMsg: "Your employment has been successfully verified."
                     },
                     property_title: "Property Ownership Verification",
-                    property_desc: "Please upload proof that you own this property (Deed or Tax Notice)",
-                    identity_desc: "For security, please capture live photos of your government-issued ID",
+                    property_desc: "Please upload proof of property ownership (deed or property tax)",
+                    identity_desc: "For security, please capture live photos of your official ID",
                     employment_desc: "Upload your professional or financial documents",
-                    legalDisclaimerDesc: "Your documents are encrypted and stored securely. We use industry-standard security practices to protect your privacy.",
+                    legalDisclaimerDesc: "Your documents are encrypted and stored securely. We use industry-best security practices to protect your privacy.",
                     progress: {
                         title: "Verification Progress",
                         email: "Email",
@@ -265,22 +294,122 @@ verification: {
                     },
                     actions: {
                         back: "Back to Dashboard",
-                        retake: "Retake photos",
-                        uploadSecurely: "Upload & Verify Securely",
+                        retake: "Retake Photos",
+                        uploadSecurely: "Securely Upload & Verify",
                         uploading: "Uploading & Verifying...",
                         mobileWaiting: "Waiting for mobile capture...",
                         generatingSession: "Generating secure session...",
                         copy: "Copy",
                         howItWorks: "How it works:",
-                        scanQr: "Scan the QR code with your phone camera",
+                        scanQr: "Scan the QR code with your phone",
                         selectDoc: "Select your document type",
-                        takePhoto: "Take a clear photo of your document",
+                        takePhoto: "Take a clear photo of the document",
                         autoUpdate: "This page will update automatically"
                     }
                 }
             },
-            landlord: {
-                welcome: "Welcome, {{name}}",
+            inbox: {
+                title: "Inbox",
+                unread: "unread",
+                viewAll: "View all",
+                empty: "No messages yet",
+                emptyDesc: "Your conversation history with tenants and landlords will appear here.",
+                selectPrompt: "Select a conversation",
+                selectDesc: "Click on a conversation to see messages",
+                searchPlaceholder: "Search...",
+                filters: {
+                    all: "All",
+                    active: "Active",
+                    archived: "Archived"
+                },
+                status: {
+                    noConversations: "No Conversations",
+                    noConversationsDesc: "You don't have any messages yet. Tenant inquiries will appear here."
+                },
+                time: {
+                    yesterday: "Yesterday"
+                },
+                tenant: {
+                    activity: "My Activity",
+                    applications: "Applications",
+                    visits: "Scheduled Visits",
+                    favorites: "Favorites",
+                    activeDisputes: "Active Disputes",
+                    premiumTitle: "Premium Services",
+                    premiumDesc: "Take advantage of our relocation services for your professional mobility",
+                    discover: "Discover",
+                    recentSearches: "Recent Searches",
+                    noSearches: "You haven't made any searches yet.",
+                    searchButton: "Search for a property"
+                },
+                landlord: {
+                    welcome: "Welcome, {{name}}",
+                    title: "Landlord Dashboard",
+                    gettingStarted: "Getting Started",
+                    gettingStartedDesc: "Add your first property to start receiving applications",
+                    addProperty: "Add a Property",
+                    portfolio: "My Portfolio",
+                    activeProperties: "Active Properties",
+                    applications: "Applications",
+                    visits: "Scheduled Visits",
+                    messages: "Messages",
+                    activeDisputes: "Active Disputes",
+                    analytics: "Analytics",
+                    viewsMonth: "Views This Month",
+                    occupancyRate: "Occupancy Rate",
+                    revenue: "Monthly Revenue",
+                    viewDetailed: "View detailed analytics",
+                    myTeam: "My Team",
+                    collaborate: "Collaborate efficiently",
+                    collaborateDesc: "Invite collaborators to manage your properties together.",
+                    inviteMember: "Invite a Member",
+                    recentMessages: "Recent Messages",
+                    noMessages: "No new messages yet."
+                },
+                agency: {
+                    enterpriseActions: "Enterprise Actions",
+                    bulkImport: "Bulk Import",
+                    csvXml: "CSV / XML",
+                    gliQuote: "GLI Quote",
+                    rentGuarantee: "Rent Guarantee Insurance",
+                    erpIntegration: "ERP Integration",
+                    webhooksApi: "Webhooks API",
+                    team: "Team",
+                    accessManagement: "Access Management",
+                    overview: "Overview",
+                    activeMandates: "Active Mandates",
+                    leased: "Leased",
+                    applications: "Applications",
+                    webhooks: "Webhooks",
+                    members: "Members",
+                    analytics: "Analytics",
+                    export: "Export",
+                    totalViews: "Total Views",
+                    conversionRate: "Conversion Rate",
+                    avgRentalTime: "Avg. Rental Time",
+                    managedRevenue: "Managed Revenue",
+                    recentActivity: "Recent Activity",
+                    noActivity: "No recent activity",
+                    compliance: "Compliance & Verifications",
+                    kbisRegistration: "Kbis Registration",
+                    verifiedStatus: "Verified Company Status",
+                    kbisRequired: "Extract less than 3 months old required",
+                    uploadKbis: "Upload Kbis",
+                    carteG: "Carte G (Professional License)",
+                    verifiedLicense: "Verified Property Management License",
+                    carteGRequired: "Required for property management in France",
+                    uploadCarteG: "Upload Carte G"
+                }
+            },
+            
+            globalFooter: {
+                terms: "Terms of Service",
+                privacy: "Privacy & CNIL",
+                cookies: "Cookie Policy",
+                gdpr: "GDPR Rights",
+                help: "Help Center",
+                rights: "All rights reserved."
+            },
                 subtitle: "Landlord Dashboard",
                 onboarding: {
                     title: "Getting Started",
@@ -328,6 +457,89 @@ verification: {
                         success: "Application submitted! A counselor will contact you within 24h."
                     }
                 }
+            },
+        },
+        analytics: {
+            subtitle: "Track your property performance and financial growth.",
+            totalViews: "Total Views",
+            occupancy: "Occupancy Rate",
+            potentialRevenue: "Potential Revenue",
+            activeListings: "Active Listings",
+            viewsOverTime: "Views Over Time",
+            demographics: "Tenant Demographics",
+            chartNotice: "Interactive charts are being generated for your portfolio. Check back in a few hours.",
+            demoNotice: "Understand who is looking at your properties to optimize your marketing.",
+            periods: {
+                d7: "7D",
+                d30: "30D",
+                d90: "90D",
+                y1: "1Y"
+            }
+        },
+        gli: {
+            subtitle: "Protect your rental income against unpaid rent and property damage.",
+            selectProperty: "Select a Property"
+        },
+        facilitation: {
+            title: "Facilitation Panel",
+            subtitle: "Preserve evidence and redirect parties to official mediation.",
+            neutralNotice: "Roomivo is a neutral facilitator. No verdicts.",
+            allClear: "All clear",
+            noDisputes: "No active disputes to facilitate.",
+            reviewDetails: "Review Details",
+            backToList: "Back to List",
+            evidence: "Evidence",
+            inventoryDiff: "Inventory Diff",
+            lateFiling: "Late Filing",
+            reporter: "Reporter",
+            accused: "Accused",
+            reporterEvidence: "Reporter Evidence",
+            counterResponse: "Counter-Response",
+            noResponse: "No response submitted yet.",
+            conditionComparison: "Condition Comparison",
+            item: "Item",
+            before: "Before",
+            after: "After",
+            status: "Status",
+            observations: "Observations (Internal/Neutral)",
+            updateStatus: "Update Status",
+            mediationLink: "Mediation Link (Redirect)",
+            updateObservations: "Update Observations",
+            finalizeClose: "Finalize & Close",
+            geoVerification: "Geo-Verification",
+            distanceFromProperty: "{{distance}}m from property",
+            alurCheck: "Loi ALUR Check",
+            alurNotice: "Deductions for normal wear & tear are prohibited. Landlords have 2 months max to return deposit if discrepancies exist.",
+            filters: {
+                all: "All",
+                open: "Open",
+                awaiting: "Awaiting",
+                review: "Review",
+                closed: "Closed"
+            },
+            categories: {
+                damage: "Damage",
+                unpaid_rent: "Unpaid Rent",
+                other: "Other"
+            },
+            moveIn: "MOVE-IN",
+            moveOut: "MOVE-OUT",
+            distance: "Distance",
+            verified: "Verified",
+            unverified: "Unverified"
+        },
+        guide: {
+            back: "Back",
+            resourceCenter: "Resource Center",
+            title: "Guides & Tips",
+            subtitle: "Discover our articles to help with your real estate project.",
+            tenant: {
+                title: "Tenant's Guide",
+                description: "Understanding the application, guarantors, and lease."
+            },
+            landlord: {
+                title: "Pricing Guide (Landlord)",
+                description: "Market trends and rent estimation."
             }
         },
         auth: {
@@ -417,57 +629,200 @@ verification: {
             logout: "Logout"
         },
         property: {
-            new: {
+            create: {
                 title: "Add New Property",
                 subtitle: "Setup your listing in a few simple steps.",
-                backToProperties: "Back to properties",
-                step: "Step",
-                cancel: "Cancel",
-                next: "Next",
-                prev: "Previous",
-                submit: "Create Property",
-                creating: "Creating...",
-                success: "Property created successfully!",
-                viewListing: "View Listing",
+                back: "Back to properties",
                 steps: {
-                    basic: {
-                        title: "Basic Information",
-                        listingTitle: "Listing Title",
-                        propertyType: "Property Type",
-                        description: "Description",
-                        placeholder: {
-                            title: "ex: Charming 1-bedroom in Paris center",
-                            desc: "Describe the highlights of your property..."
-                        }
+                    basic: "Basic Information",
+                    location: "Location",
+                    details: "Property Details",
+                    layout: "Room Layout",
+                    pricing: "Pricing & Terms",
+                    features: "Features & Amenities",
+                    review: "Final Review"
+                },
+                basic: {
+                    title: "Basic Information",
+                    propertyTitle: "Property Title",
+                    propertyTitlePlaceholder: "ex: Charming 1-bedroom in Paris center",
+                    propertyType: "Property Type",
+                    description: "Property Description",
+                    descriptionPlaceholder: "Describe the highlights of your property...",
+                    type: "Type"
+                },
+                location: {
+                    title: "Property Location",
+                    address: "Street Address",
+                    addressPlaceholder: "Start typing your address...",
+                    addressLine2: "Building, Floor, Suite",
+                    addressLine2Placeholder: "Optional",
+                    city: "City",
+                    postalCode: "Postal Code",
+                    autoDetect: "Automatic Detection",
+                    autoDetectDesc: "Use AI to detect nearby transport and landmarks from your address.",
+                    autoDetectBtn: "Detect Surroundings",
+                    detecting: "Detecting...",
+                    found: "{{count}} transport links found",
+                    foundLandmarks: "{{count}} landmarks found"
+                },
+                details: {
+                    title: "Property Details",
+                    bedrooms: "Bedrooms",
+                    bathrooms: "Bathrooms",
+                    size: "Living Area (m²)",
+                    floor: "Floor Number",
+                    furnished: "Furnished Property",
+                    energyRatingTitle: "Energy Performance (DPE)",
+                    energyRatingDesc: "French law requires displaying energy efficiency for all listings.",
+                    dpeLabel: "Energy Rating (DPE)",
+                    gesLabel: "GHG Emission (GES)",
+                    dpePlaceholder: "Select rating",
+                    surfaceType: "Surface Measurement Type",
+                    loiCarrezDesc: "Official measurement required for condominiums.",
+                    constructionYear: "Year of Construction"
+                },
+                layout: {
+                    title: "Room Layout & Capacity",
+                    globalTitle: "General Information",
+                    capacity: "Total Occupancy",
+                    pieces: "Total Rooms (Pièces)",
+                    livingRoom: "Living Room Size (m²)",
+                    kitchen: "Kitchen Type",
+                    commonAreas: "Common Areas",
+                    bedroomTitle: "Bedroom {{number}}",
+                    bedroomDetails: "Bed details & Surface",
+                    bedroomDesc: "Room Description",
+                    surface: "Surface (m²)",
+                    roomCapacity: "Occupancy",
+                    bedding: "Bed Type",
+                    roomDescLabel: "Notes (Optional)",
+                    roomDescPlaceholder: "ex: View on the garden, built-in closet...",
+                    decencyNotice: "Roomivo enforces French decency standards (min 9m² per occupant).",
+                    amenities: "Room Amenities",
+                    amenityPlaceholder: "Add amenity..."
+                },
+                pricing: {
+                    title: "Rent & Charges",
+                    monthlyRent: "Monthly Base Rent",
+                    charges: "Monthly Charges",
+                    chargesDesc: "Maintenance, water, etc.",
+                    availableFrom: "Available From",
+                    deposit: "Security Deposit",
+                    ccFull: "Rent CC",
+                    hcFull: "Rent HC",
+                    ccDesc: "Charges Included",
+                    hcDesc: "Excluding Charges",
+                    typeLabel: "Rent Type",
+                    chargesPlaceholder: "ex: 100",
+                    depositLimit: "Max 1 month rent (Unfurnished) or 2 months (Furnished)",
+                    depositWarning: "French law limits security deposit based on furnishing status.",
+                    guarantor: {
+                        title: "Guarantor Information",
+                        typesLabel: "Accepted Guarantors",
+                        elanNotice: "ELAN Law Compliant"
                     },
-                    location: {
-                        title: "Location",
-                        address: "Address",
-                        complement: "Address Complement",
-                        city: "City",
-                        zip: "Postal Code",
-                        enrich: {
-                            title: "Automatic Enrichment",
-                            desc: "Automatically detect nearby transport and landmarks.",
-                            button: "Detect surroundings",
-                            loading: "Detecting...",
-                            found: "found"
-                        }
-                    },
-                    review: {
-                        title: "Summary",
-                        surface: "Surface",
-                        bedrooms: "Bedrooms",
-                        type: "Type"
+                    rentControl: {
+                        title: "Rent Control",
+                        desc: "This property is in a rent-controlled zone.",
+                        link: "Check local regulations"
                     }
                 },
-                types: {
-                    apartment: "Apartment",
-                    house: "House",
-                    studio: "Studio",
-                    room: "Room"
+                features: {
+                    title: "Amenities & Surroundings",
+                    amenities: "General Amenities",
+                    customAmenities: "Custom Amenities",
+                    addAmenity: "Add Amenity",
+                    transport: "Nearby Transport",
+                    landmarks: "Surroundings & Landmarks"
+                },
+                review: {
+                    title: "Final Review"
+                },
+                media: {
+                    readyToPublish: "Ready to Publish",
+                    uploadAllToPublish: "Please upload photos for all rooms to publish.",
+                    publishedTitle: "Listing Published!",
+                    publishedDesc: "Your property is now live and receiving applications.",
+                    viewBtn: "View Listing",
+                    draftSaved: "Draft saved automatically",
+                    roomsMissing: "Missing photos for {{count}} rooms",
+                    roomProgress: "{{count}} photos uploaded",
+                    noMedia: "No photos uploaded yet",
+                    uploadDesc: "Take high-quality photos to attract more tenants",
+                    qrInstructions: "Scan to upload from mobile",
+                    checkStatus: "Check upload status",
+                    filesUploaded: "{{count}} files uploaded",
+                    fileCount: "{{count}} photos",
+                    publishing: "Publishing...",
+                    publishBtn: "Publish Listing",
+                    backToProperties: "Back to Dashboard"
+                },
+                validation: {
+                    required: "Please fill in all required fields",
+                    enrichSuccess: "Location data enriched successfully!",
+                    enrichFail: "Could not enrich location data automatically"
+                },
+                status: {
+                    creating: "Creating your listing..."
+                },
+                btn: "Create Property"
+            },
+            type: {
+                apartment: "Apartment",
+                house: "House",
+                studio: "Studio",
+                room: "Room"
+            },
+            energy: {
+                rating: {
+                    A: "(Very efficient)",
+                    B: "(Efficient)",
+                    C: "(Moderate)",
+                    D: "(Standard)",
+                    E: "(Inefficient)",
+                    F: "(High consumption)",
+                    G: "(Very high consumption)"
                 }
-            }
+            },
+            surface: {
+                loi_carrez: "Loi Carrez",
+                standard: "Standard"
+            },
+            pricing: {
+                ccDesc: "Charges Included",
+                ccFull: "Rent CC",
+                chargesPlaceholder: "ex: 100",
+                depositLimit: "Max 1 month rent (Unfurnished) or 2 months (Furnished)",
+                depositWarning: "French law limits security deposits based on furnishing status.",
+                guarantor: {
+                    elanNotice: "ELAN Law compliant",
+                    title: "Guarantor Information",
+                    typesLabel: "Accepted Guarantors"
+                },
+                hcDesc: "Charges Excluded",
+                hcFull: "Rent HC",
+                maxLabel: "Maximum",
+                rentControl: {
+                    desc: "This property is in a rent control zone.",
+                    link: "Check local regulations",
+                    title: "Rent Control"
+                },
+                typeLabel: "Rent Type"
+            },
+            available: "Available",
+            chargesIncluded: "CC",
+            chargesExcluded: "HC",
+            plusCharges: "+{{amount}}€ charges",
+            size: "{{size}}m²",
+            beds: "{{count}} beds",
+            deposit: "Deposit",
+            furnished: "Furnished",
+            unfurnished: "Unfurnished",
+            colocOk: "Coloc OK",
+            guarantorReq: "Guarantor Req.",
+            noGuarantor: "No Guarantor",
+            loginToView: "Log in to View Details"
         },
         "dossier": {
                 "category": {
@@ -632,25 +987,12 @@ verification: {
                 noResults: "No results found",
                 noResultsDesc: "Try expanding your search criteria."
             },
-            property: {
-                available: "Available",
-                chargesIncluded: "CC",
-                chargesExcluded: "HC",
-                plusCharges: "+{{amount}}€ charges",
-                size: "{{size}}m²",
-                beds: "{{count}} beds",
-                deposit: "Deposit",
-                furnished: "Furnished",
-                unfurnished: "Unfurnished",
-                colocOk: "Coloc OK",
-                guarantorReq: "Guarantor Req.",
-                noGuarantor: "No Guarantor",
-                loginToView: "Log in to View Details"
-            }
+
         },
         disputes: {
             title: "Incident Reports",
             subtitle: "Track and manage your property disputes",
+            desc: "Log property issues",
             report: "Report Incident",
             reportToast: "Select a lease from your dashboard to report an incident",
             noReports: "No reports found",
@@ -694,36 +1036,29 @@ verification: {
             },
             incident: {
                 title: "Report an Incident",
-                dutyTitle: "Tenant Duty of Care",
-                dutyDesc: "Under French law, you have an obligation to report any damage or issues occurring in the property. This timestamped report serves as evidence of your diligence.",
-                step1: "1. What happened?",
-                step2: "2. Describe the issue",
-                step3: "3. Visual Evidence",
+                desc: "Provide details about the issue to notify your landlord and our facilitation team.",
+                lease: "Select Lease",
+                noLease: "You do not have any active leases to report an incident on.",
+                selectLease: "Select your lease",
+                category: "Category",
+                selectCategory: "Select a category",
                 categories: {
-                    appliance_failure: { label: "Appliance", desc: "Fridge, Heater, etc." },
-                    damage: { label: "Damage", desc: "Spills, Scratches, etc." },
-                    cleaning: { label: "Cleaning", desc: "Hygiene, Mold, etc." },
-                    shared_liability: { label: "Common Area", desc: "Hallway, Elevator" },
-                    other: { label: "Other", desc: "Noise, Neighbors" }
+                    damage: "Property Damage",
+                    appliance: "Appliance Failure",
+                    cleaning: "Cleaning / Hygiene",
+                    shared: "Shared Space Issue",
+                    other: "Other"
                 },
-                form: {
-                    title: "Incident Title",
-                    titlePlaceholder: "e.g. Broken heater in main bedroom",
-                    desc: "Detailed Description",
-                    descPlaceholder: "When did it happen? What are the symptoms? Any immediate steps taken?",
-                    cost: "Estimated Cost (Optional)",
-                    costPlaceholder: "0.00",
-                    photoTip: "Live capture only. Gallery photos are not accepted to ensure the integrity of the timestamp and location metadata.",
-                    submit: "Submit Incident Report",
-                    sharingNotice: "This report will be shared with the landlord and Roomivo admin immediately."
-                },
-                messages: {
-                    success: "Incident reported successfully",
-                    maxPhotos: "Maximum 5 photos allowed",
-                    requiredFields: "Please fill in all required fields",
-                    loading: "Reporting...",
-                    loadLeaseError: "Could not load lease details"
-                }
+                titleLabel: "Issue Title",
+                titlePlaceholder: "Brief description (e.g. Broken Heater)",
+                description: "Detailed Description",
+                descPlaceholder: "Explain what happened in detail...",
+                evidence: "Visual Evidence (Photos/Videos)",
+                uploading: "Uploading evidence...",
+                submitting: "Submitting...",
+                submitBtn: "Submit Incident Report",
+                success: "Incident reported successfully",
+                error: "Failed to report incident"
             },
             messages: {
                 loadError: "Failed to load your disputes",
@@ -738,6 +1073,61 @@ verification: {
         }
     },
     fr: {
+        common: {
+            save: "Enregistrer",
+            cancel: "Annuler",
+            delete: "Supprimer",
+            edit: "Modifier",
+            view: "Voir",
+            manage: "Gérer",
+            viewAll: "Voir tout",
+            back: "Retour",
+            next: "Suivant",
+            submit: "Envoyer",
+            loading: "Chargement...",
+            requiredByLaw: "Obligatoire par la loi",
+            actions: {
+                profile: "Mon Profil",
+                verification: "Vérification d'identité",
+                documents: "Documents",
+                help: "Aide",
+                toComplete: "À compléter"
+            },
+            verification: {
+                title: "Vérification du Profil",
+                email: "Email",
+                questionnaire: "Questionnaire",
+                identity: "Identité",
+                employment: "Emploi"
+            },
+            placeholders: {
+                fullName: "Jean Dupont",
+                bio: "Un peu sur vous...",
+                email: "nom@entreprise.com",
+                phone: "+33 6 12 34 56 78",
+                password: "••••••••",
+                newPassword: "Entrez le nouveau mot de passe",
+                confirmPassword: "Confirmez le nouveau mot de passe",
+                delete: "Tapez SUPPRIMER",
+                address: "Commencez à taper une adresse en France…",
+                addressLine2: "Appartement, suite, etc. (optionnel)",
+                description: "Décrivez votre propriété...",
+                kitchenSink: "ex: Évier de cuisine",
+                school: "Entrez le nom de votre école/université",
+                city: "Ville (ex: Paris, Lyon...)",
+                guarantorName: "Nom complet du garant (Optionnel)",
+                guarantorEmail: "garant@email.com",
+                tenantEmail: "locataire@email.com",
+                workplaceAddress: "Commencez à saisir l'adresse de votre lieu de travail...",
+                year: "ex: 1985",
+                charges: "Ex: Eau froide, entretien parties communes...",
+                disputeObservations: "Saisissez des observations factuelles sur les preuves...",
+                search: "Rechercher...",
+                selectOption: "Sélectionnez une option...",
+                selectUniversity: "Sélectionnez votre université...",
+                url: "https://..."
+            }
+        },
         // Landing Page
         landing: {
             title: "Bienvenue sur Roomivo",
@@ -764,8 +1154,16 @@ verification: {
         },
         // Onboarding
         onboarding: {
-            title: "Bienvenue sur Roomivo",
+            welcome: "Bienvenue sur Roomivo.",
+            letsStart: "Commençons par votre nom",
+            ready: "Prêt à trouver votre logement idéal ? Nous allons vous poser quelques questions rapides pour personnaliser votre expérience.",
+            saving: "Enregistrement...",
+            getStarted: "Commencer",
             skip: "Passer pour l'instant",
+            pendingInvites: "Invitations en attente",
+            teamInvite: "Invitation d'équipe",
+            view: "Voir",
+            title: "Bienvenue sur Roomivo",
             back: "Retour",
             continue: "Continuer",
             processing: "Traitement de vos réponses...",
@@ -775,10 +1173,14 @@ verification: {
                     situation: {
                         question: "Quelle situation vous décrit le mieux ?",
                         options: {
-                            student_budget: "Je suis étudiant / Budget serré (D1)",
-                            family_stability: "Je cherche de la stabilité (Famille/Senior) (D2)",
-                            flexibility_relocation: "J'ai besoin de flexibilité (Télétravail/Expat) (D3)"
+                            student_budget: "🎓 Étudiant",
+                            family_stability: "👨‍👩‍👧‍👦 Salarié / Famille",
+                            flexibility_relocation: "💻 Freelance / Remote",
+                            other: "❓ Autre"
                         }
+                    },
+                    workplace: {
+                        question: "Où travaillez-vous ?"
                     },
                     location: {
                         question: "Où souhaitez-vous louer ?",
@@ -903,67 +1305,37 @@ verification: {
                 improve: "Améliorer le score"
             },
             quickActions: {
-                title: "Actions Rapides",
+                title: "Actions rapides",
+                my_disputes: "Mes Litiges",
+                property_disputes: "Litiges Immobiliers",
+                disputes: "Litiges",
+                applications: "Candidatures",
+                messages: "Messages",
+                search: "Rechercher",
+                team: "Équipe",
+                analytics: "Analyses",
                 browse: { title: "Parcourir les Biens", desc: "Trouvez votre prochain foyer" },
                 newProperty: { title: "Nouveau Bien", desc: "Listez un nouveau bien" },
                 verify: { title: "Compléter la Vérification", desc: "Vérifiez votre identité" },
                 messages: { title: "Messages", desc: "Voir la boîte de réception" },
-                onboarding: { title: "Onboarding", desc: "Complétez votre profil" }
+                onboarding: { title: "Onboarding", desc: "Complétez votre profil" },
+                team: { title: "Gestion d'Équipe", desc: "Gérer les collaborateurs" },
+                analytics: { title: "Analyses", desc: "Performance du portefeuille" },
+                gli: { title: "Garantie Loyers", desc: "Protégez vos revenus" }
             },
-            inbox: {
-                title: "Boîte de réception",
-                unread: "non lu(s)",
-                viewAll: "Voir tout",
-                empty: "Aucun message pour l'instant",
-                emptyDesc: "Votre historique de conversation apparaîtra ici.",
-                selectPrompt: "Sélectionnez une conversation",
-                selectDesc: "Cliquez sur une conversation pour voir les messages",
-                searchPlaceholder: "Rechercher...",
-                filters: {
-                    all: "Toutes",
-                    active: "Actives",
-                    archived: "Archivées"
-                },
-                status: {
-                    noConversations: "Aucune conversation",
-                    noConversationsDesc: "Vous n'avez pas encore de messages. Les demandes des locataires apparaîtront ici."
-                },
-                time: {
-                    yesterday: "Hier"
-                }
-            },
-            
-            globalFooter: {
-                terms: "Conditions Générales",
-                privacy: "Confidentialité & CNIL",
-                cookies: "Politique des Cookies",
-                gdpr: "Droits RGPD",
-                help: "Centre d'Aide",
-                rights: "Tous droits réservés."
-            },
-            landing: {
-                trustBadges: {
-                    gdpr: "Conforme RGPD",
-                    frenchLaw: "Conforme à la loi ALUR",
-                    stripe: "Sécurisé par Stripe"
-                },
-                footer: {
-                    slogan: "Louez en toute sécurité en France",
-                    platform: "Plateforme",
-                    legal: "Légal",
-                    support: "Support",
-                    terms: "Conditions Générales de Vente",
-                    privacy: "Politique de Confidentialité",
-                    notices: "Mentions Légales",
-                    help: "Aide"
-                }
-            },
-verification: {
-                title: "Statut de Vérification",
+            verification: {
                 email: "Vérification E-mail",
                 identity: "Vérification d'Identité",
                 employment: "Vérification d'Emploi",
-                start: "Démarrer",
+                verified: "Vérifié",
+                pending: "En attente",
+                start: "Démarrer la vérification",
+                progressLabel: "Progression de la vérification",
+                resend: "Renvoyer l'e-mail",
+                sending: "Envoi...",
+                toast: {
+                    success: "E-mail de vérification envoyé ! Consultez votre boîte de réception."
+                },
                 verification: {
                     title: "Statut de Vérification",
                     pageTitle: "Vérification",
@@ -1015,6 +1387,109 @@ verification: {
                     }
                 }
             },
+            inbox: {
+                title: "Boîte de réception",
+                unread: "non lu(s)",
+                viewAll: "Voir tout",
+                empty: "Aucun message pour l'instant",
+                emptyDesc: "Votre historique de conversation apparaîtra ici.",
+                selectPrompt: "Sélectionnez une conversation",
+                selectDesc: "Cliquez sur une conversation pour voir les messages",
+                searchPlaceholder: "Rechercher...",
+                filters: {
+                    all: "Toutes",
+                    active: "Actives",
+                    archived: "Archivées"
+                },
+                status: {
+                    noConversations: "Aucune conversation",
+                    noConversationsDesc: "Vous n'avez pas encore de messages. Les demandes des locataires apparaîtront ici."
+                },
+                time: {
+                    yesterday: "Hier"
+                },
+                tenant: {
+                    activity: "Mon Activité",
+                    applications: "Candidatures",
+                    visits: "Visites prévues",
+                    favorites: "Favoris",
+                    activeDisputes: "Litiges en cours",
+                    premiumTitle: "Services Premium",
+                    premiumDesc: "Profitez de nos services de relocation pour votre mobilité professionnelle",
+                    discover: "Découvrir",
+                    recentSearches: "Recherches récentes",
+                    noSearches: "Vous n'avez pas encore effectué de recherche.",
+                    searchButton: "Rechercher un bien"
+                },
+                landlord: {
+                    welcome: "Bienvenue, {{name}}",
+                    title: "Tableau de bord Propriétaire",
+                    gettingStarted: "Commencer",
+                    gettingStartedDesc: "Ajoutez votre premier bien pour commencer à recevoir des candidatures",
+                    addProperty: "Ajouter un bien",
+                    portfolio: "Mon Patrimoine",
+                    activeProperties: "Biens actifs",
+                    applications: "Candidatures",
+                    visits: "Visites prévues",
+                    messages: "Messages",
+                    activeDisputes: "Litiges en cours",
+                    analytics: "Analyses",
+                    viewsMonth: "Vues ce mois-ci",
+                    occupancyRate: "Taux d'occupation",
+                    revenue: "Revenu mensuel",
+                    viewDetailed: "Voir les analyses détaillées",
+                    myTeam: "Mon Équipe",
+                    collaborate: "Collaborer efficacement",
+                    collaborateDesc: "Invitez des collaborateurs pour gérer vos biens ensemble.",
+                    inviteMember: "Inviter un membre",
+                    recentMessages: "Messages récents",
+                    noMessages: "Pas encore de nouveaux messages."
+                },
+                agency: {
+                    enterpriseActions: "Actions Entreprise",
+                    bulkImport: "Import en masse",
+                    csvXml: "CSV / XML",
+                    gliQuote: "Devis GLI",
+                    rentGuarantee: "Assurance Loyers Impayés",
+                    erpIntegration: "Intégration ERP",
+                    webhooksApi: "API Webhooks",
+                    team: "Équipe",
+                    accessManagement: "Gestion des accès",
+                    overview: "Vue d'ensemble",
+                    activeMandates: "Mandats actifs",
+                    leased: "Loués",
+                    applications: "Candidatures",
+                    webhooks: "Webhooks",
+                    members: "Membres",
+                    analytics: "Analyses",
+                    export: "Exporter",
+                    totalViews: "Vues totales",
+                    conversionRate: "Taux de conversion",
+                    avgRentalTime: "Temps moyen de location",
+                    managedRevenue: "Revenu géré",
+                    recentActivity: "Activité récente",
+                    noActivity: "Aucune activité récente",
+                    compliance: "Conformité & Vérifications",
+                    kbisRegistration: "Enregistrement Kbis",
+                    verifiedStatus: "Statut entreprise vérifié",
+                    kbisRequired: "Extrait de moins de 3 mois requis",
+                    uploadKbis: "Charger le Kbis",
+                    carteG: "Carte G (Carte Professionnelle)",
+                    verifiedLicense: "Licence de gestion immobilière vérifiée",
+                    carteGRequired: "Requis pour la gestion immobilière en France",
+                    uploadCarteG: "Charger la Carte G"
+                }
+            },
+            
+            globalFooter: {
+                terms: "Conditions Générales",
+                privacy: "Confidentialité & CNIL",
+                cookies: "Politique des Cookies",
+                gdpr: "Droits RGPD",
+                help: "Centre d'Aide",
+                rights: "Tous droits réservés."
+            },
+
             landlord: {
                 welcome: "Bienvenue, {{name}}",
                 subtitle: "Espace Propriétaire",
@@ -1064,6 +1539,89 @@ verification: {
                         success: "Demande soumise ! Un conseiller vous contactera sous 24h."
                     }
                 }
+            }
+        },
+        analytics: {
+            subtitle: "Suivez la performance de votre portefeuille et votre croissance financière.",
+            totalViews: "Vues Totales",
+            occupancy: "Taux d'Occupation",
+            potentialRevenue: "Revenu Potentiel",
+            activeListings: "Annonces Actives",
+            viewsOverTime: "Vues au Fil du Temps",
+            demographics: "Démographie des Locataires",
+            chartNotice: "Des graphiques interactifs sont en cours de génération. Revenez dans quelques heures.",
+            demoNotice: "Comprenez qui consulte vos annonces pour optimiser votre marketing.",
+            periods: {
+                d7: "7J",
+                d30: "30J",
+                d90: "90J",
+                y1: "1A"
+            }
+        },
+        gli: {
+            subtitle: "Protégez vos revenus locatifs contre les impayés et les dégradations.",
+            selectProperty: "Sélectionnez un Bien"
+        },
+        facilitation: {
+            title: "Panneau de Facilitation",
+            subtitle: "Préservez les preuves et redirigez les parties vers la médiation officielle.",
+            neutralNotice: "Roomivo est un facilitateur neutre. Pas de verdicts.",
+            allClear: "Tout est en ordre",
+            noDisputes: "Aucun litige actif à faciliter.",
+            reviewDetails: "Examiner les détails",
+            backToList: "Retour à la liste",
+            evidence: "Preuves",
+            inventoryDiff: "Diff d'Inventaire",
+            lateFiling: "Dépôt tardif",
+            reporter: "Déclarant",
+            accused: "Mis en cause",
+            reporterEvidence: "Preuves du déclarant",
+            counterResponse: "Contre-réponse",
+            noResponse: "Aucune réponse soumise pour le moment.",
+            conditionComparison: "Comparaison de l'état",
+            item: "Élément",
+            before: "Avant",
+            after: "Après",
+            status: "Statut",
+            observations: "Observations (Internes/Neutres)",
+            updateStatus: "Mettre à jour le statut",
+            mediationLink: "Lien de médiation (Redirection)",
+            updateObservations: "Mettre à jour les observations",
+            finalizeClose: "Finaliser & Fermer",
+            geoVerification: "Géo-Vérification",
+            distanceFromProperty: "{{distance}}m du bien",
+            alurCheck: "Vérification Loi ALUR",
+            alurNotice: "Les retenues pour usure normale sont interdites. Les propriétaires ont 2 mois maximum pour restituer le dépôt en cas de divergences.",
+            filters: {
+                all: "Tous",
+                open: "Ouverts",
+                awaiting: "En attente",
+                review: "En révision",
+                closed: "Clôturés"
+            },
+            categories: {
+                damage: "Dégradation",
+                unpaid_rent: "Loyer Impayé",
+                other: "Autre"
+            },
+            moveIn: "ENTRÉE",
+            moveOut: "SORTIE",
+            distance: "Distance",
+            verified: "Vérifié",
+            unverified: "Non Vérifié"
+        },
+        guide: {
+            back: "Retour",
+            resourceCenter: "Centre de Ressources",
+            title: "Guides & Conseils",
+            subtitle: "Découvrez nos articles pour vous aider dans votre projet immobilier.",
+            tenant: {
+                title: "Guide du Locataire",
+                description: "Comprendre le dossier, les garants et le bail."
+            },
+            landlord: {
+                title: "Guide des Prix (Propriétaire)",
+                description: "Tendances du marché et estimation du loyer."
             }
         },
         auth: {
@@ -1153,57 +1711,182 @@ verification: {
             logout: "Déconnexion"
         },
         property: {
-            new: {
+            create: {
                 title: "Ajouter un Nouveau Bien",
                 subtitle: "Configurez votre annonce en quelques étapes simples.",
-                backToProperties: "Retour aux biens",
-                step: "Étape",
-                cancel: "Annuler",
-                next: "Suivant",
-                prev: "Précédent",
-                submit: "Créer le Bien",
-                creating: "Création...",
-                success: "Bien créé avec succès !",
-                viewListing: "Voir l'Annonce",
+                back: "Retour aux biens",
                 steps: {
-                    basic: {
-                        title: "Informations de Base",
-                        listingTitle: "Titre de l'Annonce",
-                        propertyType: "Type de Bien",
-                        description: "Description",
-                        placeholder: {
-                            title: "ex: Charmant T2 au centre de Paris",
-                            desc: "Décrivez les points forts de votre bien..."
-                        }
-                    },
-                    location: {
-                        title: "Localisation",
-                        address: "Adresse",
-                        complement: "Complément d'Adresse",
-                        city: "Ville",
-                        zip: "Code Postal",
-                        enrich: {
-                            title: "Enrichissement Automatique",
-                            desc: "Détectez automatiquement les transports et points d'intérêt à proximité.",
-                            button: "Détecter les environs",
-                            loading: "Détection...",
-                            found: "trouvés"
-                        }
-                    },
-                    review: {
-                        title: "Récapitulatif",
-                        surface: "Surface",
-                        bedrooms: "Chambres",
-                        type: "Type"
-                    }
+                    basic: "Informations de Base",
+                    location: "Localisation",
+                    details: "Détails du Bien",
+                    layout: "Configuration des Pièces",
+                    pricing: "Loyer & Conditions",
+                    features: "Équipements & Atouts",
+                    review: "Récapitulatif"
                 },
-                types: {
-                    apartment: "Appartement",
-                    house: "Maison",
-                    studio: "Studio",
-                    room: "Chambre"
+                basic: {
+                    title: "Informations de Base",
+                    propertyTitle: "Titre de l'Annonce",
+                    propertyTitlePlaceholder: "ex: Charmant T2 au centre de Paris",
+                    propertyType: "Type de Bien",
+                    description: "Description du Bien",
+                    descriptionPlaceholder: "Décrivez les points forts de votre bien...",
+                    type: "Type"
+                },
+                location: {
+                    title: "Localisation du Bien",
+                    address: "Adresse",
+                    addressPlaceholder: "Commencez à taper votre adresse...",
+                    addressLine2: "Bâtiment, Étage, Appartement",
+                    addressLine2Placeholder: "Optionnel",
+                    city: "Ville",
+                    postalCode: "Code Postal",
+                    autoDetect: "Détection Automatique",
+                    autoDetectDesc: "Utilisez l'IA pour détecter les transports et points d'intérêt à proximité de votre adresse.",
+                    autoDetectBtn: "Détecter les Environs",
+                    detecting: "Détection...",
+                    found: "{{count}} transports trouvés",
+                    foundLandmarks: "{{count}} points d'intérêt trouvés"
+                },
+                details: {
+                    title: "Détails du Bien",
+                    bedrooms: "Chambres",
+                    bathrooms: "Salles de bain",
+                    size: "Surface habitable (m²)",
+                    floor: "Étage",
+                    furnished: "Logement Meublé",
+                    energyRatingTitle: "Performance Énergétique (DPE)",
+                    energyRatingDesc: "La loi française impose d'afficher l'étiquette énergie sur toutes les annonces.",
+                    dpeLabel: "Classe Énergie (DPE)",
+                    gesLabel: "Émission GES",
+                    dpePlaceholder: "Sélectionnez une note",
+                    surfaceType: "Type de mesure de surface",
+                    loiCarrezDesc: "Mesure officielle obligatoire pour les copropriétés.",
+                    constructionYear: "Année de construction"
+                },
+                layout: {
+                    title: "Configuration & Capacité",
+                    globalTitle: "Informations Générales",
+                    capacity: "Capacité totale",
+                    pieces: "Nombre de pièces",
+                    livingRoom: "Surface séjour (m²)",
+                    kitchen: "Type de cuisine",
+                    commonAreas: "Parties communes",
+                    bedroomTitle: "Chambre {{number}}",
+                    bedroomDetails: "Literie & Surface",
+                    bedroomDesc: "Description de la chambre",
+                    surface: "Surface (m²)",
+                    roomCapacity: "Capacité",
+                    bedding: "Type de lit",
+                    roomDescLabel: "Notes (Optionnel)",
+                    roomDescPlaceholder: "ex: Vue sur jardin, placard intégré...",
+                    decencyNotice: "Roomivo applique les critères de décence français (min 9m² par occupant).",
+                    amenities: "Équipements de la pièce",
+                    amenityPlaceholder: "Ajouter un équipement..."
+                },
+                pricing: {
+                    title: "Loyer & Charges",
+                    monthlyRent: "Loyer de base mensuel",
+                    charges: "Charges mensuelles",
+                    chargesDesc: "Entretien, eau, etc.",
+                    availableFrom: "Disponible à partir du",
+                    deposit: "Dépôt de garantie"
+                },
+                features: {
+                    title: "Équipements & Environs",
+                    amenities: "Équipements généraux",
+                    customAmenities: "Équipements personnalisés",
+                    addAmenity: "Ajouter un équipement",
+                    transport: "Transports à proximité",
+                    landmarks: "Environnement & Points d'intérêt"
+                },
+                review: {
+                    title: "Récapitulatif"
+                },
+                media: {
+                    readyToPublish: "Prêt à Publier",
+                    uploadAllToPublish: "Veuillez charger des photos pour toutes les pièces pour publier.",
+                    publishedTitle: "Annonce Publiée !",
+                    publishedDesc: "Votre bien est maintenant en ligne et peut recevoir des candidatures.",
+                    viewBtn: "Voir l'Annonce",
+                    draftSaved: "Brouillon enregistré automatiquement",
+                    roomsMissing: "Photos manquantes pour {{count}} pièces",
+                    roomProgress: "{{count}} photos chargées",
+                    noMedia: "Aucune photo chargée",
+                    uploadDesc: "Prenez des photos de haute qualité pour attirer plus de locataires",
+                    qrInstructions: "Scannez pour charger depuis mobile",
+                    checkStatus: "Vérifier le statut",
+                    filesUploaded: "{{count}} fichiers chargés",
+                    fileCount: "{{count}} photos",
+                    publishing: "Publication...",
+                    publishBtn: "Publier l'Annonce",
+                    backToProperties: "Retour au Tableau de bord"
+                },
+                validation: {
+                    required: "Veuillez remplir tous les champs obligatoires",
+                    enrichSuccess: "Données de localisation enrichies !",
+                    enrichFail: "Échec de l'enrichissement automatique"
+                },
+                status: {
+                    creating: "Création de votre annonce..."
+                },
+                btn: "Créer le Bien"
+            },
+            type: {
+                apartment: "Appartement",
+                house: "Maison",
+                studio: "Studio",
+                room: "Chambre"
+            },
+            energy: {
+                rating: {
+                    A: "(Très performant)",
+                    B: "(Performant)",
+                    C: "(Modéré)",
+                    D: "(Standard)",
+                    E: "(Peu performant)",
+                    F: "(Consommation élevée)",
+                    G: "(Consommation très élevée)"
                 }
-            }
+            },
+            surface: {
+                loi_carrez: "Loi Carrez",
+                standard: "Standard"
+            },
+            pricing: {
+                ccDesc: "Charges Comprises",
+                ccFull: "Loyer CC",
+                chargesPlaceholder: "ex: 100",
+                depositLimit: "Max 1 mois de loyer (Non-meublé) ou 2 mois (Meublé)",
+                depositWarning: "La loi française limite le dépôt de garantie selon l'ameublement.",
+                guarantor: {
+                    elanNotice: "Conforme à la Loi ELAN",
+                    title: "Informations Garant",
+                    typesLabel: "Garants Acceptés"
+                },
+                hcDesc: "Hors Charges",
+                hcFull: "Loyer HC",
+                maxLabel: "Maximum",
+                rentControl: {
+                    desc: "Ce bien est situé en zone d'encadrement des loyers.",
+                    link: "Vérifier la réglementation locale",
+                    title: "Encadrement des Loyers"
+                },
+                typeLabel: "Type de Loyer"
+            },
+            available: "Disponible",
+            chargesIncluded: "CC",
+            chargesExcluded: "HC",
+            plusCharges: "+{{amount}}€ charges",
+            size: "{{size}}m²",
+            beds: "{{count}} lits",
+            deposit: "Dépôt",
+            furnished: "Meublé",
+            unfurnished: "Non-meublé",
+            colocOk: "Coloc OK",
+            guarantorReq: "Garant requis",
+            noGuarantor: "Sans garant",
+            loginToView: "Connectez-vous pour voir les détails"
         },
         "dossier": {
                 "category": {
@@ -1367,26 +2050,12 @@ verification: {
                 error: "Impossible de charger les annonces.",
                 noResults: "Aucun résultat trouvé",
                 noResultsDesc: "Essayez d'élargir vos critères de recherche."
-            },
-            property: {
-                available: "Disponible",
-                chargesIncluded: "CC",
-                chargesExcluded: "HC",
-                plusCharges: "+{{amount}}€ charges",
-                size: "{{size}}m²",
-                beds: "{{count}} ch.",
-                deposit: "Dépôt de garantie",
-                furnished: "Meublé",
-                unfurnished: "Non meublé",
-                colocOk: "Coloc OK",
-                guarantorReq: "Garant requis",
-                noGuarantor: "Sans garant",
-                loginToView: "Connectez-vous pour voir les détails"
             }
         },
         disputes: {
             title: "Signalements d'incidents",
             subtitle: "Suivez et gérez vos litiges immobiliers",
+            desc: "Signalez les problèmes du logement",
             report: "Signaler un incident",
             reportToast: "Sélectionnez un bail depuis votre tableau de bord pour signaler un incident",
             noReports: "Aucun signalement trouvé",
@@ -1430,36 +2099,29 @@ verification: {
             },
             incident: {
                 title: "Signaler un incident",
-                dutyTitle: "Obligation d'entretien du locataire",
-                dutyDesc: "Selon la loi française, vous avez l'obligation de signaler tout dommage ou problème survenant dans le logement. Ce rapport horodaté prouve votre diligence.",
-                step1: "1. Que s'est-il passé ?",
-                step2: "2. Décrivez le problème",
-                step3: "3. Preuves visuelles",
+                desc: "Fournissez des détails sur le problème pour informer votre propriétaire et notre équipe de facilitation.",
+                lease: "Sélectionner le Bail",
+                noLease: "Vous n'avez pas de bail actif sur lequel signaler un incident.",
+                selectLease: "Sélectionnez votre bail",
+                category: "Catégorie",
+                selectCategory: "Sélectionnez une catégorie",
                 categories: {
-                    appliance_failure: { label: "Équipement", desc: "Réfrigérateur, Chauffage, etc." },
-                    damage: { label: "Dommage", desc: "Tâches, Rayures, etc." },
-                    cleaning: { label: "Nettoyage", desc: "Hygiène, Moisissures, etc." },
-                    shared_liability: { label: "Parties communes", desc: "Couloir, Ascenseur" },
-                    other: { label: "Autre", desc: "Bruit, Voisinage" }
+                    damage: "Dommage Immobilier",
+                    appliance: "Panne d'Équipement",
+                    cleaning: "Nettoyage / Hygiène",
+                    shared: "Problème de Parties Communes",
+                    other: "Autre"
                 },
-                form: {
-                    title: "Titre de l'incident",
-                    titlePlaceholder: "ex: Chauffage en panne dans la chambre",
-                    desc: "Description détaillée",
-                    descPlaceholder: "Quand cela est-il arrivé ? Quels sont les symptômes ? Mesures immédiates prises ?",
-                    cost: "Coût estimé (optionnel)",
-                    costPlaceholder: "0.00",
-                    photoTip: "Capture en direct uniquement. Les photos de la galerie ne sont pas acceptées pour garantir l'intégrité de l'horodatage et de la localisation.",
-                    submit: "Soumettre le rapport d'incident",
-                    sharingNotice: "Ce rapport sera partagé immédiatement avec le propriétaire et l'administrateur Roomivo."
-                },
-                messages: {
-                    success: "Incident signalé avec succès",
-                    maxPhotos: "Maximum 5 photos autorisées",
-                    requiredFields: "Veuillez remplir tous les champs obligatoires",
-                    loading: "Signalement en cours...",
-                    loadLeaseError: "Impossible de charger les détails du bail"
-                }
+                titleLabel: "Titre du problème",
+                titlePlaceholder: "Brève description (ex: Chauffage en panne)",
+                description: "Description détaillée",
+                descPlaceholder: "Expliquez ce qui s'est passé en détail...",
+                evidence: "Preuve Visuelle (Photos/Vidéos)",
+                uploading: "Chargement des preuves...",
+                submitting: "Envoi...",
+                submitBtn: "Soumettre le rapport d'incident",
+                success: "Incident signalé avec succès",
+                error: "Échec du signalement de l'incident"
             },
             messages: {
                 loadError: "Échec du chargement de vos litiges",

@@ -1,265 +1,213 @@
-'use client';
-
-import Link from 'next/link';
-import { useLanguage } from '@/lib/LanguageContext';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { motion } from 'framer-motion';
+import { ChevronRight, Shield, Zap, Globe, Mail, Building, Users, FileText } from 'lucide-react';
+import { BRAND } from '@/lib/constants';
 
 export default function HomePage() {
   const { t, language } = useLanguage();
 
   return (
-    <div className="min-h-screen bg-[#fafbfc] text-gray-900" style={{ fontFamily: 'var(--font-geist-sans), system-ui, sans-serif' }}>
+    <div className="min-h-screen relative overflow-hidden">
+      <div className="vibrancy-bg" />
 
       {/* ─── Navbar ─── */}
-      <nav className="sticky top-0 z-50 backdrop-blur-md bg-white/80 border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5">
-            <div
-              className="w-9 h-9 flex items-center justify-center shadow-sm"
-              style={{ borderRadius: 8, background: 'linear-gradient(135deg, #3DD6D0, #22B8B8)' }}
-            >
-              <svg width={22} height={22} viewBox="0 0 64 64" fill="none" aria-label="Roomivo logo">
-                <path d="M32 10L8 30H14V52H50V30H56L32 10Z" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-                <circle cx="25" cy="32" r="4.5" fill="white" />
-                <path d="M18 28L25 25L32 28L25 31Z" fill="white" />
-                <path d="M20 52C20 45 21 40 25 40C29 40 30 45 30 52" fill="white" fillOpacity="0.9" />
-                <circle cx="39" cy="34" r="4" fill="white" fillOpacity="0.85" />
-                <path d="M34 52C34 46 35 42 39 42C43 42 44 46 44 52" fill="white" fillOpacity="0.75" />
-              </svg>
-            </div>
-            <span className="text-xl font-bold" style={{ color: '#22B8B8' }}>Roomivo</span>
-          </Link>
-          <div className="flex items-center gap-3">
-            <LanguageSwitcher />
-            <div className="h-5 w-px bg-gray-200 mx-1 hidden sm:block"></div>
-            <Link href="/auth/login" className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
-              {t('landing.signIn', undefined, undefined)}
-            </Link>
-            <Link
-              href="/auth/register"
-              className="px-5 py-2.5 text-sm font-semibold text-white rounded-xl shadow-md hover:shadow-sm transition-all hover:-translate-y-0.5"
-              style={{ background: 'linear-gradient(135deg, #3DD6D0, #22B8B8)' }}
-            >
-              {t('landing.getStarted', undefined, undefined)}
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        <Navbar />
+      </div>
 
       {/* ─── Hero ─── */}
-      <section className="relative overflow-hidden">
-        {/* Decorative blobs */}
-        <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full opacity-20" style={{ background: 'radial-gradient(circle, #3DD6D0, transparent 70%)' }} />
-        <div className="absolute top-60 -left-32 w-72 h-72 rounded-full opacity-15" style={{ background: 'radial-gradient(circle, #22B8B8, transparent 70%)' }} />
-
-        <div className="max-w-7xl mx-auto px-6 pt-24 pb-20 text-center relative">
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.08] mb-6">
-            {t('landing.hero.title', undefined, undefined).split(language === 'fr' ? 'foyer idéal' : 'perfect home').map((part, i) => (
-              i === 0 ? (
-                <span key={i}>
-                  {part}
-                  <span className="bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(135deg, #3DD6D0, #22B8B8)' }}>
-                    {language === 'fr' ? 'foyer idéal' : 'perfect home'}
+      <section className="relative pt-24 pb-32">
+        <div className="max-w-7xl mx-auto px-6 text-center relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          >
+            <h1 className="text-6xl sm:text-7xl lg:text-8xl font-black tracking-tight leading-[1.05] mb-8 bg-clip-text text-transparent bg-gradient-to-b from-zinc-900 to-zinc-500 dark:from-white dark:to-zinc-500">
+              {t('landing.hero.title', undefined, undefined).split(language === 'fr' ? 'foyer idéal' : 'perfect home').map((part, i) => (
+                i === 0 ? (
+                  <span key={i}>
+                    {part}
+                    <span className="text-teal-600 dark:text-teal-400">
+                      {language === 'fr' ? 'foyer idéal' : 'perfect home'}
+                    </span>
                   </span>
-                </span>
-              ) : (
-                <span key={i}>{part}</span>
-              )
+                ) : (
+                  <span key={i}>{part}</span>
+                )
+              ))}
+            </h1>
+
+            <p className="text-xl sm:text-2xl text-zinc-500 dark:text-zinc-400 max-w-3xl mx-auto mb-12 leading-relaxed font-medium">
+              {t('landing.subtitle', undefined, undefined)}
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-20">
+              <Link href="/auth/register" className="btn-primary flex items-center gap-2 group">
+                {t('landing.getStarted', undefined, undefined)}
+                <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </Link>
+              <Link href="/search" className="btn-secondary">
+                {t('dashboard.quickActions.browse.title', undefined, undefined)}
+              </Link>
+            </div>
+          </motion.div>
+
+          {/* Premium Tech Badges */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="flex flex-wrap items-center justify-center gap-10"
+          >
+            {[
+              { icon: <Shield className="w-5 h-5" />, label: t('landing.trustBadges.gdpr', undefined, 'GDPR Compliant') },
+              { icon: <Globe className="w-5 h-5" />, label: t('landing.trustBadges.frenchLaw', undefined, 'French Law Compliant') },
+              { icon: <Zap className="w-5 h-5" />, label: t('landing.trustBadges.stripe', undefined, 'Secured by Stripe') }
+            ].map((badge, i) => (
+              <div key={i} className="flex items-center gap-3 text-zinc-400 dark:text-zinc-500 font-bold text-sm tracking-widest uppercase">
+                <span className="text-teal-500">{badge.icon}</span>
+                {badge.label}
+              </div>
             ))}
-          </h1>
-
-          <p className="text-lg sm:text-xl text-gray-500 max-w-2xl mx-auto mb-10 leading-relaxed">
-            {t('landing.subtitle', undefined, undefined)}
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-            <Link
-              href="/auth/register"
-              className="group px-8 py-4 text-base font-semibold text-white rounded-2xl shadow-sm hover:shadow-sm transition-all hover:-translate-y-0.5 flex items-center gap-2"
-              style={{ background: 'linear-gradient(135deg, #3DD6D0, #1CA8A8)' }}
-            >
-              {t('landing.getStarted', undefined, undefined)}
-              <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </Link>
-            <Link
-              href="/search"
-              className="px-8 py-4 text-base font-semibold text-gray-700 bg-white border-2 border-gray-200 rounded-2xl hover:border-gray-300 hover:shadow-md transition-all"
-            >
-              {t('dashboard.quickActions.browse.title', undefined, undefined)}
-            </Link>
-          </div>
-
-          {/* Trust badges */}
-          <div className="flex flex-wrap items-center justify-center gap-8 text-gray-400 text-sm">
-            <div className="flex items-center gap-2">
-              <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
-              {t('landing.trustBadges.gdpr', undefined, 'GDPR Compliant')}
-            </div>
-            <div className="flex items-center gap-2">
-              <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
-              {t('landing.trustBadges.frenchLaw', undefined, 'French Law Compliant')}
-            </div>
-            <div className="flex items-center gap-2">
-              <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
-              {t('landing.trustBadges.stripe', undefined, 'Secured by Stripe')}
-            </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
-
-
       {/* ─── How It Works ─── */}
-      <section className="py-24">
+      <section className="py-32 relative">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-4">{t('landing.howItWorks.title', undefined, undefined)}</h2>
-            <p className="text-gray-500 text-lg max-w-xl mx-auto">{t('landing.howItWorks.subtitle', undefined, undefined)}</p>
+          <div className="text-center mb-24">
+            <h2 className="text-4xl sm:text-5xl font-black mb-6">{t('landing.howItWorks.title', undefined, undefined)}</h2>
+            <p className="text-zinc-500 dark:text-zinc-400 text-xl max-w-2xl mx-auto font-medium">{t('landing.howItWorks.subtitle', undefined, undefined)}</p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-10">
             {[
               {
                 step: '01',
-                icon: (
-                  <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                  </svg>
-                ),
+                icon: <Users className="w-8 h-8" />,
                 title: t('landing.howItWorks.steps.profile.title', undefined, undefined),
                 description: t('landing.howItWorks.steps.profile.desc', undefined, undefined)
               },
               {
                 step: '02',
-                icon: (
-                  <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
-                  </svg>
-                ),
+                icon: <Zap className="w-8 h-8" />,
                 title: t('landing.howItWorks.steps.matching.title', undefined, undefined),
                 description: t('landing.howItWorks.steps.matching.desc', undefined, undefined)
               },
               {
                 step: '03',
-                icon: (
-                  <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                  </svg>
-                ),
+                icon: <FileText className="w-8 h-8" />,
                 title: t('landing.howItWorks.steps.lease.title', undefined, undefined),
                 description: t('landing.howItWorks.steps.lease.desc', undefined, undefined)
               }
             ].map((item) => (
-              <div key={item.step} className="relative group">
-                <div className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-sm hover:-translate-y-1 transition-all duration-300">
-                  <div className="text-xs font-bold tracking-widest text-gray-300 mb-4">{item.step}</div>
-                  <div className="w-14 h-14 rounded-xl flex items-center justify-center mb-5 text-white" style={{ background: 'linear-gradient(135deg, #3DD6D0, #22B8B8)' }}>
-                    {item.icon}
-                  </div>
-                  <h3 className="text-xl font-bold mb-3">{item.title}</h3>
-                  <p className="text-gray-500 leading-relaxed">{item.description}</p>
+              <motion.div 
+                key={item.step}
+                whileHover={{ y: -10 }}
+                className="glass-card flex flex-col items-start"
+              >
+                <div className="text-sm font-black text-teal-600 dark:text-teal-400 mb-6 tracking-[0.2em]">{item.step}</div>
+                <div className="w-16 h-16 rounded-2xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 flex items-center justify-center mb-8 shadow-2xl">
+                  {item.icon}
                 </div>
-              </div>
+                <h3 className="text-2xl font-black mb-4">{item.title}</h3>
+                <p className="text-zinc-500 dark:text-zinc-400 leading-relaxed font-medium">{item.description}</p>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
       {/* ─── Dual CTA ─── */}
-      <section className="py-24">
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Tenant CTA */}
-            <div className="relative rounded-3xl p-10 text-white overflow-hidden" style={{ background: 'linear-gradient(135deg, #3DD6D0, #1CA8A8)' }}>
-              <div className="absolute top-0 right-0 w-40 h-40 rounded-full bg-white/10 -translate-y-1/2 translate-x-1/2" />
-              <div className="relative">
-                <div className="text-4xl mb-4"></div>
-                <h3 className="text-2xl font-bold mb-3">{t('landing.cta.tenant.title', undefined, undefined)}</h3>
-                <p className="text-white/80 mb-6 leading-relaxed">
+      <section className="py-32">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="grid md:grid-cols-2 gap-8">
+            <motion.div 
+              whileHover={{ scale: 1.02 }}
+              className="glass-card bg-teal-600 dark:bg-teal-700 text-white border-none p-12 overflow-hidden relative group"
+            >
+              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:scale-125 transition-transform duration-700" />
+              <div className="relative z-10">
+                <h3 className="text-4xl font-black mb-4">{t('landing.cta.tenant.title', undefined, undefined)}</h3>
+                <p className="text-teal-50 text-xl mb-10 leading-relaxed font-medium">
                   {t('landing.cta.tenant.desc', undefined, undefined)}
                 </p>
-                <Link
-                  href="/auth/register?role=tenant"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-white text-gray-900 font-semibold rounded-xl hover:shadow-sm transition-all"
-                >
-                  {t('landing.cta.tenant.button', undefined, undefined)} →
+                <Link href="/auth/register?role=tenant" className="inline-flex items-center gap-3 px-8 py-4 bg-white text-teal-700 font-black rounded-2xl shadow-xl hover:shadow-2xl transition-all active:scale-95">
+                  {t('landing.cta.tenant.button', undefined, undefined)} <ChevronRight className="w-5 h-5" />
                 </Link>
               </div>
-            </div>
+            </motion.div>
 
-            {/* Landlord CTA */}
-            <div className="relative rounded-3xl p-10 bg-gray-900 text-white overflow-hidden">
-              <div className="absolute bottom-0 left-0 w-40 h-40 rounded-full bg-white/5 translate-y-1/2 -translate-x-1/2" />
-              <div className="relative">
-                <div className="text-4xl mb-4"></div>
-                <h3 className="text-2xl font-bold mb-3">{t('landing.cta.landlord.title', undefined, undefined)}</h3>
-                <p className="text-gray-400 mb-6 leading-relaxed">
+            <motion.div 
+              whileHover={{ scale: 1.02 }}
+              className="glass-card bg-zinc-900 text-white border-none p-12 overflow-hidden relative group"
+            >
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 group-hover:scale-125 transition-transform duration-700" />
+              <div className="relative z-10">
+                <h3 className="text-4xl font-black mb-4">{t('landing.cta.landlord.title', undefined, undefined)}</h3>
+                <p className="text-zinc-400 text-xl mb-10 leading-relaxed font-medium">
                   {t('landing.cta.landlord.desc', undefined, undefined)}
                 </p>
-                <Link
-                  href="/auth/register?role=landlord"
-                  className="inline-flex items-center gap-2 px-6 py-3 font-semibold rounded-xl hover:shadow-sm transition-all"
-                  style={{ background: 'linear-gradient(135deg, #3DD6D0, #22B8B8)', color: 'white' }}
-                >
-                  {t('landing.cta.landlord.button', undefined, undefined)} →
+                <Link href="/auth/register?role=landlord" className="btn-primary !bg-white !text-zinc-900 inline-flex items-center gap-3 px-8 py-4 font-black rounded-2xl shadow-xl hover:shadow-2xl transition-all active:scale-95">
+                  {t('landing.cta.landlord.button', undefined, undefined)} <ChevronRight className="w-5 h-5" />
                 </Link>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
 
       {/* ─── Footer ─── */}
-      <footer className="border-t border-gray-100 bg-white py-16">
+      <footer className="border-t border-zinc-100 dark:border-zinc-800 bg-white dark:bg-black py-24">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div
-                  className="w-8 h-8 flex items-center justify-center shadow-sm"
-                  style={{ borderRadius: 7, background: 'linear-gradient(135deg, #3DD6D0, #22B8B8)' }}
-                >
-                  <svg width={18} height={18} viewBox="0 0 64 64" fill="none">
-                    <path d="M32 10L8 30H14V52H50V30H56L32 10Z" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-                    <circle cx="25" cy="32" r="4.5" fill="white" />
-                    <path d="M18 28L25 25L32 28L25 31Z" fill="white" />
-                    <path d="M20 52C20 45 21 40 25 40C29 40 30 45 30 52" fill="white" fillOpacity="0.9" />
-                    <circle cx="39" cy="34" r="4" fill="white" fillOpacity="0.85" />
-                    <path d="M34 52C34 46 35 42 39 42C43 42 44 46 44 52" fill="white" fillOpacity="0.75" />
-                  </svg>
-                </div>
-                <span className="font-bold" style={{ color: '#22B8B8' }}>Roomivo</span>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-12 mb-20">
+            <div className="col-span-2 md:col-span-1">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-teal-600 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg">R</div>
+                <span className="text-2xl font-black tracking-tighter text-zinc-900 dark:text-white">Roomivo</span>
               </div>
-              <p className="text-sm text-gray-400">{t('landing.footer.slogan', undefined, 'Rent securely in France')}</p>
+              <p className="text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed max-w-xs">
+                {t('landing.footer.slogan', undefined, 'Rent securely in France')}
+              </p>
             </div>
-            <div>
-              <h4 className="font-semibold text-gray-900 mb-3 text-sm">{t('landing.footer.platform', undefined, 'Platform')}</h4>
-              <div className="space-y-2 text-sm text-gray-500">
-                <Link href="/search" className="block hover:text-gray-900 transition-colors">{t('dashboard.quickActions.browse.title', undefined, undefined)}</Link>
-                <Link href="/properties" className="block hover:text-gray-900 transition-colors">{t('dashboard.stats.properties', undefined, undefined)}</Link>
-                <Link href="/auth/register" className="block hover:text-gray-900 transition-colors">{t('landing.getStarted', undefined, undefined)}</Link>
+            
+            {[
+              { title: t('landing.footer.platform', undefined, 'Platform'), links: [
+                { href: '/search', label: t('dashboard.quickActions.browse.title', undefined, undefined) },
+                { href: '/properties', label: t('dashboard.stats.properties', undefined, undefined) },
+                { href: '/auth/register', label: t('landing.getStarted', undefined, undefined) }
+              ]},
+              { title: t('landing.footer.legal', undefined, 'Legal'), links: [
+                { href: '/legal/cgv', label: t('landing.footer.terms', undefined, 'Terms of Sale') },
+                { href: '/legal/privacy', label: t('landing.footer.privacy', undefined, 'Privacy Policy') },
+                { href: '/legal/mentions-legales', label: t('landing.footer.notices', undefined, 'Legal Notices') }
+              ]},
+              { title: t('landing.footer.support', undefined, 'Support'), links: [
+                { href: '/support', label: t('landing.footer.help', undefined, 'Help') },
+                { href: 'mailto:contact@roomivo.com', label: 'contact@roomivo.com' }
+              ]}
+            ].map((section, i) => (
+              <div key={i}>
+                <h4 className="font-black text-zinc-900 dark:text-white mb-6 uppercase tracking-widest text-xs">{section.title}</h4>
+                <ul className="space-y-4">
+                  {section.links.map((link, j) => (
+                    <li key={j}>
+                      <Link href={link.href} className="text-zinc-500 dark:text-zinc-400 hover:text-teal-600 dark:hover:text-teal-400 font-medium transition-colors">
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               </div>
-            </div>
-            <div>
-              <h4 className="font-semibold text-gray-900 mb-3 text-sm">{t('landing.footer.legal', undefined, 'Legal')}</h4>
-              <div className="space-y-2 text-sm text-gray-500">
-                <Link href="/legal/cgv" className="block hover:text-gray-900 transition-colors">{t('landing.footer.terms', undefined, 'Terms of Sale')}</Link>
-                <Link href="/legal/privacy" className="block hover:text-gray-900 transition-colors">{t('landing.footer.privacy', undefined, 'Privacy Policy')}</Link>
-                <Link href="/legal/mentions-legales" className="block hover:text-gray-900 transition-colors">{t('landing.footer.notices', undefined, 'Legal Notices')}</Link>
-              </div>
-            </div>
-            <div>
-              <h4 className="font-semibold text-gray-900 mb-3 text-sm">{t('landing.footer.support', undefined, 'Support')}</h4>
-              <div className="space-y-2 text-sm text-gray-500">
-                <Link href="/support" className="block hover:text-gray-900 transition-colors">{t('landing.footer.help', undefined, 'Help')}</Link>
-                <a href="mailto:contact@roomivo.com" className="block hover:text-gray-900 transition-colors">contact@roomivo.com</a>
-              </div>
-            </div>
+            ))}
           </div>
-          <div className="border-t border-gray-100 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-400">
+          <div className="border-t border-zinc-100 dark:border-zinc-800 pt-10 flex flex-col sm:flex-row items-center justify-between gap-6 text-zinc-400 dark:text-zinc-500 text-sm font-bold tracking-widest uppercase">
             <span>© {new Date().getFullYear()} Roomivo. {t('globalFooter.rights', undefined, 'All rights reserved.')}</span>
+            <div className="flex gap-8">
+              <Link href="/legal/terms" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Terms</Link>
+              <Link href="/legal/privacy" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Privacy</Link>
+            </div>
           </div>
         </div>
       </footer>

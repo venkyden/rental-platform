@@ -480,9 +480,9 @@ async def upload_guarantor_document(
         user_id=current_user.id,
         document_type=DocumentType.GUARANTOR_FORM,
         file_url=file_url,
-        filename=file.filename,
+        file_name=file.filename,
         mime_type=file.content_type,
-        status="pending",
+        verification_status="pending",
     )
     
     db.add(new_doc)

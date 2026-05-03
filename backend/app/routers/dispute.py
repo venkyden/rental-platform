@@ -32,6 +32,7 @@ from app.models.property import Property
 from app.models.user import User
 from app.models.visits_and_leases import Lease
 from app.routers.auth import get_current_user
+from app.services.notification_service import NotificationService
 
 router = APIRouter(prefix="/disputes", tags=["Disputes"])
 
@@ -139,8 +140,19 @@ async def create_dispute(
     await db.commit()
     await db.refresh(new_dispute)
 
-    # TODO: Send notification to accused party (if set) or landlord
-    # This would use the existing notification system
+    # Notify accused party or landlord
+    notifier = NotificationService(db)
+    recipient_id = dispute_in.accused_id or lease.landlord_id
+    # If reporter is landlord, notify tenant
+    if current_user.id == lease.landlord_id:
+        recipient_id = lease.tenant_id
+    
+    await notifier.notify_dispute_created(
+        recipient_id=recipient_id,
+        reporter_name=current_user.full_name or "A user",
+        title=new_dispute.title,
+        dispute_id=new_dispute.id,
+    )
 
     return new_dispute
 
@@ -289,6 +301,16 @@ async def respond_to_dispute(
 
     await db.commit()
     await db.refresh(dispute)
+
+    # Notify reporter
+    notifier = NotificationService(db)
+    await notifier.notify_dispute_responded(
+        recipient_id=dispute.raised_by_id,
+        responder_name=current_user.full_name or "A user",
+        title=dispute.title,
+        dispute_id=dispute.id,
+    )
+
     return dispute
 
 
