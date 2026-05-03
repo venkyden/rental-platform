@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, Plus, Trash2 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
