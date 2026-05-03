@@ -131,18 +131,11 @@ npm test
 
 ## 🚢 Deployment
 
-### Backend (Railway)
-1. Create new project on Railway
-2. Connect GitHub repository
-3. Add PostgreSQL database
-4. Set environment variables
-5. Deploy automatically on push
-
-### Frontend (Vercel)
-1. Import project on Vercel
-2. Configure build settings (auto-detected)
-3. Add environment variables
-4. Deploy automatically on push
+### Platform (Render)
+1. The platform is deployed as a monorepo on Render.
+2. The `render.yaml` blueprint manages the Backend and PostgreSQL database.
+3. The Frontend is deployed as a separate Web Service on Render.
+4. All services are configured for **Auto-deploy on Push** to the `master` branch.
 
 ## 📝 License
 
