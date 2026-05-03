@@ -55,6 +55,7 @@ class PropertyCreate(BaseModel):
     utilities_included: Optional[List[str]] = (
         []
     )  # ['electricity', 'gas', 'water', 'internet']
+    caf_eligible: bool = False
     # Guarantor Preferences
     guarantor_required: bool = False
     accepted_guarantor_types: Optional[List[str]] = (
@@ -101,6 +102,7 @@ class PropertyUpdate(BaseModel):
     nearby_landmarks: Optional[List[str]] = None
 
     utilities_included: Optional[List[str]] = None
+    caf_eligible: Optional[bool] = None
     guarantor_required: Optional[bool] = None
     accepted_guarantor_types: Optional[List[str]] = None
 
@@ -150,6 +152,7 @@ class PropertyResponse(BaseModel):
     nearby_landmarks: Optional[list] = []
 
     utilities_included: Optional[list] = []
+    caf_eligible: bool = False
     guarantor_required: bool
     accepted_guarantor_types: Optional[list] = []
 

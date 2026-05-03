@@ -124,7 +124,9 @@ export default function LandlordDashboard() {
             {/* Analytics for S2 */}
             <FeatureGate feature="analytics">
                 <section className="mb-8">
-                    <h2 className="text-xl font-bold text-zinc-900 dark:text-white mb-4 pl-2 tracking-tight">Analytics</h2>
+                    <h2 className="text-xl font-bold text-zinc-900 dark:text-white mb-4 pl-2 tracking-tight">
+                        {t('dashboard.landlord.sections.analytics', undefined, 'Analytics')}
+                    </h2>
                     <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl shadow-sm border border-white/50 dark:border-white/10 p-8">
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
                             <div className="text-center sm:text-left">
@@ -161,7 +163,7 @@ export default function LandlordDashboard() {
                 <section className="mb-8">
                     <div className="flex justify-between items-center mb-4 px-2">
                         <h2 className="text-xl font-bold text-zinc-900 dark:text-white tracking-tight">
-                            {t('dashboard.landlord.myTeam', undefined, 'My Team')}
+                            {t('dashboard.landlord.sections.team', undefined, 'My Team')}
                         </h2>
                         <button
                             onClick={() => router.push('/team')}
@@ -194,7 +196,7 @@ export default function LandlordDashboard() {
                 <section>
                     <div className="flex justify-between items-center mb-4 px-2">
                         <h2 className="text-xl font-bold text-zinc-900 dark:text-white tracking-tight">
-                            {t('dashboard.landlord.recentMessages', undefined, 'Recent Messages')}
+                            {t('dashboard.landlord.sections.inbox', undefined, 'Recent Messages')}
                         </h2>
                         <button
                             onClick={() => router.push('/inbox')}

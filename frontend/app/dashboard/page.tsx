@@ -234,7 +234,9 @@ export default function DashboardPage() {
 
                     {/* Quick Actions */}
                     <motion.div variants={itemVariants} className="space-y-8">
-                        <h2 className="text-2xl font-black tracking-tighter uppercase ml-2 text-zinc-400 dark:text-zinc-500">Quick Actions</h2>
+                        <h2 className="text-2xl font-black tracking-tighter uppercase ml-2 text-zinc-400 dark:text-zinc-500">
+                            {t('dashboard.quickActions.title', undefined, 'Quick Actions')}
+                        </h2>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                             {quickActions.filter(action => action.show).map((action, idx) => (
                                 <motion.button
@@ -323,7 +325,7 @@ export default function DashboardPage() {
                             {/* Verification Progress */}
                             <div className="glass-card shadow-2xl border-white/40 dark:border-zinc-800/50">
                                 <h3 className="text-lg font-black uppercase tracking-widest text-zinc-400 mb-8 flex items-center gap-2">
-                                    <ShieldCheck className="w-5 h-5 text-teal-500" /> Progress
+                                    <ShieldCheck className="w-5 h-5 text-teal-500" /> {t('dashboard.progress', undefined, 'Progress')}
                                 </h3>
                                 <div className="space-y-8">
                                     {[
@@ -338,17 +340,19 @@ export default function DashboardPage() {
                                                 </div>
                                                 <div>
                                                     <p className="text-sm font-black text-zinc-900 dark:text-white uppercase tracking-tight">{item.label}</p>
-                                                    <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{item.verified ? 'Complete' : 'Pending'}</p>
+                                                    <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+                                                        {item.verified ? t('dashboard.complete', undefined, 'Complete') : t('dashboard.pending', undefined, 'Pending')}
+                                                    </p>
                                                 </div>
                                             </div>
                                             {item.resend && (
                                                 <button onClick={handleResendVerification} disabled={resendingEmail} className="text-[10px] font-black text-teal-600 hover:underline uppercase tracking-widest">
-                                                    {resendingEmail ? 'Sending...' : 'Resend'}
+                                                    {resendingEmail ? t('common.loading', undefined, 'Sending...') : t('dashboard.verification.resend', undefined, 'Resend')}
                                                 </button>
                                             )}
                                             {item.start && (
                                                 <button onClick={() => router.push('/verification')} className="text-[10px] font-black text-teal-600 hover:underline uppercase tracking-widest">
-                                                    Start
+                                                    {t('dashboard.verification.start', undefined, 'Start')}
                                                 </button>
                                             )}
                                         </div>
@@ -372,7 +376,9 @@ export default function DashboardPage() {
                                         </svg>
                                         <div className="absolute inset-0 flex flex-col items-center justify-center">
                                             <span className="text-5xl font-black tracking-tighter">{user.trust_score}</span>
-                                            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Points</span>
+                                            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+                                                {t('dashboard.points', undefined, 'Points')}
+                                            </span>
                                         </div>
                                     </div>
                                     <p className="mt-8 text-center text-xs font-bold text-zinc-400 leading-relaxed px-4">

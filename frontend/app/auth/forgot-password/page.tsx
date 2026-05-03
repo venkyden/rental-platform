@@ -2,6 +2,7 @@
 
 import React, { useState, ChangeEvent } from 'react';
 import Link from 'next/link';
+import { useLanguage } from '@/lib/LanguageContext';
 import { apiClient } from '@/lib/api';
 import { motion, Variants } from 'framer-motion';
 
@@ -21,6 +22,7 @@ const itemVariants: Variants = {
 };
 
 export default function ForgotPasswordPage() {
+    const { t } = useLanguage();
     const [email, setEmail] = useState('');
     const [submitted, setSubmitted] = useState(false);
     const [error, setError] = useState('');
@@ -35,7 +37,7 @@ export default function ForgotPasswordPage() {
             await apiClient.forgotPassword(email);
             setSubmitted(true);
         } catch (err: any) {
-            setError(err.response?.data?.detail || 'Failed to send reset email. Please try again.');
+            setError(err.response?.data?.detail || t('auth.forgotPassword.errors.default', undefined, 'Failed to send reset email. Please try again.'));
         } finally {
             setLoading(false);
         }
@@ -56,10 +58,10 @@ export default function ForgotPasswordPage() {
                         </svg>
                     </motion.div>
                     <motion.h2 variants={itemVariants} className="text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
-                        Check your email
+                        {t('auth.forgotPassword.successTitle', undefined, 'Check your email')}
                     </motion.h2>
                     <motion.p variants={itemVariants} className="mt-3 text-zinc-600 dark:text-zinc-400">
-                        If an account exists for <span className="font-semibold text-zinc-900 dark:text-white">{email}</span>, we've sent password reset instructions.
+                        {t('auth.forgotPassword.successDesc', { email }, `If an account exists for ${email}, we've sent password reset instructions.`)}
                     </motion.p>
                     <motion.div variants={itemVariants} className="mt-8">
                         <Link
@@ -69,7 +71,7 @@ export default function ForgotPasswordPage() {
                             <svg className="mr-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                             </svg>
-                            Back to sign in
+                            {t('auth.forgotPassword.backToSignIn', undefined, 'Back to sign in')}
                         </Link>
                     </motion.div>
                 </div>
@@ -86,10 +88,10 @@ export default function ForgotPasswordPage() {
         >
             <motion.div variants={itemVariants} className="text-center sm:text-left mb-8">
                 <h2 className="text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
-                    Reset your password
+                    {t('auth.forgotPassword.title', undefined, 'Reset your password')}
                 </h2>
                 <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-                    Enter your email address and we'll send you a link to reset your password.
+                    {t('auth.forgotPassword.subtitle', undefined, "Enter your email address and we'll send you a link to reset your password.")}
                 </p>
             </motion.div>
 
@@ -102,7 +104,7 @@ export default function ForgotPasswordPage() {
 
                 <motion.div variants={itemVariants}>
                     <label htmlFor="email" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
-                        Email address
+                        {t('auth.forgotPassword.emailLabel', undefined, 'Email address')}
                     </label>
                     <input
                         id="email"
@@ -126,10 +128,10 @@ export default function ForgotPasswordPage() {
                         {loading ? (
                             <span className="flex items-center gap-2">
                                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                Sending...
+                                {t('auth.forgotPassword.sending', undefined, 'Sending...')}
                             </span>
                         ) : (
-                            'Send reset link'
+                            t('auth.forgotPassword.submit', undefined, 'Send reset link')
                         )}
                     </button>
                 </motion.div>
@@ -142,7 +144,7 @@ export default function ForgotPasswordPage() {
                         <svg className="mr-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>
-                        Back to sign in
+                        {t('auth.forgotPassword.backToSignIn', undefined, 'Back to sign in')}
                     </Link>
                 </motion.div>
             </motion.form>

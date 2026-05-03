@@ -9,6 +9,7 @@ import { apiClient } from '@/lib/api';
 import { useToast } from '@/lib/ToastContext';
 import PremiumLayout from '@/components/PremiumLayout';
 import { useLanguage } from '@/lib/LanguageContext';
+import React, { useState } from 'react';
 
 export default function PrivacySettingsPage() {
     const { t } = useLanguage();
@@ -48,16 +49,16 @@ export default function PrivacySettingsPage() {
                     {/* Sidebar */}
                     <div className="w-full md:w-80 shrink-0">
                         <div className="mb-12">
-                            <h1 className="text-4xl font-black tracking-tighter mb-4 bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 to-zinc-500 dark:from-white dark:to-zinc-400">Settings</h1>
-                            <p className="text-zinc-500 font-medium">Manage your digital identity and security preferences.</p>
+                            <h1 className="text-4xl font-black tracking-tighter mb-4 bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 to-zinc-500 dark:from-white dark:to-zinc-400">{t('settings.title')}</h1>
+                            <p className="text-zinc-500 font-medium">{t('settings.subtitle')}</p>
                         </div>
 
                         <div className="flex flex-col gap-2 p-1.5 bg-zinc-100 dark:bg-zinc-800/50 rounded-[2rem] border border-zinc-200/50 dark:border-zinc-700/30 backdrop-blur-xl">
                             {[
-                                { id: 'account', icon: User, label: 'Profile', path: '/settings/account' },
-                                { id: 'notifications', icon: Bell, label: 'Notifications', path: '/settings/notifications' },
-                                { id: 'privacy', icon: Shield, label: 'Privacy', path: '/settings/privacy' },
-                                { id: 'preferences', icon: Settings, label: 'Preferences', path: '/settings/preferences' }
+                                { id: 'account', icon: User, label: t('settings.tabs.profile'), path: '/settings/account' },
+                                { id: 'notifications', icon: Bell, label: t('settings.tabs.notifications'), path: '/settings/notifications' },
+                                { id: 'privacy', icon: Shield, label: t('settings.tabs.privacy'), path: '/settings/privacy' },
+                                { id: 'preferences', icon: Settings, label: t('settings.tabs.preferences'), path: '/settings/preferences' }
                             ].map((tab) => (
                                 <div key={tab.id} className="flex flex-col">
                                     <button
@@ -77,7 +78,7 @@ export default function PrivacySettingsPage() {
                                             <button 
                                                 className="text-[10px] font-black uppercase tracking-widest text-left text-teal-500"
                                             >
-                                                GDPR & Data
+                                                {t('settings.privacy.gdprData')}
                                             </button>
                                         </div>
                                     )}
@@ -94,10 +95,10 @@ export default function PrivacySettingsPage() {
                                     <div className="p-3 bg-teal-500/10 rounded-2xl">
                                         <Shield className="w-6 h-6 text-teal-500" />
                                     </div>
-                                    <h2 className="text-2xl font-black tracking-tight">{t('settings.account.privacy.dataTitle', undefined, 'Data & Privacy')}</h2>
+                                    <h2 className="text-2xl font-black tracking-tight">{t('settings.privacy.dataTitle')}</h2>
                                 </div>
                                 <p className="text-zinc-500 font-bold leading-relaxed mb-12">
-                                    {t('settings.account.privacy.dataDesc', undefined, 'We take your privacy seriously. Your data is handled in accordance with the General Data Protection Regulation (GDPR). You have the right to access, rectify, or erase your personal data at any time.')}
+                                    {t('settings.privacy.dataDesc')}
                                 </p>
 
                                 <div className="p-8 bg-zinc-50 dark:bg-zinc-800/50 rounded-[2rem] border border-zinc-100 dark:border-zinc-700/50">
@@ -105,10 +106,10 @@ export default function PrivacySettingsPage() {
                                         <div className="p-3 bg-red-500/10 rounded-xl">
                                             <AlertTriangle className="w-5 h-5 text-red-500" />
                                         </div>
-                                        <h3 className="text-sm font-black uppercase tracking-widest text-red-500">{t('settings.account.privacy.dangerTitle', undefined, 'Danger Zone')}</h3>
+                                        <h3 className="text-sm font-black uppercase tracking-widest text-red-500">{t('settings.privacy.dangerTitle')}</h3>
                                     </div>
                                     <p className="text-xs font-bold text-zinc-500 mb-8 leading-relaxed">
-                                        {t('settings.account.privacy.dangerDesc', undefined, 'Permanently delete your account. This action is irreversible. Your profile, properties, preferences, and personal information will be completely anonymized or removed.')}
+                                        {t('settings.privacy.dangerDesc')}
                                     </p>
                                     <button
                                         onClick={() => setShowDeleteModal(true)}
@@ -136,15 +137,17 @@ export default function PrivacySettingsPage() {
                                 <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-2xl flex items-center justify-center mb-6">
                                     <Trash2 className="w-8 h-8 text-red-500" />
                                 </div>
-                                <h3 className="text-2xl font-black tracking-tight mb-2">{t('settings.account.privacy.deleteConfirmTitle', undefined, 'Delete Account?')}</h3>
+                                <h3 className="text-2xl font-black tracking-tight mb-2">{t('settings.privacy.deleteConfirmTitle')}</h3>
                                 <p className="text-zinc-500 font-bold text-sm leading-relaxed">
-                                    {t('settings.account.privacy.deleteConfirmDesc', undefined, 'This action cannot be undone. All your personal data will be anonymized per GDPR Article 17.')}
+                                    {t('settings.privacy.deleteConfirmDesc')}
                                 </p>
                             </div>
 
                             <div className="space-y-6">
                                 <div className="space-y-2">
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">Type <span className="text-red-500">{deleteTarget}</span> to confirm</p>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">
+                                        {t('settings.privacy.typeConfirm', { target: deleteTarget }, `Type ${deleteTarget} to confirm`)}
+                                    </p>
                                     <input
                                         type="text"
                                         value={deleteConfirmation}
@@ -155,13 +158,15 @@ export default function PrivacySettingsPage() {
                                 </div>
 
                                 <div className="flex gap-4">
-                                    <button onClick={() => setShowDeleteModal(false)} className="flex-1 py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-zinc-200 transition-all">Cancel</button>
+                                    <button onClick={() => setShowDeleteModal(false)} className="flex-1 py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-zinc-200 transition-all">
+                                        {t('common.cancel')}
+                                    </button>
                                     <button
                                         onClick={handleDeleteAccount}
                                         disabled={deleteConfirmation.toUpperCase() !== deleteTarget.toUpperCase() || isDeleting}
                                         className="flex-1 py-4 bg-red-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-red-500/20 disabled:opacity-50 hover:scale-105 transition-all"
                                     >
-                                        {isDeleting ? 'Deleting...' : 'Delete'}
+                                        {isDeleting ? t('settings.privacy.deleting', undefined, 'Deleting...') : t('common.delete')}
                                     </button>
                                 </div>
                             </div>

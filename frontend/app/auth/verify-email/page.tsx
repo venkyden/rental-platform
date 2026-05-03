@@ -4,10 +4,12 @@ import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import axios from 'axios';
+import { useLanguage } from '@/lib/LanguageContext';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 function VerifyEmailContent() {
+    const { t } = useLanguage();
     const [status, setStatus] = useState<'verifying' | 'success' | 'error'>('verifying');
     const [message, setMessage] = useState('');
     const router = useRouter();
@@ -17,7 +19,7 @@ function VerifyEmailContent() {
     useEffect(() => {
         if (!token) {
             setStatus('error');
-            setMessage('No verification token found in URL');
+            setMessage(t('auth.verifyEmail.errors.noToken', undefined, 'No verification token found in URL'));
             return;
         }
 
@@ -31,7 +33,7 @@ function VerifyEmailContent() {
             });
 
             setStatus('success');
-            setMessage(response.data.message || 'Email verified successfully!');
+            setMessage(response.data.message || t('auth.verifyEmail.success', undefined, 'Email verified successfully!'));
 
             // Redirect based on login status after 3 seconds
             setTimeout(() => {
@@ -46,7 +48,7 @@ function VerifyEmailContent() {
             setStatus('error');
             setMessage(
                 error.response?.data?.detail ||
-                'Failed to verify email. The link may have expired.'
+                t('auth.verifyEmail.errors.default', undefined, 'Failed to verify email. The link may have expired.')
             );
         }
     }
@@ -56,7 +58,7 @@ function VerifyEmailContent() {
             <div className="max-w-md w-full space-y-8">
                 <div>
                     <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                        Email Verification
+                        {t('auth.verifyEmail.title', undefined, 'Email Verification')}
                     </h2>
                 </div>
 
@@ -64,7 +66,7 @@ function VerifyEmailContent() {
                     {status === 'verifying' && (
                         <div className="text-center">
                             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                            <p className="mt-4 text-gray-600">Verifying your email...</p>
+                            <p className="mt-4 text-gray-600">{t('auth.verifyEmail.verifying', undefined, 'Verifying your email...')}</p>
                         </div>
                     )}
 
@@ -86,11 +88,11 @@ function VerifyEmailContent() {
                                 </svg>
                             </div>
                             <h3 className="mt-4 text-lg font-medium text-gray-900">
-                                Success!
+                                {t('auth.verifyEmail.success', undefined, 'Success!')}
                             </h3>
                             <p className="mt-2 text-sm text-gray-600">{message}</p>
                             <p className="mt-4 text-sm text-gray-500">
-                                Redirecting you...
+                                {t('auth.verifyEmail.redirecting', undefined, 'Redirecting you...')}
                             </p>
                         </div>
                     )}
@@ -113,7 +115,7 @@ function VerifyEmailContent() {
                                 </svg>
                             </div>
                             <h3 className="mt-4 text-lg font-medium text-gray-900">
-                                Verification Failed
+                                {t('auth.verifyEmail.failed', undefined, 'Verification Failed')}
                             </h3>
                             <p className="mt-2 text-sm text-gray-600">{message}</p>
                             <div className="mt-6 space-y-2">
@@ -121,13 +123,13 @@ function VerifyEmailContent() {
                                     href="/auth/login"
                                     className="block w-full text-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
                                 >
-                                    Go to Login
+                                    {t('auth.verifyEmail.goToLogin', undefined, 'Go to Login')}
                                 </Link>
                                 <Link
                                     href="/auth/register"
                                     className="block w-full text-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                                 >
-                                    Create New Account
+                                    {t('auth.verifyEmail.createNewAccount', undefined, 'Create New Account')}
                                 </Link>
                             </div>
                         </div>
@@ -139,11 +141,12 @@ function VerifyEmailContent() {
 }
 
 function LoadingFallback() {
+    const { t } = useLanguage();
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
             <div className="text-center">
                 <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                <p className="mt-4 text-gray-600">Loading...</p>
+                <p className="mt-4 text-gray-600">{t('common.loading', undefined, 'Loading...')}</p>
             </div>
         </div>
     );

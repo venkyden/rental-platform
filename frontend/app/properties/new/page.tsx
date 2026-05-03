@@ -77,6 +77,7 @@ type PropertyFormData = {
     charges_included: boolean;
     charges_description?: string;
     available_from?: string;
+    caf_eligible: boolean;
 
     // Guarantor Preferences
     guarantor_required: boolean;
@@ -91,15 +92,15 @@ type PropertyFormData = {
 
 const PROPERTY_TYPES = ['apartment', 'house', 'studio', 'room'];
 const STANDARD_AMENITIES = [
-    'Elevator', 'Balcony', 'Parking', 'Garden', 'Terrace',
-    'Cellar', 'Pool', 'Gym', 'Security'
+    'elevator', 'balcony', 'parking', 'garden', 'terrace',
+    'cellar', 'pool', 'gym', 'security'
 ];
 
 const ROOM_AMENITY_SUGGESTIONS = [
-    'Cupboard', 'Chair', 'Desk', 'Private Bathroom', 'Balcony',
-    'Air Conditioning', 'Wardrobe', 'Bookshelf', 'TV', 'Mini Fridge',
-    'Mirror', 'Curtains', 'Blinds', 'Lamp', 'Nightstand',
-    'Socket near bed', 'Ethernet port', 'Window', 'Skylight'
+    'cupboard', 'chair', 'desk', 'private_bathroom', 'balcony',
+    'air_conditioning', 'wardrobe', 'bookshelf', 'tv', 'mini_fridge',
+    'mirror', 'curtains', 'blinds', 'lamp', 'nightstand',
+    'socket_near_bed', 'ethernet_port', 'window', 'skylight'
 ];
 
 export default function NewPropertyPage() {
@@ -147,6 +148,7 @@ export default function NewPropertyPage() {
         // Pricing
         monthly_rent: 800,
         charges_included: false,
+        caf_eligible: false,
         // Guarantor
         guarantor_required: false,
         accepted_guarantor_types: [],
@@ -205,7 +207,7 @@ export default function NewPropertyPage() {
             setCurrentStep(8);
         } catch (error: any) {
             console.error('Submit error:', error);
-            alert(error.response?.data?.detail || 'Failed to create property');
+            alert(error.response?.data?.detail || t('property.create.errors.createFailed', undefined, 'Failed to create property'));
         } finally {
             setLoading(false);
         }
@@ -251,7 +253,7 @@ export default function NewPropertyPage() {
             setPublished(true);
         } catch (error: any) {
             console.error('Publish error:', error);
-            alert(error.response?.data?.detail || 'Failed to publish. Make sure all rooms have at least 1 photo or video.');
+            alert(error.response?.data?.detail || t('property.create.errors.publishFailed', undefined, 'Failed to publish. Make sure all rooms have at least 1 photo or video.'));
         } finally {
             setPublishing(false);
         }
@@ -767,8 +769,8 @@ export default function NewPropertyPage() {
                                                             }}
                                                             className="w-full px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-1 focus:ring-teal-500/10 focus:border-teal-500 text-sm text-zinc-900 dark:text-white"
                                                         >
-                                                            {['Single', 'Double', 'Queen', 'King', 'Bunk Bed', 'Sofa Bed', 'None'].map(b => (
-                                                                <option key={b} value={b}>{t(`property.bedding.${b.toLowerCase().replace(' ', '_')}`, undefined, undefined)}</option>
+                                                            {['single', 'double', 'queen', 'king', 'bunk_bed', 'sofa_bed', 'none'].map(b => (
+                                                                <option key={b} value={b}>{t(`property.bedding.${b}`, undefined, b)}</option>
                                                             ))}
                                                         </select>
                                                     </div>
@@ -815,7 +817,7 @@ export default function NewPropertyPage() {
                                                                         }}
                                                                         className="px-2.5 py-1 bg-zinc-100 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 rounded-full text-xs hover:bg-teal-100 dark:hover:bg-teal-900/30 hover:text-teal-700 dark:hover:text-teal-300 transition-colors border border-transparent hover:border-teal-200 dark:hover:border-teal-800"
                                                                     >
-                                                                        + {suggestion}
+                                                                        + {t(`property.amenity_labels.${suggestion}`, undefined, suggestion)}
                                                                     </button>
                                                                 ))}
                                                         </div>
@@ -992,6 +994,31 @@ export default function NewPropertyPage() {
                                             className="w-full px-4 py-2.5 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-zinc-900 dark:text-white bg-white"
                                         />
                                     </div>
+
+                                    {/* CAF Eligibility Toggle */}
+                                    <div className="col-span-2">
+                                        <div className="flex items-center justify-between p-4 bg-teal-50/30 dark:bg-teal-900/10 rounded-2xl border border-teal-100 dark:border-teal-900/30">
+                                            <div>
+                                                <h3 className="font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+                                                    <span>🏦</span> {t('property.pricing.cafEligible', undefined, 'CAF Eligible')}
+                                                </h3>
+                                                <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+                                                    {t('property.pricing.cafEligibleDesc', undefined, 'This property is eligible for housing assistance (APL/CAF).')}
+                                                </p>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => updateFormData({ caf_eligible: !formData.caf_eligible })}
+                                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 ${formData.caf_eligible ? 'bg-teal-600' : 'bg-zinc-200 dark:bg-zinc-700'
+                                                    }`}
+                                            >
+                                                <span
+                                                    className={`${formData.caf_eligible ? 'translate-x-6' : 'translate-x-1'
+                                                        } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
+                                                />
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 {/* Guarantor Preferences */}
@@ -1073,7 +1100,7 @@ export default function NewPropertyPage() {
                                                         }}
                                                         className="w-4 h-4 text-teal-600 dark:text-teal-400"
                                                     />
-                                                    <span className="text-sm text-zinc-700 dark:text-zinc-300">{t(`property.amenities.${amenity.toLowerCase()}`, undefined, amenity)}</span>
+                                                    <span className="text-sm text-zinc-700 dark:text-zinc-300">{t(`property.amenity_labels.${amenity}`, undefined, amenity)}</span>
                                                 </label>
                                             ))}
                                         </div>
@@ -1166,7 +1193,7 @@ export default function NewPropertyPage() {
                                         <div className="flex flex-wrap gap-2">
                                             {[...formData.amenities, ...formData.custom_amenities].map((a, i) => (
                                                 <span key={i} className="px-3 py-1 bg-teal-50 dark:bg-teal-900/20 text-teal-700 rounded-full text-xs">
-                                                    {t(`property.amenities.${a.toLowerCase()}`, undefined, a)}
+                                                    {t(`property.amenity_labels.${a}`, undefined, a)}
                                                 </span>
                                             ))}
                                         </div>

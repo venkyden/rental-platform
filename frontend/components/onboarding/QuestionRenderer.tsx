@@ -43,7 +43,7 @@ export default function QuestionRenderer({
         );
         // Add manual input option
         options.push({
-            label: 'Other / My school isn\'t listed',
+            label: t('onboarding.university.other', undefined, 'Other / My school isn\'t listed'),
             value: 'other|other|other',
             group: 'Other'
         });
@@ -125,7 +125,7 @@ export default function QuestionRenderer({
                     />
                     {question.id === 'nationality' && (
                         <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400 text-center">
-                            This field is collected strictly for demographic surveys. It is <strong>never</strong> used in matching or shared with landlords.
+                            {t('onboarding.university.nationalityNote', undefined, 'This field is collected strictly for demographic surveys. It is never used in matching or shared with landlords.')}
                         </p>
                     )}
                 </div>

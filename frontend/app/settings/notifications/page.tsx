@@ -5,8 +5,10 @@ import { User, Shield, Bell, Settings, Eye, ArrowLeft, Loader2, Mail, MessageSqu
 import { useRouter } from 'next/navigation';
 import PremiumLayout from '@/components/PremiumLayout';
 import NotificationPreferences from '@/components/NotificationPreferences';
+import { useLanguage } from '@/lib/LanguageContext';
 
 export default function NotificationSettingsPage() {
+    const { t } = useLanguage();
     const router = useRouter();
 
     return (
@@ -16,16 +18,16 @@ export default function NotificationSettingsPage() {
                     {/* Sidebar */}
                     <div className="w-full md:w-80 shrink-0">
                         <div className="mb-12">
-                            <h1 className="text-4xl font-black tracking-tighter mb-4 bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 to-zinc-500 dark:from-white dark:to-zinc-400">Settings</h1>
-                            <p className="text-zinc-500 font-medium">Manage your digital identity and security preferences.</p>
+                            <h1 className="text-4xl font-black tracking-tighter mb-4 bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 to-zinc-500 dark:from-white dark:to-zinc-400">{t('settings.title', undefined, 'Settings')}</h1>
+                            <p className="text-zinc-500 font-medium">{t('settings.subtitle', undefined, 'Manage your digital identity and security preferences.')}</p>
                         </div>
 
                         <div className="flex flex-col gap-2 p-1.5 bg-zinc-100 dark:bg-zinc-800/50 rounded-[2rem] border border-zinc-200/50 dark:border-zinc-700/30 backdrop-blur-xl">
                             {[
-                                { id: 'account', icon: User, label: 'Profile', path: '/settings/account' },
-                                { id: 'notifications', icon: Bell, label: 'Notifications', path: '/settings/notifications' },
-                                { id: 'privacy', icon: Shield, label: 'Privacy', path: '/settings/privacy' },
-                                { id: 'preferences', icon: Settings, label: 'Preferences', path: '/settings/preferences' }
+                                { id: 'account', icon: User, label: t('settings.tabs.profile', undefined, 'Profile'), path: '/settings/account' },
+                                { id: 'notifications', icon: Bell, label: t('settings.tabs.notifications', undefined, 'Notifications'), path: '/settings/notifications' },
+                                { id: 'privacy', icon: Shield, label: t('settings.tabs.privacy', undefined, 'Privacy'), path: '/settings/privacy' },
+                                { id: 'preferences', icon: Settings, label: t('settings.tabs.preferences', undefined, 'Preferences'), path: '/settings/preferences' }
                             ].map((tab) => (
                                 <div key={tab.id} className="flex flex-col">
                                     <button
@@ -45,7 +47,7 @@ export default function NotificationSettingsPage() {
                                             <button 
                                                 className="text-[10px] font-black uppercase tracking-widest text-left text-teal-500"
                                             >
-                                                Preferences
+                                                {t('settings.tabs.preferences', undefined, 'Preferences')}
                                             </button>
                                         </div>
                                     )}

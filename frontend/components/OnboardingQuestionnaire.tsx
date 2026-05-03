@@ -149,7 +149,7 @@ export default function OnboardingQuestionnaire({ userType, initialResponses, on
             <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden bg-slate-50 dark:bg-zinc-950">
                 <div className="text-center z-10">
                     <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-4 border-teal-600"></div>
-                    <p className="mt-4 text-lg text-zinc-700 dark:text-zinc-300">Processing your responses...</p>
+                    <p className="mt-4 text-lg text-zinc-700 dark:text-zinc-300">{t('onboarding.processing', undefined, 'Processing your responses...')}</p>
                 </div>
             </div>
         );

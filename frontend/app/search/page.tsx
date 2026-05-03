@@ -95,7 +95,7 @@ export default function SearchPage() {
                         {t('search.subtitle', undefined, 'Find your next home in France')}
                     </h1>
                     <p className="text-lg text-zinc-500 dark:text-zinc-400 font-medium">
-                        Explore {properties.length} curated listings tailored to your preferences.
+                        {t('search.resultsCount', { count: properties.length }, `Explore ${properties.length} curated listings tailored to your preferences.`)}
                     </p>
                 </div>
 
@@ -118,7 +118,7 @@ export default function SearchPage() {
 
                     <div className="flex-1 min-w-[200px] px-6 py-2">
                         <div className="flex justify-between mb-2">
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Budget</span>
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">{t('search.filters.budget', undefined, 'Budget')}</span>
                             <span className="text-[10px] font-black uppercase text-teal-600 dark:text-teal-400">{priceRange}€</span>
                         </div>
                         <input
@@ -133,18 +133,18 @@ export default function SearchPage() {
                             onClick={() => setFurnished(!furnished)}
                             className={`px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${furnished ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400'}`}
                         >
-                            Furnished
+                            {t('search.filters.furnished', undefined, 'Furnished')}
                         </button>
                         <button 
                             onClick={() => setColocation(!colocation)}
                             className={`px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${colocation ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400'}`}
                         >
-                            Colocation
+                            {t('search.filters.colocation', undefined, 'Colocation')}
                         </button>
                     </div>
 
                     <button className="btn-primary !rounded-2xl !py-3 !px-8 text-xs uppercase tracking-widest ml-auto">
-                        Search
+                        {t('search.filters.searchButton', undefined, 'Search')}
                     </button>
                 </motion.div>
 
@@ -178,20 +178,24 @@ export default function SearchPage() {
                                             <div className="px-3 py-1 bg-zinc-900/80 backdrop-blur-md text-white text-[10px] font-black rounded-lg">DPE {property.dpe_rating}</div>
                                         )}
                                         {property.furnished && (
-                                            <div className="px-3 py-1 bg-white/80 backdrop-blur-md text-zinc-900 text-[10px] font-black rounded-lg">FURNISHED</div>
+                                            <div className="px-3 py-1 bg-white/80 backdrop-blur-md text-zinc-900 text-[10px] font-black rounded-lg">
+                                                {t('search.property.furnished', undefined, 'FURNISHED')}
+                                            </div>
                                         )}
                                     </div>
                                     <div className="absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-black/60 to-transparent" />
                                     <div className="absolute bottom-4 left-6">
                                         <p className="text-3xl font-black text-white tracking-tighter">
-                                            {property.monthly_rent}€<span className="text-sm font-medium text-white/70 ml-1">/mo</span>
+                                            {property.monthly_rent}€<span className="text-sm font-medium text-white/70 ml-1">/{t('search.property.mo', undefined, 'mo')}</span>
                                         </p>
                                     </div>
                                 </div>
 
                                 <div className="p-8 flex flex-col flex-1">
                                     <h3 className="text-2xl font-black text-zinc-900 dark:text-white mb-2 truncate tracking-tight">{property.title}</h3>
-                                    <p className="text-zinc-500 dark:text-zinc-400 font-bold text-sm uppercase tracking-wider mb-6">{property.city} • {property.size_sqm}m² • {property.bedrooms} Bed</p>
+                                    <p className="text-zinc-500 dark:text-zinc-400 font-bold text-sm uppercase tracking-wider mb-6">
+                                        {property.city} • {property.size_sqm}m² • {property.bedrooms} {t('search.property.bed', undefined, 'Bed')}
+                                    </p>
                                     
                                     <div className="mt-auto pt-6 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
                                         <div className="flex -space-x-2">
@@ -210,7 +214,7 @@ export default function SearchPage() {
                                             onClick={() => router.push(`/properties/${property.id}`)}
                                             className="text-xs font-black uppercase tracking-widest text-teal-600 hover:text-teal-500 transition-colors"
                                         >
-                                            View Details →
+                                            {t('search.property.viewDetails', undefined, 'View Details')} →
                                         </button>
                                     </div>
                                 </div>
@@ -220,8 +224,5 @@ export default function SearchPage() {
                 )}
             </div>
         </PremiumLayout>
-    );
-}
-out>
     );
 }

@@ -8,6 +8,7 @@ import { apiClient } from '@/lib/api';
 import RoomivoBrand from '@/components/RoomivoBrand';
 import { useAuth } from '@/lib/useAuth';
 import { useLanguage } from '@/lib/LanguageContext';
+import PremiumLayout from '@/components/PremiumLayout';
 
 export default function OnboardingPage() {
     const [step, setStep] = useState<'welcome' | 'questionnaire'>('welcome');
@@ -31,13 +32,16 @@ export default function OnboardingPage() {
 
     const handleStart = async () => {
         if (!user?.full_name && !fullName.trim()) {
-            setError(t('onboarding.error.enterName', undefined, 'Please enter your full name to continue.'));
+            setError(t('onboarding.error.enterName'));
             return;
         }
 
         if (!user?.full_name && fullName.trim()) {
+            setIsSavingName(true);
+            try {
+                await apiClient.client.patch('/users/me', { full_name: fullName.trim() });
             } catch (err) {
-                setError(t('onboarding.error.savingName', undefined, 'Failed to save name. Please try again.'));
+                setError(t('onboarding.error.savingName'));
                 setIsSavingName(false);
                 return;
             }
@@ -50,7 +54,7 @@ export default function OnboardingPage() {
 
     if (step === 'welcome') {
         return (
-            <PremiumLayout>
+            <PremiumLayout withNavbar={false}>
                 <div className="min-h-[80vh] flex flex-col items-center justify-center p-4">
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
@@ -64,12 +68,12 @@ export default function OnboardingPage() {
                         </div>
 
                         <h1 className="text-5xl md:text-7xl font-black tracking-tighter mb-6 bg-clip-text text-transparent bg-gradient-to-b from-zinc-900 to-zinc-600 dark:from-white dark:to-zinc-500">
-                            {t('onboarding.welcome', undefined, 'Welcome to Roomivo.')}
+                            {t('onboarding.welcome')}
                         </h1>
 
                         {!user?.full_name ? (
                             <div className="mb-12 max-w-sm mx-auto">
-                                <p className="text-zinc-500 dark:text-zinc-400 font-bold text-sm uppercase tracking-widest mb-6">{t('onboarding.letsStart', undefined, "Let's start with your name")}</p>
+                                <p className="text-zinc-500 dark:text-zinc-400 font-bold text-sm uppercase tracking-widest mb-6">{t('onboarding.letsStart')}</p>
                                 <div className="relative group">
                                     <input
                                         type="text"
@@ -84,7 +88,7 @@ export default function OnboardingPage() {
                         ) : (
                             <div className="mb-12">
                                 <p className="text-xl md:text-2xl text-zinc-500 dark:text-zinc-400 font-medium max-w-xl mx-auto leading-relaxed">
-                                    {t('onboarding.ready', undefined, "Ready to find your perfect home? We'll ask a few quick questions to personalize your experience.")}
+                                    {t('onboarding.ready')}
                                 </p>
                                 <div className="mt-8">
                                     <PendingInvitesSection />
@@ -98,7 +102,7 @@ export default function OnboardingPage() {
                                 disabled={isSavingName}
                                 className="btn-primary !px-16 !py-5 !text-lg !rounded-[2rem] shadow-2xl shadow-teal-500/20 active:scale-95 transition-all"
                             >
-                                {isSavingName ? t('onboarding.saving', undefined, 'Saving...') : t('onboarding.getStarted', undefined, 'Get Started')}
+                                {isSavingName ? t('onboarding.saving') : t('onboarding.getStarted')}
                             </button>
                             
                             {user?.full_name && (
@@ -106,7 +110,7 @@ export default function OnboardingPage() {
                                     onClick={() => router.push('/dashboard')}
                                     className="text-zinc-400 hover:text-zinc-900 dark:hover:text-white font-black text-xs uppercase tracking-[0.2em] transition-all"
                                 >
-                                    {t('onboarding.skip', undefined, 'Skip for now')}
+                                    {t('onboarding.skip')}
                                 </button>
                             )}
                         </div>
@@ -145,20 +149,20 @@ function PendingInvitesSection() {
         >
             <h3 className="text-[10px] font-black text-teal-600 dark:text-teal-400 uppercase tracking-[0.2em] mb-4 flex items-center justify-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
-                {t('onboarding.pendingInvites', undefined, 'Pending Invitations')}
+                {t('onboarding.pendingInvites')}
             </h3>
             <div className="space-y-4">
                 {invites.map(invite => (
                     <div key={invite.id} className="flex items-center justify-between gap-4 p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl">
                         <div className="text-left">
                             <p className="text-sm font-black text-zinc-900 dark:text-white">{invite.landlord_name}</p>
-                            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">{t('onboarding.teamInvite', undefined, 'Team Invitation')}</p>
+                            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">{t('onboarding.teamInvite')}</p>
                         </div>
                         <button
                             onClick={() => router.push(`/invite/${invite.token}`)}
                             className="px-4 py-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-[10px] font-black uppercase tracking-widest rounded-xl hover:scale-105 active:scale-95 transition-all"
                         >
-                            {t('onboarding.view', undefined, 'View')}
+                            {t('onboarding.view')}
                         </button>
                     </div>
                 ))}

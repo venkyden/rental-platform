@@ -57,6 +57,7 @@ interface Property {
     ges_value?: number;
     guarantor_required?: boolean;
     accepted_guarantor_types?: string[];
+    caf_eligible?: boolean;
 }
 
 export default function PropertyDetailPage() {
@@ -372,15 +373,15 @@ export default function PropertyDetailPage() {
                                             <div className="flex gap-4">
                                                 <div className={`text-center p-2 rounded-xl ${property.utilities_included?.includes('electricity') ? 'bg-yellow-50 text-yellow-700' : 'bg-zinc-50 dark:bg-zinc-800/50 text-zinc-400 opacity-50'}`}>
                                                     <div className="text-2xl"></div>
-                                                    <div className="text-xs font-medium">Elec</div>
+                                                    <div className="text-xs font-medium">{t('property.utilities.elec', undefined, 'Elec')}</div>
                                                 </div>
                                                 <div className={`text-center p-2 rounded-xl ${property.utilities_included?.includes('gas') ? 'bg-orange-50 text-orange-700' : 'bg-zinc-50 dark:bg-zinc-800/50 text-zinc-400 opacity-50'}`}>
                                                     <div className="text-2xl"></div>
-                                                    <div className="text-xs font-medium">Gas</div>
+                                                    <div className="text-xs font-medium">{t('property.utilities.gas', undefined, 'Gas')}</div>
                                                 </div>
                                                 <div className={`text-center p-2 rounded-xl ${property.utilities_included?.includes('water') ? 'bg-teal-50/50 dark:bg-teal-900/10 text-teal-700' : 'bg-zinc-50 dark:bg-zinc-800/50 text-zinc-400 opacity-50'}`}>
                                                     <div className="text-2xl"></div>
-                                                    <div className="text-xs font-medium">Water</div>
+                                                    <div className="text-xs font-medium">{t('property.utilities.water', undefined, 'Water')}</div>
                                                 </div>
                                                 <div className={`text-center p-2 rounded-xl ${property.utilities_included?.includes('internet') ? 'bg-purple-50 text-purple-700' : 'bg-zinc-50 dark:bg-zinc-800/50 text-zinc-400 opacity-50'}`}>
                                                     <div className="text-2xl"></div>
@@ -530,6 +531,15 @@ export default function PropertyDetailPage() {
                                                 ))}
                                             </div>
                                         )}
+                                        {/* CAF Eligibility */}
+                                        <div className="flex justify-between">
+                                            <span className="text-zinc-600 dark:text-zinc-400 font-medium flex items-center gap-1">
+                                                🏦 {t('property.pricing.cafEligible', undefined, 'CAF Eligible')}
+                                            </span>
+                                            <span className={`font-semibold ${property.caf_eligible ? 'text-teal-600 dark:text-teal-400' : 'text-zinc-500'}`}>
+                                                {property.caf_eligible ? t('common.yes', undefined, 'Yes') : t('common.no', undefined, 'No')}
+                                            </span>
+                                        </div>
                                     </div>
                                     {!isOwner && (
                                         <div className="space-y-3">
@@ -555,7 +565,7 @@ export default function PropertyDetailPage() {
                                             <VisitScheduler
                                                 propertyId={property.id}
                                                 rooms={(property.room_details || []).map((_: any, i: number) => ({
-                                                    label: `Bedroom ${i + 1}`,
+                                                    label: `${t('property.bedroom', undefined, 'Bedroom')} ${i + 1}`,
                                                     index: i,
                                                 }))}
                                             />
@@ -565,7 +575,7 @@ export default function PropertyDetailPage() {
                                         <VisitBookingWizard
                                             propertyId={property.id}
                                             rooms={(property.room_details || []).map((_: any, i: number) => ({
-                                                label: `Bedroom ${i + 1}`,
+                                                label: `${t('property.bedroom', undefined, 'Bedroom')} ${i + 1}`,
                                                 index: i,
                                             }))}
                                         />

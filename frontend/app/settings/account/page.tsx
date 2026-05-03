@@ -52,10 +52,10 @@ export default function AccountSettingsPage() {
 
         try {
             await apiClient.client.put('/auth/me', { full_name: fullName, bio });
-            setProfileMessage({ text: 'Profile updated successfully!', type: 'success' });
+            setProfileMessage({ text: t('settings.account.messages.profileSuccess', undefined, 'Profile updated successfully!'), type: 'success' });
             setTimeout(() => window.location.reload(), 1000);
         } catch (error: any) {
-            let errorMsg = error.response?.data?.detail || 'Failed to update profile';
+            let errorMsg = error.response?.data?.detail || t('settings.account.messages.profileError', undefined, 'Failed to update profile');
             if (Array.isArray(errorMsg)) errorMsg = errorMsg[0].msg;
             setProfileMessage({ text: errorMsg, type: 'error' });
         } finally {
@@ -86,7 +86,7 @@ export default function AccountSettingsPage() {
     const handleChangePassword = async (e: React.FormEvent) => {
         e.preventDefault();
         if (newPassword !== confirmPassword) {
-            setPasswordMessage({ text: 'New passwords do not match', type: 'error' });
+            setPasswordMessage({ text: t('settings.account.messages.passwordMatchError', undefined, 'New passwords do not match'), type: 'error' });
             return;
         }
 
@@ -98,12 +98,12 @@ export default function AccountSettingsPage() {
                 old_password: oldPassword,
                 new_password: newPassword,
             });
-            setPasswordMessage({ text: 'Password updated successfully', type: 'success' });
+            setPasswordMessage({ text: t('settings.account.messages.passwordSuccess', undefined, 'Password updated successfully'), type: 'success' });
             setOldPassword('');
             setNewPassword('');
             setConfirmPassword('');
         } catch (error: any) {
-            let errorMsg = error.response?.data?.detail || 'Failed to change password';
+            let errorMsg = error.response?.data?.detail || t('settings.account.security.errors.default', undefined, 'Failed to change password');
             if (Array.isArray(errorMsg)) errorMsg = errorMsg[0].msg;
             setPasswordMessage({ text: errorMsg, type: 'error' });
         } finally {
@@ -121,11 +121,11 @@ export default function AccountSettingsPage() {
                 new_email: newEmail,
                 password: emailPassword,
             });
-            setEmailMessage({ text: `Verification link sent to ${newEmail}`, type: 'success' });
+            setEmailMessage({ text: t('settings.account.messages.emailLinkSent', { email: newEmail }, `Verification link sent to ${newEmail}`), type: 'success' });
             setNewEmail('');
             setEmailPassword('');
         } catch (error: any) {
-            let errorMsg = error.response?.data?.detail || 'Failed to request email change';
+            let errorMsg = error.response?.data?.detail || t('settings.account.messages.emailError', undefined, 'Failed to request email change');
             if (Array.isArray(errorMsg)) errorMsg = errorMsg[0].msg;
             setEmailMessage({ text: errorMsg, type: 'error' });
         } finally {
@@ -138,9 +138,9 @@ export default function AccountSettingsPage() {
         setResendMessage('');
         try {
             await apiClient.client.post('/auth/resend-verification');
-            setResendMessage('Verification email sent!');
+            setResendMessage(t('settings.account.messages.emailSent', undefined, 'Verification email sent!'));
         } catch (error: any) {
-            let errorMsg = error.response?.data?.detail || 'Failed to resend';
+            let errorMsg = error.response?.data?.detail || t('common.errors.failed', undefined, 'Failed to resend');
             if (Array.isArray(errorMsg)) errorMsg = errorMsg[0].msg;
             setResendMessage(errorMsg);
         } finally {
@@ -157,16 +157,16 @@ export default function AccountSettingsPage() {
                     {/* Sidebar */}
                     <div className="w-full md:w-80 shrink-0">
                         <div className="mb-12">
-                            <h1 className="text-4xl font-black tracking-tighter mb-4 bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 to-zinc-500 dark:from-white dark:to-zinc-400">Settings</h1>
-                            <p className="text-zinc-500 font-medium">Manage your digital identity and security preferences.</p>
+                            <h1 className="text-4xl font-black tracking-tighter mb-4 bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 to-zinc-500 dark:from-white dark:to-zinc-400">{t('settings.title', undefined, 'Settings')}</h1>
+                            <p className="text-zinc-500 font-medium">{t('settings.subtitle', undefined, 'Manage your digital identity and security preferences.')}</p>
                         </div>
 
                         <div className="flex flex-col gap-2 p-1.5 bg-zinc-100 dark:bg-zinc-800/50 rounded-[2rem] border border-zinc-200/50 dark:border-zinc-700/30 backdrop-blur-xl">
                             {[
-                                { id: 'account', icon: User, label: 'Profile', path: '/settings/account' },
-                                { id: 'notifications', icon: Bell, label: 'Notifications', path: '/settings/notifications' },
-                                { id: 'privacy', icon: Shield, label: 'Privacy', path: '/settings/privacy' },
-                                { id: 'preferences', icon: Settings, label: 'Preferences', path: '/settings/preferences' }
+                                { id: 'account', icon: User, label: t('settings.tabs.profile', undefined, 'Profile'), path: '/settings/account' },
+                                { id: 'notifications', icon: Bell, label: t('settings.tabs.notifications', undefined, 'Notifications'), path: '/settings/notifications' },
+                                { id: 'privacy', icon: Shield, label: t('settings.tabs.privacy', undefined, 'Privacy'), path: '/settings/privacy' },
+                                { id: 'preferences', icon: Settings, label: t('settings.tabs.preferences', undefined, 'Preferences'), path: '/settings/preferences' }
                             ].map((tab) => (
                                 <div key={tab.id} className="flex flex-col">
                                     <button
@@ -187,13 +187,13 @@ export default function AccountSettingsPage() {
                                                 onClick={() => setActiveTab('profile')}
                                                 className={`text-[10px] font-black uppercase tracking-widest text-left transition-all ${activeTab === 'profile' ? 'text-teal-500' : 'text-zinc-400 hover:text-zinc-500'}`}
                                             >
-                                                General
+                                                {t('settings.account.general', undefined, 'General')}
                                             </button>
                                             <button 
                                                 onClick={() => setActiveTab('security')}
                                                 className={`text-[10px] font-black uppercase tracking-widest text-left transition-all ${activeTab === 'security' ? 'text-teal-500' : 'text-zinc-400 hover:text-zinc-500'}`}
                                             >
-                                                Security
+                                                {t('settings.account.security', undefined, 'Security')}
                                             </button>
                                         </div>
                                     )}
@@ -211,12 +211,12 @@ export default function AccountSettingsPage() {
                                         <Mail className="w-6 h-6 text-amber-600 dark:text-amber-400" />
                                     </div>
                                     <div>
-                                        <h3 className="text-sm font-black text-amber-900 dark:text-amber-300 uppercase tracking-widest">Verify Email</h3>
-                                        <p className="text-xs font-bold text-amber-700 dark:text-amber-400 mt-1">Unlock full platform access by verifying your email.</p>
+                                        <h3 className="text-sm font-black text-amber-900 dark:text-amber-300 uppercase tracking-widest">{t('settings.account.verifyEmail', undefined, 'Verify Email')}</h3>
+                                        <p className="text-xs font-bold text-amber-700 dark:text-amber-400 mt-1">{t('settings.account.verifyEmailDesc', undefined, 'Unlock full platform access by verifying your email.')}</p>
                                     </div>
                                 </div>
                                 <button onClick={handleResendVerification} disabled={isResending} className="px-6 py-3 bg-white dark:bg-zinc-800 text-amber-700 dark:text-amber-400 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm hover:scale-105 transition-all">
-                                    {isResending ? 'Sending...' : 'Resend link'}
+                                    {isResending ? t('settings.account.sending', undefined, 'Sending...') : t('settings.account.resendLink', undefined, 'Resend link')}
                                 </button>
                             </motion.div>
                         )}
@@ -225,7 +225,7 @@ export default function AccountSettingsPage() {
                             {activeTab === 'profile' && (
                                 <motion.div key="profile" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-12">
                                     <div className="glass-card !p-10">
-                                        <h3 className="text-2xl font-black tracking-tight mb-8">Profile Details</h3>
+                                        <h3 className="text-2xl font-black tracking-tight mb-8">{t('settings.account.profileDetails', undefined, 'Profile Details')}</h3>
                                         
                                         <div className="flex flex-col sm:flex-row items-center gap-10 mb-12">
                                             <div className="relative group shrink-0">
@@ -245,25 +245,25 @@ export default function AccountSettingsPage() {
                                                 </label>
                                             </div>
                                             <div className="flex-1 text-center sm:text-left">
-                                                <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-2">Avatar Format</p>
-                                                <p className="text-xs font-bold text-zinc-500">Allowed: JPG, PNG, WEBP. Max size: 2MB.</p>
+                                                <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-2">{t('settings.account.avatarFormat', undefined, 'Avatar Format')}</p>
+                                                <p className="text-xs font-bold text-zinc-500">{t('settings.account.avatarDesc', undefined, 'Allowed: JPG, PNG, WEBP. Max size: 2MB.')}</p>
                                             </div>
                                         </div>
 
                                         <form onSubmit={handleProfileUpdate} className="space-y-8">
                                             <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Full Name</label>
+                                                <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">{t('settings.account.fullName', undefined, 'Full Name')}</label>
                                                 <input value={fullName} onChange={(e) => setFullName(e.target.value)} className="w-full bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-zinc-900 dark:text-white focus:ring-2 focus:ring-teal-500/50 transition-all" />
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Bio</label>
+                                                <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">{t('settings.account.bio', undefined, 'Bio')}</label>
                                                 <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={4} className="w-full bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-zinc-900 dark:text-white focus:ring-2 focus:ring-teal-500/50 transition-all resize-none" />
                                             </div>
 
                                             {profileMessage.text && <p className={`text-[10px] font-black uppercase tracking-widest ${profileMessage.type === 'success' ? 'text-emerald-500' : 'text-red-500'}`}>{profileMessage.text}</p>}
 
                                             <button type="submit" disabled={isUpdatingProfile} className="btn-primary !w-full !py-4 !rounded-2xl !text-xs uppercase tracking-[0.2em] shadow-xl shadow-teal-500/10">
-                                                {isUpdatingProfile ? 'Saving...' : 'Save Changes'}
+                                                {isUpdatingProfile ? t('settings.account.saving', undefined, 'Saving...') : t('settings.account.saveChanges', undefined, 'Save Changes')}
                                             </button>
                                         </form>
                                     </div>
@@ -273,44 +273,44 @@ export default function AccountSettingsPage() {
                             {activeTab === 'security' && (
                                 <motion.div key="security" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-12">
                                     <div className="glass-card !p-10">
-                                        <h3 className="text-2xl font-black tracking-tight mb-8">Security</h3>
+                                        <h3 className="text-2xl font-black tracking-tight mb-8">{t('settings.account.security', undefined, 'Security')}</h3>
                                         
                                         <form onSubmit={handleChangePassword} className="space-y-8 mb-16">
                                             <div className="space-y-6">
                                                 <div className="space-y-2">
-                                                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Current Password</label>
+                                                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">{t('settings.account.currentPassword', undefined, 'Current Password')}</label>
                                                     <input type="password" value={oldPassword} onChange={(e) => setOldPassword(e.target.value)} className="w-full bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-zinc-900 dark:text-white focus:ring-2 focus:ring-teal-500/50 transition-all" />
                                                 </div>
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div className="space-y-2">
-                                                        <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">New</label>
+                                                        <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">{t('settings.account.newPassword', undefined, 'New')}</label>
                                                         <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-zinc-900 dark:text-white focus:ring-2 focus:ring-teal-500/50 transition-all" />
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Confirm</label>
+                                                        <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">{t('settings.account.confirmPassword', undefined, 'Confirm')}</label>
                                                         <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="w-full bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-zinc-900 dark:text-white focus:ring-2 focus:ring-teal-500/50 transition-all" />
                                                     </div>
                                                 </div>
                                             </div>
                                             {passwordMessage.text && <p className={`text-[10px] font-black uppercase tracking-widest ${passwordMessage.type === 'success' ? 'text-emerald-500' : 'text-red-500'}`}>{passwordMessage.text}</p>}
-                                            <button type="submit" disabled={isChangingPassword} className="btn-primary !w-full !py-4 !rounded-2xl !text-xs uppercase tracking-[0.2em] shadow-xl shadow-teal-500/10">Update Password</button>
+                                            <button type="submit" disabled={isChangingPassword} className="btn-primary !w-full !py-4 !rounded-2xl !text-xs uppercase tracking-[0.2em] shadow-xl shadow-teal-500/10">{t('settings.account.updatePassword', undefined, 'Update Password')}</button>
                                         </form>
 
                                         <div className="pt-12 border-t border-zinc-100 dark:border-zinc-800">
-                                            <h4 className="text-sm font-black uppercase tracking-widest mb-8">Email Address</h4>
+                                            <h4 className="text-sm font-black uppercase tracking-widest mb-8">{t('settings.account.emailAddress', undefined, 'Email Address')}</h4>
                                             <form onSubmit={handleRequestEmailChange} className="space-y-8">
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div className="space-y-2">
-                                                        <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">New Email</label>
+                                                        <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">{t('settings.account.newEmail', undefined, 'New Email')}</label>
                                                         <input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} className="w-full bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-zinc-900 dark:text-white focus:ring-2 focus:ring-teal-500/50 transition-all" />
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">Password</label>
+                                                        <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">{t('settings.account.confirmPassword', undefined, 'Password')}</label>
                                                         <input type="password" value={emailPassword} onChange={(e) => setEmailPassword(e.target.value)} className="w-full bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-zinc-900 dark:text-white focus:ring-2 focus:ring-teal-500/50 transition-all" />
                                                     </div>
                                                 </div>
                                                 {emailMessage.text && <p className={`text-[10px] font-black uppercase tracking-widest ${emailMessage.type === 'success' ? 'text-emerald-500' : 'text-red-500'}`}>{emailMessage.text}</p>}
-                                                <button type="submit" disabled={isChangingEmail} className="py-4 px-8 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all w-full">Request Email Change</button>
+                                                <button type="submit" disabled={isChangingEmail} className="py-4 px-8 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all w-full">{t('settings.account.requestEmailChange', undefined, 'Request Email Change')}</button>
                                             </form>
                                         </div>
                                     </div>

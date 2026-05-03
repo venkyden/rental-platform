@@ -79,16 +79,42 @@ export const translations = {
                 selectOption: "Select an option...",
                 selectUniversity: "Select your university...",
                 url: "https://..."
-            }
+            },
+            selected: "selected"
         },
         // Onboarding
         onboarding: {
-            title: "Welcome to Rental Platform",
+            welcome: "Welcome to Roomivo.",
+            letsStart: "Let's start with your name",
+            ready: "Ready to find your perfect home? We'll ask a few quick questions to personalize your experience.",
+            saving: "Saving...",
+            getStarted: "Get Started",
             skip: "Skip for now",
+            pendingInvites: "Pending Invitations",
+            teamInvite: "Team Invitation",
+            view: "View",
+            error: {
+                enterName: "Please enter your full name to continue.",
+                savingName: "Failed to save name. Please try again."
+            },
+            title: "Welcome to Roomivo",
             back: "Back",
             continue: "Continue",
             processing: "Processing your responses...",
             step: "Question {{current}} of {{total}}",
+            university: {
+                manualTitle: "Manual University Entry",
+                help: "This helps us find properties near your campus",
+                other: "Other / My school isn't listed",
+                nationalityNote: "This field is collected strictly for demographic surveys. It is never used in matching or shared with landlords."
+            },
+            radius: {
+                centeredOn: "Centered on {{city}} — ",
+                centeredWorkplace: "Centered on your workplace — ",
+                help: "drag the pin to select your target search area, and use the slider to adjust your commute radius.",
+                areaSize: "Search Area Size",
+                commuteDesc: "Maximum commute distance"
+            },
             questions: {
                 tenant: {
                     situation: {
@@ -127,6 +153,57 @@ export const translations = {
                             flexible: "Flexible (1-3 months)",
                             browsing: "Just browsing for now"
                         }
+                    },
+                    nationality: { question: "Where are you from?" },
+                    languages: { question: "What languages do you speak?" },
+                    gender: {
+                        question: "Gender",
+                        options: { female: "Female", male: "Male", other: "Other / Prefer not to say" }
+                    },
+                    contract_type: {
+                        question: "Employment status?",
+                        options: { cdi: "CDI (Permanent)", cdd: "CDD (Fixed-term)", internship: "Internship", self_employed: "Self-employed", student: "Student", other: "Other" }
+                    },
+                    income: { question: "Net monthly income?" },
+                    university_q: { question: "Which university or school are you attending?" },
+                    location_preference: { question: "Where would you like to live?" },
+                    budget_max: { question: "Max budget for rent?" },
+                    furnished_q: {
+                        question: "Furnished or unfurnished?",
+                        options: { furnished: "Furnished", unfurnished: "Unfurnished", no_preference: "No preference" }
+                    },
+                    surface: { question: "Minimum space needed?" },
+                    guarantor: {
+                        question: "Guarantor status?",
+                        options: { visale: "Visale", garantme: "GarantMe", parents: "Parents", bank: "Bank Guarantee", none: "No Guarantor" }
+                    },
+                    transport: {
+                        question: "Transport connectivity needed?",
+                        options: { metro: "Metro", bus: "Bus", rer: "RER/Train", bike: "Bike Station" }
+                    },
+                    services: {
+                        question: "Nearby services needed?",
+                        options: { grocery: "Grocery", hospital: "Hospital", pharmacy: "Pharmacy", atm: "ATM" }
+                    },
+                    amenities: {
+                        question: "Must-have amenities? (Pick 3)",
+                        options: { fiber: "Fiber Internet", parking: "Parking", balcony: "Balcony", elevator: "Elevator", laundry: "Laundry", dishwasher: "Dishwasher" }
+                    },
+                    living: {
+                        question: "Living arrangement?",
+                        options: { solo: "Solo", couple: "Couple", roommates: "Roommates", family: "Family" }
+                    },
+                    pets: {
+                        question: "Do you have pets?",
+                        options: { yes: "Yes", no: "No" }
+                    },
+                    smoker: {
+                        question: "Are you a smoker?",
+                        options: { yes: "Yes", no: "No" }
+                    },
+                    caf_preference: {
+                        question: "Are you looking for CAF-eligible properties?",
+                        options: { yes: "Yes, I need CAF/APL", no: "No preference" }
                     }
                 },
                 landlord: {
@@ -159,6 +236,32 @@ export const translations = {
                             planning: "Planning ahead (1-3 months)",
                             exploring: "Just exploring for now"
                         }
+                    },
+                    property_location: { question: "Where is your property located?" },
+                    rooms: {
+                        question: "How many rooms?",
+                        options: { studio: "Studio", "1_bed": "1 Bedroom", "2_bed": "2 Bedrooms", "3_plus": "3+ Bedrooms" }
+                    },
+                    property_size: { question: "Property size?" },
+                    furnished_prop: {
+                        question: "Is the property furnished?",
+                        options: { furnished: "Furnished", unfurnished: "Unfurnished" }
+                    },
+                    tenant_types: {
+                        question: "Preferred tenant profiles?",
+                        options: { student: "Students", employee: "Employees", freelancer: "Freelancers", family: "Families" }
+                    },
+                    guarantees: {
+                        question: "Accepted guarantees?",
+                        options: { visale: "Visale", garantme: "GarantMe", parents: "Parents", bank: "Bank Guarantee" }
+                    },
+                    rules: {
+                        question: "House rules?",
+                        options: { no_smoking: "No Smoking", no_pets: "No Pets", no_parties: "No Parties" }
+                    },
+                    caf_eligibility: {
+                        question: "Is your property eligible for CAF housing assistance?",
+                        options: { yes: "Yes, it is eligible", no: "No / I don't know" }
                     }
                 }
             }
@@ -207,6 +310,10 @@ export const translations = {
             welcome: "Welcome",
             welcome_desc: "Here's what's happening with your rental journey today.",
             logout: "Sign out",
+            points: "Points",
+            progress: "Progress",
+            complete: "Complete",
+            pending: "Pending",
             role: {
                 landlord: "Landlord Mode",
                 tenant: "Tenant Mode"
@@ -387,6 +494,7 @@ export const translations = {
                     totalViews: "Total Views",
                     conversionRate: "Conversion Rate",
                     avgRentalTime: "Avg. Rental Time",
+                    daysSuffix: "d",
                     managedRevenue: "Managed Revenue",
                     recentActivity: "Recent Activity",
                     noActivity: "No recent activity",
@@ -543,6 +651,54 @@ export const translations = {
             }
         },
         auth: {
+            verifyEmail: {
+                title: "Email Verification",
+                verifying: "Verifying your email...",
+                success: "Success!",
+                redirecting: "Redirecting you...",
+                failed: "Verification Failed",
+                goToLogin: "Go to Login",
+                createNewAccount: "Create New Account",
+                errors: {
+                    noToken: "No verification token found in URL",
+                    default: "Failed to verify email. The link may have expired."
+                }
+            },
+            forgotPassword: {
+                title: "Reset your password",
+                subtitle: "Enter your email address and we'll send you a link to reset your password.",
+                emailLabel: "Email address",
+                submit: "Send reset link",
+                sending: "Sending...",
+                backToSignIn: "Back to sign in",
+                successTitle: "Check your email",
+                successDesc: "If an account exists for {{email}}, we've sent password reset instructions.",
+                errors: {
+                    default: "Failed to send reset email. Please try again."
+                }
+            },
+            resetPassword: {
+                title: "Set new password",
+                subtitle: "Enter your new password below",
+                newPasswordLabel: "New Password",
+                confirmPasswordLabel: "Confirm Password",
+                submit: "Reset Password",
+                resetting: "Resetting...",
+                successTitle: "Password Reset Successful!",
+                successDesc: "Your password has been reset successfully. You'll be redirected to the login page shortly.",
+                signInNow: "Sign in now",
+                requirements: "Must be 8+ characters with uppercase, lowercase, and number",
+                requestNew: "Request new reset link",
+                errors: {
+                    invalidLink: "Invalid reset link. Please request a new password reset.",
+                    match: "Passwords do not match",
+                    length: "Password must be at least 8 characters long",
+                    uppercase: "Password must contain at least one uppercase letter",
+                    lowercase: "Password must contain at least one lowercase letter",
+                    number: "Password must contain at least one number",
+                    default: "Failed to reset password. The link may be expired."
+                }
+            },
             login: {
                 title: "Welcome back",
                 subtitle: "Access your account",
@@ -713,6 +869,8 @@ export const translations = {
                     hcFull: "Rent HC",
                     ccDesc: "Charges Included",
                     hcDesc: "Excluding Charges",
+                    cafEligible: "CAF Eligible",
+                    cafEligibleDesc: "This property is eligible for housing assistance (APL/CAF).",
                     typeLabel: "Rent Type",
                     chargesPlaceholder: "ex: 100",
                     depositLimit: "Max 1 month rent (Unfurnished) or 2 months (Furnished)",
@@ -740,23 +898,27 @@ export const translations = {
                     title: "Final Review"
                 },
                 media: {
-                    readyToPublish: "Ready to Publish",
-                    uploadAllToPublish: "Please upload photos for all rooms to publish.",
-                    publishedTitle: "Listing Published!",
-                    publishedDesc: "Your property is now live and receiving applications.",
-                    viewBtn: "View Listing",
-                    draftSaved: "Draft saved automatically",
-                    roomsMissing: "Missing photos for {{count}} rooms",
-                    roomProgress: "{{count}} photos uploaded",
-                    noMedia: "No photos uploaded yet",
-                    uploadDesc: "Take high-quality photos to attract more tenants",
-                    qrInstructions: "Scan to upload from mobile",
-                    checkStatus: "Check upload status",
+                    draftSaved: "Draft Saved!",
+                    uploadDesc: "Scan the QR code below with your phone to capture and upload media for this property.",
+                    roomProgress: "Room Media Progress",
+                    fileCount: "{{count}} files",
+                    publishedTitle: "Property Published!",
+                    publishedDesc: "Your property is now live and visible to tenants.",
                     filesUploaded: "{{count}} files uploaded",
-                    fileCount: "{{count}} photos",
+                    readyToPublish: "Ready to publish!",
+                    roomsMissing: "{{count}} rooms missing media",
+                    noMedia: "No media uploaded yet",
+                    qrInstructions: "Please use the QR code to upload photos for all rooms.",
+                    checkStatus: "Check Status",
                     publishing: "Publishing...",
-                    publishBtn: "Publish Listing",
-                    backToProperties: "Back to Dashboard"
+                    publishBtn: "Publish Property",
+                    viewBtn: "View Property",
+                    backToProperties: "Back to Properties",
+                    uploadAllToPublish: "Please upload media for all rooms to publish"
+                },
+                errors: {
+                    createFailed: "Failed to create property. Please check the form and try again.",
+                    publishFailed: "Failed to publish. Make sure all rooms have at least 1 photo or video."
                 },
                 validation: {
                     required: "Please fill in all required fields",
@@ -767,6 +929,126 @@ export const translations = {
                     creating: "Creating your listing..."
                 },
                 btn: "Create Property"
+            },
+            error: {
+                notFound: "Property not found",
+                deleteSuccess: "Property deleted successfully",
+                deleteFail: "Failed to delete property",
+                publishSuccess: "Property published successfully!",
+                publishFail: "Failed to publish property"
+            },
+            actions: {
+                back: "Back to listings",
+                edit: "Edit Property",
+                publishing: "Publishing...",
+                publish: "Publish Listing",
+                delete: "Delete Property",
+                deleteConfirm: "Are you sure you want to delete this property? This action cannot be undone.",
+                apply: "Apply to Rent",
+                message: "Message Landlord"
+            },
+            status: {
+                published: "Published",
+                draft: "Draft",
+                available: "Available From",
+                notPublishedNotice: "This property is currently a draft and is not visible to tenants.",
+                stats: "Listing Statistics",
+                views: "Total Views",
+                listed: "Listed On",
+                publishedAt: "Published On"
+            },
+            apply: {
+                title: "Apply for this Property",
+                desc: "Send an application to the landlord. Make sure your profile and dossier are complete for better chances.",
+                placeholder: "Tell the landlord about yourself and why you're interested...",
+                cancel: "Cancel",
+                send: "Send Application",
+                sending: "Sending...",
+                success: "Application sent successfully!",
+                error: "Failed to send application"
+            },
+            detailsTitle: "Property Details",
+            bedrooms: "Bedrooms",
+            bathrooms: "Bathrooms",
+            size: "Size",
+            floor: "Floor",
+            furnished: "Furnished",
+            yes: "Yes",
+            no: "No",
+            energyTitle: "Energy Performance",
+            utilitiesTitle: "Utilities & Services",
+            includedInRent: "Included in Rent",
+            utilities: {
+                wifi: "High-speed WiFi",
+                elec: "Elec",
+                gas: "Gas",
+                water: "Water",
+                includedDesc: "Utilities listed above are included in the monthly rent.",
+                notIncludedDesc: "No utilities are included in the monthly rent."
+            },
+            amenities: "Amenities",
+            layout: "Property Layout",
+            bedroom: "Bedroom",
+            persons: "{{count}} Persons",
+            person: "{{count}} Person",
+            bed: "Bed",
+            location: "Location",
+            transport: "Public Transport",
+            landmarks: "Nearby Landmarks",
+            price: {
+                perMonth: "per month",
+                total: "Total",
+                deposit: "Security Deposit",
+                charges: "Charges",
+                included: "Included",
+                excluded: "Excluded"
+            },
+            guarantor: {
+                title: "Guarantor",
+                required: "Required",
+                notRequired: "Not Required",
+                visale: "Visale",
+                garantme: "Garantme",
+                physical: "Physical Person",
+                organisation: "Organisation"
+            },
+            amenity_labels: {
+                elevator: "Elevator",
+                balcony: "Balcony",
+                parking: "Parking",
+                garden: "Garden",
+                terrace: "Terrace",
+                cellar: "Cellar",
+                pool: "Pool",
+                gym: "Gym",
+                security: "Security",
+                cupboard: "Cupboard",
+                chair: "Chair",
+                desk: "Desk",
+                private_bathroom: "Private Bathroom",
+                air_conditioning: "Air Conditioning",
+                wardrobe: "Wardrobe",
+                bookshelf: "Bookshelf",
+                tv: "TV",
+                mini_fridge: "Mini Fridge",
+                mirror: "Mirror",
+                curtains: "Curtains",
+                blinds: "Blinds",
+                lamp: "Lamp",
+                nightstand: "Nightstand",
+                socket_near_bed: "Socket near bed",
+                ethernet_port: "Ethernet port",
+                window: "Window",
+                skylight: "Skylight"
+            },
+            bedding: {
+                single: "Single Bed",
+                double: "Double Bed",
+                queen: "Queen Size",
+                king: "King Size",
+                bunk_bed: "Bunk Bed",
+                sofa_bed: "Sofa Bed",
+                none: "None"
             },
             type: {
                 apartment: "Apartment",
@@ -973,13 +1255,22 @@ export const translations = {
         },
         search: {
             title: "Find your next home",
+            subtitle: "Find your next home in France",
+            resultsCount: "Explore {{count}} curated listings tailored to your preferences.",
             filters: {
                 location: "Location",
                 locationPlaceholder: "Paris, Lyon, Bordeaux...",
                 maxBudget: "Max Budget",
+                budget: "Budget",
                 furnished: "Furnished",
                 colocation: "Colocation",
                 searchButton: "Search"
+            },
+            property: {
+                mo: "mo",
+                furnished: "FURNISHED",
+                bed: "Bed",
+                viewDetails: "View Details"
             },
             status: {
                 loading: "Loading properties...",
@@ -987,7 +1278,6 @@ export const translations = {
                 noResults: "No results found",
                 noResultsDesc: "Try expanding your search criteria."
             },
-
         },
         disputes: {
             title: "Incident Reports",
@@ -1070,6 +1360,140 @@ export const translations = {
                 uploading: "Uploading...",
                 submitting: "Submitting..."
             }
+        },
+        settings: {
+            title: "Settings",
+            subtitle: "Manage your digital identity and security preferences.",
+            tabs: {
+                profile: "Profile",
+                notifications: "Notifications",
+                privacy: "Privacy",
+                preferences: "Preferences"
+            },
+            account: {
+                profileDetails: "Profile Details",
+                avatarFormat: "Avatar Format",
+                avatarDesc: "Allowed: JPG, PNG, WEBP. Max size: 2MB.",
+                fullName: "Full Name",
+                bio: "Bio",
+                saveChanges: "Save Changes",
+                saving: "Saving...",
+                security: "Security",
+                currentPassword: "Current Password",
+                newPassword: "New Password",
+                confirmPassword: "Confirm Password",
+                updatePassword: "Update Password",
+                emailAddress: "Email Address",
+                newEmail: "New Email",
+                requestEmailChange: "Request Email Change",
+                verifyEmail: "Verify Email",
+                verifyEmailDesc: "Unlock full platform access by verifying your email.",
+                resendLink: "Resend link",
+                sending: "Sending...",
+                general: "General",
+                messages: {
+                    profileSuccess: "Profile updated successfully!",
+                    profileError: "Failed to update profile",
+                    passwordSuccess: "Password updated successfully",
+                    passwordMatchError: "New passwords do not match",
+                    emailLinkSent: "Verification link sent to {{email}}",
+                    emailSent: "Verification email sent!",
+                    emailError: "Failed to request email change"
+                }
+            },
+            privacy: {
+                dataTitle: "Data & Privacy",
+                dataDesc: "We take your privacy seriously. Your data is handled in accordance with the General Data Protection Regulation (GDPR). You have the right to access, rectify, or erase your personal data at any time.",
+                dangerTitle: "Danger Zone",
+                dangerDesc: "Permanently delete your account. This action is irreversible. Your profile, properties, preferences, and personal information will be completely anonymized or removed.",
+                deleteConfirmTitle: "Delete Account?",
+                deleteConfirmDesc: "This action cannot be undone. All your personal data will be anonymized per GDPR Article 17.",
+                deleting: "Deleting...",
+                typeConfirm: "Type {{target}} to confirm",
+                gdprData: "GDPR & Data"
+            },
+            preferences: {
+                title: "Matching Preferences",
+                matchingCriteria: "Matching Criteria",
+                identity: "Identity",
+                housing: "Housing",
+                location: "Location",
+                amenities: "Amenities",
+                tenant: "Tenant",
+                requirements: "Requirements",
+                nationality: "Nationality",
+                languages: "Languages",
+                gender: "Gender",
+                maxBudget: "Max Budget",
+                minSurface: "Min Surface",
+                furnished: "Furnished",
+                near: "Near",
+                transport: "Transport",
+                mustHave: "Must-Have",
+                tenantType: "Tenant Type",
+                guarantees: "Guarantees",
+                rules: "Rules",
+                updated: "Updated!",
+                failed: "Failed to save",
+                updating: "Updating...",
+                notSet: "Not set",
+                options: {
+                    furnished: "Furnished",
+                    unfurnished: "Unfurnished",
+                    noPreference: "No preference",
+                    female: "Female",
+                    male: "Male",
+                    other: "Other",
+                    student: "Students",
+                    employee: "Employees",
+                    freelancer: "Freelancers",
+                    family: "Families",
+                    frenchPreferred: "French preferred",
+                    international: "International",
+                    metro: "Metro",
+                    bus: "Bus",
+                    rer: "RER/Train",
+                    bike: "Bike",
+                    fiber: "Fiber",
+                    parking: "Parking",
+                    balcony: "Balcony",
+                    elevator: "Elevator",
+                    laundry: "Laundry",
+                    dishwasher: "Dishwasher",
+                    visale: "Visale",
+                    garantme: "GarantMe",
+                    parents: "Parents",
+                    bank: "Bank",
+                    noSmoking: "No Smoking",
+                    noPets: "No Pets",
+                    noParties: "No Parties"
+                }
+            },
+            notifications: {
+                title: "Contact Preferences",
+                subtitle: "Control how Roomivo communicates with you.",
+                saveChanges: "Save Changes",
+                saving: "Saving...",
+                saved: "Preferences saved!",
+                error: "Failed to save preferences",
+                channels: "Channels",
+                inApp: "In-App",
+                inAppDesc: "Real-time alerts within the platform",
+                alwaysOn: "Always On",
+                email: "Email",
+                emailDesc: "Critical updates and activity",
+                whatsapp: "WhatsApp",
+                whatsappDesc: "Instant mobile notifications",
+                frequency: "Frequency",
+                primaryMethod: "Primary Method",
+                privacyNotice: "Privacy Protected",
+                privacyDesc: "Your personal contact details are only shared with verified parties after mutual identification. All initial communication is secured via Roomivo messaging.",
+                options: {
+                    instant: "Instant",
+                    daily: "Daily",
+                    weekly: "Weekly"
+                }
+            }
         }
     },
     fr: {
@@ -1126,7 +1550,8 @@ export const translations = {
                 selectOption: "Sélectionnez une option...",
                 selectUniversity: "Sélectionnez votre université...",
                 url: "https://..."
-            }
+            },
+            selected: "sélectionné(s)"
         },
         // Landing Page
         landing: {
@@ -1163,11 +1588,28 @@ export const translations = {
             pendingInvites: "Invitations en attente",
             teamInvite: "Invitation d'équipe",
             view: "Voir",
+            error: {
+                enterName: "Veuillez entrer votre nom complet pour continuer.",
+                savingName: "Échec de l'enregistrement du nom. Veuillez réessayer."
+            },
             title: "Bienvenue sur Roomivo",
             back: "Retour",
             continue: "Continuer",
             processing: "Traitement de vos réponses...",
             step: "Question {{current}} sur {{total}}",
+            university: {
+                manualTitle: "Saisie manuelle de l'université",
+                help: "Cela nous aide à trouver des logements près de votre campus",
+                other: "Autre / Mon école n'est pas listée",
+                nationalityNote: "Ce champ est collecté strictement pour des enquêtes démographiques. Il n'est jamais utilisé pour le matching ou partagé avec les propriétaires."
+            },
+            radius: {
+                centeredOn: "Centré sur {{city}} — ",
+                centeredWorkplace: "Centré sur votre lieu de travail — ",
+                help: "faites glisser l'épingle pour sélectionner votre zone de recherche, et utilisez le curseur pour ajuster le rayon.",
+                areaSize: "Taille de la zone de recherche",
+                commuteDesc: "Distance maximale de trajet"
+            },
             questions: {
                 tenant: {
                     situation: {
@@ -1206,6 +1648,57 @@ export const translations = {
                             flexible: "Flexible (1-3 mois)",
                             browsing: "Je regarde juste pour le moment"
                         }
+                    },
+                    nationality: { question: "D'où venez-vous ?" },
+                    languages: { question: "Quelles langues parlez-vous ?" },
+                    gender: {
+                        question: "Genre",
+                        options: { female: "Femme", male: "Homme", other: "Autre / Préfère ne pas dire" }
+                    },
+                    contract_type: {
+                        question: "Statut professionnel ?",
+                        options: { cdi: "CDI", cdd: "CDD", internship: "Stage / Alternance", self_employed: "Indépendant", student: "Étudiant", other: "Autre" }
+                    },
+                    income: { question: "Revenu net mensuel ?" },
+                    university_q: { question: "Quelle université ou école fréquentez-vous ?" },
+                    location_preference: { question: "Où aimeriez-vous habiter ?" },
+                    budget_max: { question: "Budget max pour le loyer ?" },
+                    furnished_q: {
+                        question: "Meublé ou non meublé ?",
+                        options: { furnished: "Meublé", unfurnished: "Non meublé", no_preference: "Pas de préférence" }
+                    },
+                    surface: { question: "Surface minimale souhaitée ?" },
+                    guarantor: {
+                        question: "Statut du garant ?",
+                        options: { visale: "Visale", garantme: "GarantMe", parents: "Parents", bank: "Caution bancaire", none: "Pas de garant" }
+                    },
+                    transport: {
+                        question: "Transports nécessaires ?",
+                        options: { metro: "Métro", bus: "Bus", rer: "RER / Train", bike: "Station vélo" }
+                    },
+                    services: {
+                        question: "Services de proximité ?",
+                        options: { grocery: "Épicerie / Supermarché", hospital: "Hôpital", pharmacy: "Pharmacie", atm: "DAB" }
+                    },
+                    amenities: {
+                        question: "Équipements indispensables ? (Max 3)",
+                        options: { fiber: "Fibre Internet", parking: "Parking", balcony: "Balcon", elevator: "Ascenseur", laundry: "Laverie / Lave-linge", dishwasher: "Lave-vaisselle" }
+                    },
+                    living: {
+                        question: "Mode de vie ?",
+                        options: { solo: "Seul", couple: "En couple", roommates: "Colocation", family: "En famille" }
+                    },
+                    pets: {
+                        question: "Avez-vous des animaux ?",
+                        options: { yes: "Oui", no: "Non" }
+                    },
+                    smoker: {
+                        question: "Êtes-vous fumeur ?",
+                        options: { yes: "Oui", no: "Non" }
+                    },
+                    caf_preference: {
+                        question: "Recherchez-vous des logements éligibles à la CAF ?",
+                        options: { yes: "Oui, j'ai besoin des APL", no: "Pas de préférence" }
                     }
                 },
                 landlord: {
@@ -1238,11 +1731,36 @@ export const translations = {
                             planning: "Anticipation (1-3 mois)",
                             exploring: "J'explore juste pour le moment"
                         }
+                    },
+                    property_location: { question: "Où est situé votre bien ?" },
+                    rooms: {
+                        question: "Combien de pièces ?",
+                        options: { studio: "Studio", "1_bed": "T2 (1 chambre)", "2_bed": "T3 (2 chambres)", "3_plus": "T4+ (3+ chambres)" }
+                    },
+                    property_size: { question: "Surface du bien ?" },
+                    furnished_prop: {
+                        question: "Le bien est-il meublé ?",
+                        options: { furnished: "Meublé", unfurnished: "Non meublé" }
+                    },
+                    tenant_types: {
+                        question: "Profils de locataires préférés ?",
+                        options: { student: "Étudiants", employee: "Salariés", freelancer: "Indépendants", family: "Familles" }
+                    },
+                    guarantees: {
+                        question: "Garanties acceptées ?",
+                        options: { visale: "Visale", garantme: "GarantMe", parents: "Parents", bank: "Caution bancaire" }
+                    },
+                    rules: {
+                        question: "Règles de vie ?",
+                        options: { no_smoking: "Non fumeur", no_pets: "Pas d'animaux", no_parties: "Pas de fêtes" }
+                    },
+                    caf_eligibility: {
+                        question: "Votre logement est-il éligible aux aides de la CAF ?",
+                        options: { yes: "Oui, il est éligible", no: "Non / Je ne sais pas" }
                     }
                 }
             }
         },
-
         actionCenter: {
             allInOrder: "Tout est en ordre",
             noUrgentAction: "Aucune action urgente requise"
@@ -1259,7 +1777,6 @@ export const translations = {
             differentAccount: "Se connecter avec un autre compte",
             spamFolder: "Vous ne trouvez pas l'e-mail ? Vérifiez vos spams ou demandez-en un nouveau."
         },
-
         visitBooking: {
             title: "Planifier une visite",
             success: { booked: "Visite réservée avec succès !" },
@@ -1279,13 +1796,16 @@ export const translations = {
             reserveInstantly: "Réservez ce créneau instantanément.",
             selectTimeSlot: "Sélectionnez un créneau horaire."
         },
-
         // Dashboard
         dashboard: {
             title: "Tableau de bord",
             welcome: "Bienvenue",
-            welcome_desc: "Voici ce qui se passe pour vous aujourd'hui.",
-            logout: "Se déconnecter",
+            welcome_desc: "Voici ce qui se passe dans votre parcours locatif aujourd'hui.",
+            logout: "Déconnexion",
+            points: "Points",
+            progress: "Progression",
+            complete: "Terminé",
+            pending: "En attente",
             role: {
                 landlord: "Mode Propriétaire",
                 tenant: "Mode Locataire"
@@ -1466,6 +1986,7 @@ export const translations = {
                     totalViews: "Vues totales",
                     conversionRate: "Taux de conversion",
                     avgRentalTime: "Temps moyen de location",
+                    daysSuffix: "j",
                     managedRevenue: "Revenu géré",
                     recentActivity: "Activité récente",
                     noActivity: "Aucune activité récente",
@@ -1480,7 +2001,6 @@ export const translations = {
                     uploadCarteG: "Charger la Carte G"
                 }
             },
-            
             globalFooter: {
                 terms: "Conditions Générales",
                 privacy: "Confidentialité & CNIL",
@@ -1489,7 +2009,6 @@ export const translations = {
                 help: "Centre d'Aide",
                 rights: "Tous droits réservés."
             },
-
             landlord: {
                 welcome: "Bienvenue, {{name}}",
                 subtitle: "Espace Propriétaire",
@@ -1625,6 +2144,54 @@ export const translations = {
             }
         },
         auth: {
+            verifyEmail: {
+                title: "Vérification de l'email",
+                verifying: "Vérification de votre email...",
+                success: "Succès !",
+                redirecting: "Redirection en cours...",
+                failed: "Échec de la vérification",
+                goToLogin: "Aller à la connexion",
+                createNewAccount: "Créer un nouveau compte",
+                errors: {
+                    noToken: "Aucun jeton de vérification trouvé dans l'URL",
+                    default: "Échec de la vérification de l'email. Le lien a peut-être expiré."
+                }
+            },
+            forgotPassword: {
+                title: "Réinitialiser votre mot de passe",
+                subtitle: "Entrez votre adresse email et nous vous enverrons un lien pour réinitialiser votre mot de passe.",
+                emailLabel: "Adresse email",
+                submit: "Envoyer le lien",
+                sending: "Envoi en cours...",
+                backToSignIn: "Retour à la connexion",
+                successTitle: "Vérifiez vos emails",
+                successDesc: "Si un compte existe pour {{email}}, nous avons envoyé des instructions de réinitialisation.",
+                errors: {
+                    default: "Échec de l'envoi de l'email. Veuillez réessayer."
+                }
+            },
+            resetPassword: {
+                title: "Nouveau mot de passe",
+                subtitle: "Entrez votre nouveau mot de passe ci-dessous",
+                newPasswordLabel: "Nouveau mot de passe",
+                confirmPasswordLabel: "Confirmer le mot de passe",
+                submit: "Réinitialiser le mot de passe",
+                resetting: "Réinitialisation...",
+                successTitle: "Mot de passe réinitialisé !",
+                successDesc: "Votre mot de passe a été réinitialisé avec succès. Vous allez être redirigé vers la page de connexion.",
+                signInNow: "Se connecter maintenant",
+                requirements: "8+ caractères avec majuscule, minuscule et chiffre",
+                requestNew: "Demander un nouveau lien",
+                errors: {
+                    invalidLink: "Lien invalide. Veuillez demander une nouvelle réinitialisation.",
+                    match: "Les mots de passe ne correspondent pas",
+                    length: "Le mot de passe doit faire au moins 8 caractères",
+                    uppercase: "Le mot de passe doit contenir au moins une majuscule",
+                    lowercase: "Le mot de passe doit contenir au moins une minuscule",
+                    number: "Le mot de passe doit contenir au moins un chiffre",
+                    default: "Échec de la réinitialisation. Le lien a peut-être expiré."
+                }
+            },
             login: {
                 title: "Bon retour parmi nous",
                 subtitle: "Accédez à votre compte",
@@ -1790,7 +2357,9 @@ export const translations = {
                     charges: "Charges mensuelles",
                     chargesDesc: "Entretien, eau, etc.",
                     availableFrom: "Disponible à partir du",
-                    deposit: "Dépôt de garantie"
+                    deposit: "Dépôt de garantie",
+                    cafEligible: "Éligible CAF",
+                    cafEligibleDesc: "Ce logement est éligible aux aides au logement (APL/CAF).",
                 },
                 features: {
                     title: "Équipements & Environs",
@@ -1804,23 +2373,27 @@ export const translations = {
                     title: "Récapitulatif"
                 },
                 media: {
-                    readyToPublish: "Prêt à Publier",
-                    uploadAllToPublish: "Veuillez charger des photos pour toutes les pièces pour publier.",
-                    publishedTitle: "Annonce Publiée !",
-                    publishedDesc: "Votre bien est maintenant en ligne et peut recevoir des candidatures.",
-                    viewBtn: "Voir l'Annonce",
-                    draftSaved: "Brouillon enregistré automatiquement",
-                    roomsMissing: "Photos manquantes pour {{count}} pièces",
-                    roomProgress: "{{count}} photos chargées",
-                    noMedia: "Aucune photo chargée",
-                    uploadDesc: "Prenez des photos de haute qualité pour attirer plus de locataires",
-                    qrInstructions: "Scannez pour charger depuis mobile",
-                    checkStatus: "Vérifier le statut",
-                    filesUploaded: "{{count}} fichiers chargés",
-                    fileCount: "{{count}} photos",
+                    draftSaved: "Brouillon Sauvegardé !",
+                    uploadDesc: "Scannez le code QR ci-dessous avec votre téléphone pour capturer et télécharger des médias pour cette propriété.",
+                    roomProgress: "Progression des Médias par Chambre",
+                    fileCount: "{{count}} fichiers",
+                    publishedTitle: "Propriété Publiée !",
+                    publishedDesc: "Votre propriété est maintenant en ligne et visible par les locataires.",
+                    filesUploaded: "{{count}} fichiers téléchargés",
+                    readyToPublish: "Prêt à publier !",
+                    roomsMissing: "{{count}} chambres sans médias",
+                    noMedia: "Aucun média téléchargé pour le moment",
+                    qrInstructions: "Veuillez utiliser le code QR pour télécharger des photos pour toutes les chambres.",
+                    checkStatus: "Vérifier le Statut",
                     publishing: "Publication...",
-                    publishBtn: "Publier l'Annonce",
-                    backToProperties: "Retour au Tableau de bord"
+                    publishBtn: "Publier la Propriété",
+                    viewBtn: "Voir la Propriété",
+                    backToProperties: "Retour aux Propriétés",
+                    uploadAllToPublish: "Veuillez télécharger des médias pour toutes les chambres pour publier"
+                },
+                errors: {
+                    createFailed: "Échec de la création de la propriété. Veuillez vérifier le formulaire et réessayer.",
+                    publishFailed: "Échec de la publication. Assurez-vous que toutes les chambres ont au moins 1 photo ou vidéo."
                 },
                 validation: {
                     required: "Veuillez remplir tous les champs obligatoires",
@@ -1831,6 +2404,126 @@ export const translations = {
                     creating: "Création de votre annonce..."
                 },
                 btn: "Créer le Bien"
+            },
+            error: {
+                notFound: "Bien non trouvé",
+                deleteSuccess: "Bien supprimé avec succès",
+                deleteFail: "Échec de la suppression du bien",
+                publishSuccess: "Bien publié avec succès !",
+                publishFail: "Échec de la publication du bien"
+            },
+            actions: {
+                back: "Retour aux annonces",
+                edit: "Modifier le Bien",
+                publishing: "Publication...",
+                publish: "Publier l'Annonce",
+                delete: "Supprimer le Bien",
+                deleteConfirm: "Êtes-vous sûr de vouloir supprimer ce bien ? Cette action est irréversible.",
+                apply: "Candidater",
+                message: "Contacter le Propriétaire"
+            },
+            status: {
+                published: "Publié",
+                draft: "Brouillon",
+                available: "Disponible à partir du",
+                notPublishedNotice: "Ce bien est actuellement en brouillon et n'est pas visible pour les locataires.",
+                stats: "Statistiques de l'Annonce",
+                views: "Vues Totales",
+                listed: "Mis en ligne le",
+                publishedAt: "Publié le"
+            },
+            apply: {
+                title: "Candidater pour ce Bien",
+                desc: "Envoyez une candidature au propriétaire. Assurez-vous que votre profil et votre dossier sont complets pour augmenter vos chances.",
+                placeholder: "Présentez-vous au propriétaire et expliquez pourquoi vous êtes intéressé...",
+                cancel: "Annuler",
+                send: "Envoyer la Candidature",
+                sending: "Envoi en cours...",
+                success: "Candidature envoyée avec succès !",
+                error: "Échec de l'envoi de la candidature"
+            },
+            detailsTitle: "Détails du Bien",
+            bedrooms: "Chambres",
+            bathrooms: "Salles de Bain",
+            size: "Surface",
+            floor: "Étage",
+            furnished: "Meublé",
+            yes: "Oui",
+            no: "Non",
+            energyTitle: "Performance Énergétique",
+            utilitiesTitle: "Charges & Services",
+            includedInRent: "Inclus dans le Loyer",
+            utilities: {
+                wifi: "WiFi Haut Débit",
+                elec: "Élec",
+                gas: "Gaz",
+                water: "Eau",
+                includedDesc: "Les charges listées ci-dessus sont incluses dans le loyer mensuel.",
+                notIncludedDesc: "Aucune charge n'est incluse dans le loyer mensuel."
+            },
+            amenities: "Équipements",
+            layout: "Configuration du Bien",
+            bedroom: "Chambre",
+            persons: "{{count}} Personnes",
+            person: "{{count}} Personne",
+            bed: "Lit",
+            location: "Localisation",
+            transport: "Transports en Commun",
+            landmarks: "Points d'Intérêt à Proximité",
+            price: {
+                perMonth: "par mois",
+                total: "Total",
+                deposit: "Dépôt de Garantie",
+                charges: "Charges",
+                included: "Comprises",
+                excluded: "En sus"
+            },
+            guarantor: {
+                title: "Garant",
+                required: "Requis",
+                notRequired: "Non Requis",
+                visale: "Visale",
+                garantme: "Garantme",
+                physical: "Personne Physique",
+                organisation: "Organisme"
+            },
+            amenity_labels: {
+                elevator: "Ascenseur",
+                balcony: "Balcon",
+                parking: "Parking",
+                garden: "Jardin",
+                terrace: "Terrasse",
+                cellar: "Cave",
+                pool: "Piscine",
+                gym: "Salle de sport",
+                security: "Sécurité",
+                cupboard: "Placard",
+                chair: "Chaise",
+                desk: "Bureau",
+                private_bathroom: "Salle de bain privée",
+                air_conditioning: "Climatisation",
+                wardrobe: "Garde-robe",
+                bookshelf: "Bibliothèque",
+                tv: "Télévision",
+                mini_fridge: "Mini-frigo",
+                mirror: "Miroir",
+                curtains: "Rideaux",
+                blinds: "Stores",
+                lamp: "Lampe",
+                nightstand: "Table de chevet",
+                socket_near_bed: "Prise près du lit",
+                ethernet_port: "Port Ethernet",
+                window: "Fenêtre",
+                skylight: "Velux / Lucarne"
+            },
+            bedding: {
+                single: "Lit Simple",
+                double: "Lit Double",
+                queen: "Queen Size",
+                king: "King Size",
+                bunk_bed: "Lit Superposé",
+                sofa_bed: "Canapé-lit",
+                none: "Aucun"
             },
             type: {
                 apartment: "Appartement",
@@ -2037,13 +2730,22 @@ export const translations = {
         },
         search: {
             title: "Trouvez votre futur chez-vous",
+            subtitle: "Trouvez votre prochain logement en France",
+            resultsCount: "Explorez {{count}} annonces sélectionnées selon vos préférences.",
             filters: {
                 location: "Localisation",
                 locationPlaceholder: "Paris, Lyon, Bordeaux...",
                 maxBudget: "Budget Max",
+                budget: "Budget",
                 furnished: "Meublé",
                 colocation: "Colocation",
                 searchButton: "Rechercher"
+            },
+            property: {
+                mo: "mois",
+                furnished: "MEUBLÉ",
+                bed: "Chambre",
+                viewDetails: "Voir détails"
             },
             status: {
                 loading: "Chargement des annonces...",
@@ -2132,6 +2834,140 @@ export const translations = {
                 responseError: "Échec de l'envoi de la réponse",
                 uploading: "Téléchargement...",
                 submitting: "Envoi..."
+            }
+        }
+        settings: {
+            title: "Paramètres",
+            subtitle: "Gérez votre identité numérique et vos préférences de sécurité.",
+            tabs: {
+                profile: "Profil",
+                notifications: "Notifications",
+                privacy: "Confidentialité",
+                preferences: "Préférences"
+            },
+            account: {
+                profileDetails: "Détails du profil",
+                avatarFormat: "Format d'avatar",
+                avatarDesc: "Autorisés : JPG, PNG, WEBP. Taille max : 2Mo.",
+                fullName: "Nom complet",
+                bio: "Bio",
+                saveChanges: "Enregistrer les modifications",
+                saving: "Enregistrement...",
+                security: "Sécurité",
+                currentPassword: "Mot de passe actuel",
+                newPassword: "Nouveau mot de passe",
+                confirmPassword: "Confirmer le mot de passe",
+                updatePassword: "Mettre à jour le mot de passe",
+                emailAddress: "Adresse email",
+                newEmail: "Nouvel email",
+                requestEmailChange: "Demander le changement d'email",
+                verifyEmail: "Vérifier l'email",
+                verifyEmailDesc: "Débloquez l'accès complet à la plateforme en vérifiant votre email.",
+                resendLink: "Renvoyer le lien",
+                sending: "Envoi en cours...",
+                general: "Général",
+                messages: {
+                    profileSuccess: "Profil mis à jour avec succès !",
+                    profileError: "Échec de la mise à jour du profil",
+                    passwordSuccess: "Mot de passe mis à jour avec succès",
+                    passwordMatchError: "Les nouveaux mots de passe ne correspondent pas",
+                    emailLinkSent: "Lien de vérification envoyé à {{email}}",
+                    emailSent: "Email de vérification envoyé !",
+                    emailError: "Échec de la demande de changement d'email"
+                }
+            },
+            privacy: {
+                dataTitle: "Données & Confidentialité",
+                dataDesc: "Nous prenons votre vie privée au sérieux. Vos données sont traitées conformément au Règlement Général sur la Protection des Données (RGPD). Vous avez le droit d'accéder, de rectifier ou de supprimer vos données personnelles à tout moment.",
+                dangerTitle: "Zone de Danger",
+                dangerDesc: "Supprimer définitivement votre compte. Cette action est irréversible. Votre profil, vos biens, vos préférences et vos informations personnelles seront complètement anonymisés ou supprimés.",
+                deleteConfirmTitle: "Supprimer le compte ?",
+                deleteConfirmDesc: "Cette action ne peut pas être annulée. Toutes vos données personnelles seront anonymisées conformément à l'article 17 du RGPD.",
+                deleting: "Suppression...",
+                typeConfirm: "Tapez {{target}} pour confirmer",
+                gdprData: "RGPD & Données"
+            },
+            preferences: {
+                title: "Préférences de Matching",
+                matchingCriteria: "Critères de Matching",
+                identity: "Identité",
+                housing: "Logement",
+                location: "Emplacement",
+                amenities: "Équipements",
+                tenant: "Locataire",
+                requirements: "Exigences",
+                nationality: "Nationalité",
+                languages: "Langues",
+                gender: "Genre",
+                maxBudget: "Budget Max",
+                minSurface: "Surface Min",
+                furnished: "Meublé",
+                near: "À proximité de",
+                transport: "Transport",
+                mustHave: "Indispensables",
+                tenantType: "Type de locataire",
+                guarantees: "Garanties",
+                rules: "Règles",
+                updated: "Mis à jour !",
+                failed: "Échec de l'enregistrement",
+                updating: "Mise à jour...",
+                notSet: "Non défini",
+                options: {
+                    furnished: "Meublé",
+                    unfurnished: "Non meublé",
+                    noPreference: "Pas de préférence",
+                    female: "Femme",
+                    male: "Homme",
+                    other: "Autre",
+                    student: "Étudiants",
+                    employee: "Salariés",
+                    freelancer: "Freelances",
+                    family: "Familles",
+                    frenchPreferred: "Français préféré",
+                    international: "International",
+                    metro: "Métro",
+                    bus: "Bus",
+                    rer: "RER/Train",
+                    bike: "Vélo",
+                    fiber: "Fibre",
+                    parking: "Parking",
+                    balcony: "Balcon",
+                    elevator: "Ascenseur",
+                    laundry: "Buanderie",
+                    dishwasher: "Lave-vaisselle",
+                    visale: "Visale",
+                    garantme: "GarantMe",
+                    parents: "Parents",
+                    bank: "Banque",
+                    noSmoking: "Non-fumeur",
+                    noPets: "Pas d'animaux",
+                    noParties: "Pas de fêtes"
+                }
+            },
+            notifications: {
+                title: "Préférences de Contact",
+                subtitle: "Contrôlez comment Roomivo communique avec vous.",
+                saveChanges: "Enregistrer les modifications",
+                saving: "Enregistrement...",
+                saved: "Préférences enregistrées !",
+                error: "Échec de l'enregistrement des préférences",
+                channels: "Canaux",
+                inApp: "In-App",
+                inAppDesc: "Alertes en temps réel sur la plateforme",
+                alwaysOn: "Toujours activé",
+                email: "Email",
+                emailDesc: "Mises à jour critiques et activité",
+                whatsapp: "WhatsApp",
+                whatsappDesc: "Notifications mobiles instantanées",
+                frequency: "Fréquence",
+                primaryMethod: "Méthode principale",
+                privacyNotice: "Confidentialité protégée",
+                privacyDesc: "Vos coordonnées personnelles ne sont partagées avec des tiers vérifiés qu'après identification mutuelle. Toute communication initiale est sécurisée via la messagerie Roomivo.",
+                options: {
+                    instant: "Instantané",
+                    daily: "Quotidien",
+                    weekly: "Hebdomadaire"
+                }
             }
         }
     }

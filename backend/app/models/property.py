@@ -87,6 +87,7 @@ class Property(Base):
 
     # Utilities
     utilities_included = Column(JSONB)  # ['electricity', 'gas', 'water', 'internet']
+    caf_eligible = Column(Boolean, default=False)
 
     # Photos (will be managed by PropertyMedia table, but keep this for quick access)
     photos = Column(JSONB)  # [{'url': '...', 'order': 1}, ...]

@@ -120,7 +120,7 @@ export default function AgencyDashboard() {
                                 <div className="text-xs text-gray-400">{t('dashboard.agency.conversionRate', undefined, 'Conversion Rate')}</div>
                             </div>
                             <div>
-                                <div className="text-2xl font-bold text-white">0j</div>
+                                <div className="text-2xl font-bold text-white">0{t('dashboard.agency.daysSuffix', undefined, 'd')}</div>
                                 <div className="text-xs text-gray-400">{t('dashboard.agency.avgRentalTime', undefined, 'Avg. Rental Time')}</div>
                             </div>
                             <div>

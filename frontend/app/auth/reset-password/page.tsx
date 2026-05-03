@@ -5,8 +5,10 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { apiClient } from '@/lib/api';
 import { useToast } from '@/lib/ToastContext';
+import { useLanguage } from '@/lib/LanguageContext';
 
 function ResetPasswordContent() {
+    const { t } = useLanguage();
     const router = useRouter();
     const searchParams = useSearchParams();
     const toast = useToast();
@@ -22,22 +24,22 @@ function ResetPasswordContent() {
         if (tokenParam) {
             setToken(tokenParam);
         } else {
-            setError('Invalid reset link. Please request a new password reset.');
+            setError(t('auth.resetPassword.errors.invalidLink', undefined, 'Invalid reset link. Please request a new password reset.'));
         }
     }, [searchParams]);
 
     const validatePassword = (password: string): string | null => {
         if (password.length < 8) {
-            return 'Password must be at least 8 characters long';
+            return t('auth.resetPassword.errors.length', undefined, 'Password must be at least 8 characters long');
         }
         if (!/[A-Z]/.test(password)) {
-            return 'Password must contain at least one uppercase letter';
+            return t('auth.resetPassword.errors.uppercase', undefined, 'Password must contain at least one uppercase letter');
         }
         if (!/[a-z]/.test(password)) {
-            return 'Password must contain at least one lowercase letter';
+            return t('auth.resetPassword.errors.lowercase', undefined, 'Password must contain at least one lowercase letter');
         }
         if (!/[0-9]/.test(password)) {
-            return 'Password must contain at least one number';
+            return t('auth.resetPassword.errors.number', undefined, 'Password must contain at least one number');
         }
         return null;
     };
@@ -54,7 +56,7 @@ function ResetPasswordContent() {
         }
 
         if (password !== confirmPassword) {
-            setError('Passwords do not match');
+            setError(t('auth.resetPassword.errors.match', undefined, 'Passwords do not match'));
             return;
         }
 
@@ -63,14 +65,14 @@ function ResetPasswordContent() {
         try {
             await apiClient.resetPassword(token, password);
             setSuccess(true);
-            toast.success('Password reset successful!');
+            toast.success(t('auth.resetPassword.successTitle', undefined, 'Password reset successful!'));
 
             // Redirect to login after 3 seconds
             setTimeout(() => {
                 router.push('/auth/login');
             }, 3000);
         } catch (err: any) {
-            const errorMessage = err.response?.data?.detail || 'Failed to reset password. The link may be expired.';
+            const errorMessage = err.response?.data?.detail || t('auth.resetPassword.errors.default', undefined, 'Failed to reset password. The link may be expired.');
             setError(errorMessage);
             toast.error(errorMessage);
         } finally {
@@ -87,16 +89,16 @@ function ResetPasswordContent() {
                             <span className="text-3xl"></span>
                         </div>
                         <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                            Password Reset Successful!
+                            {t('auth.resetPassword.successTitle', undefined, 'Password Reset Successful!')}
                         </h2>
                         <p className="text-gray-600 mb-6">
-                            Your password has been reset successfully. You'll be redirected to the login page shortly.
+                            {t('auth.resetPassword.successDesc', undefined, "Your password has been reset successfully. You'll be redirected to the login page shortly.")}
                         </p>
                         <Link
                             href="/auth/login"
                             className="inline-block px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:shadow-sm transition-all"
                         >
-                            Sign in now
+                            {t('auth.resetPassword.signInNow', undefined, 'Sign in now')}
                         </Link>
                     </div>
                 </div>
@@ -113,10 +115,10 @@ function ResetPasswordContent() {
                             <span className="text-3xl"></span>
                         </div>
                         <h2 className="text-2xl font-bold text-gray-900">
-                            Set new password
+                            {t('auth.resetPassword.title', undefined, 'Set new password')}
                         </h2>
                         <p className="mt-2 text-gray-600">
-                            Enter your new password below
+                            {t('auth.resetPassword.subtitle', undefined, 'Enter your new password below')}
                         </p>
                     </div>
 
@@ -127,7 +129,7 @@ function ResetPasswordContent() {
                                 href="/auth/forgot-password"
                                 className="mt-4 inline-block text-blue-600 hover:text-blue-800 font-medium"
                             >
-                                Request new reset link
+                                {t('auth.resetPassword.requestNew', undefined, 'Request new reset link')}
                             </Link>
                         </div>
                     ) : (
@@ -140,7 +142,7 @@ function ResetPasswordContent() {
 
                             <div>
                                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                                    New Password
+                                    {t('auth.resetPassword.newPasswordLabel', undefined, 'New Password')}
                                 </label>
                                 <input
                                     id="password"
@@ -153,13 +155,13 @@ function ResetPasswordContent() {
                                     onChange={(e) => setPassword(e.target.value)}
                                 />
                                 <p className="mt-1 text-xs text-gray-500">
-                                    Must be 8+ characters with uppercase, lowercase, and number
+                                    {t('auth.resetPassword.requirements', undefined, 'Must be 8+ characters with uppercase, lowercase, and number')}
                                 </p>
                             </div>
 
                             <div>
                                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Confirm Password
+                                    {t('auth.resetPassword.confirmPasswordLabel', undefined, 'Confirm Password')}
                                 </label>
                                 <input
                                     id="confirmPassword"
@@ -184,10 +186,10 @@ function ResetPasswordContent() {
                                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                                         </svg>
-                                        Resetting...
+                                        {t('auth.resetPassword.resetting', undefined, 'Resetting...')}
                                     </span>
                                 ) : (
-                                    'Reset Password'
+                                    t('auth.resetPassword.submit', undefined, 'Reset Password')
                                 )}
                             </button>
 
@@ -196,7 +198,7 @@ function ResetPasswordContent() {
                                     href="/auth/login"
                                     className="text-sm text-blue-600 hover:text-blue-800 font-medium"
                                 >
-                                    Back to sign in
+                                    {t('auth.forgotPassword.backToSignIn', undefined, 'Back to sign in')}
                                 </Link>
                             </div>
                         </form>
@@ -208,11 +210,12 @@ function ResetPasswordContent() {
 }
 
 function LoadingFallback() {
+    const { t } = useLanguage();
     return (
         <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950">
             <div className="text-center">
                 <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                <p className="mt-4 text-gray-600">Loading...</p>
+                <p className="mt-4 text-gray-600">{t('common.loading', undefined, 'Loading...')}</p>
             </div>
         </div>
     );

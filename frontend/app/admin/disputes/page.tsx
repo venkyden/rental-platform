@@ -432,10 +432,10 @@ export default function AdminDisputesPage() {
                                                     value={newStatus}
                                                     onChange={e => setNewStatus(e.target.value as any)}
                                                 >
-                                                    <option value="open">{t('facilitation.status_open', undefined, 'Open')}</option>
-                                                    <option value="awaiting_response">{t('facilitation.status_awaiting', undefined, 'Awaiting Response')}</option>
-                                                    <option value="under_review">{t('facilitation.status_review', undefined, 'Under Review')}</option>
-                                                    <option value="closed">{t('facilitation.status_closed', undefined, 'Closed')}</option>
+                                                    <option value="open">{t('facilitation.filters.open', undefined, 'Open')}</option>
+                                                    <option value="awaiting_response">{t('facilitation.filters.awaiting', undefined, 'Awaiting Response')}</option>
+                                                    <option value="under_review">{t('facilitation.filters.review', undefined, 'Under Review')}</option>
+                                                    <option value="closed">{t('facilitation.filters.closed', undefined, 'Closed')}</option>
                                                 </select>
                                             </div>
 
