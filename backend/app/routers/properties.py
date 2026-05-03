@@ -92,6 +92,7 @@ async def list_properties(
     bedrooms: Optional[int] = None,
     property_type: Optional[str] = None,
     furnished: Optional[bool] = None,
+    caf_eligible: Optional[bool] = None,
     amenities: Optional[List[str]] = Query(None),
     landlord_id: Optional[UUID] = None,
     status: Optional[str] = "active",
@@ -131,6 +132,9 @@ async def list_properties(
 
     if furnished is not None:
         filters.append(Property.furnished == furnished)
+
+    if caf_eligible is not None:
+        filters.append(Property.caf_eligible == caf_eligible)
 
     if amenities:
         # Check if property amenities (JSONB) contains ALL requested amenities

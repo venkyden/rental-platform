@@ -48,6 +48,7 @@ export default function SearchPage() {
     const [location, setLocation] = useState('');
     const [furnished, setFurnished] = useState(false);
     const [colocation, setColocation] = useState(false);
+    const [cafOnly, setCafOnly] = useState(false);
 
     useEffect(() => {
         if (!config) return;
@@ -71,6 +72,7 @@ export default function SearchPage() {
                 const params: any = { status: 'active', max_rent: priceRange };
                 if (location.length > 2) params.city = location;
                 if (furnished) params.furnished = true;
+                if (cafOnly) params.caf_eligible = true;
                 if (colocation) params.amenities = ['colocation'];
                 const response = await apiClient.client.get('/properties', { params });
                 setProperties(response.data);
@@ -82,7 +84,7 @@ export default function SearchPage() {
         };
         const timeoutId = setTimeout(() => fetchProperties(), 500);
         return () => clearTimeout(timeoutId);
-    }, [priceRange, location, furnished, colocation]);
+    }, [priceRange, location, furnished, colocation, cafOnly]);
 
     if (segmentLoading || authLoading) return <div className="p-8 text-center text-zinc-500">{t('search.status.loading', undefined, undefined)}</div>;
 
@@ -140,6 +142,12 @@ export default function SearchPage() {
                             className={`px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${colocation ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400'}`}
                         >
                             {t('search.filters.colocation', undefined, 'Colocation')}
+                        </button>
+                        <button 
+                            onClick={() => setCafOnly(!cafOnly)}
+                            className={`px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${cafOnly ? 'bg-teal-500 text-white shadow-lg' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400'}`}
+                        >
+                            {t('search.filters.caf', undefined, 'CAF')}
                         </button>
                     </div>
 

@@ -170,11 +170,11 @@ export default function AdminDisputesPage() {
                                 <div className="w-10 h-10 rounded-2xl bg-zinc-900 dark:bg-white flex items-center justify-center text-white dark:text-black">
                                     <Shield className="w-6 h-6" />
                                 </div>
-                                <h1 className="text-3xl font-extrabold tracking-tight">{t('facilitation.title', undefined, 'Facilitation Panel')}</h1>
+                                <h1 className="text-3xl font-extrabold tracking-tight">{t('facilitation.title')}</h1>
                             </div>
                             <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                                {t('facilitation.subtitle', undefined, 'Preserve evidence and redirect parties to official mediation.')}
-                                <span className="block font-bold text-teal-600 dark:text-teal-400 mt-1">{t('facilitation.neutralNotice', undefined, 'Roomivo is a neutral facilitator. No verdicts.')}</span>
+                                {t('facilitation.subtitle')}
+                                <span className="block font-bold text-teal-600 dark:text-teal-400 mt-1">{t('facilitation.neutralNotice')}</span>
                             </p>
                         </div>
 
@@ -189,7 +189,7 @@ export default function AdminDisputesPage() {
                                         : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
                                     }`}
                                 >
-                                    {f ? t(`facilitation.filters.${f === 'under_review' ? 'review' : f === 'awaiting_response' ? 'awaiting' : f}`, undefined, f.replace('_', ' ')) : t('facilitation.filters.all', undefined, 'All')}
+                                    {f ? t(`facilitation.filters.${f === 'under_review' ? 'review' : f === 'awaiting_response' ? 'awaiting' : f}`) : t('facilitation.filters.all')}
                                 </button>
                             ))}
                         </div>
@@ -203,8 +203,8 @@ export default function AdminDisputesPage() {
                             ) : disputes.length === 0 ? (
                                 <div className="bg-white dark:bg-zinc-900 rounded-[2rem] p-16 text-center border border-zinc-200 dark:border-zinc-800">
                                     <Clock className="w-12 h-12 text-zinc-300 mx-auto mb-4" />
-                                    <h3 className="text-xl font-bold">{t('facilitation.allClear', undefined, 'All clear')}</h3>
-                                    <p className="text-zinc-500">{t('facilitation.noDisputes', undefined, 'No active disputes to facilitate.')}</p>
+                                    <h3 className="text-xl font-bold">{t('facilitation.allClear')}</h3>
+                                    <p className="text-zinc-500">{t('facilitation.noDisputes')}</p>
                                 </div>
                             ) : (
                                 disputes.map((d) => (
@@ -219,7 +219,7 @@ export default function AdminDisputesPage() {
                                         <div className="flex-grow min-w-0">
                                             <div className="flex items-center gap-2 mb-1">
                                                 <span className={`text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md border ${STATUS_STYLES[d.status]}`}>
-                                                    {t(`facilitation.filters.${d.status === 'under_review' ? 'review' : d.status === 'awaiting_response' ? 'awaiting' : d.status}`, undefined, d.status.replace('_', ' '))}
+                                                    {t(`facilitation.filters.${d.status === 'under_review' ? 'review' : d.status === 'awaiting_response' ? 'awaiting' : d.status}`)}
                                                 </span>
                                                 <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">
                                                     {new Date(d.created_at).toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US', { day: '2-digit', month: '2-digit', year: 'numeric' })}
@@ -229,12 +229,12 @@ export default function AdminDisputesPage() {
                                                 {d.title}
                                             </h3>
                                             <div className="flex items-center gap-4 mt-2 text-[10px] font-bold uppercase text-zinc-400">
-                                                <span>{t(`facilitation.categories.${d.category}`, undefined, d.category.replace('_', ' '))}</span>
+                                                <span>{t(`facilitation.categories.${d.category}`)}</span>
                                                 {d.amount_claimed && <span className="text-red-500">€{d.amount_claimed.toLocaleString()}</span>}
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2 text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
-                                            <span className="text-[10px] font-bold uppercase tracking-tighter">{t('facilitation.reviewDetails', undefined, 'Review Details')}</span>
+                                            <span className="text-[10px] font-bold uppercase tracking-tighter">{t('facilitation.reviewDetails')}</span>
                                             <ArrowRight className="w-4 h-4" />
                                         </div>
                                     </button>
@@ -249,7 +249,7 @@ export default function AdminDisputesPage() {
                                     className="flex items-center gap-2 text-sm font-bold text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors"
                                 >
                                     <ChevronLeft className="w-5 h-5" />
-                                    {t('facilitation.backToList', undefined, 'Back to List')}
+                                    {t('facilitation.backToList')}
                                 </button>
                                 
                                 <div className="flex gap-2">
@@ -257,14 +257,14 @@ export default function AdminDisputesPage() {
                                             onClick={() => setViewMode('evidence')}
                                             className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${viewMode === 'evidence' ? 'bg-zinc-900 dark:bg-white text-white dark:text-black shadow-md' : 'text-zinc-500'}`}
                                         >
-                                            {t('facilitation.evidence', undefined, 'Evidence')}
+                                            {t('facilitation.evidence')}
                                         </button>
                                     {diffData && (
                                         <button 
                                             onClick={() => setViewMode('diff')}
                                             className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${viewMode === 'diff' ? 'bg-zinc-900 dark:bg-white text-white dark:text-black shadow-md' : 'text-zinc-500'}`}
                                         >
-                                            {t('facilitation.inventoryDiff', undefined, 'Inventory Diff')}
+                                            {t('facilitation.inventoryDiff')}
                                         </button>
                                     )}
                                 </div>
@@ -280,7 +280,7 @@ export default function AdminDisputesPage() {
                                                     {disputeDetail.is_late_filing && (
                                                         <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-[10px] font-bold uppercase">
                                                             <Clock className="w-3.5 h-3.5" />
-                                                            {t('facilitation.lateFiling', undefined, 'Late Filing')}
+                                                            {t('facilitation.lateFiling')}
                                                         </div>
                                                     )}
                                                 </div>
@@ -290,12 +290,12 @@ export default function AdminDisputesPage() {
                                                 
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div className="p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl">
-                                                        <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">{t('facilitation.reporter', undefined, 'Reporter')}</div>
+                                                        <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">{t('facilitation.reporter')}</div>
                                                         <div className="font-bold">{disputeDetail.raised_by?.full_name || 'Unknown'}</div>
                                                         <div className="text-xs text-zinc-500">{disputeDetail.raised_by?.email}</div>
                                                     </div>
                                                     <div className="p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl">
-                                                        <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">{t('facilitation.accused', undefined, 'Accused')}</div>
+                                                        <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">{t('facilitation.accused')}</div>
                                                         <div className="font-bold">{disputeDetail.accused?.full_name || 'N/A'}</div>
                                                         <div className="text-xs text-zinc-500">{disputeDetail.accused?.email || 'General issue'}</div>
                                                     </div>
@@ -306,7 +306,7 @@ export default function AdminDisputesPage() {
                                                 <div className="space-y-4">
                                                     <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-400 flex items-center gap-2">
                                                         <Camera className="w-4 h-4" />
-                                                        {t('facilitation.reporterEvidence', undefined, 'Reporter Evidence')}
+                                                        {t('facilitation.reporterEvidence')}
                                                     </h3>
                                                     <div className="grid grid-cols-2 gap-3">
                                                         {disputeDetail.evidence_urls?.map((url: string, i: number) => (
@@ -324,7 +324,7 @@ export default function AdminDisputesPage() {
                                                 <div className="space-y-4">
                                                     <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-400 flex items-center gap-2">
                                                         <MessageSquare className="w-4 h-4" />
-                                                        {t('facilitation.counterResponse', undefined, 'Counter-Response')}
+                                                        {t('facilitation.counterResponse')}
                                                     </h3>
                                                     {disputeDetail.responded_at ? (
                                                         <>
@@ -345,7 +345,7 @@ export default function AdminDisputesPage() {
                                                         </>
                                                     ) : (
                                                         <div className="p-8 text-center bg-zinc-100 dark:bg-zinc-900 rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700 text-zinc-400 text-xs">
-                                                            {t('facilitation.noResponse', undefined, 'No response submitted yet.')}
+                                                            {t('facilitation.noResponse')}
                                                         </div>
                                                     )}
                                                 </div>
@@ -356,19 +356,19 @@ export default function AdminDisputesPage() {
                                     {viewMode === 'diff' && diffData && (
                                         <div className="bg-white dark:bg-zinc-900 rounded-[2rem] border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-sm">
                                             <div className="p-6 bg-zinc-50 dark:bg-zinc-800/50 border-b border-zinc-200 dark:border-zinc-700 flex justify-between items-center">
-                                                <h3 className="font-bold uppercase tracking-widest text-xs">{t('facilitation.conditionComparison', undefined, 'Condition Comparison')}</h3>
+                                                <h3 className="font-bold uppercase tracking-widest text-xs">{t('facilitation.conditionComparison')}</h3>
                                                 <div className="flex gap-4 text-[10px] font-bold">
-                                                    <span className="text-zinc-500">{t('facilitation.moveIn', undefined, 'MOVE-IN')}: {new Date(diffData.move_in.date).toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US', { month: 'short', day: '2-digit' })}</span>
-                                                    <span className="text-zinc-500">{t('facilitation.moveOut', undefined, 'MOVE-OUT')}: {new Date(diffData.move_out.date).toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US', { month: 'short', day: '2-digit' })}</span>
+                                                    <span className="text-zinc-500">{t('facilitation.moveIn')}: {new Date(diffData.move_in.date).toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US', { month: 'short', day: '2-digit' })}</span>
+                                                    <span className="text-zinc-500">{t('facilitation.moveOut')}: {new Date(diffData.move_out.date).toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US', { month: 'short', day: '2-digit' })}</span>
                                                 </div>
                                             </div>
                                             <table className="w-full text-xs">
                                                 <thead>
                                                 <tr className="text-left opacity-60">
-                                                        <th className="p-4 font-bold uppercase tracking-widest">{t('facilitation.item', undefined, 'Item')}</th>
-                                                        <th className="p-4 font-bold uppercase tracking-widest">{t('facilitation.before', undefined, 'Before')}</th>
-                                                        <th className="p-4 font-bold uppercase tracking-widest">{t('facilitation.after', undefined, 'After')}</th>
-                                                        <th className="p-4 font-bold uppercase tracking-widest text-center">{t('facilitation.status', undefined, 'Status')}</th>
+                                                        <th className="p-4 font-bold uppercase tracking-widest">{t('facilitation.item')}</th>
+                                                        <th className="p-4 font-bold uppercase tracking-widest">{t('facilitation.before')}</th>
+                                                        <th className="p-4 font-bold uppercase tracking-widest">{t('facilitation.after')}</th>
+                                                        <th className="p-4 font-bold uppercase tracking-widest text-center">{t('facilitation.status')}</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
@@ -411,12 +411,12 @@ export default function AdminDisputesPage() {
                                     <div className="bg-white dark:bg-zinc-900 rounded-[2rem] p-8 border border-zinc-200 dark:border-zinc-800 shadow-xl">
                                         <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-6 flex items-center gap-2">
                                             <Gavel className="w-4 h-4" />
-                                            {t('dashboard.sections.facilitation', undefined, 'Facilitation')}
+                                            {t('dashboard.sections.facilitation')}
                                         </h3>
                                         
                                         <div className="space-y-6">
                                             <div>
-                                                <label className="block text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-2">{t('facilitation.observations', undefined, 'Observations (Internal/Neutral)')}</label>
+                                                <label className="block text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-2">{t('facilitation.observations')}</label>
                                                 <textarea 
                                                     className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-2xl p-4 text-xs min-h-[100px] outline-none focus:border-zinc-900 dark:focus:border-white transition-all"
                                                     placeholder={t('common.placeholders.factualObservations')}
@@ -426,21 +426,21 @@ export default function AdminDisputesPage() {
                                             </div>
 
                                             <div>
-                                                <label className="block text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-2">{t('facilitation.updateStatus', undefined, 'Update Status')}</label>
+                                                <label className="block text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-2">{t('facilitation.updateStatus')}</label>
                                                 <select 
                                                     className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl p-3 text-xs outline-none"
                                                     value={newStatus}
                                                     onChange={e => setNewStatus(e.target.value as any)}
                                                 >
-                                                    <option value="open">{t('facilitation.filters.open', undefined, 'Open')}</option>
-                                                    <option value="awaiting_response">{t('facilitation.filters.awaiting', undefined, 'Awaiting Response')}</option>
-                                                    <option value="under_review">{t('facilitation.filters.review', undefined, 'Under Review')}</option>
-                                                    <option value="closed">{t('facilitation.filters.closed', undefined, 'Closed')}</option>
+                                                    <option value="open">{t('facilitation.filters.open')}</option>
+                                                    <option value="awaiting_response">{t('facilitation.filters.awaiting')}</option>
+                                                    <option value="under_review">{t('facilitation.filters.review')}</option>
+                                                    <option value="closed">{t('facilitation.filters.closed')}</option>
                                                 </select>
                                             </div>
 
                                             <div>
-                                                <label className="block text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-2">{t('facilitation.mediationLink', undefined, 'Mediation Link (Redirect)')}</label>
+                                                <label className="block text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-2">{t('facilitation.mediationLink')}</label>
                                                 <div className="relative">
                                                     <ExternalLink className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
                                                     <input 
@@ -459,14 +459,14 @@ export default function AdminDisputesPage() {
                                                     disabled={submitting}
                                                     className="w-full py-4 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-2xl font-bold text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg"
                                                 >
-                                                    {submitting ? t('common.saving', undefined, 'Saving...') : t('facilitation.updateObservations', undefined, 'Update Observations')}
+                                                    {submitting ? t('common.saving') : t('facilitation.updateObservations')}
                                                 </button>
                                                 <button 
                                                     onClick={() => handleUpdate(true)}
                                                     disabled={submitting}
                                                     className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-bold text-xs uppercase tracking-widest hover:shadow-emerald-600/20 shadow-lg transition-all"
                                                 >
-                                                    {t('facilitation.finalizeClose', undefined, 'Finalize & Close')}
+                                                    {t('facilitation.finalizeClose')}
                                                 </button>
                                             </div>
                                         </div>
@@ -476,17 +476,17 @@ export default function AdminDisputesPage() {
                                     <div className="bg-zinc-100 dark:bg-zinc-900 rounded-[2rem] p-6 border border-zinc-200 dark:border-zinc-800">
                                         <h4 className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-4 flex items-center gap-2">
                                             <MapPin className="w-4 h-4" />
-                                            {t('facilitation.geoVerification', undefined, 'Geo-Verification')}
+                                            {t('facilitation.geoVerification')}
                                         </h4>
                                         <div className="flex items-center justify-between mb-2">
-                                            <span className="text-xs font-bold">{t('facilitation.status', undefined, 'Status')}</span>
+                                            <span className="text-xs font-bold">{t('facilitation.status')}</span>
                                             <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-md ${disputeDetail?.location_verified === 'verified' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
-                                                {disputeDetail?.location_verified === 'verified' ? t('facilitation.verified', undefined, 'Verified') : t('facilitation.unverified', undefined, 'Unverified')}
+                                                {disputeDetail?.location_verified === 'verified' ? t('facilitation.verified') : t('facilitation.unverified')}
                                             </span>
                                         </div>
                                         {disputeDetail?.report_distance_meters && (
                                             <div className="flex items-center justify-between">
-                                                <span className="text-xs font-bold">{t('facilitation.distance', undefined, 'Distance')}</span>
+                                                <span className="text-xs font-bold">{t('facilitation.distance')}</span>
                                                 <span className="text-xs text-zinc-500">{t('facilitation.distanceFromProperty', { distance: disputeDetail.report_distance_meters.toFixed(0) }, `${disputeDetail.report_distance_meters.toFixed(0)}m from property`)}</span>
                                             </div>
                                         )}
@@ -494,9 +494,9 @@ export default function AdminDisputesPage() {
 
                                     {/* Compliance Check */}
                                     <div className="p-6 bg-indigo-50 dark:bg-indigo-950/20 rounded-[2rem] border border-indigo-100 dark:border-indigo-900/50">
-                                        <h4 className="text-[10px] font-bold uppercase tracking-widest text-indigo-400 mb-2">{t('facilitation.alurCheck', undefined, 'Loi ALUR Check')}</h4>
+                                        <h4 className="text-[10px] font-bold uppercase tracking-widest text-indigo-400 mb-2">{t('facilitation.alurCheck')}</h4>
                                         <p className="text-[10px] text-indigo-800/80 dark:text-indigo-200/80 leading-relaxed">
-                                            {t('facilitation.alurNotice', undefined, 'Deductions for normal wear & tear are prohibited. Landlords have 2 months max to return deposit if discrepancies exist.')}
+                                            {t('facilitation.alurNotice')}
                                         </p>
                                     </div>
                                 </div>

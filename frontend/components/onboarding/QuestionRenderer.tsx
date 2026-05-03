@@ -316,11 +316,15 @@ export default function QuestionRenderer({
                         className="w-full h-3 bg-zinc-200 dark:bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-teal-600"
                     />
                     <div className="flex justify-between mt-4">
-                        <span translate="no" className="notranslate text-zinc-500 dark:text-zinc-400">{question.unit}{question.min}</span>
-                        <span translate="no" className="notranslate text-2xl font-bold text-teal-600 dark:text-teal-400">
-                            {question.unit}{responses[question.id] || question.min}
+                        <span translate="no" className="notranslate text-zinc-500 dark:text-zinc-400">
+                            {question.unit === '€' ? question.unit : ''}{question.min}{question.unit !== '€' ? question.unit : ''}
                         </span>
-                        <span translate="no" className="notranslate text-zinc-500 dark:text-zinc-400">{question.unit}{question.max}+</span>
+                        <span translate="no" className="notranslate text-2xl font-bold text-teal-600 dark:text-teal-400">
+                            {question.unit === '€' ? question.unit : ''}{responses[question.id] || question.min}{question.unit !== '€' ? question.unit : ''}
+                        </span>
+                        <span translate="no" className="notranslate text-zinc-500 dark:text-zinc-400">
+                            {question.unit === '€' ? question.unit : ''}{question.max}{question.unit !== '€' ? question.unit : ''}+
+                        </span>
                     </div>
                     <button
                         onClick={() => onAnswer(responses[question.id] || question.min)}

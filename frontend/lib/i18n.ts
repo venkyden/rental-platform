@@ -628,6 +628,9 @@ export const translations = {
             categories: {
                 damage: "Damage",
                 unpaid_rent: "Unpaid Rent",
+                appliance: "Appliance",
+                cleaning: "Cleaning",
+                shared: "Shared Space",
                 other: "Other"
             },
             moveIn: "MOVE-IN",
@@ -1264,6 +1267,7 @@ export const translations = {
                 budget: "Budget",
                 furnished: "Furnished",
                 colocation: "Colocation",
+                caf: "CAF Eligible",
                 searchButton: "Search"
             },
             property: {
@@ -1433,6 +1437,9 @@ export const translations = {
                 tenantType: "Tenant Type",
                 guarantees: "Guarantees",
                 rules: "Rules",
+                caf: "Housing Assistance",
+                cafPreference: "CAF Assistance",
+                cafEligibility: "CAF Eligibility",
                 updated: "Updated!",
                 failed: "Failed to save",
                 updating: "Updating...",
@@ -1466,7 +1473,10 @@ export const translations = {
                     bank: "Bank",
                     noSmoking: "No Smoking",
                     noPets: "No Pets",
-                    noParties: "No Parties"
+                    noParties: "No Parties",
+                    yes: "Yes",
+                    no: "No",
+                    notSure: "Not sure"
                 }
             },
             notifications: {
@@ -2121,6 +2131,9 @@ export const translations = {
             categories: {
                 damage: "Dégradation",
                 unpaid_rent: "Loyer Impayé",
+                appliance: "Équipement",
+                cleaning: "Ménage",
+                shared: "Parties Communes",
                 other: "Autre"
             },
             moveIn: "ENTRÉE",
@@ -2739,6 +2752,7 @@ export const translations = {
                 budget: "Budget",
                 furnished: "Meublé",
                 colocation: "Colocation",
+                caf: "Éligible CAF",
                 searchButton: "Rechercher"
             },
             property: {
@@ -2835,7 +2849,7 @@ export const translations = {
                 uploading: "Téléchargement...",
                 submitting: "Envoi..."
             }
-        }
+        },
         settings: {
             title: "Paramètres",
             subtitle: "Gérez votre identité numérique et vos préférences de sécurité.",
@@ -2908,6 +2922,9 @@ export const translations = {
                 tenantType: "Type de locataire",
                 guarantees: "Garanties",
                 rules: "Règles",
+                caf: "Aides au Logement",
+                cafPreference: "Aide CAF/APL",
+                cafEligibility: "Éligibilité CAF",
                 updated: "Mis à jour !",
                 failed: "Échec de l'enregistrement",
                 updating: "Mise à jour...",

@@ -17,13 +17,25 @@ interface PreferenceCardProps {
     icon: any;
     value: string | string[] | number;
     onEdit: () => void;
+    isCurrency?: boolean;
+    isSurface?: boolean;
 }
 
-function PreferenceCard({ title, icon: Icon, value, onEdit }: PreferenceCardProps) {
+function PreferenceCard({ title, icon: Icon, value, onEdit, isCurrency, isSurface }: PreferenceCardProps) {
     const { t } = useLanguage();
-    const displayValue = Array.isArray(value)
-        ? value.map(v => t(`settings.preferences.options.${v}`, undefined, v)).join(', ')
-        : value ? t(`settings.preferences.options.${value}`, undefined, value.toString()) : t('settings.preferences.notSet', undefined, 'Not set');
+    
+    let displayValue = '';
+    if (Array.isArray(value)) {
+        displayValue = value.map(v => t(`settings.preferences.options.${v}`, undefined, v)).join(', ');
+    } else if (isCurrency) {
+        displayValue = `€${value}`;
+    } else if (isSurface) {
+        displayValue = `${value}m²`;
+    } else if (value !== undefined && value !== null) {
+        displayValue = t(`settings.preferences.options.${value}`, undefined, value.toString());
+    } else {
+        displayValue = t('settings.preferences.notSet', undefined, 'Not set');
+    }
 
     return (
         <button
@@ -139,9 +151,9 @@ function EditModal({ isOpen, title, currentValue, options, type, min, max, unit,
                                         className="w-full h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full appearance-none cursor-pointer accent-teal-500"
                                     />
                                     <div className="flex justify-between mt-6">
-                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{unit}{min}</span>
-                                        <span className="text-2xl font-black text-teal-500">{unit}{value}</span>
-                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{unit}{max}+</span>
+                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{unit === '€' ? unit : ''}{min}{unit !== '€' ? unit : ''}</span>
+                                        <span className="text-2xl font-black text-teal-500">{unit === '€' ? unit : ''}{value || min}{unit !== '€' ? unit : ''}</span>
+                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{unit === '€' ? unit : ''}{max}{unit !== '€' ? unit : ''}+</span>
                                     </div>
                                 </div>
                             )}
@@ -288,7 +300,7 @@ export default function SettingsPreferencesPage() {
                                 <div className="space-y-12">
                                     <section>
                                         <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
-                                                    <User className="w-3 h-3" /> {t('settings.preferences.identity')}
+                                            <User className="w-3 h-3" /> {t('settings.preferences.identity')}
                                         </h3>
                                         <div className="grid gap-4 sm:grid-cols-2">
                                             <PreferenceCard title={t('settings.preferences.nationality')} icon={Globe} value={preferences.nationality} onEdit={() => openEdit({ key: 'nationality', title: t('settings.preferences.nationality'), type: 'select', options: ['French', 'American', 'British', 'German', 'Italian', 'Spanish', 'Other'].map(n => ({ value: n.toLowerCase(), label: n })) })} />
@@ -304,8 +316,8 @@ export default function SettingsPreferencesPage() {
                                                     <DollarSign className="w-3 h-3" /> {t('settings.preferences.housing')}
                                                 </h3>
                                                 <div className="grid gap-4 sm:grid-cols-2">
-                                                    <PreferenceCard title={t('settings.preferences.maxBudget')} icon={DollarSign} value={`€${preferences.budget || 0}`} onEdit={() => openEdit({ key: 'budget', title: t('settings.preferences.maxBudget'), type: 'range', min: 300, max: 3000, unit: '€' })} />
-                                                    <PreferenceCard title={t('settings.preferences.minSurface')} icon={Home} value={`${preferences.min_surface_area || 0}m²`} onEdit={() => openEdit({ key: 'min_surface_area', title: t('settings.preferences.minSurface'), type: 'range', min: 9, max: 100, unit: 'm²' })} />
+                                                    <PreferenceCard title={t('settings.preferences.maxBudget')} icon={DollarSign} value={preferences.budget || 0} isCurrency={true} onEdit={() => openEdit({ key: 'budget', title: t('settings.preferences.maxBudget'), type: 'range', min: 300, max: 3000, unit: '€' })} />
+                                                    <PreferenceCard title={t('settings.preferences.minSurface')} icon={Home} value={preferences.min_surface_area || 0} isSurface={true} onEdit={() => openEdit({ key: 'min_surface_area', title: t('settings.preferences.minSurface'), type: 'range', min: 9, max: 100, unit: 'm²' })} />
                                                     <PreferenceCard title={t('settings.preferences.furnished')} icon={Home} value={preferences.furnished_preference} onEdit={() => openEdit({ key: 'furnished_preference', title: t('settings.preferences.furnished'), type: 'select', options: [{ value: 'furnished', label: t('settings.preferences.options.furnished') }, { value: 'unfurnished', label: t('settings.preferences.options.unfurnished') }, { value: 'no_preference', label: t('settings.preferences.options.noPreference') }] })} />
                                                 </div>
                                             </section>
@@ -322,12 +334,21 @@ export default function SettingsPreferencesPage() {
 
                                             <section>
                                                 <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
-                                                    <Sparkles className="w-3 h-3" /> {t('settings.preferences.amenities')}
-                                                </h3>
-                                                <div className="grid gap-4">
-                                                    <PreferenceCard title={t('settings.preferences.mustHave')} icon={Sparkles} value={preferences.must_have_amenities} onEdit={() => openEdit({ key: 'must_have_amenities', title: t('settings.preferences.mustHave'), type: 'multiselect', options: [{ value: 'fiber', label: t('settings.preferences.options.fiber') }, { value: 'parking', label: t('settings.preferences.options.parking') }, { value: 'balcony', label: t('settings.preferences.options.balcony') }, { value: 'elevator', label: t('settings.preferences.options.elevator') }, { value: 'laundry', label: t('settings.preferences.options.laundry') }, { value: 'dishwasher', label: t('settings.preferences.options.dishwasher') }] })} />
-                                                </div>
-                                            </section>
+                                                     <Sparkles className="w-3 h-3" /> {t('settings.preferences.amenities')}
+                                                 </h3>
+                                                 <div className="grid gap-4">
+                                                     <PreferenceCard title={t('settings.preferences.mustHave')} icon={Sparkles} value={preferences.must_have_amenities} onEdit={() => openEdit({ key: 'must_have_amenities', title: t('settings.preferences.mustHave'), type: 'multiselect', options: [{ value: 'fiber', label: t('settings.preferences.options.fiber') }, { value: 'parking', label: t('settings.preferences.options.parking') }, { value: 'balcony', label: t('settings.preferences.options.balcony') }, { value: 'elevator', label: t('settings.preferences.options.elevator') }, { value: 'laundry', label: t('settings.preferences.options.laundry') }, { value: 'dishwasher', label: t('settings.preferences.options.dishwasher') }] })} />
+                                                 </div>
+                                             </section>
+
+                                             <section>
+                                                 <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                                                     <DollarSign className="w-3 h-3" /> {t('settings.preferences.caf')}
+                                                 </h3>
+                                                 <div className="grid gap-4 sm:grid-cols-2">
+                                                     <PreferenceCard title={t('settings.preferences.cafPreference')} icon={DollarSign} value={preferences.caf_preference} onEdit={() => openEdit({ key: 'caf_preference', title: t('settings.preferences.cafPreference'), type: 'select', options: [{ value: 'yes', label: t('settings.preferences.options.yes') }, { value: 'no', label: t('settings.preferences.options.no') }] })} />
+                                                 </div>
+                                             </section>
                                         </>
                                     ) : (
                                         <>
@@ -350,8 +371,17 @@ export default function SettingsPreferencesPage() {
                                                     <PreferenceCard title={t('settings.preferences.rules')} icon={AlertTriangle} value={preferences.house_rules} onEdit={() => openEdit({ key: 'house_rules', title: t('settings.preferences.rules'), type: 'multiselect', options: [{ value: 'no_smoking', label: t('settings.preferences.options.noSmoking') }, { value: 'no_pets', label: t('settings.preferences.options.noPets') }, { value: 'no_parties', label: t('settings.preferences.options.noParties') }] })} />
                                                 </div>
                                             </section>
+
+                                            <section>
+                                                 <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                                                     <DollarSign className="w-3 h-3" /> {t('settings.preferences.caf')}
+                                                 </h3>
+                                                 <div className="grid gap-4 sm:grid-cols-2">
+                                                     <PreferenceCard title={t('settings.preferences.cafEligibility')} icon={DollarSign} value={preferences.caf_eligibility} onEdit={() => openEdit({ key: 'caf_eligibility', title: t('settings.preferences.cafEligibility'), type: 'select', options: [{ value: 'yes', label: t('settings.preferences.options.yes') }, { value: 'no', label: t('settings.preferences.options.no') }] })} />
+                                                 </div>
+                                             </section>
                                         </>
-                                    )}                            )}
+                                    )}
                                 </div>
                             </div>
                         </div>

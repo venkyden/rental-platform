@@ -376,6 +376,15 @@ export function getTenantQuestions(): Question[] {
                 { value: 'no', label: 'onboarding.questions.tenant.smoker.options.no' },
             ],
         },
+        {
+            id: 'caf_preference',
+            question: 'onboarding.questions.tenant.caf_preference.question',
+            emoji: '🏦',
+            options: [
+                { value: 'yes', label: 'onboarding.questions.tenant.caf_preference.options.yes' },
+                { value: 'no', label: 'onboarding.questions.tenant.caf_preference.options.no' },
+            ],
+        },
     ];
 }
 
@@ -465,6 +474,15 @@ export function getLandlordQuestions(): Question[] {
                 { value: 'urgent', label: 'onboarding.questions.landlord.urgency.options.urgent' },
                 { value: 'soon', label: 'onboarding.questions.landlord.urgency.options.soon' },
                 { value: 'planning', label: 'onboarding.questions.landlord.urgency.options.planning' },
+            ],
+        },
+        {
+            id: 'caf_eligibility',
+            question: 'onboarding.questions.landlord.caf_eligibility.question',
+            emoji: '🏦',
+            options: [
+                { value: 'yes', label: 'onboarding.questions.landlord.caf_eligibility.options.yes' },
+                { value: 'no', label: 'onboarding.questions.landlord.caf_eligibility.options.no' },
             ],
         },
     ];
