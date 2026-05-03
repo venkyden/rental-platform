@@ -37,7 +37,12 @@ const nextConfig: NextConfig = {
   },
   // Image optimization
   images: {
-    domains: ['localhost'],
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+      },
+    ],
   },
   output: 'standalone',
 };

@@ -1,3 +1,5 @@
+"use client";
+
 import { User, Settings, Bell, Shield, LogOut, ChevronRight } from 'lucide-react';
 import { useLanguage } from '@/lib/LanguageContext';
 import PremiumLayout from '@/components/PremiumLayout';
