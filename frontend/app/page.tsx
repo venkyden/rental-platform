@@ -1,3 +1,5 @@
+"use client";
+
 import { motion } from 'framer-motion';
 import { ChevronRight, Shield, Zap, Globe, Mail, Building, Users, FileText } from 'lucide-react';
 import { BRAND } from '@/lib/constants';
