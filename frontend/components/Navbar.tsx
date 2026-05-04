@@ -12,6 +12,7 @@ import RoleSwitcher from '@/components/dashboard/RoleSwitcher';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Home, Building2, Search, Mail, ShieldCheck, LogOut } from 'lucide-react';
+import RoomivoBrand from './RoomivoBrand';
 
 export default function Navbar() {
     const { user, logout } = useAuth();
@@ -22,45 +23,40 @@ export default function Navbar() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const navLinks = user ? [
-        { href: '/dashboard', label: t('dashboard.title', undefined, undefined), icon: <Home className="w-5 h-5" /> },
+        { href: '/dashboard', label: t('dashboard.title', undefined, 'Dashboard'), icon: <Home className="w-4 h-4" /> },
         ...(user.role === 'landlord'
-            ? [{ href: '/properties', label: t('dashboard.stats.properties', undefined, undefined), icon: <Building2 className="w-5 h-5" /> }]
-            : [{ href: '/search', label: t('dashboard.quickActions.browse.title', undefined, undefined), icon: <Search className="w-5 h-5" /> }]),
-        { href: '/inbox', label: t('dashboard.inbox.title', undefined, undefined), icon: <Mail className="w-5 h-5" /> },
-        { href: '/verification', label: t('dashboard.verification.verification.pageTitle', undefined, undefined), icon: <ShieldCheck className="w-5 h-5" /> },
+            ? [{ href: '/properties', label: t('dashboard.stats.properties', undefined, 'Properties'), icon: <Building2 className="w-4 h-4" /> }]
+            : [{ href: '/search', label: t('dashboard.quickActions.browse.title', undefined, 'Browse'), icon: <Search className="w-4 h-4" /> }]),
+        { href: '/inbox', label: t('dashboard.inbox.title', undefined, 'Inbox'), icon: <Mail className="w-4 h-4" /> },
+        { href: '/verification', label: t('dashboard.verification.verification.pageTitle', undefined, 'Verification'), icon: <ShieldCheck className="w-4 h-4" /> },
     ] : [];
 
     return (
-        <header className="sticky top-6 z-50 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pointer-events-none">
-            <div className="glass rounded-[2rem] py-3 px-6 flex justify-between items-center shadow-2xl pointer-events-auto border-white/40 dark:border-zinc-800/50">
+        <header className="fixed top-0 left-0 right-0 z-50 w-full px-4 sm:px-6 lg:px-8 pt-6 pointer-events-none">
+            <div className="glass !rounded-full py-2 px-5 flex justify-between items-center shadow-[0_20px_40px_-10px_rgba(0,0,0,0.1)] pointer-events-auto border-white/40 dark:border-zinc-800/50 max-w-7xl mx-auto">
                 {/* Logo & Brand */}
-                <div className="flex items-center gap-8">
-                    <Link href={user ? "/dashboard" : "/"} className="flex items-center gap-3 group transition-all active:scale-95">
-                        <div className="w-11 h-11 flex items-center justify-center shadow-xl group-hover:scale-110 transition-all duration-300 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-2xl">
-                            <span className="text-2xl font-black italic tracking-tighter">R</span>
-                        </div>
-                        <h1 className="text-2xl font-black tracking-tighter hidden lg:block bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 to-zinc-500 dark:from-white dark:to-zinc-400">
-                            Roomivo
-                        </h1>
+                <div className="flex items-center gap-6">
+                    <Link href={user ? "/dashboard" : "/"} className="flex items-center pl-2 transition-all active:scale-95">
+                        <RoomivoBrand variant="wordmark" size="sm" animate={false} />
                     </Link>
 
                     {/* Desktop Navigation */}
                     {user && (
-                        <nav className="hidden md:flex items-center gap-1 ml-4 p-1 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-zinc-100 dark:border-zinc-700/50">
+                        <nav className="hidden md:flex items-center gap-1 ml-2 p-1 bg-zinc-900/5 dark:bg-white/5 rounded-full border border-zinc-900/5 dark:border-white/5">
                             {navLinks.map((link) => {
                                 const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);
                                 return (
                                     <Link
                                         key={link.href}
                                         href={link.href}
-                                        className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-2
+                                        className={`px-4 py-2 rounded-full text-[11px] font-black uppercase tracking-[0.1em] transition-all duration-500 flex items-center gap-2
                                             ${isActive
-                                                ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-md scale-100'
-                                                : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+                                                ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-xl scale-100'
+                                                : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
                                             }`}
                                     >
-                                        <span className={isActive ? 'text-teal-500' : ''}>{link.icon}</span>
-                                        {link.label}
+                                        <span className={isActive ? 'text-teal-400 dark:text-teal-500' : ''}>{link.icon}</span>
+                                        <span className="hidden lg:block">{link.label}</span>
                                     </Link>
                                 );
                             })}
@@ -84,18 +80,18 @@ export default function Navbar() {
                     </div>
                     
                     {user ? (
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-3">
                             <NotificationBell />
                             
-                            <Link href="/profile" className="flex items-center gap-3 hover:scale-105 transition-all active:scale-95 group">
-                                <div className="w-10 h-10 rounded-2xl overflow-hidden border-2 border-white dark:border-zinc-800 shadow-lg bg-zinc-100 dark:bg-zinc-800 flex justify-center items-center group-hover:border-teal-500 transition-colors">
+                            <Link href="/settings/account" className="flex items-center gap-3 hover:scale-105 transition-all active:scale-95 group">
+                                <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-white dark:border-zinc-800 shadow-lg bg-zinc-900 dark:bg-white flex justify-center items-center group-hover:border-teal-500 transition-colors">
                                     {user.profile_picture_url ? (
                                         <img src={user.profile_picture_url} alt="Profile" className="w-full h-full object-cover" />
                                     ) : (
-                                        <span className="text-zinc-500 font-black text-sm">{user.full_name?.charAt(0) || user.email?.charAt(0).toUpperCase()}</span>
+                                        <span className="text-white dark:text-zinc-900 font-black text-xs">{user.full_name?.charAt(0) || user.email?.charAt(0).toUpperCase()}</span>
                                     )}
                                 </div>
-                                <span className="text-sm font-black text-zinc-900 dark:text-white hidden xl:block uppercase tracking-widest">
+                                <span className="text-[11px] font-black text-zinc-900 dark:text-white hidden xl:block uppercase tracking-[0.2em]">
                                     {user.full_name?.split(' ')[0]}
                                 </span>
                             </Link>
@@ -128,45 +124,47 @@ export default function Navbar() {
                 <AnimatePresence>
                     {isMobileMenuOpen && (
                         <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            className="md:hidden border-t border-zinc-100 dark:border-zinc-800 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl rounded-b-2xl overflow-hidden"
+                            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                            className="md:hidden mt-4 glass !rounded-[2rem] overflow-hidden shadow-2xl pointer-events-auto border-white/20 dark:border-zinc-800/50 max-w-lg mx-auto"
                         >
-                            <nav className="p-4 flex flex-col gap-2">
-                                {navLinks.map((link) => {
-                                    const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);
-                                    return (
-                                        <Link
-                                            key={link.href}
-                                            href={link.href}
-                                            onClick={() => setIsMobileMenuOpen(false)}
-                                            className={`px-4 py-3 rounded-xl text-base font-semibold flex items-center gap-3 transition-all
-                                                ${isActive
-                                                    ? 'bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300'
-                                                    : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800'
-                                                }`}
-                                        >
-                                            <div className={`p-2 rounded-lg ${isActive ? 'bg-teal-100 dark:bg-teal-900/40' : 'bg-zinc-100 dark:bg-zinc-800'}`}>
-                                                {link.icon}
-                                            </div>
-                                            {link.label}
-                                        </Link>
-                                    );
-                                })}
+                            <nav className="p-6 flex flex-col gap-4">
+                                <div className="grid grid-cols-2 gap-3">
+                                    {navLinks.map((link) => {
+                                        const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);
+                                        return (
+                                            <Link
+                                                key={link.href}
+                                                href={link.href}
+                                                onClick={() => setIsMobileMenuOpen(false)}
+                                                className={`p-4 rounded-2xl text-xs font-black uppercase tracking-widest flex flex-col items-center gap-3 transition-all
+                                                    ${isActive
+                                                        ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-xl'
+                                                        : 'bg-zinc-50 dark:bg-zinc-800/50 text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
+                                                    }`}
+                                            >
+                                                <div className={`${isActive ? 'text-teal-400' : 'text-zinc-400'}`}>
+                                                    {link.icon}
+                                                </div>
+                                                {link.label}
+                                            </Link>
+                                        );
+                                    })}
+                                </div>
                                 
-                                <div className="h-px bg-zinc-100 dark:bg-zinc-800 my-2 mx-2"></div>
+                                <div className="h-px bg-zinc-100 dark:bg-zinc-800 my-2"></div>
                                 
-                                <div className="flex flex-col gap-4 p-2">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-sm font-medium text-zinc-500">{t('dashboard.role.title', undefined, 'Active Role')}</span>
+                                <div className="flex flex-col gap-4">
+                                    <div className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl">
+                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{t('dashboard.role.title', undefined, 'Active Role')}</span>
                                         <RoleSwitcher 
                                             currentRole={user.role} 
                                             availableRoles={user.available_roles || ["tenant"]} 
                                         />
                                     </div>
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-sm font-medium text-zinc-500">{t('common.language', undefined, 'Language')}</span>
+                                    <div className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl">
+                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{t('common.language', undefined, 'Language')}</span>
                                         <LanguageSwitcher />
                                     </div>
                                 </div>
@@ -176,11 +174,9 @@ export default function Navbar() {
                                         setIsMobileMenuOpen(false);
                                         logout();
                                     }}
-                                    className="mt-2 w-full px-4 py-3 rounded-xl text-base font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 flex items-center gap-3"
+                                    className="w-full p-4 rounded-2xl text-[10px] font-black uppercase tracking-widest text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 flex items-center justify-center gap-3 shadow-sm hover:bg-red-100 transition-all"
                                 >
-                                    <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/40">
-                                        <LogOut className="w-5 h-5" />
-                                    </div>
+                                    <LogOut className="w-4 h-4" />
                                     {t('dashboard.logout', undefined, 'Logout')}
                                 </button>
                             </nav>

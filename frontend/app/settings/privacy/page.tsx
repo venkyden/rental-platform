@@ -9,12 +9,22 @@ import { apiClient } from '@/lib/api';
 import { useToast } from '@/lib/ToastContext';
 import PremiumLayout from '@/components/PremiumLayout';
 import { useLanguage } from '@/lib/LanguageContext';
+import { useGoogleSignIn } from '@/lib/useGoogleSignIn';
 import React, { useState } from 'react';
 
 export default function PrivacySettingsPage() {
+    return (
+        <ProtectedRoute>
+            <PrivacySettingsContent />
+        </ProtectedRoute>
+    );
+}
+
+function PrivacySettingsContent() {
     const { t } = useLanguage();
     const router = useRouter();
-    const { logout } = useAuth();
+    const { logout, user } = useAuth();
+    const { revoke } = useGoogleSignIn({ clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID });
     const { success, error: showError } = useToast();
 
     const [isDeleting, setIsDeleting] = useState(false);
@@ -31,7 +41,18 @@ export default function PrivacySettingsPage() {
 
         setIsDeleting(true);
         try {
+            const userEmail = user?.email;
             await apiClient.client.delete('/gdpr/delete');
+            
+            // Try to revoke Google session if possible
+            if (userEmail) {
+                try {
+                    await revoke(userEmail);
+                } catch (gError) {
+                    console.warn('Failed to revoke Google session:', gError);
+                }
+            }
+
             success(t('auth.login.error.success'));
             logout();
         } catch (error) {
@@ -53,28 +74,28 @@ export default function PrivacySettingsPage() {
                             <p className="text-zinc-500 font-medium">{t('settings.subtitle')}</p>
                         </div>
 
-                        <div className="flex flex-col gap-2 p-1.5 bg-zinc-100 dark:bg-zinc-800/50 rounded-[2rem] border border-zinc-200/50 dark:border-zinc-700/30 backdrop-blur-xl">
+                        <div className="flex flex-row md:flex-col gap-2 p-1.5 bg-zinc-100 dark:bg-zinc-800/50 rounded-full md:rounded-[2rem] border border-zinc-200/50 dark:border-zinc-700/30 backdrop-blur-xl overflow-x-auto no-scrollbar scroll-smooth">
                             {[
                                 { id: 'account', icon: User, label: t('settings.tabs.profile'), path: '/settings/account' },
                                 { id: 'notifications', icon: Bell, label: t('settings.tabs.notifications'), path: '/settings/notifications' },
                                 { id: 'privacy', icon: Shield, label: t('settings.tabs.privacy'), path: '/settings/privacy' },
                                 { id: 'preferences', icon: Settings, label: t('settings.tabs.preferences'), path: '/settings/preferences' }
                             ].map((tab) => (
-                                <div key={tab.id} className="flex flex-col">
+                                <div key={tab.id} className="flex flex-row md:flex-col shrink-0">
                                     <button
                                         onClick={() => router.push(tab.path)}
-                                        className={`flex items-center gap-4 px-6 py-4 rounded-[1.5rem] text-sm font-black uppercase tracking-widest transition-all duration-500 ${
+                                        className={`flex items-center gap-3 px-5 md:px-6 py-3 md:py-4 rounded-full md:rounded-[1.5rem] text-[10px] md:text-sm font-black uppercase tracking-widest transition-all duration-500 whitespace-nowrap ${
                                             tab.id === 'privacy' 
-                                            ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-xl scale-100' 
+                                            ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-xl scale-100' 
                                             : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'
                                         }`}
                                     >
-                                        <tab.icon className={`w-4 h-4 ${tab.id === 'privacy' ? 'text-teal-500' : ''}`} />
+                                        <tab.icon className={`w-3.5 h-3.5 md:w-4 md:h-4 ${tab.id === 'privacy' ? 'text-teal-500' : ''}`} />
                                         {tab.label}
                                     </button>
                                     
                                     {tab.id === 'privacy' && (
-                                        <div className="px-6 py-4 flex flex-col gap-4">
+                                        <div className="hidden md:flex px-6 py-4 flex-col gap-4">
                                             <button 
                                                 className="text-[10px] font-black uppercase tracking-widest text-left text-teal-500"
                                             >

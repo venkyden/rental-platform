@@ -87,7 +87,7 @@ export default function UnifiedInbox({ onSelectConversation, selectedConversatio
         if (diffDays === 0) {
             return date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
         } else if (diffDays === 1) {
-            return t('inbox.time.yesterday', undefined, undefined);
+            return t('dashboard.inbox.time.yesterday', undefined, 'Yesterday');
         } else if (diffDays < 7) {
             return date.toLocaleDateString('en-GB', { weekday: 'short' });
         } else {
@@ -120,12 +120,12 @@ export default function UnifiedInbox({ onSelectConversation, selectedConversatio
 
     if (loading) {
         return (
-            <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl border border-white/50 dark:border-white/10 overflow-hidden h-full">
-                <div className="p-6 border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/50">
+            <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl border border-white/50 dark:border-white/10 overflow-hidden h-full shadow-2xl">
+                <div className="p-8 border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/50">
                     <div className="h-8 bg-zinc-200 dark:bg-zinc-800 rounded-lg w-1/3 mb-4 animate-pulse" />
-                    <div className="h-10 bg-zinc-200 dark:bg-zinc-800 rounded-xl w-full animate-pulse" />
+                    <div className="h-14 bg-zinc-200 dark:bg-zinc-800 rounded-2xl w-full animate-pulse" />
                 </div>
-                <div className="p-4">
+                <div className="p-6">
                     <ListSkeleton count={6} />
                 </div>
             </div>
@@ -133,14 +133,14 @@ export default function UnifiedInbox({ onSelectConversation, selectedConversatio
     }
 
     return (
-        <div className="flex flex-col h-full bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-white/50 dark:border-white/10 rounded-3xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] overflow-hidden">
+        <div className="flex flex-col h-full bg-white/50 dark:bg-zinc-900/50 backdrop-blur-2xl border border-white/40 dark:border-zinc-800/50 rounded-[2.5rem] shadow-2xl overflow-hidden">
             {/* Header */}
-            <div className="p-6 border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/50">
-                <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-xl font-bold text-zinc-900 dark:text-white flex items-center gap-3">
-                         {t('inbox.title', undefined, undefined)}
+            <div className="p-8 border-b border-zinc-100 dark:border-zinc-800 bg-white/30 dark:bg-zinc-900/30">
+                <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-2xl font-black text-zinc-900 dark:text-white tracking-tighter uppercase flex items-center gap-4">
+                         {t('dashboard.inbox.title', undefined, 'Messages')}
                         {totalUnread > 0 && (
-                            <span className="px-2.5 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full">
+                            <span className="px-3 py-1 bg-teal-500 text-white text-[10px] font-black rounded-full uppercase tracking-widest shadow-lg shadow-teal-500/20">
                                 {totalUnread}
                             </span>
                         )}
@@ -148,40 +148,34 @@ export default function UnifiedInbox({ onSelectConversation, selectedConversatio
                 </div>
 
                 {/* Search */}
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+                <div className="relative group">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 group-focus-within:text-teal-500 transition-colors" />
                     <input
                         type="text"
-                        placeholder={t('inbox.searchPlaceholder', undefined, undefined)}
+                        placeholder={t('dashboard.inbox.searchPlaceholder', undefined, 'Search messages...')}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full px-4 py-2.5 pl-10 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white placeholder-zinc-400 border border-zinc-200 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+                        className="w-full px-5 py-4 pl-12 rounded-[1.5rem] bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white placeholder:text-zinc-400 border-none focus:ring-2 focus:ring-teal-500/50 transition-all font-bold text-sm shadow-inner"
                     />
                 </div>
             </div>
 
             {/* Filter Tabs */}
-            <div className="flex px-2 pt-2 border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/30 dark:bg-zinc-800/30">
+            <div className="flex p-2 bg-zinc-50/50 dark:bg-zinc-800/30">
                 {[
-                    { key: 'all', label: t('inbox.filters.all', undefined, undefined) },
-                    { key: 'active', label: t('inbox.filters.active', undefined, undefined) },
-                    { key: 'archived', label: t('inbox.filters.archived', undefined, undefined) }
+                    { key: 'all', label: t('dashboard.inbox.filters.all', undefined, 'All') },
+                    { key: 'active', label: t('dashboard.inbox.filters.active', undefined, 'Active') },
+                    { key: 'archived', label: t('dashboard.inbox.filters.archived', undefined, 'Archived') }
                 ].map(({ key, label }) => (
                     <button
                         key={key}
                         onClick={() => setFilter(key as typeof filter)}
-                        className={`flex-1 py-3 text-sm font-semibold transition-all relative ${filter === key
-                            ? 'text-teal-600 dark:text-teal-400'
-                            : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+                        className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest transition-all rounded-2xl ${filter === key
+                            ? 'bg-white dark:bg-zinc-900 text-teal-600 shadow-xl dark:shadow-white/5'
+                            : 'text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
                             }`}
                     >
                         {label}
-                        {filter === key && (
-                            <motion.div
-                                layoutId="inbox-filter-tab"
-                                className="absolute bottom-0 left-4 right-4 h-0.5 bg-teal-500 rounded-full"
-                            />
-                        )}
                     </button>
                 ))}
             </div>
@@ -191,68 +185,79 @@ export default function UnifiedInbox({ onSelectConversation, selectedConversatio
                 variants={containerVariants}
                 initial="hidden"
                 animate="show"
-                className="flex-1 overflow-y-auto"
+                className="flex-1 overflow-y-auto no-scrollbar"
             >
                 {Object.keys(groupedByProperty).length === 0 ? (
-                    <div className="py-16">
+                    <div className="py-24">
                         <EmptyState
                             icon=""
-                            title={t('inbox.status.noConversations', undefined, undefined)}
-                            description={t('inbox.status.noConversationsDesc', undefined, undefined)}
+                            title={t('dashboard.inbox.status.noConversations', undefined, 'No messages found')}
+                            description={t('dashboard.inbox.status.noConversationsDesc', undefined, 'Start a conversation to see it here.')}
                             layout="transparent"
                         />
                     </div>
                 ) : (
                     Object.entries(groupedByProperty).map(([propertyId, group]) => (
-                        <motion.div variants={itemVariants} key={propertyId} className="border-b last:border-b-0">
+                        <motion.div variants={itemVariants} key={propertyId} className="group/property">
                             {/* Property Header */}
-                            <div className="px-4 py-2 bg-gray-50 border-b">
-                                <div className="font-medium text-gray-900 text-sm">
-                                     {group.property_title || t('search.property', undefined, undefined)}
+                            <div className="px-6 py-4 bg-zinc-50/30 dark:bg-zinc-800/10 border-b border-zinc-100 dark:border-zinc-800 sticky top-0 backdrop-blur-md z-10">
+                                <div className="font-black text-zinc-900 dark:text-white text-[10px] uppercase tracking-[0.2em] mb-1">
+                                     {group.property_title || t('search.property', undefined, 'Property')}
                                 </div>
-                                <div className="text-xs text-gray-500">
+                                <div className="text-[10px] font-bold text-zinc-400 truncate uppercase tracking-widest">
                                     {group.property_address}
                                 </div>
                             </div>
 
                             {/* Conversations for this property */}
-                            {group.conversations.map(conv => (
-                                <button
-                                    key={conv.id}
-                                    onClick={() => onSelectConversation?.(conv.id)}
-                                    className={`w-full p-4 text-left hover:bg-gray-50 transition-colors border-b last:border-b-0 ${selectedConversationId === conv.id ? 'bg-blue-50' : ''
-                                        } ${conv.unread_count > 0 ? 'bg-blue-50/50' : ''}`}
-                                >
-                                    <div className="flex items-start gap-3">
-                                        {/* Avatar */}
-                                        <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-white font-bold">
-                                            {conv.other_party_name?.charAt(0).toUpperCase() || '?'}
-                                        </div>
-
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center justify-between gap-2">
-                                                <span className={`font-medium truncate ${conv.unread_count > 0 ? 'text-gray-900' : 'text-gray-700'}`}>
-                                                    {conv.other_party_name}
-                                                </span>
-                                                <span className="text-xs text-gray-500 whitespace-nowrap">
-                                                    {formatDate(conv.last_message_at)}
-                                                </span>
+                            <div className="divide-y divide-zinc-50 dark:divide-zinc-800/50">
+                                {group.conversations.map(conv => (
+                                    <button
+                                        key={conv.id}
+                                        onClick={() => onSelectConversation?.(conv.id)}
+                                        className={`w-full p-6 text-left transition-all relative ${selectedConversationId === conv.id 
+                                            ? 'bg-teal-500/5 dark:bg-teal-400/5 shadow-inner' 
+                                            : 'hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30'
+                                            }`}
+                                    >
+                                        {selectedConversationId === conv.id && (
+                                            <div className="absolute left-0 top-6 bottom-6 w-1 bg-teal-500 rounded-r-full shadow-[0_0_12px_rgba(20,184,166,0.5)]" />
+                                        )}
+                                        <div className="flex items-center gap-5">
+                                            {/* Avatar */}
+                                            <div className={`w-14 h-14 rounded-full flex items-center justify-center text-xl font-black shadow-lg transition-transform duration-500 ${
+                                                conv.unread_count > 0 
+                                                ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 scale-105' 
+                                                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 scale-100'
+                                            }`}>
+                                                {conv.other_party_name?.charAt(0).toUpperCase() || '?'}
                                             </div>
 
-                                            <div className="flex items-center justify-between gap-2 mt-1">
-                                                <p className={`text-sm truncate ${conv.unread_count > 0 ? 'text-gray-900 font-medium' : 'text-gray-500'}`}>
-                                                    {conv.last_message_preview || conv.subject}
-                                                </p>
-                                                {conv.unread_count > 0 && (
-                                                    <span className="flex-shrink-0 w-5 h-5 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center">
-                                                        {conv.unread_count}
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center justify-between gap-4 mb-1">
+                                                    <span className={`text-lg tracking-tight truncate ${conv.unread_count > 0 ? 'font-black text-zinc-900 dark:text-white' : 'font-bold text-zinc-700 dark:text-zinc-300'}`}>
+                                                        {conv.other_party_name}
                                                     </span>
-                                                )}
+                                                    <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest whitespace-nowrap">
+                                                        {formatDate(conv.last_message_at)}
+                                                    </span>
+                                                </div>
+
+                                                <div className="flex items-center justify-between gap-4">
+                                                    <p className={`text-sm truncate ${conv.unread_count > 0 ? 'text-teal-600 dark:text-teal-400 font-bold' : 'text-zinc-500 dark:text-zinc-500 font-medium'}`}>
+                                                        {conv.last_message_preview || conv.subject}
+                                                    </p>
+                                                    {conv.unread_count > 0 && (
+                                                        <span className="flex-shrink-0 w-6 h-6 bg-teal-500 text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-lg shadow-teal-500/20">
+                                                            {conv.unread_count}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </button>
-                            ))}
+                                    </button>
+                                ))}
+                            </div>
                         </motion.div>
                     ))
                 )}

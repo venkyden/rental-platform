@@ -18,9 +18,9 @@ declare global {
 
 interface UseGoogleSignInOptions {
   clientId: string | undefined;
-  onSuccess: (credential: string) => void;
-  onError: (error: string) => void;
-  buttonId: string;
+  onSuccess?: (credential: string) => void;
+  onError?: (error: string) => void;
+  buttonId?: string;
   buttonText?: 'signin_with' | 'signup_with';
 }
 
@@ -30,25 +30,40 @@ export function useGoogleSignIn({
   onError,
   buttonId,
   buttonText = 'signin_with',
-}: UseGoogleSignInOptions) {
+}: UseGoogleSignInOptions = { clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID }) {
   const scriptLoadedRef = useRef(false);
 
   const handleGoogleResponse = useCallback(
     (response: { credential?: string }) => {
       if (response.credential) {
-        onSuccess(response.credential);
+        onSuccess?.(response.credential);
       } else {
-        onError('No credential received from Google');
+        onError?.('No credential received from Google');
       }
     },
     [onSuccess, onError]
   );
 
+  const revoke = useCallback((email: string) => {
+    return new Promise<void>((resolve) => {
+      if (typeof window !== 'undefined' && window.google?.accounts?.id) {
+        window.google.accounts.id.revoke(email, (done) => {
+          console.log('Google session revoked for:', email, done.successful);
+          resolve();
+        });
+      } else {
+        resolve();
+      }
+    });
+  }, []);
+
   useEffect(() => {
     if (!clientId) return;
-    if (scriptLoadedRef.current) return;
-    scriptLoadedRef.current = true;
-
+    if (scriptLoadedRef.current && window.google) {
+        // Even if script loaded, if we have a buttonId we might need to render it
+        // But initializeGSI handles the check for window.google
+    }
+    
     const initializeGSI = () => {
       if (!window.google) return;
 
@@ -65,20 +80,28 @@ export function useGoogleSignIn({
         window.__GSI_INITIALIZED__ = true;
       }
 
-      const buttonDiv = document.getElementById(buttonId);
-      if (buttonDiv) {
-        const containerWidth = buttonDiv.parentElement?.clientWidth || 300;
-        const buttonWidth = Math.max(200, Math.min(400, Math.floor(containerWidth)));
+      if (buttonId) {
+        const buttonDiv = document.getElementById(buttonId);
+        if (buttonDiv) {
+          const containerWidth = buttonDiv.parentElement?.clientWidth || 300;
+          const buttonWidth = Math.max(200, Math.min(400, Math.floor(containerWidth)));
 
-        window.google.accounts.id.renderButton(buttonDiv, {
-          theme: 'outline',
-          size: 'large',
-          width: buttonWidth,
-          text: buttonText,
-          shape: 'pill',
-        });
+          window.google.accounts.id.renderButton(buttonDiv, {
+            theme: 'outline',
+            size: 'large',
+            width: buttonWidth,
+            text: buttonText,
+            shape: 'pill',
+          });
+        }
       }
     };
+
+    if (scriptLoadedRef.current) {
+        initializeGSI();
+        return;
+    }
+    scriptLoadedRef.current = true;
 
     // Check if script already exists
     if (document.querySelector('script[src="https://accounts.google.com/gsi/client"]')) {
@@ -103,13 +126,15 @@ export function useGoogleSignIn({
     script.onload = initializeGSI;
     script.onerror = () => {
       console.warn('Failed to load Google Sign-In script');
-      onError('Failed to load Google Sign-In script');
+      onError?.('Failed to load Google Sign-In script');
     };
 
     document.body.appendChild(script);
 
     return () => {
-        // Cleanup if necessary, though GSI usually stays
+        // Cleanup if necessary
     };
   }, [clientId, handleGoogleResponse, buttonId, buttonText, onError]);
+
+  return { revoke };
 }

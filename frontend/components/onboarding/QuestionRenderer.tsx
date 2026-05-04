@@ -51,25 +51,31 @@ export default function QuestionRenderer({
             group: 'Other'
         });
         return options;
-    }, []);
+    }, [t]);
 
     return (
         <div className="space-y-4">
             {/* Address Autocomplete */}
             {question.type === 'address_autocomplete' && (
-                <div>
-                    <AddressAutocomplete
-                        onSelectAction={(result) => setSelectedAddress(result)}
-                        restrictToCities={question.restrictToCities || []}
-                        placeholder={question.placeholder || t('common.placeholders.address')}
-                        variant="onboarding"
-                    />
+                <div className="space-y-8">
+                    <div className="relative group">
+                        <AddressAutocomplete
+                            onSelectAction={(result) => setSelectedAddress(result)}
+                            restrictToCities={question.restrictToCities || []}
+                            placeholder={question.placeholder || t('common.placeholders.address')}
+                            variant="onboarding"
+                        />
+                    </div>
                     {selectedAddress && (
-                        <div className="mt-3 px-4 py-3 bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800 rounded-xl">
-                            <p className="text-sm font-medium text-teal-800 dark:text-teal-200">
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="px-8 py-6 bg-teal-500/5 dark:bg-teal-400/5 border border-teal-500/20 rounded-[2rem] shadow-inner"
+                        >
+                            <p className="text-sm font-black text-teal-600 dark:text-teal-400 uppercase tracking-tight text-center">
                                  {selectedAddress.display}
                             </p>
-                        </div>
+                        </motion.div>
                     )}
                     <button
                         onClick={() => {
@@ -85,20 +91,20 @@ export default function QuestionRenderer({
                             }
                         }}
                         disabled={!selectedAddress}
-                        className="w-full mt-8 py-4 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl shadow-sm hover: transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full py-6 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-xs font-black uppercase tracking-[0.3em] rounded-[2rem] shadow-2xl shadow-zinc-900/20 dark:shadow-white/5 hover:scale-[1.02] active:scale-95 disabled:opacity-30 disabled:hover:scale-100 transition-all"
                     >
-                        {t('common.back')} →
+                        {t('common.continue', undefined, 'Continue')} →
                     </button>
                 </div>
             )}
 
             {/* Text Input */}
             {question.type === 'text' && (
-                <div>
+                <div className="space-y-8">
                     <input
                         type="text"
                         placeholder={question.placeholder}
-                        className="w-full px-6 py-4 text-lg text-gray-900 dark:text-white bg-white/50 dark:bg-zinc-800/50 border-2 border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-teal-500 dark:focus:border-teal-400 transition-colors placeholder-zinc-400 dark:placeholder-zinc-500"
+                        className="w-full px-8 py-6 text-xl font-bold text-zinc-900 dark:text-white bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-[2rem] focus:ring-2 focus:ring-teal-500/50 transition-all placeholder:text-zinc-400 shadow-inner text-center"
                         onKeyPress={(e) => {
                             if (e.key === 'Enter' && e.currentTarget.value) {
                                 onAnswer(e.currentTarget.value);
@@ -110,7 +116,7 @@ export default function QuestionRenderer({
                             const input = document.querySelector('input[type="text"]') as HTMLInputElement;
                             if (input?.value) onAnswer(input.value);
                         }}
-                        className="w-full mt-8 py-4 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl shadow-sm hover: transition-all transform hover:-translate-y-0.5"
+                        className="w-full py-6 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-xs font-black uppercase tracking-[0.3em] rounded-[2rem] shadow-2xl shadow-zinc-900/20 dark:shadow-white/5 hover:scale-[1.02] active:scale-95 transition-all"
                     >
                         {t('common.next')} →
                     </button>
@@ -119,15 +125,17 @@ export default function QuestionRenderer({
 
             {/* Select Dropdown (Using Combobox) */}
             {question.type === 'select' && (
-                <div>
-                    <Combobox
-                        options={question.selectOptions || []}
-                        value={responses[question.id] || ''}
-                        onChange={(val) => onAnswer(val)}
-                        placeholder={t('common.placeholders.selectOption')}
-                    />
+                <div className="space-y-6">
+                    <div className="relative group">
+                        <Combobox
+                            options={question.selectOptions || []}
+                            value={responses[question.id] || ''}
+                            onChange={(val) => onAnswer(val)}
+                            placeholder={t('common.placeholders.selectOption')}
+                        />
+                    </div>
                     {question.id === 'nationality' && (
-                        <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400 text-center">
+                        <p className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 text-center uppercase tracking-widest leading-relaxed px-4">
                             {t('onboarding.university.nationalityNote', undefined, 'This field is collected strictly for demographic surveys. It is never used in matching or shared with landlords.')}
                         </p>
                     )}
@@ -136,40 +144,42 @@ export default function QuestionRenderer({
 
             {/* University Select (Using Combobox) */}
             {question.type === 'university_select' && (
-                <div>
-                    <Combobox
-                        options={universityOptions}
-                        value="" // Reset after each selection logic
-                        onChange={(val) => {
-                            if (val === 'other|other|other') {
-                                setShowManualUniversityInput(true);
-                            } else {
-                                const [uniId, city, label] = val.split('|');
-                                setShowManualUniversityInput(false);
-                                onAnswer({ 
-                                    university_id: sanitizeInput(uniId), 
-                                    university_name: sanitizeInput(label), 
-                                    city: sanitizeInput(city) 
-                                });
-                            }
-                        }}
-                        placeholder={t('common.placeholders.selectUniversity')}
-                    />
+                <div className="space-y-6">
+                    <div className="relative group">
+                        <Combobox
+                            options={universityOptions}
+                            value="" // Reset after each selection logic
+                            onChange={(val) => {
+                                if (val === 'other|other|other') {
+                                    setShowManualUniversityInput(true);
+                                } else {
+                                    const [uniId, city, label] = val.split('|');
+                                    setShowManualUniversityInput(false);
+                                    onAnswer({ 
+                                        university_id: sanitizeInput(uniId), 
+                                        university_name: sanitizeInput(label), 
+                                        city: sanitizeInput(city) 
+                                    });
+                                }
+                            }}
+                            placeholder={t('common.placeholders.selectUniversity')}
+                        />
+                    </div>
 
                     {showManualUniversityInput && (
                         <motion.div 
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="mt-4 p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-lg space-y-4"
+                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            className="mt-6 p-8 bg-zinc-50 dark:bg-zinc-800/50 rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 shadow-2xl space-y-6"
                         >
-                            <h3 className="font-semibold text-zinc-900 dark:text-white">{t('onboarding.university.manualTitle', undefined, 'Manual University Entry')}</h3>
-                            <div className="space-y-3">
+                            <h3 className="text-xs font-black text-zinc-400 uppercase tracking-widest text-center">{t('onboarding.university.manualTitle', undefined, 'Manual University Entry')}</h3>
+                            <div className="space-y-4">
                                 <input
                                     type="text"
                                     value={manualUniName}
                                     onChange={(e) => setManualUniName(e.target.value)}
                                     placeholder={t('common.placeholders.universityName', undefined, 'University Name')}
-                                    className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border-2 border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-teal-500 transition-colors"
+                                    className="w-full px-6 py-4 bg-white dark:bg-zinc-900 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/50 transition-all font-bold shadow-inner"
                                     maxLength={100}
                                 />
                                 <input
@@ -177,14 +187,14 @@ export default function QuestionRenderer({
                                     value={manualUniCity}
                                     onChange={(e) => setManualUniCity(e.target.value)}
                                     placeholder={t('common.placeholders.city')}
-                                    className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border-2 border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-teal-500 transition-colors"
+                                    className="w-full px-6 py-4 bg-white dark:bg-zinc-900 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/50 transition-all font-bold shadow-inner"
                                     maxLength={50}
                                 />
                             </div>
-                            <div className="flex gap-2">
+                            <div className="flex gap-4">
                                 <button
                                     onClick={() => setShowManualUniversityInput(false)}
-                                    className="flex-1 py-3 text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 font-medium transition-colors"
+                                    className="flex-1 py-4 text-xs font-black text-zinc-400 hover:text-zinc-900 dark:hover:text-white uppercase tracking-widest transition-colors"
                                 >
                                     {t('common.cancel')}
                                 </button>
@@ -202,7 +212,7 @@ export default function QuestionRenderer({
                                         }
                                     }}
                                     disabled={!manualUniName.trim() || !manualUniCity.trim()}
-                                    className="flex-[2] py-3 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl shadow-sm transition-all disabled:opacity-50"
+                                    className="flex-[2] py-4 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-xs font-black uppercase tracking-widest rounded-2xl shadow-xl hover:scale-105 transition-all disabled:opacity-30"
                                 >
                                     {t('common.next')} →
                                 </button>
@@ -210,7 +220,7 @@ export default function QuestionRenderer({
                         </motion.div>
                     )}
 
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-4 text-center">
+                    <p className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 mt-4 text-center uppercase tracking-widest">
                         {t('onboarding.university.help', undefined, 'This helps us find properties near your campus')}
                     </p>
                 </div>
@@ -257,24 +267,26 @@ export default function QuestionRenderer({
                 const centerText = uniCity ? t('onboarding.radius.centeredOn', { city: uniCity }, `Centered on ${uniCity} — `) : (workplaceResponse ? t('onboarding.radius.centeredWorkplace', undefined, 'Centered on your workplace — ') : '');
 
                 return (
-                    <div className="space-y-6">
-                        <p className="text-zinc-600 dark:text-zinc-400 text-center px-4">
+                    <div className="space-y-8">
+                        <p className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 text-center px-4 uppercase tracking-[0.2em] leading-relaxed">
                             {centerText}{t('onboarding.radius.help', undefined, 'drag the pin to select your target search area, and use the slider to adjust your commute radius.')}
                         </p>
-                        <RadiusLocationPicker
-                            initialLat={currentLat}
-                            initialLng={currentLng}
-                            radiusMeters={mapRadius}
-                            onLocationChange={(lat: number, lng: number) => setMapCenter({ lat, lng })}
-                        />
+                        <div className="rounded-[2.5rem] overflow-hidden border border-zinc-100 dark:border-zinc-800 shadow-2xl">
+                            <RadiusLocationPicker
+                                initialLat={currentLat}
+                                initialLng={currentLng}
+                                radiusMeters={mapRadius}
+                                onLocationChange={(lat: number, lng: number) => setMapCenter({ lat, lng })}
+                            />
+                        </div>
 
-                        <div className="bg-white/50 dark:bg-zinc-800/50 p-6 rounded-xl border border-zinc-200 dark:border-zinc-700 mx-1">
-                            <div className="flex justify-between items-end mb-4">
+                        <div className="bg-zinc-50 dark:bg-zinc-800/30 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-inner">
+                            <div className="flex justify-between items-end mb-6">
                                 <div>
-                                    <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">{t('onboarding.radius.areaSize', undefined, 'Search Area Size')}</h3>
-                                    <p className="text-xs text-zinc-500 dark:text-zinc-400">{t('onboarding.radius.commuteDesc', undefined, 'Maximum commute distance')}</p>
+                                    <h3 className="text-xs font-black text-zinc-900 dark:text-white uppercase tracking-widest">{t('onboarding.radius.areaSize', undefined, 'Search Area Size')}</h3>
+                                    <p className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mt-1">{t('onboarding.radius.commuteDesc', undefined, 'Maximum commute distance')}</p>
                                 </div>
-                                <div translate="no" className="notranslate text-lg font-bold text-teal-600 dark:text-teal-400">
+                                <div translate="no" className="notranslate text-2xl font-black text-teal-600 dark:text-teal-400 tracking-tighter">
                                     {mapRadius >= 1000 ? `${+(mapRadius / 1000).toFixed(1)} km` : `${mapRadius} m`}
                                 </div>
                             </div>
@@ -285,9 +297,9 @@ export default function QuestionRenderer({
                                 step={500}
                                 value={mapRadius}
                                 onChange={(e) => setMapRadius(Number(e.target.value))}
-                                className="w-full h-2 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-teal-600"
+                                className="w-full h-3 bg-zinc-200 dark:bg-zinc-700 rounded-full appearance-none cursor-pointer accent-teal-500 shadow-inner"
                             />
-                            <div className="flex justify-between text-xs text-zinc-400 mt-2 font-medium">
+                            <div className="flex justify-between text-[9px] font-black text-zinc-300 dark:text-zinc-600 mt-4 uppercase tracking-[0.3em]">
                                 <span translate="no" className="notranslate">500m</span>
                                 <span translate="no" className="notranslate">20km</span>
                             </div>
@@ -295,7 +307,7 @@ export default function QuestionRenderer({
 
                         <button
                             onClick={() => onAnswer({ lat: currentLat, lng: currentLng, radius: mapRadius })}
-                            className="w-full mt-6 py-4 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl shadow-sm hover: transition-all transform hover:-translate-y-0.5"
+                            className="w-full py-6 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-xs font-black uppercase tracking-[0.3em] rounded-[2rem] shadow-2xl shadow-zinc-900/20 dark:shadow-white/5 hover:scale-[1.02] active:scale-95 transition-all"
                         >
                             {t('common.next')} →
                         </button>
@@ -305,33 +317,35 @@ export default function QuestionRenderer({
 
             {/* Range Slider */}
             {question.type === 'range' && (
-                <div className="py-4">
-                    <input
-                        type="range"
-                        min={question.min}
-                        max={question.max}
-                        step={question.step}
-                        defaultValue={responses[question.id] || question.min}
-                        onChange={(e) => {
-                            const value = parseInt(e.target.value);
-                            onRangeUpdate(question.id, value);
-                        }}
-                        className="w-full h-3 bg-zinc-200 dark:bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-teal-600"
-                    />
-                    <div className="flex justify-between mt-4">
-                        <span translate="no" className="notranslate text-zinc-500 dark:text-zinc-400">
-                            {question.unit === '€' ? question.unit : ''}{question.min}{question.unit !== '€' ? question.unit : ''}
-                        </span>
-                        <span translate="no" className="notranslate text-2xl font-bold text-teal-600 dark:text-teal-400">
-                            {question.unit === '€' ? question.unit : ''}{responses[question.id] || question.min}{question.unit !== '€' ? question.unit : ''}
-                        </span>
-                        <span translate="no" className="notranslate text-zinc-500 dark:text-zinc-400">
-                            {question.unit === '€' ? question.unit : ''}{question.max}{question.unit !== '€' ? question.unit : ''}+
-                        </span>
+                <div className="py-8 space-y-12">
+                    <div className="relative">
+                        <input
+                            type="range"
+                            min={question.min}
+                            max={question.max}
+                            step={question.step}
+                            defaultValue={responses[question.id] || question.min}
+                            onChange={(e) => {
+                                const value = parseInt(e.target.value);
+                                onRangeUpdate(question.id, value);
+                            }}
+                            className="w-full h-4 bg-zinc-100 dark:bg-zinc-800 rounded-full appearance-none cursor-pointer accent-teal-500 shadow-inner"
+                        />
+                        <div className="flex justify-between mt-6">
+                            <span translate="no" className="notranslate text-[10px] font-black text-zinc-300 dark:text-zinc-600 uppercase tracking-widest">
+                                {question.unit === '€' ? question.unit : ''}{question.min}{question.unit !== '€' ? question.unit : ''}
+                            </span>
+                            <div translate="no" className="notranslate text-5xl font-black text-zinc-900 dark:text-white tracking-tighter">
+                                {question.unit === '€' ? question.unit : ''}{responses[question.id] || question.min}{question.unit !== '€' ? question.unit : ''}
+                            </div>
+                            <span translate="no" className="notranslate text-[10px] font-black text-zinc-300 dark:text-zinc-600 uppercase tracking-widest">
+                                {question.unit === '€' ? question.unit : ''}{question.max}{question.unit !== '€' ? question.unit : ''}+
+                            </span>
+                        </div>
                     </div>
                     <button
                         onClick={() => onAnswer(responses[question.id] || question.min)}
-                        className="w-full mt-8 py-4 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl shadow-sm hover: transition-all transform hover:-translate-y-0.5"
+                        className="w-full py-6 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-xs font-black uppercase tracking-[0.3em] rounded-[2rem] shadow-2xl shadow-zinc-900/20 dark:shadow-white/5 hover:scale-[1.02] active:scale-95 transition-all"
                     >
                         {t('common.next')} →
                     </button>
@@ -340,25 +354,33 @@ export default function QuestionRenderer({
 
             {/* Multi-Select */}
             {question.type === 'multiselect' && (
-                <div>
-                    <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-10">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {question.options?.map((option, index) => (
                             <button
                                 key={index}
                                 onClick={() => onMultiSelectToggle(option.value, question.maxSelections || 5)}
-                                className={`px-4 py-3 text-left rounded-xl border-2 transition-all ${multiSelectValues.includes(option.value)
-                                    ? 'bg-teal-100/50 dark:bg-teal-900/30 border-teal-500 text-teal-800 dark:text-teal-200'
-                                    : 'bg-zinc-50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:border-teal-300 dark:hover:border-teal-700'
+                                className={`px-8 py-6 text-left rounded-[1.5rem] border-none transition-all group relative overflow-hidden ${multiSelectValues.includes(option.value)
+                                    ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-2xl shadow-zinc-900/20 dark:shadow-white/5'
+                                    : 'bg-zinc-50 dark:bg-zinc-800/50 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 shadow-inner'
                                     }`}
                             >
-                                <span className="font-medium text-sm sm:text-base">{t(option.label, undefined, option.label)}</span>
+                                <span className="font-black text-xs uppercase tracking-widest relative z-10">{t(option.label, undefined, option.label)}</span>
+                                {multiSelectValues.includes(option.value) && (
+                                    <motion.div 
+                                        layoutId="multi-check"
+                                        className="absolute right-6 top-1/2 -translate-y-1/2"
+                                    >
+                                        <div className="w-2 h-2 rounded-full bg-teal-400" />
+                                    </motion.div>
+                                )}
                             </button>
                         ))}
                     </div>
                     {multiSelectValues.length > 0 && (
                         <button
                             onClick={() => onAnswer(multiSelectValues)}
-                            className="w-full mt-8 py-4 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl shadow-sm hover: transition-all transform hover:-translate-y-0.5"
+                            className="w-full py-6 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-xs font-black uppercase tracking-[0.3em] rounded-[2rem] shadow-2xl shadow-zinc-900/20 dark:shadow-white/5 hover:scale-[1.02] active:scale-95 transition-all"
                         >
                             {t('common.next')} ({multiSelectValues.length} {t('common.selected', undefined, 'selected')}) →
                         </button>
@@ -367,17 +389,19 @@ export default function QuestionRenderer({
             )}
 
             {/* Regular Options (no type) */}
-            {!question.type && question.options?.map((option, index) => (
-                <button
-                    key={index}
-                    onClick={() => onAnswer(option.value)}
-                    className="w-full text-left px-6 py-5 bg-zinc-50 hover:bg-teal-50 dark:bg-zinc-800/50 dark:hover:bg-teal-900/20 rounded-xl border-2 border-transparent hover:border-teal-500 dark:hover:border-teal-400 transition-all transform hover:-translate-y-0.5 hover:shadow-md group"
-                >
-                    <span className="text-lg font-medium text-zinc-800 dark:text-zinc-200 group-hover:text-teal-700 dark:group-hover:text-teal-300">
-                        {t(option.label, undefined, option.label)}
-                    </span>
-                </button>
-            ))}
+            <div className="space-y-4">
+                {!question.type && question.options?.map((option, index) => (
+                    <button
+                        key={index}
+                        onClick={() => onAnswer(option.value)}
+                        className="w-full text-left px-10 py-6 bg-zinc-50 hover:bg-zinc-900 dark:bg-zinc-800/50 dark:hover:bg-white rounded-[2rem] border-none transition-all group shadow-inner hover:shadow-2xl hover:scale-[1.02] active:scale-95"
+                    >
+                        <span className="text-sm font-black uppercase tracking-widest text-zinc-500 group-hover:text-white dark:group-hover:text-zinc-900 transition-colors">
+                            {t(option.label, undefined, option.label)}
+                        </span>
+                    </button>
+                ))}
+            </div>
         </div>
     );
 }

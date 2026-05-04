@@ -170,398 +170,233 @@ export default function PropertyDetailPage() {
 
     return (
         <ProtectedRoute>
-            <PremiumLayout withNavbar>
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                >
-                    {/* Header */}
-                    <header className="mb-6 p-6 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl shadow-sm border border-white/50 dark:border-white/10 flex justify-between items-center">
+            <PremiumLayout withNavbar={true}>
+                <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-10 pointer-events-none"></div>
+
+                <div className="max-w-7xl mx-auto px-6 lg:px-12 py-12 relative z-10">
+                    <header className="mb-16 flex items-center justify-between">
                         <button
                             onClick={() => router.push('/properties')}
-                            className="text-teal-600 hover:text-teal-500 font-medium transition-colors"
+                            className="w-16 h-16 rounded-2xl bg-white dark:bg-zinc-900 shadow-2xl border border-white/40 dark:border-zinc-800/50 flex items-center justify-center hover:scale-110 active:scale-95 transition-all group overflow-hidden relative"
                         >
-                            ← {t('property.actions.back', undefined, undefined)}
+                            <div className="absolute inset-0 bg-gradient-to-br from-zinc-100 to-transparent dark:from-white/5 opacity-50"></div>
+                            <span className="text-2xl font-black relative z-10 group-hover:-translate-x-1 transition-transform">←</span>
                         </button>
+                        
                         {isOwner && (
-                            <div className="flex gap-3">
+                            <div className="flex gap-4">
                                 <button
                                     onClick={() => router.push(`/properties/${propertyId}/edit`)}
-                                    className="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-xl hover:bg-zinc-200 dark:hover:bg-zinc-700 font-medium transition-colors"
+                                    className="px-8 py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-2xl hover:scale-105 active:scale-95 text-[10px] font-black uppercase tracking-[0.2em] transition-all"
                                 >
-                                    ️ {t('property.actions.edit', undefined, undefined)}
+                                    {t('property.actions.edit', undefined, 'Configure Property')}
                                 </button>
-                                {property.status === 'draft' && (
-                                    <button
-                                        onClick={handlePublish}
-                                        disabled={publishing}
-                                        className="px-4 py-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-xl hover:shadow-sm font-medium disabled:opacity-50 transition-all"
-                                    >
-                                        {publishing ? t('property.actions.publishing', undefined, undefined) : t('property.actions.publish', undefined, undefined)}
-                                    </button>
-                                )}
                                 <button
                                     onClick={handleDelete}
-                                    className="px-4 py-2 bg-red-50/50 dark:bg-red-900/10 text-red-600 dark:text-red-400 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/20 font-medium transition-colors border border-red-200 dark:border-red-900/30"
+                                    className="px-8 py-4 bg-red-500/10 text-red-500 rounded-2xl hover:scale-105 active:scale-95 text-[10px] font-black uppercase tracking-[0.2em] transition-all border border-red-500/20"
                                 >
-                                    ️ {t('property.actions.delete', undefined, undefined)}
+                                    {t('property.actions.delete', undefined, 'Terminate Listing')}
                                 </button>
                             </div>
                         )}
                     </header>
 
                     <main>
-                        {/* Status Badge */}
-                        <div className="mb-4">
-                            <span className={`inline-block px-4 py-1.5 rounded-full text-xs font-bold backdrop-blur-md shadow-sm ${property.status === 'active' ? 'bg-emerald-500/90 text-white' : 'bg-amber-500/90 text-white'}`}>
-                                {property.status === 'active' ? t('property.status.published', undefined, undefined) : t('property.status.draft', undefined, undefined)}
-                            </span>
+                        {/* Status Grid */}
+                        <div className="mb-10 flex flex-wrap items-center gap-4">
+                            <div className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.3em] backdrop-blur-3xl shadow-2xl border ${property.status === 'active' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400'}`}>
+                                {property.status === 'active' ? t('property.status.published', undefined, 'Market Active') : t('property.status.draft', undefined, 'Draft Protocol')}
+                            </div>
+                            {property.caf_eligible && (
+                                <div className="px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.3em] bg-teal-500/10 border border-teal-500/20 text-teal-600 dark:text-teal-400 shadow-2xl">
+                                    {t('property.pricing.cafEligible', undefined, 'CAF Approved')}
+                                </div>
+                            )}
+                            <div className="px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.3em] bg-white/50 dark:bg-zinc-900/50 backdrop-blur-3xl border border-white/20 dark:border-zinc-800/50 text-zinc-400">
+                                {property.property_type}
+                            </div>
                         </div>
 
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            {/* Left Column - Photos & Info */}
-                            <div className="lg:col-span-2 space-y-6">
-                                {/* Photo Gallery */}
-                                <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] border border-white/50 dark:border-white/10 overflow-hidden">
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+                            {/* Left Column - Deep Tech Details */}
+                            <div className="lg:col-span-8 space-y-12">
+                                {/* Cinema Gallery */}
+                                <div className="glass-card !p-0 rounded-[3.5rem] shadow-[0_60px_120px_-20px_rgba(0,0,0,0.15)] dark:shadow-[0_60px_120px_-20px_rgba(0,0,0,0.5)] border-zinc-100 dark:border-zinc-800/50 overflow-hidden group">
                                     {photos && photos.length > 0 && activePhoto ? (
-                                        <div className="relative w-full h-96 group">
-                                            {activePhoto.media_type === 'video' ? (
-                                                <video src={resolveMediaUrl(activePhoto.url || activePhoto)} controls className="w-full h-full object-cover" />
-                                            ) : (
-                                                <img
-                                                    src={resolveMediaUrl(activePhoto.url || activePhoto)}
-                                                    alt={`${property.title} - ${activePhoto.room_label || 'Photo'}`}
-                                                    className="w-full h-full object-cover"
-                                                />
-                                            )}
-
-                                            {/* Room Label Badge */}
+                                        <div className="relative w-full aspect-[16/9] lg:aspect-[21/9]">
+                                            <motion.img
+                                                key={activePhotoIdx}
+                                                initial={{ opacity: 0, scale: 1.1 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                transition={{ duration: 1 }}
+                                                src={resolveMediaUrl(activePhoto.url || activePhoto)}
+                                                alt={property.title}
+                                                className="w-full h-full object-cover"
+                                            />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
+                                            
                                             {activePhoto.room_label && (
-                                                <div className="absolute top-4 left-4 bg-teal-600/90 backdrop-blur-md text-white px-4 py-2 rounded-xl text-sm font-bold shadow-sm border border-teal-500/50 flex items-center gap-2">
-                                                    ️ {activePhoto.room_label}
+                                                <div className="absolute top-8 left-8 px-6 py-3 bg-white/10 backdrop-blur-3xl border border-white/20 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-2xl">
+                                                    {activePhoto.room_label}
                                                 </div>
                                             )}
 
-                                            {/* Navigation Controls */}
-                                            {photos.length > 1 && (
-                                                <>
-                                                    <button
-                                                        onClick={() => setActivePhotoIdx(i => i === 0 ? photos.length - 1 : i - 1)}
-                                                        className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 text-white backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70"
-                                                    >
-                                                        
-                                                    </button>
-                                                    <button
-                                                        onClick={() => setActivePhotoIdx(i => i === photos.length - 1 ? 0 : i + 1)}
-                                                        className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 text-white backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70"
-                                                    >
-                                                        
-                                                    </button>
+                                            <div className="absolute bottom-8 right-8 flex gap-3">
+                                                <button
+                                                    onClick={() => setActivePhotoIdx(i => i === 0 ? photos.length - 1 : i - 1)}
+                                                    className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-3xl border border-white/20 text-white flex items-center justify-center hover:bg-white/20 transition-all"
+                                                >
+                                                    ←
+                                                </button>
+                                                <button
+                                                    onClick={() => setActivePhotoIdx(i => i === photos.length - 1 ? 0 : i + 1)}
+                                                    className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-3xl border border-white/20 text-white flex items-center justify-center hover:bg-white/20 transition-all"
+                                                >
+                                                    →
+                                                </button>
+                                            </div>
 
-                                                    <div className="absolute bottom-4 right-4 bg-black/70 backdrop-blur-md text-white px-3 py-1.5 rounded-full text-xs font-bold">
-                                                        {activePhotoIdx + 1} / {photos.length}
-                                                    </div>
-                                                </>
-                                            )}
+                                            <div className="absolute bottom-8 left-8 text-white/60 text-[10px] font-black uppercase tracking-[0.4em]">
+                                                {activePhotoIdx + 1} // {photos.length}
+                                            </div>
                                         </div>
                                     ) : (
-                                        <div className="h-96 bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
-                                            <span className="text-8xl"></span>
+                                        <div className="aspect-[16/9] bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                                            <span className="text-3xl font-black text-zinc-300 dark:text-zinc-700 italic tracking-tighter">ROOMIVO VISUALS MISSING</span>
                                         </div>
                                     )}
                                 </div>
 
-                                {/* Title & Description */}
-                                <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] border border-white/50 dark:border-white/10 p-6">
-                                    <h1 className="text-3xl font-bold text-zinc-900 dark:text-white mb-3">{property.title}</h1>
-                                    <div className="flex items-center gap-4 text-zinc-600 dark:text-zinc-400 mb-4">
-                                        <span className="flex items-center gap-1">
-                                             {property.city}
-                                        </span>
-                                        <span>•</span>
-                                        <span className="capitalize">{property.property_type}</span>
+                                {/* Core Identity */}
+                                <div className="space-y-6">
+                                    <h1 className="text-6xl sm:text-8xl font-black tracking-tighter text-zinc-900 dark:text-white uppercase leading-[0.85]">
+                                        {property.title}
+                                    </h1>
+                                    <div className="flex items-center gap-6 text-zinc-400 dark:text-zinc-500 font-black text-[10px] uppercase tracking-[0.4em]">
+                                        <span>{property.city}</span>
+                                        <span className="w-1 h-1 rounded-full bg-zinc-200" />
+                                        <span>{property.size_sqm}m²</span>
+                                        <span className="w-1 h-1 rounded-full bg-zinc-200" />
+                                        <span>{property.bedrooms} Bedrooms</span>
                                     </div>
-                                    <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed">{property.description}</p>
+                                    <p className="text-xl text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed max-w-4xl">
+                                        {property.description}
+                                    </p>
                                 </div>
 
-                                {/* Property Details */}
-                                <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] border border-white/50 dark:border-white/10 p-6">
-                                    <h2 className="text-xl font-bold mb-4">{t('property.detailsTitle', undefined, undefined)}</h2>
-                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-2xl">️</span>
-                                            <div>
-                                                <div className="text-sm text-zinc-600 dark:text-zinc-400">{t('property.bedrooms', undefined, undefined)}</div>
-                                                <div className="font-semibold">{property.bedrooms}</div>
-                                            </div>
+                                {/* Detail Matrix */}
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+                                    {[
+                                        { label: 'Surface Area', value: `${property.size_sqm}m²`, icon: '📐' },
+                                        { label: 'Bedroom Count', value: property.bedrooms, icon: '🛌' },
+                                        { label: 'Bathrooms', value: property.bathrooms, icon: '🚿' },
+                                        { label: 'Floor Level', value: property.floor_number || 'GF', icon: '🏢' }
+                                    ].map((stat, i) => (
+                                        <div key={i} className="glass-card !p-8 rounded-[2.5rem] border-zinc-100 dark:border-zinc-800/50">
+                                            <div className="text-2xl mb-4">{stat.icon}</div>
+                                            <div className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">{stat.label}</div>
+                                            <div className="text-xl font-black text-zinc-900 dark:text-white">{stat.value}</div>
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-2xl"></span>
-                                            <div>
-                                                <div className="text-sm text-zinc-600 dark:text-zinc-400">{t('property.bathrooms', undefined, undefined)}</div>
-                                                <div className="font-semibold">{property.bathrooms}</div>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-2xl"></span>
-                                            <div>
-                                                <div className="text-sm text-zinc-600 dark:text-zinc-400">{t('property.size', undefined, undefined)}</div>
-                                                <div translate="no" className="notranslate font-semibold">{property.size_sqm}m²</div>
-                                            </div>
-                                        </div>
-                                        {property.floor_number !== null && property.floor_number !== undefined && (
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-2xl"></span>
-                                                <div>
-                                                    <div className="text-sm text-zinc-600 dark:text-zinc-400">{t('property.floor', undefined, undefined)}</div>
-                                                    <div className="font-semibold">{property.floor_number}</div>
-                                                </div>
-                                            </div>
-                                        )}
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-2xl">️</span>
-                                            <div>
-                                                <div className="text-sm text-zinc-600 dark:text-zinc-400">{t('property.furnished', undefined, undefined)}</div>
-                                                <div className="font-semibold">{property.furnished ? t('property.yes', undefined, undefined) : t('property.no', undefined, undefined)}</div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* DPE / GES Energy Ratings */}
-                                    {property.dpe_rating && (
-                                        <div className="mt-6 pt-6 border-t">
-                                            <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-3"> {t('property.energyTitle', undefined, undefined)}</h3>
-                                            <div className="flex gap-4">
-                                                <div className="flex-1">
-                                                    <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">DPE</div>
-                                                    <div className={`inline-flex items-center justify-center w-12 h-12 rounded-xl text-white font-bold text-lg ${property.dpe_rating === 'A' ? 'bg-green-500' :
-                                                        property.dpe_rating === 'B' ? 'bg-lime-500' :
-                                                            property.dpe_rating === 'C' ? 'bg-yellow-400 text-zinc-800 dark:text-zinc-200' :
-                                                                property.dpe_rating === 'D' ? 'bg-amber-400 text-zinc-800 dark:text-zinc-200' :
-                                                                    property.dpe_rating === 'E' ? 'bg-orange-500' :
-                                                                        property.dpe_rating === 'F' ? 'bg-red-500' :
-                                                                            'bg-red-700'
-                                                        }`}>{property.dpe_rating}</div>
-                                                    {property.dpe_value && <div translate="no" className="notranslate text-xs text-zinc-500 dark:text-zinc-400 mt-1">{property.dpe_value} kWh/m²/an</div>}
-                                                </div>
-                                                {property.ges_rating && (
-                                                    <div className="flex-1">
-                                                        <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">GES</div>
-                                                        <div className={`inline-flex items-center justify-center w-12 h-12 rounded-xl text-white font-bold text-lg ${property.ges_rating === 'A' ? 'bg-purple-300' :
-                                                            property.ges_rating === 'B' ? 'bg-purple-400' :
-                                                                property.ges_rating === 'C' ? 'bg-purple-500' :
-                                                                    property.ges_rating === 'D' ? 'bg-purple-600' :
-                                                                        property.ges_rating === 'E' ? 'bg-purple-700' :
-                                                                            property.ges_rating === 'F' ? 'bg-purple-800' :
-                                                                                'bg-purple-900'
-                                                            }`}>{property.ges_rating}</div>
-                                                        {property.ges_value && <div translate="no" className="notranslate text-xs text-zinc-500 dark:text-zinc-400 mt-1">{property.ges_value} kgCO₂/m²/an</div>}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    )}
+                                    ))}
                                 </div>
 
-                                {/* Utilities & CAF Eligibility */}
-                                <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] border border-white/50 dark:border-white/10 p-6">
-                                    <h2 className="text-xl font-bold mb-4"> {t('property.utilitiesTitle', undefined, undefined)}</h2>
-                                    <div className="space-y-4">
-                                        <div>
-                                            <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-2">{t('property.includedInRent', undefined, undefined)}</h3>
-                                            <div className="flex gap-4">
-                                                <div className={`text-center p-2 rounded-xl ${property.utilities_included?.includes('electricity') ? 'bg-yellow-50 text-yellow-700' : 'bg-zinc-50 dark:bg-zinc-800/50 text-zinc-400 opacity-50'}`}>
-                                                    <div className="text-2xl"></div>
-                                                    <div className="text-xs font-medium">{t('property.utilities.elec', undefined, 'Elec')}</div>
-                                                </div>
-                                                <div className={`text-center p-2 rounded-xl ${property.utilities_included?.includes('gas') ? 'bg-orange-50 text-orange-700' : 'bg-zinc-50 dark:bg-zinc-800/50 text-zinc-400 opacity-50'}`}>
-                                                    <div className="text-2xl"></div>
-                                                    <div className="text-xs font-medium">{t('property.utilities.gas', undefined, 'Gas')}</div>
-                                                </div>
-                                                <div className={`text-center p-2 rounded-xl ${property.utilities_included?.includes('water') ? 'bg-teal-50/50 dark:bg-teal-900/10 text-teal-700' : 'bg-zinc-50 dark:bg-zinc-800/50 text-zinc-400 opacity-50'}`}>
-                                                    <div className="text-2xl"></div>
-                                                    <div className="text-xs font-medium">{t('property.utilities.water', undefined, 'Water')}</div>
-                                                </div>
-                                                <div className={`text-center p-2 rounded-xl ${property.utilities_included?.includes('internet') ? 'bg-purple-50 text-purple-700' : 'bg-zinc-50 dark:bg-zinc-800/50 text-zinc-400 opacity-50'}`}>
-                                                    <div className="text-2xl"></div>
-                                                    <div className="text-xs font-medium">{t('property.utilities.wifi', undefined, undefined)}</div>
-                                                </div>
+                                {/* Energy & Compliance */}
+                                <div className="glass-card !p-12 rounded-[3rem] border-zinc-100 dark:border-zinc-800/50 relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/5 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+                                    <h2 className="text-2xl font-black uppercase tracking-tighter mb-10">{t('property.energyTitle', undefined, 'Energy Intelligence')}</h2>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-12">
+                                        <div className="flex items-center gap-8">
+                                            <div className={`w-24 h-24 rounded-3xl flex items-center justify-center text-3xl font-black text-white shadow-2xl ${
+                                                property.dpe_rating === 'A' ? 'bg-emerald-500 shadow-emerald-500/20' : 
+                                                property.dpe_rating === 'B' ? 'bg-lime-500 shadow-lime-500/20' : 
+                                                'bg-zinc-900 shadow-zinc-900/20'
+                                            }`}>
+                                                {property.dpe_rating || 'N/A'}
                                             </div>
-                                            <div className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
-                                                {property.utilities_included?.length ? t('property.utilities.includedDesc', undefined, undefined) : t('property.utilities.notIncludedDesc', undefined, undefined)}
+                                            <div>
+                                                <div className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">Energy Performance (DPE)</div>
+                                                <div className="text-sm font-black text-zinc-900 dark:text-white">{property.dpe_value || 0} kWh/m²/year</div>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-8">
+                                            <div className="w-24 h-24 rounded-3xl bg-purple-500 flex items-center justify-center text-3xl font-black text-white shadow-2xl shadow-purple-500/20">
+                                                {property.ges_rating || 'N/A'}
+                                            </div>
+                                            <div>
+                                                <div className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">GHG Emissions (GES)</div>
+                                                <div className="text-sm font-black text-zinc-900 dark:text-white">{property.ges_value || 0} kgCO₂/m²/year</div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-
-                                {/* Amenities */}
-                                {(amenities.length > 0 || customAmenities.length > 0) && (
-                                    <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] border border-white/50 dark:border-white/10 p-6">
-                                        <h2 className="text-xl font-bold mb-4 text-zinc-900 dark:text-white">{t('property.amenities', undefined, undefined)}</h2>
-                                        <div className="flex flex-wrap gap-2">
-                                            {[...amenities, ...customAmenities].map((amenity: string, idx: number) => (
-                                                <span key={idx} className="px-3 py-1 bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300 rounded-full text-sm font-medium">
-                                                    {amenity}
-                                                </span>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Rooms & Layout */}
-                                {property.room_details && property.room_details.length > 0 && (
-                                    <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] border border-white/50 dark:border-white/10 p-6">
-                                        <h2 className="text-xl font-bold mb-4 text-zinc-900 dark:text-white">️ {t('property.layout', undefined, undefined)}</h2>
-                                        <div className="space-y-4">
-                                            {property.room_details.map((room: any, index: number) => (
-                                                <div key={index} className="p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-zinc-100 dark:border-zinc-700/50">
-                                                    <div className="flex items-center justify-between mb-3">
-                                                        <h3 className="font-semibold text-zinc-900 dark:text-white">{t('property.bedroom', undefined, undefined)} {index + 1}</h3>
-                                                        <div className="flex gap-2 text-xs text-zinc-500 dark:text-zinc-400">
-                                                            {room.surface && <span translate="no" className="notranslate">{room.surface}m²</span>}
-                                                            {room.capacity && <span>• {t(room.capacity > 1 ? 'property.persons' : 'property.person', { count: room.capacity }, undefined)}</span>}
-                                                            {room.bedding && room.bedding !== 'None' && <span>• {t('property.bed', { count: 1 }, undefined)}</span>}
-                                                        </div>
-                                                    </div>
-                                                    {room.description && (
-                                                        <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-3">{room.description}</p>
-                                                    )}
-                                                    {room.custom_amenities && room.custom_amenities.length > 0 && (
-                                                        <div className="flex flex-wrap gap-1.5">
-                                                            {room.custom_amenities.map((amenity: string, ai: number) => (
-                                                                <span key={ai} className="px-2.5 py-1 bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800 rounded-full text-xs font-medium">
-                                                                    {amenity}
-                                                                </span>
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Location & Transport */}
-                                <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] border border-white/50 dark:border-white/10 p-6">
-                                    <h2 className="text-xl font-bold mb-4"> {t('property.location', undefined, undefined)}</h2>
-                                    <p className="text-zinc-700 dark:text-zinc-300 mb-4">{fullAddress}</p>
-                                    {publicTransport.length > 0 && (
-                                        <div className="mb-4">
-                                            <h3 className="font-semibold text-zinc-900 dark:text-white mb-2"> {t('property.transport', undefined, undefined)}</h3>
-                                            <ul className="space-y-1">
-                                                {publicTransport.slice(0, 10).map((transport: string, idx: number) => (
-                                                    <li key={idx} className="text-sm text-zinc-600 dark:text-zinc-400 flex items-start gap-2">
-                                                        <span className="text-emerald-600 dark:text-emerald-400 mt-0.5">→</span>
-                                                        <span>{transport}</span>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                    )}
-                                    {nearbyLandmarks.length > 0 && (
-                                        <div>
-                                            <h3 className="font-semibold text-zinc-900 dark:text-white mb-2"> {t('property.landmarks', undefined, undefined)}</h3>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
-                                                {nearbyLandmarks.slice(0, 12).map((landmark: string, idx: number) => (
-                                                    <div key={idx} className="text-sm text-zinc-600 dark:text-zinc-400 flex items-start gap-2">
-                                                        <span className="text-teal-600 dark:text-teal-400 mt-0.5">•</span>
-                                                        <span>{landmark}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
                                 </div>
                             </div>
 
-                            {/* Right Column - Price & Contact */}
-                            <div className="lg:col-span-1 space-y-6">
-                                <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] border border-white/50 dark:border-white/10 p-6 sticky top-6">
-                                    <div className="text-center mb-6">
-                                        <div translate="no" className="notranslate text-4xl font-bold text-teal-600 dark:text-teal-400 mb-1">€{property.monthly_rent}</div>
-                                        <div className="text-zinc-600 dark:text-zinc-400">
-                                            {t('property.price.perMonth', undefined, undefined)} {property.charges_included ? (
-                                                <span className="inline-block px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-bold ml-1">CC</span>
-                                            ) : (
-                                                <span className="inline-block px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full text-xs font-bold ml-1">HC</span>
-                                            )}
+                            {/* Right Column - Transaction Center */}
+                            <div className="lg:col-span-4 space-y-10">
+                                <div className="glass-card !p-12 sticky top-32 shadow-[0_60px_120px_-20px_rgba(0,0,0,0.15)] dark:shadow-[0_60px_120px_-20px_rgba(0,0,0,0.5)] border-zinc-100 dark:border-zinc-800/50 rounded-[3.5rem] relative overflow-hidden">
+                                    <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-teal-500 to-indigo-500" />
+                                    
+                                    <div className="text-center mb-12">
+                                        <div className="flex items-baseline justify-center gap-2 mb-2">
+                                            <span className="text-7xl font-black text-zinc-900 dark:text-white tracking-tighter">€{property.monthly_rent}</span>
+                                            <span className="text-sm font-black text-zinc-400 uppercase tracking-[0.2em]">{t('search.property.mo', undefined, '/ Month')}</span>
                                         </div>
-                                        {!property.charges_included && property.charges && (
-                                            <div className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-                                                {t('property.price.total', undefined, undefined)} <span translate="no" className="notranslate font-semibold text-zinc-800 dark:text-zinc-200">€{(Number(property.monthly_rent) + Number(property.charges)).toFixed(0)}/{t('property.price.perMonth', undefined, undefined)}</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="space-y-3 mb-6 text-sm">
-                                        {property.deposit && (
-                                            <div className="flex justify-between">
-                                                <span className="text-zinc-600 dark:text-zinc-400">{t('property.price.deposit', undefined, undefined)}</span>
-                                                <span translate="no" className="notranslate font-semibold">€{property.deposit}</span>
-                                            </div>
-                                        )}
-                                        {property.charges && (
-                                            <div className="flex justify-between">
-                                                <span className="text-zinc-600 dark:text-zinc-400">{t('property.price.charges', undefined, undefined)}</span>
-                                                <span translate="no" className="notranslate font-semibold">€{property.charges}/{t('property.price.perMonth', undefined, undefined)} {property.charges_included ? t('property.price.included', undefined, undefined) : t('property.price.excluded', undefined, undefined)}</span>
-                                            </div>
-                                        )}
-                                        {property.charges_description && (
-                                            <div className="text-xs text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 rounded p-2 mt-1">
-                                                 {property.charges_description}
-                                            </div>
-                                        )}
-                                        {property.available_from && (
-                                            <div className="flex justify-between">
-                                                <span className="text-zinc-600 dark:text-zinc-400">{t('property.status.available', undefined, undefined)}</span>
-                                                <span className="font-semibold">{new Date(property.available_from).toLocaleDateString(t('landing.lang', undefined, undefined) === 'fr' ? 'fr-FR' : 'en-GB')}</span>
-                                            </div>
-                                        )}
-                                        {/* Guarantor Info */}
-                                        <div className="flex justify-between">
-                                            <span className="text-zinc-600 dark:text-zinc-400">{t('property.guarantor.title', undefined, undefined)}</span>
-                                            <span className="font-semibold">{property.guarantor_required ? t('property.guarantor.required', undefined, undefined) : t('property.guarantor.notRequired', undefined, undefined)}</span>
-                                        </div>
-                                        {property.guarantor_required && property.accepted_guarantor_types && (
-                                            <div className="flex flex-wrap gap-1 mt-1">
-                                                {(Array.isArray(property.accepted_guarantor_types) ? property.accepted_guarantor_types : []).map((type: string) => (
-                                                    <span key={type} className="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded text-xs">
-                                                        {type === 'visale' ? t('property.guarantor.visale', undefined, undefined) : type === 'garantme' ? t('property.guarantor.garantme', undefined, undefined) : type === 'physical' ? t('property.guarantor.physical', undefined, undefined) : type === 'organisation' ? t('property.guarantor.organisation', undefined, undefined) : type}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        )}
-                                        {/* CAF Eligibility */}
-                                        <div className="flex justify-between">
-                                            <span className="text-zinc-600 dark:text-zinc-400 font-medium flex items-center gap-1">
-                                                🏦 {t('property.pricing.cafEligible', undefined, 'CAF Eligible')}
-                                            </span>
-                                            <span className={`font-semibold ${property.caf_eligible ? 'text-teal-600 dark:text-teal-400' : 'text-zinc-500'}`}>
-                                                {property.caf_eligible ? t('common.yes', undefined, 'Yes') : t('common.no', undefined, 'No')}
+                                        <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-full">
+                                            <div className="w-2 h-2 rounded-full bg-teal-500" />
+                                            <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                                                {property.charges_included ? t('property.price.included', undefined, 'All-Inclusive') : t('property.price.excluded', undefined, 'Rent + Charges')}
                                             </span>
                                         </div>
                                     </div>
-                                    {!isOwner && (
-                                        <div className="space-y-3">
-                                            <button onClick={() => setIsApplying(true)} className="w-full py-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-white font-bold rounded-xl hover:shadow-sm transition-all hover:scale-[1.02]">
-                                                 {t('property.actions.apply', undefined, undefined)}
+
+                                    <div className="space-y-6 mb-12">
+                                        {[
+                                            { label: 'Security Deposit', value: `€${property.deposit || 0}` },
+                                            { label: 'Monthly Charges', value: `€${property.charges || 0}` },
+                                            { label: 'Guarantor Protocol', value: property.guarantor_required ? 'Required' : 'Flexible' },
+                                            { label: 'Available From', value: property.available_from ? new Date(property.available_from).toLocaleDateString() : 'Immediate' }
+                                        ].map((item, i) => (
+                                            <div key={i} className="flex justify-between items-center pb-4 border-b border-zinc-100 dark:border-zinc-800/50 last:border-0 last:pb-0">
+                                                <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{item.label}</span>
+                                                <span className="text-sm font-black text-zinc-900 dark:text-white uppercase tracking-tighter">{item.value}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {!isOwner ? (
+                                        <div className="space-y-4">
+                                            <button 
+                                                onClick={() => setIsApplying(true)}
+                                                className="w-full py-6 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-xs font-black uppercase tracking-[0.4em] rounded-[2rem] shadow-2xl hover:scale-105 active:scale-95 transition-all group overflow-hidden relative"
+                                            >
+                                                <div className="absolute inset-0 bg-teal-500 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
+                                                <span className="relative z-10">{t('property.actions.apply', undefined, 'Initialize Application')}</span>
                                             </button>
-                                            <button className="w-full py-3 bg-white border-2 border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 font-bold rounded-xl hover:bg-zinc-50 dark:bg-zinc-800/50 transition-all">
-                                                 {t('property.actions.message', undefined, undefined)}
+                                            <button className="w-full py-6 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white text-xs font-black uppercase tracking-[0.4em] rounded-[2rem] hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all">
+                                                {t('property.actions.message', undefined, 'Open Channel')}
                                             </button>
                                         </div>
-                                    )}
-                                    {isOwner && property.status === 'draft' && (
-                                        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
-                                            <p className="text-sm text-yellow-800 mb-2">
-                                                ️ {t('property.status.notPublishedNotice', undefined, undefined)}
-                                            </p>
+                                    ) : (
+                                        <div className="space-y-6">
+                                            <div className="p-6 bg-zinc-100/50 dark:bg-zinc-800/50 rounded-[2.5rem] border border-zinc-200/50 dark:border-zinc-700/30 text-center">
+                                                <div className="text-4xl font-black text-zinc-900 dark:text-white tracking-tighter mb-1">{property.views_count}</div>
+                                                <div className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Global Views</div>
+                                            </div>
+                                            <button 
+                                                onClick={() => router.push(`/properties/${propertyId}/edit`)}
+                                                className="w-full py-5 border-2 border-zinc-200 dark:border-zinc-800 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] hover:border-zinc-900 dark:hover:border-white transition-all"
+                                            >
+                                                Update Protocol
+                                            </button>
                                         </div>
                                     )}
                                 </div>
-                                <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] border border-white/50 dark:border-white/10 p-6">
+
+                                {/* Integrated Tools */}
+                                <div className="glass-card !p-12 rounded-[3.5rem] border-zinc-100 dark:border-zinc-800/50">
+                                    <h3 className="text-xl font-black uppercase tracking-tighter mb-8 italic">Management Suite</h3>
                                     {isOwner ? (
-                                        <>
+                                        <div className="space-y-10">
                                             <VisitScheduler
                                                 propertyId={property.id}
                                                 rooms={(property.room_details || []).map((_: any, i: number) => ({
@@ -569,8 +404,10 @@ export default function PropertyDetailPage() {
                                                     index: i,
                                                 }))}
                                             />
-                                            <LeaseManager propertyId={property.id} monthlyRent={property.monthly_rent} />
-                                        </>
+                                            <div className="pt-10 border-t border-zinc-100 dark:border-zinc-800/50">
+                                                <LeaseManager propertyId={property.id} monthlyRent={property.monthly_rent} />
+                                            </div>
+                                        </div>
                                     ) : (
                                         <VisitBookingWizard
                                             propertyId={property.id}
@@ -581,67 +418,59 @@ export default function PropertyDetailPage() {
                                         />
                                     )}
                                 </div>
-                                <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] border border-white/50 dark:border-white/10 p-6">
-                                    <h3 className="font-semibold text-zinc-900 dark:text-white mb-3">{t('property.status.stats', undefined, undefined)}</h3>
-                                    <div className="space-y-2 text-sm">
-                                        <div className="flex justify-between">
-                                            <span className="text-zinc-600 dark:text-zinc-400">{t('property.status.views', undefined, undefined)}</span>
-                                            <span className="font-semibold">{property.views_count}</span>
-                                        </div>
-                                        <div className="flex justify-between">
-                                            <span className="text-zinc-600 dark:text-zinc-400">{t('property.status.listed', undefined, undefined)}</span>
-                                            <span className="font-semibold">{new Date(property.created_at).toLocaleDateString(t('landing.lang', undefined, undefined) === 'fr' ? 'fr-FR' : 'en-GB')}</span>
-                                        </div>
-                                        {property.published_at && (
-                                            <div className="flex justify-between">
-                                                <span className="text-zinc-600 dark:text-zinc-400">{t('property.status.publishedAt', undefined, undefined)}</span>
-                                                <span className="font-semibold">{new Date(property.published_at).toLocaleDateString()}</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </main>
 
+                    {/* Application Modal - Ultra High Fidelity */}
                     {isApplying && (
-                        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                            <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl rounded-3xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.3)] max-w-lg w-full p-8 border border-white/50 dark:border-white/10">
-                                <div className="flex justify-between items-center mb-4">
-                                    <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">{t('property.apply.title', undefined, undefined)} </h2>
-                                    <button onClick={() => setIsApplying(false)} className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"></button>
-                                </div>
-                                <p className="text-zinc-600 dark:text-zinc-400 mb-6">
-                                    {t('property.apply.desc', undefined, undefined)}
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+                            <motion.div 
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                onClick={() => setIsApplying(false)}
+                                className="absolute inset-0 bg-zinc-950/80 backdrop-blur-2xl"
+                            />
+                            <motion.div 
+                                initial={{ opacity: 0, scale: 0.9, y: 40 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                className="max-w-2xl w-full glass-card !p-12 sm:!p-16 rounded-[4rem] border-white/20 relative z-10 shadow-2xl overflow-hidden"
+                            >
+                                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-teal-500 to-indigo-500" />
+                                <h2 className="text-4xl font-black tracking-tighter uppercase mb-6 leading-none">
+                                    {t('property.apply.title', undefined, 'Application Protocol')}
+                                </h2>
+                                <p className="text-xl text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed mb-12">
+                                    {t('property.apply.desc', undefined, 'Introduce yourself to the landlord. A personalized cover letter increases your chances by 60%.')}
                                 </p>
+                                
                                 <textarea
                                     value={coverLetter}
                                     onChange={(e) => setCoverLetter(e.target.value)}
-                                    placeholder={t('property.apply.placeholder', undefined, undefined)}
-                                    className="w-full h-32 px-4 py-3 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900/50 text-zinc-900 dark:text-white placeholder-zinc-500 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 mb-6 resize-none transition-all"
+                                    placeholder={t('property.apply.placeholder', undefined, 'Describe your profile, lifestyle, and rental duration...')}
+                                    className="w-full h-48 px-8 py-6 rounded-[2.5rem] bg-zinc-100 dark:bg-zinc-800/50 border-none focus:ring-2 focus:ring-teal-500/30 text-lg font-medium text-zinc-900 dark:text-white placeholder:text-zinc-400 transition-all resize-none mb-12 shadow-inner"
                                 />
-                                <div className="flex gap-3">
-                                    <button onClick={() => setIsApplying(false)} className="flex-1 py-3 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl font-medium transition-colors">
-                                        {t('property.apply.cancel', undefined, undefined)}
+
+                                <div className="flex gap-6">
+                                    <button 
+                                        onClick={() => setIsApplying(false)}
+                                        className="flex-1 py-6 text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-all"
+                                    >
+                                        {t('property.apply.cancel', undefined, 'Abort')}
                                     </button>
                                     <button
                                         onClick={handleApply}
                                         disabled={submittingApp}
-                                        className="flex-1 py-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-white rounded-xl font-bold hover:shadow-sm hover: transition-all disabled:opacity-50 flex justify-center items-center gap-2"
+                                        className="flex-[2] py-6 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-xs font-black uppercase tracking-[0.4em] rounded-[2rem] shadow-2xl hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
                                     >
-                                        {submittingApp ? (
-                                            <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> {t('property.apply.sending', undefined, undefined)}</>
-                                        ) : (
-                                            <><span></span> {t('property.apply.send', undefined, undefined)}</>
-                                        )}
+                                        {submittingApp ? 'TRANSMITTING...' : t('property.apply.send', undefined, 'Submit Application')}
                                     </button>
                                 </div>
-                            </div>
+                            </motion.div>
                         </div>
                     )}
-                </motion.div>
+                </div>
             </PremiumLayout>
         </ProtectedRoute>
     );
 }
-

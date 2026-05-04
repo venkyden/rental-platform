@@ -59,11 +59,11 @@ h2 { @apply text-3xl lg:text-4xl; }
 
 /* Glassmorphism Utilities (Apple-Inspired) */
 @utility glass {
-  @apply bg-white/70 dark:bg-zinc-900/70 backdrop-blur-2xl border border-white/40 dark:border-white/5 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)];
+  @apply bg-white/70 dark:bg-zinc-900/60 backdrop-blur-3xl border border-white/40 dark:border-white/5 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)];
 }
 
 @utility glass-card {
-  @apply glass rounded-[2.5rem] p-8 transition-all duration-500 ease-out hover:shadow-[0_30px_60px_-12px_rgba(0,0,0,0.12)] hover:-translate-y-2 hover:bg-white/80 dark:hover:bg-zinc-900/80;
+  @apply glass rounded-[2.5rem] p-8 transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.15)] hover:-translate-y-2 hover:bg-white/90 dark:hover:bg-zinc-900/80;
 }
 
 /* Vibrancy Background (Apple-Inspired) */

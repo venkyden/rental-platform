@@ -41,6 +41,7 @@ class Settings(BaseSettings):
     # Monitoring
     SENTRY_DSN: Optional[str] = None
     ENVIRONMENT: str = "development"
+    COOKIE_DOMAIN: Optional[str] = None
 
     # CORS
     FRONTEND_URL: str = "http://localhost:3000"

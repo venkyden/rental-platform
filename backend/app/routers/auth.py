@@ -191,8 +191,9 @@ async def login(
         httponly=True,
         max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
         expires=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
-        samesite="none" if settings.ENVIRONMENT == "production" else "lax",
+        samesite="lax" if settings.ENVIRONMENT == "production" else "lax",
         secure=settings.ENVIRONMENT == "production",
+        domain=settings.COOKIE_DOMAIN if settings.ENVIRONMENT == "production" else None,
     )
 
     # Update last login
@@ -263,6 +264,23 @@ async def refresh_token(
         expires_delta=access_token_expires,
     )
     
+    # Issue new refresh token (rotation)
+    new_refresh_token = create_refresh_token(
+        data={"sub": user.email, "version": user.refresh_token_version}
+    )
+
+    # Set new refresh token cookie
+    response.set_cookie(
+        key="refresh_token",
+        value=new_refresh_token,
+        httponly=True,
+        max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
+        expires=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
+        samesite="lax" if settings.ENVIRONMENT == "production" else "lax",
+        secure=settings.ENVIRONMENT == "production",
+        domain=settings.COOKIE_DOMAIN if settings.ENVIRONMENT == "production" else None,
+    )
+    
     from app.core.segment_routing import get_redirect_path, get_segment_config
     role_value = user.role.value if hasattr(user.role, "value") else user.role
     redirect_path = get_redirect_path(user.segment, role_value)
@@ -294,8 +312,9 @@ async def logout(
     response.delete_cookie(
         key="refresh_token",
         httponly=True,
-        samesite="none" if settings.ENVIRONMENT == "production" else "lax",
+        samesite="lax" if settings.ENVIRONMENT == "production" else "lax",
         secure=settings.ENVIRONMENT == "production",
+        domain=settings.COOKIE_DOMAIN if settings.ENVIRONMENT == "production" else None,
     )
     return {"message": "Successfully logged out"}
 

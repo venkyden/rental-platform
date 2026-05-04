@@ -51,7 +51,7 @@ export default function AccountSettingsPage() {
         setProfileMessage({ text: '', type: '' });
 
         try {
-            await apiClient.client.put('/auth/me', { full_name: fullName, bio });
+            await apiClient.client.patch('/auth/me', { full_name: fullName, bio });
             setProfileMessage({ text: t('settings.account.messages.profileSuccess', undefined, 'Profile updated successfully!'), type: 'success' });
             setTimeout(() => window.location.reload(), 1000);
         } catch (error: any) {
@@ -161,28 +161,28 @@ export default function AccountSettingsPage() {
                             <p className="text-zinc-500 font-medium">{t('settings.subtitle', undefined, 'Manage your digital identity and security preferences.')}</p>
                         </div>
 
-                        <div className="flex flex-col gap-2 p-1.5 bg-zinc-100 dark:bg-zinc-800/50 rounded-[2rem] border border-zinc-200/50 dark:border-zinc-700/30 backdrop-blur-xl">
+                        <div className="flex flex-row md:flex-col gap-2 p-1.5 bg-zinc-100 dark:bg-zinc-800/50 rounded-full md:rounded-[2rem] border border-zinc-200/50 dark:border-zinc-700/30 backdrop-blur-xl overflow-x-auto no-scrollbar scroll-smooth">
                             {[
                                 { id: 'account', icon: User, label: t('settings.tabs.profile', undefined, 'Profile'), path: '/settings/account' },
                                 { id: 'notifications', icon: Bell, label: t('settings.tabs.notifications', undefined, 'Notifications'), path: '/settings/notifications' },
                                 { id: 'privacy', icon: Shield, label: t('settings.tabs.privacy', undefined, 'Privacy'), path: '/settings/privacy' },
                                 { id: 'preferences', icon: Settings, label: t('settings.tabs.preferences', undefined, 'Preferences'), path: '/settings/preferences' }
                             ].map((tab) => (
-                                <div key={tab.id} className="flex flex-col">
+                                <div key={tab.id} className="flex flex-row md:flex-col shrink-0">
                                     <button
                                         onClick={() => router.push(tab.path)}
-                                        className={`flex items-center gap-4 px-6 py-4 rounded-[1.5rem] text-sm font-black uppercase tracking-widest transition-all duration-500 ${
+                                        className={`flex items-center gap-3 px-5 md:px-6 py-3 md:py-4 rounded-full md:rounded-[1.5rem] text-[10px] md:text-sm font-black uppercase tracking-widest transition-all duration-500 whitespace-nowrap ${
                                             tab.id === 'account' 
-                                            ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-xl scale-100' 
+                                            ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-xl scale-100' 
                                             : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'
                                         }`}
                                     >
-                                        <tab.icon className={`w-4 h-4 ${tab.id === 'account' ? 'text-teal-500' : ''}`} />
+                                        <tab.icon className={`w-3.5 h-3.5 md:w-4 md:h-4 ${tab.id === 'account' ? 'text-teal-500' : ''}`} />
                                         {tab.label}
                                     </button>
                                     
                                     {tab.id === 'account' && (
-                                        <div className="px-6 py-4 flex flex-col gap-4">
+                                        <div className="hidden md:flex px-6 py-4 flex-col gap-4">
                                             <button 
                                                 onClick={() => setActiveTab('profile')}
                                                 className={`text-[10px] font-black uppercase tracking-widest text-left transition-all ${activeTab === 'profile' ? 'text-teal-500' : 'text-zinc-400 hover:text-zinc-500'}`}

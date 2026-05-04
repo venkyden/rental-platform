@@ -33,30 +33,48 @@ class ApiClient {
             (response) => response,
             async (error: AxiosError) => {
                 const originalRequest = error.config as any;
+                const isLoginPage = typeof window !== 'undefined' && window.location.pathname === '/auth/login';
 
                 // If the error is 401 and we haven't retried yet
                 if (error.response?.status === 401 && !originalRequest._retry) {
                     originalRequest._retry = true;
 
+                    // If we're already on the login page, don't try to refresh or redirect
+                    // This prevents loops if the refresh token is missing or invalid
+                    if (isLoginPage) {
+                        this.clearToken();
+                        return Promise.reject(error);
+                    }
+
                     try {
+                        console.log('[API] 401 detected, attempting token refresh...');
                         // Attempt to refresh the token using the HttpOnly cookie
                         const refreshResponse = await axios.post(
                             `${API_URL}/auth/refresh`,
                             {},
-                            { withCredentials: true }
+                            { 
+                                withCredentials: true,
+                                // Add a timeout to refresh requests to avoid hanging
+                                timeout: 10000 
+                            }
                         );
 
                         const newAccessToken = refreshResponse.data.access_token;
                         if (newAccessToken) {
+                            console.log('[API] Token refresh successful');
                             this.setToken(newAccessToken);
                             // Retry the original request with the new token
                             originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
                             return this.client(originalRequest);
                         }
                     } catch (refreshError) {
+                        console.error('[API] Token refresh failed:', refreshError);
                         // Refresh token failed or expired
                         this.clearToken();
-                        if (typeof window !== 'undefined' && window.location.pathname !== '/auth/login') {
+                        
+                        // Only redirect if we're not already on the login page
+                        if (typeof window !== 'undefined' && !isLoginPage) {
+                            console.log('[API] Redirecting to login...');
                             window.location.href = '/auth/login?expired=1';
                         }
                         return Promise.reject(refreshError);

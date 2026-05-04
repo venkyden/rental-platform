@@ -148,8 +148,8 @@ export default function OnboardingQuestionnaire({ userType, initialResponses, on
         return (
             <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden bg-slate-50 dark:bg-zinc-950">
                 <div className="text-center z-10">
-                    <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-4 border-teal-600"></div>
-                    <p className="mt-4 text-lg text-zinc-700 dark:text-zinc-300">{t('onboarding.processing', undefined, 'Processing your responses...')}</p>
+                    <div className="inline-block animate-spin rounded-full h-24 w-24 border-b-4 border-zinc-900 dark:border-white"></div>
+                    <p className="mt-8 text-lg font-black uppercase tracking-[0.2em] text-zinc-900 dark:text-white">{t('onboarding.processing', undefined, 'Optimizing your profile...')}</p>
                 </div>
             </div>
         );
@@ -162,69 +162,91 @@ export default function OnboardingQuestionnaire({ userType, initialResponses, on
             {/* Background Effects matching AuthLayout */}
             <div className="absolute inset-0 z-0">
                 <div className="absolute top-0 w-full h-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-teal-50/50 via-slate-50 to-white dark:from-teal-900/20 dark:via-zinc-950 dark:to-zinc-950"></div>
+                <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-10"></div>
             </div>
 
             <div className="z-10 max-w-2xl w-full relative">
-                {/* Progress Bar */}
-                <div className="mb-8 px-2">
-                    <div className="h-2 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden shadow-inner">
-                        <div
-                            className="h-full bg-teal-500 transition-all duration-500 ease-out"
-                            style={{ width: `${progress}%` }}
+                {/* Progress Bar - Premium Style */}
+                <div className="mb-12 px-4">
+                    <div className="h-3 bg-zinc-100 dark:bg-zinc-900 rounded-full overflow-hidden shadow-inner border border-white/40 dark:border-zinc-800/50">
+                        <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${progress}%` }}
+                            transition={{ duration: 1, ease: "easeOut" }}
+                            className="h-full bg-gradient-to-r from-teal-400 to-teal-500 shadow-[0_0_15px_rgba(45,212,191,0.5)]"
                         />
                     </div>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2 text-center font-medium">
-                        {t('onboarding.step', { current: currentVisibleStepCount, total: totalVisibleQuestions }, `Question ${currentVisibleStepCount} of ${totalVisibleQuestions}`)}
-                    </p>
+                    <div className="flex justify-between items-center mt-4">
+                        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em]">
+                            {t('onboarding.stepLabel', undefined, 'Progress')}
+                        </p>
+                        <p className="text-[10px] font-black text-teal-500 uppercase tracking-[0.3em]">
+                            {Math.round(progress)}%
+                        </p>
+                    </div>
                 </div>
 
-                {/* Question Card */}
+                {/* Question Card - High Fidelity */}
                 <div className="relative">
-                    <AnimatePresence>
+                    <AnimatePresence mode="wait">
                         {allQuestions.map((q, index) => {
                             if (index !== currentStepIndex) return null;
                             return (
                                 <motion.div
                                     key={q.id}
-                                    initial={{ opacity: 0, x: 20, position: 'relative' }}
-                                    animate={{ opacity: 1, x: 0, position: 'relative' }}
-                                    exit={{ opacity: 0, x: -20, position: 'absolute', top: 0, left: 0, width: '100%' }}
-                                    transition={{ duration: 0.3 }}
-                                    className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] dark:shadow-[0_8px_40px_-12px_rgba(0,0,0,0.5)] border border-white/50 dark:border-white/10 p-8 md:p-12"
+                                    initial={{ opacity: 0, y: 40, scale: 0.95 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: -40, scale: 0.95 }}
+                                    transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                                    className="bg-white/50 dark:bg-zinc-900/50 backdrop-blur-3xl rounded-[3rem] shadow-2xl border border-white/40 dark:border-zinc-800/50 p-10 md:p-16 relative overflow-hidden"
                                 >
-                                    <div className="text-center mb-8">
-                                        <div className="text-6xl mb-4 animate-bounce">{q.emoji}</div>
-                                        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">
+                                    {/* Subheader */}
+                                    <div className="flex justify-center mb-8">
+                                        <div className="px-6 py-2 rounded-full bg-zinc-900/5 dark:bg-white/5 text-zinc-400 dark:text-zinc-500 text-[10px] font-black uppercase tracking-[0.3em] border border-zinc-100 dark:border-zinc-800">
+                                            {t('onboarding.step', { current: currentVisibleStepCount, total: totalVisibleQuestions }, `Question ${currentVisibleStepCount} / ${totalVisibleQuestions}`)}
+                                        </div>
+                                    </div>
+
+                                    <div className="text-center mb-12">
+                                        <div className="text-7xl mb-8 transform hover:scale-110 transition-transform duration-500">{q.emoji}</div>
+                                        <h2 className="text-4xl md:text-5xl font-black text-zinc-900 dark:text-white mb-4 tracking-tighter leading-tight uppercase">
                                             {t(q.question, undefined, q.question)}
                                         </h2>
+                                        {q.description && (
+                                            <p className="text-zinc-500 dark:text-zinc-400 font-medium text-lg leading-relaxed max-w-md mx-auto">
+                                                {t(q.description, undefined, q.description)}
+                                            </p>
+                                        )}
                                     </div>
 
                                     {/* Rendering the Question */}
-                                    <QuestionRenderer
-                                        question={q}
-                                        responses={responses}
-                                        onAnswer={handleAnswer}
-                                        onRangeUpdate={handleRangeUpdate}
-                                        multiSelectValues={multiSelectValues}
-                                        onMultiSelectToggle={handleMultiSelectToggle}
-                                        sanitizeInput={sanitizeInput}
-                                    />
+                                    <div className="relative z-10">
+                                        <QuestionRenderer
+                                            question={q}
+                                            responses={responses}
+                                            onAnswer={handleAnswer}
+                                            onRangeUpdate={handleRangeUpdate}
+                                            multiSelectValues={multiSelectValues}
+                                            onMultiSelectToggle={handleMultiSelectToggle}
+                                            sanitizeInput={sanitizeInput}
+                                        />
+                                    </div>
 
                                     {/* Navigation */}
-                                    <div className="mt-8 pt-6 border-t border-zinc-100 dark:border-zinc-800/50 flex justify-between items-center">
+                                    <div className="mt-12 pt-10 border-t border-zinc-100 dark:border-zinc-800/50 flex justify-between items-center">
                                         {currentStepIndex > 0 ? (
                                             <button
                                                 onClick={handleBack}
-                                                className="text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 font-medium flex items-center gap-2 transition-colors"
+                                                className="w-12 h-12 rounded-full bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:scale-110 active:scale-95 transition-all group"
                                             >
-                                                ← {t('onboarding.back')}
+                                                <span className="text-xl group-hover:translate-x-[-2px] transition-transform">←</span>
                                             </button>
                                         ) : (
                                             <div />
                                         )}
                                         <button
                                             onClick={handleSkip}
-                                            className="text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-400 text-sm transition-colors"
+                                            className="text-[10px] font-black text-zinc-300 hover:text-zinc-500 dark:text-zinc-600 dark:hover:text-zinc-400 uppercase tracking-[0.3em] transition-all"
                                         >
                                             {t('onboarding.skip')}
                                         </button>

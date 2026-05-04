@@ -98,16 +98,9 @@ fastapi_app.add_middleware(
 )
 
 
-@fastapi_app.middleware("http")
-async def add_security_headers(request: Request, call_next):
-    response = await call_next(request)
-    response.headers["Cross-Origin-Opener-Policy"] = "same-origin-allow-popups"
-    return response
-
 
 # ------------------------------------------------------------------
-# Global exception handler — injects CORS headers on every error
-# so the browser never blocks the response body.
+# Global exception handler
 # ------------------------------------------------------------------
 @fastapi_app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
@@ -115,34 +108,10 @@ async def global_exception_handler(request: Request, exc: Exception):
         f"Unhandled exception on {request.method} {request.url.path}: {exc}",
         exc_info=True,
     )
-    origin = request.headers.get("origin")
-    allowed = _get_cors_origin(origin)
-    headers = {}
-    if allowed:
-        headers["Access-Control-Allow-Origin"] = allowed
-        headers["Access-Control-Allow-Credentials"] = "true"
     return JSONResponse(
         status_code=500,
         content={"detail": f"Server error: {type(exc).__name__}: {exc}"},
-        headers=headers,
     )
-
-
-# ------------------------------------------------------------------
-# Explicit OPTIONS handler — safety net for preflight requests.
-# ------------------------------------------------------------------
-@fastapi_app.options("/{full_path:path}")
-async def preflight_handler(request: Request, full_path: str):
-    origin = request.headers.get("origin")
-    allowed = _get_cors_origin(origin)
-    headers = {}
-    if allowed:
-        headers["Access-Control-Allow-Origin"] = allowed
-        headers["Access-Control-Allow-Credentials"] = "true"
-        headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-        headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type, X-Requested-With, Accept"
-        headers["Access-Control-Max-Age"] = "600"
-    return JSONResponse(content={"detail": "OK"}, status_code=200, headers=headers)
 
 
 # ------------------------------------------------------------------
@@ -211,6 +180,18 @@ fastapi_app.include_router(identity.router)
 
 from app.routers import gdpr
 fastapi_app.include_router(gdpr.router)
+
+
+# ------------------------------------------------------------------
+# Compatibility routes
+# ------------------------------------------------------------------
+@fastapi_app.api_route("/users/me", methods=["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"])
+async def users_me_compatibility(request: Request):
+    """Compatibility route for legacy /users/me endpoint"""
+    from fastapi.responses import RedirectResponse
+    # Redirect to /auth/me with 307 (Temporary Redirect) to preserve method
+    return RedirectResponse(url="/auth/me", status_code=307)
+
 
 
 # ------------------------------------------------------------------

@@ -30,7 +30,9 @@ services:
       - key: PYTHONPATH
         value: "."
       - key: ALLOWED_ORIGINS
-        value: "https://roomivo.eu,https://www.roomivo.eu,https://roomivo-frontend-0jyi.onrender.com,http://localhost:3000"
+        value: "https://roomivo.eu,https://www.roomivo.eu,https://api.roomivo.eu,https://roomivo-frontend-0jyi.onrender.com,http://localhost:3000"
+      - key: COOKIE_DOMAIN
+        value: ".roomivo.eu"
       - key: ENVIRONMENT
         value: "production"
       - key: GOOGLE_CLIENT_ID

@@ -1,20 +1,22 @@
 /**
  * Roomivo Brand Component
  * 
- * Official Roomivo brand identity: house outline with two people
- * (one wearing a graduation cap) inside, on a teal gradient background.
+ * Official Roomivo brand identity: High-fidelity "R" mark in a circular container.
  * 
  * Variants:
- *  - "icon"     → logo mark only
+ *  - "icon"     → logo mark only (circular R)
  *  - "wordmark" → icon + "Roomivo" text
  *  - "full"     → icon + "Roomivo" + tagline
  */
 
+import React from 'react';
+
 interface RoomivoBrandProps {
     variant?: 'icon' | 'wordmark' | 'full';
-    size?: 'sm' | 'md' | 'lg';
+    size?: 'sm' | 'md' | 'lg' | 'xl';
     className?: string;
     animate?: boolean;
+    theme?: 'light' | 'dark' | 'glass';
 }
 
 export default function RoomivoBrand({
@@ -22,78 +24,63 @@ export default function RoomivoBrand({
     size = 'md',
     className = '',
     animate = true,
+    theme = 'dark'
 }: RoomivoBrandProps) {
     const sizes = {
-        sm: { icon: 'w-9 h-9', text: 'text-lg', tagline: 'text-xs', svg: 24, radius: 8 },
-        md: { icon: 'w-14 h-14', text: 'text-2xl', tagline: 'text-sm', svg: 36, radius: 12 },
-        lg: { icon: 'w-20 h-20', text: 'text-4xl', tagline: 'text-base', svg: 52, radius: 16 },
+        sm: { icon: 'w-8 h-8', text: 'text-lg', tagline: 'text-xs', svg: 18, font: 'font-black' },
+        md: { icon: 'w-11 h-11', text: 'text-2xl', tagline: 'text-sm', svg: 24, font: 'font-black' },
+        lg: { icon: 'w-16 h-16', text: 'text-4xl', tagline: 'text-base', svg: 32, font: 'font-black' },
+        xl: { icon: 'w-24 h-24', text: 'text-6xl', tagline: 'text-lg', svg: 48, font: 'font-black' },
     };
 
     const s = sizes[size] || sizes.md;
 
+    const themeClasses = {
+        dark: {
+            container: 'bg-zinc-900 text-white',
+            text: 'text-zinc-900 dark:text-white',
+            mark: 'text-white'
+        },
+        light: {
+            container: 'bg-white text-zinc-900 shadow-xl',
+            text: 'text-zinc-900',
+            mark: 'text-zinc-900'
+        },
+        glass: {
+            container: 'bg-white/10 backdrop-blur-md border border-white/20 text-white',
+            text: 'text-white',
+            mark: 'text-white'
+        }
+    };
+
+    const t = themeClasses[theme];
+
     return (
-        <div className={`flex flex-col items-center gap-2 ${className}`}>
-            {/* Logo Mark — House + People + Graduation Cap */}
+        <div className={`flex items-center gap-4 ${className}`}>
+            {/* Logo Mark — The circular R */}
             <div
-                className={`${s.icon} flex items-center justify-center shadow-sm ${animate ? 'animate-bounce-in' : ''
-                    }`}
-                style={{ borderRadius: s.radius, background: 'linear-gradient(135deg, #3DD6D0, #22B8B8)' }}
+                className={`${s.icon} flex items-center justify-center rounded-full shadow-2xl transition-transform duration-500 hover:scale-110 active:scale-95 ${
+                    theme === 'dark' ? 'bg-zinc-900 dark:bg-white' : 'bg-white dark:bg-zinc-900'
+                } ${animate ? 'animate-in zoom-in duration-500' : ''}`}
             >
-                <svg
-                    width={s.svg}
-                    height={s.svg}
-                    viewBox="0 0 64 64"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Roomivo logo"
-                >
-                    {/* House outline — roof */}
-                    <path
-                        d="M32 10L8 30H14V52H50V30H56L32 10Z"
-                        stroke="white"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        fill="none"
-                    />
-
-                    {/* Left person (with graduation cap) */}
-                    {/* Head */}
-                    <circle cx="25" cy="32" r="4.5" fill="white" />
-                    {/* Graduation cap */}
-                    <path
-                        d="M18 28L25 25L32 28L25 31Z"
-                        fill="white"
-                    />
-                    <line x1="25" y1="28" x2="25" y2="25" stroke="white" strokeWidth="1.5" />
-                    {/* Body */}
-                    <path
-                        d="M20 52C20 45 21 40 25 40C29 40 30 45 30 52"
-                        fill="white"
-                        fillOpacity="0.9"
-                    />
-
-                    {/* Right person */}
-                    {/* Head */}
-                    <circle cx="39" cy="34" r="4" fill="white" fillOpacity="0.85" />
-                    {/* Body */}
-                    <path
-                        d="M34 52C34 46 35 42 39 42C43 42 44 46 44 52"
-                        fill="white"
-                        fillOpacity="0.75"
-                    />
-                </svg>
+                <span className={`${s.font} italic tracking-tighter ${
+                    theme === 'dark' ? 'text-white dark:text-zinc-900' : 'text-zinc-900 dark:text-white'
+                }`} style={{ fontSize: s.svg }}>
+                    R
+                </span>
             </div>
 
             {/* Wordmark */}
             {(variant === 'wordmark' || variant === 'full') && (
-                <div className="text-center">
-                    <h1 className={`${s.text} font-bold tracking-tight`}>
-                        <span style={{ color: '#22B8B8' }}>Roomivo</span>
+                <div className="flex flex-col">
+                    <h1 className={`${s.text} font-black tracking-tighter leading-none ${
+                        theme === 'glass' ? 'text-white' : 'bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 to-zinc-500 dark:from-white dark:to-zinc-400'
+                    }`}>
+                        Roomivo
                     </h1>
                     {variant === 'full' && (
-                        <p className={`${s.tagline} text-[var(--gray-500)] mt-0.5`}>
-                            Your first step to settling in
+                        <p className={`${s.tagline} font-bold text-zinc-500 dark:text-zinc-400 mt-1 uppercase tracking-[0.2em]`}>
+                            Premium Rentals
                         </p>
                     )}
                 </div>

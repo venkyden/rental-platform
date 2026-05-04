@@ -177,24 +177,35 @@ export default function DashboardPage() {
     return (
         <ProtectedRoute>
             <PremiumLayout withNavbar={true}>
+                <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-10 pointer-events-none"></div>
+                
                 <motion.div
                     variants={containerVariants}
                     initial="hidden"
                     animate="show"
-                    className="space-y-12"
+                    className="space-y-16 relative z-10"
                 >
-                    {/* Welcome Section */}
+                    {/* Welcome Section - Ultra Premium */}
                     <motion.div variants={itemVariants} className="relative group">
-                        <div className="glass-card !p-0 overflow-hidden border-none shadow-2xl">
-                            <div className="absolute inset-0 bg-gradient-to-br from-teal-500/10 via-transparent to-indigo-500/10 group-hover:opacity-100 opacity-50 transition-opacity duration-700" />
-                            <div className="relative z-10 px-10 py-16 sm:px-16 sm:py-20 flex flex-col sm:flex-row items-center gap-10">
-                                <div className="w-32 h-32 bg-zinc-900 dark:bg-white rounded-[2.5rem] flex items-center justify-center text-5xl text-white dark:text-zinc-900 font-black shadow-2xl active:scale-95 transition-transform cursor-default">
+                        <div className="glass-card !p-0 overflow-hidden border-none shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] dark:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] rounded-[3rem]">
+                            <div className="absolute inset-0 bg-gradient-to-br from-teal-500/10 via-transparent to-indigo-500/10 group-hover:opacity-100 opacity-40 transition-opacity duration-1000" />
+                            <div className="relative z-10 px-12 py-20 sm:px-20 sm:py-24 flex flex-col sm:flex-row items-center gap-12">
+                                <motion.div 
+                                    whileHover={{ scale: 1.05, rotate: 5 }}
+                                    className="w-40 h-40 bg-zinc-900 dark:bg-white rounded-[2.5rem] flex items-center justify-center text-6xl text-white dark:text-zinc-900 font-black shadow-2xl active:scale-95 transition-all cursor-default relative overflow-hidden"
+                                >
+                                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
                                     {user.full_name?.charAt(0) || 'U'}
-                                </div>
-                                <div className="text-center sm:text-left">
-                                    <h2 className="text-5xl sm:text-6xl font-black tracking-tighter mb-4 bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 to-zinc-500 dark:from-white dark:to-zinc-400">
-                                        {t('dashboard.landlord.welcome', { name: user.full_name.split(' ')[0] }, undefined)}
-                                    </h2>
+                                </motion.div>
+                                <div className="text-center sm:text-left flex-1">
+                                    <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
+                                        <h2 className="text-5xl sm:text-7xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-zinc-900 to-zinc-600 dark:from-white dark:to-zinc-500 uppercase leading-[0.9]">
+                                            {t('dashboard.landlord.welcome', { name: user.full_name.split(' ')[0] }, undefined)}
+                                        </h2>
+                                        <div className="inline-flex items-center self-center sm:self-start px-4 py-1.5 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-600 dark:text-teal-400 text-[10px] font-black uppercase tracking-[0.2em]">
+                                            {user.role}
+                                        </div>
+                                    </div>
                                     <p className="text-xl text-zinc-500 dark:text-zinc-400 font-medium max-w-2xl leading-relaxed">
                                         {t('dashboard.welcome_desc', undefined, "Here's what's happening with your rental journey today.")}
                                     </p>
@@ -205,7 +216,7 @@ export default function DashboardPage() {
 
                     {/* Stats Grid - Landlords */}
                     {user.role === 'landlord' && (
-                        <motion.div variants={containerVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <motion.div variants={containerVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                             {loadingStats ? (
                                 <>
                                     <DashboardCardSkeleton />
@@ -216,15 +227,20 @@ export default function DashboardPage() {
                             ) : stats ? (
                                 <>
                                     {[
-                                        { label: t('dashboard.stats.properties', undefined, undefined), value: stats.total, color: 'text-zinc-900 dark:text-white', sub: t('dashboard.stats.propertiesDesc', undefined, undefined) },
-                                        { label: t('dashboard.stats.activeListings', undefined, undefined), value: stats.active, color: 'text-teal-600 dark:text-teal-400', sub: t('dashboard.stats.activeDesc', undefined, undefined) },
-                                        { label: t('dashboard.stats.drafts', undefined, undefined), value: stats.draft, color: 'text-amber-600 dark:text-amber-400', sub: t('dashboard.stats.draftsDesc', undefined, undefined) },
-                                        { label: t('dashboard.stats.views', undefined, undefined), value: stats.total_views, color: 'text-indigo-600 dark:text-indigo-400', sub: t('dashboard.stats.viewsDesc', undefined, undefined) }
+                                        { label: t('dashboard.stats.properties', undefined, undefined), value: stats.total, color: 'text-zinc-900 dark:text-white', sub: t('dashboard.stats.propertiesDesc', undefined, undefined), icon: <Building className="w-4 h-4" /> },
+                                        { label: t('dashboard.stats.activeListings', undefined, undefined), value: stats.active, color: 'text-teal-500', sub: t('dashboard.stats.activeDesc', undefined, undefined), icon: <CheckCircle2 className="w-4 h-4" /> },
+                                        { label: t('dashboard.stats.drafts', undefined, undefined), value: stats.draft, color: 'text-amber-500', sub: t('dashboard.stats.draftsDesc', undefined, undefined), icon: <Clock className="w-4 h-4" /> },
+                                        { label: t('dashboard.stats.views', undefined, undefined), value: stats.total_views, color: 'text-indigo-500', sub: t('dashboard.stats.viewsDesc', undefined, undefined), icon: <BarChart3 className="w-4 h-4" /> }
                                     ].map((stat, i) => (
-                                        <motion.div key={i} variants={itemVariants} className="glass-card hover:translate-y-[-4px] transition-all duration-300">
-                                            <h3 className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em] mb-4">{stat.label}</h3>
-                                            <p className={`text-4xl font-black ${stat.color} mb-2 tracking-tighter`}>{stat.value}</p>
-                                            <p className="text-xs text-zinc-500 dark:text-zinc-500 font-medium">{stat.sub}</p>
+                                        <motion.div key={i} variants={itemVariants} className="glass-card !p-10 rounded-[2.5rem] hover:translate-y-[-8px] transition-all duration-500 group border-zinc-100 dark:border-zinc-800/50 shadow-xl">
+                                            <div className="flex items-center justify-between mb-8">
+                                                <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em]">{stat.label}</h3>
+                                                <div className={`p-2 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 ${stat.color} group-hover:scale-110 transition-transform`}>
+                                                    {stat.icon}
+                                                </div>
+                                            </div>
+                                            <p className={`text-5xl font-black ${stat.color} mb-4 tracking-tighter`}>{stat.value}</p>
+                                            <p className="text-[10px] text-zinc-500 dark:text-zinc-500 font-black uppercase tracking-widest">{stat.sub}</p>
                                         </motion.div>
                                     ))}
                                 </>
@@ -233,26 +249,32 @@ export default function DashboardPage() {
                     )}
 
                     {/* Quick Actions */}
-                    <motion.div variants={itemVariants} className="space-y-8">
-                        <h2 className="text-2xl font-black tracking-tighter uppercase ml-2 text-zinc-400 dark:text-zinc-500">
-                            {t('dashboard.quickActions.title', undefined, 'Quick Actions')}
-                        </h2>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <motion.div variants={itemVariants} className="space-y-10">
+                        <div className="flex items-center gap-4 px-4">
+                            <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-zinc-200 dark:via-zinc-800 to-transparent" />
+                            <h2 className="text-[10px] font-black tracking-[0.4em] uppercase text-zinc-400 dark:text-zinc-500 whitespace-nowrap">
+                                {t('dashboard.quickActions.title', undefined, 'Quick Actions')}
+                            </h2>
+                            <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-zinc-200 dark:via-zinc-800 to-transparent" />
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                             {quickActions.filter(action => action.show).map((action, idx) => (
                                 <motion.button
-                                    whileHover={{ y: -8, scale: 1.02 }}
+                                    whileHover={{ y: -12, scale: 1.02 }}
                                     whileTap={{ scale: 0.98 }}
                                     key={idx}
                                     onClick={action.action}
-                                    className="glass-card !p-8 flex flex-col items-start text-left group border-zinc-200/50 dark:border-zinc-800/50 hover:border-teal-500/50 dark:hover:border-teal-400/50 transition-all duration-500 relative"
+                                    className="glass-card !p-10 flex flex-col items-start text-left group border-zinc-100 dark:border-zinc-800/50 hover:border-teal-500/50 dark:hover:border-teal-400/50 transition-all duration-700 relative overflow-hidden rounded-[2.5rem] shadow-xl"
                                 >
-                                    <div className="mb-6 p-4 rounded-2xl bg-zinc-100 dark:bg-zinc-800 group-hover:bg-teal-600 group-hover:text-white transition-all duration-500 shadow-lg">
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-teal-500/5 to-transparent rounded-bl-[100%] opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                                    
+                                    <div className="mb-8 p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 group-hover:bg-zinc-900 dark:group-hover:bg-white text-zinc-900 dark:text-white group-hover:text-white dark:group-hover:text-zinc-900 transition-all duration-700 shadow-lg group-hover:shadow-teal-500/20 group-hover:-rotate-6">
                                         {action.icon}
                                     </div>
-                                    <h4 className="text-2xl font-black text-zinc-900 dark:text-white mb-2 tracking-tight group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">{action.title}</h4>
-                                    <p className="text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">{action.description}</p>
+                                    <h4 className="text-3xl font-black text-zinc-900 dark:text-white mb-3 tracking-tighter uppercase group-hover:text-teal-500 transition-colors">{action.title}</h4>
+                                    <p className="text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed text-lg">{action.description}</p>
                                     {action.badge && (
-                                        <div className="absolute top-8 right-8 w-12 h-12 glass flex items-center justify-center text-teal-600 font-black rounded-2xl shadow-xl border-teal-500/20">
+                                        <div className="absolute top-10 right-10 w-12 h-12 bg-zinc-900 dark:bg-white flex items-center justify-center text-white dark:text-zinc-900 text-xs font-black rounded-2xl shadow-2xl group-hover:scale-110 transition-transform">
                                             {action.badge}
                                         </div>
                                     )}
@@ -262,45 +284,49 @@ export default function DashboardPage() {
                     </motion.div>
 
                     {/* Inbox & Sidebar */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-                        <motion.div variants={itemVariants} className="lg:col-span-2 space-y-6">
-                            <div className="flex items-center justify-between px-2">
-                                <h3 className="text-2xl font-black tracking-tighter flex items-center gap-3">
-                                    <Mail className="w-6 h-6 text-teal-600" /> {t('dashboard.inbox.title', undefined, undefined)}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                        <motion.div variants={itemVariants} className="lg:col-span-2 space-y-8">
+                            <div className="flex items-center justify-between px-6">
+                                <h3 className="text-[10px] font-black tracking-[0.4em] uppercase text-zinc-400 flex items-center gap-4">
+                                    <Mail className="w-4 h-4" /> {t('dashboard.inbox.title', undefined, undefined)}
                                 </h3>
                                 <button
                                     onClick={() => router.push('/inbox')}
-                                    className="btn-secondary !py-2 !px-4 text-xs !rounded-full uppercase tracking-widest"
+                                    className="px-6 py-2 bg-zinc-100 dark:bg-zinc-800 text-[10px] font-black rounded-full uppercase tracking-[0.2em] hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-zinc-900 transition-all active:scale-95 shadow-sm"
                                 >
                                     {t('dashboard.inbox.viewAll', undefined, undefined)}
                                 </button>
                             </div>
 
-                            <div className="glass rounded-[2.5rem] overflow-hidden shadow-2xl border-white/40 dark:border-zinc-800/50">
+                            <div className="glass rounded-[3rem] overflow-hidden shadow-2xl border-white/40 dark:border-zinc-800/50">
                                 {recentConversations.length > 0 ? (
-                                    <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                                    <div className="divide-y divide-zinc-100 dark:divide-zinc-800/50">
                                         {recentConversations.map((conv) => (
                                             <button
                                                 key={conv.id}
                                                 onClick={() => router.push('/inbox')}
-                                                className="w-full p-8 text-left hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 transition-all flex items-center gap-6 group"
+                                                className="w-full p-10 text-left hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 transition-all flex items-center gap-8 group"
                                             >
-                                                <div className="w-14 h-14 rounded-2xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 flex items-center justify-center text-xl font-black shadow-lg group-hover:scale-110 transition-transform">
+                                                <div className="w-16 h-16 rounded-[1.5rem] bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 flex items-center justify-center text-2xl font-black shadow-xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 relative overflow-hidden">
+                                                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
                                                     {conv.other_party_name?.charAt(0).toUpperCase() || '?'}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center justify-between mb-1">
-                                                        <span className="font-black text-lg text-zinc-900 dark:text-white truncate">
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <span className="font-black text-xl text-zinc-900 dark:text-white truncate uppercase tracking-tight">
                                                             {conv.other_party_name}
                                                         </span>
-                                                        <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest">
+                                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest whitespace-nowrap ml-4">
                                                             {new Date(conv.last_message_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}
                                                         </span>
                                                     </div>
-                                                    <p className="text-sm text-teal-600 dark:text-teal-400 font-bold mb-2 uppercase tracking-tight">
-                                                         {conv.property_title}
-                                                    </p>
-                                                    <p className="text-zinc-500 dark:text-zinc-400 text-sm truncate font-medium">
+                                                    <div className="flex items-center gap-3 mb-3">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-teal-500" />
+                                                        <p className="text-[10px] text-teal-600 dark:text-teal-400 font-black uppercase tracking-widest truncate">
+                                                            {conv.property_title}
+                                                        </p>
+                                                    </div>
+                                                    <p className="text-zinc-500 dark:text-zinc-400 text-base truncate font-medium">
                                                         {conv.last_message_preview || conv.subject}
                                                     </p>
                                                 </div>
@@ -308,7 +334,7 @@ export default function DashboardPage() {
                                         ))}
                                     </div>
                                 ) : (
-                                    <div className="p-20 text-center">
+                                    <div className="p-24 text-center">
                                         <EmptyState
                                             icon=""
                                             title={t('dashboard.inbox.empty', undefined, undefined)}
@@ -320,39 +346,40 @@ export default function DashboardPage() {
                             </div>
                         </motion.div>
 
-                        {/* Sidebar */}
-                        <motion.div variants={itemVariants} className="space-y-8">
-                            {/* Verification Progress */}
-                            <div className="glass-card shadow-2xl border-white/40 dark:border-zinc-800/50">
-                                <h3 className="text-lg font-black uppercase tracking-widest text-zinc-400 mb-8 flex items-center gap-2">
-                                    <ShieldCheck className="w-5 h-5 text-teal-500" /> {t('dashboard.progress', undefined, 'Progress')}
+                        {/* Sidebar - Premium Column */}
+                        <motion.div variants={itemVariants} className="space-y-12">
+                            {/* Verification Progress - High Fidelity */}
+                            <div className="glass-card !p-10 shadow-2xl border-white/40 dark:border-zinc-800/50 rounded-[2.5rem] relative overflow-hidden">
+                                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-teal-400 to-teal-500" />
+                                <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 mb-10 flex items-center gap-3">
+                                    <ShieldCheck className="w-4 h-4 text-teal-500" /> {t('dashboard.progress', undefined, 'Compliance')}
                                 </h3>
-                                <div className="space-y-8">
+                                <div className="space-y-10">
                                     {[
                                         { label: t('dashboard.verification.email', undefined, undefined), verified: user.email_verified, resend: !user.email_verified },
                                         { label: t('dashboard.verification.identity', undefined, undefined), verified: user.identity_verified, start: !user.identity_verified },
                                         { label: t('dashboard.verification.employment', undefined, undefined), verified: user.employment_verified, start: !user.employment_verified }
                                     ].map((item, i) => (
-                                        <div key={i} className="flex items-center justify-between">
-                                            <div className="flex items-center gap-4">
-                                                <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${item.verified ? 'bg-teal-500/10 text-teal-500' : 'bg-amber-500/10 text-amber-500'}`}>
+                                        <div key={i} className="flex items-center justify-between group">
+                                            <div className="flex items-center gap-5">
+                                                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-500 ${item.verified ? 'bg-teal-500 text-white shadow-lg shadow-teal-500/30' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'}`}>
                                                     {item.verified ? <CheckCircle2 className="w-5 h-5" /> : <Clock className="w-5 h-5" />}
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm font-black text-zinc-900 dark:text-white uppercase tracking-tight">{item.label}</p>
-                                                    <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
-                                                        {item.verified ? t('dashboard.complete', undefined, 'Complete') : t('dashboard.pending', undefined, 'Pending')}
+                                                    <p className="text-[10px] font-black text-zinc-900 dark:text-white uppercase tracking-widest">{item.label}</p>
+                                                    <p className={`text-[9px] font-black uppercase tracking-[0.2em] mt-1.5 ${item.verified ? 'text-teal-500' : 'text-zinc-400'}`}>
+                                                        {item.verified ? t('dashboard.complete', undefined, 'Verified') : t('dashboard.pending', undefined, 'Awaiting')}
                                                     </p>
                                                 </div>
                                             </div>
                                             {item.resend && (
-                                                <button onClick={handleResendVerification} disabled={resendingEmail} className="text-[10px] font-black text-teal-600 hover:underline uppercase tracking-widest">
-                                                    {resendingEmail ? t('common.loading', undefined, 'Sending...') : t('dashboard.verification.resend', undefined, 'Resend')}
+                                                <button onClick={handleResendVerification} disabled={resendingEmail} className="px-4 py-1.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-[9px] font-black rounded-lg uppercase tracking-widest hover:scale-105 active:scale-95 transition-all">
+                                                    {resendingEmail ? '...' : t('dashboard.verification.resend', undefined, 'Resend')}
                                                 </button>
                                             )}
                                             {item.start && (
-                                                <button onClick={() => router.push('/verification')} className="text-[10px] font-black text-teal-600 hover:underline uppercase tracking-widest">
-                                                    {t('dashboard.verification.start', undefined, 'Start')}
+                                                <button onClick={() => router.push('/verification')} className="px-4 py-1.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-[9px] font-black rounded-lg uppercase tracking-widest hover:scale-105 active:scale-95 transition-all">
+                                                    {t('dashboard.verification.start', undefined, 'Fix')}
                                                 </button>
                                             )}
                                         </div>
@@ -360,45 +387,61 @@ export default function DashboardPage() {
                                 </div>
                             </div>
 
-                            {/* Trust Score */}
-                            <div className="glass-card shadow-2xl bg-zinc-900 dark:bg-zinc-800 text-white border-none">
-                                <h3 className="text-sm font-black uppercase tracking-widest text-zinc-400 mb-8">{t('dashboard.stats.trustScore', undefined, undefined)}</h3>
+                            {/* Trust Score - Ultra Visual */}
+                            <div className="glass-card !p-12 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.3)] bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 border-none rounded-[3rem] relative overflow-hidden group">
+                                <div className="absolute top-0 right-0 w-40 h-40 bg-teal-500/10 rounded-full blur-[60px] -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-1000" />
+                                
+                                <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500 mb-12">{t('dashboard.stats.trustScore', undefined, undefined)}</h3>
                                 <div className="flex flex-col items-center">
-                                    <div className="relative w-40 h-40">
+                                    <div className="relative w-48 h-48">
                                         <svg className="transform -rotate-90 w-full h-full">
-                                            <circle cx="80" cy="80" r="70" stroke="rgba(255,255,255,0.1)" strokeWidth="12" fill="none" />
+                                            <circle cx="96" cy="96" r="88" stroke="rgba(255,255,255,0.05)" dark-stroke="rgba(0,0,0,0.05)" strokeWidth="16" fill="none" />
                                             <motion.circle 
-                                                initial={{ strokeDasharray: "0 440" }}
-                                                animate={{ strokeDasharray: `${(user.trust_score / 100) * 440} 440` }}
-                                                transition={{ duration: 1.5, ease: "easeOut" }}
-                                                cx="80" cy="80" r="70" stroke="#14b8a6" strokeWidth="12" fill="none" strokeLinecap="round" 
+                                                initial={{ strokeDasharray: "0 560" }}
+                                                animate={{ strokeDasharray: `${(user.trust_score / 100) * 552.92} 560` }}
+                                                transition={{ duration: 2, ease: [0.16, 1, 0.3, 1] }}
+                                                cx="96" cy="96" r="88" stroke="url(#gradient)" strokeWidth="16" fill="none" strokeLinecap="round" 
                                             />
+                                            <defs>
+                                                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                                    <stop offset="0%" stopColor="#2dd4bf" />
+                                                    <stop offset="100%" stopColor="#14b8a6" />
+                                                </linearGradient>
+                                            </defs>
                                         </svg>
                                         <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                            <span className="text-5xl font-black tracking-tighter">{user.trust_score}</span>
-                                            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
-                                                {t('dashboard.points', undefined, 'Points')}
+                                            <motion.span 
+                                                initial={{ scale: 0.5, opacity: 0 }}
+                                                animate={{ scale: 1, opacity: 1 }}
+                                                className="text-7xl font-black tracking-tighter"
+                                            >
+                                                {user.trust_score}
+                                            </motion.span>
+                                            <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] mt-2">
+                                                {t('dashboard.points', undefined, 'Score')}
                                             </span>
                                         </div>
                                     </div>
-                                    <p className="mt-8 text-center text-xs font-bold text-zinc-400 leading-relaxed px-4">
-                                        {user.trust_score < 100 ? t('dashboard.stats.complete', undefined, undefined) : t('dashboard.stats.verified', undefined, undefined)}
-                                    </p>
-                                    {user.trust_score < 100 && (
-                                        <button
-                                            onClick={() => router.push('/verification')}
-                                            className="mt-8 w-full btn-primary !py-3 !rounded-2xl shadow-teal-500/20"
-                                        >
-                                            {t('dashboard.stats.improve', undefined, undefined)}
-                                        </button>
-                                    )}
+                                    <div className="mt-12 text-center">
+                                        <p className="text-xs font-black uppercase tracking-[0.2em] leading-relaxed mb-8 text-zinc-400">
+                                            {user.trust_score < 100 ? t('dashboard.stats.complete', undefined, undefined) : t('dashboard.stats.verified', undefined, undefined)}
+                                        </p>
+                                        {user.trust_score < 100 && (
+                                            <button
+                                                onClick={() => router.push('/verification')}
+                                                className="w-full py-5 bg-teal-500 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl shadow-2xl shadow-teal-500/40 hover:scale-105 active:scale-95 transition-all"
+                                            >
+                                                {t('dashboard.stats.improve', undefined, undefined)}
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </motion.div>
                     </div>
 
                     {user.role === 'tenant' && (
-                        <motion.div variants={itemVariants} className="pt-8">
+                        <motion.div variants={itemVariants} className="pt-12">
                             <TenantFeatures />
                         </motion.div>
                     )}

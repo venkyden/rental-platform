@@ -213,57 +213,89 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
     if (verificationType === 'identity' && !isMobile) {
         return (
             <div className="w-full">
-                <div className="text-center mb-12">
-                    <h3 className="text-4xl font-black tracking-tighter mb-4">{t('dashboard.verification.verification.tabs.identity', undefined, 'Identity Verification')}</h3>
-                    <p className="text-zinc-500 font-medium max-w-md mx-auto">For security, capture live photos of your ID using your phone's camera.</p>
+                <div className="text-center mb-16">
+                    <h3 className="text-4xl sm:text-5xl font-black tracking-tighter mb-6 uppercase leading-none">
+                        {t('dashboard.verification.verification.tabs.identity', undefined, 'Identity Verification')}
+                    </h3>
+                    <p className="text-zinc-500 font-medium max-w-md mx-auto text-lg leading-relaxed">
+                        For ultimate security, capture live photos of your government ID using your smartphone.
+                    </p>
                 </div>
 
                 {qrLoading && (
-                    <div className="py-12 flex flex-col items-center">
-                        <div className="w-12 h-12 border-4 border-teal-500/30 border-t-teal-500 rounded-full animate-spin mb-4" />
-                        <p className="text-zinc-400 font-black text-xs uppercase tracking-widest">Securing Session...</p>
+                    <div className="py-20 flex flex-col items-center">
+                        <div className="w-16 h-16 border-4 border-teal-500/20 border-t-teal-500 rounded-full animate-spin mb-6" />
+                        <p className="text-zinc-400 font-black text-[10px] uppercase tracking-[0.4em] animate-pulse">Establishing Secure Link...</p>
                     </div>
                 )}
 
                 {qrSession && (
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-12">
-                        <div className="flex justify-center">
-                            <div className="p-8 bg-white dark:bg-zinc-800 rounded-[2.5rem] shadow-2xl shadow-zinc-200/50 dark:shadow-black/50 border border-zinc-100 dark:border-zinc-700/30">
-                                <QRCodeSVG value={qrSession.captureUrl} size={220} level="H" includeMargin={true} />
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.95 }} 
+                        animate={{ opacity: 1, scale: 1 }} 
+                        className="space-y-16"
+                    >
+                        <div className="flex justify-center relative">
+                            <div className="absolute inset-0 bg-teal-500/5 rounded-full blur-[100px] animate-pulse" />
+                            <div className="p-10 bg-white dark:bg-zinc-900 rounded-[3rem] shadow-[0_64px_128px_-32px_rgba(0,0,0,0.2)] dark:shadow-[0_64px_128px_-32px_rgba(0,0,0,0.6)] border border-white/40 dark:border-zinc-800/50 relative z-10 group">
+                                <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000 rounded-[3rem]" />
+                                <QRCodeSVG 
+                                    value={qrSession.captureUrl} 
+                                    size={240} 
+                                    level="H" 
+                                    includeMargin={false}
+                                    className="dark:invert dark:brightness-100"
+                                />
+                                <div className="mt-8 flex items-center justify-center gap-3">
+                                    <div className="w-2 h-2 rounded-full bg-teal-500 animate-ping" />
+                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-teal-600 dark:text-teal-400">Live Connection Active</span>
+                                </div>
                             </div>
                         </div>
 
-                        <div className="grid md:grid-cols-2 gap-8">
-                            <div className="glass-card !p-8">
-                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-teal-600 mb-6">Instructions</h4>
-                                <ul className="space-y-4">
+                        <div className="grid md:grid-cols-2 gap-10">
+                            <motion.div whileHover={{ y: -8 }} className="glass-card !p-10 border-none shadow-xl">
+                                <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-teal-600 mb-8">Instructions</h4>
+                                <ul className="space-y-6">
                                     {[
-                                        'Scan QR code with your phone',
-                                        'Select your ID type',
-                                        'Capture clear photos',
-                                        'Watch this screen update'
+                                        'Open your phone camera & scan QR',
+                                        'Choose your document type',
+                                        'Capture clear photos of front & back',
+                                        'Wait for this screen to auto-sync'
                                     ].map((step, i) => (
-                                        <li key={i} className="flex items-center gap-4 text-sm font-bold text-zinc-700 dark:text-zinc-300">
-                                            <span className="w-6 h-6 rounded-lg bg-teal-50 dark:bg-teal-900/30 flex items-center justify-center text-teal-600 text-[10px] font-black">{i + 1}</span>
-                                            {step}
+                                        <li key={i} className="flex items-start gap-5 text-base font-bold text-zinc-700 dark:text-zinc-300">
+                                            <span className="w-8 h-8 shrink-0 rounded-xl bg-teal-500/10 dark:bg-teal-500/20 flex items-center justify-center text-teal-600 dark:text-teal-400 text-xs font-black">{i + 1}</span>
+                                            <span className="pt-1">{step}</span>
                                         </li>
                                     ))}
                                 </ul>
-                            </div>
+                            </motion.div>
 
-                            <div className="glass-card !p-8 flex flex-col justify-center">
-                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 mb-6">Waiting for capture</h4>
-                                <div className="flex items-center gap-4 py-4">
-                                    <div className="relative flex h-4 w-4">
+                            <motion.div whileHover={{ y: -8 }} className="glass-card !p-10 flex flex-col justify-center border-none shadow-xl relative overflow-hidden group">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/5 rounded-bl-[100%] group-hover:scale-110 transition-transform duration-700" />
+                                <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 mb-8">Session Status</h4>
+                                <div className="flex items-center gap-6 py-6 px-8 rounded-3xl bg-zinc-50 dark:bg-zinc-800/50 mb-8 border border-zinc-100 dark:border-zinc-800/50">
+                                    <div className="relative flex h-5 w-5">
                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
-                                        <span className="relative inline-flex rounded-full h-4 w-4 bg-teal-500"></span>
+                                        <span className="relative inline-flex rounded-full h-5 w-5 bg-teal-500"></span>
                                     </div>
-                                    <p className="text-sm font-black uppercase tracking-widest text-zinc-900 dark:text-white animate-pulse">Live Sync Active</p>
+                                    <div>
+                                        <p className="text-lg font-black uppercase tracking-widest text-zinc-900 dark:text-white leading-none mb-1">Awaiting Capture</p>
+                                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-teal-500">Synchronized with Cloud</p>
+                                    </div>
                                 </div>
-                                <p className="mt-auto text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
-                                    Session Expires: {new Date(qrSession.expiresAt).toLocaleTimeString()}
-                                </p>
-                            </div>
+                                <div className="mt-auto flex items-center justify-between">
+                                    <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+                                        Expires at <span className="text-zinc-900 dark:text-white">{new Date(qrSession.expiresAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                    </p>
+                                    <button 
+                                        onClick={() => copyToClipboard(qrSession.captureUrl)}
+                                        className="text-[10px] font-black uppercase tracking-widest text-teal-600 hover:text-teal-700 transition-colors"
+                                    >
+                                        Copy Link
+                                    </button>
+                                </div>
+                            </motion.div>
                         </div>
                     </motion.div>
                 )}
@@ -281,73 +313,83 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                 />
             )}
 
-            <div className="text-center mb-12">
-                <h3 className="text-3xl font-black tracking-tighter mb-4">
+            <div className="text-center mb-16">
+                <h3 className="text-4xl font-black tracking-tighter mb-6 uppercase leading-none">
                     {verificationType === 'identity' ? 'Identity Verification' : verificationType === 'property' ? 'Ownership Verification' : 'Resource Verification'}
                 </h3>
-                <p className="text-zinc-500 font-medium max-w-md mx-auto">
+                <p className="text-zinc-500 font-medium max-w-md mx-auto text-lg leading-relaxed">
                     {verificationType === 'identity' ? 'Capture live photos of your government-issued ID.' : verificationType === 'property' ? 'Upload proof of ownership for this listing.' : 'Upload your professional or financial documents.'}
                 </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-10">
-                <div className="glass-card !p-8 border-none shadow-xl">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 block mb-4">Document Type</label>
+            <form onSubmit={handleSubmit} className="space-y-12 max-w-2xl mx-auto">
+                <motion.div variants={itemVariants} className="glass-card !p-10 border-none shadow-2xl">
+                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 block mb-6">1. Select Document Type</label>
                     <select
                         value={documentType}
                         onChange={(e) => { setDocumentType(e.target.value); setFiles([]); }}
-                        className="w-full bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-zinc-900 dark:text-white focus:ring-2 focus:ring-teal-500/50 transition-all"
+                        className="w-full bg-zinc-50 dark:bg-zinc-800/80 border-2 border-transparent focus:border-teal-500/30 rounded-2xl px-8 py-5 text-base font-black text-zinc-900 dark:text-white focus:ring-0 transition-all appearance-none cursor-pointer"
                         required
                     >
-                        <option value="">Select type...</option>
+                        <option value="">Choose a document...</option>
                         {documentTypes.map((type) => <option key={type.value} value={type.value}>{type.label}</option>)}
                     </select>
-                </div>
+                </motion.div>
 
-                <div className="glass-card !p-8 border-none shadow-xl">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 block mb-6">File Upload</label>
+                <motion.div variants={itemVariants} className="glass-card !p-10 border-none shadow-2xl">
+                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 block mb-8">2. Secure Capture</label>
                     
                     {verificationType === 'identity' ? (
                         <button
                             type="button"
                             onClick={() => documentType ? setShowCamera(true) : setError('Select type first')}
-                            className="w-full py-16 border-2 border-dashed border-zinc-200 dark:border-zinc-700/50 rounded-[2rem] hover:border-teal-500/50 hover:bg-teal-50/5 dark:hover:bg-teal-900/5 transition-all group"
+                            className="w-full py-20 border-2 border-dashed border-zinc-200 dark:border-zinc-700/50 rounded-[2.5rem] hover:border-teal-500/50 hover:bg-teal-500/5 transition-all group overflow-hidden relative"
                         >
-                            <div className="flex flex-col items-center gap-4">
-                                <div className="w-16 h-16 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-400 group-hover:bg-teal-500 group-hover:text-white transition-all">
-                                    <Camera className="w-8 h-8" />
+                            <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                            <div className="flex flex-col items-center gap-6 relative z-10">
+                                <div className="w-20 h-20 rounded-3xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-400 group-hover:bg-zinc-900 dark:group-hover:bg-white group-hover:text-white dark:group-hover:text-zinc-900 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500 shadow-xl">
+                                    <Camera className="w-10 h-10" />
                                 </div>
-                                <p className="text-sm font-black uppercase tracking-widest text-zinc-900 dark:text-white">Capture ID Photo</p>
+                                <p className="text-base font-black uppercase tracking-[0.2em] text-zinc-900 dark:text-white">Activate ID Camera</p>
                             </div>
                         </button>
                     ) : (
-                        <div className="relative">
+                        <div className="relative group">
                             <input
                                 type="file"
                                 onChange={handleFileChange}
                                 accept="image/*,application/pdf"
-                                className="absolute inset-0 opacity-0 cursor-pointer"
+                                className="absolute inset-0 opacity-0 cursor-pointer z-20"
                                 required
                             />
-                            <div className="w-full py-12 border-2 border-dashed border-zinc-200 dark:border-zinc-700/50 rounded-[2rem] flex flex-col items-center gap-4">
-                                <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-400">
-                                    <Upload className="w-6 h-6" />
+                            <div className="w-full py-16 border-2 border-dashed border-zinc-200 dark:border-zinc-700/50 rounded-[2.5rem] flex flex-col items-center gap-6 group-hover:border-teal-500/50 group-hover:bg-teal-500/5 transition-all duration-500">
+                                <div className="w-16 h-16 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-400 group-hover:bg-zinc-900 dark:group-hover:bg-white group-hover:text-white dark:group-hover:text-zinc-900 transition-all duration-500 shadow-lg">
+                                    <Upload className="w-8 h-8" />
                                 </div>
-                                <p className="text-xs font-black uppercase tracking-widest text-zinc-400">{files.length > 0 ? files[0].name : 'Select or drop file'}</p>
+                                <div className="text-center">
+                                    <p className="text-sm font-black uppercase tracking-widest text-zinc-900 dark:text-white mb-2">{files.length > 0 ? files[0].name : 'Select or Drop Document'}</p>
+                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">PDF, JPG, or PNG max 10MB</p>
+                                </div>
                             </div>
                         </div>
                     )}
-                </div>
+                </motion.div>
 
-                {error && <p className="text-center text-red-500 text-[10px] font-black uppercase tracking-widest">{error}</p>}
+                {error && (
+                    <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="p-6 rounded-2xl bg-red-500/10 border border-red-500/20 text-center">
+                        <p className="text-red-500 text-[10px] font-black uppercase tracking-[0.3em]">{error}</p>
+                    </motion.div>
+                )}
 
-                <button
+                <motion.button
+                    whileHover={{ scale: 1.02, y: -4 }}
+                    whileTap={{ scale: 0.98 }}
                     type="submit"
                     disabled={uploading || files.length === 0}
-                    className="btn-primary !w-full !py-5 !rounded-2xl !text-sm uppercase tracking-[0.2em] shadow-2xl shadow-teal-500/20 active:scale-95 transition-all"
+                    className="w-full py-6 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-[2rem] text-xs font-black uppercase tracking-[0.4em] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] dark:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] disabled:opacity-50 transition-all"
                 >
-                    {uploading ? 'Processing Securely...' : 'Submit Verification'}
-                </button>
+                    {uploading ? 'Securing Document...' : 'Submit for Verification'}
+                </motion.button>
             </form>
         </div>
     );

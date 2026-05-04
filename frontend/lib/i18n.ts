@@ -2,6 +2,28 @@ export type Language = 'en' | 'fr';
 
 export const translations = {
     en: {
+        inbox: {
+            title: "Inbox",
+            unread: "unread",
+            viewAll: "View all",
+            empty: "No messages yet",
+            emptyDesc: "Your conversation history with tenants and landlords will appear here.",
+            selectPrompt: "Select a conversation",
+            selectDesc: "Click on a conversation to see messages",
+            searchPlaceholder: "Search...",
+            filters: {
+                all: "All",
+                active: "Active",
+                archived: "Archived"
+            },
+            status: {
+                noConversations: "No Conversations",
+                noConversationsDesc: "You don't have any messages yet. Tenant inquiries will appear here."
+            },
+            time: {
+                yesterday: "Yesterday"
+            }
+        },
         // Landing Page
         landing: {
             title: "Welcome to Roomivo",
@@ -318,6 +340,17 @@ export const translations = {
                 landlord: "Landlord Mode",
                 tenant: "Tenant Mode"
             },
+            roleSwitcher: {
+                currentSession: "Current Session",
+                switchTo: "Switch To",
+                unlockNew: "Unlock New Role",
+                unlockWorkspace: "Unlock Workspace",
+                roles: {
+                    tenant: "Tenant",
+                    landlord: "Landlord",
+                    property_manager: "Agency"
+                }
+            },
             stats: {
                 properties: "Properties",
                 propertiesDesc: "All your listings",
@@ -519,6 +552,8 @@ export const translations = {
                 help: "Help Center",
                 rights: "All rights reserved."
             },
+            landlord: {
+                welcome: "Welcome, {{name}}",
                 subtitle: "Landlord Dashboard",
                 onboarding: {
                     title: "Getting Started",
@@ -566,7 +601,8 @@ export const translations = {
                         success: "Application submitted! A counselor will contact you within 24h."
                     }
                 }
-            },
+            }
+        },
         analytics: {
             subtitle: "Track your property performance and financial growth.",
             totalViews: "Total Views",
@@ -1503,6 +1539,28 @@ export const translations = {
         }
     },
     fr: {
+        inbox: {
+            title: "Boîte de réception",
+            unread: "non lu(s)",
+            viewAll: "Voir tout",
+            empty: "Aucun message pour l'instant",
+            emptyDesc: "Votre historique de conversation apparaîtra ici.",
+            selectPrompt: "Sélectionnez une conversation",
+            selectDesc: "Cliquez sur une conversation pour voir les messages",
+            searchPlaceholder: "Rechercher...",
+            filters: {
+                all: "Toutes",
+                active: "Actives",
+                archived: "Archivées"
+            },
+            status: {
+                noConversations: "Aucune conversation",
+                noConversationsDesc: "Vous n'avez pas encore de messages. Les demandes des locataires apparaîtront ici."
+            },
+            time: {
+                yesterday: "Hier"
+            }
+        },
         common: {
             save: "Enregistrer",
             cancel: "Annuler",
@@ -1815,6 +1873,17 @@ export const translations = {
             role: {
                 landlord: "Mode Propriétaire",
                 tenant: "Mode Locataire"
+            },
+            roleSwitcher: {
+                currentSession: "Session Actuelle",
+                switchTo: "Changer pour",
+                unlockNew: "Débloquer un rôle",
+                unlockWorkspace: "Débloquer l'espace",
+                roles: {
+                    tenant: "Locataire",
+                    landlord: "Propriétaire",
+                    property_manager: "Agence"
+                }
             },
             stats: {
                 properties: "Propriétés",

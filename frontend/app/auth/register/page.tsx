@@ -175,19 +175,19 @@ export default function RegisterPage() {
             variants={containerVariants}
             initial="hidden"
             animate="show"
-            className="w-full pb-12"
+            className="w-full"
         >
-            <motion.div variants={itemVariants} className="text-center sm:text-left mb-8">
-                <h2 className="text-3xl font-extrabold text-zinc-900 tracking-tight">
-                    {t('auth.register.title', undefined, undefined)}
+            <motion.div variants={itemVariants} className="text-center mb-10">
+                <h2 className="text-4xl font-black text-zinc-900 dark:text-white tracking-tighter mb-3">
+                    {t('auth.register.title', undefined, 'Create Account')}
                 </h2>
-                <p className="mt-2 text-sm text-zinc-600">
-                    {t('auth.register.hasAccount', undefined, undefined)}{' '}
+                <p className="text-sm font-bold text-zinc-400 uppercase tracking-widest">
+                    {t('auth.register.hasAccount', undefined, 'Already part of Roomivo?')}{' '}
                     <Link
                         href="/auth/login"
-                        className="font-semibold text-teal-600 hover:text-teal-500 transition-colors"
+                        className="text-teal-500 hover:text-teal-400 transition-colors"
                     >
-                        {t('auth.register.signIn', undefined, undefined)}
+                        {t('auth.register.signIn', undefined, 'Sign In')}
                     </Link>
                 </p>
             </motion.div>
@@ -195,114 +195,96 @@ export default function RegisterPage() {
             {error && (
                 <motion.div
                     variants={itemVariants}
-                    className="mb-6 rounded-xl bg-red-50/50 border border-red-200 p-4"
+                    className="mb-8 rounded-[2rem] bg-red-50/50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/30 p-5 flex items-center gap-4"
                 >
-                    <p className="text-sm font-medium text-red-800">{error}</p>
+                    <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                    <p className="text-[10px] font-black uppercase tracking-widest text-red-800 dark:text-red-400">{error}</p>
                 </motion.div>
             )}
 
-            {/* Role selector + Google sign-up */}
-            <motion.div variants={itemVariants} className="mb-6">
-                <label className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-3 text-center sm:text-left">
-                    {t('auth.register.role.question', undefined, undefined)}
+            {/* Role selector */}
+            <motion.div variants={itemVariants} className="mb-10">
+                <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-4 text-center">
+                    {t('auth.register.role.question', undefined, 'What describes you best?')}
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
                     {[
-                        { id: 'tenant', label: t('auth.register.role.tenant', undefined, undefined), icon: <User className="w-6 h-6" /> },
-                        { id: 'landlord', label: t('auth.register.role.landlord', undefined, undefined), icon: <Home className="w-6 h-6" /> },
-                        { id: 'property_manager', label: t('auth.register.role.agency', undefined, 'Agency / Property Manager'), icon: <Building className="w-6 h-6" /> },
+                        { id: 'tenant', label: t('auth.register.role.tenant', undefined, 'Tenant'), icon: <User className="w-5 h-5" /> },
+                        { id: 'landlord', label: t('auth.register.role.landlord', undefined, 'Landlord'), icon: <Home className="w-5 h-5" /> },
+                        { id: 'property_manager', label: t('auth.register.role.agency', undefined, 'Agency'), icon: <Building className="w-5 h-5" /> },
                     ].map((role) => (
                         <button
                             key={role.id}
                             type="button"
                             onClick={() => setFormData({ ...formData, role: role.id as any })}
-                            className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${
+                            className={`flex flex-col items-center justify-center p-5 rounded-3xl border-2 transition-all duration-500 ${
                                 formData.role === role.id
-                                    ? 'border-teal-500 bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-300'
-                                    : 'border-zinc-200 dark:border-zinc-800 hover:border-teal-200 dark:hover:border-teal-800 text-zinc-700 dark:text-zinc-400'
+                                    ? 'border-teal-500 bg-teal-500/5 text-teal-600 shadow-xl shadow-teal-500/10'
+                                    : 'border-zinc-50 dark:border-zinc-800/50 bg-zinc-50 dark:bg-zinc-800/30 text-zinc-400 hover:border-teal-200'
                             }`}
                         >
-                            <div className="mb-2 text-zinc-500 dark:text-zinc-400 transition-colors">{role.icon}</div>
-                            <span className="text-sm font-medium">{role.label}</span>
+                            <div className={`mb-3 p-3 rounded-2xl transition-colors ${formData.role === role.id ? 'bg-teal-500 text-white' : 'bg-white dark:bg-zinc-900 text-zinc-400'}`}>
+                                {role.icon}
+                            </div>
+                            <span className="text-[10px] font-black uppercase tracking-widest">{role.label}</span>
                         </button>
                     ))}
                 </div>
 
                 <div className="w-full flex justify-center mt-2 mb-2">
-                    <div id="google-signup-btn" className="flex justify-center" />
+                    <div id="google-signup-btn" className="flex justify-center transform scale-110" />
                 </div>
                 {googleLoading && (
-                    <p className="text-sm text-zinc-600 mt-3 text-center animate-pulse">
-                        {t('auth.register.connectingGoogle', undefined, undefined)}
+                    <p className="text-[10px] font-black text-teal-500 uppercase tracking-[0.2em] mt-6 text-center animate-pulse">
+                        {t('auth.register.connectingGoogle', undefined, 'Authenticating with Google...')}
                     </p>
                 )}
             </motion.div>
 
             {/* Divider */}
-            <motion.div variants={itemVariants} className="relative mb-6">
+            <motion.div variants={itemVariants} className="relative mb-10">
                 <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-zinc-200 dark:border-zinc-700" />
+                    <div className="w-full border-t border-zinc-100 dark:border-zinc-800" />
                 </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-white dark:bg-zinc-900 px-3 text-zinc-500 dark:text-zinc-400">
-                        {t('auth.register.divider', undefined, undefined)}
+                <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.3em]">
+                    <span className="bg-white dark:bg-zinc-900 px-6 text-zinc-400">
+                        {t('auth.register.divider', undefined, 'OR')}
                     </span>
                 </div>
             </motion.div>
 
             <motion.form
                 variants={containerVariants}
-                className="space-y-5"
+                className="space-y-6"
                 method="POST"
                 onSubmit={handleSubmit}
             >
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-4">
-                    <motion.div variants={itemVariants} className="col-span-1 sm:col-span-2">
+                <div className="space-y-6">
+                    <motion.div variants={itemVariants}>
                         <label
                             htmlFor="full_name"
-                            className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-1.5"
+                            className="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1"
                         >
-                            {t('auth.register.fullName', undefined, undefined)}
+                            {t('auth.register.fullName', undefined, 'Full Name')}
                         </label>
                         <input
                             id="full_name"
                             name="full_name"
                             type="text"
                             required
-                            className="block w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-900 dark:text-white placeholder-zinc-500 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
+                            className="block w-full px-6 py-5 rounded-2xl border-none bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:ring-2 focus:ring-teal-500/50 transition-all font-bold"
                             placeholder={t('common.placeholders.fullName')}
                             value={formData.full_name}
                             onChange={handleChange}
                         />
                     </motion.div>
 
-                    <motion.div variants={itemVariants} className="col-span-1 sm:col-span-2">
-                        <label
-                            htmlFor="phone"
-                            className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-1.5"
-                        >
-                            {t('auth.register.phone', undefined, undefined)} <span className="text-zinc-400 dark:text-zinc-500 font-normal">{t('auth.register.optional', undefined, undefined)}</span>
-                        </label>
-                        <input
-                            id="phone"
-                            name="phone"
-                            type="tel"
-                            className="block w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-900 dark:text-white placeholder-zinc-500 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
-                            placeholder={t('common.placeholders.phone')}
-                            value={formData.phone}
-                            onChange={handleChange}
-                        />
-                        <p className="mt-1.5 text-xs text-zinc-400 dark:text-zinc-500">
-                            {t('auth.register.phoneDesc', undefined, undefined)}
-                        </p>
-                    </motion.div>
-
-                    <motion.div variants={itemVariants} className="col-span-1 sm:col-span-2">
+                    <motion.div variants={itemVariants}>
                         <label
                             htmlFor="email"
-                            className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-1.5"
+                            className="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1"
                         >
-                            {t('auth.register.email', undefined, undefined)}
+                            {t('auth.register.email', undefined, 'Email Address')}
                         </label>
                         <input
                             id="email"
@@ -310,87 +292,80 @@ export default function RegisterPage() {
                             type="email"
                             autoComplete="email"
                             required
-                            className="block w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-900 dark:text-white placeholder-zinc-500 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
+                            className="block w-full px-6 py-5 rounded-2xl border-none bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:ring-2 focus:ring-teal-500/50 transition-all font-bold"
                             placeholder={t('common.placeholders.email')}
                             value={formData.email}
                             onChange={handleChange}
                         />
                     </motion.div>
 
-                    <motion.div variants={itemVariants} className="col-span-1">
-                        <label
-                            htmlFor="password"
-                            className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-1.5"
-                        >
-                            {t('auth.register.password', undefined, undefined)}
-                        </label>
-                        <div className="relative">
-                            <input
-                                id="password"
-                                name="password"
-                                type={showPassword ? 'text' : 'password'}
-                                autoComplete="new-password"
-                                required
-                                className="block w-full px-4 py-3 pr-12 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-900 dark:text-white placeholder-zinc-500 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
-                                placeholder={t('common.placeholders.password')}
-                                value={formData.password}
-                                onChange={handleChange}
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <motion.div variants={itemVariants}>
+                            <label
+                                htmlFor="password"
+                                className="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1"
                             >
-                                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                            </button>
-                        </div>
-                        {formData.password && (
-                            <p
-                                className={`mt-2 text-xs font-medium ${
-                                    passwordStrength.valid ? 'text-teal-600' : 'text-amber-500'
-                                }`}
-                            >
-                                {passwordStrength.message}
-                            </p>
-                        )}
-                    </motion.div>
+                                {t('auth.register.password', undefined, 'Password')}
+                            </label>
+                            <div className="relative">
+                                <input
+                                    id="password"
+                                    name="password"
+                                    type={showPassword ? 'text' : 'password'}
+                                    autoComplete="new-password"
+                                    required
+                                    className="block w-full px-6 py-5 pr-14 rounded-2xl border-none bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:ring-2 focus:ring-teal-500/50 transition-all font-bold text-sm"
+                                    placeholder="••••••••"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute inset-y-0 right-0 pr-5 flex items-center text-zinc-400 hover:text-teal-500 transition-colors"
+                                >
+                                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                </button>
+                            </div>
+                        </motion.div>
 
-                    <motion.div variants={itemVariants} className="col-span-1">
-                        <label
-                            htmlFor="confirmPassword"
-                            className="block text-sm font-medium text-zinc-800 dark:text-zinc-300 mb-1.5"
-                        >
-                            {t('auth.register.confirmPassword', undefined, undefined)}
-                        </label>
-                        <div className="relative">
-                            <input
-                                id="confirmPassword"
-                                name="confirmPassword"
-                                type={showConfirmPassword ? 'text' : 'password'}
-                                autoComplete="new-password"
-                                required
-                                className="block w-full px-4 py-3 pr-12 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-900 dark:text-white placeholder-zinc-500 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
-                                placeholder={t('common.placeholders.password')}
-                                value={formData.confirmPassword}
-                                onChange={handleChange}
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
+                        <motion.div variants={itemVariants}>
+                            <label
+                                htmlFor="confirmPassword"
+                                className="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2 px-1"
                             >
-                                {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                            </button>
-                        </div>
-                    </motion.div>
+                                {t('auth.register.confirmPassword', undefined, 'Confirm')}
+                            </label>
+                            <div className="relative">
+                                <input
+                                    id="confirmPassword"
+                                    name="confirmPassword"
+                                    type={showConfirmPassword ? 'text' : 'password'}
+                                    autoComplete="new-password"
+                                    required
+                                    className="block w-full px-6 py-5 pr-14 rounded-2xl border-none bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:ring-2 focus:ring-teal-500/50 transition-all font-bold text-sm"
+                                    placeholder="••••••••"
+                                    value={formData.confirmPassword}
+                                    onChange={handleChange}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    className="absolute inset-y-0 right-0 pr-5 flex items-center text-zinc-400 hover:text-teal-500 transition-colors"
+                                >
+                                    {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
                 </div>
 
                 <motion.div
                     variants={itemVariants}
-                    className="pt-4 mt-2 border-t border-zinc-100 dark:border-zinc-800 space-y-3"
+                    className="pt-4 border-t border-zinc-100 dark:border-zinc-800 space-y-4"
                 >
-                    <div className="flex items-start">
-                        <div className="flex items-center h-5 mt-0.5">
+                    <div className="flex items-start gap-4">
+                        <div className="flex items-center h-6 mt-1">
                             <input
                                 id="gdprConsent"
                                 name="gdprConsent"
@@ -398,27 +373,27 @@ export default function RegisterPage() {
                                 required
                                 checked={formData.gdprConsent}
                                 onChange={handleChange}
-                                className="h-4 w-4 rounded border-zinc-300 text-teal-600 focus:ring-teal-600"
+                                className="h-5 w-5 rounded-lg border-zinc-200 text-teal-600 focus:ring-teal-500 transition-all cursor-pointer"
                             />
                         </div>
-                        <div className="ml-3 text-sm">
+                        <div className="text-xs font-bold text-zinc-400 leading-relaxed">
                             <label
                                 htmlFor="gdprConsent"
-                                className="font-medium text-zinc-800 dark:text-zinc-300"
+                                className="cursor-pointer"
                             >
-                                {t('auth.register.accept', undefined, undefined)}{' '}
+                                {t('auth.register.accept', undefined, 'I agree to the')}{' '}
                                 <Link
                                     href="/legal/privacy"
-                                    className="text-teal-600 hover:text-teal-500 underline"
+                                    className="text-teal-500 hover:text-teal-400"
                                 >
-                                    {t('auth.register.privacy', undefined, undefined)}
+                                    {t('auth.register.privacy', undefined, 'Privacy Policy')}
                                 </Link>{' '}
-                                {t('auth.register.and', undefined, undefined)}{' '}
+                                {t('auth.register.and', undefined, '&')}{' '}
                                 <Link
                                     href="/legal/terms"
-                                    className="text-teal-600 hover:text-teal-500 underline"
+                                    className="text-teal-500 hover:text-teal-400"
                                 >
-                                    {t('auth.register.terms', undefined, undefined)}
+                                    {t('auth.register.terms', undefined, 'Terms of Service')}
                                 </Link>
                                 <span className="text-red-500"> *</span>
                             </label>
@@ -426,19 +401,19 @@ export default function RegisterPage() {
                     </div>
                 </motion.div>
 
-                <motion.div variants={itemVariants} className="pt-2">
+                <motion.div variants={itemVariants} className="pt-4">
                     <button
                         type="submit"
                         disabled={loading || !formData.gdprConsent}
-                        className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-teal-600 hover:bg-teal-500 focus:outline-none focus:ring-4 focus:ring-teal-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
+                        className="w-full flex justify-center py-5 px-6 rounded-full text-[10px] font-black uppercase tracking-[0.3em] text-white bg-zinc-900 dark:bg-white dark:text-zinc-900 hover:shadow-2xl hover:scale-[1.02] active:scale-95 disabled:opacity-50 transition-all shadow-xl shadow-zinc-900/10 dark:shadow-white/5"
                     >
                         {loading ? (
-                            <span className="flex items-center gap-2">
-                                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                {t('auth.register.signingUp', undefined, undefined)}
+                            <span className="flex items-center gap-3">
+                                <span className="w-3 h-3 border-2 border-white/30 dark:border-zinc-900/30 border-t-white dark:border-t-zinc-900 rounded-full animate-spin" />
+                                {t('auth.register.signingUp', undefined, 'Creating...')}
                             </span>
                         ) : (
-                            t('auth.register.signUp', undefined, undefined)
+                            t('auth.register.signUp', undefined, 'Create Account')
                         )}
                     </button>
                 </motion.div>

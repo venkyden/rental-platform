@@ -112,17 +112,17 @@ export default function LoginPage() {
     /* ---------- Render ---------- */
     return (
         <motion.div variants={containerVariants} initial="hidden" animate="show" className="w-full">
-            <motion.div variants={itemVariants} className="text-center sm:text-left mb-8">
-                <h2 className="text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
-                    {t('auth.login.title', undefined, undefined)}
+            <motion.div variants={itemVariants} className="text-center mb-10">
+                <h2 className="text-4xl font-black text-zinc-900 dark:text-white tracking-tighter mb-3">
+                    {t('auth.login.title', undefined, 'Welcome Back')}
                 </h2>
-                <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-                    {t('auth.login.noAccount', undefined, undefined)}{' '}
+                <p className="text-sm font-bold text-zinc-400 uppercase tracking-widest">
+                    {t('auth.login.noAccount', undefined, 'Don\'t have an account?')}{' '}
                     <Link
                         href="/auth/register"
-                        className="font-semibold text-teal-600 hover:text-teal-500 transition-colors"
+                        className="text-teal-500 hover:text-teal-400 transition-colors"
                     >
-                        {t('auth.login.signUp', undefined, undefined)}
+                        {t('auth.login.signUp', undefined, 'Join Roomivo')}
                     </Link>
                 </p>
             </motion.div>
@@ -130,50 +130,51 @@ export default function LoginPage() {
             {error && (
                 <motion.div
                     variants={itemVariants}
-                    className="mb-6 rounded-xl bg-red-50/50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/30 p-4"
+                    className="mb-8 rounded-[2rem] bg-red-50/50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/30 p-5 flex items-center gap-4"
                 >
-                    <p className="text-sm font-medium text-red-800 dark:text-red-400">{error}</p>
+                    <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                    <p className="text-[10px] font-black uppercase tracking-widest text-red-800 dark:text-red-400">{error}</p>
                 </motion.div>
             )}
 
             {/* Google Sign-In button */}
-            <motion.div variants={itemVariants} className="mb-6">
+            <motion.div variants={itemVariants} className="mb-10">
                 <div className="flex justify-center w-full">
-                    <div id="google-signin-btn" className="flex justify-center" />
+                    <div id="google-signin-btn" className="flex justify-center transform scale-110" />
                 </div>
                 {googleLoading && (
-                    <p className="text-sm text-zinc-600 mt-3 text-center animate-pulse">
-                        {t('auth.login.connectingGoogle', undefined, undefined)}
+                    <p className="text-[10px] font-black text-teal-500 uppercase tracking-[0.2em] mt-6 text-center animate-pulse">
+                        {t('auth.login.connectingGoogle', undefined, 'Authenticating with Google...')}
                     </p>
                 )}
             </motion.div>
 
             {/* Divider */}
-            <motion.div variants={itemVariants} className="relative mb-6">
+            <motion.div variants={itemVariants} className="relative mb-10">
                 <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-zinc-200 dark:border-zinc-700" />
+                    <div className="w-full border-t border-zinc-100 dark:border-zinc-800" />
                 </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-white dark:bg-zinc-900 px-3 text-zinc-500 dark:text-zinc-400">
-                        {t('auth.login.divider', undefined, undefined)}
+                <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.3em]">
+                    <span className="bg-white dark:bg-zinc-900 px-6 text-zinc-400">
+                        {t('auth.login.divider', undefined, 'OR')}
                     </span>
                 </div>
             </motion.div>
 
-            <motion.form variants={containerVariants} className="space-y-5" onSubmit={handleSubmit}>
+            <motion.form variants={containerVariants} className="space-y-6" onSubmit={handleSubmit}>
                 <motion.div variants={itemVariants}>
-                    <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center justify-between mb-2 px-1">
                         <label
                             htmlFor="email"
-                            className="block text-sm font-medium text-zinc-800 dark:text-zinc-300"
+                            className="text-[10px] font-black text-zinc-400 uppercase tracking-widest"
                         >
-                            {t('auth.login.email', undefined, undefined)}
+                            {t('auth.login.email', undefined, 'Email Address')}
                         </label>
                         <Link
                             href="/auth/forgot-email"
-                            className="text-sm font-semibold text-teal-600 hover:text-teal-500 transition-colors"
+                            className="text-[10px] font-black text-teal-500 uppercase tracking-widest hover:text-teal-400 transition-colors"
                         >
-                            {t('auth.login.forgotEmail', undefined, undefined)}
+                            {t('auth.login.forgotEmail', undefined, 'Lost Email?')}
                         </Link>
                     </div>
                     <input
@@ -182,7 +183,7 @@ export default function LoginPage() {
                         type="email"
                         autoComplete="email"
                         required
-                        className="block w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-900 dark:text-white placeholder-zinc-500 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
+                        className="block w-full px-6 py-5 rounded-2xl border-none bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:ring-2 focus:ring-teal-500/50 transition-all font-bold"
                         placeholder={t('common.placeholders.email')}
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
@@ -190,18 +191,18 @@ export default function LoginPage() {
                 </motion.div>
 
                 <motion.div variants={itemVariants}>
-                    <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center justify-between mb-2 px-1">
                         <label
                             htmlFor="password"
-                            className="block text-sm font-medium text-zinc-800 dark:text-zinc-300"
+                            className="text-[10px] font-black text-zinc-400 uppercase tracking-widest"
                         >
-                            {t('auth.login.password', undefined, undefined)}
+                            {t('auth.login.password', undefined, 'Password')}
                         </label>
                         <Link
                             href="/auth/forgot-password"
-                            className="text-sm font-semibold text-teal-600 hover:text-teal-500 transition-colors"
+                            className="text-[10px] font-black text-teal-500 uppercase tracking-widest hover:text-teal-400 transition-colors"
                         >
-                            {t('auth.login.forgotPassword', undefined, undefined)}
+                            {t('auth.login.forgotPassword', undefined, 'Reset?')}
                         </Link>
                     </div>
                     <div className="relative">
@@ -211,7 +212,7 @@ export default function LoginPage() {
                             type={showPassword ? 'text' : 'password'}
                             autoComplete="current-password"
                             required
-                            className="block w-full px-4 py-3 pr-12 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-900 dark:text-white placeholder-zinc-500 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
+                            className="block w-full px-6 py-5 pr-14 rounded-2xl border-none bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:ring-2 focus:ring-teal-500/50 transition-all font-bold"
                             placeholder={t('common.placeholders.password')}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
@@ -219,26 +220,26 @@ export default function LoginPage() {
                         <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
+                            className="absolute inset-y-0 right-0 pr-5 flex items-center text-zinc-400 hover:text-teal-500 transition-colors"
                         >
                             {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                         </button>
                     </div>
                 </motion.div>
 
-                <motion.div variants={itemVariants} className="pt-2">
+                <motion.div variants={itemVariants} className="pt-4">
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-teal-600 hover:bg-teal-500 focus:outline-none focus:ring-4 focus:ring-teal-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
+                        className="w-full flex justify-center py-5 px-6 rounded-full text-[10px] font-black uppercase tracking-[0.3em] text-white bg-zinc-900 dark:bg-white dark:text-zinc-900 hover:shadow-2xl hover:scale-[1.02] active:scale-95 disabled:opacity-50 transition-all shadow-xl shadow-zinc-900/10 dark:shadow-white/5"
                     >
                         {loading ? (
-                            <span className="flex items-center gap-2">
-                                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                {t('auth.login.signingIn', undefined, undefined)}
+                            <span className="flex items-center gap-3">
+                                <span className="w-3 h-3 border-2 border-white/30 dark:border-zinc-900/30 border-t-white dark:border-t-zinc-900 rounded-full animate-spin" />
+                                {t('auth.login.signingIn', undefined, 'Verifying...')}
                             </span>
                         ) : (
-                            t('auth.login.signIn', undefined, undefined)
+                            t('auth.login.signIn', undefined, 'Sign In')
                         )}
                     </button>
                 </motion.div>

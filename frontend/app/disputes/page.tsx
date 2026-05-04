@@ -117,7 +117,7 @@ function MyDisputesContent() {
                                     : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
                                 }`}
                             >
-                                {f === 'all' ? t('inbox.filters.all', undefined, undefined) : t(`disputes.status.${f}` as any, undefined, undefined)}
+                                {f === 'all' ? t('dashboard.inbox.filters.all', undefined, undefined) : t(`disputes.status.${f}` as any, undefined, undefined)}
                             </button>
                         ))}
                     </div>

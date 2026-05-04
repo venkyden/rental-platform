@@ -40,6 +40,8 @@ const outfit = Outfit({
   variable: "--font-outfit",
 });
 
+import { AuthProvider } from "@/lib/AuthContext";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -59,13 +61,15 @@ export default function RootLayout({
       >
         <LanguageProvider>
           <ToastProvider>
-            <SegmentProvider>
-              <div className="flex flex-col min-h-screen">
-                {children}
-                <ToastContainer />
-                <GlobalFooter />
-              </div>
-            </SegmentProvider>
+            <AuthProvider>
+              <SegmentProvider>
+                <div className="flex flex-col min-h-screen">
+                  {children}
+                  <ToastContainer />
+                  <GlobalFooter />
+                </div>
+              </SegmentProvider>
+            </AuthProvider>
           </ToastProvider>
         </LanguageProvider>
       </body>

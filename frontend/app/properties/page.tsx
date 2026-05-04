@@ -13,6 +13,7 @@ import VerificationUpload from '@/components/VerificationUpload';
 import { useLanguage } from '@/lib/LanguageContext';
 import { toast } from 'react-hot-toast';
 import { PropertyCardSkeleton } from '@/components/SkeletonLoaders';
+import { Building } from 'lucide-react';
 
 const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -93,38 +94,41 @@ export default function PropertiesPage() {
     return (
         <ProtectedRoute>
             <PremiumLayout withNavbar={true}>
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                    {/* Header */}
-                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
-                        <div>
-                            <h1 className="text-4xl sm:text-6xl font-black tracking-tighter mb-4 bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 to-zinc-500 dark:from-white dark:to-zinc-400">
-                                {t('property.landlord.title', undefined, 'Your Portfolio')}
+                <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-10 pointer-events-none"></div>
+
+                <div className="max-w-7xl mx-auto px-6 lg:px-12 py-20 relative z-10">
+                    {/* Header - Ultra Premium */}
+                    <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12 mb-20">
+                        <div className="space-y-6">
+                            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-600 dark:text-teal-400 text-[10px] font-black uppercase tracking-[0.2em]">
+                                {t('property.landlord.portfolio', undefined, 'Portfolio Management')}
+                            </div>
+                            <h1 className="text-6xl sm:text-8xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-zinc-900 to-zinc-600 dark:from-white dark:to-zinc-500 uppercase leading-[0.9]">
+                                {t('property.landlord.title', undefined, 'Your Properties')}
                             </h1>
-                            <p className="text-lg text-zinc-500 dark:text-zinc-400 font-medium">
-                                Manage your properties and tracking listing performance.
+                            <p className="text-xl text-zinc-500 dark:text-zinc-400 font-medium max-w-xl leading-relaxed">
+                                Manage your rental assets and track high-performance listing engagement across the platform.
                             </p>
                         </div>
                         
-                        <div className="flex items-center gap-3">
-                            <button
-                                onClick={() => router.push('/properties/new')}
-                                className="btn-primary !py-4 !px-10 !rounded-2xl !text-sm uppercase tracking-widest shadow-2xl shadow-teal-500/20"
-                            >
-                                + {t('property.landlord.add', undefined, 'Add Property')}
-                            </button>
-                        </div>
+                        <button
+                            onClick={() => router.push('/properties/new')}
+                            className="group flex items-center gap-4 px-12 py-5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-xs font-black uppercase tracking-[0.4em] rounded-[2rem] shadow-2xl shadow-zinc-900/30 dark:shadow-white/10 hover:scale-105 active:scale-95 transition-all self-start lg:self-end"
+                        >
+                            + {t('property.landlord.add', undefined, 'Add Property')}
+                        </button>
                     </div>
 
-                    {/* Filters */}
-                    <div className="flex items-center justify-between mb-12">
-                        <div className="flex p-1.5 bg-zinc-100 dark:bg-zinc-800/50 backdrop-blur-xl rounded-[1.5rem] border border-zinc-200/50 dark:border-zinc-700/30">
+                    {/* Filters - High Fidelity */}
+                    <div className="flex items-center justify-between mb-16 px-2">
+                        <div className="flex p-2 bg-zinc-100/50 dark:bg-zinc-800/30 backdrop-blur-2xl rounded-[2.5rem] border border-zinc-200/50 dark:border-zinc-700/30 shadow-inner">
                             {['all', 'draft', 'active'].map((status) => (
                                 <button
                                     key={status}
                                     onClick={() => setFilter(status as any)}
-                                    className={`px-8 py-2.5 rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-500 ${
+                                    className={`px-10 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-700 ${
                                         filter === status 
-                                        ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-xl scale-100' 
+                                        ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-2xl scale-100' 
                                         : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'
                                     }`}
                                 >
@@ -132,83 +136,107 @@ export default function PropertiesPage() {
                                 </button>
                             ))}
                         </div>
+                        <div className="hidden sm:flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-teal-500" />
+                            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{properties.length} Listings</span>
+                        </div>
                     </div>
 
                     {/* Content */}
                     {loading ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
                             {[1, 2, 3, 4, 5, 6].map(i => <PropertyCardSkeleton key={i} />)}
                         </div>
                     ) : properties.length === 0 ? (
-                        <div className="py-32 text-center glass-card border-none">
-                            <h3 className="text-2xl font-black mb-2">{t('property.landlord.emptyTitle', undefined, 'No properties yet')}</h3>
-                            <p className="text-zinc-500 font-medium">{t('property.landlord.emptyDesc', undefined, 'Start by adding your first listing to the platform.')}</p>
-                            <button onClick={() => router.push('/properties/new')} className="mt-8 text-teal-600 font-black uppercase tracking-widest text-xs">Create Listing →</button>
+                        <div className="py-40 text-center glass-card border-none rounded-[3rem] shadow-2xl relative overflow-hidden">
+                            <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-[0.03] pointer-events-none"></div>
+                            <div className="w-24 h-24 bg-zinc-50 dark:bg-zinc-800/50 rounded-full flex items-center justify-center mx-auto mb-10 shadow-inner">
+                                <Building className="w-10 h-10 text-zinc-300" />
+                            </div>
+                            <h3 className="text-3xl font-black mb-4 uppercase tracking-tighter">{t('property.landlord.emptyTitle', undefined, 'Portfolio Empty')}</h3>
+                            <p className="text-lg text-zinc-500 font-medium max-w-sm mx-auto leading-relaxed mb-12">{t('property.landlord.emptyDesc', undefined, 'Start by adding your first listing to the platform to begin your journey.')}</p>
+                            <button 
+                                onClick={() => router.push('/properties/new')} 
+                                className="px-12 py-5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-[10px] font-black uppercase tracking-[0.4em] rounded-[2rem] shadow-2xl hover:scale-105 active:scale-95 transition-all"
+                            >
+                                {t('property.landlord.add', undefined, 'Create Listing')} →
+                            </button>
                         </div>
                     ) : (
                         <motion.div
                             variants={containerVariants}
                             initial="hidden" animate="show"
-                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10"
+                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12"
                         >
                             {properties.map((property) => (
                                 <motion.div 
                                     variants={itemVariants} 
                                     key={property.id} 
-                                    className="group glass-card !p-0 overflow-hidden flex flex-col border-white/40 dark:border-zinc-800/50 hover:shadow-2xl transition-all duration-500"
+                                    className="group glass-card !p-0 overflow-hidden flex flex-col border-zinc-100 dark:border-zinc-800/50 hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.4)] transition-all duration-1000 rounded-[3rem] relative"
                                 >
-                                    <div className="aspect-[16/10] bg-zinc-100 dark:bg-zinc-800 relative overflow-hidden">
+                                    <div className="aspect-[16/11] bg-zinc-100 dark:bg-zinc-800 relative overflow-hidden">
                                         {property.photos?.[0] ? (
                                             <img src={resolveMediaUrl(property.photos[0].url)} alt={property.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
                                         ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-zinc-300 font-black italic">NO PHOTO</div>
+                                            <div className="w-full h-full flex items-center justify-center text-zinc-300 font-black italic uppercase tracking-widest text-xs">No Imagery</div>
                                         )}
-                                        <div className="absolute top-4 right-4">
-                                            <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest backdrop-blur-md ${property.status === 'active' ? 'bg-emerald-500/90 text-white' : 'bg-amber-500/90 text-white'}`}>
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+                                        <div className="absolute top-6 right-6">
+                                            <div className={`px-5 py-2 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] backdrop-blur-xl shadow-2xl ${property.status === 'active' ? 'bg-emerald-500 text-white' : 'bg-amber-500 text-white'}`}>
                                                 {property.status}
+                                            </div>
+                                        </div>
+                                        <div className="absolute bottom-6 left-6 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700">
+                                            <div className="flex items-baseline gap-1">
+                                                <span className="text-3xl font-black text-white tracking-tighter">€{property.monthly_rent}</span>
+                                                <span className="text-[10px] text-zinc-300 font-black uppercase tracking-widest">/mo</span>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="p-8 flex flex-col flex-1">
-                                        <div className="flex justify-between items-start mb-4">
-                                            <h3 className="text-2xl font-black text-zinc-900 dark:text-white truncate tracking-tight pr-4">{property.title}</h3>
-                                            <div className="text-right">
-                                                <p className="text-xl font-black text-teal-600 dark:text-teal-400 leading-none">€{property.monthly_rent}</p>
-                                                <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mt-1">/ Month</p>
+                                    <div className="p-10 flex flex-col flex-1">
+                                        <div className="flex justify-between items-start mb-6">
+                                            <h3 className="text-2xl font-black text-zinc-900 dark:text-white truncate tracking-tighter uppercase pr-4 group-hover:text-teal-500 transition-colors duration-500">{property.title}</h3>
+                                            <div className="text-right flex flex-col items-end">
+                                                <p className="text-xl font-black text-zinc-900 dark:text-white tracking-tighter">€{property.monthly_rent}</p>
+                                                <p className="text-[8px] font-black text-zinc-400 uppercase tracking-[0.2em] mt-1">Investment</p>
                                             </div>
                                         </div>
                                         
-                                        <p className="text-zinc-500 dark:text-zinc-400 font-bold text-xs uppercase tracking-wider mb-8">{property.city} • {property.bedrooms} Bedrooms</p>
+                                        <div className="flex items-center gap-3 mb-10">
+                                            <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">{property.city}</p>
+                                            <div className="w-1 h-1 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+                                            <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">{property.bedrooms} Bed</p>
+                                        </div>
                                         
-                                        {/* Verification Status */}
-                                        <div className="mb-8">
+                                        {/* Verification Status - Refined */}
+                                        <div className="mb-10">
                                             {property.ownership_verified ? (
-                                                <div className="flex items-center gap-2 text-[10px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/10 px-4 py-2 rounded-xl border border-emerald-100 dark:border-emerald-900/30 uppercase tracking-widest">
-                                                    <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                                                    Verified Listing
+                                                <div className="flex items-center gap-3 text-[10px] font-black text-teal-600 dark:text-teal-400 bg-teal-500/5 px-5 py-3 rounded-2xl border border-teal-500/20 uppercase tracking-[0.2em] shadow-sm">
+                                                    <div className="w-2 h-2 rounded-full bg-teal-500 shadow-[0_0_8px_rgba(20,184,166,0.6)]" />
+                                                    Verified Registry
                                                 </div>
                                             ) : (
                                                 <button 
                                                     onClick={() => setVerifyingProperty(property.id)}
-                                                    className="w-full flex items-center justify-center gap-2 text-[10px] font-black text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/10 px-4 py-2 rounded-xl border border-amber-100 dark:border-amber-900/30 uppercase tracking-widest hover:bg-amber-100 transition-all"
+                                                    className="w-full flex items-center justify-center gap-3 text-[10px] font-black text-amber-600 dark:text-amber-400 bg-amber-500/5 px-5 py-3 rounded-2xl border border-amber-500/20 uppercase tracking-[0.2em] hover:bg-amber-500/10 transition-all group/btn"
                                                 >
                                                     <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-                                                    Verify Ownership
+                                                    Validate Ownership
                                                 </button>
                                             )}
                                         </div>
 
-                                        <div className="mt-auto grid grid-cols-2 gap-3">
+                                        <div className="mt-auto grid grid-cols-2 gap-4">
                                             <button
                                                 onClick={() => router.push(`/properties/${property.id}/edit`)}
-                                                className="py-3 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all"
+                                                className="py-4 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.3em] hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-zinc-900 transition-all duration-500 shadow-sm"
                                             >
                                                 Edit
                                             </button>
                                             <button
                                                 onClick={() => router.push(`/properties/${property.id}`)}
-                                                className="py-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] hover:scale-105 transition-all"
+                                                className="py-4 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.3em] hover:scale-105 active:scale-95 transition-all shadow-xl shadow-zinc-900/20 dark:shadow-white/5"
                                             >
                                                 Preview
                                             </button>
@@ -220,22 +248,26 @@ export default function PropertiesPage() {
                     )}
                 </div>
 
-                {/* Verification Modal */}
+                {/* Verification Modal - High Fidelity */}
                 <AnimatePresence>
                     {verifyingProperty && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
                             <motion.div 
                                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                                 onClick={() => setVerifyingProperty(null)}
-                                className="absolute inset-0 bg-zinc-900/60 dark:bg-black/80 backdrop-blur-md"
+                                className="absolute inset-0 bg-zinc-950/80 backdrop-blur-2xl"
                             />
                             <motion.div 
-                                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                                initial={{ opacity: 0, scale: 0.95, y: 40 }}
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                                className="relative bg-white dark:bg-zinc-900 rounded-[2.5rem] shadow-2xl max-w-xl w-full max-h-[90vh] overflow-hidden"
+                                exit={{ opacity: 0, scale: 0.95, y: 40 }}
+                                className="relative bg-white dark:bg-zinc-900 rounded-[3rem] shadow-[0_60px_120px_-20px_rgba(0,0,0,0.5)] max-w-2xl w-full max-h-[90vh] overflow-hidden border border-white/20 dark:border-zinc-800"
                             >
-                                <div className="p-12">
+                                <div className="p-16">
+                                    <div className="mb-12 text-center">
+                                        <h2 className="text-4xl font-black tracking-tighter uppercase mb-4">Ownership Validation</h2>
+                                        <p className="text-zinc-500 dark:text-zinc-400 font-medium">Please upload official property deeds or utility bills to verify this listing.</p>
+                                    </div>
                                     <VerificationUpload 
                                         verificationType="property"
                                         propertyId={verifyingProperty}
