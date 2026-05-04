@@ -9,6 +9,7 @@ declare global {
           renderButton: (element: HTMLElement, config: Record<string, unknown>) => void;
           prompt: () => void;
           cancel: () => void;
+          revoke: (email: string, callback: (done: { successful: boolean; error: string }) => void) => void;
         };
       };
     };
