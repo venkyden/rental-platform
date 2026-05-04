@@ -515,20 +515,6 @@ export const translations = {
                         trustScore: "Trust Score",
                         boost: "Complete verification to boost score",
                         max: "Maximum Trust Score Achieved"
-                    },
-                    actions: {
-                        back: "Back to Dashboard",
-                        retake: "Retake Photos",
-                        uploadSecurely: "Securely Upload & Verify",
-                        uploading: "Uploading & Verifying...",
-                        mobileWaiting: "Waiting for mobile capture...",
-                        generatingSession: "Generating secure session...",
-                        copy: "Copy",
-                        howItWorks: "How it works:",
-                        scanQr: "Scan the QR code with your phone",
-                        selectDoc: "Select your document type",
-                        takePhoto: "Take a clear photo of the document",
-                        autoUpdate: "This page will update automatically"
                     }
                 }
             },
@@ -2207,20 +2193,6 @@ export const translations = {
                         trustScore: "Score de Confiance",
                         boost: "Complétez les vérifications pour booster votre score",
                         max: "Score de confiance maximum atteint"
-                    },
-                    actions: {
-                        back: "Retour au tableau de bord",
-                        retake: "Reprendre les photos",
-                        uploadSecurely: "Télécharger et vérifier en toute sécurité",
-                        uploading: "Téléchargement et vérification...",
-                        mobileWaiting: "En attente de la capture mobile...",
-                        generatingSession: "Génération d'une session sécurisée...",
-                        copy: "Copier",
-                        howItWorks: "Comment ça marche :",
-                        scanQr: "Scannez le code QR avec votre téléphone",
-                        selectDoc: "Sélectionnez votre type de document",
-                        takePhoto: "Prenez une photo claire du document",
-                        autoUpdate: "Cette page se mettra à jour automatiquement"
                     }
                 }
             },

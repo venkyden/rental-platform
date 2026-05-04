@@ -3,18 +3,11 @@
 import { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { useParams } from 'next/navigation';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-
-'use client';
-
-import { useState, useRef, useEffect } from 'react';
-import axios from 'axios';
-import { useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Camera, CheckCircle2, AlertCircle, Shield, ArrowLeft, RefreshCcw } from 'lucide-react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
 
 export default function VerifyCapturePage() {
     const params = useParams();
