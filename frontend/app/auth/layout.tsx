@@ -7,7 +7,7 @@ import PremiumLayout from '@/components/PremiumLayout';
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
     return (
-        <PremiumLayout>
+        <PremiumLayout withNavbar={false}>
             <div className="relative min-h-screen w-full flex flex-col items-center justify-center p-6 overflow-hidden bg-white dark:bg-zinc-950">
                 {/* Mesh Gradient Background */}
                 <div className="absolute inset-0 z-0 overflow-hidden">

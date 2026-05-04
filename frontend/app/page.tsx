@@ -27,7 +27,7 @@ export default function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
           >
-            <h1 className="text-6xl sm:text-7xl lg:text-8xl font-black tracking-tight leading-[1.05] mb-8 bg-clip-text text-transparent bg-gradient-to-b from-zinc-900 to-zinc-500 dark:from-white dark:to-zinc-500">
+            <h1 className="text-6xl sm:text-7xl lg:text-8xl font-black tracking-tight leading-[1.05] mb-8 text-zinc-900 dark:text-white">
               {t('landing.hero.title', undefined, undefined).split(language === 'fr' ? 'foyer idéal' : 'perfect home').map((part, i) => (
                 i === 0 ? (
                   <span key={i}>
@@ -42,7 +42,7 @@ export default function HomePage() {
               ))}
             </h1>
 
-            <p className="text-xl sm:text-2xl text-zinc-500 dark:text-zinc-400 max-w-3xl mx-auto mb-12 leading-relaxed font-medium">
+            <p className="text-xl sm:text-2xl text-zinc-600 dark:text-zinc-400 max-w-3xl mx-auto mb-12 leading-relaxed font-medium">
               {t('landing.subtitle', undefined, undefined)}
             </p>
 
@@ -69,7 +69,7 @@ export default function HomePage() {
               { icon: <Globe className="w-5 h-5" />, label: t('landing.trustBadges.frenchLaw', undefined, 'French Law Compliant') },
               { icon: <Zap className="w-5 h-5" />, label: t('landing.trustBadges.stripe', undefined, 'Secured by Stripe') }
             ].map((badge, i) => (
-              <div key={i} className="flex items-center gap-3 text-zinc-400 dark:text-zinc-500 font-bold text-sm tracking-widest uppercase">
+              <div key={i} className="flex items-center gap-3 text-zinc-500 dark:text-zinc-400 font-bold text-sm tracking-widest uppercase">
                 <span className="text-teal-500">{badge.icon}</span>
                 {badge.label}
               </div>

@@ -40,13 +40,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const router = useRouter();
 
     const checkAuth = async () => {
-        // Skip if we already have a user and we're not explicitly re-checking
+        const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+        if (!token) {
+            setUser(null);
+            setLoading(false);
+            return;
+        }
+
         try {
             const userData = await apiClient.getMe();
             setUser(userData);
         } catch (error) {
             setUser(null);
-            // Token might be missing or expired, interceptor handles refresh
         } finally {
             setLoading(false);
         }
@@ -79,10 +84,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     };
 
-    const logout = () => {
-        apiClient.logout();
-        setUser(null);
-        router.push('/auth/login');
+    const logout = async () => {
+        try {
+            await apiClient.logout();
+        } finally {
+            setUser(null);
+            // router.push is usually redundant if apiClient.logout does window.location.href
+            // but we keep it as a fallback
+            router.push('/auth/login');
+        }
     };
 
     const switchRole = async (targetRole: string) => {
