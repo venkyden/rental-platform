@@ -185,8 +185,15 @@ export const translations = {
             view: "View",
             error: {
                 enterName: "Please enter your full name to continue.",
-                savingName: "Failed to save name. Please try again."
+                savingName: "Failed to save name. Please try again.",
+                acceptTerms: "Please accept the Privacy Policy and Terms of Service to continue."
             },
+            roleSelection: "I am a...",
+            roleDesc: "Select your primary role to customize your experience.",
+            termsLabel: "I agree to the",
+            and: "&",
+            privacyPolicy: "Privacy Policy",
+            termsOfService: "Terms of Service",
             title: "Welcome to Roomivo",
             back: "Back",
             continue: "Continue",

@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { User as UserIcon, Home, Building, Check } from 'lucide-react';
 import OnboardingQuestionnaire from '@/components/OnboardingQuestionnaire';
 import { apiClient } from '@/lib/api';
 import RoomivoBrand from '@/components/RoomivoBrand';
@@ -12,11 +13,12 @@ import PremiumLayout from '@/components/PremiumLayout';
 
 export default function OnboardingPage() {
     const [step, setStep] = useState<'welcome' | 'questionnaire'>('welcome');
-    const { user, loading } = useAuth();
+    const { user, loading, checkAuth, switchRole } = useAuth();
     const router = useRouter();
     const { t } = useLanguage();
-    const [fullName, setFullName] = useState('');
-    const [isSavingName, setIsSavingName] = useState(false);
+    const [selectedRole, setSelectedRole] = useState<string>(user?.role || 'tenant');
+    const [acceptedTerms, setAcceptedTerms] = useState(false);
+    const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState('');
 
     const userType = useMemo(() => {
@@ -37,23 +39,23 @@ export default function OnboardingPage() {
     };
 
     const handleStart = async () => {
-        if (!user?.full_name && !fullName.trim()) {
-            setError(t('onboarding.error.enterName'));
+        if (!acceptedTerms) {
+            setError(t('onboarding.error.acceptTerms'));
             return;
         }
 
-        if (!user?.full_name && fullName.trim()) {
-            setIsSavingName(true);
-            try {
-                await apiClient.client.patch('/auth/me', { full_name: fullName.trim() });
-            } catch (err) {
-                setError(t('onboarding.error.savingName'));
-                setIsSavingName(false);
-                return;
+        setIsProcessing(true);
+        try {
+            // If the user selected a different role than what's currently in their profile
+            if (selectedRole !== user?.role) {
+                await switchRole(selectedRole);
             }
+            setStep('questionnaire');
+        } catch (err) {
+            setError(t('onboarding.error.savingName')); // Reuse error or add role-specific one
+        } finally {
+            setIsProcessing(false);
         }
-        
-        setStep('questionnaire');
     };
 
     if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="w-8 h-8 border-3 border-teal-500/30 border-t-teal-500 rounded-full animate-spin" /></div>;
@@ -87,44 +89,72 @@ export default function OnboardingPage() {
                             {t('onboarding.welcome')}
                         </h1>
 
-                        {!user?.full_name ? (
-                            <div className="mb-16 max-w-sm mx-auto">
-                                <p className="text-zinc-400 dark:text-zinc-500 font-black text-[10px] uppercase tracking-[0.4em] mb-8">{t('onboarding.letsStart')}</p>
-                                <div className="relative group">
-                                    <input
-                                        type="text"
-                                        placeholder={t('common.placeholders.fullName')}
-                                        value={fullName}
-                                        onChange={(e) => { setFullName(e.target.value); setError(''); }}
-                                        className="w-full px-10 py-6 rounded-[2rem] border-none bg-white dark:bg-zinc-900/50 text-2xl font-black text-zinc-900 dark:text-white placeholder:text-zinc-300 focus:ring-2 focus:ring-teal-500/50 transition-all text-center shadow-2xl"
-                                    />
-                                    {error && (
-                                        <motion.p 
-                                            initial={{ opacity: 0, y: -10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            className="text-red-500 text-[10px] font-black mt-4 uppercase tracking-widest"
-                                        >
-                                            {error}
-                                        </motion.p>
-                                    )}
+                        <div className="mb-12 max-w-2xl mx-auto">
+                            <p className="text-zinc-400 dark:text-zinc-500 font-black text-[10px] uppercase tracking-[0.4em] mb-8 text-center">{t('onboarding.roleSelection')}</p>
+                            
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+                                {[
+                                    { id: 'tenant', label: t('dashboard.roleSwitcher.roles.tenant'), icon: <UserIcon className="w-6 h-6" /> },
+                                    { id: 'landlord', label: t('dashboard.roleSwitcher.roles.landlord'), icon: <Home className="w-6 h-6" /> },
+                                    { id: 'property_manager', label: t('dashboard.roleSwitcher.roles.property_manager'), icon: <Building className="w-6 h-6" /> },
+                                ].map((role) => (
+                                    <button
+                                        key={role.id}
+                                        onClick={() => { setSelectedRole(role.id); setError(''); }}
+                                        className={`group relative flex flex-col items-center justify-center p-6 rounded-[2rem] border-2 transition-all duration-500 ${
+                                            selectedRole === role.id
+                                                ? 'border-teal-500 bg-teal-500/5 text-teal-600 shadow-xl shadow-teal-500/10 scale-105'
+                                                : 'border-zinc-100 dark:border-zinc-800/50 bg-white dark:bg-zinc-900/30 text-zinc-400 hover:border-teal-200'
+                                        }`}
+                                    >
+                                        {selectedRole === role.id && (
+                                            <motion.div 
+                                                layoutId="selected-check"
+                                                className="absolute -top-2 -right-2 w-6 h-6 bg-teal-500 rounded-full flex items-center justify-center text-white shadow-lg"
+                                            >
+                                                <Check className="w-3 h-3 stroke-[4]" />
+                                            </motion.div>
+                                        )}
+                                        <div className={`mb-4 p-4 rounded-2xl transition-colors ${selectedRole === role.id ? 'bg-teal-500 text-white' : 'bg-zinc-50 dark:bg-zinc-800 text-zinc-400'}`}>
+                                            {role.icon}
+                                        </div>
+                                        <span className="text-[10px] font-black uppercase tracking-widest">{role.label}</span>
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div className="flex items-center justify-center gap-4 group cursor-pointer" onClick={() => { setAcceptedTerms(!acceptedTerms); setError(''); }}>
+                                <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${acceptedTerms ? 'bg-teal-500 border-teal-500 shadow-lg shadow-teal-500/30' : 'border-zinc-200 dark:border-zinc-800 group-hover:border-teal-300'}`}>
+                                    {acceptedTerms && <Check className="w-4 h-4 text-white stroke-[4]" />}
                                 </div>
-                            </div>
-                        ) : (
-                            <div className="mb-16">
-                                <p className="text-xl md:text-2xl text-zinc-500 dark:text-zinc-400 font-medium max-w-xl mx-auto leading-relaxed mb-12">
-                                    {t('onboarding.ready')}
+                                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest text-left">
+                                    {t('onboarding.termsLabel')}{' '}
+                                    <a href="/legal/privacy" target="_blank" className="text-teal-500 hover:underline">{t('onboarding.privacyPolicy')}</a>{' '}
+                                    {t('onboarding.and')}{' '}
+                                    <a href="/legal/terms" target="_blank" className="text-teal-500 hover:underline">{t('onboarding.termsOfService')}</a>
+                                    <span className="text-red-500 ml-1">*</span>
                                 </p>
-                                <PendingInvitesSection />
                             </div>
-                        )}
+                            
+                            {error && (
+                                <motion.p 
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="text-red-500 text-[10px] font-black mt-6 uppercase tracking-widest text-center"
+                                >
+                                    {error}
+                                </motion.p>
+                            )}
+                        </div>
+
 
                         <div className="flex flex-col items-center gap-10">
                             <button
                                 onClick={handleStart}
-                                disabled={isSavingName}
+                                disabled={isProcessing || !acceptedTerms}
                                 className="px-20 py-6 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-sm font-black uppercase tracking-[0.4em] rounded-[2.5rem] shadow-2xl shadow-zinc-900/30 dark:shadow-white/10 hover:scale-105 active:scale-95 transition-all disabled:opacity-30"
                             >
-                                {isSavingName ? t('onboarding.saving') : t('onboarding.getStarted')}
+                                {isProcessing ? t('onboarding.saving') : t('onboarding.getStarted')}
                             </button>
                             
                             {user?.full_name && (
