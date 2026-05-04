@@ -25,7 +25,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                         className="mb-12"
                     >
-                        <RoomivoBrand variant="logo" size="xl" />
+                        <RoomivoBrand variant="wordmark" size="xl" />
                     </motion.div>
 
                     {/* Auth Card */}
