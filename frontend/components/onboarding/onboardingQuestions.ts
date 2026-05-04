@@ -467,8 +467,9 @@ export function getLandlordQuestions(): Question[] {
                 { value: 'no_smoking', label: 'onboarding.questions.landlord.rules.options.no_smoking' },
                 { value: 'no_pets', label: 'onboarding.questions.landlord.rules.options.no_pets' },
                 { value: 'no_parties', label: 'onboarding.questions.landlord.rules.options.no_parties' },
+                { value: 'no_preference', label: 'onboarding.questions.landlord.rules.options.no_preference' },
             ],
-            maxSelections: 3,
+            maxSelections: 4,
         },
         {
             id: 'urgency',

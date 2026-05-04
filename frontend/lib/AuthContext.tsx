@@ -64,9 +64,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const login = async (email: string, password: string) => {
         setLoading(true);
         try {
-            await apiClient.login(email, password);
+            const response = await apiClient.login(email, password);
             await checkAuth();
-            router.push('/dashboard');
+            router.push(response.redirect_path || '/dashboard');
         } finally {
             setLoading(false);
         }
@@ -76,9 +76,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(true);
         try {
             await apiClient.register(data);
-            await apiClient.login(data.email, data.password);
+            const response = await apiClient.login(data.email, data.password);
             await checkAuth();
-            router.push('/dashboard');
+            router.push(response.redirect_path || '/dashboard');
         } finally {
             setLoading(false);
         }

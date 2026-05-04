@@ -347,7 +347,7 @@ export const translations = {
                     },
                     rules: {
                         question: "House rules?",
-                        options: { no_smoking: "No Smoking", no_pets: "No Pets", no_parties: "No Parties" }
+                        options: { no_smoking: "No Smoking", no_pets: "No Pets", no_parties: "No Parties", no_preference: "No preference" }
                     },
                     caf_eligibility: {
                         question: "Is your property eligible for CAF housing assistance?",
@@ -2050,7 +2050,7 @@ export const translations = {
                     },
                     rules: {
                         question: "Règles de vie ?",
-                        options: { no_smoking: "Non fumeur", no_pets: "Pas d'animaux", no_parties: "Pas de fêtes" }
+                        options: { no_smoking: "Non fumeur", no_pets: "Pas d'animaux", no_parties: "Pas de fêtes", no_preference: "Pas de préférence" }
                     },
                     caf_eligibility: {
                         question: "Votre logement est-il éligible aux aides de la CAF ?",

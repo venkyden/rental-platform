@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import OnboardingQuestionnaire from '@/components/OnboardingQuestionnaire';
@@ -19,7 +19,11 @@ export default function OnboardingPage() {
     const [isSavingName, setIsSavingName] = useState(false);
     const [error, setError] = useState('');
 
-    const userType = (user?.role === 'landlord' || user?.role === 'property_manager') ? 'landlord' : 'tenant';
+    const userType = useMemo(() => {
+        if (!user?.role) return 'tenant';
+        const roleStr = String(user.role).toLowerCase();
+        return (roleStr === 'landlord' || roleStr === 'property_manager') ? 'landlord' : 'tenant';
+    }, [user]);
 
     const handleComplete = async (responses: Record<string, any>) => {
         try {

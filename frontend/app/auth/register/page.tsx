@@ -152,8 +152,8 @@ export default function RegisterPage() {
                 role: formData.role,
                 marketing_consent: formData.marketingConsent,
             });
-            await apiClient.login(formData.email, formData.password);
-            router.push('/dashboard');
+            const loginResponse = await apiClient.login(formData.email, formData.password);
+            router.push(loginResponse.redirect_path || '/dashboard');
         } catch (err: unknown) {
             const axiosErr = err as { response?: { data?: { detail?: string | Array<{ msg?: string; message?: string }> | { msg?: string; message?: string } } } };
             const detail = axiosErr?.response?.data?.detail;

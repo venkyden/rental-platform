@@ -76,6 +76,27 @@ fastapi_app.add_middleware(
 )
 
 
+# ------------------------------------------------------------------
+# Security Headers Middleware
+# ------------------------------------------------------------------
+@fastapi_app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    try:
+        response = await call_next(request)
+    except Exception as e:
+        # If an exception happens here, the exception handler will catch it.
+        # We don't want to double-handle, but we need to ensure the final response
+        # eventually gets these headers.
+        raise e
+        
+    # Allow Google Auth popups to communicate back to the window
+    response.headers["Cross-Origin-Opener-Policy"] = "same-origin-allow-popups"
+    # Additional security headers
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    return response
+
+
 
 # ------------------------------------------------------------------
 # Global exception handler
@@ -86,9 +107,33 @@ async def global_exception_handler(request: Request, exc: Exception):
         f"Unhandled exception on {request.method} {request.url.path}: {exc}",
         exc_info=True,
     )
+    
+    # Manually add CORS headers to the error response to prevent "Network Error" in browser
+    # when the standard CORSMiddleware is bypassed or fails.
+    from app.core.config import settings
+    origin = request.headers.get("origin")
+    allow_origin = "*"
+    if origin and origin in settings.ALLOWED_ORIGINS:
+        allow_origin = origin
+    elif settings.ENVIRONMENT == "production":
+        allow_origin = "https://roomivo.eu"
+    else:
+        allow_origin = "http://localhost:3000"
+
+    content = {"detail": f"Server error: {type(exc).__name__}"}
+    if settings.ENVIRONMENT != "production":
+        content["message"] = str(exc)
+
     return JSONResponse(
         status_code=500,
-        content={"detail": f"Server error: {type(exc).__name__}: {exc}"},
+        content=content,
+        headers={
+            "Access-Control-Allow-Origin": allow_origin,
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With, Accept, Language",
+            "Access-Control-Allow-Credentials": "true",
+            "Cross-Origin-Opener-Policy": "same-origin-allow-popups",
+        }
     )
 
 
@@ -282,6 +327,7 @@ class CORSSafetyNet:
                     (b"access-control-allow-methods", b"GET, POST, PUT, DELETE, OPTIONS, PATCH"),
                     (b"access-control-allow-headers", b"Content-Type, Authorization, X-Requested-With, Accept, Language"),
                     (b"access-control-allow-credentials", b"true"),
+                    (b"cross-origin-opener-policy", b"same-origin-allow-popups"),
                 ]
                 
                 # Sanitize error message for JSON

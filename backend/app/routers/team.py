@@ -80,6 +80,17 @@ class AcceptInviteRequest(BaseModel):
     pass
 
 
+class PendingInviteResponse(BaseModel):
+    id: str
+    landlord_name: str
+    permission_level: str
+    token: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
 # --- Endpoints ---
 
 
@@ -137,12 +148,16 @@ async def get_team_members(
     return response
 
 
-@router.get("/my-invites", response_model=List[dict])
+@router.get("/my-invites", response_model=List[PendingInviteResponse])
 async def get_my_invites(
     current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
 ):
     """Get all pending team invites for the current user."""
     try:
+        if not current_user.email:
+            logger.warning(f"User {current_user.id} has no email address")
+            return []
+
         # Fetch invites where the current user is the recipient (by email)
         # Using ilike for case-insensitive matching
         query = (
@@ -161,9 +176,7 @@ async def get_my_invites(
 
         response = []
         for invite in invites:
-            # Safely get landlord name via relationship (lazy loaded)
-            # Or fetch explicitly if needed. For now, let's use a separate query for safety
-            # since lazy loading in async context can be tricky without proper setup.
+            # Safely get landlord name
             landlord_result = await db.execute(select(User).where(User.id == invite.landlord_id))
             landlord = landlord_result.scalar_one_or_none()
             
@@ -172,19 +185,25 @@ async def get_my_invites(
             if hasattr(perm_level, "value"):
                 perm_level = perm_level.value
             
-            response.append({
-                "id": str(invite.id),
-                "landlord_name": landlord.full_name if landlord else "Unknown Landlord",
-                "permission_level": str(perm_level),
-                "token": invite.invite_token,
-                "created_at": invite.created_at,
-            })
+            # If for some reason perm_level is still an enum or weird, force to string
+            perm_level_str = str(perm_level) if perm_level else "view_only"
+            
+            response.append(
+                PendingInviteResponse(
+                    id=str(invite.id),
+                    landlord_name=landlord.full_name if (landlord and landlord.full_name) else "Unknown Landlord",
+                    permission_level=perm_level_str,
+                    token=invite.invite_token,
+                    created_at=invite.created_at,
+                )
+            )
 
         return response
     except Exception as e:
-        logger.error(f"Error fetching invites for {current_user.email}: {str(e)}", exc_info=True)
+        logger.error(f"CRITICAL: Error fetching invites for user {current_user.id} ({getattr(current_user, 'email', 'N/A')}): {str(e)}", exc_info=True)
+        # We raise a more descriptive error in development, or keep it generic in production
         raise HTTPException(
-            status_code=500, detail="Failed to fetch invites. Please try again later."
+            status_code=500, detail=f"Internal server error fetching invites: {type(e).__name__}"
         )
 
 
