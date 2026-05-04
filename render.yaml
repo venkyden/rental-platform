@@ -15,7 +15,7 @@ services:
     branch: master
     rootDir: backend
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    startCommand: "./start.sh"
     envVars:
       - key: REDIS_URL
         sync: false
@@ -28,7 +28,7 @@ services:
       - key: CACHE_DIR
         value: "./.cache"
       - key: PYTHONPATH
-        value: "/opt/render/project/src/backend"
+        value: "."
       - key: ALLOWED_ORIGINS
         value: "https://roomivo.eu,https://www.roomivo.eu,https://roomivo-frontend-0jyi.onrender.com,http://localhost:3000"
       - key: ENVIRONMENT

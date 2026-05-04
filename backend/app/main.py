@@ -98,6 +98,13 @@ fastapi_app.add_middleware(
 )
 
 
+@fastapi_app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["Cross-Origin-Opener-Policy"] = "same-origin-allow-popups"
+    return response
+
+
 # ------------------------------------------------------------------
 # Global exception handler — injects CORS headers on every error
 # so the browser never blocks the response body.
@@ -211,28 +218,44 @@ fastapi_app.include_router(gdpr.router)
 # ------------------------------------------------------------------
 @fastapi_app.get("/health")
 async def health_check():
-    """Health check endpoint."""
-    try:
-        from app.core.circuit_breaker import get_circuit_health
-        circuit_status = get_circuit_health()
-    except Exception:
-        circuit_status = {}
+    """Enhanced health check for Render with timing and partial failure detection"""
+    import time
+    from sqlalchemy import text
+    from app.core.cache import cache
+    from app.core.circuit_breaker import get_circuit_health
+    from app.core.database import AsyncSessionLocal
 
-    try:
-        from app.core.cache import cache
-        cache_status = "connected" if cache.redis_client else "disconnected"
-    except Exception:
-        cache_status = "not_configured"
+    status = {"status": "ok", "timestamp": time.time(), "checks": {}}
+    start_total = time.time()
 
-    return {
-        "status": "healthy",
-        "service": "rental-platform",
-        "version": "1.0.0",
-        "infrastructure": {
-            "cache": cache_status,
-            "circuits": circuit_status,
-        },
-    }
+    # 1. DB Check
+    try:
+        t0 = time.time()
+        async with AsyncSessionLocal() as session:
+            await session.execute(text("SELECT 1"))
+        status["checks"]["database"] = {"status": "up", "latency": time.time() - t0}
+    except Exception as e:
+        status["status"] = "degraded"
+        status["checks"]["database"] = {"status": "down", "error": str(e)}
+
+    # 2. Redis Check
+    try:
+        t0 = time.time()
+        redis_ok = False
+        if cache.redis_client:
+            redis_ok = cache.redis_client.ping()
+        status["checks"]["cache"] = {
+            "status": "up" if redis_ok else "down",
+            "latency": time.time() - t0,
+        }
+    except Exception:
+        status["checks"]["cache"] = {"status": "error"}
+
+    # 3. Circuits
+    status["checks"]["circuits"] = get_circuit_health()
+    status["total_latency"] = time.time() - start_total
+
+    return status
 
 
 @fastapi_app.get("/")
@@ -256,30 +279,38 @@ if _os.path.isdir("uploads"):
 # the frontend sees a readable error instead of "Network Error".
 # ------------------------------------------------------------------
 class CORSSafetyNet:
-    def __init__(self, wrapped: ASGIApp):
-        self.wrapped = wrapped
+    """
+    Final safety net to catch ANY unhandled exception and return 503
+    with correct CORS headers to prevent 'Network Error' in browser.
+    """
 
-    async def __call__(self, scope: Scope, receive: Receive, send: Send):
+    def __init__(self, app: ASGIApp):
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] != "http":
-            await self.wrapped(scope, receive, send)
+            await self.app(scope, receive, send)
             return
+
         try:
-            await self.wrapped(scope, receive, send)
-        except Exception as exc:
-            logger.error(f"CORS-safety-net caught crash: {exc}", exc_info=True)
-            headers_raw = dict(scope.get("headers", []))
-            origin = headers_raw.get(b"origin", b"").decode()
-            allowed = _get_cors_origin(origin)
+            await self.app(scope, receive, send)
+        except Exception as e:
+            import traceback
+
+            # LOG THE ERROR! This is critical for debugging 503s
+            print("❌ CRITICAL ERROR CAUGHT BY SAFETY NET:")
+            traceback.print_exc()
+
             resp_headers = [
                 (b"content-type", b"application/json"),
+                (b"access-control-allow-origin", b"*"),
+                (b"access-control-allow-methods", b"*"),
+                (b"access-control-allow-headers", b"*"),
             ]
-            if allowed:
-                resp_headers.extend([
-                    (b"access-control-allow-origin", allowed.encode()),
-                    (b"access-control-allow-credentials", b"true"),
-                ])
-            body = b'{"detail":"Service temporarily unavailable. Please try again."}'
-            await send({"type": "http.response.start", "status": 503, "headers": resp_headers})
+            body = f'{{"detail":"Service temporarily unavailable: {str(e)}"}}'.encode()
+            await send(
+                {"type": "http.response.start", "status": 503, "headers": resp_headers}
+            )
             await send({"type": "http.response.body", "body": body})
 
 

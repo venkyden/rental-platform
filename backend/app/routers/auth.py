@@ -191,7 +191,7 @@ async def login(
         httponly=True,
         max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
         expires=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
-        samesite="lax",
+        samesite="none" if settings.ENVIRONMENT == "production" else "lax",
         secure=settings.ENVIRONMENT == "production",
     )
 
@@ -294,7 +294,7 @@ async def logout(
     response.delete_cookie(
         key="refresh_token",
         httponly=True,
-        samesite="lax",
+        samesite="none" if settings.ENVIRONMENT == "production" else "lax",
         secure=settings.ENVIRONMENT == "production",
     )
     return {"message": "Successfully logged out"}
@@ -305,7 +305,7 @@ async def get_me(current_user: User = Depends(get_current_user)):
     """Get current user profile"""
     return current_user
 
-@router.put("/me", response_model=UserResponse)
+@router.patch("/me", response_model=UserResponse)
 async def update_me(
     user_update: UserUpdate,
     db: AsyncSession = Depends(get_db),
@@ -614,7 +614,7 @@ async def google_auth(
             httponly=True,
             max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
             expires=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
-            samesite="lax",
+            samesite="none" if settings.ENVIRONMENT == "production" else "lax",
             secure=settings.ENVIRONMENT == "production",
         )
 
