@@ -191,7 +191,7 @@ async def login(
         httponly=True,
         max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
         expires=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
-        samesite="lax" if settings.ENVIRONMENT == "production" else "lax",
+        samesite="lax",
         secure=settings.ENVIRONMENT == "production",
         domain=settings.COOKIE_DOMAIN if settings.ENVIRONMENT == "production" else None,
     )
@@ -276,7 +276,7 @@ async def refresh_token(
         httponly=True,
         max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
         expires=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
-        samesite="lax" if settings.ENVIRONMENT == "production" else "lax",
+        samesite="lax",
         secure=settings.ENVIRONMENT == "production",
         domain=settings.COOKIE_DOMAIN if settings.ENVIRONMENT == "production" else None,
     )
@@ -312,7 +312,7 @@ async def logout(
     response.delete_cookie(
         key="refresh_token",
         httponly=True,
-        samesite="lax" if settings.ENVIRONMENT == "production" else "lax",
+        samesite="lax",
         secure=settings.ENVIRONMENT == "production",
         domain=settings.COOKIE_DOMAIN if settings.ENVIRONMENT == "production" else None,
     )
@@ -633,8 +633,9 @@ async def google_auth(
             httponly=True,
             max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
             expires=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
-            samesite="none" if settings.ENVIRONMENT == "production" else "lax",
+            samesite="lax",
             secure=settings.ENVIRONMENT == "production",
+            domain=settings.COOKIE_DOMAIN if settings.ENVIRONMENT == "production" else None,
         )
 
         # Get segment-based redirect
