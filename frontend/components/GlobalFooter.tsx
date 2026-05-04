@@ -26,6 +26,12 @@ export default function GlobalFooter() {
                         <Link href="/legal/cookies" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
                             {t('globalFooter.cookies', undefined, 'Cookie Policy')}
                         </Link>
+                        <button 
+                            onClick={() => window.dispatchEvent(new CustomEvent('open-cookie-settings'))}
+                            className="text-sm text-gray-500 hover:text-gray-900 transition-colors cursor-pointer"
+                        >
+                            {t('cookies.actions.customize', undefined, 'Cookie Settings')}
+                        </button>
                         <Link href="/legal/gdpr" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
                             {t('globalFooter.gdpr', undefined, 'GDPR Rights')}
                         </Link>

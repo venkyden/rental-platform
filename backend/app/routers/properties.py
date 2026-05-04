@@ -150,32 +150,37 @@ async def list_properties(
             filters.append(Property.amenities.contains([amenity]))
 
     # Default behavior for landlords/team members: show properties they own or are members of
-    is_management_role = current_user and current_user.role in ["landlord", "property_manager"]
+    role_val = current_user.role.value if current_user and hasattr(current_user.role, "value") else (current_user.role if current_user else None)
+    is_management_role = role_val in ["landlord", "property_manager"]
     
     if is_management_role and not landlord_id:
         # If no specific landlord_id is requested, show EVERYTHING the user has access to
-        from app.models.team import InviteStatus, TeamMember, TeamMemberProperty
-        
-        # Subquery for properties via team membership
-        # In SQLAlchemy 2.0, we use subquery() for use with in_()
-        team_prop_subquery = (
-            select(TeamMemberProperty.property_id)
-            .join(TeamMember, TeamMember.id == TeamMemberProperty.team_member_id)
-            .where(
+        try:
+            from app.models.team import InviteStatus, TeamMember, TeamMemberProperty
+            
+            # Subquery for properties via team membership
+            team_prop_subquery = (
+                select(TeamMemberProperty.property_id)
+                .join(TeamMember, TeamMember.id == TeamMemberProperty.team_member_id)
+                .where(
+                    and_(
+                        TeamMember.member_user_id == current_user.id,
+                        TeamMember.status == InviteStatus.ACTIVE
+                    )
+                )
+            ).subquery()
+            
+            # Combine owned properties and team properties
+            filters.append(
                 and_(
-                    TeamMember.member_user_id == current_user.id,
-                    TeamMember.status == InviteStatus.ACTIVE
+                    (Property.landlord_id == current_user.id) | (Property.id.in_(team_prop_subquery)),
+                    Property.status == (status if status else "active")
                 )
             )
-        ).subquery()
-        
-        # Combine owned properties and team properties
-        filters.append(
-            and_(
-                (Property.landlord_id == current_user.id) | (Property.id.in_(team_prop_subquery)),
-                Property.status == (status if status else "active")
-            )
-        )
+        except Exception as e:
+            logger.error(f"Error in management role filter: {e}")
+            # Fallback to just active properties to avoid total crash
+            filters.append(Property.status == "active")
     elif landlord_id:
         filters.append(Property.landlord_id == landlord_id)
     elif status:

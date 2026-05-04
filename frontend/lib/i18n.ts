@@ -48,6 +48,29 @@ export const translations = {
                 landlord: { title: "Are you a landlord?", desc: "List your properties and receive verified applications.", button: "I'm a landlord" }
             }
         },
+        cookies: {
+            title: "Cookie Preferences",
+            description: "Roomivo uses cookies to ensure essential functionality and, with your consent, for analytics to improve the platform. See our {{privacyLink}} for details.",
+            privacyPolicy: "Privacy Policy",
+            essential: {
+                title: "Essential",
+                description: "Authentication, security, core features"
+            },
+            analytics: {
+                title: "Analytics",
+                description: "Usage statistics, page performance"
+            },
+            preferences: {
+                title: "Preferences",
+                description: "Language, display settings"
+            },
+            actions: {
+                acceptAll: "Accept All",
+                essentialOnly: "Essential Only",
+                savePreferences: "Save Preferences",
+                customize: "Customize"
+            }
+        },
         common: {
             save: "Save",
             cancel: "Cancel",
@@ -1827,6 +1850,29 @@ export const translations = {
             cta: {
                 tenant: { title: "Vous cherchez un logement ?", desc: "Constituez votre dossier numérique et postulez en un clic.", button: "Je suis locataire" },
                 landlord: { title: "Vous êtes propriétaire ?", desc: "Listez vos biens et recevez des candidatures vérifiées.", button: "Je suis propriétaire" }
+            }
+        },
+        cookies: {
+            title: "Préférences des Cookies",
+            description: "Roomivo utilise des cookies pour assurer les fonctionnalités essentielles et, avec votre consentement, pour des analyses afin d'améliorer la plateforme. Consultez notre {{privacyLink}} pour plus de détails.",
+            privacyPolicy: "Politique de Confidentialité",
+            essential: {
+                title: "Essentiels",
+                description: "Authentification, sécurité, fonctionnalités de base"
+            },
+            analytics: {
+                title: "Analyses",
+                description: "Statistiques d'utilisation, performance des pages"
+            },
+            preferences: {
+                title: "Préférences",
+                description: "Langue, paramètres d'affichage"
+            },
+            actions: {
+                acceptAll: "Tout Accepter",
+                essentialOnly: "Essentiels Uniquement",
+                savePreferences: "Enregistrer les Préférences",
+                customize: "Personnaliser"
             }
         },
         // Onboarding

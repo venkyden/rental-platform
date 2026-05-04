@@ -2,11 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useLanguage } from '@/lib/LanguageContext';
+import { Shield, Cookie, ChevronRight, X, Check } from 'lucide-react';
 
 const COOKIE_CONSENT_KEY = 'roomivo_cookie_consent';
 
 type ConsentState = {
-    essential: true; // always true
+    essential: true;
     analytics: boolean;
     preferences: boolean;
 };
@@ -17,7 +20,7 @@ function getStoredConsent(): ConsentState | null {
         const raw = localStorage.getItem(COOKIE_CONSENT_KEY);
         if (raw) return JSON.parse(raw);
     } catch {
-        // ignore parse errors
+        return null;
     }
     return null;
 }
@@ -27,6 +30,7 @@ function storeConsent(consent: ConsentState) {
 }
 
 export default function CookieConsentBanner() {
+    const { t, language } = useLanguage();
     const [visible, setVisible] = useState(false);
     const [showDetails, setShowDetails] = useState(false);
     const [analytics, setAnalytics] = useState(false);
@@ -35,8 +39,24 @@ export default function CookieConsentBanner() {
     useEffect(() => {
         const stored = getStoredConsent();
         if (!stored) {
-            setVisible(true);
+            const timer = setTimeout(() => setVisible(true), 1500);
+            return () => clearTimeout(timer);
         }
+    }, []);
+
+    // Listen for custom event to reopen settings
+    useEffect(() => {
+        const handleOpen = () => {
+            const stored = getStoredConsent();
+            if (stored) {
+                setAnalytics(stored.analytics);
+                setPreferences(stored.preferences);
+            }
+            setShowDetails(true);
+            setVisible(true);
+        };
+        window.addEventListener('open-cookie-settings', handleOpen);
+        return () => window.removeEventListener('open-cookie-settings', handleOpen);
     }, []);
 
     const acceptAll = () => {
@@ -57,115 +77,152 @@ export default function CookieConsentBanner() {
         setVisible(false);
     };
 
-    if (!visible) return null;
+    const privacyLink = (
+        <Link 
+            href="/legal/privacy" 
+            className="text-teal-600 dark:text-teal-400 font-medium hover:underline decoration-teal-500/30 underline-offset-4"
+        >
+            {t('cookies.privacyPolicy')}
+        </Link>
+    );
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 z-50 p-4">
-            <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                {/* Main banner */}
-                <div className="p-5">
-                    <div className="flex items-start gap-3">
-                        <span className="text-2xl" aria-hidden="true"></span>
-                        <div className="flex-1">
-                            <h3 className="text-base font-semibold text-gray-900 mb-1">
-                                Cookie Preferences
-                            </h3>
-                            <p className="text-sm text-gray-600 leading-relaxed">
-                                Roomivo uses cookies to ensure essential functionality and, with your consent,
-                                for analytics to improve the platform. See our{' '}
-                                <Link href="/legal/privacy" className="text-blue-600 hover:underline">
-                                    Privacy Policy
-                                </Link>{' '}
-                                for details.
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Expandable details */}
-                    {showDetails && (
-                        <div className="mt-4 space-y-3 border-t border-gray-100 pt-4">
-                            {/* Essential — always on */}
-                            <label className="flex items-center justify-between">
-                                <div>
-                                    <span className="text-sm font-medium text-gray-900">Essential</span>
-                                    <p className="text-xs text-gray-500">Authentication, security, core features</p>
-                                </div>
-                                <div className="relative">
-                                    <input type="checkbox" checked disabled className="sr-only" />
-                                    <div className="w-10 h-5 bg-blue-500 rounded-full cursor-not-allowed">
-                                        <div className="w-4 h-4 bg-white rounded-full shadow transform translate-x-5 translate-y-0.5" />
+        <AnimatePresence>
+            {visible && (
+                <motion.div
+                    initial={{ y: 100, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: 100, opacity: 0 }}
+                    transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                    className="fixed bottom-6 left-6 right-6 z-[100] pointer-events-none flex justify-center"
+                >
+                    <div className="w-full max-w-2xl pointer-events-auto overflow-hidden">
+                        <div className="bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200 dark:border-zinc-800 shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-3xl overflow-hidden">
+                            <div className="p-6 sm:p-8">
+                                <div className="flex items-start gap-4">
+                                    <div className="w-12 h-12 shrink-0 flex items-center justify-center bg-teal-50 dark:bg-teal-900/30 rounded-2xl">
+                                        <Cookie className="w-6 h-6 text-teal-600 dark:text-teal-400" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <h3 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+                                                {t('cookies.title')}
+                                            </h3>
+                                            {!showDetails && (
+                                                <button 
+                                                    onClick={() => setVisible(false)}
+                                                    className="p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors"
+                                                >
+                                                    <X className="w-5 h-5" />
+                                                </button>
+                                            )}
+                                        </div>
+                                        <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed text-sm sm:text-base">
+                                            {t('cookies.description').split('{{privacyLink}}').map((part, i, arr) => (
+                                                <span key={i}>
+                                                    {part}
+                                                    {i < arr.length - 1 && privacyLink}
+                                                </span>
+                                            ))}
+                                        </p>
                                     </div>
                                 </div>
-                            </label>
 
-                            {/* Analytics */}
-                            <label className="flex items-center justify-between cursor-pointer">
-                                <div>
-                                    <span className="text-sm font-medium text-gray-900">Analytics</span>
-                                    <p className="text-xs text-gray-500">Usage statistics, page performance</p>
-                                </div>
-                                <button
-                                    type="button"
-                                    role="switch"
-                                    aria-checked={analytics}
-                                    onClick={() => setAnalytics(!analytics)}
-                                    className={`w-10 h-5 rounded-full transition-colors ${analytics ? 'bg-blue-500' : 'bg-gray-300'}`}
-                                >
-                                    <div className={`w-4 h-4 bg-white rounded-full shadow transform transition-transform translate-y-0.5 ${analytics ? 'translate-x-5' : 'translate-x-0.5'}`} />
-                                </button>
-                            </label>
+                                <AnimatePresence>
+                                    {showDetails && (
+                                        <motion.div
+                                            initial={{ height: 0, opacity: 0 }}
+                                            animate={{ height: 'auto', opacity: 1 }}
+                                            exit={{ height: 0, opacity: 0 }}
+                                            className="overflow-hidden"
+                                        >
+                                            <div className="mt-8 space-y-4 pt-6 border-t border-zinc-100 dark:border-zinc-800">
+                                                {/* Essential */}
+                                                <div className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-zinc-100 dark:border-zinc-800/50">
+                                                    <div>
+                                                        <span className="block text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t('cookies.essential.title')}</span>
+                                                        <p className="text-xs text-zinc-500 dark:text-zinc-400">{t('cookies.essential.description')}</p>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/20 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase">
+                                                        <Check className="w-3 h-3" />
+                                                        {t('common.requiredByLaw')}
+                                                    </div>
+                                                </div>
 
-                            {/* Preferences */}
-                            <label className="flex items-center justify-between cursor-pointer">
-                                <div>
-                                    <span className="text-sm font-medium text-gray-900">Preferences</span>
-                                    <p className="text-xs text-gray-500">Language, display settings</p>
+                                                {/* Analytics */}
+                                                <label className="flex items-center justify-between p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 rounded-2xl transition-colors cursor-pointer group">
+                                                    <div>
+                                                        <span className="block text-sm font-semibold text-zinc-900 dark:text-zinc-100 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">{t('cookies.analytics.title')}</span>
+                                                        <p className="text-xs text-zinc-500 dark:text-zinc-400">{t('cookies.analytics.description')}</p>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        role="switch"
+                                                        aria-checked={analytics}
+                                                        onClick={() => setAnalytics(!analytics)}
+                                                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-teal-600 focus:ring-offset-2 ${analytics ? 'bg-teal-600' : 'bg-zinc-200 dark:bg-zinc-700'}`}
+                                                    >
+                                                        <span
+                                                            aria-hidden="true"
+                                                            className={`inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${analytics ? 'translate-x-5' : 'translate-x-0'}`}
+                                                        />
+                                                    </button>
+                                                </label>
+
+                                                {/* Preferences */}
+                                                <label className="flex items-center justify-between p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 rounded-2xl transition-colors cursor-pointer group">
+                                                    <div>
+                                                        <span className="block text-sm font-semibold text-zinc-900 dark:text-zinc-100 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">{t('cookies.preferences.title')}</span>
+                                                        <p className="text-xs text-zinc-500 dark:text-zinc-400">{t('cookies.preferences.description')}</p>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        role="switch"
+                                                        aria-checked={preferences}
+                                                        onClick={() => setPreferences(!preferences)}
+                                                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-teal-600 focus:ring-offset-2 ${preferences ? 'bg-teal-600' : 'bg-zinc-200 dark:bg-zinc-700'}`}
+                                                    >
+                                                        <span
+                                                            aria-hidden="true"
+                                                            className={`inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${preferences ? 'translate-x-5' : 'translate-x-0'}`}
+                                                        />
+                                                    </button>
+                                                </label>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+
+                                <div className="mt-8 flex flex-col sm:flex-row items-center gap-3">
+                                    <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                                        <button
+                                            onClick={acceptAll}
+                                            className="flex-1 sm:flex-none px-6 py-3 bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 text-sm font-bold rounded-2xl hover:bg-zinc-800 dark:hover:bg-white transition-all active:scale-95 shadow-lg shadow-zinc-900/10 dark:shadow-zinc-50/10"
+                                        >
+                                            {t('cookies.actions.acceptAll')}
+                                        </button>
+                                        <button
+                                            onClick={showDetails ? saveCustom : rejectOptional}
+                                            className="flex-1 sm:flex-none px-6 py-3 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-50 text-sm font-semibold rounded-2xl border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-all active:scale-95"
+                                        >
+                                            {showDetails ? t('cookies.actions.savePreferences') : t('cookies.actions.essentialOnly')}
+                                        </button>
+                                    </div>
+                                    {!showDetails && (
+                                        <button
+                                            onClick={() => setShowDetails(true)}
+                                            className="w-full sm:w-auto px-4 py-2 text-zinc-500 dark:text-zinc-400 text-sm font-medium hover:text-teal-600 dark:hover:text-teal-400 transition-colors flex items-center justify-center gap-1 group"
+                                        >
+                                            {t('cookies.actions.customize')}
+                                            <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                        </button>
+                                    )}
                                 </div>
-                                <button
-                                    type="button"
-                                    role="switch"
-                                    aria-checked={preferences}
-                                    onClick={() => setPreferences(!preferences)}
-                                    className={`w-10 h-5 rounded-full transition-colors ${preferences ? 'bg-blue-500' : 'bg-gray-300'}`}
-                                >
-                                    <div className={`w-4 h-4 bg-white rounded-full shadow transform transition-transform translate-y-0.5 ${preferences ? 'translate-x-5' : 'translate-x-0.5'}`} />
-                                </button>
-                            </label>
+                            </div>
                         </div>
-                    )}
-
-                    {/* Action buttons */}
-                    <div className="mt-4 flex flex-wrap gap-2">
-                        <button
-                            onClick={acceptAll}
-                            className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
-                        >
-                            Accept All
-                        </button>
-                        <button
-                            onClick={rejectOptional}
-                            className="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
-                        >
-                            Essential Only
-                        </button>
-                        {showDetails ? (
-                            <button
-                                onClick={saveCustom}
-                                className="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
-                            >
-                                Save Preferences
-                            </button>
-                        ) : (
-                            <button
-                                onClick={() => setShowDetails(true)}
-                                className="px-4 py-2 text-gray-500 text-sm font-medium hover:text-gray-700 transition-colors"
-                            >
-                                Customize
-                            </button>
-                        )}
                     </div>
-                </div>
-            </div>
-        </div>
+                </motion.div>
+            )}
+        </AnimatePresence>
     );
 }

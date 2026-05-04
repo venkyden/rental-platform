@@ -45,6 +45,20 @@ class Settings(BaseSettings):
 
     # CORS
     FRONTEND_URL: str = "http://localhost:3000"
+    
+    @property
+    def ALLOWED_ORIGINS(self) -> list[str]:
+        import os
+        _env_origins = os.getenv("ALLOWED_ORIGINS", "").split(",") if os.getenv("ALLOWED_ORIGINS") else []
+        return [
+            *[o.strip() for o in _env_origins if o.strip()],
+            "http://localhost:3000",
+            "http://localhost:3001",
+            "http://127.0.0.1:3000",
+            "https://roomivo-frontend-0jyi.onrender.com",
+            "https://roomivo.eu",
+            "https://www.roomivo.eu",
+        ]
 
     class Config:
         env_file = ".env"

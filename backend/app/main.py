@@ -50,28 +50,6 @@ except ImportError:
     RATE_LIMITING_ENABLED = False
 
 # ------------------------------------------------------------------
-# CORS – allowed origins
-# ------------------------------------------------------------------
-_env_origins = os.getenv("ALLOWED_ORIGINS", "").split(",") if os.getenv("ALLOWED_ORIGINS") else []
-ALLOWED_ORIGINS = [
-    *[o.strip() for o in _env_origins if o.strip()],
-    "http://localhost:3000",
-    "http://localhost:3001",
-    "http://127.0.0.1:3000",
-    "https://roomivo-frontend-0jyi.onrender.com",
-    "https://roomivo.eu",
-    "https://www.roomivo.eu",
-]
-
-
-def _get_cors_origin(request_origin: str | None) -> str | None:
-    """Return the origin if it is in our allow-list, else None."""
-    if request_origin and request_origin in ALLOWED_ORIGINS:
-        return request_origin
-    return None
-
-
-# ------------------------------------------------------------------
 # FastAPI app
 # ------------------------------------------------------------------
 fastapi_app = FastAPI(
@@ -89,7 +67,7 @@ if RATE_LIMITING_ENABLED:
 # ------------------------------------------------------------------
 fastapi_app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
+    allow_origins=settings.ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -276,35 +254,49 @@ class CORSSafetyNet:
         try:
             await self.app(scope, receive, send)
         except Exception as e:
-            import traceback
+            try:
+                import traceback
+                logger.error(f"❌ CRITICAL ERROR CAUGHT BY SAFETY NET: {str(e)}", exc_info=True)
 
-            # LOG THE ERROR! This is critical for debugging 503s
-            logger.error(f"❌ CRITICAL ERROR CAUGHT BY SAFETY NET: {str(e)}", exc_info=True)
+                # Use settings directly to avoid circular imports
+                from app.core.config import settings
+                allowed_origins = settings.ALLOWED_ORIGINS
+                
+                # Default to the first allowed production origin if not found or untrusted
+                # fallback index 0 is typically https://roomivo.eu in production
+                origin = allowed_origins[0].encode() 
+                
+                for header_name, header_value in scope.get("headers", []):
+                    if header_name.lower() == b"origin":
+                        try:
+                            decoded_origin = header_value.decode()
+                            if decoded_origin in allowed_origins:
+                                origin = header_value
+                        except Exception:
+                            pass
+                        break
 
-            # Get origin from headers to echo it back (necessary for credentials)
-            # Default to the first allowed production origin if not found
-            from app.main import ALLOWED_ORIGINS
-            origin = ALLOWED_ORIGINS[1].encode() # https://roomivo.eu
-            
-            for header_name, header_value in scope.get("headers", []):
-                if header_name.lower() == b"origin":
-                    if header_value.decode() in ALLOWED_ORIGINS:
-                        origin = header_value
-                    break
-
-            resp_headers = [
-                (b"content-type", b"application/json"),
-                (b"access-control-allow-origin", origin),
-                (b"access-control-allow-methods", b"GET, POST, PUT, DELETE, OPTIONS, PATCH"),
-                (b"access-control-allow-headers", b"Content-Type, Authorization, X-Requested-With"),
-                (b"access-control-allow-credentials", b"true"),
-            ]
-            body = f'{{"detail":"Service temporarily unavailable: {str(e)}"}}'.encode()
-            
-            await send(
-                {"type": "http.response.start", "status": 503, "headers": resp_headers}
-            )
-            await send({"type": "http.response.body", "body": body})
+                resp_headers = [
+                    (b"content-type", b"application/json"),
+                    (b"access-control-allow-origin", origin),
+                    (b"access-control-allow-methods", b"GET, POST, PUT, DELETE, OPTIONS, PATCH"),
+                    (b"access-control-allow-headers", b"Content-Type, Authorization, X-Requested-With, Accept, Language"),
+                    (b"access-control-allow-credentials", b"true"),
+                ]
+                
+                # Sanitize error message for JSON
+                safe_error = str(e).replace('"', '\\"')
+                body = f'{{"detail":"Service temporarily unavailable: {safe_error}"}}'.encode()
+                
+                await send(
+                    {"type": "http.response.start", "status": 503, "headers": resp_headers}
+                )
+                await send({"type": "http.response.body", "body": body})
+            except Exception as nested_e:
+                # Absolute last resort if the safety net ITSELF crashes
+                logger.error(f"🔥🔥🔥 SAFETY NET CRASHED: {str(nested_e)}")
+                # We can't do much here except let it bubble or send a bare-bones response if possible
+                raise nested_e
 
 
 # This is what uvicorn imports: app = CORSSafetyNet(fastapi_app)

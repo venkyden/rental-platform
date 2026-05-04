@@ -41,6 +41,7 @@ const outfit = Outfit({
 });
 
 import { AuthProvider } from "@/lib/AuthContext";
+import CookieConsentBanner from "@/components/CookieConsentBanner";
 
 export default function RootLayout({
   children,
@@ -67,6 +68,7 @@ export default function RootLayout({
                   {children}
                   <ToastContainer />
                   <GlobalFooter />
+                  <CookieConsentBanner />
                 </div>
               </SegmentProvider>
             </AuthProvider>
