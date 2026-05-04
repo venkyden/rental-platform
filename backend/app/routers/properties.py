@@ -178,7 +178,7 @@ async def list_properties(
                 )
             )
         except Exception as e:
-            logger.error(f"Error in management role filter: {e}")
+            logger.error(f"Error in management role filter for user {getattr(current_user, 'id', 'unknown')}: {e}", exc_info=True)
             # Fallback to just active properties to avoid total crash
             filters.append(Property.status == "active")
     elif landlord_id:

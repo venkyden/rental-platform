@@ -89,8 +89,10 @@ async def add_security_headers(request: Request, call_next):
         # eventually gets these headers.
         raise e
         
-    # Allow Google Auth popups to communicate back to the window
-    response.headers["Cross-Origin-Opener-Policy"] = "same-origin-allow-popups"
+    # Allow Google Auth popups to communicate back to the window.
+    # 'unsafe-none' is used to avoid postMessage blocks with Google Identity Services.
+    # Note: 'FrameDoesNotExistError' console noise is extension-related and can be ignored.
+    response.headers["Cross-Origin-Opener-Policy"] = "unsafe-none"
     # Additional security headers
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
@@ -101,6 +103,33 @@ async def add_security_headers(request: Request, call_next):
 # ------------------------------------------------------------------
 # Global exception handler
 # ------------------------------------------------------------------
+from starlette.exceptions import HTTPException as StarletteHTTPException
+
+@fastapi_app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    from app.core.config import settings
+    origin = request.headers.get("origin")
+    allow_origin = "*"
+    if origin and origin in settings.ALLOWED_ORIGINS:
+        allow_origin = origin
+    elif settings.ENVIRONMENT == "production":
+        allow_origin = "https://roomivo.eu"
+    else:
+        allow_origin = "http://localhost:3000"
+
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail},
+        headers={
+            "Access-Control-Allow-Origin": allow_origin,
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With, Accept, Language",
+            "Access-Control-Allow-Credentials": "true",
+            "Cross-Origin-Opener-Policy": "unsafe-none",
+        }
+    )
+
+
 @fastapi_app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     logger.error(
@@ -132,7 +161,7 @@ async def global_exception_handler(request: Request, exc: Exception):
             "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
             "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With, Accept, Language",
             "Access-Control-Allow-Credentials": "true",
-            "Cross-Origin-Opener-Policy": "same-origin-allow-popups",
+            "Cross-Origin-Opener-Policy": "unsafe-none",
         }
     )
 
@@ -304,12 +333,17 @@ class CORSSafetyNet:
                 logger.error(f"❌ CRITICAL ERROR CAUGHT BY SAFETY NET: {str(e)}", exc_info=True)
 
                 # Use settings directly to avoid circular imports
-                from app.core.config import settings
-                allowed_origins = settings.ALLOWED_ORIGINS
+                try:
+                    from app.core.config import settings
+                    allowed_origins = settings.ALLOWED_ORIGINS
+                except Exception:
+                    allowed_origins = ["https://roomivo.eu", "https://www.roomivo.eu", "http://localhost:3000"]
                 
                 # Default to the first allowed production origin if not found or untrusted
                 # fallback index 0 is typically https://roomivo.eu in production
-                origin = allowed_origins[0].encode() 
+                origin = b"*"
+                if allowed_origins:
+                    origin = allowed_origins[0].encode()
                 
                 for header_name, header_value in scope.get("headers", []):
                     if header_name.lower() == b"origin":
@@ -327,7 +361,7 @@ class CORSSafetyNet:
                     (b"access-control-allow-methods", b"GET, POST, PUT, DELETE, OPTIONS, PATCH"),
                     (b"access-control-allow-headers", b"Content-Type, Authorization, X-Requested-With, Accept, Language"),
                     (b"access-control-allow-credentials", b"true"),
-                    (b"cross-origin-opener-policy", b"same-origin-allow-popups"),
+                    (b"cross-origin-opener-policy", b"unsafe-none"), # Ensure compatibility for GSI in error states
                 ]
                 
                 # Sanitize error message for JSON

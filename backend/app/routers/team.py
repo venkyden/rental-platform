@@ -82,10 +82,10 @@ class AcceptInviteRequest(BaseModel):
 
 class PendingInviteResponse(BaseModel):
     id: str
-    landlord_name: str
-    permission_level: str
-    token: str
-    created_at: datetime
+    landlord_name: str = "Unknown Landlord"
+    permission_level: str = "view_only"
+    token: str = ""
+    created_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True

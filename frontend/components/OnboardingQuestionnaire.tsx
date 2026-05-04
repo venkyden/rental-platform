@@ -3,12 +3,12 @@
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getTenantQuestions, getLandlordQuestions } from './onboarding/onboardingQuestions';
+import { getTenantQuestions, getLandlordQuestions, getAgencyQuestions } from './onboarding/onboardingQuestions';
 import QuestionRenderer from './onboarding/QuestionRenderer';
 import { useLanguage } from '@/lib/LanguageContext';
 
 interface QuestionnaireProps {
-    userType: 'tenant' | 'landlord';
+    userType: 'tenant' | 'landlord' | 'agency';
     initialResponses?: Record<string, any>;
     onComplete: (responses: Record<string, any>) => void;
 }
@@ -18,7 +18,7 @@ export default function OnboardingQuestionnaire({ userType, initialResponses, on
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
     const [responses, setResponses] = useState<Record<string, any>>(initialResponses || {});
     const [multiSelectValues, setMultiSelectValues] = useState<string[]>(() => {
-        const initialQuestions = userType === 'tenant' ? getTenantQuestions() : getLandlordQuestions();
+        const initialQuestions = userType === 'tenant' ? getTenantQuestions() : (userType === 'agency' ? getAgencyQuestions() : getLandlordQuestions());
         if (initialQuestions[0]?.type === 'multiselect') {
             return (initialResponses || {})[initialQuestions[0].id] || [];
         }
@@ -28,7 +28,9 @@ export default function OnboardingQuestionnaire({ userType, initialResponses, on
 
     // Get the base set of questions
     const allQuestions = useMemo(() => {
-        return userType === 'tenant' ? getTenantQuestions() : getLandlordQuestions();
+        if (userType === 'tenant') return getTenantQuestions();
+        if (userType === 'agency') return getAgencyQuestions();
+        return getLandlordQuestions();
     }, [userType]);
 
     const getNextQuestionIndex = (startIndex: number, currentResponses: Record<string, any>) => {

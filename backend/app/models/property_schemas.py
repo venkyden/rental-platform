@@ -125,26 +125,26 @@ class PropertyResponse(BaseModel):
     latitude: Optional[Decimal]
     longitude: Optional[Decimal]
 
-    bedrooms: int
-    bathrooms: Optional[Decimal]
-    size_sqm: Optional[Decimal]
-    floor_number: Optional[int]
-    furnished: bool
+    bedrooms: int = 0
+    bathrooms: Optional[Decimal] = None
+    size_sqm: Optional[Decimal] = None
+    floor_number: Optional[int] = None
+    furnished: bool = False
 
-    accommodation_capacity: Optional[int]
-    rooms_count: Optional[int]
-    living_room_type: Optional[str]
-    kitchen_type: Optional[str]
+    accommodation_capacity: Optional[int] = None
+    rooms_count: Optional[int] = None
+    living_room_type: Optional[str] = None
+    kitchen_type: Optional[str] = None
     room_details: Optional[List[dict]] = []
 
-    monthly_rent: Decimal
-    deposit: Optional[Decimal]
-    charges: Optional[Decimal]
-    charges_included: bool
-    charges_description: Optional[str]
+    monthly_rent: Decimal = Decimal("0")
+    deposit: Optional[Decimal] = None
+    charges: Optional[Decimal] = None
+    charges_included: bool = False
+    charges_description: Optional[str] = None
 
-    available_from: Optional[date]
-    lease_duration_months: Optional[int]
+    available_from: Optional[date] = None
+    lease_duration_months: Optional[int] = None
 
     amenities: Optional[list] = []
     custom_amenities: Optional[list] = []
@@ -153,13 +153,13 @@ class PropertyResponse(BaseModel):
 
     utilities_included: Optional[list] = []
     caf_eligible: bool = False
-    guarantor_required: bool
+    guarantor_required: bool = False
     accepted_guarantor_types: Optional[list] = []
 
     photos: Optional[list] = []
 
-    status: str
-    views_count: int
+    status: str = "draft"
+    views_count: int = 0
 
     created_at: datetime
     updated_at: Optional[datetime]

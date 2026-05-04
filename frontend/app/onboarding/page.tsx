@@ -22,7 +22,9 @@ export default function OnboardingPage() {
     const userType = useMemo(() => {
         if (!user?.role) return 'tenant';
         const roleStr = String(user.role).toLowerCase();
-        return (roleStr === 'landlord' || roleStr === 'property_manager') ? 'landlord' : 'tenant';
+        if (roleStr === 'property_manager') return 'agency';
+        if (roleStr === 'landlord') return 'landlord';
+        return 'tenant';
     }, [user]);
 
     const handleComplete = async (responses: Record<string, any>) => {

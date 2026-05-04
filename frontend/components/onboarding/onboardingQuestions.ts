@@ -29,7 +29,7 @@ export interface Question {
 }
 
 export interface QuestionnaireProps {
-    userType: 'tenant' | 'landlord';
+    userType: 'tenant' | 'landlord' | 'agency';
     onComplete: (responses: Record<string, any>) => void;
 }
 
@@ -395,12 +395,34 @@ export function getTenantQuestions(): Question[] {
 export function getLandlordQuestions(): Question[] {
     return [
         {
+            id: 'property_count',
+            question: 'onboarding.questions.landlord.property_count.question',
+            emoji: '🏠',
+            options: [
+                { value: '1_4', label: 'onboarding.questions.landlord.property_count.options.1_4', segment: 'S1' },
+                { value: '5_100', label: 'onboarding.questions.landlord.property_count.options.5_100', segment: 'S2' },
+                { value: '100_plus', label: 'onboarding.questions.landlord.property_count.options.100_plus', segment: 'S3' },
+            ],
+        },
+        {
+            id: 'challenge',
+            question: 'onboarding.questions.landlord.challenge.question',
+            emoji: '🎯',
+            options: [
+                { value: 'finding_tenants', label: 'onboarding.questions.landlord.challenge.options.finding_tenants' },
+                { value: 'avoiding_fraud', label: 'onboarding.questions.landlord.challenge.options.avoiding_fraud' },
+                { value: 'regulations', label: 'onboarding.questions.landlord.challenge.options.regulations' },
+                { value: 'all', label: 'onboarding.questions.landlord.challenge.options.all' },
+            ],
+        },
+        {
             id: 'location',
             question: 'onboarding.questions.landlord.property_location.question',
-            emoji: '',
+            emoji: '📍',
             type: 'address_autocomplete',
             restrictToCities: ['nantes', 'paris'],
             placeholder: 'common.placeholders.address',
+            description: 'onboarding.questions.landlord.property_location.description',
         },
         {
             id: 'rooms',
@@ -488,6 +510,41 @@ export function getLandlordQuestions(): Question[] {
             options: [
                 { value: 'yes', label: 'onboarding.questions.landlord.caf_eligibility.options.yes' },
                 { value: 'no', label: 'onboarding.questions.landlord.caf_eligibility.options.no' },
+            ],
+        },
+    ];
+}
+
+export function getAgencyQuestions(): Question[] {
+    return [
+        {
+            id: 'property_count',
+            question: 'onboarding.questions.landlord.property_count.question',
+            emoji: '🏢',
+            options: [
+                { value: '5_100', label: 'onboarding.questions.landlord.property_count.options.5_100', segment: 'S2' },
+                { value: '100_plus', label: 'onboarding.questions.landlord.property_count.options.100_plus', segment: 'S3' },
+            ],
+        },
+        {
+            id: 'challenge',
+            question: 'onboarding.questions.landlord.challenge.question',
+            emoji: '🚀',
+            options: [
+                { value: 'finding_tenants', label: 'onboarding.questions.landlord.challenge.options.finding_tenants' },
+                { value: 'avoiding_fraud', label: 'onboarding.questions.landlord.challenge.options.avoiding_fraud' },
+                { value: 'regulations', label: 'onboarding.questions.landlord.challenge.options.regulations' },
+                { value: 'all', label: 'onboarding.questions.landlord.challenge.options.all' },
+            ],
+        },
+        {
+            id: 'urgency',
+            question: 'onboarding.questions.landlord.urgency.question',
+            emoji: '⏰',
+            options: [
+                { value: 'urgent', label: 'onboarding.questions.landlord.urgency.options.urgent' },
+                { value: 'soon', label: 'onboarding.questions.landlord.urgency.options.soon' },
+                { value: 'planning', label: 'onboarding.questions.landlord.urgency.options.planning' },
             ],
         },
     ];

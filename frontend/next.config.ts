@@ -28,8 +28,17 @@ const nextConfig: NextConfig = {
             value: 'camera=(self), microphone=(self), geolocation=(self)',
           },
           {
+            /* 
+              Cross-Origin-Opener-Policy: 'unsafe-none' is used to ensure compatibility with 
+              Google Identity Services (GSI) / Google Sign-In popups and iframes.
+              Using 'same-origin-allow-popups' may trigger console warnings/errors regarding window.postMessage.
+              
+              Note: Errors like 'FrameDoesNotExistError' or 'runtime.lastError' in the console 
+              are typically caused by browser extensions (e.g. Grammarly, Loom) and are not 
+              related to the application code.
+            */
             key: 'Cross-Origin-Opener-Policy',
-            value: 'same-origin-allow-popups',
+            value: 'unsafe-none',
           },
         ],
       },
