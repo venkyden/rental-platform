@@ -24,6 +24,7 @@ export interface Question {
     unit?: string;
     maxSelections?: number;
     selectOptions?: { value: string; label: string }[];
+    description?: string;
     showIf?: (responses: Record<string, any>) => boolean;
 }
 
