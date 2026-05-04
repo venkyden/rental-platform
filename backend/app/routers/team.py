@@ -144,10 +144,9 @@ async def get_my_invites(
     """Get all pending team invites for the current user."""
     try:
         # Fetch invites where the current user is the recipient (by email)
-        # Using .outerjoin to ensure we get the invite even if the landlord user record is missing
+        # Using ilike for case-insensitive matching
         query = (
-            select(TeamMember, User)
-            .outerjoin(User, User.id == TeamMember.landlord_id)
+            select(TeamMember)
             .where(
                 and_(
                     TeamMember.email.ilike(current_user.email),
@@ -158,10 +157,16 @@ async def get_my_invites(
         )
         
         result = await db.execute(query)
-        rows = result.all()
+        invites = result.scalars().all()
 
         response = []
-        for invite, landlord in rows:
+        for invite in invites:
+            # Safely get landlord name via relationship (lazy loaded)
+            # Or fetch explicitly if needed. For now, let's use a separate query for safety
+            # since lazy loading in async context can be tricky without proper setup.
+            landlord_result = await db.execute(select(User).where(User.id == invite.landlord_id))
+            landlord = landlord_result.scalar_one_or_none()
+            
             # Safely extract permission level value
             perm_level = invite.permission_level
             if hasattr(perm_level, "value"):
@@ -177,9 +182,9 @@ async def get_my_invites(
 
         return response
     except Exception as e:
-        logger.exception(f"Critical error fetching invites for {current_user.email}")
+        logger.error(f"Error fetching invites for {current_user.email}: {str(e)}", exc_info=True)
         raise HTTPException(
-            status_code=500, detail=f"Failed to fetch invites due to a server error. Please try again later."
+            status_code=500, detail="Failed to fetch invites. Please try again later."
         )
 
 

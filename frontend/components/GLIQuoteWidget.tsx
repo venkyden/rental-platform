@@ -121,15 +121,18 @@ export default function GLIQuoteWidget({ monthlyRent, propertyId }: GLIQuoteWidg
                     <div className="relative group">
                         <input
                             type="number"
-                            value={tenantIncome}
-                            onChange={(e) => setTenantIncome(Number(e.target.value))}
+                            value={isNaN(tenantIncome) ? '' : tenantIncome}
+                            onChange={(e) => {
+                                const val = e.target.value === '' ? 0 : Number(e.target.value);
+                                setTenantIncome(val);
+                            }}
                             className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl font-bold text-zinc-900 dark:text-white focus:ring-2 focus:ring-teal-500/50 transition-all"
                         />
                         <span className="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-zinc-400">€</span>
                     </div>
                     <p translate="no" className="notranslate text-[10px] font-black uppercase tracking-widest text-zinc-500 mt-2">
-                        {t('dashboard.widgets.gli.ratio', { ratio: (tenantIncome / monthlyRent).toFixed(1) }, `Ratio: ${(tenantIncome / monthlyRent).toFixed(1)}x rent`)}
-                        {tenantIncome / monthlyRent < 3 && <span className="text-red-500 ml-2">{t('dashboard.widgets.gli.min_ratio', undefined, '(min 3x)')}</span>}
+                        {t('dashboard.widgets.gli.ratio', { ratio: monthlyRent > 0 ? (tenantIncome / monthlyRent).toFixed(1) : '0.0' }, `Ratio: ${monthlyRent > 0 ? (tenantIncome / monthlyRent).toFixed(1) : '0.0'}x rent`)}
+                        {monthlyRent > 0 && tenantIncome / monthlyRent < 3 && <span className="text-red-500 ml-2">{t('dashboard.widgets.gli.min_ratio', undefined, '(min 3x)')}</span>}
                     </p>
                 </div>
 

@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { apiClient } from '@/lib/api';
+import { useAuth } from '@/lib/useAuth';
 import { ChevronDown, UserCircle, Building, Home, Plus, Check, Loader2 } from 'lucide-react';
 import { useLanguage } from '@/lib/LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -43,6 +43,7 @@ export default function RoleSwitcher({ currentRole, availableRoles, onSwitch }: 
     const dropdownRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
     const { t } = useLanguage();
+    const { switchRole: globalSwitchRole } = useAuth();
 
     const currentConfig = ROLE_CONFIG[currentRole] || ROLE_CONFIG.tenant;
     const otherRoles = availableRoles.filter((r) => r !== currentRole && ROLE_CONFIG[r]);
@@ -62,12 +63,9 @@ export default function RoleSwitcher({ currentRole, availableRoles, onSwitch }: 
         if (switching) return;
         setSwitching(targetRole);
         try {
-            const data = await apiClient.switchRole(targetRole);
+            await globalSwitchRole(targetRole);
             setOpen(false);
             onSwitch?.();
-            if (data.redirect_path) {
-                router.push(data.redirect_path);
-            }
         } catch (err) {
             console.error('Role switch failed:', err);
         } finally {
@@ -79,12 +77,9 @@ export default function RoleSwitcher({ currentRole, availableRoles, onSwitch }: 
         if (unlocking) return;
         setUnlocking(true);
         try {
-            const data = await apiClient.switchRole(targetRole);
+            await globalSwitchRole(targetRole);
             setOpen(false);
             onSwitch?.();
-            if (data.redirect_path) {
-                router.push(data.redirect_path);
-            }
         } catch (err: any) {
             console.error('Role unlock failed:', err);
             alert('To unlock this role, please sign up again using the role selector on the registration page.');

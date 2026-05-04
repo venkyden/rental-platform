@@ -1,93 +1,79 @@
 'use client';
 
-import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { apiClient } from '@/lib/api';
-import { useToast } from '@/lib/ToastContext';
+import { motion } from 'framer-motion';
+import { Briefcase, ChevronLeft } from 'lucide-react';
+import PremiumLayout from '@/components/PremiumLayout';
+import { useLanguage } from '@/lib/LanguageContext';
+import VerificationUpload from '@/components/VerificationUpload';
+import { useAuth } from '@/lib/useAuth';
 
 export default function IncomeVerifyPage() {
     const router = useRouter();
-    const toast = useToast();
-    const fileInputRef = useRef<HTMLInputElement>(null);
-    const [uploading, setUploading] = useState(false);
+    const { t } = useLanguage();
+    const { user } = useAuth();
 
-    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        const formData = new FormData();
-        formData.append('file', file);
-
-        try {
-            setUploading(true);
-            // Using the income verification endpoint
-            await apiClient.client.post('/documents/verify/income', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-            });
-            toast.success('Income proof uploaded successfully!');
-            setTimeout(() => router.push('/dashboard'), 1500);
-        } catch (error) {
-            console.error(error);
-            toast.error("Error uploading document");
-        } finally {
-            setUploading(false);
-        }
+    const handleSuccess = () => {
+        router.push('/dashboard');
     };
 
-
-
     return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-            <div className="max-w-lg w-full bg-white rounded-2xl shadow-sm p-8 border border-gray-200">
-                <div className="text-6xl mb-6 text-center"></div>
-                <h1 className="text-2xl font-bold text-gray-900 mb-2 text-center">Income Verification</h1>
-                <p className="text-center text-gray-500 mb-8">
-                    Secure your application for landlords.
-                </p>
+        <PremiumLayout withNavbar={false}>
+            <div className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden bg-slate-50 dark:bg-zinc-950">
+                {/* Background Effects */}
+                <div className="absolute inset-0 z-0">
+                    <div className="absolute top-0 w-full h-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-teal-50/50 via-slate-50 to-white dark:from-teal-900/20 dark:via-zinc-950 dark:to-zinc-950"></div>
+                    <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-10"></div>
+                </div>
 
-                <div className="space-y-4 mb-8">
-                    <div
-                        onClick={() => fileInputRef.current?.click()}
-                        className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:bg-indigo-50 hover:border-indigo-300 transition-colors cursor-pointer"
-                    >
-                        <span className="text-4xl block mb-2"></span>
-                        <span className="text-gray-600 font-medium">Drop your Tax Notice 2025</span>
-                        <span className="text-xs text-gray-400 block mt-1">
-                            {uploading ? 'Uploading...' : 'PDF only'}
-                        </span>
-                    </div>
-
-                    <input
-                        type="file"
-                        ref={fileInputRef}
-                        className="hidden"
-                        accept=".pdf,.jpg,.png"
-                        onChange={handleFileUpload}
-                        disabled={uploading}
-                    />
-
-                    <div className="grid grid-cols-1 gap-4">
-                        <div
-                            onClick={() => fileInputRef.current?.click()}
-                            className="border rounded-xl p-4 text-center hover:bg-gray-50 cursor-pointer transition-colors"
+                <motion.div 
+                    initial={{ opacity: 0, y: 40, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                    className="max-w-2xl w-full relative z-10"
+                >
+                    <div className="glass-card !p-12 sm:!p-16 rounded-[3.5rem] shadow-[0_60px_120px_-20px_rgba(0,0,0,0.15)] dark:shadow-[0_60px_120px_-20px_rgba(0,0,0,0.5)] border-zinc-100 dark:border-zinc-800/50 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/5 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+                        
+                        <button 
+                            onClick={() => router.back()}
+                            className="flex items-center gap-2 text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] hover:text-zinc-900 dark:hover:text-white transition-all mb-12 group"
                         >
-                            <span className="text-2xl block mb-1"></span>
-                            <span className="text-xs font-medium">3 Pay Stubs</span>
+                            <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                            {t('common.actions.back', undefined, 'Back')}
+                        </button>
+
+                        <div className="mb-16 text-center space-y-4">
+                            <div className="w-20 h-20 bg-teal-500/10 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-inner">
+                                <Briefcase className="w-10 h-10 text-teal-500" />
+                            </div>
+                            <h1 className="text-4xl sm:text-5xl font-black tracking-tighter uppercase leading-none">
+                                {t('verify.income.title', undefined, 'Resource Validation')}
+                            </h1>
+                            <p className="text-lg text-zinc-500 dark:text-zinc-400 font-medium max-w-sm mx-auto">
+                                Prove your financial stability to secure the best rental opportunities.
+                            </p>
+                        </div>
+
+                        <div className="mb-16">
+                            <VerificationUpload 
+                                verificationType="employment" 
+                                onSuccessAction={handleSuccess} 
+                                user={user}
+                            />
+                        </div>
+
+                        <div className="text-center pt-8 border-t border-zinc-100 dark:border-zinc-800/50">
+                            <button
+                                onClick={() => router.push('/dashboard')}
+                                className="text-zinc-400 hover:text-zinc-900 dark:hover:text-white text-[10px] font-black uppercase tracking-[0.4em] transition-all"
+                            >
+                                {t('onboarding.skip', undefined, 'I will do this later')}
+                            </button>
                         </div>
                     </div>
-                </div>
-
-                <div className="flex gap-4">
-                    <button
-                        onClick={() => router.back()}
-                        className="w-full py-3 text-gray-400 hover:text-gray-600 transition-colors"
-                        disabled={uploading}
-                    >
-                        Cancel / Back
-                    </button>
-                    {/* Optional skip button if needed */}
-                </div>
+                </motion.div>
             </div>
-        </div>
+        </PremiumLayout>
     );
 }

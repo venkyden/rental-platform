@@ -335,7 +335,7 @@ async def upload_identity_mobile(
 
 @router.post("/employment/upload")
 async def upload_employment_document(
-    document_type: str,
+    document_type: str = Form(...),
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -496,8 +496,8 @@ async def upload_guarantor_document(
 
 @router.post("/property/upload")
 async def upload_property_document(
-    property_id: str,
-    document_type: str,
+    property_id: str = Query(...),
+    document_type: str = Query(...),
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),

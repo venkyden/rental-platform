@@ -279,16 +279,28 @@ class CORSSafetyNet:
             import traceback
 
             # LOG THE ERROR! This is critical for debugging 503s
-            print("❌ CRITICAL ERROR CAUGHT BY SAFETY NET:")
-            traceback.print_exc()
+            logger.error(f"❌ CRITICAL ERROR CAUGHT BY SAFETY NET: {str(e)}", exc_info=True)
+
+            # Get origin from headers to echo it back (necessary for credentials)
+            # Default to the first allowed production origin if not found
+            from app.main import ALLOWED_ORIGINS
+            origin = ALLOWED_ORIGINS[1].encode() # https://roomivo.eu
+            
+            for header_name, header_value in scope.get("headers", []):
+                if header_name.lower() == b"origin":
+                    if header_value.decode() in ALLOWED_ORIGINS:
+                        origin = header_value
+                    break
 
             resp_headers = [
                 (b"content-type", b"application/json"),
-                (b"access-control-allow-origin", b"*"),
-                (b"access-control-allow-methods", b"*"),
-                (b"access-control-allow-headers", b"*"),
+                (b"access-control-allow-origin", origin),
+                (b"access-control-allow-methods", b"GET, POST, PUT, DELETE, OPTIONS, PATCH"),
+                (b"access-control-allow-headers", b"Content-Type, Authorization, X-Requested-With"),
+                (b"access-control-allow-credentials", b"true"),
             ]
             body = f'{{"detail":"Service temporarily unavailable: {str(e)}"}}'.encode()
+            
             await send(
                 {"type": "http.response.start", "status": 503, "headers": resp_headers}
             )

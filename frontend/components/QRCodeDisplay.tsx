@@ -1,6 +1,7 @@
 'use client';
 
 import { QRCodeSVG } from 'qrcode.react';
+import { useLanguage } from '@/lib/LanguageContext';
 
 interface QRCodeDisplayProps {
     verificationCode: string;
@@ -9,16 +10,17 @@ interface QRCodeDisplayProps {
 }
 
 export default function QRCodeDisplay({ verificationCode, captureUrl, expiresAt }: QRCodeDisplayProps) {
+    const { t } = useLanguage();
     const copyToClipboard = () => {
         navigator.clipboard.writeText(captureUrl);
-        alert('Link copied to clipboard!');
+        alert(t('common.components.qrCode.toast.copied'));
     };
 
     return (
         <div className="bg-white border-2 border-blue-200 rounded-lg p-6">
-            <h3 className="text-xl font-bold mb-4"> Upload Property Photos</h3>
+            <h3 className="text-xl font-bold mb-4"> {t('common.components.qrCode.title')}</h3>
             <p className="text-gray-600 mb-6">
-                Scan this QR code with your phone to upload GPS-verified photos of the property
+                {t('common.components.qrCode.description')}
             </p>
 
             {/* QR Code */}
@@ -35,13 +37,13 @@ export default function QRCodeDisplay({ verificationCode, captureUrl, expiresAt 
 
             {/* Verification Code */}
             <div className="bg-blue-50 rounded-lg p-4 mb-4">
-                <p className="text-sm text-gray-600 mb-1">Verification Code:</p>
+                <p className="text-sm text-gray-600 mb-1">{t('common.components.qrCode.codeLabel')}</p>
                 <p className="text-2xl font-mono font-bold text-blue-600">{verificationCode}</p>
             </div>
 
             {/* Capture URL */}
             <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                <p className="text-sm text-gray-600 mb-2">Or copy this link:</p>
+                <p className="text-sm text-gray-600 mb-2">{t('common.components.qrCode.copyLinkLabel')}</p>
                 <div className="flex gap-2">
                     <input
                         type="text"
@@ -53,26 +55,28 @@ export default function QRCodeDisplay({ verificationCode, captureUrl, expiresAt 
                         onClick={copyToClipboard}
                         className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                     >
-                        Copy
+                        {t('common.components.qrCode.copyButton')}
                     </button>
                 </div>
             </div>
 
             {/* Expiry */}
             <p className="text-xs text-gray-500 text-center">
-                This link expires on {new Date(expiresAt).toLocaleDateString()} at{' '}
-                {new Date(expiresAt).toLocaleTimeString()}
+                {t('common.components.qrCode.expiry', {
+                    date: new Date(expiresAt).toLocaleDateString(),
+                    time: new Date(expiresAt).toLocaleTimeString()
+                })}
             </p>
 
             {/* Instructions */}
             <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <p className="text-sm font-medium mb-2"> Instructions:</p>
+                <p className="text-sm font-medium mb-2"> {t('common.components.qrCode.instructions.title')}</p>
                 <ol className="text-xs text-gray-700 space-y-1 list-decimal list-inside">
-                    <li>Open the link on your mobile phone</li>
-                    <li>Allow camera and location permissions</li>
-                    <li>Make sure you're AT the property location (GPS verified)</li>
-                    <li>Take photos of each room</li>
-                    <li>Photos will be automatically watermarked with the address</li>
+                    <li>{t('common.components.qrCode.instructions.step1')}</li>
+                    <li>{t('common.components.qrCode.instructions.step2')}</li>
+                    <li>{t('common.components.qrCode.instructions.step3')}</li>
+                    <li>{t('common.components.qrCode.instructions.step4')}</li>
+                    <li>{t('common.components.qrCode.instructions.step5')}</li>
                 </ol>
             </div>
         </div>

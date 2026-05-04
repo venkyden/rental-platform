@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Shield, Key, Mail, Camera, Loader2, CheckCircle2, Bell, Settings } from 'lucide-react';
+import { User, Shield, Key, Mail, Camera, Loader2, CheckCircle2, Bell, Settings, LogOut } from 'lucide-react';
 import { useAuth } from '@/lib/useAuth';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api';
@@ -12,7 +12,7 @@ import PremiumLayout from '@/components/PremiumLayout';
 
 
 export default function AccountSettingsPage() {
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
     const { t } = useLanguage();
     const router = useRouter();
 
@@ -199,7 +199,18 @@ export default function AccountSettingsPage() {
                                     )}
                                 </div>
                             ))}
+
+                            <div className="mt-4 md:mt-8 pt-4 md:pt-8 border-t border-zinc-200/50 dark:border-zinc-700/30">
+                                <button
+                                    onClick={logout}
+                                    className="flex items-center gap-3 px-5 md:px-6 py-3 md:py-4 rounded-full md:rounded-[1.5rem] text-[10px] md:text-sm font-black uppercase tracking-widest text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 transition-all duration-300 w-full"
+                                >
+                                    <LogOut className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                                    {t('dashboard.logout', undefined, 'Sign Out')}
+                                </button>
+                            </div>
                         </div>
+
                     </div>
 
                     {/* Content */}

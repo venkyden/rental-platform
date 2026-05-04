@@ -186,10 +186,13 @@ export function getTenantQuestions(): Question[] {
         },
         {
             id: 'nationality',
+            type: 'select',
             question: 'onboarding.questions.tenant.nationality.question',
             emoji: '',
-            type: 'select',
-            selectOptions: NATIONALITIES.map(n => ({ value: n.toLowerCase(), label: n })),
+            selectOptions: NATIONALITIES.map(n => ({ 
+                value: n.toLowerCase(), 
+                label: `common.nationalities.${n.toLowerCase()}` 
+            })),
         },
         {
             id: 'languages',

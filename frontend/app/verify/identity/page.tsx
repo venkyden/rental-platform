@@ -2,13 +2,20 @@
 
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Shield, Camera, FileText, ChevronLeft } from 'lucide-react';
+import { Shield, ChevronLeft } from 'lucide-react';
 import PremiumLayout from '@/components/PremiumLayout';
 import { useLanguage } from '@/lib/LanguageContext';
+import VerificationUpload from '@/components/VerificationUpload';
+import { useAuth } from '@/lib/useAuth';
 
 export default function IdentityVerifyPage() {
     const router = useRouter();
     const { t } = useLanguage();
+    const { user } = useAuth();
+
+    const handleSuccess = () => {
+        router.push('/dashboard');
+    };
 
     return (
         <PremiumLayout withNavbar={false}>
@@ -48,52 +55,15 @@ export default function IdentityVerifyPage() {
                             </p>
                         </div>
 
-                        <div className="space-y-6 mb-16">
-                            <motion.div 
-                                whileHover={{ scale: 1.02 }}
-                                className="p-8 bg-white/50 dark:bg-zinc-800/30 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-700/30 shadow-xl group cursor-pointer transition-all"
-                            >
-                                <div className="flex items-center justify-between gap-6">
-                                    <div className="flex items-center gap-6">
-                                        <div className="w-16 h-16 bg-indigo-500 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/20 group-hover:scale-110 transition-transform">
-                                            <Camera className="w-8 h-8" />
-                                        </div>
-                                        <div>
-                                            <h3 className="text-xl font-black uppercase tracking-tight mb-1">{t('verify.identity.idCard', undefined, 'Passport / CNI')}</h3>
-                                            <p className="text-xs text-zinc-500 font-medium">{t('verify.identity.scanDesc', undefined, 'Secure automated scan via camera.')}</p>
-                                        </div>
-                                    </div>
-                                    <div className="hidden sm:block">
-                                        <div className="px-4 py-2 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[8px] font-black uppercase tracking-widest rounded-xl">Fast Scan</div>
-                                    </div>
-                                </div>
-                                <button className="mt-8 w-full py-4 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] hover:scale-[1.02] active:scale-95 transition-all shadow-2xl">
-                                    {t('verify.identity.scanButton', undefined, 'Launch Scanner')}
-                                </button>
-                            </motion.div>
-
-                            <motion.div 
-                                whileHover={{ scale: 1.02 }}
-                                className="p-8 bg-zinc-50/50 dark:bg-zinc-900/30 rounded-[2.5rem] border border-zinc-200/50 dark:border-zinc-800/50 shadow-sm opacity-80 hover:opacity-100 transition-all group cursor-pointer"
-                            >
-                                <div className="flex items-center justify-between gap-6">
-                                    <div className="flex items-center gap-6">
-                                        <div className="w-16 h-16 bg-zinc-200 dark:bg-zinc-800 text-zinc-500 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                                            <FileText className="w-8 h-8" />
-                                        </div>
-                                        <div>
-                                            <h3 className="text-xl font-black uppercase tracking-tight mb-1">{t('verify.identity.residency', undefined, 'Residence Permit')}</h3>
-                                            <p className="text-xs text-zinc-500 font-medium">{t('verify.identity.visaDesc', undefined, 'Required for non-EU passport holders.')}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <button className="mt-8 w-full py-4 border-2 border-zinc-200 dark:border-zinc-800 text-zinc-400 dark:text-zinc-500 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] hover:border-zinc-900 hover:text-zinc-900 dark:hover:border-white dark:hover:text-white transition-all">
-                                    {t('verify.identity.uploadPdf', undefined, 'Import PDF Document')}
-                                </button>
-                            </motion.div>
+                        <div className="mb-16">
+                            <VerificationUpload 
+                                verificationType="identity" 
+                                onSuccessAction={handleSuccess} 
+                                user={user}
+                            />
                         </div>
 
-                        <div className="text-center">
+                        <div className="text-center pt-8 border-t border-zinc-100 dark:border-zinc-800/50">
                             <button
                                 onClick={() => router.push('/dashboard')}
                                 className="text-zinc-400 hover:text-zinc-900 dark:hover:text-white text-[10px] font-black uppercase tracking-[0.4em] transition-all"

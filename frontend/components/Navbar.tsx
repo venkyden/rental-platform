@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 import { useAuth } from '@/lib/useAuth';
 import { useLanguage } from '@/lib/LanguageContext';
@@ -8,10 +8,10 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useToast } from '@/lib/ToastContext';
 import NotificationBell from '@/components/NotificationBell';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
-import RoleSwitcher from '@/components/dashboard/RoleSwitcher';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Home, Building2, Search, Mail, ShieldCheck, LogOut } from 'lucide-react';
+import { Menu, X, Home, Building2, Search, Mail, ShieldCheck, LogOut, ChevronDown, User, Settings, Building, CreditCard, Shield } from 'lucide-react';
+
 import RoomivoBrand from './RoomivoBrand';
 
 export default function Navbar() {
@@ -21,6 +21,33 @@ export default function Navbar() {
     const { t } = useLanguage();
 
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [isSwitching, setIsSwitching] = useState<string | null>(null);
+    const profileRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+                setIsProfileOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const handleRoleSwitch = async (role: string) => {
+        if (isSwitching) return;
+        setIsSwitching(role);
+        try {
+            await switchRole(role);
+            setIsProfileOpen(false);
+        } catch (error) {
+            console.error('Failed to switch role:', error);
+        } finally {
+            setIsSwitching(null);
+        }
+    };
+
 
     const navLinks = user ? [
         { href: '/dashboard', label: t('dashboard.title', undefined, 'Dashboard'), icon: <Home className="w-4 h-4" /> },
@@ -67,34 +94,133 @@ export default function Navbar() {
                 {/* Right Side Actions */}
                 <div className="flex items-center gap-3 sm:gap-6">
                     <div className="hidden sm:flex items-center gap-4">
-                        {user && (
-                            <>
-                                <RoleSwitcher 
-                                    currentRole={user.role} 
-                                    availableRoles={user.available_roles || ["tenant"]} 
-                                />
-                                <div className="h-5 w-px bg-zinc-200 dark:bg-zinc-800"></div>
-                            </>
-                        )}
                         <LanguageSwitcher />
                     </div>
+
                     
                     {user ? (
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 relative" ref={profileRef}>
+
                             <NotificationBell />
                             
-                            <Link href="/settings/account" className="flex items-center gap-3 hover:scale-105 transition-all active:scale-95 group">
-                                <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-white dark:border-zinc-800 shadow-lg bg-zinc-900 dark:bg-white flex justify-center items-center group-hover:border-teal-500 transition-colors">
+                            <button 
+                                onClick={() => setIsProfileOpen(!isProfileOpen)}
+                                className={`flex items-center gap-2 p-1 pr-3 rounded-full transition-all active:scale-95 group border-2 ${isProfileOpen ? 'bg-zinc-100 dark:bg-zinc-800 border-teal-500' : 'bg-transparent border-transparent'}`}
+                            >
+                                <div className="w-8 h-8 rounded-full overflow-hidden shadow-lg bg-zinc-900 dark:bg-white flex justify-center items-center">
                                     {user.profile_picture_url ? (
-                                        <img src={user.profile_picture_url} alt="Profile" className="w-full h-full object-cover" />
+                                        <img 
+                                            src={user.profile_picture_url} 
+                                            alt="Profile" 
+                                            crossOrigin="anonymous"
+                                            className="w-full h-full object-cover" 
+                                        />
                                     ) : (
                                         <span className="text-white dark:text-zinc-900 font-black text-xs">{user.full_name?.charAt(0) || user.email?.charAt(0).toUpperCase()}</span>
                                     )}
                                 </div>
-                                <span className="text-[11px] font-black text-zinc-900 dark:text-white hidden xl:block uppercase tracking-[0.2em]">
+                                <span className="text-[11px] font-black text-zinc-900 dark:text-white hidden xl:block uppercase tracking-[0.2em] ml-1">
                                     {user.full_name?.split(' ')[0]}
                                 </span>
-                            </Link>
+                                <ChevronDown className={`w-3 h-3 text-zinc-400 transition-transform duration-300 ${isProfileOpen ? 'rotate-180' : ''}`} />
+                            </button>
+
+                            {/* Profile Dropdown */}
+                            <AnimatePresence>
+                                {isProfileOpen && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                        className="absolute right-0 top-full mt-4 w-72 glass-card !p-2 z-[60] shadow-2xl origin-top-right border-zinc-200/50 dark:border-zinc-700/50"
+                                    >
+                                        {/* User Info */}
+                                        <div className="px-4 py-4 mb-2 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl">
+                                            <p className="text-xs font-black text-zinc-900 dark:text-white uppercase tracking-wider truncate">{user.full_name}</p>
+                                            <p className="text-[10px] text-zinc-400 truncate mt-0.5">{user.email}</p>
+                                            <div className="mt-3 flex items-center gap-2">
+                                                <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                                                    user.role === 'tenant' ? 'bg-teal-500/10 text-teal-600' :
+                                                    user.role === 'landlord' ? 'bg-blue-500/10 text-blue-600' :
+                                                    'bg-purple-500/10 text-purple-600'
+                                                }`}>
+                                                    {t(`dashboard.roleSwitcher.roles.${user.role}`)}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {/* Role Switching */}
+                                        {user.available_roles && user.available_roles.length > 1 && (
+                                            <div className="py-2 border-b border-zinc-100 dark:border-zinc-800 mb-2">
+                                                <p className="px-4 py-2 text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em]">
+                                                    {t('dashboard.roleSwitcher.switchTo')}
+                                                </p>
+                                                {user.available_roles.filter(r => r !== user.role).map(role => (
+                                                    <button
+                                                        key={role}
+                                                        onClick={() => handleRoleSwitch(role)}
+                                                        disabled={!!isSwitching}
+                                                        className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all group"
+                                                    >
+                                                        <div className="p-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-700 group-hover:bg-white dark:group-hover:bg-zinc-600 transition-colors">
+                                                            {role === 'tenant' ? <Home className="w-3.5 h-3.5 text-teal-600" /> :
+                                                             role === 'landlord' ? <User className="w-3.5 h-3.5 text-blue-600" /> :
+                                                             <Building className="w-3.5 h-3.5 text-purple-600" />}
+                                                        </div>
+                                                        <span className="text-[11px] font-bold text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white uppercase tracking-wider">
+                                                            {t(`dashboard.roleSwitcher.roles.${role}`)}
+                                                        </span>
+                                                        {isSwitching === role && (
+                                                            <div className="ml-auto w-3 h-3 border-2 border-zinc-300 border-t-zinc-800 animate-spin rounded-full"></div>
+                                                        )}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        {/* Links */}
+                                        <div className="space-y-1">
+                                            <Link 
+                                                href="/settings/account" 
+                                                onClick={() => setIsProfileOpen(false)}
+                                                className="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all group"
+                                            >
+                                                <Settings className="w-4 h-4 text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white" />
+                                                <span className="text-[11px] font-bold text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white uppercase tracking-wider">
+                                                    {t('settings.title', undefined, 'Settings')}
+                                                </span>
+                                            </Link>
+                                            <Link 
+                                                href="/verification" 
+                                                onClick={() => setIsProfileOpen(false)}
+                                                className="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all group"
+                                            >
+                                                <Shield className="w-4 h-4 text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white" />
+                                                <span className="text-[11px] font-bold text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white uppercase tracking-wider">
+                                                    {t('dashboard.verification.title', undefined, 'Verification')}
+                                                </span>
+                                            </Link>
+                                        </div>
+
+                                        <div className="mt-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+                                            <button
+                                                onClick={() => {
+                                                    setIsProfileOpen(false);
+                                                    logout();
+                                                }}
+                                                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/10 transition-all group text-red-600"
+                                            >
+                                                <LogOut className="w-4 h-4" />
+                                                <span className="text-[11px] font-black uppercase tracking-widest">
+                                                    {t('dashboard.logout', undefined, 'Logout')}
+                                                </span>
+                                            </button>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
+
 
                             <button
                                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}

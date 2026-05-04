@@ -7,6 +7,7 @@ import { useLanguage } from '@/lib/LanguageContext';
 import { apiClient } from '@/lib/api';
 import { motion } from 'framer-motion';
 import { Sparkles, ArrowRight, Home } from 'lucide-react';
+import { useAuth } from '@/lib/useAuth';
 import { resolveMediaUrl } from '@/lib/mediaUrl';
 
 interface PropertyMatch {
@@ -22,11 +23,17 @@ interface PropertyMatch {
 export default function TenantFeatures() {
     const router = useRouter();
     const { t } = useLanguage();
+    const { user } = useAuth();
     const [matches, setMatches] = useState<PropertyMatch[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchMatches = async () => {
+            if (!user || user.role !== 'tenant') {
+                setLoading(false);
+                return;
+            }
+
             try {
                 const response = await apiClient.client.get('/properties/recommendations?limit=3');
                 setMatches(response.data);
@@ -37,8 +44,10 @@ export default function TenantFeatures() {
             }
         };
 
-        fetchMatches();
-    }, []);
+        if (user) {
+            fetchMatches();
+        }
+    }, [user]);
 
     return (
         <div className="space-y-20 mt-12">

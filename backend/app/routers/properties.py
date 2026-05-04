@@ -26,7 +26,7 @@ from app.models.property_schemas import (MediaSessionCreate,
                                          PropertyResponse, PropertyUpdate,
                                          PropertyMatchResponse)
 from app.models.user import User
-from app.routers.auth import get_current_user
+from app.routers.auth import get_current_user, get_current_user_optional
 from app.services.matching_service import matching_service
 
 router = APIRouter(prefix="/properties", tags=["Properties"])
@@ -100,7 +100,7 @@ async def list_properties(
     status: Optional[str] = "active",
     skip: int = 0,
     limit: int = 20,
-    current_user: Optional[User] = Depends(get_current_user),
+    current_user: Optional[User] = Depends(get_current_user_optional),
     db: AsyncSession = Depends(get_db),
 ):
     """List properties with filters"""
@@ -172,7 +172,7 @@ async def list_properties(
         # Combine owned properties and team properties
         filters.append(
             and_(
-                (Property.landlord_id == current_user.id) | (Property.id.in_(select(team_prop_subquery))),
+                (Property.landlord_id == current_user.id) | (Property.id.in_(team_prop_subquery)),
                 Property.status == (status if status else "active")
             )
         )
@@ -207,10 +207,8 @@ async def get_recommendations(
     Calculates scores using the MatchingService.
     """
     if current_user.role != "tenant":
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Recommendations are only available for tenants",
-        )
+        # Gracefully return empty list if called by landlord/manager
+        return []
 
     # 1. Fetch active properties
     # In a real production app, we would pre-filter by city or budget for performance

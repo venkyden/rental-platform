@@ -102,7 +102,7 @@ export default function Combobox({
                 `}
             >
                 <span className={`truncate ${!selectedOption ? 'text-zinc-400 dark:text-zinc-500' : 'text-zinc-900 dark:text-zinc-100'}`}>
-                    {selectedOption ? selectedOption.label : displayPlaceholder}
+                    {selectedOption ? t(selectedOption.label, undefined, selectedOption.label) : displayPlaceholder}
                 </span>
                 <ChevronDown className={`w-5 h-5 text-zinc-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
             </button>
@@ -148,7 +148,7 @@ export default function Combobox({
                                     <div key={group}>
                                         {group !== 'Other' && (
                                             <div className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-zinc-400 bg-zinc-50/30 dark:bg-zinc-800/30">
-                                                {group}
+                                                {t(group, undefined, group)}
                                             </div>
                                         )}
                                         {opts.map((opt) => (
@@ -162,7 +162,7 @@ export default function Combobox({
                                                     }
                                                 `}
                                             >
-                                                <span>{opt.label}</span>
+                                                <span>{t(opt.label, undefined, opt.label)}</span>
                                                 {value === opt.value && <Check className="w-4 h-4 text-teal-600 dark:text-teal-400" />}
                                             </button>
                                         ))}

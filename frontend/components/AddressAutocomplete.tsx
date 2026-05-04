@@ -374,10 +374,10 @@ export default function AddressAutocomplete({
                             <span className="mt-0.5 text-zinc-400 shrink-0">️</span>
                             <div className="min-w-0">
                                 <p className="font-medium text-sm text-zinc-700 dark:text-zinc-300 truncate">
-                                    Use &ldquo;{query}&rdquo; as typed
+                                    {t('common.components.addressAutocomplete.useTyped', { query })}
                                 </p>
                                 <p className="text-xs text-zinc-400 dark:text-zinc-500">
-                                    Address not found? Enter it manually
+                                    {t('common.components.addressAutocomplete.notFound')}
                                 </p>
                             </div>
                         </li>
@@ -385,7 +385,7 @@ export default function AddressAutocomplete({
 
                     {/* Powered by */}
                     <li className="px-4 py-1.5 text-[10px] text-zinc-400 dark:text-zinc-500 text-right border-t border-zinc-100 dark:border-zinc-700">
-                        Powered by OpenStreetMap
+                        {t('common.components.addressAutocomplete.poweredBy')}
                     </li>
                 </ul>
             )}
@@ -394,10 +394,10 @@ export default function AddressAutocomplete({
             {isOpen && results.length === 0 && !loading && query.length >= 3 && !allowManualEntry && (
                 <div className="absolute z-50 mt-1 w-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-sm p-4 text-center">
                     <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                        No addresses found
+                        {t('common.components.addressAutocomplete.noResults')}
                         {restrictToCities.length > 0 && (
                             <span className="block text-xs mt-1">
-                                Restricted to: {restrictToCities.map(c => c.charAt(0).toUpperCase() + c.slice(1)).join(', ')}
+                                {t('common.components.addressAutocomplete.restrictedTo')} {restrictToCities.map(c => c.charAt(0).toUpperCase() + c.slice(1)).join(', ')}
                             </span>
                         )}
                     </p>

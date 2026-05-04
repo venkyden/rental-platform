@@ -227,15 +227,17 @@ export default function NewPropertyPage() {
                     <div className="flex items-center justify-between mb-16">
                         <div className="space-y-4">
                             <h1 className="text-5xl font-black tracking-tighter uppercase text-zinc-900 dark:text-white leading-none">
-                                Listing Protocol
+                                {t('properties.new.title')}
                             </h1>
-                            <p className="text-zinc-500 font-medium tracking-tight">Step {currentStep} of 7: Initializing Asset Registry</p>
+                            <p className="text-zinc-500 font-medium tracking-tight">
+                                {t('properties.new.stepStatus', { current: currentStep, status: currentStep === 1 ? t('properties.new.initializing') : '' })}
+                            </p>
                         </div>
                         <button 
                             onClick={() => router.push('/properties')}
                             className="w-12 h-12 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center hover:scale-110 transition-transform"
                         >
-                            ×
+                            {t('properties.new.exit')}
                         </button>
                     </div>
 
@@ -267,21 +269,21 @@ export default function NewPropertyPage() {
                                     {currentStep === 1 && (
                                         <div className="space-y-10">
                                             <div className="space-y-6">
-                                                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">01 // Identity</label>
+                                                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">{t('properties.new.steps.identity.label')}</label>
                                                 <input
                                                     type="text"
                                                     value={formData.title}
                                                     onChange={(e) => updateFormData({ title: e.target.value })}
-                                                    placeholder="Lister Title (e.g., Haussmann Luxury Suite)"
+                                                    placeholder={t('properties.new.steps.identity.titlePlaceholder')}
                                                     className="w-full bg-transparent text-4xl sm:text-6xl font-black tracking-tighter text-zinc-900 dark:text-white placeholder:text-zinc-200 dark:placeholder:text-zinc-800 border-none focus:ring-0"
                                                 />
                                             </div>
                                             <div className="space-y-6">
-                                                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">02 // Narrative</label>
+                                                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">{t('properties.new.steps.identity.narrativeLabel')}</label>
                                                 <textarea
                                                     value={formData.description}
                                                     onChange={(e) => updateFormData({ description: e.target.value })}
-                                                    placeholder="Elaborate on the architectural significance and living experience..."
+                                                    placeholder={t('properties.new.steps.identity.descriptionPlaceholder')}
                                                     className="w-full h-48 bg-transparent text-xl font-medium text-zinc-500 placeholder:text-zinc-200 border-none focus:ring-0 resize-none"
                                                 />
                                             </div>
@@ -294,7 +296,7 @@ export default function NewPropertyPage() {
                                                     >
                                                         <div className={`text-[10px] font-black uppercase tracking-[0.2em] mb-2 ${formData.property_type === type ? 'text-zinc-400' : 'text-zinc-500'}`}>{type}</div>
                                                         <div className={`text-xl font-black ${formData.property_type === type ? 'text-white dark:text-zinc-900' : 'text-zinc-900 dark:text-white'}`}>
-                                                            {type.charAt(0).toUpperCase() + type.slice(1)}
+                                                            {t(`properties.new.types.${type}`)}
                                                         </div>
                                                     </button>
                                                 ))}
@@ -305,7 +307,7 @@ export default function NewPropertyPage() {
                                     {currentStep === 2 && (
                                         <div className="space-y-10">
                                             <div className="space-y-6">
-                                                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">03 // Geolocation</label>
+                                                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">{t('properties.new.steps.geolocation.label')}</label>
                                                 <div className="glass-card !p-8 rounded-[3rem] border-zinc-100 dark:border-zinc-800/50">
                                                     <AddressAutocomplete
                                                         onSelectAction={(result) => {
@@ -325,7 +327,7 @@ export default function NewPropertyPage() {
                                             </div>
                                             <div className="grid grid-cols-2 gap-8">
                                                 <div className="space-y-4">
-                                                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">City</label>
+                                                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">{t('properties.new.steps.geolocation.city')}</label>
                                                     <input
                                                         type="text"
                                                         value={formData.city}
@@ -334,7 +336,7 @@ export default function NewPropertyPage() {
                                                     />
                                                 </div>
                                                 <div className="space-y-4">
-                                                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">Zip</label>
+                                                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">{t('properties.new.steps.geolocation.zip')}</label>
                                                     <input
                                                         type="text"
                                                         value={formData.postal_code}
@@ -348,7 +350,7 @@ export default function NewPropertyPage() {
                                                 disabled={enriching}
                                                 className="w-full py-6 bg-teal-500 text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] shadow-2xl hover:scale-[1.02] active:scale-95 transition-all"
                                             >
-                                                {enriching ? 'Enriching Data...' : 'Verify Connectivity & POIs'}
+                                                {enriching ? t('properties.new.steps.geolocation.enriching') : t('properties.new.steps.geolocation.enrichButton')}
                                             </button>
                                         </div>
                                     )}
@@ -357,7 +359,7 @@ export default function NewPropertyPage() {
                                         <div className="space-y-12">
                                             <div className="grid grid-cols-2 gap-12">
                                                 <div className="space-y-6">
-                                                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">Bedrooms</label>
+                                                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">{t('properties.new.steps.details.bedrooms')}</label>
                                                     <div className="flex items-center gap-8">
                                                         <button onClick={() => updateFormData({ bedrooms: Math.max(0, formData.bedrooms - 1) })} className="w-16 h-16 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-2xl font-black">-</button>
                                                         <span className="text-6xl font-black tracking-tighter">{formData.bedrooms}</span>
@@ -365,17 +367,17 @@ export default function NewPropertyPage() {
                                                     </div>
                                                 </div>
                                                 <div className="space-y-6">
-                                                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">Surface (m²)</label>
+                                                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">{t('properties.new.steps.details.surface')}</label>
                                                     <input
                                                         type="number"
-                                                        value={formData.size_sqm}
-                                                        onChange={(e) => updateFormData({ size_sqm: parseInt(e.target.value) })}
+                                                        value={isNaN(formData.size_sqm) ? '' : formData.size_sqm}
+                                                        onChange={(e) => updateFormData({ size_sqm: e.target.value === '' ? 0 : parseInt(e.target.value) || 0 })}
                                                         className="w-full bg-transparent text-6xl font-black tracking-tighter border-none focus:ring-0"
                                                     />
                                                 </div>
                                             </div>
                                             <div className="space-y-10">
-                                                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">Energy Protocol (DPE)</label>
+                                                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">{t('properties.new.steps.details.energyProtocol')}</label>
                                                 <div className="flex flex-wrap gap-4">
                                                     {['A', 'B', 'C', 'D', 'E', 'F', 'G'].map(r => (
                                                         <button
@@ -394,13 +396,13 @@ export default function NewPropertyPage() {
                                     {currentStep === 5 && (
                                         <div className="space-y-12">
                                             <div className="space-y-6">
-                                                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">Monthly Rent</label>
+                                                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">{t('properties.new.steps.pricing.monthlyRent')}</label>
                                                 <div className="flex items-baseline gap-4">
                                                     <span className="text-4xl font-black text-zinc-300">€</span>
                                                     <input
                                                         type="number"
-                                                        value={formData.monthly_rent}
-                                                        onChange={(e) => updateFormData({ monthly_rent: parseInt(e.target.value) })}
+                                                        value={isNaN(formData.monthly_rent) ? '' : formData.monthly_rent}
+                                                        onChange={(e) => updateFormData({ monthly_rent: e.target.value === '' ? 0 : parseInt(e.target.value) || 0 })}
                                                         className="bg-transparent text-8xl font-black tracking-tighter border-none focus:ring-0 w-full"
                                                     />
                                                 </div>
@@ -410,15 +412,15 @@ export default function NewPropertyPage() {
                                                     onClick={() => updateFormData({ charges_included: !formData.charges_included })}
                                                     className={`p-8 rounded-[3rem] border-2 text-left transition-all ${formData.charges_included ? 'bg-teal-500/10 border-teal-500 shadow-2xl' : 'border-zinc-100 dark:border-zinc-800'}`}
                                                 >
-                                                    <div className="text-[10px] font-black uppercase tracking-[0.2em] mb-2 text-teal-600">Charges</div>
-                                                    <div className="text-xl font-black">All-Inclusive</div>
+                                                    <div className="text-[10px] font-black uppercase tracking-[0.2em] mb-2 text-teal-600">{t('properties.new.steps.pricing.chargesLabel')}</div>
+                                                    <div className="text-xl font-black">{t('properties.new.steps.pricing.allInclusive')}</div>
                                                 </button>
                                                 <button 
                                                     onClick={() => updateFormData({ caf_eligible: !formData.caf_eligible })}
                                                     className={`p-8 rounded-[3rem] border-2 text-left transition-all ${formData.caf_eligible ? 'bg-indigo-500/10 border-indigo-500 shadow-2xl' : 'border-zinc-100 dark:border-zinc-800'}`}
                                                 >
-                                                    <div className="text-[10px] font-black uppercase tracking-[0.2em] mb-2 text-indigo-600">Compliance</div>
-                                                    <div className="text-xl font-black">CAF Eligible</div>
+                                                    <div className="text-[10px] font-black uppercase tracking-[0.2em] mb-2 text-indigo-600">{t('properties.new.steps.pricing.complianceLabel')}</div>
+                                                    <div className="text-xl font-black">{t('properties.new.steps.pricing.cafEligible')}</div>
                                                 </button>
                                             </div>
                                         </div>
@@ -427,19 +429,19 @@ export default function NewPropertyPage() {
                                     {currentStep === 7 && (
                                         <div className="space-y-10">
                                             <div className="glass-card !p-12 rounded-[4rem] border-zinc-100 dark:border-zinc-800/50 space-y-8">
-                                                <h3 className="text-3xl font-black uppercase tracking-tighter italic">Review Protocol</h3>
+                                                <h3 className="text-3xl font-black uppercase tracking-tighter italic">{t('properties.new.steps.review.title')}</h3>
                                                 <div className="space-y-4">
                                                     <div className="flex justify-between items-center py-4 border-b border-zinc-100 dark:border-zinc-800/50">
-                                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Asset</span>
+                                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{t('properties.new.steps.review.asset')}</span>
                                                         <span className="text-sm font-black uppercase">{formData.title}</span>
                                                     </div>
                                                     <div className="flex justify-between items-center py-4 border-b border-zinc-100 dark:border-zinc-800/50">
-                                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Location</span>
+                                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{t('properties.new.steps.review.location')}</span>
                                                         <span className="text-sm font-black uppercase">{formData.city}</span>
                                                     </div>
                                                     <div className="flex justify-between items-center py-4">
-                                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Pricing</span>
-                                                        <span className="text-sm font-black uppercase">€{formData.monthly_rent}/mo</span>
+                                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{t('properties.new.steps.review.pricing')}</span>
+                                                        <span className="text-sm font-black uppercase">€{formData.monthly_rent}/{t('properties.new.steps.review.perMonth')}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -448,7 +450,7 @@ export default function NewPropertyPage() {
                                                 disabled={loading}
                                                 className="w-full py-8 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-sm font-black uppercase tracking-[0.5em] rounded-[2.5rem] shadow-2xl hover:scale-[1.02] active:scale-95 transition-all"
                                             >
-                                                {loading ? 'Initializing...' : 'Commit to Registry'}
+                                                {loading ? t('properties.new.steps.review.initializing') : t('properties.new.steps.review.commitButton')}
                                             </button>
                                         </div>
                                     )}
@@ -459,8 +461,8 @@ export default function NewPropertyPage() {
                                                 <CheckCircle2 className="w-16 h-16 text-white" />
                                             </div>
                                             <div className="space-y-6">
-                                                <h2 className="text-5xl font-black tracking-tighter uppercase">Draft Created</h2>
-                                                <p className="text-xl text-zinc-500 font-medium max-w-md mx-auto">Asset registered as DRAFT. Finalize by capturing visual telemetry via mobile device.</p>
+                                                <h2 className="text-5xl font-black tracking-tighter uppercase">{t('properties.new.steps.success.title')}</h2>
+                                                <p className="text-xl text-zinc-500 font-medium max-w-md mx-auto">{t('properties.new.steps.success.description')}</p>
                                             </div>
                                             
                                             <div className="glass-card !p-12 rounded-[4rem] inline-block shadow-2xl">
@@ -477,13 +479,13 @@ export default function NewPropertyPage() {
                                                     disabled={publishing}
                                                     className="px-16 py-6 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-xs font-black uppercase tracking-[0.4em] rounded-[2rem] shadow-2xl hover:scale-105 transition-all"
                                                 >
-                                                    {publishing ? 'Synchronizing...' : 'Force Publish'}
+                                                    {publishing ? t('properties.new.steps.success.synchronizing') : t('properties.new.steps.success.forcePublish')}
                                                 </button>
                                                 <button 
                                                     onClick={() => router.push('/properties')}
                                                     className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 hover:text-zinc-900 transition-colors"
                                                 >
-                                                    Return to Terminal
+                                                    {t('properties.new.steps.success.return')}
                                                 </button>
                                             </div>
                                         </div>
@@ -499,14 +501,14 @@ export default function NewPropertyPage() {
                                             onClick={prevStep}
                                             className="px-12 py-6 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] hover:bg-zinc-200 transition-all"
                                         >
-                                            Back
+                                            {t('properties.new.navigation.back')}
                                         </button>
                                     )}
                                     <button 
                                         onClick={nextStep}
                                         className="flex-1 py-6 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] shadow-2xl hover:scale-[1.02] active:scale-95 transition-all"
                                     >
-                                        Next Protocol
+                                        {t('properties.new.navigation.next')}
                                     </button>
                                 </div>
                             )}
@@ -519,9 +521,9 @@ export default function NewPropertyPage() {
                                     <div className="w-16 h-16 bg-teal-500/10 rounded-2xl flex items-center justify-center mb-6">
                                         <Info className="w-8 h-8 text-teal-500" />
                                     </div>
-                                    <h4 className="text-xl font-black uppercase tracking-tighter mb-4 italic text-zinc-900 dark:text-white">Listing Intelligence</h4>
+                                    <h4 className="text-xl font-black uppercase tracking-tighter mb-4 italic text-zinc-900 dark:text-white">{t('properties.new.sidebar.title')}</h4>
                                     <p className="text-sm text-zinc-500 font-medium leading-relaxed">
-                                        Assets with high-fidelity descriptions and verified geolocation data experience a 400% increase in tenant engagement protocols.
+                                        {t('properties.new.sidebar.description')}
                                     </p>
                                 </div>
 
@@ -529,16 +531,16 @@ export default function NewPropertyPage() {
                                     <div className="p-6 bg-white dark:bg-zinc-800/50 rounded-3xl border border-zinc-100 dark:border-zinc-700/30">
                                         <div className="flex items-center gap-4 mb-4">
                                             <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Optimization Rank</span>
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{t('properties.new.sidebar.optimizationRank')}</span>
                                         </div>
-                                        <div className="text-3xl font-black text-zinc-900 dark:text-white tracking-tighter">Elite</div>
+                                        <div className="text-3xl font-black text-zinc-900 dark:text-white tracking-tighter">{t('properties.new.sidebar.rankValue')}</div>
                                     </div>
                                     <div className="p-6 bg-white dark:bg-zinc-800/50 rounded-3xl border border-zinc-100 dark:border-zinc-700/30">
                                         <div className="flex items-center gap-4 mb-4">
                                             <div className="w-2 h-2 rounded-full bg-indigo-500" />
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Network Reach</span>
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{t('properties.new.sidebar.networkReach')}</span>
                                         </div>
-                                        <div className="text-3xl font-black text-zinc-900 dark:text-white tracking-tighter">Global</div>
+                                        <div className="text-3xl font-black text-zinc-900 dark:text-white tracking-tighter">{t('properties.new.sidebar.reachValue')}</div>
                                     </div>
                                 </div>
                             </div>

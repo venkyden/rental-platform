@@ -103,7 +103,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
 
     const copyToClipboard = (url: string) => {
         navigator.clipboard.writeText(url);
-        toast.success('Link copied');
+        toast.success(t('dashboard.verification.verification.actions.copyLink', undefined, 'Link copied'));
     };
 
     const getEmploymentDocumentTypes = () => {
@@ -215,17 +215,19 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
             <div className="w-full">
                 <div className="text-center mb-16">
                     <h3 className="text-4xl sm:text-5xl font-black tracking-tighter mb-6 uppercase leading-none">
-                        {t('dashboard.verification.verification.tabs.identity', undefined, 'Identity Verification')}
+                        {t('dashboard.verification.verification.identityTitle', undefined, 'Identity Verification')}
                     </h3>
                     <p className="text-zinc-500 font-medium max-w-md mx-auto text-lg leading-relaxed">
-                        For ultimate security, capture live photos of your government ID using your smartphone.
+                        {t('dashboard.verification.verification.identityDesc', undefined, 'For ultimate security, capture live photos of your government ID using your smartphone.')}
                     </p>
                 </div>
 
                 {qrLoading && (
                     <div className="py-20 flex flex-col items-center">
                         <div className="w-16 h-16 border-4 border-teal-500/20 border-t-teal-500 rounded-full animate-spin mb-6" />
-                        <p className="text-zinc-400 font-black text-[10px] uppercase tracking-[0.4em] animate-pulse">Establishing Secure Link...</p>
+                        <p className="text-zinc-400 font-black text-[10px] uppercase tracking-[0.4em] animate-pulse">
+                            {t('dashboard.verification.verification.actions.generatingSession', undefined, 'Establishing Secure Link...')}
+                        </p>
                     </div>
                 )}
 
@@ -248,20 +250,24 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                                 />
                                 <div className="mt-8 flex items-center justify-center gap-3">
                                     <div className="w-2 h-2 rounded-full bg-teal-500 animate-ping" />
-                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-teal-600 dark:text-teal-400">Live Connection Active</span>
+                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-teal-600 dark:text-teal-400">
+                                        {t('dashboard.verification.verification.status.live', undefined, 'Live Connection Active')}
+                                    </span>
                                 </div>
                             </div>
                         </div>
 
                         <div className="grid md:grid-cols-2 gap-10">
                             <motion.div whileHover={{ y: -8 }} className="glass-card !p-10 border-none shadow-xl">
-                                <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-teal-600 mb-8">Instructions</h4>
+                                <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-teal-600 mb-8">
+                                    {t('dashboard.verification.verification.instructions.title', undefined, 'Instructions')}
+                                </h4>
                                 <ul className="space-y-6">
                                     {[
-                                        'Open your phone camera & scan QR',
-                                        'Choose your document type',
-                                        'Capture clear photos of front & back',
-                                        'Wait for this screen to auto-sync'
+                                        t('dashboard.verification.verification.instructions.step1', undefined, 'Open your phone camera & scan QR'),
+                                        t('dashboard.verification.verification.instructions.step2', undefined, 'Choose your document type'),
+                                        t('dashboard.verification.verification.instructions.step3', undefined, 'Capture clear photos of front & back'),
+                                        t('dashboard.verification.verification.instructions.step4', undefined, 'Wait for this screen to auto-sync')
                                     ].map((step, i) => (
                                         <li key={i} className="flex items-start gap-5 text-base font-bold text-zinc-700 dark:text-zinc-300">
                                             <span className="w-8 h-8 shrink-0 rounded-xl bg-teal-500/10 dark:bg-teal-500/20 flex items-center justify-center text-teal-600 dark:text-teal-400 text-xs font-black">{i + 1}</span>
@@ -273,26 +279,32 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
 
                             <motion.div whileHover={{ y: -8 }} className="glass-card !p-10 flex flex-col justify-center border-none shadow-xl relative overflow-hidden group">
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/5 rounded-bl-[100%] group-hover:scale-110 transition-transform duration-700" />
-                                <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 mb-8">Session Status</h4>
+                                <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 mb-8">
+                                    {t('dashboard.verification.verification.status.title', undefined, 'Session Status')}
+                                </h4>
                                 <div className="flex items-center gap-6 py-6 px-8 rounded-3xl bg-zinc-50 dark:bg-zinc-800/50 mb-8 border border-zinc-100 dark:border-zinc-800/50">
                                     <div className="relative flex h-5 w-5">
                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
                                         <span className="relative inline-flex rounded-full h-5 w-5 bg-teal-500"></span>
                                     </div>
                                     <div>
-                                        <p className="text-lg font-black uppercase tracking-widest text-zinc-900 dark:text-white leading-none mb-1">Awaiting Capture</p>
-                                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-teal-500">Synchronized with Cloud</p>
+                                        <p className="text-lg font-black uppercase tracking-widest text-zinc-900 dark:text-white leading-none mb-1">
+                                            {t('dashboard.verification.verification.status.awaiting', undefined, 'Awaiting Capture')}
+                                        </p>
+                                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-teal-500">
+                                            {t('dashboard.verification.verification.status.synced', undefined, 'Synchronized with Cloud')}
+                                        </p>
                                     </div>
                                 </div>
                                 <div className="mt-auto flex items-center justify-between">
                                     <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
-                                        Expires at <span className="text-zinc-900 dark:text-white">{new Date(qrSession.expiresAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                        {t('dashboard.verification.verification.status.expiresAt', undefined, 'Expires at')} <span className="text-zinc-900 dark:text-white">{new Date(qrSession.expiresAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                     </p>
                                     <button 
                                         onClick={() => copyToClipboard(qrSession.captureUrl)}
                                         className="text-[10px] font-black uppercase tracking-widest text-teal-600 hover:text-teal-700 transition-colors"
                                     >
-                                        Copy Link
+                                        {t('dashboard.verification.verification.actions.copy', undefined, 'Copy Link')}
                                     </button>
                                 </div>
                             </motion.div>
@@ -315,29 +327,41 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
 
             <div className="text-center mb-16">
                 <h3 className="text-4xl font-black tracking-tighter mb-6 uppercase leading-none">
-                    {verificationType === 'identity' ? 'Identity Verification' : verificationType === 'property' ? 'Ownership Verification' : 'Resource Verification'}
+                    {verificationType === 'identity' 
+                        ? t('dashboard.verification.verification.identityTitle', undefined, 'Identity Verification') 
+                        : verificationType === 'property' 
+                            ? t('dashboard.verification.verification.propertyTitle', undefined, 'Ownership Verification') 
+                            : t('dashboard.verification.verification.resourceTitle', undefined, 'Resource Verification')}
                 </h3>
                 <p className="text-zinc-500 font-medium max-w-md mx-auto text-lg leading-relaxed">
-                    {verificationType === 'identity' ? 'Capture live photos of your government-issued ID.' : verificationType === 'property' ? 'Upload proof of ownership for this listing.' : 'Upload your professional or financial documents.'}
+                    {verificationType === 'identity' 
+                        ? t('dashboard.verification.verification.identityDesc', undefined, 'Capture live photos of your government-issued ID.') 
+                        : verificationType === 'property' 
+                            ? t('dashboard.verification.verification.propertyDesc', undefined, 'Upload proof of ownership for this listing.') 
+                            : t('dashboard.verification.verification.resourceDesc', undefined, 'Upload your professional or financial documents.')}
                 </p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-12 max-w-2xl mx-auto">
                 <motion.div variants={itemVariants} className="glass-card !p-10 border-none shadow-2xl">
-                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 block mb-6">1. Select Document Type</label>
+                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 block mb-6">
+                        {t('dashboard.verification.verification.steps.selectType', undefined, '1. Select Document Type')}
+                    </label>
                     <select
                         value={documentType}
                         onChange={(e) => { setDocumentType(e.target.value); setFiles([]); }}
                         className="w-full bg-zinc-50 dark:bg-zinc-800/80 border-2 border-transparent focus:border-teal-500/30 rounded-2xl px-8 py-5 text-base font-black text-zinc-900 dark:text-white focus:ring-0 transition-all appearance-none cursor-pointer"
                         required
                     >
-                        <option value="">Choose a document...</option>
+                        <option value="">{t('dashboard.verification.verification.actions.chooseDoc', undefined, 'Choose a document...')}</option>
                         {documentTypes.map((type) => <option key={type.value} value={type.value}>{type.label}</option>)}
                     </select>
                 </motion.div>
 
                 <motion.div variants={itemVariants} className="glass-card !p-10 border-none shadow-2xl">
-                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 block mb-8">2. Secure Capture</label>
+                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 block mb-8">
+                        {t('dashboard.verification.verification.steps.secureCapture', undefined, '2. Secure Capture')}
+                    </label>
                     
                     {verificationType === 'identity' ? (
                         <button
@@ -350,7 +374,9 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                                 <div className="w-20 h-20 rounded-3xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-400 group-hover:bg-zinc-900 dark:group-hover:bg-white group-hover:text-white dark:group-hover:text-zinc-900 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500 shadow-xl">
                                     <Camera className="w-10 h-10" />
                                 </div>
-                                <p className="text-base font-black uppercase tracking-[0.2em] text-zinc-900 dark:text-white">Activate ID Camera</p>
+                                <p className="text-base font-black uppercase tracking-[0.2em] text-zinc-900 dark:text-white">
+                                    {t('dashboard.verification.verification.actions.activateCamera', undefined, 'Activate ID Camera')}
+                                </p>
                             </div>
                         </button>
                     ) : (
@@ -367,8 +393,12 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                                     <Upload className="w-8 h-8" />
                                 </div>
                                 <div className="text-center">
-                                    <p className="text-sm font-black uppercase tracking-widest text-zinc-900 dark:text-white mb-2">{files.length > 0 ? files[0].name : 'Select or Drop Document'}</p>
-                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">PDF, JPG, or PNG max 10MB</p>
+                                    <p className="text-sm font-black uppercase tracking-widest text-zinc-900 dark:text-white mb-2">
+                                        {files.length > 0 ? files[0].name : t('dashboard.verification.verification.actions.selectDrop', undefined, 'Select or Drop Document')}
+                                    </p>
+                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
+                                        {t('dashboard.verification.verification.actions.fileTypes', undefined, 'PDF, JPG, or PNG max 10MB')}
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -388,7 +418,9 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                     disabled={uploading || files.length === 0}
                     className="w-full py-6 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-[2rem] text-xs font-black uppercase tracking-[0.4em] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] dark:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] disabled:opacity-50 transition-all"
                 >
-                    {uploading ? 'Securing Document...' : 'Submit for Verification'}
+                    {uploading 
+                        ? t('dashboard.verification.verification.actions.securing', undefined, 'Securing Document...') 
+                        : t('dashboard.verification.verification.actions.submit', undefined, 'Submit for Verification')}
                 </motion.button>
             </form>
         </div>

@@ -64,7 +64,7 @@ export default function DashboardPage() {
                     total: properties.length,
                     active: properties.filter((p: any) => p.status === 'active').length,
                     draft: properties.filter((p: any) => p.status === 'draft').length,
-                    total_views: properties.reduce((sum: number, p: any) => sum + (p.views_count || 0), 0),
+                    total_views: properties.reduce((sum: number, p: any) => sum + (Number(p.views_count) || 0), 0),
                 };
 
                 setStats(statsData);

@@ -88,16 +88,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const switchRole = async (targetRole: string) => {
         setLoading(true);
         try {
+            console.log(`[Auth] Switching to role: ${targetRole}`);
             const data = await apiClient.switchRole(targetRole);
+            
+            // Refresh user data to get new role and available roles
             await checkAuth();
+            
             if (data.redirect_path) {
                 router.push(data.redirect_path);
             }
             return data;
+        } catch (error) {
+            console.error('[Auth] Role switch failed:', error);
+            throw error;
         } finally {
             setLoading(false);
         }
     };
+
 
     return (
         <AuthContext.Provider value={{

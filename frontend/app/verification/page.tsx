@@ -164,7 +164,9 @@ export default function VerificationPage() {
                                     </div>
                                 </div>
                                 <p className="mt-8 text-center text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
-                                    {user.trust_score < 100 ? 'Complete verification to boost score' : 'Maximum Trust Score Achieved'}
+                                    {user.trust_score < 100 
+                                        ? t('dashboard.verification.verification.progress.boost', undefined, 'Complete verification to boost score') 
+                                        : t('dashboard.verification.verification.progress.max', undefined, 'Maximum Trust Score Achieved')}
                                 </p>
                             </div>
                         </motion.div>

@@ -67,7 +67,7 @@ class UserResponse(BaseModel):
     onboarding_completed: bool = False
     marketing_consent: bool = False
     contact_preferences: Optional[Dict[str, Any]] = None
-    created_at: datetime
+    created_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
@@ -84,7 +84,7 @@ class SwitchRoleRequest(BaseModel):
     role: str
 
 class UserUpdate(BaseModel):
-    full_name: Optional[str] = Field(None, min_length=1, max_length=100)
+    full_name: Optional[str] = Field(None, max_length=100)
     bio: Optional[str] = Field(None, max_length=500)
 
 

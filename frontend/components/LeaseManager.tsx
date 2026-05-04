@@ -158,8 +158,8 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
                         type="number"
                         min="1"
                         max="10"
-                        value={durationMonths}
-                        onChange={(e) => setDurationMonths(parseInt(e.target.value) || 1)}
+                        value={isNaN(durationMonths) ? '' : durationMonths}
+                        onChange={(e) => setDurationMonths(e.target.value === '' ? 1 : parseInt(e.target.value) || 1)}
                         className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                     />
                 </div>
@@ -204,8 +204,8 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
                         <label className="block text-xs text-blue-700 mb-1">{t('lease.charges', undefined, 'Charges')}</label>
                         <input
                             type="number"
-                            value={customCharges || ''}
-                            onChange={(e) => setCustomCharges(parseFloat(e.target.value) || undefined)}
+                            value={(customCharges === undefined || isNaN(customCharges)) ? '' : customCharges}
+                            onChange={(e) => setCustomCharges(e.target.value === '' ? undefined : parseFloat(e.target.value) || 0)}
                             placeholder="0"
                             className="w-full px-2 py-1 text-sm border rounded focus:ring-1 focus:ring-blue-500"
                         />
@@ -217,8 +217,8 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
                             </label>
                             <input
                                 type="number"
-                                value={customDeposit || ''}
-                                onChange={(e) => setCustomDeposit(parseFloat(e.target.value) || undefined)}
+                                value={(customDeposit === undefined || isNaN(customDeposit)) ? '' : customDeposit}
+                                onChange={(e) => setCustomDeposit(e.target.value === '' ? undefined : parseFloat(e.target.value) || 0)}
                                 placeholder={`${monthlyRent * 2}`}
                                 className="w-full px-2 py-1 text-sm border rounded focus:ring-1 focus:ring-blue-500"
                             />

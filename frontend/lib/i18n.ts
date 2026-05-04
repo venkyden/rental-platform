@@ -102,7 +102,52 @@ export const translations = {
                 selectUniversity: "Select your university...",
                 url: "https://..."
             },
-            selected: "selected"
+            selected: "selected",
+            noResults: "No results found for \"{{term}}\"",
+            nationalities: {
+                french: "French",
+                american: "American",
+                british: "British",
+                german: "German",
+                italian: "Italian",
+                spanish: "Spanish",
+                portuguese: "Portuguese",
+                chinese: "Chinese",
+                indian: "Indian",
+                brazilian: "Brazilian",
+                mexican: "Mexican",
+                canadian: "Canadian",
+                australian: "Australian",
+                other: "Other"
+            },
+            components: {
+                addressAutocomplete: {
+                    useTyped: "Use \"{{query}}\" as typed",
+                    notFound: "Address not found? Enter it manually",
+                    poweredBy: "Powered by OpenStreetMap",
+                    noResults: "No addresses found",
+                    restrictedTo: "Restricted to:"
+                },
+                qrCode: {
+                    title: "Upload Property Photos",
+                    description: "Scan this QR code with your phone to upload GPS-verified photos of the property",
+                    codeLabel: "Verification Code:",
+                    copyLinkLabel: "Or copy this link:",
+                    copyButton: "Copy",
+                    expiry: "This link expires on {{date}} at {{time}}",
+                    instructions: {
+                        title: "Instructions:",
+                        step1: "Open the link on your mobile phone",
+                        step2: "Allow camera and location permissions",
+                        step3: "Make sure you're AT the property location (GPS verified)",
+                        step4: "Take photos of each room",
+                        step5: "Photos will be automatically watermarked with the address"
+                    },
+                    toast: {
+                        copied: "Link copied to clipboard!"
+                    }
+                }
+            }
         },
         // Onboarding
         onboarding: {
@@ -393,6 +438,7 @@ export const translations = {
                 toast: {
                     success: "Verification email sent! Check your inbox."
                 },
+                secureSubtitle: "Secure Identity & Document Verification",
                 verification: {
                     title: "Verification Status",
                     pageTitle: "Verification",
@@ -410,23 +456,65 @@ export const translations = {
                         identity: "Identity Verification",
                         employment: "Employment Verification"
                     },
+                    identityTitle: "Identity Verification",
+                    propertyTitle: "Ownership Verification",
+                    resourceTitle: "Resource Verification",
+                    identityDesc: "Capture live photos of your government-issued ID.",
+                    propertyDesc: "Upload proof of ownership for this listing.",
+                    resourceDesc: "Upload your professional or financial documents.",
                     success: {
                         identity: "Identity Verified!",
                         identityMsg: "Your identity has been successfully verified.",
                         employment: "Employment Verification",
                         employmentMsg: "Your employment has been successfully verified."
                     },
-                    property_title: "Property Ownership Verification",
-                    property_desc: "Please upload proof of property ownership (deed or property tax)",
-                    identity_desc: "For security, please capture live photos of your official ID",
-                    employment_desc: "Upload your professional or financial documents",
-                    legalDisclaimerDesc: "Your documents are encrypted and stored securely. We use industry-best security practices to protect your privacy.",
+                    status: {
+                        title: "Session Status",
+                        awaiting: "Awaiting Capture",
+                        synced: "Synchronized with Cloud",
+                        live: "Live Connection Active",
+                        expiresAt: "Expires at"
+                    },
+                    instructions: {
+                        title: "Instructions",
+                        step1: "Open your phone camera & scan QR",
+                        step2: "Choose your document type",
+                        step3: "Capture clear photos of front & back",
+                        step4: "Wait for this screen to auto-sync"
+                    },
+                    steps: {
+                        selectType: "1. Select Document Type",
+                        secureCapture: "2. Secure Capture"
+                    },
+                    actions: {
+                        back: "Back to Dashboard",
+                        retake: "Retake Photos",
+                        uploadSecurely: "Securely Upload & Verify",
+                        uploading: "Uploading & Verifying...",
+                        mobileWaiting: "Waiting for mobile capture...",
+                        generatingSession: "Generating secure session...",
+                        copy: "Copy",
+                        copyLink: "Copy Link",
+                        howItWorks: "How it works:",
+                        scanQr: "Scan the QR code with your phone",
+                        selectDoc: "Select your document type",
+                        takePhoto: "Take a clear photo of the document",
+                        autoUpdate: "This page will update automatically",
+                        chooseDoc: "Choose a document...",
+                        activateCamera: "Activate ID Camera",
+                        selectDrop: "Select or Drop Document",
+                        fileTypes: "PDF, JPG, or PNG max 10MB",
+                        securing: "Securing Document...",
+                        submit: "Submit for Verification"
+                    },
                     progress: {
                         title: "Verification Progress",
                         email: "Email",
                         identity: "Identity",
                         employment: "Employment",
-                        trustScore: "Trust Score"
+                        trustScore: "Trust Score",
+                        boost: "Complete verification to boost score",
+                        max: "Maximum Trust Score Achieved"
                     },
                     actions: {
                         back: "Back to Dashboard",
@@ -661,6 +749,75 @@ export const translations = {
                 review: "Review",
                 closed: "Closed"
             },
+        properties: {
+            new: {
+                title: "Listing Protocol",
+                stepStatus: "Step {{current}} of 7: {{status}}",
+                initializing: "Initializing Asset Registry",
+                exit: "×",
+                types: {
+                    apartment: "Apartment",
+                    house: "House",
+                    studio: "Studio",
+                    room: "Room"
+                },
+                steps: {
+                    identity: {
+                        label: "01 // Identity",
+                        titlePlaceholder: "Lister Title (e.g., Haussmann Luxury Suite)",
+                        narrativeLabel: "02 // Narrative",
+                        descriptionPlaceholder: "Elaborate on the architectural significance and living experience..."
+                    },
+                    geolocation: {
+                        label: "03 // Geolocation",
+                        city: "City",
+                        zip: "Zip",
+                        enrichButton: "Verify Connectivity & POIs",
+                        enriching: "Enriching Data..."
+                    },
+                    details: {
+                        bedrooms: "Bedrooms",
+                        surface: "Surface (m²)",
+                        energyProtocol: "Energy Protocol (DPE)"
+                    },
+                    pricing: {
+                        monthlyRent: "Monthly Rent",
+                        chargesLabel: "Charges",
+                        allInclusive: "All-Inclusive",
+                        complianceLabel: "Compliance",
+                        cafEligible: "CAF Eligible"
+                    },
+                    review: {
+                        title: "Review Protocol",
+                        asset: "Asset",
+                        location: "Location",
+                        pricing: "Pricing",
+                        perMonth: "mo",
+                        commitButton: "Commit to Registry",
+                        initializing: "Initializing..."
+                    },
+                    success: {
+                        title: "Draft Created",
+                        description: "Asset registered as DRAFT. Finalize by capturing visual telemetry via mobile device.",
+                        forcePublish: "Force Publish",
+                        synchronizing: "Synchronizing...",
+                        return: "Return to Terminal"
+                    }
+                },
+                navigation: {
+                    back: "Back",
+                    next: "Next Protocol"
+                },
+                sidebar: {
+                    title: "Listing Intelligence",
+                    description: "Assets with high-fidelity descriptions and verified geolocation data experience a 400% increase in tenant engagement protocols.",
+                    optimizationRank: "Optimization Rank",
+                    rankValue: "Elite",
+                    networkReach: "Network Reach",
+                    reachValue: "Global"
+                }
+            }
+        },
             categories: {
                 damage: "Damage",
                 unpaid_rent: "Unpaid Rent",
@@ -1615,7 +1772,52 @@ export const translations = {
                 selectUniversity: "Sélectionnez votre université...",
                 url: "https://..."
             },
-            selected: "sélectionné(s)"
+            selected: "sélectionné(s)",
+            noResults: "Aucun résultat trouvé pour \"{{term}}\"",
+            nationalities: {
+                french: "Français",
+                american: "Américain",
+                british: "Britannique",
+                german: "Allemand",
+                italian: "Italien",
+                spanish: "Espagnol",
+                portuguese: "Portugais",
+                chinese: "Chinois",
+                indian: "Indien",
+                brazilian: "Brésilien",
+                mexican: "Mexicain",
+                canadian: "Canadien",
+                australian: "Australien",
+                other: "Autre"
+            },
+            components: {
+                addressAutocomplete: {
+                    useTyped: "Utiliser \"{{query}}\" tel quel",
+                    notFound: "Adresse non trouvée ? Saisissez-la manuellement",
+                    poweredBy: "Propulsé par OpenStreetMap",
+                    noResults: "Aucune adresse trouvée",
+                    restrictedTo: "Limité à :"
+                },
+                qrCode: {
+                    title: "Télécharger les Photos du Bien",
+                    description: "Scannez ce code QR avec votre téléphone pour télécharger des photos du bien vérifiées par GPS",
+                    codeLabel: "Code de Vérification :",
+                    copyLinkLabel: "Ou copiez ce lien :",
+                    copyButton: "Copier",
+                    expiry: "Ce lien expire le {{date}} à {{time}}",
+                    instructions: {
+                        title: "Instructions :",
+                        step1: "Ouvrez le lien sur votre téléphone mobile",
+                        step2: "Autorisez les permissions d'appareil photo et de localisation",
+                        step3: "Assurez-vous d'être SUR PLACE (vérification GPS)",
+                        step4: "Prenez des photos de chaque pièce",
+                        step5: "Les photos seront automatiquement marquées avec l'adresse"
+                    },
+                    toast: {
+                        copied: "Lien copié dans le presse-papiers !"
+                    }
+                }
+            }
         },
         // Landing Page
         landing: {
@@ -1928,6 +2130,7 @@ export const translations = {
                 toast: {
                     success: "E-mail de vérification envoyé ! Consultez votre boîte de réception."
                 },
+                secureSubtitle: "Vérification sécurisée de l'identité et des documents",
                 verification: {
                     title: "Statut de Vérification",
                     pageTitle: "Vérification",
@@ -1945,23 +2148,65 @@ export const translations = {
                         identity: "Vérification d'Identité",
                         employment: "Vérification d'Emploi"
                     },
+                    identityTitle: "Vérification d'Identité",
+                    propertyTitle: "Vérification de Propriété",
+                    resourceTitle: "Vérification des Ressources",
+                    identityDesc: "Capturez des photos en direct de votre pièce d'identité officielle.",
+                    propertyDesc: "Téléchargez une preuve de propriété pour cette annonce.",
+                    resourceDesc: "Téléchargez vos documents professionnels ou financiers.",
                     success: {
                         identity: "Identité Vérifiée !",
                         identityMsg: "Votre identité a été vérifiée avec succès.",
                         employment: "Vérification d'Emploi",
                         employmentMsg: "Votre emploi a été vérifié avec succès."
                     },
-                    property_title: "Vérification de la propriété",
-                    property_desc: "Veuillez télécharger une preuve de propriété (acte de vente ou taxe foncière)",
-                    identity_desc: "Par sécurité, veuillez capturer des photos en direct de votre pièce d'identité officielle",
-                    employment_desc: "Téléchargez vos documents professionnels ou financiers",
-                    legalDisclaimerDesc: "Vos documents sont cryptés et stockés en toute sécurité. Nous utilisons les meilleures pratiques de sécurité pour protéger votre vie privée.",
+                    status: {
+                        title: "Statut de la session",
+                        awaiting: "En attente de capture",
+                        synced: "Synchronisé avec le Cloud",
+                        live: "Connexion en direct active",
+                        expiresAt: "Expire à"
+                    },
+                    instructions: {
+                        title: "Instructions",
+                        step1: "Ouvrez l'appareil photo de votre téléphone et scannez le QR",
+                        step2: "Choisissez votre type de document",
+                        step3: "Capturez des photos claires du recto et du verso",
+                        step4: "Attendez que cet écran se synchronise automatiquement"
+                    },
+                    steps: {
+                        selectType: "1. Sélectionnez le type de document",
+                        secureCapture: "2. Capture sécurisée"
+                    },
+                    actions: {
+                        back: "Retour au tableau de bord",
+                        retake: "Reprendre les photos",
+                        uploadSecurely: "Télécharger et vérifier en toute sécurité",
+                        uploading: "Téléchargement et vérification...",
+                        mobileWaiting: "En attente de la capture mobile...",
+                        generatingSession: "Génération d'une session sécurisée...",
+                        copy: "Copier",
+                        copyLink: "Copier le lien",
+                        howItWorks: "Comment ça marche :",
+                        scanQr: "Scannez le code QR avec votre téléphone",
+                        selectDoc: "Sélectionnez votre type de document",
+                        takePhoto: "Prenez une photo claire du document",
+                        autoUpdate: "Cette page se mettra à jour automatiquement",
+                        chooseDoc: "Choisissez un document...",
+                        activateCamera: "Activer la caméra ID",
+                        selectDrop: "Sélectionnez ou déposez le document",
+                        fileTypes: "PDF, JPG ou PNG max 10 Mo",
+                        securing: "Sécurisation du document...",
+                        submit: "Soumettre pour vérification"
+                    },
                     progress: {
                         title: "Progression des vérifications",
                         email: "Email",
                         identity: "Identité",
                         employment: "Emploi",
-                        trustScore: "Score de Confiance"
+                        trustScore: "Score de Confiance",
+                        boost: "Complétez les vérifications pour booster votre score",
+                        max: "Score de confiance maximum atteint"
                     },
                     actions: {
                         back: "Retour au tableau de bord",
@@ -2221,6 +2466,75 @@ export const translations = {
             landlord: {
                 title: "Guide des Prix (Propriétaire)",
                 description: "Tendances du marché et estimation du loyer."
+            }
+        },
+        properties: {
+            new: {
+                title: "Protocole de Mise en Location",
+                stepStatus: "Étape {{current}} sur 7 : {{status}}",
+                initializing: "Initialisation du Registre des Actifs",
+                exit: "×",
+                types: {
+                    apartment: "Appartement",
+                    house: "Maison",
+                    studio: "Studio",
+                    room: "Chambre"
+                },
+                steps: {
+                    identity: {
+                        label: "01 // Identité",
+                        titlePlaceholder: "Titre de l'Annonce (ex : Suite de Luxe Haussmann)",
+                        narrativeLabel: "02 // Description",
+                        descriptionPlaceholder: "Détaillez l'importance architecturale et l'expérience de vie..."
+                    },
+                    geolocation: {
+                        label: "03 // Géolocalisation",
+                        city: "Ville",
+                        zip: "Code Postal",
+                        enrichButton: "Vérifier la Connectivité & POIs",
+                        enriching: "Enrichissement des données..."
+                    },
+                    details: {
+                        bedrooms: "Chambres",
+                        surface: "Surface (m²)",
+                        energyProtocol: "Protocole Énergétique (DPE)"
+                    },
+                    pricing: {
+                        monthlyRent: "Loyer Mensuel",
+                        chargesLabel: "Charges",
+                        allInclusive: "Tout compris",
+                        complianceLabel: "Conformité",
+                        cafEligible: "Éligible CAF"
+                    },
+                    review: {
+                        title: "Protocole de Révision",
+                        asset: "Actif",
+                        location: "Emplacement",
+                        pricing: "Tarification",
+                        perMonth: "mois",
+                        commitButton: "Valider l'Inscription",
+                        initializing: "Initialisation..."
+                    },
+                    success: {
+                        title: "Brouillon Créé",
+                        description: "Actif enregistré comme BROUILLON. Finalisez en capturant la télémétrie visuelle via un appareil mobile.",
+                        forcePublish: "Forcer la Publication",
+                        synchronizing: "Synchronisation...",
+                        return: "Retour au Terminal"
+                    }
+                },
+                navigation: {
+                    back: "Retour",
+                    next: "Protocole Suivant"
+                },
+                sidebar: {
+                    title: "Intelligence de l'Annonce",
+                    description: "Les actifs avec des descriptions de haute fidélité et des données de géolocalisation vérifiées connaissent une augmentation de 400% des protocoles d'engagement des locataires.",
+                    optimizationRank: "Rang d'Optimisation",
+                    rankValue: "Élite",
+                    networkReach: "Portée du Réseau",
+                    reachValue: "Mondiale"
+                }
             }
         },
         auth: {

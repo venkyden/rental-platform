@@ -121,15 +121,10 @@ class CloudStorageService:
         if not self.client:
             return
 
-        # If public URL is configured, files are served via R2 public
-        # access (or a custom domain / CDN), so bucket-level CORS is
-        # not required for GET requests.
+        # Even if public URL is configured, bucket-level CORS is often required
+        # for fetch requests or cross-origin attributes on media tags.
         if self.public_url:
-            logger.info(
-                "ℹ️ STORAGE_PUBLIC_URL is set — skipping programmatic CORS "
-                "config (not needed for public access URLs)."
-            )
-            return
+            logger.info("ℹ️ STORAGE_PUBLIC_URL is set — also ensuring bucket CORS is configured.")
 
         cors_config = {
             "CORSRules": [
