@@ -465,8 +465,9 @@ export default function NewPropertyPage() {
                                             
                                             <div className="glass-card !p-12 rounded-[4rem] inline-block shadow-2xl">
                                                 <QRCodeDisplay 
-                                                    url={`${window.location.origin}/capture/${mediaSession?.id}`} 
-                                                    title="Telemetry Bridge"
+                                                    verificationCode={mediaSession?.verification_code || ''} 
+                                                    captureUrl={`${window.location.origin}/capture/${mediaSession?.id}`}
+                                                    expiresAt={mediaSession?.expires_at || new Date().toISOString()}
                                                 />
                                             </div>
 
