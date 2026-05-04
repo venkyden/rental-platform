@@ -10,6 +10,7 @@ declare global {
           prompt: () => void;
           cancel: () => void;
           revoke: (email: string, callback: (done: { successful: boolean; error: string }) => void) => void;
+          disableAutoSelect: () => void;
         };
       };
     };
@@ -46,11 +47,19 @@ export function useGoogleSignIn({
   );
 
   const revoke = useCallback((email: string) => {
-    return new Promise<void>((resolve) => {
+    return new Promise<void>((resolve, reject) => {
       if (typeof window !== 'undefined' && window.google?.accounts?.id) {
         window.google.accounts.id.revoke(email, (done) => {
-          console.log('Google session revoked for:', email, done.successful);
-          resolve();
+          if (done.successful) {
+            console.log('Google session revoked for:', email);
+            // Also disable auto-select for future sessions
+            window.google?.accounts.id.disableAutoSelect();
+            resolve();
+          } else {
+            console.warn('Google session revocation failed:', done.error);
+            // Still resolve because we want the UI to proceed
+            resolve();
+          }
         });
       } else {
         resolve();

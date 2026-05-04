@@ -1,5 +1,5 @@
 
-import { translations } from './frontend/lib/i18n.ts';
+import { translations } from '../frontend/lib/i18n';
 
 console.log('Keys in translations:', Object.keys(translations));
 if (translations.fr) {

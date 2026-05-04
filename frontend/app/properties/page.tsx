@@ -271,7 +271,7 @@ export default function PropertiesPage() {
                                     <VerificationUpload 
                                         verificationType="property"
                                         propertyId={verifyingProperty}
-                                        onSuccess={() => {
+                                        onSuccessAction={() => {
                                             setVerifyingProperty(null);
                                             loadProperties();
                                         }}

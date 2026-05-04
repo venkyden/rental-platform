@@ -27,7 +27,7 @@ const itemVariants: Variants = {
 interface VerificationUploadProps {
     verificationType: 'identity' | 'employment' | 'property';
     propertyId?: string; // For property verification
-    onSuccess: () => void;
+    onSuccessAction: () => void;
     user?: any; // Contains user.preferences.contract_type etc.
 }
 
@@ -37,7 +37,7 @@ function isMobileDevice(): boolean {
         || (navigator.maxTouchPoints > 0 && window.innerWidth < 1024);
 }
 
-export default function VerificationUpload({ verificationType, propertyId, onSuccess, user }: VerificationUploadProps) {
+export default function VerificationUpload({ verificationType, propertyId, onSuccessAction, user }: VerificationUploadProps) {
     const { t } = useLanguage();
     const [files, setFiles] = useState<File[]>([]);
     const [documentType, setDocumentType] = useState('');
@@ -93,7 +93,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                 const res = await apiClient.client.get(`/verification/identity/session/${code}/status`);
                 if (res.data.completed) {
                     if (pollRef.current) clearInterval(pollRef.current);
-                    onSuccess();
+                    onSuccessAction();
                 }
             } catch {
                 if (pollRef.current) clearInterval(pollRef.current);
@@ -202,7 +202,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                     params: { document_type: documentType, ...(verificationType === 'property' && { property_id: propertyId }) }
                 });
             }
-            onSuccess();
+            onSuccessAction();
         } catch (err: any) {
             setError(err.response?.data?.detail || 'Upload failed. Please try again.');
         } finally {

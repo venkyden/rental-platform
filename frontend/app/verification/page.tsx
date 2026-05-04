@@ -206,7 +206,7 @@ export default function VerificationPage() {
                                         <VerificationUpload
                                             key={`identity-${refreshKey}`}
                                             verificationType="identity"
-                                            onSuccess={handleSuccess}
+                                            onSuccessAction={handleSuccess}
                                             user={user}
                                         />
                                     ) : (
@@ -229,7 +229,7 @@ export default function VerificationPage() {
                                         <VerificationUpload
                                             key={`employment-${refreshKey}`}
                                             verificationType="employment"
-                                            onSuccess={handleSuccess}
+                                            onSuccessAction={handleSuccess}
                                             user={user}
                                         />
                                     ) : (

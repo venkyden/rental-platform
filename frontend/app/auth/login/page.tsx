@@ -70,7 +70,7 @@ export default function LoginPage() {
     );
 
     /* ---------- Setup Google Sign-In ---------- */
-    useGoogleSignIn({
+    const { revoke } = useGoogleSignIn({
         clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
         buttonId: 'google-signin-btn',
         buttonText: 'signin_with',
@@ -84,6 +84,14 @@ export default function LoginPage() {
             }
         },
     });
+
+    const handleClearGoogleHint = async () => {
+        const emailToRevoke = prompt(t('auth.login.promptEmailToForget', undefined, 'Enter your Google email to forget this account on this site:'));
+        if (emailToRevoke) {
+            await revoke(emailToRevoke);
+            window.location.reload(); // Reload to refresh the GSI button
+        }
+    };
 
     /* ---------- Email/password submit ---------- */
     async function handleSubmit(e: React.FormEvent) {
@@ -146,6 +154,17 @@ export default function LoginPage() {
                     <p className="text-[10px] font-black text-teal-500 uppercase tracking-[0.2em] mt-6 text-center animate-pulse">
                         {t('auth.login.connectingGoogle', undefined, 'Authenticating with Google...')}
                     </p>
+                )}
+                {!googleLoading && (
+                    <div className="flex justify-center mt-6">
+                        <button 
+                            type="button"
+                            onClick={handleClearGoogleHint}
+                            className="text-[10px] font-black text-zinc-400 uppercase tracking-widest hover:text-teal-500 transition-colors"
+                        >
+                            {t('auth.login.forgetGoogle', undefined, 'Not you? Clear Google hint')}
+                        </button>
+                    </div>
                 )}
             </motion.div>
 
