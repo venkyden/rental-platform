@@ -10,12 +10,12 @@ import NotificationBell from '@/components/NotificationBell';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Home, Building2, Search, Mail, ShieldCheck, LogOut, ChevronDown, User, Settings, Building, CreditCard, Shield } from 'lucide-react';
+import { Menu, X, Home, Building2, Search, Mail, ShieldCheck, LogOut, ChevronDown, User, Settings, Building, CreditCard, Shield, Plus } from 'lucide-react';
 
 import RoomivoBrand from './RoomivoBrand';
 
 export default function Navbar() {
-    const { user, logout } = useAuth();
+    const { user, logout, switchRole } = useAuth();
     const router = useRouter();
     const pathname = usePathname();
     const { t } = useLanguage();
@@ -150,12 +150,13 @@ export default function Navbar() {
                                         </div>
 
                                         {/* Role Switching */}
-                                        {user.available_roles && user.available_roles.length > 1 && (
+                                        {(user.available_roles || []).length > 0 && (
                                             <div className="py-2 border-b border-zinc-100 dark:border-zinc-800 mb-2">
                                                 <p className="px-4 py-2 text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em]">
-                                                    {t('dashboard.roleSwitcher.switchTo')}
+                                                    {t('dashboard.roleSwitcher.title', undefined, 'Roles')}
                                                 </p>
-                                                {user.available_roles.filter(r => r !== user.role).map(role => (
+                                                {/* Switchable Roles */}
+                                                {(user.available_roles || []).filter(r => r !== user.role).map(role => (
                                                     <button
                                                         key={role}
                                                         onClick={() => handleRoleSwitch(role)}
@@ -175,8 +176,34 @@ export default function Navbar() {
                                                         )}
                                                     </button>
                                                 ))}
+                                                
+                                                {/* Unlockable Roles */}
+                                                {['tenant', 'landlord', 'property_manager']
+                                                    .filter(r => !(user.available_roles || []).includes(r))
+                                                    .map(role => (
+                                                        <button
+                                                            key={role}
+                                                            onClick={() => handleRoleSwitch(role)}
+                                                            disabled={!!isSwitching}
+                                                            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-teal-50 dark:hover:bg-teal-900/10 transition-all group opacity-70 hover:opacity-100"
+                                                        >
+                                                            <div className="p-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-700 group-hover:bg-white dark:group-hover:bg-zinc-600 transition-colors">
+                                                                <Plus className="w-3.5 h-3.5 text-zinc-400 group-hover:text-teal-600" />
+                                                            </div>
+                                                            <div className="flex flex-col items-start">
+                                                                <span className="text-[11px] font-bold text-zinc-500 group-hover:text-teal-600 uppercase tracking-wider">
+                                                                    {t(`dashboard.roleSwitcher.roles.${role}`)}
+                                                                </span>
+                                                                <span className="text-[8px] text-zinc-400 uppercase tracking-tighter">
+                                                                    {t('dashboard.roleSwitcher.unlockNew', undefined, 'Unlock Workspace')}
+                                                                </span>
+                                                            </div>
+                                                        </button>
+                                                    ))
+                                                }
                                             </div>
                                         )}
+
 
                                         {/* Links */}
                                         <div className="space-y-1">
@@ -282,18 +309,38 @@ export default function Navbar() {
                                 <div className="h-px bg-zinc-100 dark:bg-zinc-800 my-2"></div>
                                 
                                 <div className="flex flex-col gap-4">
-                                    <div className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl">
-                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{t('dashboard.role.title', undefined, 'Active Role')}</span>
-                                        <RoleSwitcher 
-                                            currentRole={user.role} 
-                                            availableRoles={user.available_roles || ["tenant"]} 
-                                        />
+                                    <div className="flex flex-col gap-2 p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl">
+                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">{t('dashboard.role.title', undefined, 'Active Role')}</span>
+                                        <div className="flex flex-wrap gap-2">
+                                            {['tenant', 'landlord', 'property_manager'].map(role => {
+                                                const isCurrent = user.role === role;
+                                                const isAvailable = (user.available_roles || []).includes(role);
+                                                return (
+                                                    <button
+                                                        key={role}
+                                                        onClick={() => handleRoleSwitch(role)}
+                                                        disabled={isCurrent || !!isSwitching}
+                                                        className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider transition-all
+                                                            ${isCurrent 
+                                                                ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900' 
+                                                                : isAvailable
+                                                                    ? 'bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-400'
+                                                                    : 'bg-teal-500/10 text-teal-600 border border-teal-500/20'
+                                                            }`}
+                                                    >
+                                                        {t(`dashboard.roleSwitcher.roles.${role}`)}
+                                                        {!isAvailable && !isCurrent && ' +'}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
                                     </div>
                                     <div className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl">
                                         <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{t('common.language', undefined, 'Language')}</span>
                                         <LanguageSwitcher />
                                     </div>
                                 </div>
+
 
                                 <button
                                     onClick={() => {

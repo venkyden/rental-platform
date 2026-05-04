@@ -6,7 +6,6 @@ import { useAuth } from '@/lib/useAuth';
 import { useSegment, QuickActions, SegmentBadge } from '@/lib/SegmentContext';
 import { useLanguage } from '@/lib/LanguageContext';
 import { CheckCircle2, Clock, ShieldCheck, FileText, Building } from 'lucide-react';
-import RoleSwitcher from '@/components/dashboard/RoleSwitcher';
 
 export default function AgencyDashboard() {
     const { user, logout, loading: authLoading } = useAuth();

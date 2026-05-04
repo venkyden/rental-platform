@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/useAuth';
 import { useSegment, QuickActions, SegmentBadge, FeatureGate } from '@/lib/SegmentContext';
 import { useLanguage } from '@/lib/LanguageContext';
-import RoleSwitcher from '@/components/dashboard/RoleSwitcher';
 
 export default function LandlordDashboard() {
     const { user, loading: authLoading } = useAuth();

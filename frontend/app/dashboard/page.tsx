@@ -12,7 +12,6 @@ import { useToast } from '@/lib/ToastContext';
 import { motion, Variants } from 'framer-motion';
 import { Home, Search, ShieldCheck, Mail, UserCircle, LogOut, CheckCircle2, Clock, Building, Users, BarChart3, FileCheck } from 'lucide-react';
 import TenantFeatures from '@/components/dashboard/TenantFeatures';
-import RoleSwitcher from '@/components/dashboard/RoleSwitcher';
 
 const containerVariants: Variants = {
     hidden: { opacity: 0 },
