@@ -57,9 +57,9 @@ class AlertsResponse(BaseModel):
 
 
 def _require_landlord(user: User):
-    if user.role != "landlord":
+    if user.role not in ["landlord", "property_manager", "admin"]:
         raise HTTPException(
-            status_code=403, detail="Only landlords can access these stats"
+            status_code=403, detail="Only landlords or managers can access these stats"
         )
 
 

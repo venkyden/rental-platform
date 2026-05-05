@@ -57,9 +57,9 @@ async def get_import_template(
     """
     Download import template with headers and example data.
     """
-    if current_user.role not in [UserRole.LANDLORD, UserRole.PROPERTY_MANAGER]:
+    if current_user.role not in [UserRole.LANDLORD, UserRole.PROPERTY_MANAGER, UserRole.ADMIN]:
         raise HTTPException(
-            status_code=403, detail="Only landlords can access bulk operations"
+            status_code=403, detail="Only landlords or managers can access bulk operations"
         )
 
     if format == "csv":
@@ -148,8 +148,8 @@ async def export_properties(
     """
     Export all properties as CSV or XML.
     """
-    if current_user.role not in [UserRole.LANDLORD, UserRole.PROPERTY_MANAGER]:
-        raise HTTPException(status_code=403, detail="Only landlords can export")
+    if current_user.role not in [UserRole.LANDLORD, UserRole.PROPERTY_MANAGER, UserRole.ADMIN]:
+        raise HTTPException(status_code=403, detail="Only landlords or managers can export")
 
     # Get properties
     query = select(Property).where(Property.landlord_id == current_user.id)
@@ -255,8 +255,8 @@ async def import_properties(
     Import properties from CSV or XML file.
     Returns summary of imported, updated, and failed rows.
     """
-    if current_user.role not in [UserRole.LANDLORD, UserRole.PROPERTY_MANAGER]:
-        raise HTTPException(status_code=403, detail="Only landlords can import")
+    if current_user.role not in [UserRole.LANDLORD, UserRole.PROPERTY_MANAGER, UserRole.ADMIN]:
+        raise HTTPException(status_code=403, detail="Only landlords or managers can import")
 
     content = await file.read()
 
@@ -386,8 +386,8 @@ async def preview_import(
     Preview import file without actually importing.
     Returns parsed rows for validation.
     """
-    if current_user.role not in [UserRole.LANDLORD, UserRole.PROPERTY_MANAGER]:
-        raise HTTPException(status_code=403, detail="Only landlords can import")
+    if current_user.role not in [UserRole.LANDLORD, UserRole.PROPERTY_MANAGER, UserRole.ADMIN]:
+        raise HTTPException(status_code=403, detail="Only landlords or managers can import")
 
     content = await file.read()
     is_xml = (

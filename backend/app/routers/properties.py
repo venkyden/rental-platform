@@ -70,10 +70,10 @@ async def create_property(
     """Create a new property listing"""
 
     # Only landlords and property managers can create properties
-    if current_user.role not in ["landlord", "property_manager"]:
+    if current_user.role not in ["landlord", "property_manager", "admin"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only landlords can create properties",
+            detail="Only landlords or managers can create properties",
         )
 
     # Create property

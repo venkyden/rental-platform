@@ -143,9 +143,9 @@ async def list_subscriptions(
     current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
 ):
     """List all webhook subscriptions for the current landlord."""
-    if current_user.role not in [UserRole.LANDLORD, UserRole.PROPERTY_MANAGER]:
+    if current_user.role not in [UserRole.LANDLORD, UserRole.PROPERTY_MANAGER, UserRole.ADMIN]:
         raise HTTPException(
-            status_code=403, detail="Only landlords can manage webhooks"
+            status_code=403, detail="Only landlords or managers can manage webhooks"
         )
 
     result = await db.execute(
@@ -178,9 +178,9 @@ async def create_subscription(
     db: AsyncSession = Depends(get_db),
 ):
     """Create a new webhook subscription."""
-    if current_user.role not in [UserRole.LANDLORD, UserRole.PROPERTY_MANAGER]:
+    if current_user.role not in [UserRole.LANDLORD, UserRole.PROPERTY_MANAGER, UserRole.ADMIN]:
         raise HTTPException(
-            status_code=403, detail="Only landlords can create webhooks"
+            status_code=403, detail="Only landlords or managers can create webhooks"
         )
 
     # Validate events
