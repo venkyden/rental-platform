@@ -199,7 +199,7 @@ export default function DashboardPage() {
                                 <div className="text-center sm:text-left flex-1">
                                     <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
                                         <h2 className="text-5xl sm:text-7xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-zinc-900 to-zinc-600 dark:from-white dark:to-zinc-500 uppercase leading-[0.9]">
-                                            {t('dashboard.landlord.welcome', { name: user.full_name.split(' ')[0] }, undefined)}
+                                            {t('dashboard.landlord.welcome', { name: user.full_name?.split(' ')[0] || user.email?.split('@')[0] }, undefined)}
                                         </h2>
                                         <div className="inline-flex items-center self-center sm:self-start px-4 py-1.5 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-600 dark:text-teal-400 text-[10px] font-black uppercase tracking-[0.2em]">
                                             {user.role}

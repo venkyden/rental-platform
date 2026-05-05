@@ -58,7 +58,7 @@ export default function AppHeader({
                                         {user.full_name?.charAt(0) || user.email.charAt(0).toUpperCase()}
                                     </div>
                                     <span className="text-sm font-medium text-[var(--gray-700)] max-w-[120px] truncate">
-                                        {user.full_name?.split(' ')[0] || user.email.split('@')[0]}
+                                        {user.full_name?.split(' ')[0] || user.email?.split('@')[0]}
                                     </span>
                                 </div>
 
