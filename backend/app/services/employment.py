@@ -10,7 +10,8 @@ import re
 from dataclasses import dataclass
 from datetime import date, datetime
 from decimal import Decimal
-from typing import BinaryIO, Optional
+from typing import BinaryIO, Optional, Dict, Any
+from app.services.french_government_api import french_gov_service
 
 # Optional AI imports
 try:
@@ -92,6 +93,28 @@ class EmploymentVerificationService:
             extracted_data, expected_name, document_type
         )
 
+        # SIRET Verification (Real-time check)
+        siret_data = None
+        if extracted_data.siret:
+            siret_result = await french_gov_service.verify_siret(extracted_data.siret)
+            if siret_result.get("valid"):
+                siret_data = siret_result
+                validation_results.append({
+                    "name": "siret_api_verified",
+                    "description": "Employer found in National Business Register",
+                    "passed": True,
+                    "critical": False,
+                    "details": f"Verified: {siret_result['company_name']}"
+                })
+            else:
+                validation_results.append({
+                    "name": "siret_api_verified",
+                    "description": "Employer verification in Register",
+                    "passed": False,
+                    "critical": False,
+                    "details": siret_result.get("error", "SIRET not found")
+                })
+
         # Determine overall status
         all_passed = all(check["passed"] for check in validation_results)
         critical_failed = any(
@@ -120,6 +143,7 @@ class EmploymentVerificationService:
                 "pay_period": extracted_data.pay_period,
                 "job_title": extracted_data.job_title,
                 "siret": extracted_data.siret,
+                "siret_api_data": siret_data,
                 "confidence_score": float(extracted_data.confidence_score),
             },
             "validation_checks": validation_results,
@@ -162,10 +186,12 @@ class EmploymentVerificationService:
     "employment_type": "CDI/CDD/Student/Freelance/interim",
     "siret": "SIRET number if visible",
     "job_title": "Job title or academic program if visible",
+    "is_rib": true or false,
     "confidence_score": 0.0 to 1.0
 }}
 
 Important Context:
+- If this is a Relevé d'Identité Bancaire (RIB), set 'is_rib' to true.
 - If this is a payslip, extract 'Salaire brut' (gross) and 'Net à payer' (net).
 - If this is a student ID or enrollment certificate, 'net_salary' and 'gross_salary' should be 0.00, 'employment_type' should be 'Student', 'employer_name' should be the University.
 - If this is a tax return or KBIS, extract relevant identifiers, incomes as salaried, and company names.
@@ -226,15 +252,27 @@ Return ONLY the JSON, no explanation."""
 
         checks = []
 
-        # 1. Name match check (non-critical — flagged for review)
+        # 1. Name match check (CRITICAL)
         name_match = self._fuzzy_name_match(data.employee_name, expected_name)
         checks.append(
             {
                 "name": "name_match",
                 "description": "Employee name matches account",
                 "passed": name_match > 0.5,
-                "critical": False,
+                "critical": True,
                 "details": f"Document: {data.employee_name} | Account: {expected_name} | Match: {name_match:.0%}",
+            }
+        )
+
+        # 1b. RIB check (CRITICAL - Illegal to collect in dossier stage)
+        is_rib = getattr(data, "is_rib", False)
+        checks.append(
+            {
+                "name": "unauthorized_document",
+                "description": "Document type is allowed for dossier stage",
+                "passed": not is_rib,
+                "critical": True,
+                "details": "RIB (Bank Account details) are not allowed at this stage in France." if is_rib else "Document type is allowed.",
             }
         )
 

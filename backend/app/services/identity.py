@@ -127,8 +127,10 @@ class IdentityVerificationService:
             return None
 
         import asyncio
-
-        models_to_try = ["gemini-2.5-flash", "gemini-2.0-flash"]
+        import time
+        start_time = time.time()
+        
+        models_to_try = ["gemini-2.0-flash", "gemini-1.5-flash"]
         max_retries = 2
 
         document_part = types.Part.from_bytes(
@@ -143,16 +145,11 @@ An identity document is ONLY one of these:
 - National ID Card / Carte Nationale d'Identité (plastic card with photo, name, ID number)
 - Residence Permit / Titre de séjour (card with photo, name, permit number)
 - Driver's License / Permis de conduire (card with photo, name, license number)
+- French Residence Permit / Titre de séjour (Must be valid, check expiry)
 
-The following are NOT identity documents and MUST be rejected (is_identity_document = false):
-- Payslips / bulletins de salaire
-- Tax returns / avis d'imposition  
-- Employment contracts
-- Bank statements
-- Student IDs or enrollment certificates
-- Utility bills
-- Screenshots, selfies, random photos
-- Any document without a government-issued photo ID format
+Special for French context:
+- Carte Nationale d'Identité (CNI): Modern (format carte bancaire) or Legacy (large blue plastic).
+- Titre de séjour: Check the 'Valable du... au...' dates.
 
 The user claims this is a '{document_type}'.
 
@@ -160,7 +157,7 @@ Return a JSON object:
 
 {{
     "is_identity_document": true or false,
-    "full_name": "Person's full name from the ID, or 'Unknown'",
+    "full_name": "Person's full name from the ID, or 'Unknown'. Include middle names if present.",
     "document_number": "ID number, passport number, permit number, or license number. 'Unknown' if not an ID",
     "expiry_date": "YYYY-MM-DD or null",
     "document_type": "passport, id_card, residence_permit, or drivers_license. Use 'other' if it's not any of these",
@@ -172,6 +169,7 @@ Strict rules:
 - Set is_identity_document to false if the image is NOT a government photo ID. Be strict.
 - Set document_type to "other" if it's not one of the 4 valid types listed above.
 - A real ID card always has a face photo. If there's no face photo, it's likely not an ID.
+- For Titre de séjour, verify it's the actual permit, not just a 'récépissé' (unless specified).
 - If confidence is low or the image is unclear, set confidence_score below 0.3.
 
 Return ONLY the JSON."""
@@ -191,7 +189,8 @@ Return ONLY the JSON."""
                     json_text = response.text
                     data = json.loads(json_text)
 
-                    logger.info(f"AI extracted data for {document_type} (model={model_name}): {data}")
+                    duration = time.time() - start_time
+                    logger.info(f"AI extracted data for {document_type} (model={model_name}) in {duration:.2f}s: {data}")
 
                     return IdentityData(
                         full_name=data.get("full_name", "Unknown"),
@@ -292,14 +291,14 @@ Return ONLY the JSON."""
             }
         )
 
-        # 4. NON-CRITICAL: Name match (flagged for review, not blocking)
+        # 4. CRITICAL: Name match (Blocking in production)
         name_match = self._fuzzy_name_match(data.full_name, expected_name)
         checks.append(
             {
                 "name": "name_match",
                 "description": "Name on document matches account name",
                 "passed": name_match > 0.5,
-                "critical": False,
+                "critical": True,
                 "details": f"Document: {data.full_name} | Account: {expected_name} | Match: {name_match:.0%}",
             }
         )

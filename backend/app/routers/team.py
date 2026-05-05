@@ -98,18 +98,43 @@ class PendingInviteResponse(BaseModel):
 async def get_team_members(
     current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
 ):
-    """Get all team members for the current landlord."""
-    if current_user.role not in [UserRole.LANDLORD, UserRole.PROPERTY_MANAGER, UserRole.ADMIN]:
+    """Get all team members for the current landlord or the team the user belongs to."""
+    role_val = current_user.role.value if hasattr(current_user.role, "value") else str(current_user.role)
+    if role_val not in ["landlord", "property_manager", "admin"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only landlords or managers can manage team members",
         )
 
+    # If user is a team member (e.g. property_manager), they might be looking for their teammates
+    # rather than members they invited themselves.
+    landlord_id = current_user.id
+    
+    # Check if this user is a member of someone else's team
+    # (Only if they aren't an admin or if they don't have their own members)
+    from app.models.team import TeamMember
+    
+    # Try to find if this user is an active member of ANY team
+    membership_result = await db.execute(
+        select(TeamMember).where(
+            and_(
+                TeamMember.member_user_id == current_user.id,
+                TeamMember.status == InviteStatus.ACTIVE
+            )
+        )
+    )
+    membership = membership_result.scalar_one_or_none()
+    
+    if membership:
+        # If they are a member, they see the landlord's team
+        landlord_id = membership.landlord_id
+        logger.info(f"User {current_user.id} is viewing team for landlord {landlord_id}")
+
     result = await db.execute(
         select(TeamMember)
         .where(
             and_(
-                TeamMember.landlord_id == current_user.id,
+                TeamMember.landlord_id == landlord_id,
                 TeamMember.status != InviteStatus.REVOKED,
             )
         )
@@ -214,7 +239,8 @@ async def invite_team_member(
     db: AsyncSession = Depends(get_db),
 ):
     """Invite a new team member by email."""
-    if current_user.role not in [UserRole.LANDLORD, UserRole.PROPERTY_MANAGER, UserRole.ADMIN]:
+    role_val = current_user.role.value if hasattr(current_user.role, "value") else str(current_user.role)
+    if role_val not in ["landlord", "property_manager", "admin"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only landlords or managers can invite team members",

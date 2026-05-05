@@ -51,7 +51,13 @@ class MatchingService:
         """
         score = 0.0
         breakdown = {}
-        prefs = tenant.preferences or {}
+        all_prefs = tenant.preferences or {}
+        
+        # Use role-specific key if it exists, otherwise fallback to flat for backward compatibility
+        if isinstance(all_prefs, dict):
+            prefs = all_prefs.get("tenant", all_prefs)
+        else:
+            prefs = {}
 
         # 1. Tenant Preference / Identity (20 points)
         accepted_types = property.accepted_tenant_types or []

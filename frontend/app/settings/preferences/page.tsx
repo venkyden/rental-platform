@@ -189,6 +189,7 @@ export default function SettingsPreferencesPage() {
     const { user } = useAuth();
     const { success, error: showError } = useToast();
     const [preferences, setPreferences] = useState<Record<string, any>>({});
+    const [activeRole, setActiveRole] = useState<string>('tenant');
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [editModal, setEditModal] = useState<{
@@ -215,6 +216,7 @@ export default function SettingsPreferencesPage() {
         try {
             const response = await apiClient.client.get('/onboarding/status');
             setPreferences(response.data.preferences || {});
+            setActiveRole(response.data.active_role || 'tenant');
         } catch (error) {
             console.error('Failed to load preferences:', error);
         } finally {
@@ -244,7 +246,9 @@ export default function SettingsPreferencesPage() {
 
     if (loading) return <PremiumLayout withNavbar={true}><div className="flex justify-center items-center py-40"><Loader2 className="w-8 h-8 animate-spin text-teal-500" /></div></PremiumLayout>;
 
-    const isTenant = user?.role === 'tenant';
+    const isTenant = activeRole === 'tenant';
+    const isLandlord = activeRole === 'landlord';
+    const isAgency = activeRole === 'property_manager';
 
     return (
         <PremiumLayout withNavbar={true}>
@@ -309,7 +313,7 @@ export default function SettingsPreferencesPage() {
                                         </div>
                                     </section>
 
-                                    {isTenant ? (
+                                    {isTenant && (
                                         <>
                                             <section>
                                                 <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
@@ -350,36 +354,102 @@ export default function SettingsPreferencesPage() {
                                                  </div>
                                              </section>
                                         </>
-                                    ) : (
+                                    )}
+
+                                    {(isLandlord || isAgency) && (
                                         <>
                                             <section>
                                                 <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
                                                     <Heart className="w-3 h-3" /> {t('settings.preferences.tenant')}
                                                 </h3>
                                                 <div className="grid gap-4 sm:grid-cols-2">
-                                                    <PreferenceCard title={t('settings.preferences.tenantType')} icon={Heart} value={preferences.accepted_tenant_types} onEdit={() => openEdit({ key: 'accepted_tenant_types', title: t('settings.preferences.tenantType'), type: 'multiselect', options: [{ value: 'student', label: t('settings.preferences.options.student') }, { value: 'employee', label: t('settings.preferences.options.employee') }, { value: 'freelancer', label: t('settings.preferences.options.freelancer') }, { value: 'family', label: t('settings.preferences.options.family') }] })} />
-                                                    <PreferenceCard title={t('settings.preferences.nationality')} icon={Globe} value={preferences.nationality_preference} onEdit={() => openEdit({ key: 'nationality_preference', title: t('settings.preferences.nationality'), type: 'select', options: [{ value: 'no_preference', label: t('settings.preferences.options.noPreference') }, { value: 'french', label: t('settings.preferences.options.frenchPreferred') }, { value: 'international', label: t('settings.preferences.options.international') }] })} />
+                                                    <PreferenceCard 
+                                                        title={t('settings.preferences.propertyCount', undefined, 'Portfolio Size')} 
+                                                        icon={Home} 
+                                                        value={preferences.property_count} 
+                                                        onEdit={() => openEdit({ 
+                                                            key: 'property_count', 
+                                                            title: t('settings.preferences.propertyCount'), 
+                                                            type: 'select', 
+                                                            options: isAgency 
+                                                                ? [{ value: '5_100', label: '5-100' }, { value: '100_plus', label: '100+' }]
+                                                                : [{ value: '1_4', label: '1-4' }, { value: '5_100', label: '5-100' }, { value: '100_plus', label: '100+' }]
+                                                        })} 
+                                                    />
+                                                    <PreferenceCard 
+                                                        title={t('settings.preferences.challenge', undefined, 'Main Challenge')} 
+                                                        icon={Sparkles} 
+                                                        value={preferences.challenge} 
+                                                        onEdit={() => openEdit({ 
+                                                            key: 'challenge', 
+                                                            title: t('settings.preferences.challenge'), 
+                                                            type: 'select', 
+                                                            options: [
+                                                                { value: 'finding_tenants', label: t('settings.preferences.options.findingTenants', undefined, 'Finding Tenants') },
+                                                                { value: 'avoiding_fraud', label: t('settings.preferences.options.avoidingFraud', undefined, 'Avoiding Fraud') },
+                                                                { value: 'regulations', label: t('settings.preferences.options.regulations', undefined, 'Regulations') },
+                                                                { value: 'all', label: t('settings.preferences.options.all', undefined, 'All of the above') }
+                                                            ] 
+                                                        })} 
+                                                    />
                                                 </div>
                                             </section>
+
+                                            {isLandlord && (
+                                                <>
+                                                    <section>
+                                                        <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                                                            <Heart className="w-3 h-3" /> {t('settings.preferences.tenantCriteria', undefined, 'Target Tenant')}
+                                                        </h3>
+                                                        <div className="grid gap-4 sm:grid-cols-2">
+                                                            <PreferenceCard title={t('settings.preferences.tenantType')} icon={Heart} value={preferences.accepted_tenant_types} onEdit={() => openEdit({ key: 'accepted_tenant_types', title: t('settings.preferences.tenantType'), type: 'multiselect', options: [{ value: 'student', label: t('settings.preferences.options.student') }, { value: 'employee', label: t('settings.preferences.options.employee') }, { value: 'freelancer', label: t('settings.preferences.options.freelancer') }, { value: 'family', label: t('settings.preferences.options.family') }] })} />
+                                                            <PreferenceCard title={t('settings.preferences.nationality')} icon={Globe} value={preferences.nationality_preference} onEdit={() => openEdit({ key: 'nationality_preference', title: t('settings.preferences.nationality'), type: 'select', options: [{ value: 'no_preference', label: t('settings.preferences.options.noPreference') }, { value: 'french', label: t('settings.preferences.options.frenchPreferred') }, { value: 'international', label: t('settings.preferences.options.international') }] })} />
+                                                        </div>
+                                                    </section>
+
+                                                    <section>
+                                                        <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                                                            <ShieldCheck className="w-3 h-3" /> {t('settings.preferences.requirements')}
+                                                        </h3>
+                                                        <div className="grid gap-4 sm:grid-cols-2">
+                                                            <PreferenceCard title={t('settings.preferences.guarantees')} icon={Shield} value={preferences.accepted_guarantees} onEdit={() => openEdit({ key: 'accepted_guarantees', title: t('settings.preferences.guarantees'), type: 'multiselect', options: [{ value: 'visale', label: t('settings.preferences.options.visale') }, { value: 'garantme', label: t('settings.preferences.options.garantme') }, { value: 'parents', label: t('settings.preferences.options.parents') }, { value: 'bank', label: t('settings.preferences.options.bank') }] })} />
+                                                            <PreferenceCard title={t('settings.preferences.rules')} icon={AlertTriangle} value={preferences.house_rules} onEdit={() => openEdit({ key: 'house_rules', title: t('settings.preferences.rules'), type: 'multiselect', options: [{ value: 'no_smoking', label: t('settings.preferences.options.noSmoking') }, { value: 'no_pets', label: t('settings.preferences.options.noPets') }, { value: 'no_parties', label: t('settings.preferences.options.noParties') }] })} />
+                                                        </div>
+                                                    </section>
+
+                                                    <section>
+                                                        <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                                                            <DollarSign className="w-3 h-3" /> {t('settings.preferences.caf')}
+                                                        </h3>
+                                                        <div className="grid gap-4 sm:grid-cols-2">
+                                                            <PreferenceCard title={t('settings.preferences.cafEligibility')} icon={DollarSign} value={preferences.caf_eligibility} onEdit={() => openEdit({ key: 'caf_eligibility', title: t('settings.preferences.cafEligibility'), type: 'select', options: [{ value: 'yes', label: t('settings.preferences.options.yes') }, { value: 'no', label: t('settings.preferences.options.no') }] })} />
+                                                        </div>
+                                                    </section>
+                                                </>
+                                            )}
 
                                             <section>
                                                 <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
-                                                    <ShieldCheck className="w-3 h-3" /> {t('settings.preferences.requirements')}
+                                                    <Loader2 className="w-3 h-3" /> {t('settings.preferences.urgency', undefined, 'Urgency')}
                                                 </h3>
                                                 <div className="grid gap-4 sm:grid-cols-2">
-                                                    <PreferenceCard title={t('settings.preferences.guarantees')} icon={Shield} value={preferences.accepted_guarantees} onEdit={() => openEdit({ key: 'accepted_guarantees', title: t('settings.preferences.guarantees'), type: 'multiselect', options: [{ value: 'visale', label: t('settings.preferences.options.visale') }, { value: 'garantme', label: t('settings.preferences.options.garantme') }, { value: 'parents', label: t('settings.preferences.options.parents') }, { value: 'bank', label: t('settings.preferences.options.bank') }] })} />
-                                                    <PreferenceCard title={t('settings.preferences.rules')} icon={AlertTriangle} value={preferences.house_rules} onEdit={() => openEdit({ key: 'house_rules', title: t('settings.preferences.rules'), type: 'multiselect', options: [{ value: 'no_smoking', label: t('settings.preferences.options.noSmoking') }, { value: 'no_pets', label: t('settings.preferences.options.noPets') }, { value: 'no_parties', label: t('settings.preferences.options.noParties') }] })} />
+                                                    <PreferenceCard 
+                                                        title={t('settings.preferences.urgencyLevel', undefined, 'Timeline')} 
+                                                        icon={Loader2} 
+                                                        value={preferences.urgency} 
+                                                        onEdit={() => openEdit({ 
+                                                            key: 'urgency', 
+                                                            title: t('settings.preferences.urgencyLevel'), 
+                                                            type: 'select', 
+                                                            options: [
+                                                                { value: 'urgent', label: t('settings.preferences.options.urgent', undefined, 'Urgent') },
+                                                                { value: 'soon', label: t('settings.preferences.options.soon', undefined, 'Soon') },
+                                                                { value: 'planning', label: t('settings.preferences.options.planning', undefined, 'Planning') }
+                                                            ] 
+                                                        })} 
+                                                    />
                                                 </div>
                                             </section>
-
-                                            <section>
-                                                 <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
-                                                     <DollarSign className="w-3 h-3" /> {t('settings.preferences.caf')}
-                                                 </h3>
-                                                 <div className="grid gap-4 sm:grid-cols-2">
-                                                     <PreferenceCard title={t('settings.preferences.cafEligibility')} icon={DollarSign} value={preferences.caf_eligibility} onEdit={() => openEdit({ key: 'caf_eligibility', title: t('settings.preferences.cafEligibility'), type: 'select', options: [{ value: 'yes', label: t('settings.preferences.options.yes') }, { value: 'no', label: t('settings.preferences.options.no') }] })} />
-                                                 </div>
-                                             </section>
                                         </>
                                     )}
                                 </div>

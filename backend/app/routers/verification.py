@@ -17,8 +17,8 @@ from app.models.user import User
 from app.routers.auth import get_current_user
 from app.core.cache import cache
 import logging
-
-logger = logging.getLogger(__name__)
+from app.services.storage import storage
+from app.utils.watermark import apply_watermark
 
 # Fallback in-memory verification sessions (if Redis is not available)
 # Format: { code: { user_id, document_type, expires_at, completed } }
@@ -111,21 +111,19 @@ async def upload_identity_document(
             detail=f"Verification failed: {result.get('rejection_reason')}",
         )
 
-    # Save file to disk
-    import os
-    import secrets
+    # Apply watermark before upload
+    watermarked_content = apply_watermark(content)
     
-    upload_dir = "uploads/verification"
-    os.makedirs(upload_dir, exist_ok=True)
+    # Save file to Cloud Storage
+    from io import BytesIO
+    storage_result = await storage.upload_file(
+        file_data=BytesIO(watermarked_content),
+        filename=file.filename,
+        content_type=file.content_type,
+        folder="verification/identity"
+    )
     
-    file_extension = os.path.splitext(file.filename)[1]
-    filename = f"{current_user.id}_{secrets.token_urlsafe(8)}{file_extension}"
-    file_path = os.path.join(upload_dir, filename)
-    
-    with open(file_path, "wb") as f:
-        f.write(content)
-
-    file_url = f"/uploads/verification/{filename}"
+    file_url = storage_result["url"]
 
     # Update user verification status
     current_user.identity_verified = result["verified"]
@@ -139,6 +137,7 @@ async def upload_identity_document(
         "upload_date": datetime.utcnow().isoformat(),
         "filename": file.filename,
         "file_url": file_url,
+        "storage_key": storage_result.get("key"),
         "status": result["status"],
         "extracted_data": result["data"],
         "checks": result["validation_checks"],
@@ -279,21 +278,19 @@ async def upload_identity_mobile(
             detail=f"Verification failed: {result.get('rejection_reason')}",
         )
 
-    # Save file to disk
-    import os
-    import secrets
+    # Apply watermark before upload
+    watermarked_content = apply_watermark(content)
     
-    upload_dir = "uploads/verification"
-    os.makedirs(upload_dir, exist_ok=True)
+    # Save file to Cloud Storage
+    from io import BytesIO
+    storage_result = await storage.upload_file(
+        file_data=BytesIO(watermarked_content),
+        filename=file.filename,
+        content_type=file.content_type,
+        folder="verification/identity"
+    )
     
-    file_extension = os.path.splitext(file.filename)[1]
-    filename = f"{user.id}_{secrets.token_urlsafe(8)}{file_extension}"
-    file_path = os.path.join(upload_dir, filename)
-    
-    with open(file_path, "wb") as f:
-        f.write(content)
-
-    file_url = f"/uploads/verification/{filename}"
+    file_url = storage_result["url"]
 
     user.identity_verified = result["verified"]
     if result["verified"]:
@@ -305,6 +302,7 @@ async def upload_identity_mobile(
         "filename": file.filename,
         "file_url": file_url,
         "source": "mobile_capture",
+        "storage_key": storage_result.get("key"),
         "status": result["status"],
         "extracted_data": result["data"],
         "checks": result["validation_checks"],
@@ -385,21 +383,19 @@ async def upload_employment_document(
         # Add trust score points (30 for verified employment)
         current_user.trust_score = min(100, current_user.trust_score + 30)
 
-    # Save file to disk
-    import os
-    import secrets
+    # Apply watermark before upload
+    watermarked_content = apply_watermark(content)
     
-    upload_dir = "uploads/verification"
-    os.makedirs(upload_dir, exist_ok=True)
+    # Save file to Cloud Storage
+    from io import BytesIO
+    storage_result = await storage.upload_file(
+        file_data=BytesIO(watermarked_content),
+        filename=file.filename,
+        content_type=file.content_type,
+        folder="verification/employment"
+    )
     
-    file_extension = os.path.splitext(file.filename)[1]
-    filename = f"emp_{current_user.id}_{secrets.token_urlsafe(8)}{file_extension}"
-    file_path = os.path.join(upload_dir, filename)
-    
-    with open(file_path, "wb") as f:
-        f.write(content)
-
-    file_url = f"/uploads/verification/{filename}"
+    file_url = storage_result["url"]
 
     # Store verification data — convert any Decimal values to float for JSON serialization
     extracted = result.get("data")
@@ -413,6 +409,7 @@ async def upload_employment_document(
         "upload_date": datetime.utcnow().isoformat(),
         "filename": file.filename,
         "file_url": file_url,
+        "storage_key": storage_result.get("key"),
         "status": result["status"],
         "extracted_data": extracted,
         "checks": result["validation_checks"],
@@ -558,21 +555,19 @@ async def upload_property_document(
             detail=f"Verification failed: {verification_result.get('rejection_reason')}",
         )
 
-    # 5. Save file to disk
-    import os
-    import secrets
+    # Apply watermark before upload
+    watermarked_content = apply_watermark(content)
     
-    upload_dir = "uploads/verification/property"
-    os.makedirs(upload_dir, exist_ok=True)
+    # Save file to Cloud Storage
+    from io import BytesIO
+    storage_result = await storage.upload_file(
+        file_data=BytesIO(watermarked_content),
+        filename=file.filename,
+        content_type=file.content_type,
+        folder="verification/property"
+    )
     
-    file_extension = os.path.splitext(file.filename)[1]
-    filename = f"prop_{property_id}_{secrets.token_urlsafe(8)}{file_extension}"
-    file_path = os.path.join(upload_dir, filename)
-    
-    with open(file_path, "wb") as f:
-        f.write(content)
-
-    file_url = f"/uploads/verification/property/{filename}"
+    file_url = storage_result["url"]
 
     # 6. Update property
     property_obj.ownership_verified = verification_result["verified"]

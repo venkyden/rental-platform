@@ -63,10 +63,20 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
         if (verificationType === 'identity' && !isMobile && !qrSession) {
             createQrSession();
         }
+        
+        // Auto-select document type based on user profile if not set
+        if (!documentType) {
+            const types = getDocumentTypes();
+            const recommended = types.find(t => (t as any).recommended);
+            if (recommended) {
+                setDocumentType(recommended.value);
+            }
+        }
+
         return () => {
             if (pollRef.current) clearInterval(pollRef.current);
         };
-    }, [verificationType, isMobile]);
+    }, [verificationType, isMobile, user]);
 
     const createQrSession = async () => {
         setQrLoading(true);
@@ -107,37 +117,51 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
     };
 
     const getEmploymentDocumentTypes = () => {
-        const contractType = user?.preferences?.contract_type;
-        const situation = user?.preferences?.situation;
+        // Handle the new role-based structure (user.preferences.tenant) or legacy flat structure
+        const rolePrefs = user?.preferences?.tenant || 
+                         (user?.preferences?.landlord ? null : user?.preferences) || {};
+        
+        const contractType = rolePrefs?.contract_type;
+        const situation = rolePrefs?.situation;
 
+        // 1. SALARIED (CDI, CDD, Interim, Public Sector)
+        if (contractType === 'cdi' || contractType === 'cdd' || contractType === 'interim') {
+            return [
+                { value: 'payslip', label: t('docs.payslip', undefined, 'Last 3 Payslips'), captures: 3, recommended: true },
+                { value: 'employer_certificate', label: t('docs.employer_cert', undefined, 'Employer Certificate / Job Promise'), captures: 1, recommended: contractType === 'cdd' },
+                { value: 'contract', label: t('docs.contract', undefined, 'Employment Contract'), captures: 1 },
+                { value: 'tax_return', label: t('docs.tax_return', undefined, 'Latest Tax Return'), captures: 1 },
+            ];
+        } 
+        
+        // 2. NON-SALARIED: STUDENTS & INTERNS
         if (contractType === 'student' || situation === 'student_budget' || contractType === 'internship') {
             return [
-                { value: 'student_id', label: t('docs.student_id', undefined, 'Student ID / Enrollment Certificate'), captures: 1 },
-                { value: 'internship_contract', label: t('docs.internship_contract', undefined, 'Internship Agreement'), captures: 1 },
+                { value: 'student_id', label: t('docs.student_id', undefined, 'Student ID / Enrollment Certificate'), captures: 1, recommended: true },
+                { value: 'internship_contract', label: t('docs.internship_contract', undefined, 'Internship Agreement'), captures: 1, recommended: contractType === 'internship' },
                 { value: 'scholarship', label: t('docs.scholarship', undefined, 'Scholarship Notice'), captures: 1 },
                 { value: 'caf', label: t('docs.caf', undefined, 'Housing Aid Simulation (CAF/MSA)'), captures: 1 },
-                { value: 'visale_certificate', label: t('docs.visale', undefined, 'Visale Guarantee Certificate'), captures: 1 },
+                { value: 'visale_certificate', label: t('docs.visale', undefined, 'Visale Guarantee Certificate'), captures: 1, recommended: true },
                 { value: 'garantme_certificate', label: t('docs.garantme', undefined, 'Garantme Certificate'), captures: 1 },
-                { value: 'bank_funds_certificate', label: t('docs.bank_funds', undefined, 'Blocked Bank Funds Certificate'), captures: 1 },
             ];
-        } else if (contractType === 'self_employed' || situation === 'flexibility_relocation') {
+        } 
+        
+        // 3. NON-SALARIED: SELF-EMPLOYED / FREELANCE / ENTREPRENEURS
+        if (contractType === 'self_employed' || situation === 'flexibility_relocation') {
             return [
-                { value: 'kbis', label: t('docs.kbis', undefined, 'Kbis Extract (less than 3 months)'), captures: 1 },
-                { value: 'tax_return', label: t('docs.tax_return', undefined, 'Latest Tax Return'), captures: 1 },
+                { value: 'kbis', label: t('docs.kbis', undefined, 'Kbis Extract (less than 3 months)'), captures: 1, recommended: true },
+                { value: 'tax_return', label: t('docs.tax_return', undefined, 'Latest Tax Return'), captures: 1, recommended: true },
                 { value: 'accounting', label: t('docs.accounting', undefined, 'Latest Accounting Balance'), captures: 1 },
-                { value: 'garantme_certificate', label: t('docs.garantme', undefined, 'Garantme Certificate'), captures: 1 },
+                { value: 'bank_statement', label: t('docs.bank_statement', undefined, 'Last 3 Professional Bank Statements'), captures: 3 },
             ];
-        } else if (contractType === 'cdd' || contractType === 'interim') {
+        } 
+        
+        // 4. NON-SALARIED: OTHER (Retired, Social Benefits, etc.)
+        if (contractType === 'other' || situation === 'other' || situation === 'family_stability') {
             return [
-                { value: 'employer_certificate', label: t('docs.employer_cert', undefined, 'Employer Certificate / Job Promise'), captures: 1 },
-                { value: 'contract', label: t('docs.contract', undefined, 'Employment Contract'), captures: 1 },
-                { value: 'payslip', label: t('docs.payslip', undefined, 'Last 3 Payslips (if available)'), captures: 3 },
-            ];
-        } else if (contractType === 'other' || situation === 'other') {
-            return [
-                { value: 'tax_return', label: t('docs.tax_return', undefined, 'Latest Tax Return'), captures: 1 },
+                { value: 'tax_return', label: t('docs.tax_return', undefined, 'Latest Tax Return'), captures: 1, recommended: true },
+                { value: 'pension', label: t('docs.pension', undefined, 'Pension / Retirement Proof'), captures: 1, recommended: situation === 'family_stability' },
                 { value: 'benefits', label: t('docs.benefits', undefined, 'Social / Family Benefits'), captures: 1 },
-                { value: 'pension', label: t('docs.pension', undefined, 'Pension Proof'), captures: 1 },
                 { value: 'foreign_tax_return', label: t('docs.foreign_tax', undefined, 'Foreign Tax Return'), captures: 1 },
             ];
         }
@@ -158,9 +182,16 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                 { value: 'residence_permit', label: t('docs.residence_permit', undefined, 'Residence Permit / Receipt'), captures: 2 },
             ];
         } else if (verificationType === 'property') {
+            const landlordPrefs = user?.preferences?.landlord || {};
+            const isProfessional = landlordPrefs.property_count === '5_100' || landlordPrefs.property_count === '100_plus';
+
             return [
-                { value: 'property_deed', label: t('docs.property_deed', undefined, 'Property Deed (Titre de propriété)'), captures: 1 },
-                { value: 'property_tax_notice', label: t('docs.property_tax_notice', undefined, 'Property Tax Notice (Taxe foncière)'), captures: 1 },
+                { value: 'property_deed', label: t('docs.property_deed', undefined, 'Property Deed (Titre de propriété)'), captures: 1, recommended: !isProfessional },
+                { value: 'property_tax_notice', label: t('docs.property_tax_notice', undefined, 'Property Tax Notice (Taxe foncière)'), captures: 1, recommended: true },
+                ...(isProfessional ? [
+                    { value: 'kbis', label: t('docs.company_kbis', undefined, 'Company Kbis (Professional Landlord)'), captures: 1, recommended: true },
+                    { value: 'management_mandate', label: t('docs.management_mandate', undefined, 'Management Mandate (for Agencies)'), captures: 1 }
+                ] : []),
             ];
         }
         return getEmploymentDocumentTypes();
@@ -343,7 +374,21 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-12 max-w-2xl mx-auto">
-                <motion.div variants={itemVariants} className="glass-card !p-10 border-none shadow-2xl">
+                <motion.div variants={itemVariants} className="glass-card !p-10 border-none shadow-2xl relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-teal-500/5 rounded-bl-full" />
+                    <div className="mb-8">
+                        <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 block mb-2">
+                            {t('dashboard.verification.verification.steps.detectedProfile', undefined, 'Current Profile Situation')}
+                        </label>
+                        <p className="text-sm font-black text-teal-600 dark:text-teal-400 uppercase tracking-widest">
+                            {(() => {
+                                const rolePrefs = user?.preferences?.[user?.role === 'tenant' ? 'tenant' : 'landlord'] || user?.preferences || {};
+                                const situation = rolePrefs.situation || rolePrefs.contract_type || rolePrefs.property_count || 'Standard';
+                                return situation.replace(/_/g, ' ');
+                            })()}
+                        </p>
+                    </div>
+
                     <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 block mb-6">
                         {t('dashboard.verification.verification.steps.selectType', undefined, '1. Select Document Type')}
                     </label>
@@ -354,7 +399,11 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                         required
                     >
                         <option value="">{t('dashboard.verification.verification.actions.chooseDoc', undefined, 'Choose a document...')}</option>
-                        {documentTypes.map((type) => <option key={type.value} value={type.value}>{type.label}</option>)}
+                        {documentTypes.map((type) => (
+                            <option key={type.value} value={type.value}>
+                                {type.label} {(type as any).recommended ? ` (${t('common.recommended', undefined, 'Recommended for your profile')})` : ''}
+                            </option>
+                        ))}
                     </select>
                 </motion.div>
 

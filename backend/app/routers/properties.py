@@ -150,7 +150,7 @@ async def list_properties(
             filters.append(Property.amenities.contains([amenity]))
 
     # Default behavior for landlords/team members: show properties they own or are members of
-    role_val = current_user.role.value if current_user and hasattr(current_user.role, "value") else (current_user.role if current_user else None)
+    role_val = current_user.role.value if current_user and hasattr(current_user.role, "value") else (str(current_user.role) if current_user else None)
     is_management_role = role_val in ["landlord", "property_manager", "admin"]
     
     if is_management_role and not landlord_id:
@@ -159,19 +159,21 @@ async def list_properties(
             from app.models.team import InviteStatus, TeamMember, TeamMemberProperty
             
             # Subquery for properties via team membership
+            # Use .value for enum comparison to ensure compatibility with Postgres native enums
+            active_status_val = InviteStatus.ACTIVE.value if hasattr(InviteStatus.ACTIVE, "value") else str(InviteStatus.ACTIVE)
+            
             team_prop_subquery = (
                 select(TeamMemberProperty.property_id)
                 .join(TeamMember, TeamMember.id == TeamMemberProperty.team_member_id)
                 .where(
                     and_(
                         TeamMember.member_user_id == current_user.id,
-                        TeamMember.status == InviteStatus.ACTIVE
+                        TeamMember.status == active_status_val
                     )
                 )
             ).subquery()
             
             # Filter for properties where user is either the landlord or an active team member
-            # Note: We use .value for enum comparison to be safe with some async drivers
             filters.append(
                 and_(
                     (Property.landlord_id == current_user.id) | (Property.id.in_(team_prop_subquery)),
@@ -179,11 +181,9 @@ async def list_properties(
                 )
             )
         except Exception as e:
-            logger.error(f"Error in management role filter for user {getattr(current_user, 'id', 'unknown')}: {e}", exc_info=True)
+            logger.error(f"CRITICAL: Error in management role filter for user {getattr(current_user, 'id', 'unknown')}: {e}", exc_info=True)
             # Fallback to just active properties to avoid total crash
-            filters.append(Property.status == "active")
-            if landlord_id:
-                filters.append(Property.landlord_id == landlord_id)
+            filters.append(Property.status == (status if status else "active"))
     elif landlord_id:
         filters.append(Property.landlord_id == landlord_id)
     elif status:
