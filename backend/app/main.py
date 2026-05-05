@@ -93,6 +93,9 @@ async def add_security_headers(request: Request, call_next):
     # 'unsafe-none' is used to avoid postMessage blocks with Google Identity Services.
     # Note: 'FrameDoesNotExistError' console noise is extension-related and can be ignored.
     response.headers["Cross-Origin-Opener-Policy"] = "unsafe-none"
+    response.headers["Cross-Origin-Embedder-Policy"] = "unsafe-none"
+    response.headers["Cross-Origin-Resource-Policy"] = "cross-origin"
+    
     # Additional security headers
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
@@ -126,6 +129,8 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
             "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With, Accept, Language",
             "Access-Control-Allow-Credentials": "true",
             "Cross-Origin-Opener-Policy": "unsafe-none",
+            "Cross-Origin-Embedder-Policy": "unsafe-none",
+            "Cross-Origin-Resource-Policy": "cross-origin",
         }
     )
 
@@ -162,6 +167,8 @@ async def global_exception_handler(request: Request, exc: Exception):
             "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With, Accept, Language",
             "Access-Control-Allow-Credentials": "true",
             "Cross-Origin-Opener-Policy": "unsafe-none",
+            "Cross-Origin-Embedder-Policy": "unsafe-none",
+            "Cross-Origin-Resource-Policy": "cross-origin",
         }
     )
 
@@ -361,7 +368,9 @@ class CORSSafetyNet:
                     (b"access-control-allow-methods", b"GET, POST, PUT, DELETE, OPTIONS, PATCH"),
                     (b"access-control-allow-headers", b"Content-Type, Authorization, X-Requested-With, Accept, Language"),
                     (b"access-control-allow-credentials", b"true"),
-                    (b"cross-origin-opener-policy", b"unsafe-none"), # Ensure compatibility for GSI in error states
+                    (b"cross-origin-opener-policy", b"unsafe-none"),
+                    (b"cross-origin-embedder-policy", b"unsafe-none"),
+                    (b"cross-origin-resource-policy", b"cross-origin"),
                 ]
                 
                 # Sanitize error message for JSON
