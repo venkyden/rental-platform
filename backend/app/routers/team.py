@@ -99,10 +99,10 @@ async def get_team_members(
     current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
 ):
     """Get all team members for the current landlord."""
-    if current_user.role != UserRole.LANDLORD:
+    if current_user.role not in [UserRole.LANDLORD, UserRole.PROPERTY_MANAGER, UserRole.ADMIN]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only landlords can manage team members",
+            detail="Only landlords or managers can manage team members",
         )
 
     result = await db.execute(
@@ -214,10 +214,10 @@ async def invite_team_member(
     db: AsyncSession = Depends(get_db),
 ):
     """Invite a new team member by email."""
-    if current_user.role != UserRole.LANDLORD:
+    if current_user.role not in [UserRole.LANDLORD, UserRole.PROPERTY_MANAGER, UserRole.ADMIN]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only landlords can invite team members",
+            detail="Only landlords or managers can invite team members",
         )
 
     # Map permission string to enum

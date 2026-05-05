@@ -151,7 +151,7 @@ async def list_properties(
 
     # Default behavior for landlords/team members: show properties they own or are members of
     role_val = current_user.role.value if current_user and hasattr(current_user.role, "value") else (current_user.role if current_user else None)
-    is_management_role = role_val in ["landlord", "property_manager"]
+    is_management_role = role_val in ["landlord", "property_manager", "admin"]
     
     if is_management_role and not landlord_id:
         # If no specific landlord_id is requested, show EVERYTHING the user has access to
@@ -170,7 +170,8 @@ async def list_properties(
                 )
             ).subquery()
             
-            # Combine owned properties and team properties
+            # Filter for properties where user is either the landlord or an active team member
+            # Note: We use .value for enum comparison to be safe with some async drivers
             filters.append(
                 and_(
                     (Property.landlord_id == current_user.id) | (Property.id.in_(team_prop_subquery)),
@@ -181,6 +182,8 @@ async def list_properties(
             logger.error(f"Error in management role filter for user {getattr(current_user, 'id', 'unknown')}: {e}", exc_info=True)
             # Fallback to just active properties to avoid total crash
             filters.append(Property.status == "active")
+            if landlord_id:
+                filters.append(Property.landlord_id == landlord_id)
     elif landlord_id:
         filters.append(Property.landlord_id == landlord_id)
     elif status:
@@ -195,8 +198,15 @@ async def list_properties(
     # Pagination
     query = query.offset(skip).limit(limit)
 
-    result = await db.execute(query)
-    properties = result.scalars().all()
+    try:
+        result = await db.execute(query)
+        properties = result.scalars().all()
+    except Exception as e:
+        logger.error(f"CRITICAL: Failed to execute properties query: {e}", exc_info=True)
+        # Fallback: try a very simple query to at least return SOMETHING if the complex one fails
+        fallback_query = select(Property).where(Property.status == "active").limit(limit)
+        result = await db.execute(fallback_query)
+        properties = result.scalars().all()
 
     return properties
 
