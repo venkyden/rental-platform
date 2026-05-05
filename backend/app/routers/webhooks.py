@@ -16,6 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.models.user import User
 from app.services.email import email_service
+from app.core.config import settings
 
 router = APIRouter(prefix="/webhooks", tags=["Webhooks"])
 

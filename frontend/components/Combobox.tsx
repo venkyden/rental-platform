@@ -15,7 +15,7 @@ interface Option {
 interface ComboboxProps {
     options: Option[];
     value: string;
-    onChange: (value: string) => void;
+    onChangeAction: (value: string) => void;
     placeholder?: string;
     label?: string;
     error?: string;
@@ -25,7 +25,7 @@ interface ComboboxProps {
 export default function Combobox({
     options,
     value,
-    onChange,
+    onChangeAction,
     placeholder,
     label,
     error,
@@ -74,7 +74,7 @@ export default function Combobox({
     }, []);
 
     const handleSelect = (optionValue: string) => {
-        onChange(optionValue);
+        onChangeAction(optionValue);
         setIsOpen(false);
         setSearchTerm('');
     };

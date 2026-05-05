@@ -130,7 +130,7 @@ export default function QuestionRenderer({
                         <Combobox
                             options={question.selectOptions || []}
                             value={responses[question.id] || ''}
-                            onChange={(val) => onAnswer(val)}
+                            onChangeAction={(val) => onAnswer(val)}
                             placeholder={t('common.placeholders.selectOption')}
                         />
                     </div>
@@ -149,7 +149,7 @@ export default function QuestionRenderer({
                         <Combobox
                             options={universityOptions}
                             value="" // Reset after each selection logic
-                            onChange={(val) => {
+                            onChangeAction={(val) => {
                                 if (val === 'other|other|other') {
                                     setShowManualUniversityInput(true);
                                 } else {
