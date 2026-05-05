@@ -54,6 +54,31 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
     const [qrLoading, setQrLoading] = useState(false);
     const pollRef = useRef<NodeJS.Timeout | null>(null);
 
+    // Property verification state
+    const [properties, setProperties] = useState<any[]>([]);
+    const [selectedPropertyId, setSelectedPropertyId] = useState(propertyId || '');
+    const [loadingProps, setLoadingProps] = useState(false);
+
+    useEffect(() => {
+        if (verificationType === 'property' && !propertyId) {
+            const fetchProps = async () => {
+                setLoadingProps(true);
+                try {
+                    const data = await apiClient.getProperties();
+                    setProperties(data);
+                    if (data.length === 1) {
+                        setSelectedPropertyId(data[0].id);
+                    }
+                } catch (err) {
+                    console.error('Failed to fetch properties', err);
+                } finally {
+                    setLoadingProps(false);
+                }
+            };
+            fetchProps();
+        }
+    }, [verificationType, propertyId]);
+
     useEffect(() => {
         setIsMobile(isMobileDevice());
     }, []);
@@ -118,8 +143,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
 
     const getEmploymentDocumentTypes = () => {
         // Handle the new role-based structure (user.preferences.tenant) or legacy flat structure
-        const rolePrefs = user?.preferences?.tenant || 
-                         (user?.preferences?.landlord ? null : user?.preferences) || {};
+        const rolePrefs = user?.preferences?.[user?.role === 'tenant' ? 'tenant' : 'landlord'] || user?.preferences || {};
         
         const contractType = rolePrefs?.contract_type;
         const situation = rolePrefs?.situation;
@@ -230,12 +254,20 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                 const endpoint = verificationType === 'identity' ? '/verification/identity/upload' : verificationType === 'property' ? '/verification/property/upload' : '/verification/employment/upload';
                 await apiClient.client.post(endpoint, formData, {
                     headers: { 'Content-Type': 'multipart/form-data' },
-                    params: { document_type: documentType, ...(verificationType === 'property' && { property_id: propertyId }) }
+                    params: { document_type: documentType, ...(verificationType === 'property' && { property_id: selectedPropertyId }) }
                 });
             }
             onSuccessAction();
         } catch (err: any) {
-            setError(err.response?.data?.detail || 'Upload failed. Please try again.');
+            const detail = err.response?.data?.detail;
+            const errorMessage = typeof detail === 'string' 
+                ? detail 
+                : Array.isArray(detail) 
+                    ? detail[0]?.msg || 'Validation error' 
+                    : typeof detail === 'object' && detail !== null
+                        ? detail.msg || JSON.stringify(detail)
+                        : 'Upload failed. Please try again.';
+            setError(errorMessage);
         } finally {
             setUploading(false);
         }
@@ -382,6 +414,32 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                 >
                     <motion.div variants={itemVariants} className="glass-card !p-10 border-none shadow-2xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-teal-500/5 rounded-bl-full" />
+                    
+                    {verificationType === 'property' && !propertyId && (
+                        <div className="mb-8">
+                            <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 block mb-2">
+                                {loadingProps ? 'Loading properties...' : 'Select Property'}
+                            </label>
+                            {properties.length > 0 ? (
+                                <select
+                                    value={selectedPropertyId}
+                                    onChange={(e) => setSelectedPropertyId(e.target.value)}
+                                    required
+                                    className="w-full bg-zinc-50 dark:bg-zinc-900 border-none rounded-2xl px-6 py-4 text-sm font-medium focus:ring-2 focus:ring-teal-500/20 transition-all outline-none appearance-none"
+                                >
+                                    <option value="">Choose a property...</option>
+                                    {properties.map((p) => (
+                                        <option key={p.id} value={p.id}>{p.title} - {p.city}</option>
+                                    ))}
+                                </select>
+                            ) : !loadingProps && (
+                                <p className="text-xs text-red-500 font-medium">
+                                    No properties found. Please add a property first.
+                                </p>
+                            )}
+                        </div>
+                    )}
+
                     <div className="mb-8">
                         <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 block mb-2">
                             {t('dashboard.verification.verification.steps.detectedProfile', undefined, 'Current Profile Situation')}
@@ -389,8 +447,14 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                         <p className="text-sm font-black text-teal-600 dark:text-teal-400 uppercase tracking-widest">
                             {(() => {
                                 const rolePrefs = user?.preferences?.[user?.role === 'tenant' ? 'tenant' : 'landlord'] || user?.preferences || {};
-                                const situation = rolePrefs.situation || rolePrefs.contract_type || rolePrefs.property_count || 'Standard';
-                                return situation.replace(/_/g, ' ');
+                                const value = rolePrefs.situation || rolePrefs.contract_type || rolePrefs.property_count || 'Standard';
+                                
+                                // Format property count values into readable ranges
+                                if (value === '1_4') return '1 - 4 Properties';
+                                if (value === '5_100') return '5 - 100 Properties';
+                                if (value === '100_plus') return '100+ Properties';
+                                
+                                return typeof value === 'string' ? value.replace(/_/g, ' ') : String(value);
                             })()}
                         </p>
                     </div>

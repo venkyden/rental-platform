@@ -240,6 +240,11 @@ class ApiClient {
         const response = await this.client.put('/onboarding/preferences', { responses });
         return response.data;
     }
+
+    async getProperties(params: Record<string, any> = {}) {
+        const response = await this.client.get('/properties', { params });
+        return response.data;
+    }
 }
 
 export const apiClient = new ApiClient();
