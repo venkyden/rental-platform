@@ -1895,8 +1895,15 @@ export const translations = {
             view: "Voir",
             error: {
                 enterName: "Veuillez entrer votre nom complet pour continuer.",
-                savingName: "Échec de l'enregistrement du nom. Veuillez réessayer."
+                savingName: "Échec de l'enregistrement du nom. Veuillez réessayer.",
+                acceptTerms: "Veuillez accepter la politique de confidentialité et les conditions d'utilisation pour continuer."
             },
+            roleSelection: "Je suis...",
+            roleDesc: "Sélectionnez votre rôle principal pour personnaliser votre expérience.",
+            termsLabel: "J'accepte la",
+            and: "et les",
+            privacyPolicy: "Politique de Confidentialité",
+            termsOfService: "Conditions d'Utilisation",
             title: "Bienvenue sur Roomivo",
             back: "Retour",
             continue: "Continuer",
