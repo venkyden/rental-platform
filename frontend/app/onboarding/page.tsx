@@ -10,6 +10,7 @@ import RoomivoBrand from '@/components/RoomivoBrand';
 import { useAuth } from '@/lib/useAuth';
 import { useLanguage } from '@/lib/LanguageContext';
 import PremiumLayout from '@/components/PremiumLayout';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 export default function OnboardingPage() {
     const [step, setStep] = useState<'welcome' | 'questionnaire'>('welcome');
@@ -68,6 +69,11 @@ export default function OnboardingPage() {
                     <div className="absolute inset-0 z-0">
                         <div className="absolute top-0 w-full h-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-teal-50/50 via-slate-50 to-white dark:from-teal-900/20 dark:via-zinc-950 dark:to-zinc-950"></div>
                         <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-10"></div>
+                    </div>
+
+                    {/* Language Switcher - Floating */}
+                    <div className="absolute top-8 right-8 z-50">
+                        <LanguageSwitcher />
                     </div>
 
                     <motion.div
@@ -173,7 +179,14 @@ export default function OnboardingPage() {
     }
 
     if (step === 'questionnaire') {
-        return <OnboardingQuestionnaire userType={userType} onComplete={handleComplete} />;
+        return (
+            <PremiumLayout withNavbar={false}>
+                <div className="absolute top-8 right-8 z-50">
+                    <LanguageSwitcher />
+                </div>
+                <OnboardingQuestionnaire userType={userType} onComplete={handleComplete} />
+            </PremiumLayout>
+        );
     }
 
     return null;

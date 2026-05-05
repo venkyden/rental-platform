@@ -152,7 +152,7 @@ export default function QuestionRenderer({
                             onChangeAction={(val) => {
                                 if (val === 'other|other|other') {
                                     setShowManualUniversityInput(true);
-                                } else {
+                                } else if (val && typeof val === 'string' && val.includes('|')) {
                                     const [uniId, city, label] = val.split('|');
                                     setShowManualUniversityInput(false);
                                     onAnswer({ 

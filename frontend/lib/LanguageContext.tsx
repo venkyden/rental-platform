@@ -28,6 +28,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     };
 
     const t = (key: string, params?: Record<string, string | number>, fallback?: string): string => {
+        if (!key || typeof key !== 'string') return fallback || '';
         const keys = key.split('.');
         let value: any = translations[language];
 
