@@ -29,7 +29,7 @@ export default function VerificationPage() {
     const { user } = useAuth();
     const { t } = useLanguage();
     const router = useRouter();
-    const [activeTab, setActiveTab] = useState<'identity' | 'employment'>('identity');
+    const [activeTab, setActiveTab] = useState<'identity' | 'employment' | 'property'>('identity');
     const [refreshKey, setRefreshKey] = useState(0);
 
     if (!user) return null;
@@ -179,7 +179,9 @@ export default function VerificationPage() {
                             <div className="flex flex-wrap gap-4">
                                 {[
                                     { id: 'identity', label: t('dashboard.verification.verification.tabs.identity', undefined, 'Identity Verification') },
-                                    { id: 'employment', label: t('dashboard.verification.verification.tabs.employment', undefined, 'Employment Verification') }
+                                    (user.role === 'landlord' || user.role === 'property_manager')
+                                        ? { id: 'property', label: t('dashboard.verification.verification.tabs.property', undefined, 'Ownership Verification') }
+                                        : { id: 'employment', label: t('dashboard.verification.verification.tabs.employment', undefined, 'Employment Verification') }
                                 ].map((tab) => (
                                     <button
                                         key={tab.id}
@@ -247,6 +249,15 @@ export default function VerificationPage() {
                                             </p>
                                         </div>
                                     )
+                                )}
+
+                                {activeTab === 'property' && (
+                                    <VerificationUpload
+                                        key={`property-${refreshKey}`}
+                                        verificationType="property"
+                                        onSuccessAction={handleSuccess}
+                                        user={user}
+                                    />
                                 )}
                             </motion.div>
                         </div>

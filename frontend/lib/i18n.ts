@@ -334,7 +334,10 @@ export const translations = {
                             exploring: "Just exploring for now"
                         }
                     },
-                    property_location: { question: "Where is your property located?" },
+                    property_location: { 
+                        question: "Where is your property located?",
+                        description: "Enter the full address to verify ownership and synchronize with local tax registers."
+                    },
                     rooms: {
                         question: "How many rooms?",
                         options: { studio: "Studio", "1_bed": "1 Bedroom", "2_bed": "2 Bedrooms", "3_plus": "3+ Bedrooms" }
@@ -484,7 +487,8 @@ export const translations = {
                     sending: "Sending...",
                     tabs: {
                         identity: "Identity Verification",
-                        employment: "Employment Verification"
+                        employment: "Employment Verification",
+                        property: "Ownership Verification"
                     },
                     identityTitle: "Identity Verification",
                     propertyTitle: "Ownership Verification",
@@ -2044,7 +2048,10 @@ export const translations = {
                             exploring: "J'explore juste pour le moment"
                         }
                     },
-                    property_location: { question: "Où est situé votre bien ?" },
+                    property_location: { 
+                        question: "Où est situé votre bien ?",
+                        description: "Saisissez l'adresse complète pour vérifier la propriété et synchroniser avec les registres cadastraux."
+                    },
                     rooms: {
                         question: "Combien de pièces ?",
                         options: { studio: "Studio", "1_bed": "T2 (1 chambre)", "2_bed": "T3 (2 chambres)", "3_plus": "T4+ (3+ chambres)" }
@@ -2192,7 +2199,8 @@ export const translations = {
                     sending: "Envoi...",
                     tabs: {
                         identity: "Vérification d'Identité",
-                        employment: "Vérification d'Emploi"
+                        employment: "Vérification d'Emploi",
+                        property: "Vérification de Propriété"
                     },
                     identityTitle: "Vérification d'Identité",
                     propertyTitle: "Vérification de Propriété",

@@ -117,9 +117,10 @@ async def list_properties(
         # Total rent: for CC, charges already in monthly_rent; for HC, add charges
         from sqlalchemy import case
 
+        from decimal import Decimal
         total_rent = Property.monthly_rent + case(
-            [(Property.charges_included == True, 0)],
-            else_=func.coalesce(Property.charges, 0),
+            [(Property.charges_included == True, Decimal("0"))],
+            else_=func.coalesce(Property.charges, Decimal("0")),
         )
         if min_rent:
             filters.append(total_rent >= min_rent)
@@ -158,25 +159,27 @@ async def list_properties(
         try:
             from app.models.team import InviteStatus, TeamMember, TeamMemberProperty
             
-            # Subquery for properties via team membership
-            # Use .value for enum comparison to ensure compatibility with Postgres native enums
-            active_status_val = InviteStatus.ACTIVE.value if hasattr(InviteStatus.ACTIVE, "value") else str(InviteStatus.ACTIVE)
+            from sqlalchemy import or_
             
+            # Subquery for properties via team membership
+            # Using the Enum member directly is more robust with SQLAlchemy 2.0 and native enums
             team_prop_subquery = (
                 select(TeamMemberProperty.property_id)
                 .join(TeamMember, TeamMember.id == TeamMemberProperty.team_member_id)
                 .where(
                     and_(
                         TeamMember.member_user_id == current_user.id,
-                        TeamMember.status == active_status_val
+                        TeamMember.status == InviteStatus.ACTIVE
                     )
                 )
-            ).subquery()
-            
-            # Filter for properties where user is either the landlord or an active team member
+            )
+
             filters.append(
                 and_(
-                    (Property.landlord_id == current_user.id) | (Property.id.in_(team_prop_subquery)),
+                    or_(
+                        Property.landlord_id == current_user.id,
+                        Property.id.in_(team_prop_subquery)
+                    ),
                     Property.status == (status if status else "active")
                 )
             )

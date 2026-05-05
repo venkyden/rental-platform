@@ -441,8 +441,8 @@ export function getLandlordQuestions(): Question[] {
             emoji: '',
             type: 'range',
             min: 9,
-            max: 200,
-            step: 5,
+            max: 500,
+            step: 1,
             unit: 'm²',
         },
         {

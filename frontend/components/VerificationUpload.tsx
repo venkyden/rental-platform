@@ -167,7 +167,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
         }
         
         return [
-            { value: 'payslip', label: t('docs.payslip', undefined, 'Last 3 Payslips'), captures: 3 },
+            { value: 'payslip', label: t('docs.payslip', undefined, 'Last 3 Payslips'), captures: 3, recommended: true },
             { value: 'contract', label: t('docs.contract', undefined, 'Employment Contract / Certificate'), captures: 1 },
             { value: 'tax_return', label: t('docs.tax_return', undefined, 'Latest Tax Return'), captures: 1 },
         ];
@@ -374,7 +374,13 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-12 max-w-2xl mx-auto">
-                <motion.div variants={itemVariants} className="glass-card !p-10 border-none shadow-2xl relative overflow-hidden">
+                <motion.div 
+                    initial="hidden"
+                    animate="show"
+                    variants={containerVariants}
+                    className="space-y-12"
+                >
+                    <motion.div variants={itemVariants} className="glass-card !p-10 border-none shadow-2xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-teal-500/5 rounded-bl-full" />
                     <div className="mb-8">
                         <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 block mb-2">
@@ -471,6 +477,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                         ? t('dashboard.verification.verification.actions.securing', undefined, 'Securing Document...') 
                         : t('dashboard.verification.verification.actions.submit', undefined, 'Submit for Verification')}
                 </motion.button>
+                </motion.div>
             </form>
         </div>
     );
