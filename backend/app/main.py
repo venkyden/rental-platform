@@ -51,6 +51,17 @@ except ImportError:
     RATE_LIMITING_ENABLED = False
 
 # ------------------------------------------------------------------
+# Encryption & Privacy
+# ------------------------------------------------------------------
+from app.utils.encryption import encryption_service
+if encryption_service.mode == "secure":
+    logger.info("🔐 Encryption Service: SECURE (MASTER_ENCRYPTION_KEY set)")
+elif encryption_service.mode == "fallback":
+    logger.warning("⚠️ Encryption Service: FALLBACK (Deriving from SECRET_KEY). Set MASTER_ENCRYPTION_KEY for production.")
+else:
+    logger.critical("🚨 Encryption Service: EPHEMERAL (Keys will change on restart). DATA LOSS IMMINENT.")
+
+# ------------------------------------------------------------------
 # FastAPI app
 # ------------------------------------------------------------------
 fastapi_app = FastAPI(

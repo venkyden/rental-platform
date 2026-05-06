@@ -9,28 +9,40 @@ logger = logging.getLogger(__name__)
 
 class EncryptionService:
     def __init__(self):
-        # We try to get the key from environment or settings
-        # If it doesn't exist, we fallback to SECRET_KEY (which is better than nothing, 
-        # but Fernet requires a specific 32-byte base64 encoded key)
-        key = os.getenv("MASTER_ENCRYPTION_KEY")
+        from app.core.config import settings
+        import base64
+        import hashlib
+        
+        # Priority 1: settings.MASTER_ENCRYPTION_KEY (Explicitly set in .env or environment)
+        key = settings.MASTER_ENCRYPTION_KEY
         
         if not key:
-            # Generate a stable key from SECRET_KEY if possible, or warn
-            from app.core.config import settings
-            import base64
-            import hashlib
-            
-            # Deterministically derive a 32-byte key from SECRET_KEY
+            # Priority 2: OS Environment (legacy/direct override)
+            key = os.getenv("MASTER_ENCRYPTION_KEY")
+        
+        if not key:
+            # Fallback: Deterministically derive a 32-byte key from SECRET_KEY
+            # This ensures stable encryption/decryption in dev even if no key is set.
+            # However, we warn the user as this is less secure.
             h = hashlib.sha256(settings.SECRET_KEY.encode()).digest()
             key = base64.urlsafe_b64encode(h).decode()
-            logger.warning("⚠️ MASTER_ENCRYPTION_KEY not set. Deriving from SECRET_KEY.")
+            logger.warning("⚠️ MASTER_ENCRYPTION_KEY not set. Deriving from SECRET_KEY (Dev mode).")
+            self.mode = "fallback"
+        else:
+            self.mode = "secure"
             
         try:
             self.fernet = Fernet(key.encode())
         except Exception as e:
             logger.error(f"❌ Failed to initialize Fernet: {e}")
-            # Final fallback: generate a random one (DANGEROUS for persistence)
+            # Absolute last resort: generate a random one (Warning: Data will be lost on restart!)
             self.fernet = Fernet(Fernet.generate_key())
+            self.mode = "ephemeral"
+
+    @staticmethod
+    def generate_key() -> str:
+        """Utility to generate a secure 32-byte Base64 encoded key for MASTER_ENCRYPTION_KEY"""
+        return Fernet.generate_key().decode()
 
     def encrypt_json(self, data: Dict[str, Any]) -> str:
         if data is None:
