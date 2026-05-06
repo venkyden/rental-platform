@@ -13,6 +13,9 @@ import sqlalchemy
 import os
 import sys
 url = os.getenv('DATABASE_URL').replace('postgres://', 'postgresql://', 1)
+# Ensure we use a synchronous driver for the pre-flight check
+if '+asyncpg' in url:
+    url = url.replace('+asyncpg', '')
 engine = sqlalchemy.create_engine(url)
 try:
     with engine.connect() as conn:

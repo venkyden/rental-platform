@@ -48,11 +48,17 @@ class CacheLayer:
             # Retry once for transient DNS issues (common on cold starts)
             for attempt in range(2):
                 try:
+                    # Handle SSL certificate verification (common issue in local dev environments)
+                    ssl_kwargs = {}
+                    if redis_url.startswith("rediss://"):
+                        ssl_kwargs["ssl_cert_reqs"] = None
+                        
                     self.redis_client = redis.Redis.from_url(
                         redis_url,
                         decode_responses=True,
                         socket_timeout=5,
                         socket_connect_timeout=5,
+                        **ssl_kwargs
                     )
                     # Test connection
                     self.redis_client.ping()

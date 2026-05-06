@@ -144,12 +144,12 @@ class CloudStorageService:
             )
             logger.info(f"✅ CORS configured on bucket '{self.bucket_name}'")
         except Exception as e:
-            logger.warning(
-                f"⚠️ Could not set CORS on bucket programmatically: {e}. "
-                f"This is expected if your R2 API token lacks 'Admin' permissions. "
-                f"To fix: configure CORS manually in Cloudflare Dashboard → "
-                f"R2 → {self.bucket_name} → Settings → CORS Policy."
-            )
+            # If it's an AccessDenied error, it means the token isn't an Admin token.
+            # Since we've advised manual configuration, we can log this as INFO or DEBUG.
+            if "AccessDenied" in str(e):
+                logger.info(f"ℹ️ Note: Bucket CORS is managed manually (AccessDenied for programmatic update).")
+            else:
+                logger.warning(f"⚠️ Could not set CORS on bucket programmatically: {e}.")
 
     def _generate_key(self, filename: str, folder: str = "uploads") -> str:
         """Generate unique storage key"""
