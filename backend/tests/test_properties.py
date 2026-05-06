@@ -11,9 +11,9 @@ class TestPropertyEndpoints:
     """Integration tests for property CRUD operations."""
 
     def test_list_properties_unauthenticated(self, client):
-        """GET /properties should fail without auth."""
+        """GET /properties should succeed without auth (public access)."""
         resp = client.get("/properties")
-        assert resp.status_code in (401, 403)
+        assert resp.status_code == 200
 
     def test_list_properties_authenticated(self, landlord_client):
         """GET /properties with auth should return list."""

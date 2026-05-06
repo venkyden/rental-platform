@@ -1,6 +1,7 @@
 import logging
 import httpx
 import html
+import uuid
 from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
@@ -98,8 +99,9 @@ async def register(
     request: Request, user_data: UserRegister, db: AsyncSession = Depends(get_db)
 ):
     """Register a new user"""
+    client_host = request.client.host if request.client else "unknown"
     audit_logger.info(
-        f"REGISTER_ATTEMPT email={user_data.email} ip={request.client.host}"
+        f"REGISTER_ATTEMPT email={user_data.email} ip={client_host}"
     )
     # Check if user exists
     result = await db.execute(select(User).where(User.email == user_data.email))
@@ -113,6 +115,7 @@ async def register(
     # Create new user
     hashed_password = get_password_hash(user_data.password)
     new_user = User(
+        id=uuid.uuid4(),
         email=user_data.email,
         hashed_password=hashed_password,
         full_name=html.escape(user_data.full_name.strip()) if user_data.full_name else None,
@@ -121,6 +124,12 @@ async def register(
         available_roles=[user_data.role],
         marketing_consent=user_data.marketing_consent,
         marketing_consent_at=datetime.utcnow() if user_data.marketing_consent else None,
+        email_verified=False,
+        identity_verified=False,
+        employment_verified=False,
+        trust_score=0,
+        onboarding_status={},
+        onboarding_completed=False,
     )
 
     db.add(new_user)
@@ -151,8 +160,9 @@ async def login(
     db: AsyncSession = Depends(get_db),
 ):
     """Login and get JWT token"""
+    client_host = request.client.host if request.client else "unknown"
     audit_logger.info(
-        f"LOGIN_ATTEMPT email={form_data.username} ip={request.client.host}"
+        f"LOGIN_ATTEMPT email={form_data.username} ip={client_host}"
     )
     # Find user
     result = await db.execute(select(User).where(User.email == form_data.username))
@@ -160,7 +170,7 @@ async def login(
 
     if not user or not user.hashed_password or not verify_password(form_data.password, user.hashed_password):
         audit_logger.warning(
-            f"LOGIN_FAILED email={form_data.username} ip={request.client.host}"
+            f"LOGIN_FAILED email={form_data.username} ip={client_host}"
         )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -600,15 +610,22 @@ async def google_auth(
     except HTTPException:
         raise
     except Exception as e:
+        import traceback
         tb = traceback.format_exc()
-        audit_logger.error(f"GOOGLE_AUTH_DB_ERROR email={email} error={e}\n{tb}")
+        audit_logger.error(f"GOOGLE_AUTH_DB_ERROR email={email} google_id={google_id} error={type(e).__name__}: {str(e)}\n{tb}")
         try:
             await db.rollback()
         except Exception:
             pass
+            
+        # Distinguish between schema issues and other errors
+        error_msg = "Account setup failed. Please try again."
+        if "column" in str(e).lower() or "relation" in str(e).lower():
+            error_msg = "Database schema mismatch. Please run migrations (alembic upgrade head)."
+            
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Account setup failed. Please try again.",
+            detail=error_msg,
         )
 
     # ---- Step 3: Create tokens and return ----
@@ -715,7 +732,8 @@ async def forgot_email(
         full_name=user.full_name or "User"
     )
 
-    audit_logger.info(f"FORGOT_EMAIL_SUCCESS masked_email={masked_email} ip={request.client.host}")
+    client_host = request.client.host if request.client else "unknown"
+    audit_logger.info(f"FORGOT_EMAIL_SUCCESS masked_email={masked_email} ip={client_host}")
 
     return {"message": "Account found and email reminder sent", "masked_email": masked_email}
 

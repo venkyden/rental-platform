@@ -20,8 +20,8 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from fastapi.testclient import TestClient
 
-from app.core.database import get_db
-from app.main import app
+from app.core.database import get_db, AsyncSessionLocal
+from app.main import app as main_app
 from app.models.user import UserRole
 from app.routers.auth import get_current_user
 
@@ -42,6 +42,8 @@ def make_mock_user(role: str = "tenant", email: str = "test@example.com"):
     user.employment_verified = False
     user.trust_score = 50
     user.segment = None
+    user.available_roles = ["tenant"]
+    user.onboarding_status = {}
     user.onboarding_completed = False
     user.nationality = None
     user.languages = None
@@ -50,7 +52,7 @@ def make_mock_user(role: str = "tenant", email: str = "test@example.com"):
     user.bio = None
     user.profile_picture_url = None
     user.created_at = datetime.utcnow()
-    user.preferences = None
+    user.preferences = {}
     user.contact_preferences = {"email_notifications": True}
     return user
 
@@ -75,13 +77,24 @@ def mock_get_db():
                 )
             ),
             scalar_one_or_none=MagicMock(return_value=None),
+            scalar=MagicMock(return_value="encrypted_mock_value"),
         )
     )
     mock_session.add = MagicMock()
     mock_session.commit = AsyncMock()
     mock_session.refresh = AsyncMock()
     mock_session.close = AsyncMock()
+    # Mocking context manager behavior for 'async with AsyncSessionLocal() as db'
+    mock_session.__aenter__ = AsyncMock(return_value=mock_session)
+    mock_session.__aexit__ = AsyncMock(return_value=None)
     yield mock_session
+
+# Create a stable mock session for direct AsyncSessionLocal() usage
+_mock_session_instance = next(mock_get_db())
+
+# Global override for direct AsyncSessionLocal() usage
+import app.core.database
+app.core.database.AsyncSessionLocal = MagicMock(return_value=_mock_session_instance)
 
 
 # ─── Fixtures ─────────────────────────────────────────────────────
@@ -90,38 +103,43 @@ def mock_get_db():
 @pytest.fixture
 def client():
     """TestClient with mocked DB, no auth."""
-    app.dependency_overrides[get_db] = mock_get_db
-    app.dependency_overrides.pop(get_current_user, None)
-    with TestClient(app) as c:
+    # Handle CORSSafetyNet wrapper if present
+    target_app = main_app.app if hasattr(main_app, 'app') else main_app
+    target_app.dependency_overrides[get_db] = mock_get_db
+    target_app.dependency_overrides.pop(get_current_user, None)
+    with TestClient(main_app) as c:
         yield c
-    app.dependency_overrides.clear()
+    target_app.dependency_overrides.clear()
 
 
 @pytest.fixture
 def tenant_client():
     """TestClient authenticated as a tenant."""
-    app.dependency_overrides[get_db] = mock_get_db
-    app.dependency_overrides[get_current_user] = lambda: MOCK_TENANT
-    with TestClient(app) as c:
+    target_app = main_app.app if hasattr(main_app, 'app') else main_app
+    target_app.dependency_overrides[get_db] = mock_get_db
+    target_app.dependency_overrides[get_current_user] = lambda: MOCK_TENANT
+    with TestClient(main_app) as c:
         yield c
-    app.dependency_overrides.clear()
+    target_app.dependency_overrides.clear()
 
 
 @pytest.fixture
 def landlord_client():
     """TestClient authenticated as a landlord."""
-    app.dependency_overrides[get_db] = mock_get_db
-    app.dependency_overrides[get_current_user] = lambda: MOCK_LANDLORD
-    with TestClient(app) as c:
+    target_app = main_app.app if hasattr(main_app, 'app') else main_app
+    target_app.dependency_overrides[get_db] = mock_get_db
+    target_app.dependency_overrides[get_current_user] = lambda: MOCK_LANDLORD
+    with TestClient(main_app) as c:
         yield c
-    app.dependency_overrides.clear()
+    target_app.dependency_overrides.clear()
 
 
 @pytest.fixture
 def admin_client():
     """TestClient authenticated as an admin."""
-    app.dependency_overrides[get_db] = mock_get_db
-    app.dependency_overrides[get_current_user] = lambda: MOCK_ADMIN
-    with TestClient(app) as c:
+    target_app = main_app.app if hasattr(main_app, 'app') else main_app
+    target_app.dependency_overrides[get_db] = mock_get_db
+    target_app.dependency_overrides[get_current_user] = lambda: MOCK_ADMIN
+    with TestClient(main_app) as c:
         yield c
-    app.dependency_overrides.clear()
+    target_app.dependency_overrides.clear()

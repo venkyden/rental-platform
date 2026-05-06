@@ -91,8 +91,7 @@ async def add_security_headers(request: Request, call_next):
         raise e
         
     # Allow Google Auth popups to communicate back to the window.
-    # 'unsafe-none' is used to avoid postMessage blocks with Google Identity Services.
-    # Note: 'FrameDoesNotExistError' console noise is extension-related and can be ignored.
+    # 'unsafe-none' is critical for window.postMessage with Google Identity Services.
     response.headers["Cross-Origin-Opener-Policy"] = "unsafe-none"
     response.headers["Cross-Origin-Embedder-Policy"] = "unsafe-none"
     response.headers["Cross-Origin-Resource-Policy"] = "cross-origin"
@@ -100,13 +99,15 @@ async def add_security_headers(request: Request, call_next):
     # Additional security headers
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
+    
+    # Optimized CSP for Google Identity Services (GSI)
     response.headers["Content-Security-Policy"] = (
         "default-src 'self'; "
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://cdn.jsdelivr.net; "
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://*.google.com https://cdn.jsdelivr.net; "
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; "
         "img-src 'self' data: https:; "
-        "connect-src 'self' https://accounts.google.com; "
-        "frame-src https://accounts.google.com;"
+        "connect-src 'self' https://accounts.google.com https://*.google.com; "
+        "frame-src https://accounts.google.com https://*.google.com;"
     )
     return response
 

@@ -40,6 +40,7 @@ class Token(BaseModel):
     redirect_path: Optional[str] = None
     segment: Optional[str] = None
     segment_name: Optional[str] = None
+    available_roles: list[str] = []
 
 
 class TokenData(BaseModel):
@@ -54,13 +55,13 @@ class UserResponse(BaseModel):
     bio: Optional[str] = None
     profile_picture_url: Optional[str] = None
     role: str
-    email_verified: bool
-    identity_verified: bool
-    employment_verified: bool
+    email_verified: bool = False
+    identity_verified: bool = False
+    employment_verified: bool = False
     ownership_verified: Optional[bool] = False
     kbis_verified: Optional[bool] = False
     carte_g_verified: Optional[bool] = False
-    trust_score: int
+    trust_score: int = 0
     segment: Optional[str] = None
     preferences: Optional[Dict[str, Any]] = None
     available_roles: list[str] = ["tenant"]
