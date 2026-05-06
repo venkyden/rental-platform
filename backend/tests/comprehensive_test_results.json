@@ -4,19 +4,19 @@
       "name": "Backend Health Check",
       "passed": true,
       "details": "Status: ok",
-      "timestamp": "2026-05-06T17:58:18.800904"
+      "timestamp": "2026-05-07T01:28:21.653829"
     },
     {
       "name": "API Documentation",
       "passed": true,
       "details": "",
-      "timestamp": "2026-05-06T17:58:18.801690"
+      "timestamp": "2026-05-07T01:28:21.655550"
     },
     {
       "name": "Root Endpoint",
       "passed": true,
       "details": "",
-      "timestamp": "2026-05-06T17:58:18.802798"
+      "timestamp": "2026-05-07T01:28:21.658091"
     }
   ],
   "functional": [
@@ -24,43 +24,43 @@
       "name": "User Registration",
       "passed": true,
       "details": "",
-      "timestamp": "2026-05-06T17:58:18.862401"
+      "timestamp": "2026-05-07T01:28:21.834701"
     },
     {
       "name": "User Login",
       "passed": true,
       "details": "",
-      "timestamp": "2026-05-06T17:58:18.907554"
+      "timestamp": "2026-05-07T01:28:21.883328"
     },
     {
       "name": "Profile Retrieval",
       "passed": true,
       "details": "",
-      "timestamp": "2026-05-06T17:58:18.911070"
+      "timestamp": "2026-05-07T01:28:21.885523"
     },
     {
       "name": "Identity Verification Start",
       "passed": true,
       "details": "Mock URL: https://identity.stripe.com/mock-verification?user...",
-      "timestamp": "2026-05-06T17:58:18.918099"
+      "timestamp": "2026-05-07T01:28:22.227055"
     },
     {
       "name": "Verification Status Check",
       "passed": true,
       "details": "",
-      "timestamp": "2026-05-06T17:58:18.922091"
+      "timestamp": "2026-05-07T01:28:22.234869"
     },
     {
       "name": "Property Listing (Public)",
       "passed": true,
       "details": "",
-      "timestamp": "2026-05-06T17:58:18.929552"
+      "timestamp": "2026-05-07T01:28:22.253086"
     },
     {
       "name": "Notifications Retrieval",
       "passed": true,
       "details": "",
-      "timestamp": "2026-05-06T17:58:18.940526"
+      "timestamp": "2026-05-07T01:28:22.263634"
     }
   ],
   "integration": [
@@ -68,47 +68,47 @@
       "name": "Landlord Account Creation",
       "passed": true,
       "details": "",
-      "timestamp": "2026-05-06T17:58:18.990122"
+      "timestamp": "2026-05-07T01:28:22.317229"
     },
     {
       "name": "Landlord Login",
       "passed": true,
       "details": "",
-      "timestamp": "2026-05-06T17:58:19.033945"
+      "timestamp": "2026-05-07T01:28:22.360888"
     },
     {
       "name": "E2E Property Flow",
       "passed": true,
       "details": "Skipped - requires verified identity",
-      "timestamp": "2026-05-06T17:58:19.033961"
+      "timestamp": "2026-05-07T01:28:22.360905"
     },
     {
       "name": "GLI Quote Generation",
       "passed": true,
       "details": "Premium: \u20ac24.0/mo",
-      "timestamp": "2026-05-06T17:58:19.039439"
+      "timestamp": "2026-05-07T01:28:22.684490"
     }
   ],
   "load": [
     {
       "name": "Concurrent Users (10)",
       "passed": true,
-      "details": "100% success in 0.01s",
-      "timestamp": "2026-05-06T17:58:19.235417"
+      "details": "100% success in 1.68s",
+      "timestamp": "2026-05-07T01:28:25.563532"
     },
     {
       "name": "Rate Limiter Active",
       "passed": true,
       "details": "429 Received",
-      "timestamp": "2026-05-06T17:58:19.330325"
+      "timestamp": "2026-05-07T01:28:25.780391"
     }
   ],
   "stress": [
     {
       "name": "Burst Load (50 reqs)",
       "passed": true,
-      "details": "200: 50, 429: 0, Errors: 0 in 0.05s",
-      "timestamp": "2026-05-06T17:58:19.379133"
+      "details": "200: 50, 429: 0, Errors: 0 in 8.60s",
+      "timestamp": "2026-05-07T01:28:34.383411"
     }
   ],
   "security": [
@@ -116,61 +116,61 @@
       "name": "SQL Injection Protection",
       "passed": true,
       "details": "Protected",
-      "timestamp": "2026-05-06T17:58:19.054013"
+      "timestamp": "2026-05-07T01:28:22.694737"
     },
     {
       "name": "XSS Input Sanitization",
       "passed": true,
       "details": "",
-      "timestamp": "2026-05-06T17:58:19.103037"
+      "timestamp": "2026-05-07T01:28:22.745739"
     },
     {
       "name": "Invalid JWT Rejection",
       "passed": true,
       "details": "HTTP 401",
-      "timestamp": "2026-05-06T17:58:19.103795"
+      "timestamp": "2026-05-07T01:28:22.746424"
     },
     {
       "name": "Tampered JWT Rejection",
       "passed": true,
       "details": "HTTP 401",
-      "timestamp": "2026-05-06T17:58:19.104839"
+      "timestamp": "2026-05-07T01:28:22.747457"
     },
     {
       "name": "IDOR Protection",
       "passed": true,
       "details": "HTTP 404",
-      "timestamp": "2026-05-06T17:58:19.105774"
+      "timestamp": "2026-05-07T01:28:22.748455"
     },
     {
       "name": "CORS Configuration",
       "passed": true,
       "details": "Restricted: http://localhost:3000",
-      "timestamp": "2026-05-06T17:58:19.106534"
+      "timestamp": "2026-05-07T01:28:22.749204"
     },
     {
       "name": "User Enumeration Protection",
       "passed": true,
       "details": "Generic error (good)",
-      "timestamp": "2026-05-06T17:58:19.110411"
+      "timestamp": "2026-05-07T01:28:22.751752"
     },
     {
       "name": "Weak Password Rejection",
       "passed": true,
       "details": "Enforced strong policy",
-      "timestamp": "2026-05-06T17:58:19.113512"
+      "timestamp": "2026-05-07T01:28:22.754450"
     },
     {
       "name": "GDPR Right to Erasure Endpoint",
       "passed": true,
       "details": "HTTP 405",
-      "timestamp": "2026-05-06T17:58:19.114347"
+      "timestamp": "2026-05-07T01:28:22.755262"
     },
     {
       "name": "Security Headers",
       "passed": true,
       "details": "All present",
-      "timestamp": "2026-05-06T17:58:19.117666"
+      "timestamp": "2026-05-07T01:28:22.915125"
     }
   ],
   "features": [
@@ -178,13 +178,13 @@
       "name": "Feature ENABLED Check",
       "passed": true,
       "details": "Got 200",
-      "timestamp": "2026-05-06T17:58:19.212685"
+      "timestamp": "2026-05-07T01:28:23.356301"
     },
     {
       "name": "Feature DISABLED Check (503)",
       "passed": true,
       "details": "Got 503",
-      "timestamp": "2026-05-06T17:58:19.218984"
+      "timestamp": "2026-05-07T01:28:23.701191"
     }
   ],
   "findings": [],
@@ -192,14 +192,14 @@
     {
       "name": "Submit Anonymous Feedback",
       "passed": true,
-      "details": "ID: 5d8230ee-23a6-4a24-b663-7b8e87679a6f",
-      "timestamp": "2026-05-06T17:58:19.227823"
+      "details": "ID: e56c26e8-8ff0-4209-a374-bfcc72d275e5",
+      "timestamp": "2026-05-07T01:28:23.884609"
     },
     {
       "name": "Validation (Length)",
       "passed": true,
       "details": "",
-      "timestamp": "2026-05-06T17:58:19.228663"
+      "timestamp": "2026-05-07T01:28:23.886913"
     }
   ]
 }
