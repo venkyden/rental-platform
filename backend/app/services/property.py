@@ -24,7 +24,7 @@ except ImportError:
 
 
 @dataclass
-    class PropertyData:
+class PropertyData:
     owner_name: str
     property_address: str
     confidence_score: float = 0.0

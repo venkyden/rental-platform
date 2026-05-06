@@ -480,6 +480,7 @@ export const translations = {
                     email: "Email",
                     identity: "Identity",
                     employment: "Employment",
+                    ownership: "Ownership",
                     verified: "Verified",
                     pending: "Pending",
                     start: "Start",
@@ -546,6 +547,7 @@ export const translations = {
                         email: "Email",
                         identity: "Identity",
                         employment: "Employment",
+                        ownership: "Ownership",
                         trustScore: "Trust Score",
                         boost: "Complete verification to boost score",
                         max: "Maximum Trust Score Achieved"
@@ -769,6 +771,34 @@ export const translations = {
                 review: "Review",
                 closed: "Closed"
             },
+            categories: {
+                damage: "Damage",
+                unpaid_rent: "Unpaid Rent",
+                appliance: "Appliance",
+                cleaning: "Cleaning",
+                shared: "Shared Space",
+                other: "Other"
+            },
+            moveIn: "MOVE-IN",
+            moveOut: "MOVE-OUT",
+            distance: "Distance",
+            verified: "Verified",
+            unverified: "Unverified"
+        },
+        guide: {
+            back: "Back",
+            resourceCenter: "Resource Center",
+            title: "Guides & Tips",
+            subtitle: "Discover our articles to help with your real estate project.",
+            tenant: {
+                title: "Tenant's Guide",
+                description: "Understanding the application, guarantors, and lease."
+            },
+            landlord: {
+                title: "Pricing Guide (Landlord)",
+                description: "Market trends and rent estimation."
+            }
+        },
         properties: {
             new: {
                 title: "Listing Protocol",
@@ -838,35 +868,8 @@ export const translations = {
                 }
             }
         },
-            categories: {
-                damage: "Damage",
-                unpaid_rent: "Unpaid Rent",
-                appliance: "Appliance",
-                cleaning: "Cleaning",
-                shared: "Shared Space",
-                other: "Other"
-            },
-            moveIn: "MOVE-IN",
-            moveOut: "MOVE-OUT",
-            distance: "Distance",
-            verified: "Verified",
-            unverified: "Unverified"
-        },
-        guide: {
-            back: "Back",
-            resourceCenter: "Resource Center",
-            title: "Guides & Tips",
-            subtitle: "Discover our articles to help with your real estate project.",
-            tenant: {
-                title: "Tenant's Guide",
-                description: "Understanding the application, guarantors, and lease."
-            },
-            landlord: {
-                title: "Pricing Guide (Landlord)",
-                description: "Market trends and rent estimation."
-            }
-        },
         auth: {
+
             verifyEmail: {
                 title: "Email Verification",
                 verifying: "Verifying your email...",
@@ -2192,6 +2195,7 @@ export const translations = {
                     email: "Email",
                     identity: "Identité",
                     employment: "Emploi",
+                    ownership: "Propriété",
                     verified: "Vérifié",
                     pending: "En attente",
                     start: "Démarrer",
@@ -2258,6 +2262,7 @@ export const translations = {
                         email: "Email",
                         identity: "Identité",
                         employment: "Emploi",
+                        ownership: "Propriété",
                         trustScore: "Score de Confiance",
                         boost: "Complétez les vérifications pour booster votre score",
                         max: "Score de confiance maximum atteint"

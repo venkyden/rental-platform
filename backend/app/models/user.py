@@ -53,6 +53,7 @@ class User(Base):
     email_verified = Column(Boolean, default=False)
     identity_verified = Column(Boolean, default=False)
     employment_verified = Column(Boolean, default=False)
+    ownership_verified = Column(Boolean, default=False)
     kbis_verified = Column(Boolean, default=False)
     carte_g_verified = Column(Boolean, default=False)
 
@@ -63,6 +64,9 @@ class User(Base):
     employment_data = Column(
         JSON, nullable=True
     )  # Stores employment verification results
+    ownership_data = Column(
+        JSON, nullable=True
+    )  # Stores ownership verification results (account level)
 
     # Trust scoring
     trust_score = Column(Integer, default=0)  # 0-100

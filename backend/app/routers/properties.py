@@ -113,18 +113,18 @@ async def list_properties(
     if city:
         filters.append(Property.city.ilike(f"%{city}%"))
 
-    if min_rent or max_rent:
+    if min_rent is not None or max_rent is not None:
         # Total rent: for CC, charges already in monthly_rent; for HC, add charges
         from sqlalchemy import case
-
         from decimal import Decimal
+
         total_rent = Property.monthly_rent + case(
-            [(Property.charges_included == True, Decimal("0"))],
+            (Property.charges_included == True, Decimal("0")),
             else_=func.coalesce(Property.charges, Decimal("0")),
         )
-        if min_rent:
+        if min_rent is not None:
             filters.append(total_rent >= min_rent)
-        if max_rent:
+        if max_rent is not None:
             filters.append(total_rent <= max_rent)
 
     if bedrooms is not None:
@@ -141,28 +141,31 @@ async def list_properties(
 
     if amenities:
         # Check if property amenities (JSONB) contains ALL requested amenities
-        # Using the @> operator for JSONB containment
         from sqlalchemy.dialects.postgresql import JSONB
 
-        # Cast mainly for type safety if needed, but usually works directly on JSONB column
         for amenity in amenities:
-            # Basic implementation: check if the JSON array contains the string
-            # Note: This depends on how amenities are stored (list of strings)
             filters.append(Property.amenities.contains([amenity]))
 
     # Default behavior for landlords/team members: show properties they own or are members of
-    role_val = current_user.role.value if current_user and hasattr(current_user.role, "value") else (str(current_user.role) if current_user else None)
+    # Safely get role value
+    try:
+        if current_user:
+            role_val = current_user.role.value if hasattr(current_user.role, "value") else str(current_user.role)
+        else:
+            role_val = None
+    except Exception:
+        role_val = None
+
     is_management_role = role_val in ["landlord", "property_manager", "admin"]
     
     if is_management_role and not landlord_id:
         # If no specific landlord_id is requested, show EVERYTHING the user has access to
         try:
             from app.models.team import InviteStatus, TeamMember, TeamMemberProperty
-            
             from sqlalchemy import or_
             
             # Subquery for properties via team membership
-            # Using the Enum member directly is more robust with SQLAlchemy 2.0 and native enums
+            # Using .scalar_subquery() for better compatibility in .in_()
             team_prop_subquery = (
                 select(TeamMemberProperty.property_id)
                 .join(TeamMember, TeamMember.id == TeamMemberProperty.team_member_id)
@@ -172,29 +175,32 @@ async def list_properties(
                         TeamMember.status == InviteStatus.ACTIVE
                     )
                 )
-            )
+            ).scalar_subquery()
 
             filters.append(
-                and_(
-                    or_(
-                        Property.landlord_id == current_user.id,
-                        Property.id.in_(team_prop_subquery)
-                    ),
-                    Property.status == (status if status else "active")
+                or_(
+                    Property.landlord_id == current_user.id,
+                    Property.id.in_(team_prop_subquery)
                 )
             )
+            
+            # Filter by status if provided, otherwise default to active
+            target_status = status if status else "active"
+            filters.append(Property.status == target_status)
+            
         except Exception as e:
-            logger.error(f"CRITICAL: Error in management role filter for user {getattr(current_user, 'id', 'unknown')}: {e}", exc_info=True)
-            # Fallback to just active properties to avoid total crash
+            logger.error(f"Error in management role filter for user {getattr(current_user, 'id', 'unknown')}: {e}", exc_info=True)
+            # Fallback to just active properties
             filters.append(Property.status == (status if status else "active"))
     elif landlord_id:
         filters.append(Property.landlord_id == landlord_id)
+        if status:
+            filters.append(Property.status == status)
     elif status:
         filters.append(Property.status == status)
     else:
         # Default: only show active properties to public
         filters.append(Property.status == "active")
-
     if filters:
         query = query.where(and_(*filters))
 

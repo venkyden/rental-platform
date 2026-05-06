@@ -18,6 +18,8 @@ from app.routers.auth import get_current_user
 from app.core.cache import cache
 import logging
 from app.services.storage import storage
+
+logger = logging.getLogger(__name__)
 from app.utils.watermark import apply_watermark
 
 # Fallback in-memory verification sessions (if Redis is not available)
@@ -57,8 +59,12 @@ class VerificationStatusResponse(BaseModel):
 
     identity_verified: bool
     employment_verified: bool
+    ownership_verified: bool = False
+    kbis_verified: bool = False
+    carte_g_verified: bool = False
     identity_data: Optional[dict] = None
     employment_data: Optional[dict] = None
+    ownership_data: Optional[dict] = None
     trust_score: int
 
 
@@ -433,8 +439,12 @@ async def get_verification_status(current_user: User = Depends(get_current_user)
     return {
         "identity_verified": current_user.identity_verified,
         "employment_verified": current_user.employment_verified,
+        "ownership_verified": current_user.ownership_verified,
+        "kbis_verified": current_user.kbis_verified,
+        "carte_g_verified": current_user.carte_g_verified,
         "identity_data": current_user.identity_data,
         "employment_data": current_user.employment_data,
+        "ownership_data": current_user.ownership_data,
         "trust_score": current_user.trust_score,
     }
 
@@ -584,6 +594,8 @@ async def upload_property_document(
     # Update landlord trust score if verified
     if verification_result["verified"]:
         current_user.trust_score = min(100, current_user.trust_score + 20)
+        current_user.ownership_verified = True
+        current_user.ownership_data = property_obj.ownership_data
 
     await db.commit()
     await db.refresh(property_obj)

@@ -8,7 +8,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import PremiumLayout from '@/components/PremiumLayout';
 import VerificationUpload from '@/components/VerificationUpload';
 import { motion, Variants } from 'framer-motion';
-import { CheckCircle2, Clock, ShieldCheck, Briefcase, UserCheck, ChevronLeft, TrendingUp } from 'lucide-react';
+import { CheckCircle2, Clock, ShieldCheck, Briefcase, UserCheck, ChevronLeft, TrendingUp, Home } from 'lucide-react';
 
 const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -107,22 +107,32 @@ export default function VerificationPage() {
                                 </p>
                             </motion.div>
 
-                            {/* Employment Card */}
-                            <motion.div variants={itemVariants} className={`glass-card !p-10 flex flex-col items-center text-center group ${user.employment_verified ? 'border-teal-500/30' : ''}`}>
-                                <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center mb-8 shadow-xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 ${user.employment_verified ? 'bg-teal-500 text-white shadow-teal-500/20' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'}`}>
-                                    {user.employment_verified ? (
-                                        <Briefcase className="w-8 h-8" />
-                                    ) : (
-                                        <Clock className="w-8 h-8" />
-                                    )}
-                                </div>
-                                <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] mb-3">
-                                    {t('dashboard.verification.verification.progress.employment', undefined, 'Employment')}
-                                </h3>
-                                <p className={`text-lg font-black uppercase tracking-tight ${user.employment_verified ? 'text-teal-600 dark:text-teal-400' : 'text-zinc-400'}`}>
-                                    {user.employment_verified ? t('dashboard.verification.verification.verified', undefined, 'Verified') : t('dashboard.verification.verification.pending', undefined, 'Pending')}
-                                </p>
-                            </motion.div>
+                            {/* Professional/Ownership Card */}
+                            {(() => {
+                                const isLandlord = user.role === 'landlord' || user.role === 'property_manager';
+                                const isVerified = isLandlord ? user.ownership_verified : user.employment_verified;
+                                const label = isLandlord 
+                                    ? t('dashboard.verification.verification.progress.ownership', undefined, 'Ownership') 
+                                    : t('dashboard.verification.verification.progress.employment', undefined, 'Employment');
+                                
+                                return (
+                                    <motion.div variants={itemVariants} className={`glass-card !p-10 flex flex-col items-center text-center group ${isVerified ? 'border-teal-500/30' : ''}`}>
+                                        <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center mb-8 shadow-xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 ${isVerified ? 'bg-teal-500 text-white shadow-teal-500/20' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'}`}>
+                                            {isVerified ? (
+                                                isLandlord ? <Home className="w-8 h-8" /> : <Briefcase className="w-8 h-8" />
+                                            ) : (
+                                                <Clock className="w-8 h-8" />
+                                            )}
+                                        </div>
+                                        <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] mb-3">
+                                            {label}
+                                        </h3>
+                                        <p className={`text-lg font-black uppercase tracking-tight ${isVerified ? 'text-teal-600 dark:text-teal-400' : 'text-zinc-400'}`}>
+                                            {isVerified ? t('dashboard.verification.verification.verified', undefined, 'Verified') : t('dashboard.verification.verification.pending', undefined, 'Pending')}
+                                        </p>
+                                    </motion.div>
+                                );
+                            })()}
                         </motion.div>
 
                         {/* Trust Score Card - Ultra Premium */}

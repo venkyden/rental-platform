@@ -11,7 +11,20 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from app.core.config import settings
 from app.core.database import Base
-from app.models.user import User, VerificationRecord
+from app.models.user import User, VerificationRecord, OnboardingResponse
+from app.models.application import Application
+from app.models.dispute import Dispute
+from app.models.document import Document, DocumentExtraction
+from app.models.feature_flag import FeatureFlag
+from app.models.feedback import Feedback
+from app.models.inventory import Inventory, InventoryItem
+from app.models.messages import Conversation, Message
+from app.models.notification import Notification
+from app.models.property import Property, PropertyMediaSession, PropertyMedia
+from app.models.property_manager import PropertyManagerAccess
+from app.models.team import TeamMember, TeamMemberProperty
+from app.models.visits_and_leases import VisitSlot, Lease
+from app.models.webhook_subscriptions import WebhookSubscription, WebhookDelivery
 
 # this is the Alembic Config object
 config = context.config

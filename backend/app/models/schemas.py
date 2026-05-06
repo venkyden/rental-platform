@@ -57,6 +57,7 @@ class UserResponse(BaseModel):
     email_verified: bool
     identity_verified: bool
     employment_verified: bool
+    ownership_verified: Optional[bool] = False
     kbis_verified: Optional[bool] = False
     carte_g_verified: Optional[bool] = False
     trust_score: int

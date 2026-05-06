@@ -254,9 +254,9 @@ export default function NewPropertyPage() {
                         </div>
                     )}
 
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
+                    <div className="flex justify-center">
                         {/* Main Interaction Area */}
-                        <div className="lg:col-span-7">
+                        <div className="w-full max-w-2xl">
                             <AnimatePresence mode="wait">
                                 <motion.div
                                     key={currentStep}
@@ -512,38 +512,6 @@ export default function NewPropertyPage() {
                                     </button>
                                 </div>
                             )}
-                        </div>
-
-                        {/* Visual Sidebar */}
-                        <div className="lg:col-span-5">
-                            <div className="sticky top-32 glass-card !p-12 rounded-[4rem] border-zinc-100 dark:border-zinc-800/50 bg-zinc-50/50 dark:bg-zinc-900/50">
-                                <div className="mb-12">
-                                    <div className="w-16 h-16 bg-teal-500/10 rounded-2xl flex items-center justify-center mb-6">
-                                        <Info className="w-8 h-8 text-teal-500" />
-                                    </div>
-                                    <h4 className="text-xl font-black uppercase tracking-tighter mb-4 italic text-zinc-900 dark:text-white">{t('properties.new.sidebar.title')}</h4>
-                                    <p className="text-sm text-zinc-500 font-medium leading-relaxed">
-                                        {t('properties.new.sidebar.description')}
-                                    </p>
-                                </div>
-
-                                <div className="space-y-6">
-                                    <div className="p-6 bg-white dark:bg-zinc-800/50 rounded-3xl border border-zinc-100 dark:border-zinc-700/30">
-                                        <div className="flex items-center gap-4 mb-4">
-                                            <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{t('properties.new.sidebar.optimizationRank')}</span>
-                                        </div>
-                                        <div className="text-3xl font-black text-zinc-900 dark:text-white tracking-tighter">{t('properties.new.sidebar.rankValue')}</div>
-                                    </div>
-                                    <div className="p-6 bg-white dark:bg-zinc-800/50 rounded-3xl border border-zinc-100 dark:border-zinc-700/30">
-                                        <div className="flex items-center gap-4 mb-4">
-                                            <div className="w-2 h-2 rounded-full bg-indigo-500" />
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{t('properties.new.sidebar.networkReach')}</span>
-                                        </div>
-                                        <div className="text-3xl font-black text-zinc-900 dark:text-white tracking-tighter">{t('properties.new.sidebar.reachValue')}</div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>

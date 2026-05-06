@@ -12,6 +12,9 @@ interface User {
     email_verified: boolean;
     identity_verified: boolean;
     employment_verified: boolean;
+    ownership_verified: boolean;
+    kbis_verified?: boolean;
+    carte_g_verified?: boolean;
     trust_score: number;
     onboarding_completed?: boolean;
     available_roles?: string[];
