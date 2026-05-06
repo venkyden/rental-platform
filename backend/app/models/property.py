@@ -99,7 +99,8 @@ class Property(Base):
 
     # Verification
     ownership_verified = Column(Boolean, default=False)
-    ownership_data = Column(JSONB)
+    from app.utils.encryption import EncryptedJSON
+    ownership_data = Column(EncryptedJSON)
 
     # Metadata
     created_at = Column(TIMESTAMP, server_default=func.now())

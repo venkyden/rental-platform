@@ -7,7 +7,7 @@ import sys
 from sqlalchemy import text
 
 # Add parent directory to path
-sys.path.insert(0, "/Users/venkat/.gemini/antigravity/scratch/rental-platform/backend")
+sys.path.insert(0, "/Users/venkat/rental-platform/backend")
 
 from app.core.database import engine
 from app.models.user import Base
@@ -36,6 +36,18 @@ async def test_connection():
             result = await conn.execute(text("SELECT COUNT(*) FROM users"))
             count = result.scalar()
             print(f"\n👥 Current user count: {count}")
+
+            # Show users columns
+            print("\n🔍 Columns in 'users' table:")
+            result = await conn.execute(text("""
+                SELECT column_name, data_type, is_nullable
+                FROM information_schema.columns
+                WHERE table_name = 'users'
+                ORDER BY ordinal_position
+            """))
+            columns = result.fetchall()
+            for col in columns:
+                print(f"   - {col[0]}: {col[1]} (nullable: {col[2]})")
 
     except Exception as e:
         print(f"❌ Error: {e}")

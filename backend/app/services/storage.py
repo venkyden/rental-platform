@@ -276,6 +276,61 @@ class CloudStorageService:
                 return True
             return False
 
+    async def delete_files_by_prefix(self, prefix: str) -> int:
+        """Delete all files starting with a prefix (e.g. 'users/{user_id}/')"""
+        count = 0
+        if not prefix:
+            return 0
+            
+        if self.client and not self.is_local:
+            try:
+                # S3/R2 bulk delete
+                paginator = self.client.get_paginator("list_objects_v2")
+                for page in paginator.paginate(Bucket=self.bucket_name, Prefix=prefix):
+                    if "Contents" in page:
+                        objects_to_delete = [{"Key": obj["Key"]} for obj in page["Contents"]]
+                        if objects_to_delete:
+                            self.client.delete_objects(
+                                Bucket=self.bucket_name,
+                                Delete={"Objects": objects_to_delete}
+                            )
+                            count += len(objects_to_delete)
+                logger.info(f"☁️ Cloud bulk delete: {count} objects with prefix '{prefix}'")
+                return count
+            except Exception as e:
+                logger.error(f"Cloud prefix delete failed for prefix={prefix}: {e}")
+                return count
+        else:
+            # Local prefix delete
+            import shutil
+            import glob
+            
+            count = 0
+            # Sanitize prefix to avoid deleting root
+            if prefix in ["/", ""]:
+                return 0
+                
+            full_path_prefix = os.path.join(self.local_path, prefix)
+            
+            # Use glob to find all matches (files and directories)
+            matches = glob.glob(f"{full_path_prefix}*")
+            for match in matches:
+                try:
+                    if os.path.isfile(match):
+                        os.remove(match)
+                        count += 1
+                    elif os.path.isdir(match):
+                        # Count files before deleting for accurate return
+                        for root, dirs, files in os.walk(match):
+                            count += len(files)
+                        shutil.rmtree(match)
+                except Exception as e:
+                    logger.error(f"Local prefix delete failed for {match}: {e}")
+            
+            if count > 0:
+                logger.info(f"📁 Local bulk delete: {count} files with prefix '{prefix}'")
+            return count
+
     async def get_file_info(self, key: str) -> Optional[dict]:
         """Get file metadata"""
         if self.client and not self.is_local:

@@ -52,21 +52,19 @@ class User(Base):
     # Verification status
     email_verified = Column(Boolean, default=False)
     identity_verified = Column(Boolean, default=False)
+    identity_status = Column(String, default="unverified") # unverified, pending, verified, rejected
     employment_verified = Column(Boolean, default=False)
+    employment_status = Column(String, default="unverified")
     ownership_verified = Column(Boolean, default=False)
+    ownership_status = Column(String, default="unverified")
     kbis_verified = Column(Boolean, default=False)
     carte_g_verified = Column(Boolean, default=False)
 
-    # Identity verification data (JSONB for flexibility)
-    identity_data = Column(
-        JSON, nullable=True
-    )  # Stores eIDV results, trust score, etc.
-    employment_data = Column(
-        JSON, nullable=True
-    )  # Stores employment verification results
-    ownership_data = Column(
-        JSON, nullable=True
-    )  # Stores ownership verification results (account level)
+    # Identity verification data (Encrypted for GDPR Compliance)
+    from app.utils.encryption import EncryptedJSON
+    identity_data = Column(EncryptedJSON, nullable=True)
+    employment_data = Column(EncryptedJSON, nullable=True)
+    ownership_data = Column(EncryptedJSON, nullable=True)
 
     # Trust scoring
     trust_score = Column(Integer, default=0)  # 0-100

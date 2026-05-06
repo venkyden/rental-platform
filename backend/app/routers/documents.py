@@ -33,21 +33,21 @@ async def upload_document(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Generic document upload"""
-
-    # Save file
-    file_extension = os.path.splitext(file.filename)[1]
-    filename = f"{secrets.token_urlsafe(16)}{file_extension}"
-    user_dir = os.path.join(UPLOAD_DIR, str(current_user.id))
-    os.makedirs(user_dir, exist_ok=True)
-
-    file_path = os.path.join(user_dir, filename)
+    """Generic document upload using Cloud Storage"""
+    from io import BytesIO
+    from app.services.storage import storage
 
     content = await file.read()
-    with open(file_path, "wb") as f:
-        f.write(content)
-
-    file_url = f"/uploads/documents/{current_user.id}/{filename}"
+    
+    # Save file to Cloud Storage
+    storage_result = await storage.upload_file(
+        file_data=BytesIO(content),
+        filename=file.filename,
+        content_type=file.content_type,
+        folder=f"documents/{current_user.id}"
+    )
+    
+    file_url = storage_result["url"]
 
     # Create record
     doc = Document(
@@ -58,6 +58,8 @@ async def upload_document(
         size_bytes=len(content),
         document_type=document_type,
         verification_status="pending",
+        # Store key for easier deletion (GDPR)
+        extra_data={"storage_key": storage_result.get("key")}
     )
 
     db.add(doc)

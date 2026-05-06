@@ -776,27 +776,3 @@ async def upload_media(
         "distance_meters": int(distance) if distance else None,
         "verification_status": verification_status,
     }
-
-
-@router.get("/debug/{property_id}")
-async def debug_property_media(property_id: UUID, db: AsyncSession = Depends(get_db)):
-    """Temporary endpoint to check DB state directly"""
-    
-    # 1. Check property
-    prop_res = await db.execute(select(Property).where(Property.id == property_id))
-    prop = prop_res.scalar_one_or_none()
-    
-    # 2. Check sessions
-    sess_res = await db.execute(select(PropertyMediaSession).where(PropertyMediaSession.property_id == property_id))
-    sessions = sess_res.scalars().all()
-    
-    # 3. Check media
-    media_res = await db.execute(select(PropertyMedia).where(PropertyMedia.property_id == property_id))
-    media = media_res.scalars().all()
-    
-    return {
-        "property_exists": bool(prop),
-        "property_photos_field": prop.photos if prop else None,
-        "sessions": [{"id": str(s.id), "code": s.verification_code} for s in sessions],
-        "media": [{"id": str(m.id), "url": m.file_url} for m in media],
-    }

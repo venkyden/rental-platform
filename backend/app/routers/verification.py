@@ -21,6 +21,7 @@ from app.services.storage import storage
 
 logger = logging.getLogger(__name__)
 from app.utils.watermark import apply_watermark
+from app.services.feature_flag_service import feature_flag_service
 
 # Fallback in-memory verification sessions (if Redis is not available)
 # Format: { code: { user_id, document_type, expires_at, completed } }
@@ -126,13 +127,14 @@ async def upload_identity_document(
         file_data=BytesIO(watermarked_content),
         filename=file.filename,
         content_type=file.content_type,
-        folder="verification/identity"
+        folder=f"verification/identity/{current_user.id}"
     )
     
     file_url = storage_result["url"]
 
     # Update user verification status
     current_user.identity_verified = result["verified"]
+    current_user.identity_status = result["status"]
     
     if result["verified"]:
         current_user.trust_score = min(100, current_user.trust_score + 30)
@@ -293,12 +295,13 @@ async def upload_identity_mobile(
         file_data=BytesIO(watermarked_content),
         filename=file.filename,
         content_type=file.content_type,
-        folder="verification/identity"
+        folder=f"verification/identity/{user.id}"
     )
     
     file_url = storage_result["url"]
 
     user.identity_verified = result["verified"]
+    user.identity_status = result["status"]
     if result["verified"]:
         user.trust_score = min(100, user.trust_score + 30)
 
@@ -398,7 +401,7 @@ async def upload_employment_document(
         file_data=BytesIO(watermarked_content),
         filename=file.filename,
         content_type=file.content_type,
-        folder="verification/employment"
+        folder=f"verification/employment/{current_user.id}"
     )
     
     file_url = storage_result["url"]
@@ -471,17 +474,19 @@ async def upload_guarantor_document(
 
     content = await file.read()
     
-    upload_dir = "uploads/verification/guarantor"
-    os.makedirs(upload_dir, exist_ok=True)
+    # Apply watermark for security
+    watermarked_content = apply_watermark(content)
     
-    file_extension = os.path.splitext(file.filename)[1]
-    filename = f"guarantor_{current_user.id}_{secrets.token_urlsafe(8)}{file_extension}"
-    file_path = os.path.join(upload_dir, filename)
+    # Save file to Cloud Storage
+    from io import BytesIO
+    storage_result = await storage.upload_file(
+        file_data=BytesIO(watermarked_content),
+        filename=file.filename,
+        content_type=file.content_type,
+        folder=f"verification/guarantor/{current_user.id}"
+    )
     
-    with open(file_path, "wb") as f:
-        f.write(content)
-
-    file_url = f"/uploads/verification/guarantor/{filename}"
+    file_url = storage_result["url"]
 
     new_doc = Document(
         user_id=current_user.id,
@@ -490,6 +495,8 @@ async def upload_guarantor_document(
         file_name=file.filename,
         mime_type=file.content_type,
         verification_status="pending",
+        # Store key for easier deletion
+        extra_data={"storage_key": storage_result.get("key")}
     )
     
     db.add(new_doc)
@@ -574,7 +581,7 @@ async def upload_property_document(
         file_data=BytesIO(watermarked_content),
         filename=file.filename,
         content_type=file.content_type,
-        folder="verification/property"
+        folder=f"verification/property/{current_user.id}"
     )
     
     file_url = storage_result["url"]
@@ -656,12 +663,19 @@ class GLIQuoteRequest(BaseModel):
 
 @router.post("/gli/quote")
 async def get_gli_quote(
-    request: GLIQuoteRequest, current_user: User = Depends(get_current_user)
+    request: GLIQuoteRequest, 
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Get a GLI (Garantie Loyers Impayés) quote.
     One-click insurance quote for landlords.
     """
+    if not await feature_flag_service.get_flag_state(db, "gli_quote", default=True):
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="GLI services are currently undergoing maintenance. Please try again later.",
+        )
     from app.services.gli import TenantProfile, gli_service
 
     tenant = TenantProfile(
@@ -699,6 +713,11 @@ async def apply_gli(
     In production, this would submit to a GLI provider.
     For MVP: Mock application submission.
     """
+    if not await feature_flag_service.get_flag_state(db, "gli_quote", default=True):
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="GLI services are currently undergoing maintenance. Please try again later.",
+        )
     from app.services.gli import TenantProfile, gli_service
 
     tenant = TenantProfile(

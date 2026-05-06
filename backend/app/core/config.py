@@ -43,6 +43,9 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     COOKIE_DOMAIN: Optional[str] = None
 
+    # GDPR & Privacy
+    MASTER_ENCRYPTION_KEY: Optional[str] = None
+
     # CORS
     FRONTEND_URL: str = "http://localhost:3000"
     

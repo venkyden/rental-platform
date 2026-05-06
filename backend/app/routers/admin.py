@@ -152,8 +152,8 @@ async def get_pending_verifications(db: AsyncSession = Depends(get_db)):
     # 1. Check Users (Identity & Employment)
     user_query = select(User).where(
         or_(
-            User.identity_data["status"].astext == "pending_review",
-            User.employment_data["status"].astext == "pending_review"
+            User.identity_status == "pending_review",
+            User.employment_status == "pending_review"
         )
     )
     user_result = await db.execute(user_query)
@@ -217,24 +217,30 @@ async def approve_verification(
         user = await db.get(User, uid)
         if user and user.identity_data:
             user.identity_verified = True
-            user.identity_data["status"] = "verified"
+            user.identity_status = "verified"
+            # We must be careful: modifying a dict inside a TypeDecorator-managed field
+            # might not trigger the 'dirty' flag if it's already a dict in memory.
+            # But here it's an EncryptedJSON, so any reassignment triggers it.
+            new_data = dict(user.identity_data)
+            new_data["status"] = "verified"
+            user.identity_data = new_data
             user.trust_score = min(100, user.trust_score + 30)
-            from sqlalchemy.orm.attributes import flag_modified
-            flag_modified(user, "identity_data")
     
     elif type == "employment":
         user = await db.get(User, uid)
         if user and user.employment_data:
             user.employment_verified = True
-            user.employment_data["status"] = "verified"
+            user.employment_status = "verified"
+            new_data = dict(user.employment_data)
+            new_data["status"] = "verified"
+            user.employment_data = new_data
             user.trust_score = min(100, user.trust_score + 30)
-            from sqlalchemy.orm.attributes import flag_modified
-            flag_modified(user, "employment_data")
 
     elif type == "property":
         prop = await db.get(Property, uid)
         if prop:
             prop.ownership_verified = True
+            prop.ownership_status = "verified"
     
     await db.commit()
     return {"status": "approved"}

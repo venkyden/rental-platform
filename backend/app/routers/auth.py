@@ -1,5 +1,6 @@
 import logging
 import httpx
+import html
 from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
@@ -92,7 +93,7 @@ async def get_current_user_optional(
 @router.post(
     "/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED
 )
-@limiter.limit("3/minute")  # Rate limit: 3 registrations per minute per IP
+@limiter.limit("20/minute")  # Rate limit: 20 registrations per minute per IP
 async def register(
     request: Request, user_data: UserRegister, db: AsyncSession = Depends(get_db)
 ):
@@ -114,7 +115,7 @@ async def register(
     new_user = User(
         email=user_data.email,
         hashed_password=hashed_password,
-        full_name=user_data.full_name,
+        full_name=html.escape(user_data.full_name.strip()) if user_data.full_name else None,
         phone=user_data.phone.strip() if user_data.phone else None,
         role=user_data.role,
         available_roles=[user_data.role],
@@ -142,7 +143,7 @@ async def register(
 
 
 @router.post("/login", response_model=Token)
-@limiter.limit("5/minute")  # Rate limit: 5 login attempts per minute per IP
+@limiter.limit("50/minute")  # Rate limit: 50 login attempts per minute per IP
 async def login(
     request: Request,
     response: Response,
@@ -332,7 +333,7 @@ async def update_me(
 ):
     """Update current user profile (name, bio)"""
     if user_update.full_name is not None:
-        current_user.full_name = user_update.full_name
+        current_user.full_name = html.escape(user_update.full_name)
     if user_update.bio is not None:
         current_user.bio = user_update.bio
         

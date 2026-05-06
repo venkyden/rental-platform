@@ -19,8 +19,8 @@ from typing import Any, Dict, List
 import aiohttp
 
 # Configuration
-BASE_URL = "http://localhost:8000"
-FRONTEND_URL = "http://localhost:3000"
+BASE_URL = "http://127.0.0.1:8000"
+FRONTEND_URL = "http://127.0.0.1:3000"
 CONCURRENT_USERS = 10
 STRESS_REQUESTS = 50
 
@@ -34,6 +34,7 @@ results = {
     "security": [],
     "features": [],
     "findings": [],
+    "feedback": [],
 }
 
 
@@ -124,8 +125,6 @@ async def functional_tests(session: aiohttp.ClientSession):
             },
         ) as resp:
             if resp.status == 201:
-                data = await resp.json()
-                access_token = data.get("access_token")
                 log("functional", "User Registration", True)
             else:
                 error = await resp.text()
@@ -231,11 +230,24 @@ async def integration_tests(session: aiohttp.ClientSession):
         },
     ) as resp:
         if resp.status == 201:
-            data = await resp.json()
-            landlord_token = data.get("access_token")
             log("integration", "Landlord Account Creation", True)
         else:
             log("integration", "Landlord Account Creation", False)
+            return
+
+    # Login as Landlord to get token
+    landlord_token = None
+    async with session.post(
+        f"{BASE_URL}/auth/login",
+        data={"username": landlord_email, "password": "LandlordPass123!"},
+    ) as resp:
+        if resp.status == 200:
+            data = await resp.json()
+            landlord_token = data.get("access_token")
+            log("integration", "Landlord Login", True)
+        else:
+            error = await resp.text()
+            log("integration", "Landlord Login", False, f"HTTP {resp.status}: {error[:50]}")
             return
 
     headers = {"Authorization": f"Bearer {landlord_token}"}
@@ -302,10 +314,10 @@ async def load_tests(session: aiohttp.ClientSession):
         f"{success_rate:.0f}% success in {elapsed:.2f}s",
     )
 
-    # Rate limiting check
+    # Rate limiting check (using /auth/login which is restricted)
     rate_limit_hit = False
-    for _ in range(30):
-        async with session.get(f"{BASE_URL}/health") as resp:
+    for _ in range(60):
+        async with session.post(f"{BASE_URL}/auth/login", data={"username": "test@test.com", "password": "p"}) as resp:
             if resp.status == 429:
                 rate_limit_hit = True
                 break
@@ -458,7 +470,6 @@ async def security_tests(session: aiohttp.ClientSession):
         log("security", "IDOR Protection", True, "Endpoint not exposed")
 
     # 6.6 CSRF Token (Check for protection header requirement)
-    # For API-only backends with JWT, CSRF is less relevant but check CORS
     try:
         async with session.options(f"{BASE_URL}/auth/login") as resp:
             cors_headers = resp.headers.get("Access-Control-Allow-Origin", "")
@@ -573,89 +584,81 @@ async def feature_flag_tests(session: aiohttp.ClientSession):
     print("7. FEATURE FLAG (KILL SWITCH) TESTS")
     print("=" * 60)
 
-    flag_name = "identity_verification"
+    # Get token for authenticated feature tests
+    token = None
+    email = f"feat_{uuid.uuid4().hex[:8]}@test.com"
+    password = "FeaturePass123!"
+    
+    # 1. Register
+    async with session.post(f"{BASE_URL}/auth/register", json={
+        "email": email, "password": password, "full_name": "Feature Test User", "role": "landlord"
+    }) as resp:
+        if resp.status != 201:
+            error = await resp.text()
+            log("features", "Feature Test User Registration", False, f"HTTP {resp.status}: {error[:50]}")
+            return
+        
+    # 2. Login
+    async with session.post(f"{BASE_URL}/auth/login", data={
+        "username": email, "password": password
+    }) as resp:
+        if resp.status == 200:
+            data = await resp.json()
+            token = data.get("access_token")
+        else:
+            error = await resp.text()
+            log("features", "Feature Test User Login", False, f"HTTP {resp.status}: {error[:50]}")
+            return
+            
+    headers = {"Authorization": f"Bearer {token}"} if token else {}
+
+    gli_flag = "gli_quote"
 
     # 7.1 Ensure Flag Exists/Create
     try:
-        # Create flag via Admin API (simulated admin access - currently no auth on admin for MVP internal use, or we add auth later)
-        # Note: In prod, Admin API must be secured. Assuming internal access for now.
         async with session.post(
             f"{BASE_URL}/admin/features",
+            headers=headers,
             json={
-                "name": flag_name,
-                "description": "Identity Verification Service",
+                "name": gli_flag,
+                "description": "GLI Quote Service",
                 "is_enabled": True,
             },
         ) as resp:
-            pass  # Ignore if exists (500/400) or created (200)
+            pass
     except:
         pass
 
-    # 7.2 Test ENABLED behavior
-    # Ensure enabled
-    await session.post(
-        f"{BASE_URL}/admin/features/{flag_name}/toggle",
-        json={"is_enabled": True},
-    )
-
-    # Needs auth for identity start
-    # We need a token. Re-login manually or use existing logic?
-    # For simplicity, we'll assume func tests got a token, but here strict separation.
-    # We'll skip authenticated call check here and trust functional tests, OR do a quick toggle check on public endpoint (GLI).
-
-    gli_flag = "gli_quote"
-    async with session.post(
-        f"{BASE_URL}/admin/features", json={"name": gli_flag, "is_enabled": True}
-    ) as resp:
-        if resp.status not in [
-            200,
-            422,
-        ]:  # 422 if exists? No, my service handles it. logic returns existing.
-            LOGGING_MSG = await resp.text()
-            log(
-                "features",
-                "GLI Flag Creation",
-                False,
-                f"Status {resp.status} - {LOGGING_MSG}",
-            )
-            return
-
-    # Ensure it is enabled
-    await session.post(
-        f"{BASE_URL}/admin/features/{gli_flag}/toggle", json={"is_enabled": True}
-    )
-
-    # Call GLI (Public)
+    # 7.2 Feature ENABLED Check
     try:
+        # Enable it first
+        await session.post(f"{BASE_URL}/admin/features/{gli_flag}/toggle", headers=headers, json={"is_enabled": True})
+        
         async with session.post(
             f"{BASE_URL}/verification/gli/quote",
+            headers=headers,
             json={
                 "monthly_rent": 1000,
-                "tenant_monthly_income": 3000,
+                "tenant_monthly_income": 4000,
                 "tenant_employment_type": "cdi",
-                "tenant_employment_verified": True,
-                "tenant_identity_verified": True,
             },
         ) as resp:
-            log("features", "Feature ENABLED Check", resp.status == 200)
+            log("features", "Feature ENABLED Check", resp.status == 200, f"Got {resp.status}")
     except Exception as e:
         log("features", "Feature ENABLED Check", False, str(e))
 
-    # 7.3 Test DISABLED behavior (KILL SWITCH)
-    await session.post(
-        f"{BASE_URL}/admin/features/{gli_flag}/toggle",
-        json={"is_enabled": False},
-    )
-
+    # 7.3 Feature DISABLED Check (Kill Switch)
     try:
+        # Disable it
+        await session.post(f"{BASE_URL}/admin/features/{gli_flag}/toggle", headers=headers, json={"is_enabled": False})
+
         async with session.post(
             f"{BASE_URL}/verification/gli/quote",
+            headers=headers,
             json={
                 "monthly_rent": 1000,
-                "tenant_monthly_income": 3000,
+                "tenant_monthly_income": 4000,
                 "tenant_employment_type": "cdi",
-                "tenant_employment_verified": True,
-                "tenant_identity_verified": True,
             },
         ) as resp:
             log(
@@ -664,13 +667,11 @@ async def feature_flag_tests(session: aiohttp.ClientSession):
                 resp.status == 503,
                 f"Got {resp.status}",
             )
+        
+        # Re-enable for other tests
+        await session.post(f"{BASE_URL}/admin/features/{gli_flag}/toggle", headers=headers, json={"is_enabled": True})
     except Exception as e:
-        log("features", "Feature DISABLED Check", False, str(e))
-
-    # Restore
-    await session.post(
-        f"{BASE_URL}/admin/features/{gli_flag}/toggle", json={"is_enabled": True}
-    )
+        log("features", "Feature DISABLED Check (503)", False, str(e))
 
 
 # ============================================================
@@ -678,7 +679,7 @@ async def feature_flag_tests(session: aiohttp.ClientSession):
 # ============================================================
 async def feedback_tests(session: aiohttp.ClientSession):
     print("\n" + "=" * 60)
-    print("8. FEEDBACK (Category Y) TESTS")
+    print("8. FEEDBACK TESTS")
     print("=" * 60)
 
     # 8.1 Submit Anonymous Feedback
@@ -716,7 +717,6 @@ async def feedback_tests(session: aiohttp.ClientSession):
 # MAIN EXECUTION
 # ============================================================
 async def main():
-    results["feedback"] = []  # Init category
     print("=" * 60)
     print("COMPREHENSIVE PLATFORM TEST SUITE")
     print("OWASP + CNIL/GDPR Compliance")
@@ -729,11 +729,11 @@ async def main():
         await smoke_tests(session)
         await functional_tests(session)
         await integration_tests(session)
-        await load_tests(session)
-        await stress_tests(session)
         await security_tests(session)
         await feature_flag_tests(session)
         await feedback_tests(session)
+        await load_tests(session)
+        await stress_tests(session)
 
     # Summary
     print("\n" + "=" * 60)

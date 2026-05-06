@@ -129,7 +129,44 @@ async def delete_user_data(
     We retain the anonymised record for legal obligations (invoicing,
     fraud prevention) as permitted by GDPR Art. 17(3)(b) and (e).
     """
-    # Anonymise user record
+    # 1. Physical File Deletion (GDPR Art. 17 — True Erasure)
+    from app.services.storage import storage
+    from app.models.property import Property
+    from app.models.document import Document
+
+    # Delete verification documents (using new folder structure)
+    await storage.delete_files_by_prefix(f"verification/identity/{current_user.id}")
+    await storage.delete_files_by_prefix(f"verification/employment/{current_user.id}")
+    await storage.delete_files_by_prefix(f"verification/guarantor/{current_user.id}")
+    await storage.delete_files_by_prefix(f"verification/property/{current_user.id}")
+
+    # Fallback: Delete specific keys if they exist in JSONB (for older uploads)
+    if current_user.identity_data and isinstance(current_user.identity_data, dict):
+        key = current_user.identity_data.get("storage_key")
+        if key: await storage.delete_file(key)
+        
+    if current_user.employment_data and isinstance(current_user.employment_data, dict):
+        key = current_user.employment_data.get("storage_key")
+        if key: await storage.delete_file(key)
+
+    # Delete property media
+    props_result = await db.execute(select(Property).where(Property.landlord_id == current_user.id))
+    properties = props_result.scalars().all()
+    for prop in properties:
+        await storage.delete_files_by_prefix(f"properties/{prop.id}")
+        # Also check property-level ownership docs
+        if prop.ownership_data and isinstance(prop.ownership_data, dict):
+            key = prop.ownership_data.get("storage_key")
+            if key: await storage.delete_file(key)
+
+    # Delete any other documents associated with the user
+    docs_result = await db.execute(select(Document).where(Document.user_id == current_user.id))
+    for doc in docs_result.scalars().all():
+        if doc.extra_data and isinstance(doc.extra_data, dict):
+            key = doc.extra_data.get("storage_key")
+            if key: await storage.delete_file(key)
+
+    # 2. Database Anonymisation
     anonymised_email = f"deleted_{current_user.id}@anonymised.roomivo.internal"
 
     await db.execute(
@@ -144,7 +181,11 @@ async def delete_user_data(
             bio=None,
             profile_picture_url=None,
             identity_data=None,
+            identity_status="deleted",
             employment_data=None,
+            employment_status="deleted",
+            ownership_data=None,
+            ownership_status="deleted",
             preferences=None,
             contact_preferences=None,
             segment=None,

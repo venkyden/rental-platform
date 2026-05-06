@@ -9,6 +9,7 @@ from starlette.types import ASGIApp, Receive, Scope, Send
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
+import app.models
 
 # ------------------------------------------------------------------
 # Stripe initialization
@@ -99,6 +100,14 @@ async def add_security_headers(request: Request, call_next):
     # Additional security headers
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://cdn.jsdelivr.net; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; "
+        "img-src 'self' data: https:; "
+        "connect-src 'self' https://accounts.google.com; "
+        "frame-src https://accounts.google.com;"
+    )
     return response
 
 

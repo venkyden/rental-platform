@@ -108,12 +108,24 @@ async def get_inbox(
     Get all conversations for the current user (landlord or tenant).
     Sorted by last message date, most recent first.
     """
+    from sqlalchemy.orm import selectinload
+    
     # Build query - user can be either landlord or tenant
+    # Eager load relationships to prevent N+1 queries
     query = select(Conversation).where(
         or_(
             Conversation.landlord_id == current_user.id,
             Conversation.tenant_id == current_user.id,
         )
+    ).options(
+        selectinload(Conversation.property),
+        selectinload(Conversation.landlord),
+        selectinload(Conversation.tenant),
+        # We only need the last message for the preview
+        # But selectinload(Conversation.messages) would load ALL messages.
+        # For simplicity and given typical conversation sizes, this is usually acceptable,
+        # but we'll optimize by just accessing what we loaded.
+        selectinload(Conversation.messages)
     )
 
     if status:
@@ -128,36 +140,23 @@ async def get_inbox(
     result = await db.execute(query)
     conversations = result.scalars().all()
 
-    # Build response with additional context
+    # Build response
     summaries = []
     for conv in conversations:
-        # Determine if user is landlord or tenant
         is_landlord = conv.landlord_id == current_user.id
         unread = conv.unread_count_landlord if is_landlord else conv.unread_count_tenant
-
-        # Get property info
-        prop_query = select(Property).where(Property.id == conv.property_id)
-        prop = (await db.execute(prop_query)).scalar_one_or_none()
-
-        # Get other party info
-        other_id = conv.tenant_id if is_landlord else conv.landlord_id
-        other_query = select(User).where(User.id == other_id)
-        other_user = (await db.execute(other_query)).scalar_one_or_none()
-
-        # Get last message preview
-        last_msg_query = (
-            select(Message)
-            .where(Message.conversation_id == conv.id)
-            .order_by(desc(Message.created_at))
-            .limit(1)
-        )
-        last_msg = (await db.execute(last_msg_query)).scalar_one_or_none()
+        
+        prop = conv.property
+        other_user = conv.tenant if is_landlord else conv.landlord
+        
+        # Get last message from the preloaded messages list
+        last_msg = conv.messages[-1] if conv.messages else None
 
         summaries.append(
             ConversationSummary(
                 id=conv.id,
                 property_id=conv.property_id,
-                property_title=prop.title if prop else None,
+                property_title=prop.title if prop else "Unknown Property",
                 property_address=f"{prop.address_line1}, {prop.city}" if prop else None,
                 other_party_name=(other_user.full_name or "Unknown") if other_user else "Unknown",
                 other_party_email=other_user.email if other_user else "",
