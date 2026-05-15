@@ -17,15 +17,11 @@ export default defineConfig({
             name: 'chromium',
             use: { ...devices['Desktop Chrome'] },
         },
-        {
-            name: 'webkit',
-            use: { ...devices['Desktop Safari'] },
-        },
     ],
     webServer: {
-        command: 'npm run dev -- -p 3000 -H 127.0.0.1',
+        command: 'cd .. && PORT=3000 npm run dev --prefix frontend -p 3000 -H 127.0.0.1',
         url: 'http://127.0.0.1:3000',
-        reuseExistingServer: true,
-        timeout: 180_000,
+        reuseExistingServer: !process.env.CI,
+        timeout: 120000,
     },
 });

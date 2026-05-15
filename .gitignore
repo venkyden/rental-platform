@@ -11,7 +11,7 @@ __pycache__/
 .Python
 env/
 venv/
-.venv/
+.venv
 build/
 develop-eggs/
 dist/
@@ -62,9 +62,12 @@ artifacts/
 backend/scratch/
 scratch/
 bin/
-*.bak
-stderr.txt
-stdout.txt
-playwright-report/
-test-results/
+test_*.py
+test_db*.py
+tmp.json
+*.sh
+!backend/run_mcp.sh
+!backend/start.sh
+!backend/start_local.sh
+!start_tests.sh
 

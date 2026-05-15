@@ -47,21 +47,25 @@ test.describe('Landing Page E2E Tests', () => {
     });
 
     test('language switcher changes text', async ({ page }) => {
-        // Verify default english text
-        await expect(page.getByText('Browse Listings')).toBeVisible();
+        // Verify default english text (case-insensitive for CSS uppercase)
+        await expect(page.getByText(/Browse Listings/i)).toBeVisible();
 
-        // Click FR button
-        const frButton = page.locator('button').filter({ hasText: /^fr$/i }).first();
-        await frButton.click();
+        // Click FR button using test-id
+        await page.getByTestId('lang-switch-fr').click();
 
-        // Check if text changed to French
-        await expect(page.getByText('Parcourir les annonces')).toBeVisible();
+        // Wait for potential hydration/translation update
+        await page.waitForTimeout(500);
+
+        // Check if text changed to French (case-insensitive)
+        await expect(page.getByText(/Parcourir les annonces/i)).toBeVisible();
         
-        // Click EN button to revert
-        const enButton = page.locator('button').filter({ hasText: /^en$/i }).first();
-        await enButton.click();
+        // Click EN button to revert using test-id
+        await page.getByTestId('lang-switch-en').click();
+
+        // Wait
+        await page.waitForTimeout(500);
 
         // Verify back to English
-        await expect(page.getByText('Browse Listings')).toBeVisible();
+        await expect(page.getByText(/Browse Listings/i)).toBeVisible();
     });
 });

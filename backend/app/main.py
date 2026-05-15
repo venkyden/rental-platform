@@ -68,12 +68,19 @@ import starlette.routing
 from typing import Any
 
 # FastAPI 0.109.0 expects on_startup/on_shutdown in Router, but Starlette 1.0.0 removed them.
+import fastapi.routing
 _original_router_init = starlette.routing.Router.__init__
 def _patched_router_init(self: Any, *args: Any, **kwargs: Any) -> None:
     kwargs.pop("on_startup", None)
     kwargs.pop("on_shutdown", None)
     _original_router_init(self, *args, **kwargs)
 starlette.routing.Router.__init__ = _patched_router_init
+
+# Also ensure APIRouter has these attributes as empty lists for compatibility
+if not hasattr(fastapi.routing.APIRouter, "on_startup"):
+    setattr(fastapi.routing.APIRouter, "on_startup", [])
+if not hasattr(fastapi.routing.APIRouter, "on_shutdown"):
+    setattr(fastapi.routing.APIRouter, "on_shutdown", [])
 
 fastapi_app = FastAPI(
     title="Roomivo API",

@@ -9,6 +9,9 @@ from typing import List, Optional
 # This must happen before any other imports that might trigger output.
 _original_stdout = sys.stdout
 sys.stdout = sys.stderr
+import logging
+logging.basicConfig(filename="/Users/venkat/rental-platform/backend/mcp_server.log", level=logging.DEBUG)
+logging.info("Starting MCP Server!")
 
 from sqlalchemy import select, update
 from sqlalchemy.orm import selectinload
@@ -180,6 +183,7 @@ async def generate_mock_lease(
             )
             return f"---[SUCCESS]---\nMock Lease generated safely. No DB rows created.\nPDF Saved to: {pdf_path}"
         except Exception as e:
+            import traceback; traceback.print_exc(file=sys.stderr)
             return f"Error generating lease PDF: {str(e)}"
 
 
