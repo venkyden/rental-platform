@@ -62,8 +62,19 @@ else:
     logger.critical("🚨 Encryption Service: EPHEMERAL (Keys will change on restart). DATA LOSS IMMINENT.")
 
 # ------------------------------------------------------------------
-# FastAPI app
+# FastAPI app & Starlette 1.0.0 Compatibility Patch
 # ------------------------------------------------------------------
+import starlette.routing
+from typing import Any
+
+# FastAPI 0.109.0 expects on_startup/on_shutdown in Router, but Starlette 1.0.0 removed them.
+_original_router_init = starlette.routing.Router.__init__
+def _patched_router_init(self: Any, *args: Any, **kwargs: Any) -> None:
+    kwargs.pop("on_startup", None)
+    kwargs.pop("on_shutdown", None)
+    _original_router_init(self, *args, **kwargs)
+starlette.routing.Router.__init__ = _patched_router_init
+
 fastapi_app = FastAPI(
     title="Roomivo API",
     description="Smart rental platform API",

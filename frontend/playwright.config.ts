@@ -23,9 +23,9 @@ export default defineConfig({
         },
     ],
     webServer: {
-        command: 'npm run dev -- -p 3000 -H 0.0.0.0',
+        command: 'npm run dev -- -p 3000 -H 127.0.0.1',
         url: 'http://127.0.0.1:3000',
         reuseExistingServer: true,
-        timeout: 60_000,
+        timeout: 180_000,
     },
 });
