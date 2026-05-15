@@ -1,8 +1,9 @@
-"use client";
+'use client';
 
 import { useState, useMemo } from 'react';
 import { useLanguage } from '@/lib/LanguageContext';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MapPin, Search, GraduationCap, Building2, Check, ArrowRight, X } from 'lucide-react';
 import RadiusLocationPicker from '../RadiusLocationPicker';
 import AddressAutocomplete, { AddressResult } from '../AddressAutocomplete';
 import Combobox from '../Combobox';
@@ -16,6 +17,7 @@ interface QuestionRendererProps {
     multiSelectValues: string[];
     onMultiSelectToggle: (value: string, max: number) => void;
     sanitizeInput: (input: string) => string;
+    userType: 'tenant' | 'landlord' | 'agency';
 }
 
 export default function QuestionRenderer({
@@ -26,6 +28,7 @@ export default function QuestionRenderer({
     multiSelectValues,
     onMultiSelectToggle,
     sanitizeInput,
+    userType,
 }: QuestionRendererProps) {
     const { t } = useLanguage();
     const [showManualUniversityInput, setShowManualUniversityInput] = useState(false);
@@ -35,7 +38,6 @@ export default function QuestionRenderer({
     const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number } | null>(null);
     const [mapRadius, setMapRadius] = useState<number>(2000);
 
-    // Prepare university options for Combobox
     const universityOptions = useMemo(() => {
         const options = FRENCH_UNIVERSITIES.flatMap(cityGroup => 
             cityGroup.universities.map(uni => ({
@@ -44,7 +46,6 @@ export default function QuestionRenderer({
                 group: cityGroup.city
             }))
         );
-        // Add manual input option
         options.push({
             label: t('onboarding.university.other', undefined, 'Other / My school isn\'t listed'),
             value: 'other|other|other',
@@ -53,355 +54,398 @@ export default function QuestionRenderer({
         return options;
     }, [t]);
 
-    return (
-        <div className="space-y-4">
-            {/* Address Autocomplete */}
-            {question.type === 'address_autocomplete' && (
-                <div className="space-y-8">
-                    <div className="relative group">
-                        <AddressAutocomplete
-                            onSelectAction={(result) => setSelectedAddress(result)}
-                            restrictToCities={question.restrictToCities || []}
-                            placeholder={question.placeholder || t('common.placeholders.address')}
-                            variant="onboarding"
-                        />
-                    </div>
-                    {selectedAddress && (
-                        <motion.div 
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            className="px-8 py-6 bg-teal-500/5 dark:bg-teal-400/5 border border-teal-500/20 rounded-[2rem] shadow-inner"
-                        >
-                            <p className="text-sm font-black text-teal-600 dark:text-teal-400 uppercase tracking-tight text-center">
-                                 {selectedAddress.display}
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: { staggerChildren: 0.05 }
+        }
+    };
+
+    const itemVariants: any = {
+        hidden: { y: 20, opacity: 0 },
+        visible: {
+            y: 0,
+            opacity: 1,
+            transition: { type: "spring", damping: 25, stiffness: 300 }
+        }
+    };
+
+    /* ----------------------------------------------------------------
+       Render Helpers
+       ---------------------------------------------------------------- */
+
+    const renderAddressAutocomplete = () => (
+        <div className="space-y-8">
+            <div className="relative group">
+                <div className="absolute left-8 top-1/2 -translate-y-1/2 z-10 text-zinc-400 group-focus-within:text-zinc-900 transition-colors">
+                    <Search className="w-5 h-5" />
+                </div>
+                <AddressAutocomplete
+                    onSelectAction={(result) => setSelectedAddress(result)}
+                    restrictToCities={question.restrictToCities || []}
+                    placeholder={question.placeholder || t('common.placeholders.address')}
+                    variant="onboarding"
+                />
+            </div>
+            
+            <AnimatePresence>
+                {selectedAddress && (
+                    <motion.div 
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="px-10 py-8 bg-zinc-50 border border-zinc-100 rounded-[2.5rem] flex items-center gap-6"
+                    >
+                        <div className="w-12 h-12 rounded-full bg-zinc-900 flex items-center justify-center text-white shrink-0">
+                            <MapPin className="w-5 h-5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">Confirmed Location</p>
+                            <p className="text-xl font-bold text-zinc-900 truncate leading-tight">
+                                {selectedAddress.display}
                             </p>
-                        </motion.div>
-                    )}
-                    <button
-                        onClick={() => {
-                            if (selectedAddress) {
-                                onAnswer({
-                                    address: selectedAddress.address,
-                                    city: selectedAddress.city,
-                                    postal_code: selectedAddress.postal_code,
-                                    lat: selectedAddress.lat,
-                                    lng: selectedAddress.lng,
-                                    display: selectedAddress.display,
-                                });
-                            }
-                        }}
-                        disabled={!selectedAddress}
-                        className="w-full py-6 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-xs font-black uppercase tracking-[0.3em] rounded-[2rem] shadow-2xl shadow-zinc-900/20 dark:shadow-white/5 hover:scale-[1.02] active:scale-95 disabled:opacity-30 disabled:hover:scale-100 transition-all"
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => {
+                    if (selectedAddress) {
+                        onAnswer({
+                            address: selectedAddress.address,
+                            city: selectedAddress.city,
+                            postal_code: selectedAddress.postal_code,
+                            lat: selectedAddress.lat,
+                            lng: selectedAddress.lng,
+                            display: selectedAddress.display,
+                        });
+                    }
+                }}
+                disabled={!selectedAddress}
+                className="w-full py-8 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.5em] rounded-[2rem] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.2)] disabled:opacity-30 transition-all flex items-center justify-center gap-4 group"
+            >
+                {t('common.continue', undefined, 'Continue')}
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </motion.button>
+        </div>
+    );
+
+    const renderUniversitySelect = () => (
+        <div className="space-y-8">
+            <div className="relative group">
+                <div className="absolute left-8 top-1/2 -translate-y-1/2 z-10 text-zinc-400 group-focus-within:text-zinc-900 transition-colors">
+                    <GraduationCap className="w-5 h-5" />
+                </div>
+                <Combobox
+                    options={universityOptions}
+                    value=""
+                    onChangeAction={(val) => {
+                        if (val === 'other|other|other') {
+                            setShowManualUniversityInput(true);
+                        } else if (val && typeof val === 'string' && val.includes('|')) {
+                            const [uniId, city, label] = val.split('|');
+                            setShowManualUniversityInput(false);
+                            onAnswer({ 
+                                university_id: sanitizeInput(uniId), 
+                                university_name: sanitizeInput(label), 
+                                city: sanitizeInput(city) 
+                            });
+                        }
+                    }}
+                    placeholder={t('common.placeholders.selectUniversity')}
+                />
+            </div>
+
+            <AnimatePresence>
+                {showManualUniversityInput && (
+                    <motion.div 
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="overflow-hidden"
                     >
-                        {t('common.continue', undefined, 'Continue')} →
-                    </button>
-                </div>
-            )}
-
-            {/* Text Input */}
-            {question.type === 'text' && (
-                <div className="space-y-8">
-                    <input
-                        type="text"
-                        placeholder={question.placeholder}
-                        className="w-full px-8 py-6 text-xl font-bold text-zinc-900 dark:text-white bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-[2rem] focus:ring-2 focus:ring-teal-500/50 transition-all placeholder:text-zinc-400 shadow-inner text-center"
-                        onKeyPress={(e) => {
-                            if (e.key === 'Enter' && e.currentTarget.value) {
-                                onAnswer(e.currentTarget.value);
-                            }
-                        }}
-                    />
-                    <button
-                        onClick={() => {
-                            const input = document.querySelector('input[type="text"]') as HTMLInputElement;
-                            if (input?.value) onAnswer(input.value);
-                        }}
-                        className="w-full py-6 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-xs font-black uppercase tracking-[0.3em] rounded-[2rem] shadow-2xl shadow-zinc-900/20 dark:shadow-white/5 hover:scale-[1.02] active:scale-95 transition-all"
-                    >
-                        {t('common.next')} →
-                    </button>
-                </div>
-            )}
-
-            {/* Select Dropdown (Using Combobox) */}
-            {question.type === 'select' && (
-                <div className="space-y-6">
-                    <div className="relative group">
-                        <Combobox
-                            options={question.selectOptions || []}
-                            value={responses[question.id] || ''}
-                            onChangeAction={(val) => onAnswer(val)}
-                            placeholder={t('common.placeholders.selectOption')}
-                        />
-                    </div>
-                    {question.id === 'nationality' && (
-                        <p className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 text-center uppercase tracking-widest leading-relaxed px-4">
-                            {t('onboarding.university.nationalityNote', undefined, 'This field is collected strictly for demographic surveys. It is never used in matching or shared with landlords.')}
-                        </p>
-                    )}
-                </div>
-            )}
-
-            {/* University Select (Using Combobox) */}
-            {question.type === 'university_select' && (
-                <div className="space-y-6">
-                    <div className="relative group">
-                        <Combobox
-                            options={universityOptions}
-                            value="" // Reset after each selection logic
-                            onChangeAction={(val) => {
-                                if (val === 'other|other|other') {
-                                    setShowManualUniversityInput(true);
-                                } else if (val && typeof val === 'string' && val.includes('|')) {
-                                    const [uniId, city, label] = val.split('|');
-                                    setShowManualUniversityInput(false);
-                                    onAnswer({ 
-                                        university_id: sanitizeInput(uniId), 
-                                        university_name: sanitizeInput(label), 
-                                        city: sanitizeInput(city) 
-                                    });
-                                }
-                            }}
-                            placeholder={t('common.placeholders.selectUniversity')}
-                        />
-                    </div>
-
-                    {showManualUniversityInput && (
-                        <motion.div 
-                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            className="mt-6 p-8 bg-zinc-50 dark:bg-zinc-800/50 rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 shadow-2xl space-y-6"
-                        >
-                            <h3 className="text-xs font-black text-zinc-400 uppercase tracking-widest text-center">{t('onboarding.university.manualTitle', undefined, 'Manual University Entry')}</h3>
+                        <div className="p-10 bg-zinc-50 rounded-[3rem] border border-zinc-100 shadow-inner space-y-8">
+                            <div className="flex items-center justify-between mb-2">
+                                <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] flex items-center gap-2">
+                                    <Building2 className="w-4 h-4" />
+                                    Manual Entry
+                                </h3>
+                                <button onClick={() => setShowManualUniversityInput(false)} className="text-zinc-400 hover:text-zinc-900 transition-colors">
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </div>
                             <div className="space-y-4">
                                 <input
                                     type="text"
                                     value={manualUniName}
                                     onChange={(e) => setManualUniName(e.target.value)}
-                                    placeholder={t('common.placeholders.universityName', undefined, 'University Name')}
-                                    className="w-full px-6 py-4 bg-white dark:bg-zinc-900 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/50 transition-all font-bold shadow-inner"
-                                    maxLength={100}
+                                    placeholder={t('common.placeholders.universityName', undefined, 'School Name')}
+                                    className="w-full px-8 py-6 bg-white border-none rounded-2xl focus:ring-2 focus:ring-zinc-900 transition-all font-bold placeholder:text-zinc-300"
                                 />
                                 <input
                                     type="text"
                                     value={manualUniCity}
                                     onChange={(e) => setManualUniCity(e.target.value)}
                                     placeholder={t('common.placeholders.city')}
-                                    className="w-full px-6 py-4 bg-white dark:bg-zinc-900 border-none rounded-2xl focus:ring-2 focus:ring-teal-500/50 transition-all font-bold shadow-inner"
-                                    maxLength={50}
+                                    className="w-full px-8 py-6 bg-white border-none rounded-2xl focus:ring-2 focus:ring-zinc-900 transition-all font-bold placeholder:text-zinc-300"
                                 />
                             </div>
-                            <div className="flex gap-4">
-                                <button
-                                    onClick={() => setShowManualUniversityInput(false)}
-                                    className="flex-1 py-4 text-xs font-black text-zinc-400 hover:text-zinc-900 dark:hover:text-white uppercase tracking-widest transition-colors"
-                                >
-                                    {t('common.cancel')}
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        if (manualUniName.trim() && manualUniCity.trim()) {
-                                            onAnswer({
-                                                university_id: 'custom',
-                                                university_name: sanitizeInput(manualUniName),
-                                                city: sanitizeInput(manualUniCity)
-                                            });
-                                            setManualUniName('');
-                                            setManualUniCity('');
-                                            setShowManualUniversityInput(false);
-                                        }
-                                    }}
-                                    disabled={!manualUniName.trim() || !manualUniCity.trim()}
-                                    className="flex-[2] py-4 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-xs font-black uppercase tracking-widest rounded-2xl shadow-xl hover:scale-105 transition-all disabled:opacity-30"
-                                >
-                                    {t('common.next')} →
-                                </button>
-                            </div>
-                        </motion.div>
-                    )}
-
-                    <p className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 mt-4 text-center uppercase tracking-widest">
-                        {t('onboarding.university.help', undefined, 'This helps us find properties near your campus')}
-                    </p>
-                </div>
-            )}
-
-            {/* Location Radius Picker */}
-            {question.type === 'location_radius' && (() => {
-                // City-to-coordinates lookup for major French cities
-                const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
-                    'Paris': { lat: 48.8566, lng: 2.3522 },
-                    'Lyon': { lat: 45.7640, lng: 4.8357 },
-                    'Toulouse': { lat: 43.6047, lng: 1.4442 },
-                    'Bordeaux': { lat: 44.8378, lng: -0.5792 },
-                    'Lille': { lat: 50.6292, lng: 3.0573 },
-                    'Marseille / Aix': { lat: 43.2965, lng: 5.3698 },
-                    'Marseille': { lat: 43.2965, lng: 5.3698 },
-                    'Aix': { lat: 43.5297, lng: 5.4474 },
-                    'Nantes': { lat: 47.2184, lng: -1.5536 },
-                    'Strasbourg': { lat: 48.5734, lng: 7.7521 },
-                    'Montpellier': { lat: 43.6108, lng: 3.8767 },
-                    'Rennes': { lat: 48.1173, lng: -1.6778 },
-                    'Grenoble': { lat: 45.1885, lng: 5.7245 },
-                    'Nice': { lat: 43.7102, lng: 7.2620 },
-                };
-
-                // Try to get coordinates from previous university selection
-                const uniResponse = responses?.university;
-                const uniCity = typeof uniResponse === 'object' ? uniResponse?.city : null;
-
-                // Try to get coordinates from workplace selection
-                const workplaceResponse = responses?.workplace;
-                const workplaceLat = typeof workplaceResponse === 'object' ? workplaceResponse?.lat : null;
-                const workplaceLng = typeof workplaceResponse === 'object' ? workplaceResponse?.lng : null;
-
-                const coords = uniCity ? CITY_COORDS[uniCity] : (workplaceLat && workplaceLng ? { lat: workplaceLat, lng: workplaceLng } : null);
-
-                // Default: center of France if no location
-                const defaultLat = coords?.lat ?? 46.6034;
-                const defaultLng = coords?.lng ?? 2.2137;
-
-                const currentLat = mapCenter?.lat ?? defaultLat;
-                const currentLng = mapCenter?.lng ?? defaultLng;
-
-                const centerText = uniCity ? t('onboarding.radius.centeredOn', { city: uniCity }, `Centered on ${uniCity} — `) : (workplaceResponse ? t('onboarding.radius.centeredWorkplace', undefined, 'Centered on your workplace — ') : '');
-
-                return (
-                    <div className="space-y-8">
-                        <p className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 text-center px-4 uppercase tracking-[0.2em] leading-relaxed">
-                            {centerText}{t('onboarding.radius.help', undefined, 'drag the pin to select your target search area, and use the slider to adjust your commute radius.')}
-                        </p>
-                        <div className="rounded-[2.5rem] overflow-hidden border border-zinc-100 dark:border-zinc-800 shadow-2xl">
-                            <RadiusLocationPicker
-                                initialLat={currentLat}
-                                initialLng={currentLng}
-                                radiusMeters={mapRadius}
-                                onLocationChange={(lat: number, lng: number) => setMapCenter({ lat, lng })}
-                            />
-                        </div>
-
-                        <div className="bg-zinc-50 dark:bg-zinc-800/30 p-8 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-inner">
-                            <div className="flex justify-between items-end mb-6">
-                                <div>
-                                    <h3 className="text-xs font-black text-zinc-900 dark:text-white uppercase tracking-widest">{t('onboarding.radius.areaSize', undefined, 'Search Area Size')}</h3>
-                                    <p className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mt-1">{t('onboarding.radius.commuteDesc', undefined, 'Maximum commute distance')}</p>
-                                </div>
-                                <div translate="no" className="notranslate text-2xl font-black text-teal-600 dark:text-teal-400 tracking-tighter">
-                                    {mapRadius >= 1000 ? `${+(mapRadius / 1000).toFixed(1)} km` : `${mapRadius} m`}
-                                </div>
-                            </div>
-                            <input
-                                type="range"
-                                min={500}
-                                max={20000}
-                                step={500}
-                                value={mapRadius}
-                                onChange={(e) => setMapRadius(Number(e.target.value))}
-                                className="w-full h-3 bg-zinc-200 dark:bg-zinc-700 rounded-full appearance-none cursor-pointer accent-teal-500 shadow-inner"
-                            />
-                            <div className="flex justify-between text-[9px] font-black text-zinc-300 dark:text-zinc-600 mt-4 uppercase tracking-[0.3em]">
-                                <span translate="no" className="notranslate">500m</span>
-                                <span translate="no" className="notranslate">20km</span>
-                            </div>
-                        </div>
-
-                        <button
-                            onClick={() => onAnswer({ lat: currentLat, lng: currentLng, radius: mapRadius })}
-                            className="w-full py-6 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-xs font-black uppercase tracking-[0.3em] rounded-[2rem] shadow-2xl shadow-zinc-900/20 dark:shadow-white/5 hover:scale-[1.02] active:scale-95 transition-all"
-                        >
-                            {t('common.next')} →
-                        </button>
-                    </div>
-                );
-            })()}
-
-            {/* Range Slider */}
-            {question.type === 'range' && (
-                <div className="py-8 space-y-12">
-                    <div className="relative">
-                        <input
-                            type="range"
-                            min={question.min}
-                            max={question.max}
-                            step={question.step}
-                            defaultValue={responses[question.id] || question.min}
-                            onChange={(e) => {
-                                const value = parseInt(e.target.value);
-                                onRangeUpdate(question.id, value);
-                            }}
-                            className="w-full h-4 bg-zinc-100 dark:bg-zinc-800 rounded-full appearance-none cursor-pointer accent-teal-500 shadow-inner"
-                        />
-                        <div className="flex justify-between mt-6">
-                            <span translate="no" className="notranslate text-[10px] font-black text-zinc-300 dark:text-zinc-600 uppercase tracking-widest">
-                                {question.unit === '€' ? question.unit : ''}{question.min}{question.unit !== '€' ? question.unit : ''}
-                            </span>
-                            <div translate="no" className="notranslate text-5xl font-black text-zinc-900 dark:text-white tracking-tighter">
-                                {question.unit === '€' ? question.unit : ''}{responses[question.id] || question.min}{question.unit !== '€' ? question.unit : ''}
-                            </div>
-                            <span translate="no" className="notranslate text-[10px] font-black text-zinc-300 dark:text-zinc-600 uppercase tracking-widest">
-                                {question.unit === '€' ? question.unit : ''}{question.max}{question.unit !== '€' ? question.unit : ''}+
-                            </span>
-                        </div>
-                    </div>
-                    <button
-                        onClick={() => onAnswer(responses[question.id] || question.min)}
-                        className="w-full py-6 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-xs font-black uppercase tracking-[0.3em] rounded-[2rem] shadow-2xl shadow-zinc-900/20 dark:shadow-white/5 hover:scale-[1.02] active:scale-95 transition-all"
-                    >
-                        {t('common.next')} →
-                    </button>
-                </div>
-            )}
-
-            {/* Multi-Select */}
-            {question.type === 'multiselect' && (
-                <div className="space-y-10">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {question.options?.map((option, index) => (
-                            <button
-                                key={index}
-                                onClick={() => onMultiSelectToggle(option.value, question.maxSelections || 5)}
-                                className={`px-8 py-6 text-left rounded-[1.5rem] border-none transition-all group relative overflow-hidden ${multiSelectValues.includes(option.value)
-                                    ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-2xl shadow-zinc-900/20 dark:shadow-white/5'
-                                    : 'bg-zinc-50 dark:bg-zinc-800/50 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 shadow-inner'
-                                    }`}
+                            <motion.button
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => {
+                                    if (manualUniName.trim() && manualUniCity.trim()) {
+                                        onAnswer({
+                                            university_id: 'custom',
+                                            university_name: sanitizeInput(manualUniName),
+                                            city: sanitizeInput(manualUniCity)
+                                        });
+                                    }
+                                }}
+                                disabled={!manualUniName.trim() || !manualUniCity.trim()}
+                                className="w-full py-6 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl transition-all disabled:opacity-30"
                             >
-                                <span className="font-black text-xs uppercase tracking-widest relative z-10">{t(option.label, undefined, option.label)}</span>
-                                {multiSelectValues.includes(option.value) && (
-                                    <motion.div 
-                                        layoutId="multi-check"
-                                        className="absolute right-6 top-1/2 -translate-y-1/2"
-                                    >
-                                        <div className="w-2 h-2 rounded-full bg-teal-400" />
-                                    </motion.div>
-                                )}
-                            </button>
-                        ))}
-                    </div>
-                    {multiSelectValues.length > 0 && (
-                        <button
-                            onClick={() => onAnswer(multiSelectValues)}
-                            className="w-full py-6 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-xs font-black uppercase tracking-[0.3em] rounded-[2rem] shadow-2xl shadow-zinc-900/20 dark:shadow-white/5 hover:scale-[1.02] active:scale-95 transition-all"
-                        >
-                            {t('common.next')} ({multiSelectValues.length} {t('common.selected', undefined, 'selected')}) →
-                        </button>
-                    )}
-                </div>
-            )}
-
-            {/* Regular Options (no type) */}
-            <div className="space-y-4">
-                {!question.type && question.options?.map((option, index) => (
-                    <button
-                        key={index}
-                        onClick={() => onAnswer(option.value)}
-                        className="w-full text-left px-10 py-6 bg-zinc-50 hover:bg-zinc-900 dark:bg-zinc-800/50 dark:hover:bg-white rounded-[2rem] border-none transition-all group shadow-inner hover:shadow-2xl hover:scale-[1.02] active:scale-95"
-                    >
-                        <span className="text-sm font-black uppercase tracking-widest text-zinc-500 group-hover:text-white dark:group-hover:text-zinc-900 transition-colors">
-                            {t(option.label, undefined, option.label)}
-                        </span>
-                    </button>
-                ))}
-            </div>
+                                {t('common.confirm')}
+                            </motion.button>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
+
+    const renderLocationRadius = () => {
+        const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
+            'Paris': { lat: 48.8566, lng: 2.3522 },
+            'Lyon': { lat: 45.7640, lng: 4.8357 },
+            'Toulouse': { lat: 43.6047, lng: 1.4442 },
+            'Bordeaux': { lat: 44.8378, lng: -0.5792 },
+            'Lille': { lat: 50.6292, lng: 3.0573 },
+            'Marseille': { lat: 43.2965, lng: 5.3698 },
+            'Nantes': { lat: 47.2184, lng: -1.5536 },
+        };
+
+        const uniResponse = responses?.university;
+        const uniCity = typeof uniResponse === 'object' ? uniResponse?.city : null;
+        const workplaceResponse = responses?.workplace;
+        const workplaceLat = typeof workplaceResponse === 'object' ? workplaceResponse?.lat : null;
+        const workplaceLng = typeof workplaceResponse === 'object' ? workplaceResponse?.lng : null;
+
+        const coords = uniCity ? CITY_COORDS[uniCity] : (workplaceLat && workplaceLng ? { lat: workplaceLat, lng: workplaceLng } : null);
+        const currentLat = mapCenter?.lat ?? (coords?.lat ?? 46.6034);
+        const currentLng = mapCenter?.lng ?? (coords?.lng ?? 2.2137);
+
+        return (
+            <div className="space-y-10">
+                <div className="rounded-[3rem] overflow-hidden border border-zinc-100 shadow-[0_40px_80px_-20px_rgba(0,0,0,0.1)] relative group">
+                    <RadiusLocationPicker
+                        initialLat={currentLat}
+                        initialLng={currentLng}
+                        radiusMeters={mapRadius}
+                        onLocationChange={(lat: number, lng: number) => setMapCenter({ lat, lng })}
+                    />
+                    <div className="absolute top-6 left-6 right-6 flex items-center justify-center pointer-events-none">
+                        <div className="px-6 py-3 bg-white/90 backdrop-blur shadow-xl rounded-full border border-zinc-100 flex items-center gap-3">
+                            <div className="w-2 h-2 bg-zinc-900 rounded-full animate-pulse" />
+                            <span className="text-[10px] font-black text-zinc-900 uppercase tracking-widest">Interactive Selection</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="bg-zinc-50 p-10 rounded-[3rem] border border-zinc-100 shadow-inner">
+                    <div className="flex justify-between items-end mb-10">
+                        <div>
+                            <h3 className="text-[10px] font-black text-zinc-900 uppercase tracking-[0.3em] mb-2">{t('onboarding.radius.areaSize', undefined, 'Search Area Radius')}</h3>
+                            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{t('onboarding.radius.commuteDesc', undefined, 'Maximum commute distance')}</p>
+                        </div>
+                        <div className="text-4xl font-black text-zinc-900 tracking-tighter">
+                            {mapRadius >= 1000 ? `${+(mapRadius / 1000).toFixed(1)}km` : `${mapRadius}m`}
+                        </div>
+                    </div>
+                    <input
+                        type="range"
+                        min={500}
+                        max={20000}
+                        step={500}
+                        value={mapRadius}
+                        onChange={(e) => setMapRadius(Number(e.target.value))}
+                        className="w-full h-1.5 bg-zinc-200 rounded-full appearance-none cursor-pointer accent-zinc-900"
+                    />
+                    <div className="flex justify-between text-[9px] font-black text-zinc-300 mt-6 uppercase tracking-[0.5em]">
+                        <span>500m</span>
+                        <span>20km</span>
+                    </div>
+                </div>
+
+                <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => onAnswer({ lat: currentLat, lng: currentLng, radius: mapRadius })}
+                    className="w-full py-8 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.5em] rounded-[2rem] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.2)] transition-all"
+                >
+                    {t('common.confirm_area', undefined, 'Confirm Search Area')}
+                </motion.button>
+            </div>
+        );
+    };
+
+    const renderRange = () => {
+        const value = responses[question.id] || question.min || 0;
+        return (
+            <div className="space-y-16 py-8">
+                <div className="relative">
+                    <motion.div 
+                        animate={{ left: `${((value - (question.min || 0)) / ((question.max || 100) - (question.min || 0))) * 100}%` }}
+                        className="absolute -top-16 -translate-x-1/2 flex flex-col items-center"
+                    >
+                        <span className="text-5xl font-black text-zinc-900 tracking-tighter mb-2">
+                            {question.unit === '€' ? '€' : ''}{value}{question.unit !== '€' ? question.unit : ''}
+                        </span>
+                        <div className="w-0.5 h-6 bg-zinc-900" />
+                    </motion.div>
+                    
+                    <input
+                        type="range"
+                        min={question.min || 0}
+                        max={question.max || 100}
+                        step={question.step || 1}
+                        value={value}
+                        onChange={(e) => onRangeUpdate(question.id, parseInt(e.target.value))}
+                        className="w-full h-1.5 bg-zinc-100 rounded-full appearance-none cursor-pointer accent-zinc-900"
+                    />
+                    
+                    <div className="flex justify-between mt-8">
+                        <span className="text-[10px] font-black text-zinc-300 uppercase tracking-widest">{question.min}{question.unit}</span>
+                        <span className="text-[10px] font-black text-zinc-300 uppercase tracking-widest">{question.max}{question.unit}+</span>
+                    </div>
+                </div>
+                <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => onAnswer(value)}
+                    className="w-full py-8 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.5em] rounded-[2rem] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.2)]"
+                >
+                    {t('common.next')}
+                </motion.button>
+            </div>
+        );
+    };
+
+    const renderMultiSelect = () => (
+        <div className="space-y-12">
+            <motion.div 
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+            >
+                {question.options?.map((option, index) => {
+                    const isSelected = multiSelectValues.includes(option.value);
+                    return (
+                        <motion.button
+                            key={index}
+                            variants={itemVariants}
+                            whileHover={{ scale: 1.03 }}
+                            whileTap={{ scale: 0.97 }}
+                            onClick={() => onMultiSelectToggle(option.value, question.maxSelections || 5)}
+                            className={`px-8 py-8 text-left rounded-[2.5rem] transition-all duration-300 relative overflow-hidden flex items-center justify-between group ${
+                                isSelected
+                                ? 'bg-zinc-900 text-white shadow-2xl'
+                                : 'bg-white border border-zinc-100 text-zinc-400 hover:border-zinc-300'
+                            }`}
+                        >
+                            <span className={`text-[10px] font-black uppercase tracking-[0.2em] relative z-10 transition-colors ${isSelected ? 'text-white' : 'group-hover:text-zinc-900'}`}>
+                                {t(option.label.startsWith('options.') ? `onboarding.questions.${userType}.${question.id}.${option.label}` : option.label, undefined, option.label)}
+                            </span>
+                            {isSelected && (
+                                <motion.div layoutId="check" className="shrink-0">
+                                    <Check className="w-5 h-5 text-white" />
+                                </motion.div>
+                            )}
+                        </motion.button>
+                    );
+                })}
+            </motion.div>
+            <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => onAnswer(multiSelectValues)}
+                disabled={multiSelectValues.length === 0}
+                className="w-full py-8 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.5em] rounded-[2rem] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.2)] disabled:opacity-30"
+            >
+                {t('common.continue')} ({multiSelectValues.length} Selected)
+            </motion.button>
+        </div>
+    );
+
+    const renderDefaultOptions = () => (
+        <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="space-y-4"
+        >
+            {question.options?.map((option, index) => (
+                <motion.button
+                    key={index}
+                    variants={itemVariants}
+                    whileHover={{ scale: 1.02, x: 10 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => onAnswer(option.value)}
+                    className="w-full text-left px-10 py-8 bg-white hover:bg-zinc-900 rounded-[2.5rem] border border-zinc-100 hover:border-zinc-900 transition-all group flex items-center justify-between"
+                >
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 group-hover:text-white transition-colors">
+                        {t(option.label.startsWith('options.') ? `onboarding.questions.${userType}.${question.id}.${option.label}` : option.label, undefined, option.label)}
+                    </span>
+                    <div className="w-8 h-8 rounded-full border border-zinc-100 flex items-center justify-center group-hover:border-zinc-700 transition-colors">
+                        <ArrowRight className="w-4 h-4 text-transparent group-hover:text-white group-hover:translate-x-1 transition-all" />
+                    </div>
+                </motion.button>
+            ))}
+        </motion.div>
+    );
+
+    const renderTextInput = () => (
+        <div className="space-y-10">
+            <div className="relative group">
+                <input
+                    type="text"
+                    placeholder={question.placeholder}
+                    className="w-full px-12 py-10 text-2xl font-bold text-zinc-900 bg-zinc-50 border-none rounded-[3rem] focus:ring-2 focus:ring-zinc-900 transition-all placeholder:text-zinc-200 text-center"
+                    onKeyPress={(e) => e.key === 'Enter' && e.currentTarget.value && onAnswer(e.currentTarget.value)}
+                    autoFocus
+                />
+            </div>
+            <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => {
+                    const input = document.querySelector('input[type="text"]') as HTMLInputElement;
+                    if (input?.value) onAnswer(input.value);
+                }}
+                className="w-full py-8 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.5em] rounded-[2rem] shadow-2xl transition-all"
+            >
+                {t('common.next')}
+            </motion.button>
+        </div>
+    );
+
+    /* ----------------------------------------------------------------
+       Main Dispatcher
+       ---------------------------------------------------------------- */
+
+    switch (question.type) {
+        case 'address_autocomplete': return renderAddressAutocomplete();
+        case 'text': return renderTextInput();
+        case 'university_select': return renderUniversitySelect();
+        case 'location_radius': return renderLocationRadius();
+        case 'range': return renderRange();
+        case 'multiselect': return renderMultiSelect();
+        case 'select':
+        default: return renderDefaultOptions();
+    }
 }

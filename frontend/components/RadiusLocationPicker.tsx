@@ -60,23 +60,26 @@ export default function RadiusLocationPicker({ initialLat, initialLng, radiusMet
 
     if (!isMounted) {
         return (
-            <div className="w-full h-[300px] bg-[var(--gray-100)] rounded-xl flex items-center justify-center animate-pulse border border-[var(--gray-200)]">
-                <p className="text-[var(--gray-500)] text-sm font-medium">Loading Map...</p>
+            <div className="w-full h-[400px] bg-zinc-50 rounded-[2.5rem] flex items-center justify-center animate-pulse border border-zinc-100">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-8 h-8 border-4 border-zinc-200 border-t-zinc-900 rounded-full animate-spin" />
+                    <p className="text-zinc-400 text-[10px] font-black uppercase tracking-widest">Initializing Map</p>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="relative w-full h-[300px] rounded-xl overflow-hidden shadow-sm border border-[var(--card-border)] z-0">
+        <div className="relative w-full h-[400px] rounded-[2.5rem] overflow-hidden border border-zinc-100 shadow-inner z-0 group">
             <MapContainer
                 center={[initialLat, initialLng]}
                 zoom={13}
                 scrollWheelZoom={true}
-                className="w-full h-full"
+                className="w-full h-full grayscale-[0.8] opacity-90 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700"
                 ref={mapRef}
             >
                 <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
 
@@ -84,28 +87,36 @@ export default function RadiusLocationPicker({ initialLat, initialLng, radiusMet
                 <Circle
                     center={center}
                     radius={radiusMeters}
-                    pathOptions={{ color: 'var(--primary-500)', fillColor: 'var(--primary-500)', fillOpacity: 0.2 }}
+                    pathOptions={{ 
+                        color: '#18181b', // zinc-900
+                        fillColor: '#18181b', 
+                        fillOpacity: 0.15,
+                        weight: 2,
+                        dashArray: '8, 8'
+                    }}
                 />
                 <MapEventHandler onMoveEnd={handleMoveEnd} />
             </MapContainer>
 
             {/* Fixed "Uber-style" Pin Overlay */}
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-[1000] flex flex-col items-center pb-8">
-                {/* Pin Head */}
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-[1000] flex flex-col items-center pb-12">
                 <div className="relative">
-                    <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center shadow-sm">
-                        <div className="w-4 h-4 bg-white rounded-sm"></div>
+                    <div className="w-14 h-14 bg-zinc-900 rounded-full flex items-center justify-center shadow-[0_20px_40px_-10px_rgba(0,0,0,0.5)] border-4 border-white">
+                        <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
                     </div>
-                    {/* Triangle pointer */}
-                    <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-t-[14px] border-t-black"></div>
+                    {/* Shadow below pin */}
+                    <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-8 h-2 bg-black/20 rounded-full blur-md" />
                 </div>
             </div>
 
-            {/* Instruction Overlay */}
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white/90 backdrop-blur-md px-4 py-2 rounded-full shadow-sm border border-[var(--gray-200)] pointer-events-none z-[1000]">
-                <p className="text-xs font-semibold text-[var(--foreground)] text-center whitespace-nowrap">
-                    Search Area ({radiusMeters >= 1000 ? `${+(radiusMeters / 1000).toFixed(1)}km` : `${radiusMeters}m`})
-                </p>
+            {/* Scale Indicator */}
+            <div className="absolute top-6 right-6 bg-white/90 backdrop-blur-xl px-6 py-3 rounded-2xl shadow-xl border border-zinc-100 z-[1000]">
+                <div className="flex items-center gap-3">
+                    <div className="w-4 h-1 bg-zinc-900 rounded-full" />
+                    <span className="text-[10px] font-black text-zinc-900 uppercase tracking-widest">
+                        {radiusMeters >= 1000 ? `${+(radiusMeters / 1000).toFixed(1)}km` : `${radiusMeters}m`}
+                    </span>
+                </div>
             </div>
         </div>
     );

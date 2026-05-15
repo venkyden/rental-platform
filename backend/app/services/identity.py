@@ -5,10 +5,16 @@ Uses AI for OCR and data extraction, with validation rules.
 """
 
 import json
+import hashlib
+import logging
+import asyncio
+import time
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
-import logging
+from app.core.database import AsyncSessionLocal
+from app.models.document import DocumentExtraction
+from sqlalchemy import select
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +59,10 @@ class IdentityVerificationService:
         if GEMINI_AVAILABLE and settings.GEMINI_API_KEY:
             self.ai_client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
+    def _get_file_hash(self, file_content: bytes) -> str:
+        """Generate a SHA-256 hash of the file content."""
+        return hashlib.sha256(file_content).hexdigest()
+
     async def verify_document(
         self, file_content: bytes, file_type: str, expected_name: str, document_type: str
     ) -> dict:
@@ -68,7 +78,54 @@ class IdentityVerificationService:
                 "rejection_reason": Optional[str]
             }
         """
-        extracted_data = await self._extract_document_data(file_content, file_type, document_type)
+        file_hash = self._get_file_hash(file_content)
+        cached_extraction = None
+
+        # Try to get from cache
+        async with AsyncSessionLocal() as session:
+            stmt = select(DocumentExtraction).where(DocumentExtraction.file_hash == file_hash)
+            result = await session.execute(stmt)
+            db_extraction = result.scalar_one_or_none()
+            
+            if db_extraction:
+                logger.info(f"Identity OCR Cache Hit for hash {file_hash}")
+                data = db_extraction.extraction_data
+                cached_extraction = IdentityData(
+                    full_name=data.get("full_name", "Unknown"),
+                    document_number=data.get("document_number", "Unknown"),
+                    expiry_date=data.get("expiry_date"),
+                    document_type=data.get("document_type", document_type),
+                    is_identity_document=bool(data.get("is_identity_document", False)),
+                    has_face_photo=bool(data.get("has_face_photo", False)),
+                    confidence_score=float(data.get("confidence_score", 1.0)),
+                )
+
+        if cached_extraction:
+            extracted_data = cached_extraction
+        else:
+            extracted_data = await self._extract_document_data(file_content, file_type, document_type)
+            
+            # Store in cache if successful
+            if extracted_data:
+                async with AsyncSessionLocal() as session:
+                    new_extraction = DocumentExtraction(
+                        file_hash=file_hash,
+                        extraction_data={
+                            "full_name": extracted_data.full_name,
+                            "document_number": extracted_data.document_number,
+                            "expiry_date": extracted_data.expiry_date,
+                            "document_type": extracted_data.document_type,
+                            "is_identity_document": extracted_data.is_identity_document,
+                            "has_face_photo": extracted_data.has_face_photo,
+                            "confidence_score": float(extracted_data.confidence_score),
+                        }
+                    )
+                    session.add(new_extraction)
+                    try:
+                        await session.commit()
+                    except Exception as e:
+                        await session.rollback()
+                        logger.warning(f"Failed to cache identity extraction: {e}")
 
         if not extracted_data:
             return {
@@ -126,8 +183,6 @@ class IdentityVerificationService:
             logger.warning("AI client not initialized — skipping verification")
             return None
 
-        import asyncio
-        import time
         start_time = time.time()
         
         models_to_try = ["gemini-2.0-flash", "gemini-1.5-flash"]

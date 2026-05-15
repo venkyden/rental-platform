@@ -121,22 +121,25 @@ export default function InventoryPage() {
 
     return (
         <div className="max-w-2xl mx-auto p-4 pb-24">
-            <header className="mb-6">
-                <h1 className="text-2xl font-bold">
+             <header className="mb-12">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900/5 border border-zinc-900/10 text-zinc-900 text-[8px] font-black uppercase tracking-[0.2em] mb-4">
+                    Protocol {inventory.type === 'move_in' ? 'Alpha' : 'Omega'}
+                </div>
+                <h1 className="text-4xl font-black text-zinc-900 uppercase tracking-tighter leading-none mb-2">
                     {inventory.type === 'move_in' ? 'Move-In' : 'Move-Out'} Inspection
                 </h1>
-                <p className="text-gray-500 text-sm">Create the undeniable truth.</p>
+                <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.4em]">Create the undeniable truth</p>
             </header>
 
             {step === 'items' && (
                 <div className="space-y-6">
                     {/* List Existing */}
                     <div className="space-y-3">
-                        {inventory.items.map(item => (
-                            <div key={item.id} className="flex items-center gap-3 p-3 bg-white border rounded-lg shadow-sm">
-                                <div className={`w-3 h-3 rounded-full ${item.condition === 'good' ? 'bg-green-500' : 'bg-red-500'}`} />
-                                <span className="font-medium">{item.name}</span>
-                                <span className="text-xs text-gray-500 ml-auto capitalize">{item.condition}</span>
+                         {inventory.items.map(item => (
+                            <div key={item.id} className="flex items-center gap-4 p-5 bg-white border border-zinc-100 rounded-2xl shadow-sm group hover:shadow-md transition-all">
+                                <div className={`w-2 h-2 rounded-full ${item.condition === 'good' || item.condition === 'new' ? 'bg-zinc-900' : 'bg-zinc-300'} shadow-[0_0_8px_rgba(0,0,0,0.1)]`} />
+                                <span className="font-bold text-zinc-900 uppercase tracking-tight">{item.name}</span>
+                                <span className="text-[10px] font-black text-zinc-400 ml-auto uppercase tracking-widest">{item.condition}</span>
                             </div>
                         ))}
                     </div>
@@ -164,7 +167,7 @@ export default function InventoryPage() {
                                 ))}
                             </div>
 
-                            <div className="relative">
+                             <div className="relative">
                                 <input
                                     type="file"
                                     accept="image/*"
@@ -172,9 +175,9 @@ export default function InventoryPage() {
                                     onChange={e => setCaptureFile(e.target.files?.[0] || null)}
                                     className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
                                 />
-                                <button className="w-full py-3 flex items-center justify-center gap-2 bg-white border rounded-lg text-blue-600 font-medium">
-                                    <Camera size={20} />
-                                    {captureFile ? "Photo Captured" : "Take Live Photo"}
+                                <button className="w-full py-4 flex items-center justify-center gap-2 bg-white border border-zinc-200 rounded-xl text-zinc-900 text-[10px] font-black uppercase tracking-widest hover:bg-zinc-50 transition-all">
+                                    <Camera size={16} />
+                                    {captureFile ? "Protocol Captured" : "Capture Visual Evidence"}
                                 </button>
                             </div>
 
@@ -188,19 +191,22 @@ export default function InventoryPage() {
                         </div>
                     </div>
 
-                    <button
+                     <button
                         onClick={() => setStep('sign')}
-                        className="w-full py-4 bg-green-600 text-white rounded-xl font-bold shadow-sm mt-8"
+                        className="w-full py-5 bg-zinc-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.4em] hover:scale-[1.02] active:scale-95 transition-all shadow-2xl mt-8"
                     >
-                        Finish & Sign
+                        Execute Authentication
                     </button>
                 </div>
             )}
 
             {step === 'sign' && (
                 <div className="space-y-8">
-                    <div className="bg-blue-50 p-4 rounded-lg text-sm text-blue-800 border border-blue-200">
-                        ℹ️ Use the checkboxes below to confirm the inventory status. Both parties must be present.
+                     <div className="bg-zinc-900 border border-zinc-900 p-6 rounded-2xl flex items-start gap-4">
+                        <div className="w-2 h-2 rounded-full bg-white mt-1.5 animate-pulse" />
+                        <p className="text-[10px] font-black text-white uppercase tracking-widest leading-relaxed">
+                            Verification Protocol: Use the checkpoints below to confirm the inventory status. Both parties must be present.
+                        </p>
                     </div>
 
                     <div className="space-y-6 bg-white p-6 rounded-xl border shadow-sm">

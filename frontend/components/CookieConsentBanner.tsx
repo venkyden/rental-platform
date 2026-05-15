@@ -80,7 +80,7 @@ export default function CookieConsentBanner() {
     const privacyLink = (
         <Link 
             href="/legal/privacy" 
-            className="text-teal-600 dark:text-teal-400 font-medium hover:underline decoration-teal-500/30 underline-offset-4"
+            className="text-zinc-900 font-medium hover:underline decoration-zinc-900/30 underline-offset-4"
         >
             {t('cookies.privacyPolicy')}
         </Link>
@@ -97,27 +97,27 @@ export default function CookieConsentBanner() {
                     className="fixed bottom-6 left-6 right-6 z-[100] pointer-events-none flex justify-center"
                 >
                     <div className="w-full max-w-2xl pointer-events-auto overflow-hidden">
-                        <div className="bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200 dark:border-zinc-800 shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-3xl overflow-hidden">
+                        <div className="bg-white/80 backdrop-blur-xl border border-zinc-200 shadow-[0_20px_50px_rgba(0,0,0,0.1)]_20px_50px_rgba(0,0,0,0.3)] rounded-3xl overflow-hidden">
                             <div className="p-6 sm:p-8">
                                 <div className="flex items-start gap-4">
-                                    <div className="w-12 h-12 shrink-0 flex items-center justify-center bg-teal-50 dark:bg-teal-900/30 rounded-2xl">
-                                        <Cookie className="w-6 h-6 text-teal-600 dark:text-teal-400" />
+                                    <div className="w-12 h-12 shrink-0 flex items-center justify-center bg-zinc-100 rounded-2xl">
+                                        <Cookie className="w-6 h-6 text-zinc-900" />
                                     </div>
                                     <div className="flex-1">
                                         <div className="flex items-center justify-between mb-2">
-                                            <h3 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+                                            <h3 className="text-xl font-semibold text-zinc-900">
                                                 {t('cookies.title')}
                                             </h3>
                                             {!showDetails && (
                                                 <button 
                                                     onClick={() => setVisible(false)}
-                                                    className="p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors"
+                                                    className="p-1 text-zinc-400 hover:text-zinc-600 transition-colors"
                                                 >
                                                     <X className="w-5 h-5" />
                                                 </button>
                                             )}
                                         </div>
-                                        <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed text-sm sm:text-base">
+                                        <p className="text-zinc-600 leading-relaxed text-sm sm:text-base">
                                             {t('cookies.description').split('{{privacyLink}}').map((part, i, arr) => (
                                                 <span key={i}>
                                                     {part}
@@ -136,31 +136,31 @@ export default function CookieConsentBanner() {
                                             exit={{ height: 0, opacity: 0 }}
                                             className="overflow-hidden"
                                         >
-                                            <div className="mt-8 space-y-4 pt-6 border-t border-zinc-100 dark:border-zinc-800">
+                                            <div className="mt-8 space-y-4 pt-6 border-t border-zinc-100">
                                                 {/* Essential */}
-                                                <div className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-zinc-100 dark:border-zinc-800/50">
+                                                <div className="flex items-center justify-between p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
                                                     <div>
-                                                        <span className="block text-sm font-semibold text-zinc-900 dark:text-zinc-100">{t('cookies.essential.title')}</span>
-                                                        <p className="text-xs text-zinc-500 dark:text-zinc-400">{t('cookies.essential.description')}</p>
+                                                        <span className="block text-sm font-semibold text-zinc-900">{t('cookies.essential.title')}</span>
+                                                        <p className="text-xs text-zinc-500">{t('cookies.essential.description')}</p>
                                                     </div>
-                                                    <div className="flex items-center gap-2 text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/20 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase">
+                                                    <div className="flex items-center gap-2 text-zinc-900 bg-zinc-100 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase">
                                                         <Check className="w-3 h-3" />
                                                         {t('common.requiredByLaw')}
                                                     </div>
                                                 </div>
 
                                                 {/* Analytics */}
-                                                <label className="flex items-center justify-between p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 rounded-2xl transition-colors cursor-pointer group">
+                                                <label className="flex items-center justify-between p-4 hover:bg-zinc-50 rounded-2xl transition-colors cursor-pointer group">
                                                     <div>
-                                                        <span className="block text-sm font-semibold text-zinc-900 dark:text-zinc-100 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">{t('cookies.analytics.title')}</span>
-                                                        <p className="text-xs text-zinc-500 dark:text-zinc-400">{t('cookies.analytics.description')}</p>
+                                                        <span className="block text-sm font-semibold text-zinc-900 group-hover:text-zinc-600 transition-colors">{t('cookies.analytics.title')}</span>
+                                                        <p className="text-xs text-zinc-500">{t('cookies.analytics.description')}</p>
                                                     </div>
                                                     <button
                                                         type="button"
                                                         role="switch"
                                                         aria-checked={analytics}
                                                         onClick={() => setAnalytics(!analytics)}
-                                                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-teal-600 focus:ring-offset-2 ${analytics ? 'bg-teal-600' : 'bg-zinc-200 dark:bg-zinc-700'}`}
+                                                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2 ${analytics ? 'bg-zinc-900' : 'bg-zinc-200'}`}
                                                     >
                                                         <span
                                                             aria-hidden="true"
@@ -170,17 +170,17 @@ export default function CookieConsentBanner() {
                                                 </label>
 
                                                 {/* Preferences */}
-                                                <label className="flex items-center justify-between p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 rounded-2xl transition-colors cursor-pointer group">
+                                                <label className="flex items-center justify-between p-4 hover:bg-zinc-50 rounded-2xl transition-colors cursor-pointer group">
                                                     <div>
-                                                        <span className="block text-sm font-semibold text-zinc-900 dark:text-zinc-100 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">{t('cookies.preferences.title')}</span>
-                                                        <p className="text-xs text-zinc-500 dark:text-zinc-400">{t('cookies.preferences.description')}</p>
+                                                        <span className="block text-sm font-semibold text-zinc-900 group-hover:text-zinc-600 transition-colors">{t('cookies.preferences.title')}</span>
+                                                        <p className="text-xs text-zinc-500">{t('cookies.preferences.description')}</p>
                                                     </div>
                                                     <button
                                                         type="button"
                                                         role="switch"
                                                         aria-checked={preferences}
                                                         onClick={() => setPreferences(!preferences)}
-                                                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-teal-600 focus:ring-offset-2 ${preferences ? 'bg-teal-600' : 'bg-zinc-200 dark:bg-zinc-700'}`}
+                                                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2 ${preferences ? 'bg-zinc-900' : 'bg-zinc-200'}`}
                                                     >
                                                         <span
                                                             aria-hidden="true"
@@ -197,13 +197,13 @@ export default function CookieConsentBanner() {
                                     <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
                                         <button
                                             onClick={acceptAll}
-                                            className="flex-1 sm:flex-none px-6 py-3 bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 text-sm font-bold rounded-2xl hover:bg-zinc-800 dark:hover:bg-white transition-all active:scale-95 shadow-lg shadow-zinc-900/10 dark:shadow-zinc-50/10"
+                                            className="flex-1 sm:flex-none px-6 py-3 bg-zinc-900 text-white text-sm font-bold rounded-2xl hover:bg-zinc-800 transition-all active:scale-95 shadow-lg shadow-zinc-900/10"
                                         >
                                             {t('cookies.actions.acceptAll')}
                                         </button>
                                         <button
                                             onClick={showDetails ? saveCustom : rejectOptional}
-                                            className="flex-1 sm:flex-none px-6 py-3 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-50 text-sm font-semibold rounded-2xl border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-all active:scale-95"
+                                            className="flex-1 sm:flex-none px-6 py-3 bg-white text-zinc-900 text-sm font-semibold rounded-2xl border border-zinc-200 hover:bg-zinc-50 transition-all active:scale-95"
                                         >
                                             {showDetails ? t('cookies.actions.savePreferences') : t('cookies.actions.essentialOnly')}
                                         </button>
@@ -211,7 +211,7 @@ export default function CookieConsentBanner() {
                                     {!showDetails && (
                                         <button
                                             onClick={() => setShowDetails(true)}
-                                            className="w-full sm:w-auto px-4 py-2 text-zinc-500 dark:text-zinc-400 text-sm font-medium hover:text-teal-600 dark:hover:text-teal-400 transition-colors flex items-center justify-center gap-1 group"
+                                            className="w-full sm:w-auto px-4 py-2 text-zinc-500 text-sm font-medium hover:text-zinc-900 transition-colors flex items-center justify-center gap-1 group"
                                         >
                                             {t('cookies.actions.customize')}
                                             <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

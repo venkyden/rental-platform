@@ -88,6 +88,30 @@ fastapi_app.add_middleware(
 )
 
 
+from fastapi.exceptions import RequestValidationError
+from datetime import datetime
+
+@fastapi_app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    error_msg = f"Validation error on {request.method} {request.url.path}: {exc.errors()}\n"
+    error_msg += f"Request body: {exc.body}\n"
+    logger.error(error_msg)
+    
+    # Also write to a file we can read
+    try:
+        with open("validation_errors.log", "a") as f:
+            f.write(f"--- {datetime.now()} ---\n")
+            f.write(error_msg)
+            f.write("\n")
+    except Exception:
+        pass
+
+    return JSONResponse(
+        status_code=422,
+        content={"detail": exc.errors(), "body": str(exc.body)},
+    )
+
+
 # ------------------------------------------------------------------
 # Security Headers Middleware
 # ------------------------------------------------------------------
@@ -194,17 +218,21 @@ async def global_exception_handler(request: Request, exc: Exception):
     )
 
 
+@fastapi_app.get("/diagnostic-check")
+async def diagnostic_check():
+    return {"status": "ok"}
+
 # ------------------------------------------------------------------
 # Include all routers
 # ------------------------------------------------------------------
 from app.routers import (auth, location, onboarding, properties,
                          property_manager, verification)
 
+fastapi_app.include_router(properties.router)
 fastapi_app.include_router(auth.router)
 fastapi_app.include_router(property_manager.router)
 fastapi_app.include_router(onboarding.router)
 fastapi_app.include_router(verification.router)
-fastapi_app.include_router(properties.router)
 fastapi_app.include_router(location.router)
 
 from app.routers import webhooks
@@ -219,8 +247,9 @@ fastapi_app.include_router(messages.router)
 from app.routers import team
 fastapi_app.include_router(team.router)
 
-from app.routers import bulk
+from app.routers import bulk, stats
 fastapi_app.include_router(bulk.router)
+fastapi_app.include_router(stats.router)
 
 from app.routers import erp_webhooks
 fastapi_app.include_router(erp_webhooks.router)

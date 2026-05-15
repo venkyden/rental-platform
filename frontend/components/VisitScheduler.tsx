@@ -86,10 +86,10 @@ export default function VisitScheduler({ propertyId, rooms = [] }: VisitSchedule
     }, {} as Record<string, VisitSlot[]>);
 
     return (
-        <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-3xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] border border-white/50 dark:border-white/10 p-6">
-            <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-zinc-900 dark:text-white">
-                <Calendar className="w-5 h-5 text-teal-600" />
-                Manage Visit Availability
+        <div className="bg-zinc-50 border border-zinc-100 rounded-[2.5rem] p-10 shadow-inner">
+            <h3 className="text-2xl font-black text-zinc-900 mb-8 flex items-center gap-4 uppercase tracking-tighter">
+                <Calendar className="w-6 h-6" />
+                Availability Protocol
             </h3>
 
             {/* Room Tabs */}
@@ -97,20 +97,20 @@ export default function VisitScheduler({ propertyId, rooms = [] }: VisitSchedule
                 <div className="flex flex-wrap gap-2 mb-4">
                     <button
                         onClick={() => setSelectedRoom(null)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all border ${selectedRoom === null
-                                ? 'bg-teal-600 text-white border-teal-600'
-                                : 'bg-zinc-50 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700 hover:border-teal-300'
+                        className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${selectedRoom === null
+                                ? 'bg-zinc-900 text-white border-zinc-900 shadow-lg shadow-zinc-900/20'
+                                : 'bg-white text-zinc-400 border-zinc-200 hover:border-zinc-400'
                             }`}
                     >
-                        All Rooms
+                        All Assets
                     </button>
                     {rooms.map((room) => (
                         <button
                             key={`room-${room.index}`}
                             onClick={() => setSelectedRoom(room.index)}
-                            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all border ${selectedRoom === room.index
-                                    ? 'bg-teal-600 text-white border-teal-600'
-                                    : 'bg-zinc-50 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700 hover:border-teal-300'
+                            className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${selectedRoom === room.index
+                                    ? 'bg-zinc-900 text-white border-zinc-900 shadow-lg shadow-zinc-900/20'
+                                    : 'bg-white text-zinc-400 border-zinc-200 hover:border-zinc-400'
                                 }`}
                         >
                             {room.label}
@@ -120,14 +120,14 @@ export default function VisitScheduler({ propertyId, rooms = [] }: VisitSchedule
             )}
 
             {/* Add Slot Form */}
-            <div className="mb-6 p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl flex flex-wrap items-end gap-4">
+            <div className="mb-10 p-8 bg-white rounded-[2rem] border border-zinc-100 grid grid-cols-1 sm:grid-cols-4 gap-6 items-end">
                 {rooms.length > 0 && (
                     <div>
-                        <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">Room</label>
+                        <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">Asset</label>
                         <select
                             value={selectedRoom ?? ''}
                             onChange={(e) => setSelectedRoom(e.target.value ? parseInt(e.target.value) : null)}
-                            className="border border-zinc-200 dark:border-zinc-700 rounded-xl px-3 py-2 text-sm bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                            className="w-full border-none bg-zinc-50 rounded-xl px-4 py-3 text-sm font-bold text-zinc-900 focus:ring-2 focus:ring-zinc-900/10"
                         >
                             {rooms.map((room) => (
                                 <option key={room.index} value={room.index}>{room.label}</option>
@@ -136,57 +136,57 @@ export default function VisitScheduler({ propertyId, rooms = [] }: VisitSchedule
                     </div>
                 )}
                 <div>
-                    <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">Date</label>
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">Date</label>
                     <input
                         type="date"
                         value={selectedDate}
                         onChange={(e) => setSelectedDate(e.target.value)}
-                        className="border border-zinc-200 dark:border-zinc-700 rounded-xl px-3 py-2 text-sm bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                        className="w-full border-none bg-zinc-50 rounded-xl px-4 py-3 text-sm font-bold text-zinc-900 focus:ring-2 focus:ring-zinc-900/10"
                         min={new Date().toISOString().split('T')[0]}
                     />
                 </div>
                 <div>
-                    <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">Start Time</label>
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">Time</label>
                     <input
                         type="time"
                         value={selectedTime}
                         onChange={(e) => setSelectedTime(e.target.value)}
-                        className="border border-zinc-200 dark:border-zinc-700 rounded-xl px-3 py-2 text-sm bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                        className="w-full border-none bg-zinc-50 rounded-xl px-4 py-3 text-sm font-bold text-zinc-900 focus:ring-2 focus:ring-zinc-900/10"
                     />
                 </div>
                 <button
                     onClick={addSlot}
                     disabled={loading}
-                    className="bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-white px-4 py-2 rounded-xl text-sm font-medium hover:shadow-sm hover: disabled:opacity-50 flex items-center gap-2 transition-all"
+                    className="bg-zinc-900 text-white h-12 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                     <Plus className="w-4 h-4" />
-                    Add Slot
+                    Provision Slot
                 </button>
             </div>
 
             {/* Slot Display */}
             <div className="space-y-4">
-                <h4 className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                <h4 className="text-sm font-medium text-zinc-700">
                     Available Slots {selectedRoom !== null && rooms[selectedRoom] ? `— ${rooms[selectedRoom].label}` : ''}
                 </h4>
                 {Object.keys(groupedSlots).length === 0 ? (
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400 italic">No slots defined yet.</p>
+                    <p className="text-sm text-zinc-500 italic">No slots defined yet.</p>
                 ) : (
                     Object.entries(groupedSlots).map(([day, daySlots]) => (
-                        <div key={day} className="border-l-4 border-teal-200 dark:border-teal-800 pl-4 py-1">
-                            <p className="text-sm font-semibold text-zinc-900 dark:text-white mb-2">{day}</p>
+                        <div key={day} className="border-l-4 border-zinc-200 pl-4 py-1">
+                            <p className="text-sm font-semibold text-zinc-900 mb-2">{day}</p>
                             <div className="flex flex-wrap gap-2">
                                 {daySlots.map(slot => (
-                                    <div key={slot.id} className={`
-                                        text-xs px-3 py-1.5 rounded-full flex items-center gap-2
-                                        ${slot.is_booked
-                                            ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800'
-                                            : 'bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400'}
-                                    `}>
+                                     <div key={slot.id} className={`
+                                         text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full flex items-center gap-2 transition-all
+                                         ${slot.is_booked
+                                             ? 'bg-zinc-900 text-white shadow-lg shadow-zinc-900/20'
+                                             : 'bg-white border border-zinc-100 text-zinc-400 hover:text-zinc-900 hover:border-zinc-900'}
+                                     `}>
                                         <Clock className="w-3 h-3" />
                                         {new Date(slot.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                         {slot.room_label && (
-                                            <span className="text-[10px] bg-teal-50 dark:bg-teal-900/20 text-teal-600 dark:text-teal-400 px-1.5 py-0.5 rounded-full">
+                                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${slot.is_booked ? 'bg-white/20 text-white' : 'bg-zinc-100 text-zinc-900'}`}>
                                                 {slot.room_label}
                                             </span>
                                         )}

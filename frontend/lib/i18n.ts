@@ -2,50 +2,52 @@ export type Language = 'en' | 'fr';
 
 export const translations = {
     en: {
-        inbox: {
-            title: "Inbox",
-            unread: "unread",
-            viewAll: "View all",
-            empty: "No messages yet",
-            emptyDesc: "Your conversation history with tenants and landlords will appear here.",
-            selectPrompt: "Select a conversation",
-            selectDesc: "Click on a conversation to see messages",
-            searchPlaceholder: "Search...",
-            filters: {
-                all: "All",
-                active: "Active",
-                archived: "Archived"
-            },
-            status: {
-                noConversations: "No Conversations",
-                noConversationsDesc: "You don't have any messages yet. Tenant inquiries will appear here."
-            },
-            time: {
-                yesterday: "Yesterday"
-            }
-        },
         // Landing Page
         landing: {
-            title: "Welcome to Roomivo",
-            subtitle: "Identity verification, smart matching, and digital leases — everything you need to rent safely in France.",
-            getStarted: "Get Started",
-            signIn: "Sign In",
             hero: {
                 title: "Find your perfect home with confidence",
-                subtitle: "The all-in-one platform for secure rentals in France."
+                highlight: "perfect home",
+                searchPlaceholder: "Where do you want to live?",
+                searchButton: "Search"
+            },
+            subtitle: "The most secure and transparent rental platform in France. Verified listings, automated contracts, and end-to-end protection.",
+            getStarted: "Get Started",
+            signIn: "Sign In",
+            valueProp: {
+                title: "Why Choose Roomivo?",
+                subtitle: "The most secure and transparent way to rent in France.",
+                dossier: { title: "Digital Dossier", desc: "No more paper. Your verified identity and documents in one secure place." },
+                matching: { title: "AI-Powered Matching", desc: "Find properties that actually match your profile and criteria." },
+                legal: { title: "French Law Compliant", desc: "Digital leases generated according to the latest French regulations." },
+                payments: { title: "Secure Payments", desc: "Pay your rent and deposits through our integrated secure gateway." }
             },
             howItWorks: {
-                title: "How It Works",
-                subtitle: "Three simple steps to find your ideal home or perfect tenant.",
+                title: "How it Works",
+                subtitle: "Three steps to your next home in France",
                 steps: {
-                    profile: { title: "Create Your Profile", desc: "Sign up and verify your identity in minutes." },
-                    matching: { title: "Smart Matching", desc: "Our algorithm suggests the best matches based on your criteria." },
-                    lease: { title: "Digital Lease", desc: "Generate a legally-compliant French lease contract in a few clicks." }
+                    profile: { title: "Create Profile", desc: "Build your verified digital rental identity." },
+                    matching: { title: "Smart Matching", desc: "Connect with compatible listings instantly." },
+                    lease: { title: "Automated Lease", desc: "Sign legal contracts digitally and securely." }
                 }
             },
+            stats: {
+                listings: "Active Listings",
+                landlords: "Verified Landlords",
+                matches: "Recent Matches"
+            },
             cta: {
-                tenant: { title: "Looking for a home?", desc: "Build your digital dossier and apply in one click.", button: "I'm a tenant" },
-                landlord: { title: "Are you a landlord?", desc: "List your properties and receive verified applications.", button: "I'm a landlord" }
+                tenant: { title: "Looking for a home?", desc: "Join thousands of tenants finding verified homes in France.", button: "Browse Listings" },
+                landlord: { title: "Are you a landlord?", desc: "List your property and find the perfect, verified tenant.", button: "List Property" }
+            },
+            footer: {
+                platform: "Platform",
+                legal: "Legal",
+                support: "Support",
+                terms: "Terms of Sale",
+                privacy: "Privacy Policy",
+                notices: "Legal Notices",
+                help: "Help",
+                slogan: "Rent securely in France"
             }
         },
         cookies: {
@@ -72,6 +74,7 @@ export const translations = {
             }
         },
         common: {
+            locale: "en-GB",
             save: "Save",
             cancel: "Cancel",
             delete: "Delete",
@@ -83,6 +86,7 @@ export const translations = {
             next: "Next",
             submit: "Submit",
             loading: "Loading...",
+            recommended: "Recommended for your profile",
             requiredByLaw: "Required by Law",
             actions: {
                 profile: "My Profile",
@@ -177,6 +181,7 @@ export const translations = {
             welcome: "Welcome to Roomivo.",
             letsStart: "Let's start with your name",
             ready: "Ready to find your perfect home? We'll ask a few quick questions to personalize your experience.",
+            timeEstimate: "~2 mins to complete setup",
             saving: "Saving...",
             getStarted: "Get Started",
             skip: "Skip for now",
@@ -217,38 +222,11 @@ export const translations = {
                     situation: {
                         question: "What describes your situation best?",
                         options: {
-                            student_budget: "🎓 Student",
-                            family_stability: "👨‍👩‍👧‍👦 Employee/Family",
-                            flexibility_relocation: "💻 Freelancer/Remote",
+                            student: "🎓 Student",
+                            young_professional: "💼 Young Professional",
+                            self_employed: "💻 Freelance / Independent",
+                            retired: "👴 Retired",
                             other: "❓ Other"
-                        }
-                    },
-                    workplace: {
-                        question: "Where do you work?"
-                    },
-                    location: {
-                        question: "Where are you looking to rent?",
-                        placeholder: "e.g., Paris, Lyon, Marseille..."
-                    },
-                    budget: {
-                        question: "What's your monthly budget?"
-                    },
-                    lease_duration: {
-                        question: "How long do you plan to stay?",
-                        options: {
-                            short_term: "Short-term (3-6 months)",
-                            medium_term: "Medium-term (6-12 months)",
-                            long_term: "Long-term (1-2 years)",
-                            very_long_term: "Very long-term (2+ years)"
-                        }
-                    },
-                    move_in_timeline: {
-                        question: "When do you need to move in?",
-                        options: {
-                            asap: "ASAP (within 1 week)",
-                            soon: "Soon (within 2-4 weeks)",
-                            flexible: "Flexible (1-3 months)",
-                            browsing: "Just browsing for now"
                         }
                     },
                     nationality: { question: "Where are you from?" },
@@ -262,39 +240,49 @@ export const translations = {
                         options: { cdi: "CDI (Permanent)", cdd: "CDD (Fixed-term)", internship: "Internship", self_employed: "Self-employed", student: "Student", other: "Other" }
                     },
                     income: { question: "Net monthly income?" },
-                    university_q: { question: "Which university or school are you attending?" },
+                    university: { question: "Which university or school are you attending?" },
+                    workplace: { question: "Where do you work?" },
                     location_preference: { question: "Where would you like to live?" },
-                    budget_max: { question: "Max budget for rent?" },
-                    furnished_q: {
+                    budget: { question: "What's your maximum monthly budget?" },
+                    furnished_preference: {
                         question: "Furnished or unfurnished?",
                         options: { furnished: "Furnished", unfurnished: "Unfurnished", no_preference: "No preference" }
                     },
-                    surface: { question: "Minimum space needed?" },
-                    guarantor: {
+                    min_surface_area: { question: "Minimum space needed?" },
+                    guarantor_type: {
                         question: "Guarantor status?",
                         options: { visale: "Visale", garantme: "GarantMe", parents: "Parents", bank: "Bank Guarantee", none: "No Guarantor" }
                     },
-                    transport: {
+                    transport_needs: {
                         question: "Transport connectivity needed?",
                         options: { metro: "Metro", bus: "Bus", rer: "RER/Train", bike: "Bike Station" }
                     },
-                    services: {
+                    service_needs: {
                         question: "Nearby services needed?",
                         options: { grocery: "Grocery", hospital: "Hospital", pharmacy: "Pharmacy", atm: "ATM" }
                     },
-                    amenities: {
+                    must_have_amenities: {
                         question: "Must-have amenities? (Pick 3)",
                         options: { fiber: "Fiber Internet", parking: "Parking", balcony: "Balcony", elevator: "Elevator", laundry: "Laundry", dishwasher: "Dishwasher" }
                     },
-                    living: {
-                        question: "Living arrangement?",
-                        options: { solo: "Solo", couple: "Couple", roommates: "Roommates", family: "Family" }
+                    living_arrangement: {
+                        question: "Who will you be living with?",
+                        options: { solo: "Just me", couple: "As a couple", roommates: "With roommates", family: "With family" }
                     },
-                    pets: {
+                    move_in_timeline: {
+                        question: "How soon do you want to move in?",
+                        options: {
+                            asap: "ASAP (within 1 week)",
+                            soon: "Soon (within 2-4 weeks)",
+                            flexible: "Flexible (1-3 months)",
+                            browsing: "Just browsing for now"
+                        }
+                    },
+                    has_pets: {
                         question: "Do you have pets?",
                         options: { yes: "Yes", no: "No" }
                     },
-                    smoker: {
+                    is_smoker: {
                         question: "Are you a smoker?",
                         options: { yes: "Yes", no: "No" }
                     },
@@ -499,9 +487,9 @@ export const translations = {
                     resourceDesc: "Upload your professional or financial documents.",
                     success: {
                         identity: "Identity Verified!",
-                        identityMsg: "Your identity has been successfully verified.",
-                        employment: "Employment Verification",
-                        employmentMsg: "Your employment has been successfully verified."
+                        identityMsg: "Your identity has been successfully verified. You now have full access to high-trust rental listings.",
+                        employment: "Employment Verified!",
+                        employmentMsg: "Your employment has been successfully verified. This significantly improves your profile standing."
                     },
                     status: {
                         title: "Session Status",
@@ -518,6 +506,7 @@ export const translations = {
                         step4: "Wait for this screen to auto-sync"
                     },
                     steps: {
+                        detectedProfile: "Current Profile Situation",
                         selectType: "1. Select Document Type",
                         secureCapture: "2. Secure Capture"
                     },
@@ -542,6 +531,23 @@ export const translations = {
                         securing: "Securing Document...",
                         submit: "Submit for Verification"
                     },
+                    errors: {
+                        sessionCreationFailed: "Failed to create verification session",
+                        missingSelection: "Please select a document type and capture/upload all required photos",
+                        validationError: "Validation error",
+                        uploadFailed: "Upload failed. Please try again."
+                    },
+                    property: {
+                        loading: "Loading properties...",
+                        select: "Select Property",
+                        choose: "Choose a property...",
+                        notFound: "No properties found. Please add a property first.",
+                        count: {
+                            few: "1 - 4 Properties",
+                            medium: "5 - 100 Properties",
+                            many: "100+ Properties"
+                        }
+                    },
                     progress: {
                         title: "Verification Progress",
                         email: "Email",
@@ -563,6 +569,8 @@ export const translations = {
                 selectPrompt: "Select a conversation",
                 selectDesc: "Click on a conversation to see messages",
                 searchPlaceholder: "Search...",
+                secure: "Secure Communications",
+                encrypted: "End-to-End Encrypted",
                 filters: {
                     all: "All",
                     active: "Active",
@@ -805,6 +813,19 @@ export const translations = {
                 stepStatus: "Step {{current}} of 7: {{status}}",
                 initializing: "Initializing Asset Registry",
                 exit: "×",
+                wizard: {
+                    identity: "Details",
+                    location: "Location",
+                    specs: "Spaces",
+                    capacity: "Capacity",
+                    pricing: "Pricing",
+                    review: "Review",
+                    media: "Media"
+                },
+                error: {
+                    mandatoryDpe: "DPE Rating is mandatory in France.",
+                    invalidPrice: "Please enter a valid monthly rent."
+                },
                 types: {
                     apartment: "Apartment",
                     house: "House",
@@ -869,7 +890,7 @@ export const translations = {
             }
         },
         auth: {
-
+            google_signin: "Sign in with Google",
             verifyEmail: {
                 title: "Email Verification",
                 verifying: "Verifying your email...",
@@ -1457,6 +1478,8 @@ export const translations = {
                 "benefits": "Social / Family Benefits",
                 "pension": "Pension Proof",
                 "payslip": "Last 3 Payslips",
+                "bank_statement": "Last 3 Bank Statements",
+                "professional_card": "Professional Card / Identity Certificate",
                 "contract": "Employment Contract / Certificate",
                 "passport": "Passport",
                 "id_card": "National ID Card",
@@ -1466,35 +1489,133 @@ export const translations = {
                 "garantme": "Garantme Certificate",
                 "bank_funds": "Blocked Bank Funds Certificate",
                 "employer_cert": "Employer Certificate / Job Promise",
-                "foreign_tax": "Foreign Tax Return"
+                "foreign_tax": "Foreign Tax Return",
+                "property_deed": "Property Deed (Titre de propriété)",
+                "property_tax_notice": "Property Tax Notice (Taxe foncière)",
+                "company_kbis": "Company Kbis (Professional Landlord)",
+                "management_mandate": "Management Mandate (for Agencies)"
         },
         search: {
-            title: "Find your next home",
-            subtitle: "Find your next home in France",
+            discovery: "Marketplace Discovery",
+            subtitle: "Find your next home",
+            welcome_user: "Your Next Home, {{name}}",
             resultsCount: "Explore {{count}} curated listings tailored to your preferences.",
+            loadMore: "Discover More Listings",
+            sort: {
+                label: "Sort by",
+                newest: "Newest",
+                priceAsc: "Price: Low to High",
+                priceDesc: "Price: High to Low",
+                sizeDesc: "Largest Surface"
+            },
             filters: {
                 location: "Location",
-                locationPlaceholder: "Paris, Lyon, Bordeaux...",
-                maxBudget: "Max Budget",
+                locationPlaceholder: "Where would you like to live?",
                 budget: "Budget",
                 furnished: "Furnished",
                 colocation: "Colocation",
                 caf: "CAF Eligible",
-                searchButton: "Search"
+                searchButton: "Search",
+                resetExploration: "Reset Exploration",
+                setupMatchProfile: "Setup Match Profile",
+                highMatch: "High Match",
+                verified: "Verified",
+                allTypes: "All Types",
+                wishlist: "Wishlist"
             },
             property: {
-                mo: "mo",
-                furnished: "FURNISHED",
-                bed: "Bed",
-                viewDetails: "View Details"
+                mo: "/ Month",
+                furnished: "Premium Furnished",
+                viewDetails: "Explore"
             },
             status: {
-                loading: "Loading properties...",
+                loading: "Initializing Discovery...",
+                compatibilityIndex: "Compatibility Index",
                 error: "Impossible to load listings.",
-                noResults: "No results found",
-                noResultsDesc: "Try expanding your search criteria."
-            },
+                noResults: "Market Vacant",
+                noResultsDesc: "Try expanding your search parameters to discover hidden gems."
+            }
         },
+        legal: {
+            terms: {
+                title: 'Terms of Use',
+                subtitle: 'Conditions Générales d\'Utilisation (CGU)',
+                description: 'By using Roomivo, you agree to these terms governing our automated trust ecosystem.',
+                sections: {
+                    service: {
+                        title: '1. Service Description',
+                        content: 'Roomivo is a high-fidelity technology platform for secure rental transactions. We provide digital infrastructure for identity verification and financial assessment. We are not a real estate agency.'
+                    },
+                    obligations: {
+                        title: '2. User Obligations',
+                        content: 'Users must provide accurate information. Forgery or deceptive documents result in immediate account termination. You are responsible for account security.'
+                    },
+                    fraud: {
+                        title: '3. Fraud Prevention',
+                        content: 'Our AI systems actively monitor for discrepancies. Manipulation of the Trust Score is prohibited and may be reported to legal authorities.'
+                    },
+                    liability: {
+                        title: '4. Limitation of Liability',
+                        content: 'Rental decisions rest solely with the parties involved. Roomivo is not liable for transaction outcomes or user disputes.'
+                    }
+                },
+                lastUpdated: 'Last updated: April 2026'
+            },
+            privacy: {
+                title: 'Privacy Policy',
+                subtitle: 'Data Protection & Trust',
+                description: 'Your data is encrypted and managed with strict adherence to GDPR standards.',
+                sections: {
+                    collection: {
+                        title: 'Data Collection',
+                        content: 'We collect identity, income, and employment data strictly for rental verification purposes.'
+                    },
+                    encryption: {
+                        title: 'Military-Grade Encryption',
+                        content: 'All PII is encrypted at rest using industry-standard protocols. Your documents are only visible to authorized parties.'
+                    }
+                }
+            },
+            notice: {
+                title: 'Legal Notice',
+                subtitle: 'Administrative Compliance',
+                editor: {
+                    title: 'Site Editor',
+                    company: 'Roomivo SAS',
+                    form: 'Société par Actions Simplifiée (SAS)',
+                    capital: 'Capital: 10,000 €',
+                    hq: 'Headquarters: Paris, France',
+                    labels: {
+                        company: 'Company',
+                        form: 'Legal Form',
+                        capital: 'Capital',
+                        hq: 'Headquarters'
+                    }
+                },
+                infrastructure: {
+                    title: 'Infrastructure',
+                    frontend: {
+                        title: 'Frontend Hosting',
+                        company: 'Vercel Inc.',
+                        address: '440 N Barranca Ave #4133, Covina, CA 91723, USA'
+                    },
+                    backend: {
+                        title: 'Backend Logic',
+                        company: 'Railway Corporation',
+                        address: '548 Market St, San Francisco, CA 94104, USA'
+                    }
+                }
+            },
+            gdpr: {
+                title: 'GDPR Rights'
+            }
+        },
+        globalFooter: {
+            help: "Help & Support",
+            rights: "All rights reserved.",
+            status: "System Operational"
+        },
+
         disputes: {
             title: "Incident Reports",
             subtitle: "Track and manage your property disputes",
@@ -1715,6 +1836,58 @@ export const translations = {
                     daily: "Daily",
                     weekly: "Weekly"
                 }
+            },
+            legal: {
+                terms: {
+                    title: 'Terms of Use',
+                    subtitle: 'Conditions Générales d\'Utilisation (CGU)',
+                    description: 'By using Roomivo, you agree to these terms governing our automated trust ecosystem.',
+                    sections: {
+                        service: {
+                            title: '1. Service Description',
+                            content: 'Roomivo is a high-fidelity technology platform for secure rental transactions. We provide digital infrastructure for identity verification and financial assessment. We are not a real estate agency.'
+                        },
+                        obligations: {
+                            title: '2. User Obligations',
+                            content: 'Users must provide accurate information. Forgery or deceptive documents result in immediate account termination. You are responsible for account security.'
+                        },
+                        fraud: {
+                            title: '3. Fraud Prevention',
+                            content: 'Our AI systems actively monitor for discrepancies. Manipulation of the Trust Score is prohibited and may be reported to legal authorities.'
+                        },
+                        liability: {
+                            title: '4. Limitation of Liability',
+                            content: 'Rental decisions rest solely with the parties involved. Roomivo is not liable for transaction outcomes or user disputes.'
+                        }
+                    },
+                    lastUpdated: 'Last updated: April 2026'
+                },
+                privacy: {
+                    title: 'Privacy Policy',
+                    subtitle: 'Data Protection & Trust',
+                    description: 'Your data is encrypted and managed with strict adherence to GDPR standards.',
+                    sections: {
+                        collection: {
+                            title: 'Data Collection',
+                            content: 'We collect identity, income, and employment data strictly for rental verification purposes.'
+                        },
+                        encryption: {
+                            title: 'Military-Grade Encryption',
+                            content: 'All PII is encrypted at rest using industry-standard protocols. Your documents are only visible to authorized parties.'
+                        }
+                    }
+                },
+                notice: {
+                    title: 'Legal Notice',
+                    subtitle: 'Mentions Légales',
+                    editor: {
+                        title: 'Site Editor',
+                        company: 'Roomivo SAS',
+                        form: 'Société par Actions Simplifiée (SAS)',
+                        capital: 'Capital: 10,000 €',
+                        hq: 'Headquarters: Paris, France'
+                    }
+                }
             }
         }
     },
@@ -1742,6 +1915,7 @@ export const translations = {
             }
         },
         common: {
+            locale: "fr-FR",
             save: "Enregistrer",
             cancel: "Annuler",
             delete: "Supprimer",
@@ -1753,6 +1927,7 @@ export const translations = {
             next: "Suivant",
             submit: "Envoyer",
             loading: "Chargement...",
+            recommended: "Recommandé pour votre profil",
             requiredByLaw: "Obligatoire par la loi",
             actions: {
                 profile: "Mon Profil",
@@ -1844,26 +2019,50 @@ export const translations = {
         },
         // Landing Page
         landing: {
-            title: "Bienvenue sur Roomivo",
-            subtitle: "Vérification d'identité, matching intelligent et baux numériques — tout ce dont vous avez besoin pour louer en toute sécurité en France.",
+            hero: {
+                title: "Trouvez votre foyer idéal avec confiance",
+                highlight: "foyer idéal",
+                searchPlaceholder: "Où voulez-vous vivre ?",
+                searchButton: "Rechercher"
+            },
+            subtitle: "La plateforme de location la plus sécurisée et transparente de France. Annonces vérifiées, contrats automatisés et protection de bout en bout.",
             getStarted: "Commencer",
             signIn: "Se connecter",
-            hero: {
-                title: "Trouvez votre foyer idéal en toute confiance",
-                subtitle: "La plateforme tout-en-un pour des locations sécurisées en France."
+            valueProp: {
+                title: "Pourquoi Choisir Roomivo ?",
+                subtitle: "La façon la plus sécurisée et transparente de louer en France.",
+                dossier: { title: "Dossier Numérique", desc: "Plus de papier. Votre identité et vos documents vérifiés en un seul lieu sûr." },
+                matching: { title: "Matching IA", desc: "Trouvez des biens qui correspondent réellement à votre profil et vos critères." },
+                legal: { title: "Conforme à la Loi Française", desc: "Baux numériques générés selon les dernières réglementations françaises." },
+                payments: { title: "Paiements Sécurisés", desc: "Payez votre loyer et vos dépôts via notre passerelle sécurisée intégrée." }
             },
             howItWorks: {
                 title: "Comment ça marche",
-                subtitle: "Trois étapes simples pour trouver votre foyer idéal ou le locataire parfait.",
+                subtitle: "Trois étapes vers votre futur logement en France",
                 steps: {
-                    profile: { title: "Créez votre profil", desc: "Inscrivez-vous et vérifiez votre identité en quelques minutes." },
-                    matching: { title: "Matching Intelligent", desc: "Notre algorithme suggère les meilleures correspondances selon vos critères." },
-                    lease: { title: "Bail Numérique", desc: "Générez un contrat de bail conforme en quelques clics." }
+                    profile: { title: "Profil Vérifié", desc: "Créez votre identité numérique locative sécurisée." },
+                    matching: { title: "Matching Intelligent", desc: "Connectez-vous instantanément aux meilleures annonces." },
+                    lease: { title: "Bail Automatisé", desc: "Signez vos contrats légaux en toute sécurité." }
                 }
             },
+            stats: {
+                listings: "Annonces actives",
+                landlords: "Bailleurs vérifiés",
+                matches: "Matchs récents"
+            },
             cta: {
-                tenant: { title: "Vous cherchez un logement ?", desc: "Constituez votre dossier numérique et postulez en un clic.", button: "Je suis locataire" },
-                landlord: { title: "Vous êtes propriétaire ?", desc: "Listez vos biens et recevez des candidatures vérifiées.", button: "Je suis propriétaire" }
+                tenant: { title: "Vous cherchez un logement ?", desc: "Rejoignez des milliers de locataires trouvant des biens vérifiés.", button: "Parcourir les annonces" },
+                landlord: { title: "Vous êtes propriétaire ?", desc: "Publiez votre annonce et trouvez le locataire idéal.", button: "Publier une annonce" }
+            },
+            footer: {
+                platform: "Plateforme",
+                legal: "Légal",
+                support: "Support",
+                terms: "CGV",
+                privacy: "Confidentialité",
+                notices: "Mentions Légales",
+                help: "Aide",
+                slogan: "Louez en toute sécurité en France"
             }
         },
         cookies: {
@@ -1894,6 +2093,7 @@ export const translations = {
             welcome: "Bienvenue sur Roomivo.",
             letsStart: "Commençons par votre nom",
             ready: "Prêt à trouver votre logement idéal ? Nous allons vous poser quelques questions rapides pour personnaliser votre expérience.",
+            timeEstimate: "~2 min pour finaliser",
             saving: "Enregistrement...",
             getStarted: "Commencer",
             skip: "Passer pour l'instant",
@@ -1934,38 +2134,11 @@ export const translations = {
                     situation: {
                         question: "Quelle situation vous décrit le mieux ?",
                         options: {
-                            student_budget: "🎓 Étudiant",
-                            family_stability: "👨‍👩‍👧‍👦 Salarié / Famille",
-                            flexibility_relocation: "💻 Freelance / Remote",
-                            other: "❓ Autre"
-                        }
-                    },
-                    workplace: {
-                        question: "Où travaillez-vous ?"
-                    },
-                    location: {
-                        question: "Où souhaitez-vous louer ?",
-                        placeholder: "ex: Paris, Lyon, Marseille..."
-                    },
-                    budget: {
-                        question: "Quel est votre budget mensuel ?"
-                    },
-                    lease_duration: {
-                        question: "Combien de temps comptez-vous rester ?",
-                        options: {
-                            short_term: "Court terme (3-6 mois)",
-                            medium_term: "Moyen terme (6-12 mois)",
-                            long_term: "Long terme (1-2 ans)",
-                            very_long_term: "Très long terme (2 ans+)"
-                        }
-                    },
-                    move_in_timeline: {
-                        question: "Quand devez-vous emménager ?",
-                        options: {
-                            asap: "Dès que possible (sous 1 semaine)",
-                            soon: "Bientôt (sous 2-4 semaines)",
-                            flexible: "Flexible (1-3 mois)",
-                            browsing: "Je regarde juste pour le moment"
+                            student: "🎓 Étudiant",
+                            young_professional: "💼 Jeune actif",
+                            self_employed: "💻 Indépendant",
+                            retired: "👴 Retraité",
+                            other: "❓ Autres"
                         }
                     },
                     nationality: { question: "D'où venez-vous ?" },
@@ -1979,39 +2152,49 @@ export const translations = {
                         options: { cdi: "CDI", cdd: "CDD", internship: "Stage / Alternance", self_employed: "Indépendant", student: "Étudiant", other: "Autre" }
                     },
                     income: { question: "Revenu net mensuel ?" },
-                    university_q: { question: "Quelle université ou école fréquentez-vous ?" },
+                    university: { question: "Quelle université ou école fréquentez-vous ?" },
+                    workplace: { question: "Où travaillez-vous ?" },
                     location_preference: { question: "Où aimeriez-vous habiter ?" },
-                    budget_max: { question: "Budget max pour le loyer ?" },
-                    furnished_q: {
+                    budget: { question: "Quel est votre budget mensuel maximum ?" },
+                    furnished_preference: {
                         question: "Meublé ou non meublé ?",
                         options: { furnished: "Meublé", unfurnished: "Non meublé", no_preference: "Pas de préférence" }
                     },
-                    surface: { question: "Surface minimale souhaitée ?" },
-                    guarantor: {
+                    min_surface_area: { question: "Surface minimale souhaitée ?" },
+                    guarantor_type: {
                         question: "Statut du garant ?",
                         options: { visale: "Visale", garantme: "GarantMe", parents: "Parents", bank: "Caution bancaire", none: "Pas de garant" }
                     },
-                    transport: {
+                    transport_needs: {
                         question: "Transports nécessaires ?",
                         options: { metro: "Métro", bus: "Bus", rer: "RER / Train", bike: "Station vélo" }
                     },
-                    services: {
+                    service_needs: {
                         question: "Services de proximité ?",
                         options: { grocery: "Épicerie / Supermarché", hospital: "Hôpital", pharmacy: "Pharmacie", atm: "DAB" }
                     },
-                    amenities: {
+                    must_have_amenities: {
                         question: "Équipements indispensables ? (Max 3)",
                         options: { fiber: "Fibre Internet", parking: "Parking", balcony: "Balcon", elevator: "Ascenseur", laundry: "Laverie / Lave-linge", dishwasher: "Lave-vaisselle" }
                     },
-                    living: {
-                        question: "Mode de vie ?",
-                        options: { solo: "Seul", couple: "En couple", roommates: "Colocation", family: "En famille" }
+                    living_arrangement: {
+                        question: "Avec qui allez-vous habiter ?",
+                        options: { solo: "Seul", couple: "En couple", roommates: "En colocation", family: "En famille" }
                     },
-                    pets: {
+                    move_in_timeline: {
+                        question: "Quand souhaitez-vous emménager ?",
+                        options: {
+                            asap: "Dès que possible (sous 1 semaine)",
+                            soon: "Bientôt (sous 2-4 semaines)",
+                            flexible: "Flexible (1-3 mois)",
+                            browsing: "Je regarde juste pour le moment"
+                        }
+                    },
+                    has_pets: {
                         question: "Avez-vous des animaux ?",
                         options: { yes: "Oui", no: "Non" }
                     },
-                    smoker: {
+                    is_smoker: {
                         question: "Êtes-vous fumeur ?",
                         options: { yes: "Oui", no: "Non" }
                     },
@@ -2214,9 +2397,9 @@ export const translations = {
                     resourceDesc: "Téléchargez vos documents professionnels ou financiers.",
                     success: {
                         identity: "Identité Vérifiée !",
-                        identityMsg: "Votre identité a été vérifiée avec succès.",
-                        employment: "Vérification d'Emploi",
-                        employmentMsg: "Votre emploi a été vérifié avec succès."
+                        identityMsg: "Votre identité a été vérifiée avec succès. Vous avez maintenant un accès complet aux annonces de haute confiance.",
+                        employment: "Emploi Vérifié !",
+                        employmentMsg: "Votre situation professionnelle a été vérifiée avec succès. Cela améliore considérablement votre profil."
                     },
                     status: {
                         title: "Statut de la session",
@@ -2233,6 +2416,7 @@ export const translations = {
                         step4: "Attendez que cet écran se synchronise automatiquement"
                     },
                     steps: {
+                        detectedProfile: "Profil Actuel Détecté",
                         selectType: "1. Sélectionnez le type de document",
                         secureCapture: "2. Capture sécurisée"
                     },
@@ -2257,6 +2441,23 @@ export const translations = {
                         securing: "Sécurisation du document...",
                         submit: "Soumettre pour vérification"
                     },
+                    errors: {
+                        sessionCreationFailed: "Échec de la création de la session de vérification",
+                        missingSelection: "Veuillez sélectionner un type de document et capturer/télécharger toutes les photos requises",
+                        validationError: "Erreur de validation",
+                        uploadFailed: "Échec du téléchargement. Veuillez réessayer."
+                    },
+                    property: {
+                        loading: "Chargement des propriétés...",
+                        select: "Sélectionner la propriété",
+                        choose: "Choisir une propriété...",
+                        notFound: "Aucune propriété trouvée. Veuillez d'abord ajouter une propriété.",
+                        count: {
+                            few: "1 - 4 Propriétés",
+                            medium: "5 - 100 Propriétés",
+                            many: "100+ Propriétés"
+                        }
+                    },
                     progress: {
                         title: "Progression des vérifications",
                         email: "Email",
@@ -2269,6 +2470,24 @@ export const translations = {
                     }
                 }
             },
+            properties: {
+                portfolioManagement: "Gestion du Portefeuille",
+                yourProperties: "Vos Biens",
+                description: "Gérez vos annonces et suivez les performances de vos biens.",
+                addProperty: "Ajouter un Bien",
+                listingsCount: "{{count}} Annonces",
+                filters: {
+                    all: "Tous",
+                    draft: "Brouillons",
+                    active: "Actifs"
+                },
+                emptyTitle: "Aucun bien trouvé",
+                emptyDescription: "Vous n'avez pas encore ajouté de bien. Commencez dès maintenant pour trouver vos futurs locataires."
+            },
+            roles: {
+                tenant: "Locataire",
+                landlord: "Bailleur"
+            },
             inbox: {
                 title: "Boîte de réception",
                 unread: "non lu(s)",
@@ -2278,6 +2497,8 @@ export const translations = {
                 selectPrompt: "Sélectionnez une conversation",
                 selectDesc: "Cliquez sur une conversation pour voir les messages",
                 searchPlaceholder: "Rechercher...",
+                secure: "Communications Sécurisées",
+                encrypted: "Chiffré de bout en bout",
                 filters: {
                     all: "Toutes",
                     active: "Actives",
@@ -2519,6 +2740,19 @@ export const translations = {
                 stepStatus: "Étape {{current}} sur 7 : {{status}}",
                 initializing: "Initialisation du Registre des Actifs",
                 exit: "×",
+                wizard: {
+                    identity: "Détails",
+                    location: "Localisation",
+                    specs: "Espaces",
+                    capacity: "Capacité",
+                    pricing: "Loyer",
+                    review: "Révision",
+                    media: "Médias"
+                },
+                error: {
+                    mandatoryDpe: "Le diagnostic DPE est obligatoire en France.",
+                    invalidPrice: "Veuillez entrer un loyer mensuel valide."
+                },
                 types: {
                     apartment: "Appartement",
                     house: "Maison",
@@ -2583,6 +2817,7 @@ export const translations = {
             }
         },
         auth: {
+            google_signin: "Se connecter avec Google",
             verifyEmail: {
                 title: "Vérification de l'email",
                 verifying: "Vérification de votre email...",
@@ -3013,7 +3248,42 @@ export const translations = {
             colocOk: "Coloc OK",
             guarantorReq: "Garant requis",
             noGuarantor: "Sans garant",
-            loginToView: "Connectez-vous pour voir les détails"
+            loginToView: "Connectez-vous pour voir les détails",
+            locationTitle: "Localisation Vérifiée",
+//             energyTitle: "Intelligence Énergétique",
+            share: {
+                copied: "Lien copié dans le presse-papiers"
+            },
+//             actions: {
+//                 back: "Retour aux annonces",
+//                 edit: "Configurer",
+//                 publishing: "Publication...",
+//                 publish: "Publier l'annonce",
+//                 delete: "Supprimer le bien",
+//                 deleteConfirm: "Êtes-vous sûr de vouloir supprimer ce bien ? Cette action est irréversible.",
+//                 apply: "Postuler",
+//                 message: "Contacter le bailleur"
+//             },
+//             status: {
+//                 published: "Marché Actif",
+//                 draft: "Protocole Brouillon",
+//                 available: "Disponible le",
+//                 notPublishedNotice: "Ce bien est actuellement un brouillon et n'est pas visible par les locataires.",
+//                 stats: "Statistiques de l'annonce",
+//                 views: "Vues totales",
+//                 listed: "Mis en ligne le",
+//                 publishedAt: "Publié le"
+//             },
+//             apply: {
+//                 title: "Protocole de Candidature",
+//                 desc: "Présentez-vous au bailleur. Une lettre de motivation personnalisée augmente vos chances de 60%.",
+//                 placeholder: "Décrivez votre profil, votre style de vie et la durée souhaitée...",
+//                 cancel: "Avorter",
+//                 send: "Envoyer la candidature",
+//                 sending: "Envoi en cours...",
+//                 success: "Candidature envoyée avec succès !",
+//                 error: "Échec de l'envoi de la candidature"
+//             }
         },
         "dossier": {
                 "category": {
@@ -3131,6 +3401,11 @@ export const translations = {
                 "tenantEmail": "Email du locataire",
                 "startDate": "Date de début du bail",
                 "financialConditions": "Conditions financières",
+                "benefits": "Allocations sociales / familiales",
+                "pension": "Justificatif de pension",
+                "payslip": "3 derniers bulletins de salaire",
+                "bank_statement": "3 derniers relevés bancaires",
+                "professional_card": "Carte professionnelle / Justificatif d'identité",
                 "monthlyRent": "Loyer mensuel",
                 "charges": "Charges",
                 "securityDeposit": "Dépôt de garantie",
@@ -3151,6 +3426,8 @@ export const translations = {
                 "benefits": "Prestations sociales / familiales",
                 "pension": "Justificatif de retraite",
                 "payslip": "3 derniers bulletins de paie",
+                "bank_statement": "3 derniers relevés bancaires",
+                "professional_card": "Carte professionnelle / Justificatif d'identité",
                 "contract": "Contrat de travail / Attestation employeur",
                 "passport": "Passeport",
                 "id_card": "Carte nationale d'identité",
@@ -3160,35 +3437,147 @@ export const translations = {
                 "garantme": "Certificat Garantme",
                 "bank_funds": "Certificat de blocage de fonds bancaires",
                 "employer_cert": "Attestation employeur / Promesse d'embauche",
-                "foreign_tax": "Avis d'imposition étranger"
+                "foreign_tax": "Avis d'imposition étranger",
+                "property_deed": "Titre de propriété",
+                "property_tax_notice": "Avis de taxe foncière",
+                "company_kbis": "Extrait Kbis (Bailleur Professionnel)",
+                "management_mandate": "Mandat de gestion (pour Agences)"
         },
         search: {
-            title: "Trouvez votre futur chez-vous",
-            subtitle: "Trouvez votre prochain logement en France",
+            discovery: "Découverte du Marché",
+            subtitle: "Trouvez votre futur chez-vous",
+            welcome_user: "Votre futur chez-vous, {{name}}",
             resultsCount: "Explorez {{count}} annonces sélectionnées selon vos préférences.",
+            loadMore: "Découvrir plus d'annonces",
+            sort: {
+                label: "Trier par",
+                newest: "Plus récent",
+                priceAsc: "Prix : Croissant",
+                priceDesc: "Prix : Décroissant",
+                sizeDesc: "Plus grande surface"
+            },
             filters: {
                 location: "Localisation",
-                locationPlaceholder: "Paris, Lyon, Bordeaux...",
-                maxBudget: "Budget Max",
+                locationPlaceholder: "Où voulez-vous vivre ?",
                 budget: "Budget",
                 furnished: "Meublé",
                 colocation: "Colocation",
                 caf: "Éligible CAF",
-                searchButton: "Rechercher"
+                searchButton: "Rechercher",
+                resetExploration: "Réinitialiser l'exploration",
+                setupMatchProfile: "Configurer le profil",
+                highMatch: "Compatibilité Élevée",
+                verified: "Vérifié",
+                allTypes: "Tous les types",
+                wishlist: "Favoris"
             },
             property: {
-                mo: "mois",
-                furnished: "MEUBLÉ",
-                bed: "Chambre",
-                viewDetails: "Voir détails"
+                mo: "/ mois",
+                furnished: "Meublé Premium",
+                viewDetails: "Explorer"
             },
             status: {
-                loading: "Chargement des annonces...",
+                loading: "Initialisation de la découverte...",
+                compatibilityIndex: "Indice de compatibilité",
                 error: "Impossible de charger les annonces.",
-                noResults: "Aucun résultat trouvé",
-                noResultsDesc: "Essayez d'élargir vos critères de recherche."
+                noResults: "Marché Vacant",
+                noResultsDesc: "Essayez d'élargir vos paramètres de recherche pour découvrir des pépites."
+            },
+            detail: {
+                matrix: {
+                    surface: "Surface habitable",
+                    bedrooms: "Chambres",
+                    bathrooms: "Salles de bain",
+                    floor: "Étage"
+                },
+                match: {
+                    title: "Indice de Compatibilité",
+                    reason1: "Correspond à votre budget",
+                    reason2: "Proximité idéale des pôles d'activité",
+                    reason3: "Équipements premium inclus"
+                }
             }
         },
+        legal: {
+            terms: {
+                title: 'Conditions d\'Utilisation',
+                subtitle: 'Conditions Générales d\'Utilisation (CGU)',
+                description: 'En utilisant Roomivo, vous acceptez ces conditions régissant notre écosystème de confiance automatisé.',
+                sections: {
+                    service: {
+                        title: '1. Description du Service',
+                        content: 'Roomivo est une plateforme technologique pour les transactions locatives sécurisées. Nous fournissons l\'infrastructure numérique pour la vérification d\'identité et l\'évaluation financière. Nous ne sommes pas une agence immobilière.'
+                    },
+                    obligations: {
+                        title: '2. Obligations de l\'Utilisateur',
+                        content: 'Les utilisateurs doivent fournir des informations exactes. La falsification ou les documents trompeurs entraînent la résiliation immédiate du compte. Vous êtes responsable de la sécurité de votre compte.'
+                    },
+                    fraud: {
+                        title: '3. Prévention de la Fraude',
+                        content: 'Nos systèmes d\'IA surveillent activement les anomalies. La manipulation du Trust Score est interdite et peut être signalée aux autorités légales.'
+                    },
+                    liability: {
+                        title: '4. Limitation de Responsabilité',
+                        content: 'Les décisions de location incombent exclusivement aux parties concernées. Roomivo n\'est pas responsable des issues de transactions ou des litiges.'
+                    }
+                },
+                lastUpdated: 'Dernière mise à jour : Avril 2026'
+            },
+            privacy: {
+                title: 'Confidentialité',
+                subtitle: 'Protection des Données',
+                description: 'Vos données sont cryptées et gérées dans le strict respect des normes RGPD.',
+                sections: {
+                    collection: {
+                        title: 'Collecte des Données',
+                        content: 'Nous collectons des données d\'identité, de revenus et d\'emploi strictement à des fins de vérification locative.'
+                    },
+                    encryption: {
+                        title: 'Cryptage de Niveau Militaire',
+                        content: 'Toutes les données personnelles sont cryptées au repos selon les protocoles standards. Vos documents ne sont visibles que par les parties autorisées.'
+                    }
+                }
+            },
+            notice: {
+                title: 'Mentions Légales',
+                subtitle: 'Conformité Administrative',
+                editor: {
+                    title: 'Éditeur du Site',
+                    company: 'Roomivo SAS',
+                    form: 'Société par Actions Simplifiée (SAS)',
+                    capital: 'Capital : 10 000 €',
+                    hq: 'Siège social : Paris, France',
+                    labels: {
+                        company: 'Société',
+                        form: 'Forme Juridique',
+                        capital: 'Capital',
+                        hq: 'Siège Social'
+                    }
+                },
+                infrastructure: {
+                    title: 'Infrastructure',
+                    frontend: {
+                        title: 'Hébergement Frontend',
+                        company: 'Vercel Inc.',
+                        address: '440 N Barranca Ave #4133, Covina, CA 91723, USA'
+                    },
+                    backend: {
+                        title: 'Logique Backend',
+                        company: 'Railway Corporation',
+                        address: '548 Market St, San Francisco, CA 94104, USA'
+                    }
+                }
+            },
+            gdpr: {
+                title: 'Droits RGPD'
+            }
+        },
+        globalFooter: {
+            help: "Aide & Support",
+            rights: "Tous droits réservés.",
+            status: "Système Opérationnel"
+        },
+
         disputes: {
             title: "Signalements d'incidents",
             subtitle: "Suivez et gérez vos litiges immobiliers",
@@ -3408,6 +3797,58 @@ export const translations = {
                     instant: "Instantané",
                     daily: "Quotidien",
                     weekly: "Hebdomadaire"
+                }
+            },
+            legal: {
+                terms: {
+                    title: 'Conditions d\'Utilisation',
+                    subtitle: 'Conditions Générales d\'Utilisation (CGU)',
+                    description: 'En utilisant Roomivo, vous acceptez ces conditions régissant notre écosystème de confiance automatisé.',
+                    sections: {
+                        service: {
+                            title: '1. Description du Service',
+                            content: 'Roomivo est une plateforme technologique pour les transactions locatives sécurisées. Nous fournissons l\'infrastructure numérique pour la vérification d\'identité et l\'évaluation financière. Nous ne sommes pas une agence immobilière.'
+                        },
+                        obligations: {
+                            title: '2. Obligations de l\'Utilisateur',
+                            content: 'Les utilisateurs doivent fournir des informations exactes. La falsification ou les documents trompeurs entraînent la résiliation immédiate du compte. Vous êtes responsable de la sécurité de votre compte.'
+                        },
+                        fraud: {
+                            title: '3. Prévention de la Fraude',
+                            content: 'Nos systèmes d\'IA surveillent activement les anomalies. La manipulation du Trust Score est interdite et peut être signalée aux autorités légales.'
+                        },
+                        liability: {
+                            title: '4. Limitation de Responsabilité',
+                            content: 'Les décisions de location incombent exclusivement aux parties concernées. Roomivo n\'est pas responsable des issues de transactions ou des litiges.'
+                        }
+                    },
+                    lastUpdated: 'Dernière mise à jour : Avril 2026'
+                },
+                privacy: {
+                    title: 'Confidentialité',
+                    subtitle: 'Protection des Données',
+                    description: 'Vos données sont cryptées et gérées dans le strict respect des normes RGPD.',
+                    sections: {
+                        collection: {
+                            title: 'Collecte des Données',
+                            content: 'Nous collectons des données d\'identité, de revenus et d\'emploi strictement à des fins de vérification locative.'
+                        },
+                        encryption: {
+                            title: 'Cryptage de Niveau Militaire',
+                            content: 'Toutes les données personnelles sont cryptées au repos selon les protocoles standards. Vos documents ne sont visibles que par les parties autorisées.'
+                        }
+                    }
+                },
+                notice: {
+                    title: 'Mentions Légales',
+                    subtitle: 'Informations Légales',
+                    editor: {
+                        title: 'Éditeur du Site',
+                        company: 'Roomivo SAS',
+                        form: 'Société par Actions Simplifiée (SAS)',
+                        capital: 'Capital : 10 000 €',
+                        hq: 'Siège social : Paris, France'
+                    }
                 }
             }
         }

@@ -16,20 +16,20 @@ interface RoleSwitcherProps {
 const ROLE_CONFIG: Record<string, { icon: React.ReactNode; color: string; bgColor: string; dashboardPath: string }> = {
     tenant: {
         icon: <Home className="w-4 h-4" />,
-        color: 'text-teal-600 dark:text-teal-400',
-        bgColor: 'bg-teal-50 dark:bg-teal-900/30',
+        color: 'text-zinc-900',
+        bgColor: 'bg-zinc-100',
         dashboardPath: '/dashboard',
     },
     landlord: {
         icon: <UserCircle className="w-4 h-4" />,
-        color: 'text-blue-600 dark:text-blue-400',
-        bgColor: 'bg-blue-50 dark:bg-blue-900/30',
+        color: 'text-zinc-900',
+        bgColor: 'bg-zinc-100',
         dashboardPath: '/dashboard/landlord',
     },
     property_manager: {
         icon: <Building className="w-4 h-4" />,
-        color: 'text-purple-600 dark:text-purple-400',
-        bgColor: 'bg-purple-50 dark:bg-purple-900/30',
+        color: 'text-zinc-900',
+        bgColor: 'bg-zinc-100',
         dashboardPath: '/dashboard/agency',
     },
 };
@@ -97,13 +97,13 @@ export default function RoleSwitcher({ currentRole, availableRoles, onSwitch }: 
             {/* Trigger Button - Apple Style Pill */}
             <button
                 onClick={() => setOpen(!open)}
-                className="flex items-center gap-3 px-4 py-2 bg-zinc-900/5 dark:bg-white/5 hover:bg-zinc-900/10 dark:hover:bg-white/10 rounded-full transition-all duration-300 border border-zinc-900/5 dark:border-white/5 group active:scale-95 shadow-sm"
+                className="flex items-center gap-3 px-4 py-2 bg-zinc-900/5 hover:bg-zinc-900/10 rounded-full transition-all duration-300 border border-zinc-900/5 group active:scale-95 shadow-sm"
                 id="role-switcher-trigger"
             >
-                <div className={`p-1.5 rounded-full bg-white dark:bg-zinc-700 shadow-sm ${currentConfig.color}`}>
+                <div className={`p-1.5 rounded-full bg-white shadow-sm ${currentConfig.color}`}>
                     {currentConfig.icon}
                 </div>
-                <span className="text-sm font-black text-zinc-900 dark:text-white uppercase tracking-widest hidden sm:inline">
+                <span className="text-sm font-black text-zinc-900 uppercase tracking-widest hidden sm:inline">
                     {t(`dashboard.roleSwitcher.roles.${currentRole}`)}
                 </span>
                 <ChevronDown className={`w-4 h-4 text-zinc-400 transition-transform duration-300 ${open ? 'rotate-180' : ''}`} />
@@ -117,10 +117,10 @@ export default function RoleSwitcher({ currentRole, availableRoles, onSwitch }: 
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
                         transition={{ duration: 0.2, ease: "easeOut" }}
-                        className="absolute right-0 top-full mt-4 w-72 glass-card !p-2 z-[60] shadow-2xl origin-top-right border-zinc-200/50 dark:border-zinc-700/50"
+                        className="absolute right-0 top-full mt-4 w-72 glass-card !p-2 z-[60] shadow-2xl origin-top-right border-zinc-200/50"
                     >
                         {/* Current Role */}
-                        <div className="px-4 py-3 mb-2 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl flex items-center justify-between">
+                        <div className="px-4 py-3 mb-2 bg-zinc-50 rounded-2xl flex items-center justify-between">
                             <div className="flex flex-col">
                                 <span className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-1">
                                     {t('dashboard.roleSwitcher.currentSession')}
@@ -131,7 +131,7 @@ export default function RoleSwitcher({ currentRole, availableRoles, onSwitch }: 
                                     </span>
                                 </div>
                             </div>
-                            <div className="w-6 h-6 rounded-full bg-teal-500 text-white flex items-center justify-center">
+                            <div className="w-6 h-6 rounded-full bg-zinc-900 text-white flex items-center justify-center">
                                 <Check className="w-3.5 h-3.5" />
                             </div>
                         </div>
@@ -150,12 +150,12 @@ export default function RoleSwitcher({ currentRole, availableRoles, onSwitch }: 
                                             key={role}
                                             onClick={() => handleSwitch(role)}
                                             disabled={!!switching}
-                                            className="w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all group disabled:opacity-50"
+                                            className="w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-zinc-100 transition-all group disabled:opacity-50"
                                         >
-                                            <div className={`p-2 rounded-lg bg-zinc-100 dark:bg-zinc-700 group-hover:bg-white dark:group-hover:bg-zinc-600 transition-colors ${config.color}`}>
+                                            <div className={`p-2 rounded-lg bg-zinc-100 group-hover:bg-white transition-colors ${config.color}`}>
                                                 {isSwitching ? <Loader2 className="w-4 h-4 animate-spin" /> : config.icon}
                                             </div>
-                                            <span className="text-sm font-bold text-zinc-700 dark:text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-white">
+                                            <span className="text-sm font-bold text-zinc-700 group-hover:text-zinc-900">
                                                 {t(`dashboard.roleSwitcher.roles.${role}`)}
                                             </span>
                                         </button>
@@ -166,7 +166,7 @@ export default function RoleSwitcher({ currentRole, availableRoles, onSwitch }: 
 
                         {/* Unlockable */}
                         {lockableRoles.length > 0 && (
-                            <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800 space-y-1">
+                            <div className="pt-2 border-t border-zinc-100 space-y-1">
                                 <p className="px-4 py-2 text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">
                                     {t('dashboard.roleSwitcher.unlockNew')}
                                 </p>
@@ -177,13 +177,13 @@ export default function RoleSwitcher({ currentRole, availableRoles, onSwitch }: 
                                             key={role}
                                             onClick={() => handleUnlock(role)}
                                             disabled={unlocking}
-                                            className="w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-all group disabled:opacity-50"
+                                            className="w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-zinc-100 transition-all group disabled:opacity-50"
                                         >
-                                            <div className="p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 group-hover:bg-white dark:group-hover:bg-zinc-700 transition-colors text-zinc-400 group-hover:text-teal-600">
+                                            <div className="p-2 rounded-lg bg-zinc-100 group-hover:bg-white transition-colors text-zinc-400 group-hover:text-zinc-900">
                                                 {unlocking ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
                                             </div>
                                             <div className="flex flex-col items-start">
-                                                <span className="text-sm font-bold text-zinc-500 dark:text-zinc-400 group-hover:text-teal-700 dark:group-hover:text-teal-400">
+                                                <span className="text-sm font-bold text-zinc-500 group-hover:text-zinc-900">
                                                     {t(`dashboard.roleSwitcher.roles.${role}`)}
                                                 </span>
                                                 <span className="text-[10px] text-zinc-400">

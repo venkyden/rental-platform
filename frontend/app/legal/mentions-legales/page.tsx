@@ -1,156 +1,107 @@
-import Link from 'next/link';
+"use client";
+
+import { motion } from 'framer-motion';
+import { useLanguage } from '@/lib/LanguageContext';
+import PremiumLayout from '@/components/PremiumLayout';
 
 export default function MentionsLegalesPage() {
+    const { t } = useLanguage();
+
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: { staggerChildren: 0.15 }
+        }
+    };
+
+    const sectionVariants = {
+        hidden: { y: 20, opacity: 0 },
+        visible: {
+            y: 0,
+            opacity: 1,
+            transition: { type: "spring" as any, damping: 25, stiffness: 100 }
+        }
+    };
+
     return (
-        <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-3xl mx-auto">
-                <div className="bg-white shadow rounded-lg p-8">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-6">
-                        Mentions Légales
-                    </h1>
+        <PremiumLayout withNavbar={true}>
+            <div className="max-w-4xl mx-auto px-6 py-24">
+                <motion.div
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
+                    className="space-y-16"
+                >
+                    {/* Header */}
+                    <motion.div variants={sectionVariants} className="text-center space-y-4">
+                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl">
+                            {t('legal.notice.subtitle', undefined, 'Administrative Compliance')}
+                        </div>
+                        <h1 className="text-6xl sm:text-7xl font-black tracking-tighter text-zinc-900 uppercase">
+                            {t('legal.notice.title')}
+                        </h1>
+                        <p className="text-xl text-zinc-500 font-medium max-w-2xl mx-auto">
+                            {t('legal.notice.subtitle')}
+                        </p>
+                    </motion.div>
 
-                    <div className="prose prose-blue max-w-none space-y-6">
-                        {/* Éditeur */}
-                        <section>
-                            <h2 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
-                                1. Éditeur du Site
+                    {/* Content Sections */}
+                    <div className="space-y-12">
+                        <motion.section variants={sectionVariants} className="glass-card !p-12 rounded-[3rem] border-zinc-100">
+                            <h2 className="text-2xl font-black tracking-tight text-zinc-900 mb-8 uppercase">
+                                {t('legal.notice.editor.title')}
                             </h2>
-                            <div className="text-gray-700 space-y-2">
-                                <p><strong>Raison sociale :</strong> Rental Platform SAS</p>
-                                <p><strong>Forme juridique :</strong> Société par Actions Simplifiée</p>
-                                <p><strong>Capital social :</strong> 10 000 €</p>
-                                <p><strong>Siège social :</strong> [Adresse à compléter]</p>
-                                <p><strong>RCS :</strong> [Numéro RCS à compléter]</p>
-                                <p><strong>SIRET :</strong> [Numéro SIRET à compléter]</p>
-                                <p><strong>TVA intracommunautaire :</strong> [Numéro TVA à compléter]</p>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-zinc-600">
+                                <div className="space-y-2">
+                                    <p className="text-xs font-black text-zinc-400 uppercase tracking-widest">{t('legal.notice.editor.labels.company', undefined, 'Company')}</p>
+                                    <p className="font-bold text-zinc-900">{t('legal.notice.editor.company')}</p>
+                                </div>
+                                <div className="space-y-2">
+                                    <p className="text-xs font-black text-zinc-400 uppercase tracking-widest">{t('legal.notice.editor.labels.form', undefined, 'Legal Form')}</p>
+                                    <p className="font-bold text-zinc-900">{t('legal.notice.editor.form')}</p>
+                                </div>
+                                <div className="space-y-2">
+                                    <p className="text-xs font-black text-zinc-400 uppercase tracking-widest">{t('legal.notice.editor.labels.capital', undefined, 'Capital')}</p>
+                                    <p className="font-bold text-zinc-900">{t('legal.notice.editor.capital')}</p>
+                                </div>
+                                <div className="space-y-2">
+                                    <p className="text-xs font-black text-zinc-400 uppercase tracking-widest">{t('legal.notice.editor.labels.hq', undefined, 'Headquarters')}</p>
+                                    <p className="font-bold text-zinc-900">{t('legal.notice.editor.hq')}</p>
+                                </div>
                             </div>
-                        </section>
+                        </motion.section>
 
-                        {/* Directeur de publication */}
-                        <section>
-                            <h2 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
-                                2. Directeur de la Publication
+                        <motion.section variants={sectionVariants} className="glass-card !p-12 rounded-[3rem] border-zinc-100">
+                            <h2 className="text-2xl font-black tracking-tight text-zinc-900 mb-8 uppercase">
+                                {t('legal.notice.infrastructure.title', undefined, 'Infrastructure')}
                             </h2>
-                            <p className="text-gray-700">
-                                <strong>Nom :</strong> [Nom du directeur à compléter]<br />
-                                <strong>Qualité :</strong> Président
-                            </p>
-                        </section>
-
-                        {/* Hébergeur */}
-                        <section>
-                            <h2 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
-                                3. Hébergeur
-                            </h2>
-                            <div className="text-gray-700 space-y-2">
-                                <p><strong>Frontend :</strong> Vercel Inc.</p>
-                                <p>440 N Barranca Ave #4133, Covina, CA 91723, USA</p>
-                                <p><strong>Backend :</strong> Railway Corporation</p>
-                                <p>548 Market St, San Francisco, CA 94104, USA</p>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-zinc-600">
+                                <div className="space-y-2">
+                                    <p className="text-xs font-black text-zinc-400 uppercase tracking-widest">{t('legal.notice.infrastructure.frontend.title', undefined, 'Frontend Hosting')}</p>
+                                    <p className="font-bold text-zinc-900">{t('legal.notice.infrastructure.frontend.company', undefined, 'Vercel Inc.')}</p>
+                                    <p className="text-sm">{t('legal.notice.infrastructure.frontend.address', undefined, '440 N Barranca Ave #4133, Covina, CA 91723, USA')}</p>
+                                </div>
+                                <div className="space-y-2">
+                                    <p className="text-xs font-black text-zinc-400 uppercase tracking-widest">{t('legal.notice.infrastructure.backend.title', undefined, 'Backend Logic')}</p>
+                                    <p className="font-bold text-zinc-900">{t('legal.notice.infrastructure.backend.company', undefined, 'Railway Corporation')}</p>
+                                    <p className="text-sm">{t('legal.notice.infrastructure.backend.address', undefined, '548 Market St, San Francisco, CA 94104, USA')}</p>
+                                </div>
                             </div>
-                        </section>
-
-                        {/* Contact */}
-                        <section>
-                            <h2 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
-                                4. Contact
-                            </h2>
-                            <div className="text-gray-700 space-y-2">
-                                <p>
-                                    <strong>Email :</strong>{' '}
-                                    <a href="mailto:contact@rentalplatform.fr" className="text-blue-600 hover:underline">
-                                        contact@rentalplatform.fr
-                                    </a>
-                                </p>
-                                <p><strong>Téléphone :</strong> [Numéro à compléter]</p>
-                            </div>
-                        </section>
-
-                        {/* Propriété intellectuelle */}
-                        <section>
-                            <h2 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
-                                5. Propriété Intellectuelle
-                            </h2>
-                            <p className="text-gray-700">
-                                L&apos;ensemble du contenu de ce site (textes, images, vidéos, logos, icônes)
-                                est protégé par le droit d&apos;auteur et le droit des marques. Toute reproduction,
-                                représentation, modification, publication, adaptation ou exploitation de tout
-                                ou partie des éléments du site est interdite sans autorisation écrite préalable.
-                            </p>
-                        </section>
-
-                        {/* Données personnelles */}
-                        <section>
-                            <h2 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
-                                6. Protection des Données Personnelles
-                            </h2>
-                            <p className="text-gray-700">
-                                Conformément au Règlement Général sur la Protection des Données (RGPD) et à la
-                                loi Informatique et Libertés, vous disposez de droits sur vos données personnelles.
-                                Pour plus d&apos;informations, consultez notre{' '}
-                                <Link href="/privacy" className="text-blue-600 hover:underline">
-                                    Politique de Confidentialité
-                                </Link>.
-                            </p>
-                            <p className="text-gray-700 mt-2">
-                                <strong>Délégué à la Protection des Données (DPO) :</strong>{' '}
-                                <a href="mailto:dpo@rentalplatform.fr" className="text-blue-600 hover:underline">
-                                    dpo@rentalplatform.fr
-                                </a>
-                            </p>
-                        </section>
-
-                        {/* Cookies */}
-                        <section>
-                            <h2 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
-                                7. Cookies
-                            </h2>
-                            <p className="text-gray-700">
-                                Ce site utilise des cookies pour améliorer votre expérience. Vous pouvez gérer
-                                vos préférences via le bandeau de consentement affiché lors de votre première visite.
-                            </p>
-                        </section>
-
-                        {/* Médiation */}
-                        <section>
-                            <h2 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
-                                8. Médiation et Litiges
-                            </h2>
-                            <p className="text-gray-700">
-                                Conformément aux dispositions du Code de la consommation, en cas de litige,
-                                vous pouvez recourir gratuitement au service de médiation.
-                                <br /><br />
-                                <strong>Médiateur :</strong> [Nom du médiateur à compléter]<br />
-                                <strong>Site :</strong> [URL du médiateur]
-                            </p>
-                        </section>
-
-                        {/* Loi applicable */}
-                        <section>
-                            <h2 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
-                                9. Droit Applicable
-                            </h2>
-                            <p className="text-gray-700">
-                                Les présentes mentions légales sont soumises au droit français.
-                                Tout litige relatif à l&apos;utilisation du site sera soumis à la compétence
-                                exclusive des tribunaux de Paris.
-                            </p>
-                        </section>
+                        </motion.section>
                     </div>
 
-                    <div className="mt-8 pt-6 border-t border-gray-200 flex gap-4">
-                        <Link href="/" className="text-blue-600 hover:text-blue-500 font-medium">
-                            ← Accueil
-                        </Link>
-                        <Link href="/privacy" className="text-blue-600 hover:text-blue-500 font-medium">
-                            Confidentialité
-                        </Link>
-                        <Link href="/terms" className="text-blue-600 hover:text-blue-500 font-medium">
-                            CGU
-                        </Link>
-                    </div>
-                </div>
+                    {/* Contact Disclaimer */}
+                    <motion.div 
+                        variants={sectionVariants}
+                        className="pt-12 border-t border-zinc-100 text-center"
+                    >
+                        <p className="text-xs font-black text-zinc-400 uppercase tracking-[0.3em]">
+                            Propriété de Roomivo SAS • Tous droits réservés
+                        </p>
+                    </motion.div>
+                </motion.div>
             </div>
-        </div>
+        </PremiumLayout>
     );
 }

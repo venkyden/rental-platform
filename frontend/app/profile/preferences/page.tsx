@@ -15,8 +15,8 @@ export default function EditPreferencesPage() {
     // Provide a simple loading state while waiting for auth
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50 dark:bg-zinc-950">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
+            <div className="min-h-screen flex items-center justify-center p-4 bg-zinc-50">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-zinc-900"></div>
             </div>
         );
     }
@@ -40,22 +40,22 @@ export default function EditPreferencesPage() {
     };
 
     return (
-        <ProtectedRoute>
-            <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 flex flex-col">
+         <ProtectedRoute>
+            <div className="min-h-screen bg-zinc-50 flex flex-col">
                 {/* Header */}
-                <header className="bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 sticky top-0 z-50">
+                <header className="bg-white/80 backdrop-blur-xl border-b border-zinc-100 sticky top-0 z-50">
                     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="flex justify-between items-center h-16">
-                            <div className="flex items-center gap-4">
+                        <div className="flex justify-between items-center h-20">
+                            <div className="flex items-center gap-6">
                                 <button
                                     onClick={() => router.back()}
-                                    className="p-2 -ml-2 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                                    className="p-3 -ml-2 text-zinc-400 hover:text-zinc-900 rounded-2xl hover:bg-zinc-100 transition-all active:scale-95"
                                 >
                                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                                     </svg>
                                 </button>
-                                <h1 className="text-xl font-semibold text-zinc-900 dark:text-white">Edit Rental Preferences</h1>
+                                <h1 className="text-xl font-black text-zinc-900 uppercase tracking-tighter">Edit Rental Preferences</h1>
                             </div>
                         </div>
                     </div>
@@ -75,9 +75,9 @@ export default function EditPreferencesPage() {
 
                 {/* Saving Overlay */}
                 {isSaving && (
-                    <div className="fixed inset-0 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm z-50 flex flex-col justify-center items-center">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mb-4"></div>
-                        <p className="text-zinc-900 dark:text-white font-medium">Saving preferences...</p>
+                    <div className="fixed inset-0 bg-white/50 backdrop-blur-md z-[100] flex flex-col justify-center items-center">
+                        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-zinc-900 mb-6"></div>
+                        <p className="text-[10px] font-black text-zinc-900 uppercase tracking-[0.4em] animate-pulse">Synchronizing Preferences...</p>
                     </div>
                 )}
             </div>

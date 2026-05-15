@@ -23,7 +23,7 @@ test.describe('Smoke Tests', () => {
     test('unauthenticated user is redirected from dashboard', async ({ page }) => {
         await page.goto('/dashboard');
         // Should redirect to login or show auth prompt
-        await page.waitForURL(/auth|login|\//, { timeout: 10_000 });
+        await page.waitForURL(/\/auth\/login/, { timeout: 10_000 });
         // Verify we're not on the dashboard anymore
         expect(page.url()).not.toContain('/dashboard');
     });

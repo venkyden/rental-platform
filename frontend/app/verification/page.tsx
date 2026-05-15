@@ -57,16 +57,16 @@ export default function VerificationPage() {
                         <div className="flex items-center gap-8">
                             <button
                                 onClick={() => router.push('/dashboard')}
-                                className="w-16 h-16 rounded-2xl bg-white dark:bg-zinc-900 shadow-2xl border border-white/40 dark:border-zinc-800/50 flex items-center justify-center hover:scale-110 active:scale-95 transition-all group"
+                                className="w-16 h-16 rounded-2xl bg-white shadow-2xl border border-white/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-all group"
                             >
-                                <ChevronLeft className="w-8 h-8 group-hover:translate-x-[-4px] transition-transform text-zinc-900 dark:text-white" />
+                                <ChevronLeft className="w-8 h-8 group-hover:translate-x-[-4px] transition-transform text-zinc-900" />
                             </button>
                             <div>
-                                <h1 className="text-5xl sm:text-7xl font-black tracking-tighter text-zinc-900 dark:text-white uppercase leading-[0.8] mb-4">
+                                <h1 className="text-5xl sm:text-7xl font-black tracking-tighter text-zinc-900 uppercase leading-[0.8] mb-4">
                                     {t('dashboard.verification.verification.pageTitle', undefined, 'Verification')}
                                 </h1>
                                 <div className="flex items-center gap-3">
-                                    <div className="px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-600 dark:text-teal-400 text-[10px] font-black uppercase tracking-[0.2em]">
+                                    <div className="px-4 py-1.5 rounded-full bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl">
                                         {t('dashboard.verification.secureSubtitle', undefined, 'Secure Identity & Document Verification')}
                                     </div>
                                 </div>
@@ -79,20 +79,20 @@ export default function VerificationPage() {
                         <motion.div variants={containerVariants} className="lg:col-span-8 grid grid-cols-1 md:grid-cols-3 gap-8">
                             {/* Email Card */}
                             <motion.div variants={itemVariants} className="glass-card !p-10 flex flex-col items-center text-center group">
-                                <div className="w-16 h-16 bg-teal-500 text-white rounded-[1.5rem] flex items-center justify-center mb-8 shadow-xl shadow-teal-500/20 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                                <div className="w-16 h-16 bg-zinc-900 text-white rounded-[1.5rem] flex items-center justify-center mb-8 shadow-2xl group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
                                     <CheckCircle2 className="w-8 h-8" />
                                 </div>
                                 <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] mb-3">
                                     {t('dashboard.verification.verification.progress.email', undefined, 'Email')}
                                 </h3>
-                                <p className="text-lg font-black text-teal-600 dark:text-teal-400 uppercase tracking-tight">
+                                <p className="text-lg font-black text-zinc-900 uppercase tracking-tight">
                                     {t('dashboard.verification.verification.verified', undefined, 'Verified')}
                                 </p>
                             </motion.div>
 
                             {/* Identity Card */}
-                            <motion.div variants={itemVariants} className={`glass-card !p-10 flex flex-col items-center text-center group ${user.identity_verified ? 'border-teal-500/30' : ''}`}>
-                                <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center mb-8 shadow-xl transition-all duration-500 group-hover:scale-110 group-hover:-rotate-6 ${user.identity_verified ? 'bg-teal-500 text-white shadow-teal-500/20' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'}`}>
+                            <motion.div variants={itemVariants} className={`glass-card !p-10 flex flex-col items-center text-center group ${user.identity_verified ? 'border-zinc-900/30' : ''}`}>
+                                <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center mb-8 shadow-xl transition-all duration-500 group-hover:scale-110 group-hover:-rotate-6 ${user.identity_verified ? 'bg-zinc-900 text-white shadow-2xl' : 'bg-zinc-100 text-zinc-400'}`}>
                                     {user.identity_verified ? (
                                         <UserCheck className="w-8 h-8" />
                                     ) : (
@@ -102,7 +102,7 @@ export default function VerificationPage() {
                                 <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] mb-3">
                                     {t('dashboard.verification.verification.progress.identity', undefined, 'Identity')}
                                 </h3>
-                                <p className={`text-lg font-black uppercase tracking-tight ${user.identity_verified ? 'text-teal-600 dark:text-teal-400' : 'text-zinc-400'}`}>
+                                <p className={`text-lg font-black uppercase tracking-tight ${user.identity_verified ? 'text-zinc-900' : 'text-zinc-400'}`}>
                                     {user.identity_verified ? t('dashboard.verification.verification.verified', undefined, 'Verified') : t('dashboard.verification.verification.pending', undefined, 'Pending')}
                                 </p>
                             </motion.div>
@@ -116,8 +116,8 @@ export default function VerificationPage() {
                                     : t('dashboard.verification.verification.progress.employment', undefined, 'Employment');
                                 
                                 return (
-                                    <motion.div variants={itemVariants} className={`glass-card !p-10 flex flex-col items-center text-center group ${isVerified ? 'border-teal-500/30' : ''}`}>
-                                        <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center mb-8 shadow-xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 ${isVerified ? 'bg-teal-500 text-white shadow-teal-500/20' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'}`}>
+                                    <motion.div variants={itemVariants} className={`glass-card !p-10 flex flex-col items-center text-center group ${isVerified ? 'border-zinc-900/30' : ''}`}>
+                                        <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center mb-8 shadow-xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 ${isVerified ? 'bg-zinc-900 text-white shadow-2xl' : 'bg-zinc-100 text-zinc-400'}`}>
                                             {isVerified ? (
                                                 isLandlord ? <Home className="w-8 h-8" /> : <Briefcase className="w-8 h-8" />
                                             ) : (
@@ -127,7 +127,7 @@ export default function VerificationPage() {
                                         <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] mb-3">
                                             {label}
                                         </h3>
-                                        <p className={`text-lg font-black uppercase tracking-tight ${isVerified ? 'text-teal-600 dark:text-teal-400' : 'text-zinc-400'}`}>
+                                        <p className={`text-lg font-black uppercase tracking-tight ${isVerified ? 'text-zinc-900' : 'text-zinc-400'}`}>
                                             {isVerified ? t('dashboard.verification.verification.verified', undefined, 'Verified') : t('dashboard.verification.verification.pending', undefined, 'Pending')}
                                         </p>
                                     </motion.div>
@@ -136,8 +136,8 @@ export default function VerificationPage() {
                         </motion.div>
 
                         {/* Trust Score Card - Ultra Premium */}
-                        <motion.div variants={itemVariants} className="lg:col-span-4 glass-card !p-12 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.3)] bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 border-none rounded-[3rem] relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 w-40 h-40 bg-teal-500/10 rounded-full blur-[60px] -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-1000" />
+                        <motion.div variants={itemVariants} className="lg:col-span-4 glass-card !p-12 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.3)] bg-zinc-900 text-white border-none rounded-[3rem] relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full blur-[60px] -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-1000" />
                             
                             <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500 mb-10">
                                 {t('dashboard.verification.verification.progress.trustScore', undefined, 'Trust Score')}
@@ -155,8 +155,8 @@ export default function VerificationPage() {
                                         />
                                         <defs>
                                             <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                                                <stop offset="0%" stopColor="#2dd4bf" />
-                                                <stop offset="100%" stopColor="#14b8a6" />
+                                                <stop offset="0%" stopColor="#ffffff" />
+                                                <stop offset="100%" stopColor="#d4d4d8" />
                                             </linearGradient>
                                         </defs>
                                     </svg>
@@ -185,7 +185,7 @@ export default function VerificationPage() {
                     {/* Main Verification Container */}
                     <motion.div variants={itemVariants} className="glass-card !p-0 rounded-[3rem] overflow-hidden shadow-2xl">
                         {/* Tab Selectors - Premium Pill */}
-                        <div className="p-6 bg-zinc-50/50 dark:bg-zinc-900/30 border-b border-zinc-100 dark:border-zinc-800/50">
+                        <div className="p-6 bg-zinc-50/50 border-b border-zinc-100">
                             <div className="flex flex-wrap gap-4">
                                 {[
                                     { id: 'identity', label: t('dashboard.verification.verification.tabs.identity', undefined, 'Identity Verification') },
@@ -197,8 +197,8 @@ export default function VerificationPage() {
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id as any)}
                                         className={`px-10 py-5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 ${activeTab === tab.id
-                                            ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-2xl scale-105'
-                                            : 'text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+                                            ? 'bg-zinc-900 text-white shadow-2xl scale-105'
+                                            : 'text-zinc-400 hover:text-zinc-900'
                                             }`}
                                     >
                                         {tab.label}
@@ -225,13 +225,13 @@ export default function VerificationPage() {
                                         />
                                     ) : (
                                         <div className="text-center py-20">
-                                            <div className="w-24 h-24 bg-teal-500 text-white rounded-[2rem] flex items-center justify-center mx-auto mb-10 shadow-2xl shadow-teal-500/20">
+                                            <div className="w-24 h-24 bg-zinc-900 text-white rounded-[2rem] flex items-center justify-center mx-auto mb-10 shadow-2xl">
                                                 <UserCheck className="w-12 h-12" />
                                             </div>
-                                            <h3 className="text-4xl font-black text-zinc-900 dark:text-white mb-4 tracking-tighter uppercase">
+                                            <h3 className="text-4xl font-black text-zinc-900 mb-4 tracking-tighter uppercase">
                                                 {t('dashboard.verification.verification.success.identity', undefined, 'Identity Verified!')}
                                             </h3>
-                                            <p className="text-zinc-500 dark:text-zinc-400 font-medium max-w-sm mx-auto text-lg leading-relaxed">
+                                            <p className="text-zinc-500 font-bold max-w-sm mx-auto text-lg leading-relaxed">
                                                 {t('dashboard.verification.verification.success.identityMsg', undefined, 'Your identity has been successfully verified. You now have full access to high-trust rental listings.')}
                                             </p>
                                         </div>
@@ -248,13 +248,13 @@ export default function VerificationPage() {
                                         />
                                     ) : (
                                         <div className="text-center py-20">
-                                            <div className="w-24 h-24 bg-teal-500 text-white rounded-[2rem] flex items-center justify-center mx-auto mb-10 shadow-2xl shadow-teal-500/20">
+                                            <div className="w-24 h-24 bg-zinc-900 text-white rounded-[2rem] flex items-center justify-center mx-auto mb-10 shadow-2xl">
                                                 <Briefcase className="w-12 h-12" />
                                             </div>
-                                            <h3 className="text-4xl font-black text-zinc-900 dark:text-white mb-4 tracking-tighter uppercase">
+                                            <h3 className="text-4xl font-black text-zinc-900 mb-4 tracking-tighter uppercase">
                                                 {t('dashboard.verification.verification.success.employment', undefined, 'Employment Verified!')}
                                             </h3>
-                                            <p className="text-zinc-500 dark:text-zinc-400 font-medium max-w-sm mx-auto text-lg leading-relaxed">
+                                            <p className="text-zinc-500 font-bold max-w-sm mx-auto text-lg leading-relaxed">
                                                 {t('dashboard.verification.verification.success.employmentMsg', undefined, 'Your employment has been successfully verified. This significantly improves your profile standing.')}
                                             </p>
                                         </div>

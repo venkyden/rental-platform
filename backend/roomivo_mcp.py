@@ -1,15 +1,28 @@
 import asyncio
+import os
+import sys
 from typing import List, Optional
+
+# --- CRITICAL MCP STABILITY FIX ---
+# Redirect stdout to stderr immediately to ensure any stray print() calls 
+# from dependencies do not corrupt the JSON-RPC communication stream.
+# This must happen before any other imports that might trigger output.
+_original_stdout = sys.stdout
+sys.stdout = sys.stderr
 
 from sqlalchemy import select, update
 from sqlalchemy.orm import selectinload
+from dotenv import load_dotenv
+
+# Load environment variables from .env file BEFORE importing app modules
+# that rely on pydantic-settings validation.
+env_path = os.path.join(os.path.dirname(__file__), ".env")
+load_dotenv(env_path)
 
 try:
     from mcp.server.fastmcp import FastMCP
 except ImportError:
-    print("Please install the 'mcp' package: pip install mcp")
-    import sys
-
+    sys.stderr.write("CRITICAL: 'mcp' package missing. Run: pip install mcp fastmcp\n")
     sys.exit(1)
 
 from app.core.database import AsyncSessionLocal
@@ -150,9 +163,12 @@ async def generate_mock_lease(
             from datetime import datetime
 
             start_date = datetime.now().strftime("%Y-%m-%d")
-            output_path = f"/tmp/mock_lease_{prop.id}_{tenant.id}.pdf"
-
             # Use the actual backend service
+            # Ensure the uploads directory exists within the workspace
+            upload_dir = os.path.join(os.path.dirname(__file__), "uploads")
+            os.makedirs(upload_dir, exist_ok=True)
+            output_path = os.path.join(upload_dir, f"mock_lease_{prop.id}_{tenant.id}.pdf")
+
             pdf_path = lease_generator.generate_pdf(
                 property=prop,
                 landlord=prop.landlord,
@@ -271,7 +287,7 @@ async def audit_property_compliance(property_id: str) -> str:
             "montpellier",
             "bordeaux",
         ]:
-            if prop.size_sqm and prop.monthly_rent:
+            if prop.size_sqm and float(prop.size_sqm) > 0:
                 price_per_sqm = float(prop.monthly_rent) / float(prop.size_sqm)
                 if (
                     price_per_sqm > 35.0
@@ -310,4 +326,6 @@ async def audit_property_compliance(property_id: str) -> str:
 
 
 if __name__ == "__main__":
+    # Restore stdout for the MCP server protocol
+    sys.stdout = _original_stdout
     mcp.run()

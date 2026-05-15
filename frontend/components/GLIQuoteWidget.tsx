@@ -75,7 +75,7 @@ export default function GLIQuoteWidget({ monthlyRent, propertyId }: GLIQuoteWidg
         return (
             <button
                 onClick={() => setShowForm(true)}
-                className="w-full py-3 px-4 bg-zinc-900 dark:bg-zinc-800 text-white rounded-xl hover:shadow-lg font-bold flex items-center justify-center gap-2 transition-all active:scale-95"
+                className="w-full py-3 px-4 bg-zinc-900 text-white rounded-xl hover:shadow-lg font-bold flex items-center justify-center gap-2 transition-all active:scale-95"
             >
                 {t('dashboard.widgets.gli.button', undefined, '️ Get GLI Quote')}
             </button>
@@ -85,7 +85,7 @@ export default function GLIQuoteWidget({ monthlyRent, propertyId }: GLIQuoteWidg
     return (
         <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
             {/* Header */}
-            <div className="bg-zinc-900 dark:bg-zinc-800 text-white p-6">
+            <div className="bg-zinc-900 text-white p-6">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
@@ -108,9 +108,9 @@ export default function GLIQuoteWidget({ monthlyRent, propertyId }: GLIQuoteWidg
             {/* Form */}
             <div className="p-4 space-y-4">
                 {/* Rent display */}
-                <div className="bg-gray-50 dark:bg-zinc-800/50 rounded-xl p-4">
+                <div className="bg-gray-50 rounded-xl p-4">
                     <div className="text-xs font-black uppercase tracking-widest text-zinc-400 mb-1">{t('dashboard.widgets.gli.rent', undefined, 'Monthly Rent')}</div>
-                    <div translate="no" className="notranslate text-2xl font-black text-zinc-900 dark:text-white">{monthlyRent.toLocaleString('fr-FR')} €</div>
+                    <div translate="no" className="notranslate text-2xl font-black text-zinc-900">{monthlyRent.toLocaleString('fr-FR')} €</div>
                 </div>
 
                 {/* Tenant income */}
@@ -126,13 +126,13 @@ export default function GLIQuoteWidget({ monthlyRent, propertyId }: GLIQuoteWidg
                                 const val = e.target.value === '' ? 0 : Number(e.target.value);
                                 setTenantIncome(val);
                             }}
-                            className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl font-bold text-zinc-900 dark:text-white focus:ring-2 focus:ring-teal-500/50 transition-all"
+                            className="w-full px-4 py-3 bg-zinc-50 border-none rounded-xl font-bold text-zinc-900 focus:ring-2 focus:ring-zinc-900/10 transition-all"
                         />
                         <span className="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-zinc-400">€</span>
                     </div>
                     <p translate="no" className="notranslate text-[10px] font-black uppercase tracking-widest text-zinc-500 mt-2">
                         {t('dashboard.widgets.gli.ratio', { ratio: monthlyRent > 0 ? (tenantIncome / monthlyRent).toFixed(1) : '0.0' }, `Ratio: ${monthlyRent > 0 ? (tenantIncome / monthlyRent).toFixed(1) : '0.0'}x rent`)}
-                        {monthlyRent > 0 && tenantIncome / monthlyRent < 3 && <span className="text-red-500 ml-2">{t('dashboard.widgets.gli.min_ratio', undefined, '(min 3x)')}</span>}
+                        {monthlyRent > 0 && tenantIncome / monthlyRent < 3 && <span className="text-zinc-900 ml-2 font-black">{t('dashboard.widgets.gli.min_ratio', undefined, '(min 3x)')}</span>}
                     </p>
                 </div>
 
@@ -144,10 +144,10 @@ export default function GLIQuoteWidget({ monthlyRent, propertyId }: GLIQuoteWidg
                     <select
                         value={employmentType}
                         onChange={(e) => setEmploymentType(e.target.value)}
-                        className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl font-bold text-zinc-900 dark:text-white focus:ring-2 focus:ring-teal-500/50 transition-all appearance-none cursor-pointer"
+                        className="w-full px-4 py-3 bg-zinc-50 border-none rounded-xl font-bold text-zinc-900 focus:ring-2 focus:ring-zinc-900/10 transition-all appearance-none cursor-pointer"
                     >
                         {EMPLOYMENT_TYPES.map(type => (
-                            <option key={type.value} value={type.value} className="bg-white dark:bg-zinc-900">
+                            <option key={type.value} value={type.value} className="bg-white">
                                 {type.label}
                             </option>
                         ))}
@@ -180,71 +180,71 @@ export default function GLIQuoteWidget({ monthlyRent, propertyId }: GLIQuoteWidg
                 <button
                     onClick={getQuote}
                     disabled={loading}
-                    className="w-full py-4 bg-teal-500 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-teal-600 transition-all active:scale-95 disabled:opacity-50 shadow-xl shadow-teal-500/20"
+                    className="w-full py-4 bg-zinc-900 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-zinc-800 transition-all active:scale-95 disabled:opacity-50 shadow-xl"
                 >
                     {loading ? t('dashboard.widgets.gli.calculating', undefined, 'Calculating...') : t('dashboard.widgets.gli.calculate', undefined, 'Calculate Quote')}
                 </button>
 
                 {/* Error */}
                 {error && (
-                    <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-3 text-sm">
+                    <div className="bg-zinc-900 text-white rounded-xl p-4 text-xs font-black uppercase tracking-widest text-center">
                         {error}
                     </div>
                 )}
 
                 {/* Quote result */}
                 {quote && (
-                    <div className={`rounded-lg p-4 ${quote.eligible ? 'bg-green-50 border border-green-200' : 'bg-yellow-50 border border-yellow-200'}`}>
+                    <div className={`rounded-2xl p-6 ${quote.eligible ? 'bg-zinc-900 text-white' : 'bg-white border-2 border-zinc-200'}`}>
                         {quote.eligible ? (
                             <>
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
                                         <CheckCircle2 className="w-6 h-6 text-white" />
                                     </div>
-                                    <span className="font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
+                                    <span className="font-black uppercase tracking-widest text-white">
                                         {t('dashboard.widgets.gli.eligible', undefined, 'Eligible for GLI')}
                                     </span>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4 mb-6">
-                                    <div className="bg-white dark:bg-zinc-900 rounded-2xl p-4 text-center border border-emerald-100 dark:border-emerald-900/30">
-                                        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 mb-1">
+                                    <div className="bg-white/10 rounded-2xl p-4 text-center border border-white/10">
+                                        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 mb-1">
                                             {t('dashboard.widgets.gli.premium_monthly', undefined, 'Monthly Premium')}
                                         </div>
-                                        <div translate="no" className="notranslate text-2xl font-black text-emerald-600 dark:text-emerald-400">
+                                        <div translate="no" className="notranslate text-2xl font-black text-white">
                                             {quote.monthly_premium?.toLocaleString('fr-FR')} €
                                         </div>
                                     </div>
-                                    <div className="bg-white dark:bg-zinc-900 rounded-2xl p-4 text-center border border-emerald-100 dark:border-emerald-900/30">
-                                        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 mb-1">
+                                    <div className="bg-white/10 rounded-2xl p-4 text-center border border-white/10">
+                                        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 mb-1">
                                             {t('dashboard.widgets.gli.premium_annual', undefined, 'Annual Premium')}
                                         </div>
-                                        <div translate="no" className="notranslate text-2xl font-black text-emerald-600 dark:text-emerald-400">
+                                        <div translate="no" className="notranslate text-2xl font-black text-white">
                                             {quote.annual_premium?.toLocaleString('fr-FR')} €
                                         </div>
                                     </div>
                                 </div>
 
-                                <div translate="no" className="notranslate text-xs font-bold text-zinc-500 space-y-2 mb-8">
-                                    <div className="flex justify-between"><span>Rate:</span> <span>{quote.premium_rate}%</span></div>
-                                    <div className="flex justify-between"><span>Coverage:</span> <span>{quote.coverage_amount?.toLocaleString('fr-FR')} €</span></div>
-                                    <div className="flex justify-between"><span>Validity:</span> <span>{quote.quote_valid_until}</span></div>
+                                <div translate="no" className="notranslate text-xs font-bold text-white/50 space-y-2 mb-8">
+                                    <div className="flex justify-between"><span>Rate:</span> <span className="text-white">{quote.premium_rate}%</span></div>
+                                    <div className="flex justify-between"><span>Coverage:</span> <span className="text-white">{quote.coverage_amount?.toLocaleString('fr-FR')} €</span></div>
+                                    <div className="flex justify-between"><span>Validity:</span> <span className="text-white">{quote.quote_valid_until}</span></div>
                                 </div>
 
                                 <button
                                     onClick={handleApply}
                                     disabled={loading}
-                                    className="w-full py-4 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-2xl font-black uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-[0.98] transition-all"
+                                    className="w-full py-4 bg-white text-zinc-900 rounded-2xl font-black uppercase tracking-[0.2em] hover:bg-zinc-100 active:scale-[0.98] transition-all"
                                 >
                                     {t('dashboard.widgets.gli.subscribe', undefined, 'Subscribe Now')}
                                 </button>
                             </>
                         ) : (
-                            <div className="flex items-start gap-2">
-                                <span className="text-xl">️</span>
+                            <div className="flex items-start gap-4 p-4 bg-zinc-50 rounded-xl">
+                                <div className="text-2xl">⚠️</div>
                                 <div>
-                                    <div className="font-bold text-yellow-800">Not Eligible</div>
-                                    <p className="text-sm text-yellow-700 mt-1">{quote.eligibility_reason}</p>
+                                    <div className="font-black uppercase tracking-widest text-zinc-900">{t('dashboard.widgets.gli.notEligible', undefined, 'Not Eligible')}</div>
+                                    <p className="text-xs font-bold text-zinc-500 mt-2 leading-relaxed">{quote.eligibility_reason}</p>
                                 </div>
                             </div>
                         )}

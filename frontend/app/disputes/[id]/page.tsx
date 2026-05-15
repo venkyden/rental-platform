@@ -118,8 +118,8 @@ export default function DisputeDetailPage() {
 
     if (loading || !dispute) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-black">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
+            <div className="min-h-screen flex items-center justify-center bg-zinc-50">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-zinc-900"></div>
             </div>
         );
     }
@@ -130,22 +130,22 @@ export default function DisputeDetailPage() {
 
     const getStatusStyles = (status: string) => {
         switch (status) {
-            case 'open': return 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20';
-            case 'awaiting_response': return 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20';
-            case 'under_review': return 'text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20';
-            case 'closed': return 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20';
+            case 'open': return 'text-zinc-500 bg-zinc-50';
+            case 'awaiting_response': return 'text-zinc-900 bg-zinc-100';
+            case 'under_review': return 'text-zinc-900 bg-zinc-200';
+            case 'closed': return 'text-zinc-400 bg-zinc-50';
             default: return 'text-zinc-600 bg-zinc-50';
         }
     };
 
     return (
-        <div className="min-h-screen bg-zinc-50 dark:bg-black text-zinc-900 dark:text-zinc-100 pb-24">
+        <div className="min-h-screen bg-zinc-50 text-zinc-900 pb-24">
             {/* Sticky Header */}
-            <div className="sticky top-0 z-30 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border-b border-zinc-200 dark:border-zinc-800">
+            <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-xl border-b border-zinc-200">
                 <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
                     <button 
                         onClick={() => router.push('/disputes')}
-                        className="p-2 -ml-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors flex items-center gap-2"
+                        className="p-2 -ml-2 hover:bg-zinc-100 rounded-full transition-colors flex items-center gap-2"
                     >
                         <ChevronLeft className="w-5 h-5" />
                         <span className="text-sm font-bold">{t('disputes.detail.back', undefined, undefined)}</span>
@@ -173,7 +173,7 @@ export default function DisputeDetailPage() {
                                 <span>{t(`disputes.incident.categories.${dispute.category}.label` as any, undefined, undefined)}</span>
                             </div>
                             {dispute.amount_claimed && (
-                                <div className="flex items-center gap-1.5 text-zinc-900 dark:text-white">
+                                <div className="flex items-center gap-1.5 text-zinc-900">
                                     <Euro className="w-4 h-4" />
                                     <span>€{dispute.amount_claimed.toLocaleString()} {t('disputes.detail.claimed', undefined, undefined)}</span>
                                 </div>
@@ -182,12 +182,12 @@ export default function DisputeDetailPage() {
                     </section>
 
                     {/* Description */}
-                    <section className="bg-white dark:bg-zinc-900 rounded-[2rem] p-8 border border-zinc-200 dark:border-zinc-800 shadow-sm relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-zinc-50 dark:bg-zinc-800/50 rounded-bl-[2rem] flex items-center justify-center">
+                    <section className="bg-white rounded-[2rem] p-8 border border-zinc-200 shadow-sm relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-zinc-50 rounded-bl-[2rem] flex items-center justify-center">
                             <MessageSquare className="w-8 h-8 opacity-10" />
                         </div>
                         <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-400 mb-4">{t('disputes.detail.description', undefined, undefined)}</h3>
-                        <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed whitespace-pre-wrap">
+                        <p className="text-zinc-700 leading-relaxed whitespace-pre-wrap">
                             {dispute.description}
                         </p>
                     </section>
@@ -202,7 +202,7 @@ export default function DisputeDetailPage() {
                                     href={url} 
                                     target="_blank" 
                                     rel="noopener noreferrer"
-                                    className="aspect-square rounded-[1.5rem] overflow-hidden border border-zinc-200 dark:border-zinc-800 group relative"
+                                    className="aspect-square rounded-[1.5rem] overflow-hidden border border-zinc-200 group relative"
                                 >
                                     <img src={url} alt={`Evidence ${idx}`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -216,9 +216,9 @@ export default function DisputeDetailPage() {
                                 <div className="space-y-3">
                                     <button 
                                         onClick={() => extraInputRef.current?.click()}
-                                        className="w-full aspect-square rounded-[1.5rem] border-2 border-dashed border-zinc-200 dark:border-zinc-800 flex flex-col items-center justify-center gap-2 hover:bg-white dark:hover:bg-zinc-900 transition-all group"
+                                        className="w-full aspect-square rounded-[1.5rem] border-2 border-dashed border-zinc-200 flex flex-col items-center justify-center gap-2 hover:bg-white transition-all group"
                                     >
-                                        <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                        <div className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center group-hover:scale-110 transition-transform">
                                             <Camera className="w-5 h-5 text-zinc-500" />
                                         </div>
                                         <span className="text-[10px] font-bold text-zinc-400 uppercase">{t('disputes.detail.addPhoto', undefined, undefined)}</span>
@@ -237,7 +237,7 @@ export default function DisputeDetailPage() {
                                         <button 
                                             onClick={handleAddEvidence}
                                             disabled={submitting}
-                                            className="w-full py-2 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-xl text-xs font-bold uppercase"
+                                            className="w-full py-2 bg-zinc-900 text-white rounded-xl text-xs font-bold uppercase"
                                         >
                                             {submitting ? t('disputes.messages.uploading', undefined, undefined) : t('disputes.detail.saveEvidence', undefined, undefined)}
                                         </button>
@@ -249,51 +249,51 @@ export default function DisputeDetailPage() {
 
                     {/* Counter-Response Section */}
                     {(dispute.responded_at || isAccused) && (
-                        <section className="bg-teal-50 dark:bg-teal-950/20 border border-teal-100 dark:border-teal-900/50 rounded-[2rem] p-8">
+                        <section className="bg-zinc-50 border border-zinc-200 rounded-[2rem] p-8">
                             <div className="flex items-center gap-3 mb-6">
-                                <div className="w-10 h-10 rounded-xl bg-teal-100 dark:bg-teal-900/50 flex items-center justify-center text-teal-600 dark:text-teal-400">
+                                <div className="w-10 h-10 rounded-xl bg-zinc-900 flex items-center justify-center text-white">
                                     <MessageSquare className="w-5 h-5" />
                                 </div>
-                                <h3 className="text-xl font-bold text-teal-900 dark:text-teal-100">{t('disputes.detail.accusedResponseTitle', undefined, undefined)}</h3>
+                                <h3 className="text-xl font-bold text-zinc-900">{t('disputes.detail.accusedResponseTitle', undefined, undefined)}</h3>
                             </div>
 
                             {dispute.responded_at ? (
                                 <div className="space-y-6">
-                                    <p className="text-teal-800/80 dark:text-teal-200/80 leading-relaxed whitespace-pre-wrap">
+                                    <p className="text-zinc-700 leading-relaxed whitespace-pre-wrap">
                                         {dispute.response_description}
                                     </p>
                                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                                         {dispute.response_evidence_urls.map((url, idx) => (
-                                            <a key={idx} href={url} target="_blank" rel="noopener noreferrer" className="aspect-square rounded-2xl overflow-hidden border border-teal-200 dark:border-teal-800 group relative">
+                                            <a key={idx} href={url} target="_blank" rel="noopener noreferrer" className="aspect-square rounded-2xl overflow-hidden border border-zinc-200 group relative">
                                                 <img src={url} alt="Counter Evidence" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                                             </a>
                                         ))}
                                     </div>
-                                    <div className="text-[10px] font-bold uppercase tracking-widest text-teal-600/60 dark:text-teal-400/60">
+                                    <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
                                         {t('disputes.detail.submittedOn', { date: new Date(dispute.responded_at).toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US', { month: 'long', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' } as any) }, undefined)}
                                     </div>
                                 </div>
                             ) : isAccused && dispute.status !== 'closed' ? (
                                 <div className="space-y-4">
-                                    <p className="text-sm text-teal-800 dark:text-teal-200 mb-4">
+                                    <p className="text-sm text-zinc-500 mb-4">
                                         {t('disputes.detail.accusedResponsePrompt', undefined, undefined)}
                                     </p>
                                     <textarea 
-                                        className="w-full bg-white dark:bg-zinc-900 border border-teal-200 dark:border-teal-800 focus:border-teal-500 outline-none rounded-2xl p-4 min-h-[120px] transition-all"
+                                        className="w-full bg-white border border-zinc-200 focus:border-zinc-900 outline-none rounded-2xl p-4 min-h-[120px] transition-all"
                                         placeholder={t('disputes.detail.accusedResponsePlaceholder', undefined, undefined)}
                                         value={responseDesc}
                                         onChange={e => setResponseDesc(e.target.value)}
                                     />
                                     <div className="flex flex-wrap gap-2">
                                         {responsePreviews.map((p, i) => (
-                                            <div key={i} className="w-16 h-16 rounded-xl overflow-hidden border border-teal-200 relative">
+                                            <div key={i} className="w-16 h-16 rounded-xl overflow-hidden border border-zinc-200 relative">
                                                 <img src={p} className="w-full h-full object-cover" />
                                             </div>
                                         ))}
                                         {responseFiles.length < 5 && (
                                             <button 
                                                 onClick={() => responseInputRef.current?.click()}
-                                                className="w-16 h-16 rounded-xl border-2 border-dashed border-teal-200 flex items-center justify-center text-teal-400 hover:bg-white transition-colors"
+                                                className="w-16 h-16 rounded-xl border-2 border-dashed border-zinc-200 flex items-center justify-center text-zinc-400 hover:bg-white transition-colors"
                                             >
                                                 <Camera className="w-6 h-6" />
                                             </button>
@@ -309,7 +309,7 @@ export default function DisputeDetailPage() {
                                     <button 
                                         onClick={handleRespond}
                                         disabled={!responseDesc || submitting}
-                                        className="w-full py-4 bg-teal-600 hover:bg-teal-500 text-white rounded-2xl font-bold shadow-lg shadow-teal-600/20 transition-all flex items-center justify-center gap-2"
+                                        className="w-full py-4 bg-zinc-900 hover:bg-zinc-800 text-white rounded-2xl font-bold shadow-lg shadow-zinc-900/20 transition-all flex items-center justify-center gap-2"
                                     >
                                         {submitting ? t('disputes.messages.submitting', undefined, undefined) : t('disputes.detail.submitResponse', undefined, undefined)}
                                     </button>
@@ -322,12 +322,12 @@ export default function DisputeDetailPage() {
                 {/* Right Column: Status & Facilitation */}
                 <div className="space-y-6">
                     {/* Status Card */}
-                    <section className="bg-white dark:bg-zinc-900 rounded-[2rem] p-8 border border-zinc-200 dark:border-zinc-800 shadow-sm">
+                    <section className="bg-white rounded-[2rem] p-8 border border-zinc-200 shadow-sm">
                         <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-6">{t('disputes.detail.currentStatus', undefined, undefined)}</h3>
                         
                         <div className="space-y-6">
                             <div className="flex gap-4">
-                                <div className={`w-1 bg-zinc-100 dark:bg-zinc-800 rounded-full relative`}>
+                                <div className={`w-1 bg-zinc-100 rounded-full relative`}>
                                     <div className={`absolute top-0 left-0 w-full rounded-full ${getStatusStyles(dispute.status).split(' ')[0]} transition-all duration-1000`} style={{ height: 
                                         dispute.status === 'open' ? '25%' : 
                                         dispute.status === 'awaiting_response' ? '50%' :
@@ -344,7 +344,7 @@ export default function DisputeDetailPage() {
                                         const isDone = ['open', 'awaiting_response', 'under_review', 'closed'].indexOf(dispute.status) >= idx;
                                         return (
                                             <div key={step.id} className={`flex items-start gap-3 ${isDone ? 'opacity-100' : 'opacity-30'}`}>
-                                                <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${isDone ? 'bg-zinc-900 dark:bg-white text-white dark:text-black' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'}`}>
+                                                <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${isDone ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-400'}`}>
                                                     {isDone ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Clock className="w-3.5 h-3.5" />}
                                                 </div>
                                                 <div>
@@ -360,9 +360,9 @@ export default function DisputeDetailPage() {
                     </section>
 
                     {/* Facilitation Info */}
-                    <section className="bg-indigo-600 rounded-[2rem] p-8 text-white shadow-xl shadow-indigo-600/20">
+                    <section className="bg-zinc-900 rounded-[2rem] p-8 text-white shadow-xl shadow-zinc-900/20">
                         <div className="flex items-center gap-3 mb-4">
-                            <Gavel className="w-6 h-6 text-indigo-200" />
+                            <Gavel className="w-6 h-6 text-zinc-400" />
                             <h3 className="text-lg font-bold">{t('disputes.detail.facilitationTitle', undefined, undefined)}</h3>
                         </div>
                         
@@ -373,24 +373,24 @@ export default function DisputeDetailPage() {
                                 </div>
                             </div>
                         ) : (
-                            <p className="text-xs text-indigo-100 leading-relaxed">
+                            <p className="text-xs text-zinc-400 leading-relaxed">
                                 {t('disputes.detail.facilitationDesc', undefined, undefined)}
                             </p>
                         )}
 
                         {dispute.mediation_redirect_url && (
                             <div className="mt-6 pt-6 border-t border-white/10">
-                                <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-200 mb-3">{t('disputes.detail.recommendedAction', undefined, undefined)}</p>
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-3">{t('disputes.detail.recommendedAction', undefined, undefined)}</p>
                                 <a 
                                     href={dispute.mediation_redirect_url} 
                                     target="_blank" 
                                     rel="noopener noreferrer"
-                                    className="flex items-center justify-between p-4 bg-white text-indigo-600 rounded-2xl font-bold text-xs hover:bg-indigo-50 transition-colors"
+                                    className="flex items-center justify-between p-4 bg-white text-zinc-900 rounded-2xl font-bold text-xs hover:bg-zinc-50 transition-colors border border-zinc-200"
                                 >
                                     <span>{t('disputes.detail.proceedMediation', undefined, undefined)}</span>
                                     <ExternalLink className="w-4 h-4" />
                                 </a>
-                                <p className="text-[9px] text-indigo-200 mt-3 text-center opacity-80 uppercase tracking-tighter">
+                                <p className="text-[9px] text-zinc-500 mt-3 text-center opacity-80 uppercase tracking-tighter">
                                     {t('disputes.detail.mediationPlatform', undefined, undefined)}
                                 </p>
                             </div>
@@ -398,9 +398,9 @@ export default function DisputeDetailPage() {
                     </section>
 
                     {/* Legal Context */}
-                    <section className="bg-zinc-100 dark:bg-zinc-900 rounded-[2rem] p-8 border border-zinc-200 dark:border-zinc-800">
+                    <section className="bg-zinc-100 rounded-[2rem] p-8 border border-zinc-200">
                         <h4 className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-zinc-400 mb-4">{t('disputes.detail.legalDisclaimerTitle', undefined, undefined)}</h4>
-                        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 leading-relaxed uppercase tracking-tighter">
+                        <p className="text-[10px] text-zinc-500 leading-relaxed uppercase tracking-tighter">
                             {t('disputes.detail.legalDisclaimerDesc', undefined, undefined)}
                         </p>
                     </section>

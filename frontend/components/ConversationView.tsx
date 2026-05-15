@@ -137,15 +137,15 @@ export default function ConversationView({ conversationId, onClose, onArchive }:
 
     if (loading) {
         return (
-            <div className="flex flex-col h-full bg-white/50 dark:bg-zinc-900/50 backdrop-blur-2xl animate-pulse rounded-[2.5rem]">
-                <div className="p-8 border-b border-zinc-100 dark:border-zinc-800">
-                    <div className="h-8 bg-zinc-200 dark:bg-zinc-800 rounded-lg w-1/4 mb-4" />
-                    <div className="h-4 bg-zinc-200 dark:bg-zinc-800 rounded-lg w-1/3" />
+            <div className="flex flex-col h-full bg-white/50 backdrop-blur-2xl animate-pulse rounded-[2.5rem]">
+                <div className="p-8 border-b border-zinc-100">
+                    <div className="h-8 bg-zinc-200 rounded-lg w-1/4 mb-4" />
+                    <div className="h-4 bg-zinc-200 rounded-lg w-1/3" />
                 </div>
                 <div className="flex-1 p-8 space-y-8">
                     {[1, 2, 3].map(i => (
                         <div key={i} className={`flex ${i % 2 === 0 ? 'justify-end' : 'justify-start'}`}>
-                            <div className={`h-20 bg-zinc-200 dark:bg-zinc-800 rounded-[2rem] w-2/3 ${i % 2 === 0 ? 'rounded-tr-none' : 'rounded-tl-none'}`} />
+                            <div className={`h-20 bg-zinc-200 rounded-[2rem] w-2/3 ${i % 2 === 0 ? 'rounded-tr-none' : 'rounded-tl-none'}`} />
                         </div>
                     ))}
                 </div>
@@ -169,26 +169,26 @@ export default function ConversationView({ conversationId, onClose, onArchive }:
     }, {} as Record<string, Message[]>);
 
     return (
-        <div className="flex flex-col h-full bg-white/50 dark:bg-zinc-900/50 backdrop-blur-2xl border border-white/40 dark:border-zinc-800/50 rounded-[2.5rem] shadow-2xl overflow-hidden">
+        <div className="flex flex-col h-full bg-white/50 backdrop-blur-2xl border border-white/40 rounded-[2.5rem] shadow-2xl overflow-hidden">
             {/* Header */}
-            <div className="p-8 border-b border-zinc-100 dark:border-zinc-800 bg-white/30 dark:bg-zinc-900/30">
+            <div className="p-8 border-b border-zinc-100 bg-white/30">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-6">
                         {onClose && (
                             <button
                                 onClick={onClose}
-                                className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center hover:scale-110 active:scale-95 transition-all lg:hidden"
+                                className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center hover:scale-110 active:scale-95 transition-all lg:hidden"
                             >
-                                <ArrowLeft className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
+                                <ArrowLeft className="w-5 h-5 text-zinc-600" />
                             </button>
                         )}
                         <div>
-                            <h3 className="text-2xl font-black text-zinc-900 dark:text-white tracking-tighter uppercase">{conversation.subject || t('conversation.noSubject', undefined, 'Conversation')}</h3>
+                            <h3 className="text-2xl font-black text-zinc-900 tracking-tighter uppercase">{conversation.subject || t('conversation.noSubject', undefined, 'Conversation')}</h3>
                             <div className="flex items-center gap-3 mt-1">
-                                <div className="p-1.5 rounded-lg bg-teal-500/10 text-teal-500">
+                                <div className="p-1.5 rounded-lg bg-zinc-900/10 text-zinc-900">
                                     <Building2 className="w-4 h-4" />
                                 </div>
-                                <p className="text-xs font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">
+                                <p className="text-xs font-black text-zinc-500 uppercase tracking-widest">
                                     {conversation.property_title}
                                 </p>
                             </div>
@@ -199,7 +199,7 @@ export default function ConversationView({ conversationId, onClose, onArchive }:
                         {conversation.status === 'active' && (
                             <button
                                 onClick={handleArchive}
-                                className="w-12 h-12 rounded-full bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-red-500 hover:bg-red-50 transition-all group"
+                                className="w-12 h-12 rounded-full bg-zinc-50 flex items-center justify-center text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 transition-all group"
                                 title={t('conversation.archiveButton', undefined, 'Archive')}
                             >
                                 <Archive className="w-5 h-5 group-hover:scale-110 transition-transform" />
@@ -210,22 +210,22 @@ export default function ConversationView({ conversationId, onClose, onArchive }:
             </div>
 
             {/* Property Context Card */}
-            <div className="px-8 py-4 bg-zinc-50/50 dark:bg-zinc-800/20 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between gap-6">
+            <div className="px-8 py-4 bg-zinc-50/50 border-b border-zinc-100 flex items-center justify-between gap-6">
                 <div className="flex items-center gap-8">
                     <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 rounded-full bg-teal-500" />
+                        <div className="w-2 h-2 rounded-full bg-zinc-900" />
                         <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{t('conversation.landlord', undefined, 'Landlord')}:</span>
-                        <span className="text-[11px] font-black text-zinc-900 dark:text-white uppercase tracking-tight">{conversation.landlord_name}</span>
+                        <span className="text-[11px] font-black text-zinc-900 uppercase tracking-tight">{conversation.landlord_name}</span>
                     </div>
                     <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 rounded-full bg-indigo-500" />
+                        <div className="w-2 h-2 rounded-full bg-zinc-400" />
                         <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{t('conversation.tenant', undefined, 'Tenant')}:</span>
-                        <span className="text-[11px] font-black text-zinc-900 dark:text-white uppercase tracking-tight">{conversation.tenant_name}</span>
+                        <span className="text-[11px] font-black text-zinc-900 uppercase tracking-tight">{conversation.tenant_name}</span>
                     </div>
                 </div>
                 <Link
                     href={`/properties/${conversation.property_id}`}
-                    className="text-[10px] font-black text-teal-500 uppercase tracking-widest hover:text-teal-400 transition-colors flex items-center gap-2 group"
+                    className="text-[10px] font-black text-zinc-900 uppercase tracking-widest hover:text-zinc-600 transition-colors flex items-center gap-2 group"
                 >
                     {t('conversation.viewProperty', undefined, 'View Property')} 
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -233,12 +233,12 @@ export default function ConversationView({ conversationId, onClose, onArchive }:
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-8 space-y-12 bg-[#fafbfc] dark:bg-zinc-950/20 no-scrollbar">
+            <div className="flex-1 overflow-y-auto p-8 space-y-12 bg-[#fafbfc] no-scrollbar">
                 {Object.entries(messagesByDate).map(([date, msgs]) => (
                     <div key={date} className="space-y-10">
                         {/* Date separator */}
                         <div className="flex items-center justify-center">
-                            <div className="px-6 py-2 bg-white dark:bg-zinc-900 text-zinc-400 dark:text-zinc-500 text-[10px] font-black uppercase tracking-[0.3em] rounded-full shadow-sm border border-zinc-100 dark:border-zinc-800">
+                            <div className="px-6 py-2 bg-white text-zinc-400 text-[10px] font-black uppercase tracking-[0.3em] rounded-full shadow-sm border border-zinc-100">
                                 {formatDate(msgs[0].created_at)}
                             </div>
                         </div>
@@ -255,17 +255,18 @@ export default function ConversationView({ conversationId, onClose, onArchive }:
                                         key={msg.id}
                                         className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
                                     >
+                                        {/* Message card */}
                                         <div
                                             className={`max-w-[85%] sm:max-w-[70%] group relative ${isSystemType
-                                                ? 'bg-amber-50/50 dark:bg-amber-900/10 border border-amber-200/50 dark:border-amber-900/20 text-amber-900 dark:text-amber-200 rounded-[2rem] p-6 text-center mx-auto w-full'
+                                                ? 'bg-zinc-100/50 border border-zinc-200/50 text-zinc-900 rounded-[2rem] p-6 text-center mx-auto w-full'
                                                 : isOwn
-                                                    ? 'bg-gradient-to-br from-zinc-900 to-zinc-800 dark:from-white dark:to-zinc-100 text-white dark:text-zinc-900 rounded-[2rem] rounded-tr-none p-6 shadow-2xl shadow-zinc-900/10 dark:shadow-white/5'
-                                                    : 'bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-[2rem] rounded-tl-none p-6 shadow-xl'
+                                                    ? 'bg-gradient-to-br from-zinc-900 to-zinc-800 text-white rounded-[2rem] rounded-tr-none p-6 shadow-2xl shadow-zinc-900/10'
+                                                    : 'bg-white border border-zinc-100 text-zinc-900 rounded-[2rem] rounded-tl-none p-6 shadow-xl'
                                                 }`}
                                         >
                                             {/* Sender name for received messages */}
                                             {!isOwn && !isSystemType && (
-                                                <div className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-3">
+                                                <div className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-3">
                                                     {msg.sender_name}
                                                 </div>
                                             )}
@@ -287,7 +288,7 @@ export default function ConversationView({ conversationId, onClose, onArchive }:
                                                             className={`flex items-center gap-3 w-fit px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
                                                                 isOwn 
                                                                 ? 'bg-white/10 hover:bg-white/20 text-white' 
-                                                                : 'bg-teal-500 text-white shadow-lg shadow-teal-500/20 hover:scale-105'
+                                                                : 'bg-zinc-900 text-white shadow-lg shadow-zinc-900/20 hover:scale-105'
                                                             }`}
                                                         >
                                                             <Download className="w-4 h-4" />
@@ -298,10 +299,10 @@ export default function ConversationView({ conversationId, onClose, onArchive }:
                                             </div>
 
                                             {/* Timestamp */}
-                                            <div className={`text-[9px] mt-4 font-black uppercase tracking-widest flex items-center gap-2 ${isOwn ? 'text-zinc-400 dark:text-zinc-500 justify-end' : 'text-zinc-400'}`}>
+                                            <div className={`text-[9px] mt-4 font-black uppercase tracking-widest flex items-center gap-2 ${isOwn ? 'text-zinc-400 justify-end' : 'text-zinc-400'}`}>
                                                 {formatTime(msg.created_at)}
                                                 {isOwn && msg.is_read && (
-                                                    <CheckCheck className="w-3 h-3 text-teal-500" />
+                                                    <CheckCheck className="w-3 h-3 text-zinc-900" />
                                                 )}
                                             </div>
                                         </div>
@@ -316,7 +317,7 @@ export default function ConversationView({ conversationId, onClose, onArchive }:
 
             {/* Message Input */}
             {conversation.status === 'active' && (
-                <div className="p-8 border-t border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+                <div className="p-8 border-t border-zinc-100 bg-white">
                     <div className="flex items-end gap-4 max-w-5xl mx-auto">
                         <div className="flex-1 relative group">
                             <textarea
@@ -329,7 +330,7 @@ export default function ConversationView({ conversationId, onClose, onArchive }:
                                     }
                                 }}
                                 placeholder={t('conversation.writeMessage', undefined, 'Write a message...')}
-                                className="w-full px-6 py-5 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-[2rem] focus:ring-2 focus:ring-teal-500/50 transition-all resize-none min-h-[64px] max-h-48 no-scrollbar text-zinc-900 dark:text-white font-bold shadow-inner"
+                                className="w-full px-6 py-5 bg-zinc-50 border-none rounded-[2rem] focus:ring-2 focus:ring-zinc-900/20 transition-all resize-none min-h-[64px] max-h-48 no-scrollbar text-zinc-900 font-bold shadow-inner"
                                 disabled={sending}
                                 rows={1}
                             />
@@ -337,7 +338,7 @@ export default function ConversationView({ conversationId, onClose, onArchive }:
                         <button
                             onClick={sendMessage}
                             disabled={!newMessage.trim() || sending}
-                            className="w-16 h-16 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-full flex items-center justify-center hover:scale-110 disabled:opacity-30 disabled:hover:scale-100 transition-all shadow-2xl shadow-zinc-900/20 dark:shadow-white/5 active:scale-95"
+                            className="w-16 h-16 bg-zinc-900 text-white rounded-full flex items-center justify-center hover:scale-110 disabled:opacity-30 disabled:hover:scale-100 transition-all shadow-2xl shadow-zinc-900/10 active:scale-95"
                         >
                             {sending ? (
                                 <Loader2 className="w-6 h-6 animate-spin" />
@@ -351,8 +352,8 @@ export default function ConversationView({ conversationId, onClose, onArchive }:
 
             {/* Archived notice */}
             {conversation.status === 'archived' && (
-                <div className="p-10 border-t border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 text-center">
-                    <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full bg-zinc-200 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400 text-xs font-black uppercase tracking-widest shadow-inner">
+                <div className="p-10 border-t border-zinc-100 bg-zinc-50/50 text-center">
+                    <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full bg-zinc-200 text-zinc-500 text-xs font-black uppercase tracking-widest shadow-inner">
                         <Archive className="w-4 h-4" />
                         {t('conversation.archivedNotice', undefined, 'This conversation is archived')}
                     </div>

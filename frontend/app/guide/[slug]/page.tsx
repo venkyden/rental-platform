@@ -11,7 +11,7 @@ export default function GuidePage() {
         <div className="min-h-screen flex flex-col bg-slate-50 relative overflow-hidden">
             {/* Background Effects */}
             <div className="absolute inset-0 z-0">
-                <div className="absolute top-0 w-full h-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-teal-50/50 via-slate-50 to-white"></div>
+                <div className="absolute top-0 w-full h-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-100/50 via-slate-50 to-white"></div>
             </div>
 
             <header className="relative z-10 bg-white/80 backdrop-blur-xl border-b border-white/50">

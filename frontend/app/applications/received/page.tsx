@@ -8,6 +8,7 @@ import VerificationGate from '@/components/VerificationGate';
 import { apiClient } from '@/lib/api';
 import { useToast } from '@/lib/ToastContext';
 import NotificationBell from '@/components/NotificationBell';
+import { Shield } from 'lucide-react';
 
 interface Application {
     id: string;
@@ -72,46 +73,45 @@ export default function ReceivedApplicationsPage() {
     // Verification required screen
     if (verificationRequired) {
         return (
-            <ProtectedRoute>
-                <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-2xl shadow-sm max-w-md w-full p-8 text-center">
-                        <div className="w-20 h-20 bg-blue-600 rounded-2xl flex items-center justify-center text-4xl mx-auto mb-6">
-                            
+             <ProtectedRoute>
+                <div className="min-h-screen bg-white flex items-center justify-center p-4">
+                    <div className="bg-white border border-zinc-100 rounded-[2.5rem] shadow-2xl max-w-md w-full p-12 text-center relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-zinc-900/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                        <div className="w-20 h-20 bg-zinc-900 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-xl">
+                             <Shield className="w-10 h-10 text-white" />
                         </div>
-                        <h2 className="text-2xl font-bold text-gray-900 mb-3">
-                            Verify Your Identity
+                        <h2 className="text-3xl font-black text-zinc-900 mb-4 uppercase tracking-tighter">
+                            Identity Protocol
                         </h2>
-                        <p className="text-gray-600 mb-6">
+                        <p className="text-zinc-500 font-medium mb-8 leading-relaxed">
                             Tenants only share their verified profiles with verified landlords.
-                            Complete ID verification to view applications.
+                            Complete ID verification to unlock applications.
                         </p>
 
-                        <div className="bg-gray-50 rounded-xl p-4 mb-6 text-left">
-                            <ul className="space-y-2 text-sm">
-                                <li className="flex items-start gap-2 text-gray-700">
-                                    <span className="text-green-600"></span>
-                                    <span>Access full tenant profiles and documents</span>
-                                </li>
-                                <li className="flex items-start gap-2 text-gray-700">
-                                    <span className="text-green-600"></span>
-                                    <span>Get a "Verified Landlord" badge on your listings</span>
-                                </li>
-                                <li className="flex items-start gap-2 text-gray-700">
-                                    <span className="text-green-600"></span>
-                                    <span>Build trust with prospective tenants</span>
-                                </li>
+                        <div className="bg-zinc-50 rounded-2xl p-6 mb-8 text-left border border-zinc-100">
+                            <ul className="space-y-4">
+                                {[
+                                    'Access full tenant profiles and documents',
+                                    'Get a "Verified Landlord" badge on your listings',
+                                    'Build trust with prospective tenants'
+                                ].map((item, i) => (
+                                    <li key={i} className="flex items-start gap-3">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-zinc-900 mt-1.5" />
+                                        <span className="text-[10px] font-black text-zinc-900 uppercase tracking-widest leading-tight">{item}</span>
+                                    </li>
+                                ))}
                             </ul>
                         </div>
 
                         <button
                             onClick={() => router.push('/verification/identity')}
-                            className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold hover:shadow-sm transition-all"
+                            className="w-full py-5 bg-zinc-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.4em] hover:scale-[1.02] active:scale-95 transition-all shadow-2xl"
                         >
-                            Verify Now
+                            Execute Verification
                         </button>
 
-                        <p className="text-xs text-gray-400 mt-4">
-                             Your data is encrypted and never shared without consent
+                        <p className="text-[8px] font-black text-zinc-400 uppercase tracking-[0.2em] mt-6">
+                             End-to-end encryption active
                         </p>
                     </div>
                 </div>
@@ -151,22 +151,19 @@ export default function ReceivedApplicationsPage() {
                                             <div>
                                                 <h3 className="font-bold text-lg text-gray-900">
                                                     Rental Application
-                                                    {app.property && <span className="text-gray-500 font-normal"> • {app.property.title} ({app.property.city})</span>}
+                                                    {app.property && <span className="text-zinc-400 font-normal"> • {app.property.title} ({app.property.city})</span>}
                                                 </h3>
-                                                <div className="text-sm text-gray-500">
-                                                    Received on {new Date(app.created_at).toLocaleDateString('en-US')}
+                                                <div className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mt-1">
+                                                    Received {new Date(app.created_at).toLocaleDateString('en-US')}
                                                 </div>
                                             </div>
-                                            <span className={`px-3 py-1 rounded-full text-sm font-bold ${app.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                                app.status === 'approved' ? 'bg-green-100 text-green-800' :
-                                                    'bg-red-100 text-red-800'
-                                                }`}>
-                                                {app.status.toUpperCase()}
+                                             <span className="px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-[0.2em] bg-zinc-900 text-white border border-zinc-900 shadow-sm">
+                                                {app.status}
                                             </span>
                                         </div>
 
                                         {app.cover_letter && (
-                                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 italic text-gray-700 mb-4">
+                                            <div className="bg-zinc-50 p-4 rounded-xl border border-zinc-100 text-zinc-600 text-sm italic mb-4">
                                                 "{app.cover_letter}"
                                             </div>
                                         )}
@@ -178,19 +175,19 @@ export default function ReceivedApplicationsPage() {
                                         </div>
                                     </div>
 
-                                    {app.status === 'pending' && (
-                                        <div className="flex md:flex-col gap-2 justify-center min-w-[140px]">
+                                     {app.status === 'pending' && (
+                                        <div className="flex md:flex-col gap-3 justify-center min-w-[160px]">
                                             <button
                                                 onClick={() => handleStatusUpdate(app.id, 'approved')}
-                                                className="px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors shadow-sm"
+                                                className="px-6 py-3 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:scale-[1.02] active:scale-95 transition-all shadow-lg"
                                             >
-                                                 Accept
+                                                 Approve
                                             </button>
                                             <button
                                                 onClick={() => handleStatusUpdate(app.id, 'rejected')}
-                                                className="px-4 py-2 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-red-50 hover:text-red-700 hover:border-red-200 transition-colors"
+                                                className="px-6 py-3 bg-white border border-zinc-200 text-zinc-900 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-zinc-50 transition-all"
                                             >
-                                                 Reject
+                                                 Decline
                                             </button>
                                         </div>
                                     )}

@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#4F46E5",
+  themeColor: "#18181b", // Zinc-900
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -33,12 +33,8 @@ export const viewport: Viewport = {
 
 import Script from "next/script";
 
-import { Outfit } from "next/font/google";
-
-const outfit = Outfit({
-  subsets: ["latin"],
-  variable: "--font-outfit",
-});
+// Using system font stack for reliability in restricted environments
+const fontStack = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"';
 
 import { AuthProvider } from "@/lib/AuthContext";
 import CookieConsentBanner from "@/components/CookieConsentBanner";
@@ -49,7 +45,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" className={`${outfit.variable}`}>
+    <html lang="fr" suppressHydrationWarning>
       <head>
         {/* Load Google Identity Services script once */}
         <Script 
@@ -58,7 +54,8 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`font-sans antialiased bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 min-h-screen selection:bg-teal-100 dark:selection:bg-teal-900/30 selection:text-teal-900 dark:selection:text-teal-100`}
+        className="antialiased bg-zinc-50 text-zinc-900 min-h-screen selection:bg-zinc-900 selection:text-white"
+        style={{ fontFamily: fontStack }}
       >
         <LanguageProvider>
           <ToastProvider>

@@ -47,13 +47,13 @@ function VerifyEmailChangeContent() {
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl p-8 rounded-2xl shadow-sm  dark: text-center border border-gray-100 dark:border-gray-700"
+                className="bg-white/80 backdrop-blur-xl p-8 rounded-2xl shadow-sm  dark: text-center border border-gray-100"
             >
                 {status === 'loading' && (
                     <div className="flex flex-col items-center">
-                        <Loader2 className="w-16 h-16 text-indigo-500 animate-spin mb-6" />
-                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Verifying...</h2>
-                        <p className="text-gray-500 dark:text-gray-400">{message}</p>
+                        <Loader2 className="w-16 h-16 text-zinc-900 animate-spin mb-6" />
+                        <h2 className="text-xl font-black tracking-tight text-zinc-900 mb-2 uppercase">Verifying...</h2>
+                        <p className="text-zinc-500 font-medium">{message}</p>
                     </div>
                 )}
 
@@ -64,11 +64,11 @@ function VerifyEmailChangeContent() {
                             animate={{ scale: 1 }}
                             transition={{ type: "spring", stiffness: 200, damping: 10 }}
                         >
-                            <CheckCircle2 className="w-16 h-16 text-green-500 mb-6" />
+                            <CheckCircle2 className="w-16 h-16 text-zinc-900 mb-6" />
                         </motion.div>
-                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Email Updated</h2>
-                        <p className="text-gray-500 dark:text-gray-400 mb-6">{message}</p>
-                        <p className="text-sm text-gray-400">Redirecting you to your profile...</p>
+                        <h2 className="text-xl font-black tracking-tight text-zinc-900 mb-2 uppercase">Email Updated</h2>
+                        <p className="text-zinc-600 mb-6 font-medium">{message}</p>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Redirecting you to your profile...</p>
                     </div>
                 )}
 
@@ -79,13 +79,13 @@ function VerifyEmailChangeContent() {
                             animate={{ scale: 1 }}
                             transition={{ type: "spring", stiffness: 200, damping: 10 }}
                         >
-                            <XCircle className="w-16 h-16 text-red-500 mb-6" />
+                            <XCircle className="w-16 h-16 text-zinc-900 mb-6" />
                         </motion.div>
-                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Verification Failed</h2>
-                        <p className="text-gray-500 dark:text-gray-400 mb-6">{message}</p>
+                        <h2 className="text-xl font-black tracking-tight text-zinc-900 mb-2 uppercase">Verification Failed</h2>
+                        <p className="text-zinc-600 mb-6 font-medium">{message}</p>
                         <button
                             onClick={() => router.push('/settings/account')}
-                            className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors font-medium shadow-md "
+                            className="px-8 py-3 bg-zinc-900 text-white rounded-xl font-bold hover:shadow-sm transition-all"
                         >
                             Return to Settings
                         </button>
@@ -101,7 +101,7 @@ export default function VerifyEmailChangePage() {
         <PremiumLayout>
             <Suspense fallback={
                 <div className="flex justify-center items-center py-20">
-                    <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+                    <Loader2 className="w-8 h-8 animate-spin text-zinc-900" />
                 </div>
             }>
                 <VerifyEmailChangeContent />

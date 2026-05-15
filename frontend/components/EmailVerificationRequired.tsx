@@ -49,9 +49,9 @@ export default function EmailVerificationRequired({ children }: EmailVerificatio
     // If user hasn't verified their email, show verification prompt
     if (user && !user.email_verified) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-zinc-100 dark:bg-zinc-800">
+            <div className="min-h-screen flex items-center justify-center bg-zinc-100">
                 <div className="text-center bg-white p-8 rounded-2xl shadow-sm max-w-md mx-4">
-                    <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                    <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-zinc-100 flex items-center justify-center">
                         <span className="text-4xl"></span>
                     </div>
                     <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('emailVerification.title', undefined, 'Verify Your Email')}</h2>
@@ -69,7 +69,7 @@ export default function EmailVerificationRequired({ children }: EmailVerificatio
                             <button
                                 onClick={handleResendVerification}
                                 disabled={resending}
-                                className="w-full py-3 px-4 bg-zinc-900 dark:bg-white text-white font-semibold rounded-xl hover:shadow-sm transition-all disabled:opacity-50"
+                                className="w-full py-3 px-4 bg-zinc-900 text-white font-semibold rounded-xl hover:shadow-sm transition-all disabled:opacity-50"
                             >
                                 {resending ? t('emailVerification.sending', undefined, 'Sending...') : t('emailVerification.resendButton', undefined, 'Resend Verification Email')}
                             </button>

@@ -54,10 +54,10 @@ function VerifyEmailContent() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen flex items-center justify-center bg-white py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-md w-full space-y-8">
                 <div>
-                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                    <h2 className="mt-6 text-center text-3xl font-black tracking-tighter text-zinc-900 uppercase">
                         {t('auth.verifyEmail.title', undefined, 'Email Verification')}
                     </h2>
                 </div>
@@ -65,16 +65,16 @@ function VerifyEmailContent() {
                 <div className="mt-8 bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
                     {status === 'verifying' && (
                         <div className="text-center">
-                            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                            <p className="mt-4 text-gray-600">{t('auth.verifyEmail.verifying', undefined, 'Verifying your email...')}</p>
+                            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-zinc-900"></div>
+                            <p className="mt-4 text-zinc-600 font-medium">{t('auth.verifyEmail.verifying', undefined, 'Verifying your email...')}</p>
                         </div>
                     )}
 
                     {status === 'success' && (
                         <div className="text-center">
-                            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+                            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-zinc-900">
                                 <svg
-                                    className="h-6 w-6 text-green-600"
+                                    className="h-6 w-6 text-white"
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
@@ -87,11 +87,11 @@ function VerifyEmailContent() {
                                     />
                                 </svg>
                             </div>
-                            <h3 className="mt-4 text-lg font-medium text-gray-900">
+                            <h3 className="mt-4 text-lg font-black tracking-tight text-zinc-900 uppercase">
                                 {t('auth.verifyEmail.success', undefined, 'Success!')}
                             </h3>
-                            <p className="mt-2 text-sm text-gray-600">{message}</p>
-                            <p className="mt-4 text-sm text-gray-500">
+                            <p className="mt-2 text-sm text-zinc-600">{message}</p>
+                            <p className="mt-4 text-[10px] font-black uppercase tracking-widest text-zinc-400">
                                 {t('auth.verifyEmail.redirecting', undefined, 'Redirecting you...')}
                             </p>
                         </div>
@@ -99,9 +99,9 @@ function VerifyEmailContent() {
 
                     {status === 'error' && (
                         <div className="text-center">
-                            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full border-2 border-zinc-900">
                                 <svg
-                                    className="h-6 w-6 text-red-600"
+                                    className="h-6 w-6 text-zinc-900"
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
@@ -114,20 +114,20 @@ function VerifyEmailContent() {
                                     />
                                 </svg>
                             </div>
-                            <h3 className="mt-4 text-lg font-medium text-gray-900">
+                            <h3 className="mt-4 text-lg font-black tracking-tight text-zinc-900 uppercase">
                                 {t('auth.verifyEmail.failed', undefined, 'Verification Failed')}
                             </h3>
-                            <p className="mt-2 text-sm text-gray-600">{message}</p>
+                            <p className="mt-2 text-sm text-zinc-600">{message}</p>
                             <div className="mt-6 space-y-2">
                                 <Link
                                     href="/auth/login"
-                                    className="block w-full text-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                                    className="block w-full text-center px-4 py-3 bg-zinc-900 text-white rounded-xl font-bold hover:shadow-sm transition-all"
                                 >
                                     {t('auth.verifyEmail.goToLogin', undefined, 'Go to Login')}
                                 </Link>
                                 <Link
                                     href="/auth/register"
-                                    className="block w-full text-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                                    className="block w-full text-center px-4 py-3 border border-zinc-200 text-sm font-bold rounded-xl text-zinc-900 bg-white hover:bg-zinc-50 transition-all"
                                 >
                                     {t('auth.verifyEmail.createNewAccount', undefined, 'Create New Account')}
                                 </Link>
@@ -143,10 +143,10 @@ function VerifyEmailContent() {
 function LoadingFallback() {
     const { t } = useLanguage();
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="min-h-screen flex items-center justify-center bg-white">
             <div className="text-center">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                <p className="mt-4 text-gray-600">{t('common.loading', undefined, 'Loading...')}</p>
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-zinc-900"></div>
+                <p className="mt-4 text-zinc-600 font-medium">{t('common.loading', undefined, 'Loading...')}</p>
             </div>
         </div>
     );

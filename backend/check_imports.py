@@ -18,7 +18,7 @@ for root, _, files in os.walk("app"):
                         elif isinstance(node, ast.ImportFrom):
                             if node.module:
                                 external_imports.add(node.module.split(".")[0])
-                except err:
+                except Exception:
                     pass
 
 required = external_imports - stdlib - {"app"}

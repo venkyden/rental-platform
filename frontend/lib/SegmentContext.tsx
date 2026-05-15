@@ -71,8 +71,12 @@ export function SegmentProvider({ children }: { children: ReactNode }) {
         try {
             const response = await apiClient.client.get('/auth/me/segment-config');
             setConfig(response.data);
-        } catch (error) {
-            console.error('Failed to fetch segment config:', error);
+        } catch (error: any) {
+            // Silently handle 401s as the user might be a guest or session expired
+            if (error?.response?.status !== 401) {
+                console.error('Failed to fetch segment config:', error);
+            }
+            setConfig(null);
         } finally {
             setLoading(false);
         }

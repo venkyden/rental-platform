@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import React, { useState } from 'react';
 
 const content = {
     en: {
@@ -295,18 +295,18 @@ type Section = (typeof content)['en']['sections'][number];
 function SectionRenderer({ section }: { section: Section }) {
     return (
         <section>
-            <h2 className="text-xl font-semibold text-gray-900 mt-8 mb-4">{section.title}</h2>
+            <h2 className="text-xl font-black text-zinc-900 mt-8 mb-4 uppercase tracking-tighter">{section.title}</h2>
 
             {section.paragraphs?.map((p, i) => (
-                <p key={i} className="text-gray-700 mb-4">{p}</p>
+                <p key={i} className="text-zinc-600 mb-4">{p}</p>
             ))}
 
             {'definitions' in section && section.definitions && (
-                <dl className="border-l-2 border-blue-200 pl-4 space-y-3 mb-4">
+                <dl className="border-l-2 border-zinc-900 pl-4 space-y-3 mb-4 bg-zinc-50/50 p-4 rounded-r-xl">
                     {(section.definitions as Array<{ term: string; def: string }>).map((d, i) => (
                         <div key={i}>
-                            <dt className="font-semibold text-gray-900">{d.term}</dt>
-                            <dd className="text-gray-700 text-sm">{d.def}</dd>
+                            <dt className="font-black text-zinc-900 uppercase tracking-tight text-xs">{d.term}</dt>
+                            <dd className="text-zinc-600 text-sm mt-1">{d.def}</dd>
                         </div>
                     ))}
                 </dl>
@@ -315,19 +315,19 @@ function SectionRenderer({ section }: { section: Section }) {
             {'table' in section && section.table && (
                 <>
                     <div className="overflow-x-auto mb-4">
-                        <table className="min-w-full border border-gray-200 text-sm">
-                            <thead className="bg-gray-50">
+                        <table className="min-w-full border border-zinc-100 text-sm">
+                            <thead className="bg-zinc-50">
                                 <tr>
                                     {(section.table as { headers: string[]; rows: string[][] }).headers.map((h, i) => (
-                                        <th key={i} className="px-4 py-2 text-left font-semibold text-gray-900 border-b">{h}</th>
+                                        <th key={i} className="px-4 py-2 text-left font-black text-zinc-900 uppercase text-[10px] border-b border-zinc-100">{h}</th>
                                     ))}
                                 </tr>
                             </thead>
                             <tbody>
                                 {(section.table as { headers: string[]; rows: string[][] }).rows.map((row, i) => (
-                                    <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                                    <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-zinc-50'}>
                                         {row.map((cell, j) => (
-                                            <td key={j} className="px-4 py-2 text-gray-700 border-b">{cell}</td>
+                                            <td key={j} className="px-4 py-2 text-zinc-600 border-b border-zinc-100">{cell}</td>
                                         ))}
                                     </tr>
                                 ))}
@@ -335,42 +335,45 @@ function SectionRenderer({ section }: { section: Section }) {
                         </table>
                     </div>
                     {'postTable' in section && (
-                        <p className="text-gray-700 text-sm mb-4">{(section as { postTable: string }).postTable}</p>
+                        <p className="text-zinc-600 text-xs mb-4 italic">{(section as { postTable: string }).postTable}</p>
                     )}
                 </>
             )}
 
             {'steps' in section && (
                 <>
-                    <ol className="list-decimal pl-6 text-gray-700 space-y-2 mb-4">
+                    <ol className="list-decimal pl-6 text-zinc-600 space-y-2 mb-4 text-sm">
                         {(section as { steps: string[] }).steps.map((s, i) => (
                             <li key={i}>{s}</li>
                         ))}
                     </ol>
                     {'postSteps' in section && (
-                        <p className="text-gray-700 text-sm mb-4">{(section as { postSteps: string }).postSteps}</p>
+                        <p className="text-zinc-600 text-xs mb-4">{(section as { postSteps: string }).postSteps}</p>
                     )}
                 </>
             )}
 
             {'list' in section && section.list && (
-                <ul className="list-disc pl-6 text-gray-700 space-y-2 mb-4">
+                <ul className="list-none pl-0 text-zinc-600 space-y-4 mb-4">
                     {(section.list as Array<{ label: string; detail: string }>).map((item, j) => (
-                        <li key={j}><strong>{item.label}:</strong> {item.detail}</li>
+                        <li key={j} className="text-sm">
+                            <strong className="text-zinc-900 font-black block uppercase text-xs tracking-tight">{item.label}</strong> 
+                            {item.detail}
+                        </li>
                     ))}
                 </ul>
             )}
 
             {'subSections' in section && (section as { subSections: Array<{ subtitle: string; body: string }> }).subSections.map((sub, i) => (
-                <div key={i} className="ml-4 mb-4">
-                    <h3 className="font-semibold text-gray-800 mb-2">{sub.subtitle}</h3>
-                    <p className="text-gray-700 text-sm">{sub.body}</p>
+                <div key={i} className="ml-0 mb-6 border-l border-zinc-200 pl-4">
+                    <h3 className="font-black text-zinc-900 uppercase text-xs mb-2 tracking-tight">{sub.subtitle}</h3>
+                    <p className="text-zinc-600 text-sm">{sub.body}</p>
                 </div>
             ))}
 
             {'contact' in section && (section as { contact: { email: string } }).contact && (
-                <p className="text-gray-700 mb-4">
-                    <a href={`mailto:${(section as { contact: { email: string } }).contact.email}`} className="text-blue-600 hover:underline">
+                <p className="text-zinc-600 mb-4">
+                    <a href={`mailto:${(section as { contact: { email: string } }).contact.email}`} className="text-zinc-900 font-black underline hover:text-zinc-500 transition-colors">
                         {(section as { contact: { email: string } }).contact.email}
                     </a>
                 </p>
@@ -379,58 +382,56 @@ function SectionRenderer({ section }: { section: Section }) {
     );
 }
 
-export default function CGVPage() {
-    const [lang, setLang] = useState<'en' | 'fr'>('en');
-    const t = content[lang];
+export default function LegalPage() {
+    const [lang, setLang] = React.useState('en');
+    const t = content[lang as keyof typeof content];
 
     return (
-        <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-3xl mx-auto">
-                <div className="bg-white shadow rounded-lg p-8">
-                    <div className="flex justify-between items-start mb-6">
+        <div className="min-h-screen bg-zinc-50 py-24 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-4xl mx-auto">
+                <div className="glass-card !p-12 rounded-[3rem] border-zinc-100 shadow-2xl">
+                    <div className="flex justify-between items-start mb-12">
                         <div>
-                            <h1 className="text-3xl font-bold text-gray-900">{t.title}</h1>
-                            <p className="text-sm text-gray-500 mt-1">{t.subtitle}</p>
-                            <p className="text-sm text-gray-500 mt-1">{t.updated}</p>
+                            <h1 className="text-5xl font-black text-zinc-900 tracking-tighter uppercase">{t.title}</h1>
+                            <p className="text-xs font-black text-zinc-400 uppercase tracking-[0.3em] mt-4">{t.subtitle}</p>
+                            <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mt-2">{t.updated}</p>
                         </div>
                         <button
                             onClick={() => setLang(lang === 'en' ? 'fr' : 'en')}
-                            className="text-sm px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors font-medium"
+                            className="text-[10px] px-4 py-2 bg-zinc-900 text-white rounded-full transition-all font-black uppercase tracking-widest hover:scale-105 active:scale-95 shadow-xl"
                         >
                             {t.langSwitch}
                         </button>
                     </div>
 
-                    <div className="prose prose-blue max-w-none">
+                    <div className="prose prose-zinc max-w-none prose-headings:uppercase prose-headings:tracking-tighter prose-headings:font-black">
                         {t.sections.map((section, i) => (
                             <SectionRenderer key={i} section={section} />
                         ))}
                     </div>
 
                     {/* Withdrawal Form */}
-                    <div className="mt-10 pt-6 border-t border-gray-200">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-2">{t.withdrawalForm.title}</h2>
-                        <p className="text-sm text-gray-500 mb-4">{t.withdrawalForm.note}</p>
-                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-sm text-gray-700 space-y-2 font-mono">
+                    <div className="mt-16 pt-12 border-t border-zinc-100">
+                        <h2 className="text-xl font-black text-zinc-900 mb-4 uppercase tracking-tighter">{t.withdrawalForm.title}</h2>
+                        <p className="text-sm text-zinc-500 mb-8">{t.withdrawalForm.note}</p>
+                        <div className="bg-zinc-900 text-white border border-zinc-900 rounded-[2rem] p-10 text-xs space-y-4 font-mono shadow-2xl">
                             {t.withdrawalForm.fields.map((f, i) => (
-                                <p key={i}>{f}</p>
+                                <p key={i} className="opacity-80">{f}</p>
                             ))}
                         </div>
                     </div>
 
-                    <div className="mt-8 pt-6 border-t border-gray-200 flex gap-4">
-                        <Link href="/" className="text-blue-600 hover:text-blue-500 font-medium">
-                            {t.backHome}
-                        </Link>
-                        <Link href="/legal/terms" className="text-blue-600 hover:text-blue-500 font-medium">
-                            Terms / CGU
-                        </Link>
-                        <Link href="/legal/privacy" className="text-blue-600 hover:text-blue-500 font-medium">
-                            Privacy
-                        </Link>
-                        <Link href="/legal/mentions-legales" className="text-blue-600 hover:text-blue-500 font-medium">
-                            Mentions Légales
-                        </Link>
+                    <div className="mt-16 pt-12 border-t border-zinc-100 flex flex-wrap gap-6">
+                        {[
+                            { label: t.backHome, path: '/' },
+                            { label: 'Terms / CGU', path: '/legal/terms' },
+                            { label: 'Privacy', path: '/legal/privacy' },
+                            { label: 'Mentions Légales', path: '/legal/mentions-legales' }
+                        ].map((link, i) => (
+                            <Link key={i} href={link.path} className="text-[10px] font-black text-zinc-400 hover:text-zinc-900 uppercase tracking-widest transition-colors">
+                                {link.label}
+                            </Link>
+                        ))}
                     </div>
                 </div>
             </div>

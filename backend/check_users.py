@@ -2,12 +2,18 @@ import asyncio
 
 from sqlalchemy import select
 
-from app.database import SessionLocal
+import os
+import sys
+
+# Add backend directory to sys.path
+sys.path.append(os.path.join(os.getcwd(), "backend"))
+
+from app.core.database import AsyncSessionLocal
 from app.models.user import User
 
 
 async def run():
-    async with SessionLocal() as db:
+    async with AsyncSessionLocal() as db:
         res = await db.execute(select(User))
         users = res.scalars().all()
         for u in users:

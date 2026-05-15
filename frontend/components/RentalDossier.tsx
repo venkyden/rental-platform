@@ -101,10 +101,10 @@ export default function RentalDossier() {
     if (loading) return <div className="p-4 bg-gray-50 rounded animate-pulse">{t('dossier.loading', undefined, 'Loading dossier...')}</div>;
 
     return (
-        <div className="bg-white rounded-xl shadow border border-gray-100 overflow-hidden">
-            <div className="p-6 border-b border-gray-100 bg-blue-50">
-                <h2 className="text-xl font-bold text-gray-900"> {t('dossier.title', undefined, 'My Rental Application File')}</h2>
-                <p className="text-sm text-gray-600 mt-1">
+        <div className="bg-white rounded-xl shadow-lg border border-zinc-100 overflow-hidden">
+            <div className="p-8 bg-zinc-900 text-white">
+                <h2 className="text-2xl font-black uppercase tracking-widest"> {t('dossier.title', undefined, 'My Rental Application File')}</h2>
+                <p className="text-xs font-bold text-zinc-400 mt-2 leading-relaxed max-w-lg">
                     {t('dossier.subtitle', undefined, 'Compliant with housing regulations. A complete file increases your chances by 80%.')}
                 </p>
             </div>
@@ -112,7 +112,7 @@ export default function RentalDossier() {
             <div className="p-6 space-y-8">
                 {REQUIRED_DOCS.map((cat) => (
                     <div key={cat.category}>
-                        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                        <h3 className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400 mb-4 flex items-center gap-2">
                             {cat.category === t('dossier.category.guarantor', undefined, 'Guarantor (If applicable)') ? '️' : ''} {cat.category}
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -125,27 +125,27 @@ export default function RentalDossier() {
                                                 {item.label}
                                             </label>
                                             {existingDocs.length > 0 ? (
-                                                <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full font-bold">
+                                                <span className="bg-zinc-900 text-white text-[10px] px-3 py-1 rounded-full font-black uppercase tracking-widest">
                                                      {t('dossier.status.received', undefined, 'Received')}
                                                 </span>
                                             ) : (
-                                                <span className="bg-gray-200 text-gray-500 text-xs px-2 py-1 rounded-full">
+                                                <span className="bg-zinc-100 text-zinc-400 text-[10px] px-3 py-1 rounded-full font-black uppercase tracking-widest">
                                                     {t('dossier.status.missing', undefined, 'Missing')}
                                                 </span>
                                             )}
                                         </div>
 
                                         {existingDocs.map(doc => (
-                                            <div key={doc.id} className="flex items-center gap-2 text-xs text-blue-600 mb-2 bg-blue-50 p-1 rounded">
+                                            <div key={doc.id} className="flex items-center gap-2 text-[10px] font-bold text-zinc-600 mb-2 bg-zinc-50 p-2 rounded-lg border border-zinc-100">
                                                 <span> {doc.file_name}</span>
                                             </div>
                                         ))}
 
                                         <div className="mt-3">
                                             <label className={`
-                                                cursor-pointer flex items-center justify-center gap-2 w-full py-2 rounded-lg border-2 border-dashed
-                                                transition-all text-sm font-medium
-                                                ${uploading === item.type ? 'bg-gray-100 border-gray-300 text-gray-400' : 'border-blue-200 text-blue-600 hover:bg-blue-50'}
+                                                cursor-pointer flex items-center justify-center gap-2 w-full py-3 rounded-xl border-2 border-dashed
+                                                transition-all text-xs font-black uppercase tracking-widest
+                                                ${uploading === item.type ? 'bg-zinc-50 border-zinc-200 text-zinc-400' : 'border-zinc-200 text-zinc-900 hover:bg-zinc-900 hover:text-white hover:border-zinc-900'}
                                             `}>
                                                 {uploading === item.type ? (
                                                     <span>{t('dossier.action.uploading', undefined, 'Uploading...')} ⏳</span>
@@ -169,14 +169,29 @@ export default function RentalDossier() {
                     </div>
                 ))}
 
-                <div className="bg-red-50 border border-red-100 rounded-lg p-4 text-sm text-red-700 mt-6">
-                    <p className="font-bold mb-1"> {t('dossier.prohibited.title', undefined, 'Prohibited Documents (Never submit):')}</p>
-                    <ul className="list-disc list-inside space-y-1">
-                        <li>{t('dossier.prohibited.item1', undefined, 'Social Security Card')}</li>
-                        <li>{t('dossier.prohibited.item2', undefined, 'Bank Account Statements')}</li>
-                        <li>{t('dossier.prohibited.item3', undefined, 'Direct Debit Authorization (before lease signing)')}</li>
-                        <li>{t('dossier.prohibited.item4', undefined, 'Medical Records / Criminal Record')}</li>
-                        <li>{t('dossier.prohibited.item5', undefined, 'Reservation Check')}</li>
+                <div className="bg-zinc-900 text-white rounded-2xl p-6 mt-8">
+                    <p className="font-black uppercase tracking-widest text-xs mb-4 text-white/50"> {t('dossier.prohibited.title', undefined, 'Prohibited Documents (Never submit):')}</p>
+                    <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <li className="text-[10px] font-bold text-zinc-400 flex items-center gap-2 bg-white/5 p-3 rounded-xl">
+                            <span className="w-1 h-1 bg-white/20 rounded-full" />
+                            {t('dossier.prohibited.item1', undefined, 'Social Security Card')}
+                        </li>
+                        <li className="text-[10px] font-bold text-zinc-400 flex items-center gap-2 bg-white/5 p-3 rounded-xl">
+                            <span className="w-1 h-1 bg-white/20 rounded-full" />
+                            {t('dossier.prohibited.item2', undefined, 'Bank Account Statements')}
+                        </li>
+                        <li className="text-[10px] font-bold text-zinc-400 flex items-center gap-2 bg-white/5 p-3 rounded-xl">
+                            <span className="w-1 h-1 bg-white/20 rounded-full" />
+                            {t('dossier.prohibited.item3', undefined, 'Direct Debit Authorization (before lease signing)')}
+                        </li>
+                        <li className="text-[10px] font-bold text-zinc-400 flex items-center gap-2 bg-white/5 p-3 rounded-xl">
+                            <span className="w-1 h-1 bg-white/20 rounded-full" />
+                            {t('dossier.prohibited.item4', undefined, 'Medical Records / Criminal Record')}
+                        </li>
+                        <li className="text-[10px] font-bold text-zinc-400 flex items-center gap-2 bg-white/5 p-3 rounded-xl">
+                            <span className="w-1 h-1 bg-white/20 rounded-full" />
+                            {t('dossier.prohibited.item5', undefined, 'Reservation Check')}
+                        </li>
                     </ul>
                 </div>
             </div>

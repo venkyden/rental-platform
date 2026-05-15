@@ -40,19 +40,19 @@ function PreferenceCard({ title, icon: Icon, value, onEdit, isCurrency, isSurfac
     return (
         <button
             onClick={onEdit}
-            className="w-full text-left p-6 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-transparent hover:border-zinc-200 dark:hover:border-zinc-700 transition-all group"
+            className="w-full text-left p-6 bg-zinc-50 rounded-2xl border border-transparent hover:border-zinc-200 transition-all group"
         >
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                    <div className="p-3 bg-white dark:bg-zinc-700 rounded-xl shadow-sm group-hover:scale-110 transition-transform">
-                        <Icon className="w-5 h-5 text-teal-500" />
+                    <div className="p-3 bg-white rounded-xl shadow-sm group-hover:scale-110 transition-transform">
+                        <Icon className="w-5 h-5 text-zinc-900" />
                     </div>
                     <div>
                         <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">{title}</h3>
-                        <p className="text-sm font-black text-zinc-900 dark:text-white uppercase tracking-wider truncate max-w-[200px]">{displayValue}</p>
+                        <p className="text-sm font-black text-zinc-900 uppercase tracking-wider truncate max-w-[200px]">{displayValue}</p>
                     </div>
                 </div>
-                <ChevronRight className="w-4 h-4 text-zinc-300 group-hover:text-teal-500 group-hover:translate-x-1 transition-all" />
+                <ChevronRight className="w-4 h-4 text-zinc-300 group-hover:text-zinc-900 group-hover:translate-x-1 transition-all" />
             </div>
         </button>
     );
@@ -101,10 +101,10 @@ function EditModal({ isOpen, title, currentValue, options, type, min, max, unit,
             {isOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-zinc-950/60 backdrop-blur-md" />
-                    <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} className="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-10 w-full max-w-md shadow-2xl relative z-10">
+                    <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} className="bg-white rounded-[2.5rem] p-10 w-full max-w-md shadow-2xl relative z-10">
                         <div className="flex items-center justify-between mb-8">
                             <h3 className="text-2xl font-black tracking-tight">{title}</h3>
-                            <button onClick={onClose} className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-all"><X className="w-5 h-5 text-zinc-400" /></button>
+                            <button onClick={onClose} className="p-2 hover:bg-zinc-100 rounded-xl transition-all"><X className="w-5 h-5 text-zinc-400" /></button>
                         </div>
 
                         <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 scrollbar-hide">
@@ -113,8 +113,8 @@ function EditModal({ isOpen, title, currentValue, options, type, min, max, unit,
                                     key={opt.value}
                                     onClick={() => setValue(opt.value)}
                                     className={`w-full text-left px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${value === opt.value
-                                        ? 'bg-teal-500 text-white shadow-xl shadow-teal-500/20'
-                                        : 'bg-zinc-50 dark:bg-zinc-800 text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-700'
+                                        ? 'bg-zinc-900 text-white shadow-xl shadow-zinc-900/20'
+                                        : 'bg-zinc-50 text-zinc-500 hover:bg-zinc-100'
                                         }`}
                                 >
                                     <div className="flex items-center justify-between">
@@ -129,8 +129,8 @@ function EditModal({ isOpen, title, currentValue, options, type, min, max, unit,
                                     key={opt.value}
                                     onClick={() => toggleMultiValue(opt.value)}
                                     className={`w-full text-left px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${multiValues.includes(opt.value)
-                                        ? 'bg-teal-500 text-white shadow-xl shadow-teal-500/20'
-                                        : 'bg-zinc-50 dark:bg-zinc-800 text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-700'
+                                        ? 'bg-zinc-900 text-white shadow-xl shadow-zinc-900/20'
+                                        : 'bg-zinc-50 text-zinc-500 hover:bg-zinc-100'
                                         }`}
                                 >
                                     <div className="flex items-center justify-between">
@@ -148,11 +148,11 @@ function EditModal({ isOpen, title, currentValue, options, type, min, max, unit,
                                         max={max}
                                         value={value || min}
                                         onChange={(e) => setValue(parseInt(e.target.value))}
-                                        className="w-full h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full appearance-none cursor-pointer accent-teal-500"
+                                        className="w-full h-2 bg-zinc-100 rounded-full appearance-none cursor-pointer accent-zinc-900"
                                     />
                                     <div className="flex justify-between mt-6">
                                         <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{unit === '€' ? unit : ''}{min}{unit !== '€' ? unit : ''}</span>
-                                        <span className="text-2xl font-black text-teal-500">{unit === '€' ? unit : ''}{value || min}{unit !== '€' ? unit : ''}</span>
+                                        <span className="text-2xl font-black text-zinc-900">{unit === '€' ? unit : ''}{value || min}{unit !== '€' ? unit : ''}</span>
                                         <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{unit === '€' ? unit : ''}{max}{unit !== '€' ? unit : ''}+</span>
                                     </div>
                                 </div>
@@ -163,16 +163,16 @@ function EditModal({ isOpen, title, currentValue, options, type, min, max, unit,
                                     type="text"
                                     value={value || ''}
                                     onChange={(e) => setValue(e.target.value)}
-                                    className="w-full bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl px-6 py-4 font-black text-sm uppercase tracking-widest focus:ring-2 focus:ring-teal-500/20 transition-all"
+                                    className="w-full bg-zinc-50 border-none rounded-2xl px-6 py-4 font-black text-sm uppercase tracking-widest focus:ring-2 focus:ring-zinc-900/20 transition-all"
                                 />
                             )}
                         </div>
 
                         <div className="grid grid-cols-2 gap-4 mt-10">
-                            <button onClick={onClose} className="py-4 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-zinc-200 transition-all">
+                            <button onClick={onClose} className="py-4 bg-zinc-100 text-zinc-900 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-zinc-200 transition-all">
                                 {t('common.cancel')}
                             </button>
-                            <button onClick={handleSave} className="py-4 bg-teal-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-teal-500/20 hover:scale-105 transition-all">
+                            <button onClick={handleSave} className="py-4 bg-zinc-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-zinc-900/20 hover:scale-105 transition-all">
                                 {t('common.save')}
                             </button>
                         </div>
@@ -244,7 +244,7 @@ export default function SettingsPreferencesPage() {
         setEditModal({ ...config, isOpen: true });
     };
 
-    if (loading) return <PremiumLayout withNavbar={true}><div className="flex justify-center items-center py-40"><Loader2 className="w-8 h-8 animate-spin text-teal-500" /></div></PremiumLayout>;
+    if (loading) return <PremiumLayout withNavbar={true}><div className="flex justify-center items-center py-40"><Loader2 className="w-8 h-8 animate-spin text-zinc-900" /></div></PremiumLayout>;
 
     const isTenant = activeRole === 'tenant';
     const isLandlord = activeRole === 'landlord';
@@ -257,11 +257,11 @@ export default function SettingsPreferencesPage() {
                     {/* Sidebar */}
                     <div className="w-full md:w-80 shrink-0">
                         <div className="mb-12">
-                            <h1 className="text-4xl font-black tracking-tighter mb-4 bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 to-zinc-500 dark:from-white dark:to-zinc-400">{t('settings.title')}</h1>
+                            <h1 className="text-4xl font-black tracking-tighter mb-4 bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 to-zinc-500">{t('settings.title')}</h1>
                             <p className="text-zinc-500 font-medium">{t('settings.subtitle')}</p>
                         </div>
 
-                        <div className="flex flex-row md:flex-col gap-2 p-1.5 bg-zinc-100 dark:bg-zinc-800/50 rounded-full md:rounded-[2rem] border border-zinc-200/50 dark:border-zinc-700/30 backdrop-blur-xl overflow-x-auto no-scrollbar scroll-smooth">
+                        <div className="flex flex-row md:flex-col gap-2 p-1.5 bg-zinc-100 rounded-full md:rounded-[2rem] border border-zinc-200/50 backdrop-blur-xl overflow-x-auto no-scrollbar scroll-smooth">
                             {[
                                 { id: 'account', icon: User, label: t('settings.tabs.profile'), path: '/settings/account' },
                                 { id: 'notifications', icon: Bell, label: t('settings.tabs.notifications'), path: '/settings/notifications' },
@@ -273,18 +273,18 @@ export default function SettingsPreferencesPage() {
                                         onClick={() => router.push(tab.path)}
                                         className={`flex items-center gap-3 px-5 md:px-6 py-3 md:py-4 rounded-full md:rounded-[1.5rem] text-[10px] md:text-sm font-black uppercase tracking-widest transition-all duration-500 whitespace-nowrap ${
                                             tab.id === 'preferences' 
-                                            ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-xl scale-100' 
-                                            : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'
+                                            ? 'bg-zinc-900 text-white shadow-xl scale-100' 
+                                            : 'text-zinc-400 hover:text-zinc-600'
                                         }`}
                                     >
-                                        <tab.icon className={`w-3.5 h-3.5 md:w-4 md:h-4 ${tab.id === 'preferences' ? 'text-teal-500' : ''}`} />
+                                        <tab.icon className={`w-3.5 h-3.5 md:w-4 md:h-4 ${tab.id === 'preferences' ? 'text-zinc-100' : ''}`} />
                                         {tab.label}
                                     </button>
                                     
                                     {tab.id === 'preferences' && (
                                         <div className="hidden md:flex px-6 py-4 flex-col gap-4">
                                             <button 
-                                                className="text-[10px] font-black uppercase tracking-widest text-left text-teal-500"
+                                                className="text-[10px] font-black uppercase tracking-widest text-left text-zinc-900"
                                             >
                                                 {t('settings.preferences.matchingCriteria')}
                                             </button>
@@ -474,8 +474,8 @@ export default function SettingsPreferencesPage() {
 
             {saving && (
                 <div className="fixed inset-0 bg-zinc-950/20 backdrop-blur-sm flex items-center justify-center z-[200]">
-                    <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-2xl flex items-center gap-4">
-                        <Loader2 className="w-5 h-5 animate-spin text-teal-500" />
+                    <div className="bg-white rounded-2xl p-6 shadow-2xl flex items-center gap-4">
+                        <Loader2 className="w-5 h-5 animate-spin text-zinc-900" />
                         <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t('settings.preferences.updating', undefined, 'Updating...')}</p>
                     </div>
                 </div>

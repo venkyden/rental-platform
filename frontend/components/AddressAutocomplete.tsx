@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useLanguage } from '@/lib/LanguageContext';
+import { Search, MapPin, Loader2, Navigation } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -261,13 +263,13 @@ export default function AddressAutocomplete({
 
     const baseInput =
         variant === 'onboarding'
-            ? 'w-full px-6 py-4 text-lg text-gray-900 dark:text-white bg-white/50 dark:bg-zinc-800/50 border-2 border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-teal-500 dark:focus:border-teal-400 transition-colors placeholder-zinc-400 dark:placeholder-zinc-500'
-            : 'w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500';
+            ? 'w-full px-8 py-6 text-xl font-medium text-zinc-900 bg-zinc-50 border-2 border-zinc-100 rounded-[2rem] focus:outline-none focus:border-zinc-900 focus:bg-white transition-all duration-300 placeholder-zinc-300'
+            : 'w-full px-4 py-3 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-zinc-900 focus:border-zinc-900 outline-none transition-all';
 
     return (
-        <div ref={wrapperRef} className="relative">
-            {/* Input */}
-            <div className="relative">
+        <div ref={wrapperRef} className="relative w-full">
+            {/* Input Wrapper */}
+            <div className="relative group">
                 <input
                     ref={inputRef}
                     id="address-autocomplete-input"
@@ -281,127 +283,117 @@ export default function AddressAutocomplete({
                     autoComplete="off"
                 />
 
-                {/* Loading spinner */}
-                {loading && (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                        <div className="w-5 h-5 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
-                    </div>
-                )}
-
-                {/* Search icon when idle */}
-                {!loading && !query && (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-5 w-5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
+                {/* Status Icons */}
+                <div className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-3">
+                    {loading ? (
+                        <Loader2 className="w-5 h-5 text-zinc-400 animate-spin" />
+                    ) : query ? (
+                        <motion.button
+                            initial={{ scale: 0, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            onClick={() => { setQuery(''); setResults([]); setIsOpen(false); }}
+                            className="p-1 hover:bg-zinc-100 rounded-full transition-colors"
                         >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                            />
-                        </svg>
-                    </div>
-                )}
+                            <Search className="w-5 h-5 text-zinc-400" />
+                        </motion.button>
+                    ) : (
+                        <Search className="w-5 h-5 text-zinc-300" />
+                    )}
+                </div>
             </div>
 
-            {/* Dropdown */}
-            {isOpen && (results.length > 0 || allowManualEntry) && (
-                <ul className="absolute z-50 mt-1 w-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-sm max-h-72 overflow-y-auto">
-                    {results.map((result, idx) => (
-                        <li
-                            key={idx}
-                            onClick={() => handleSelect(result)}
-                            onMouseEnter={() => setActiveIndex(idx)}
-                            className={`px-4 py-3 cursor-pointer transition-colors flex items-start gap-3 ${idx === activeIndex
-                                ? 'bg-teal-50 dark:bg-teal-900/30'
-                                : 'hover:bg-zinc-50 dark:hover:bg-zinc-700/50'
-                                } ${idx === 0 ? 'rounded-t-xl' : ''}`}
-                        >
-                            {/* Pin icon */}
-                            <span className="mt-0.5 text-teal-500 shrink-0">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-5 w-5"
-                                    viewBox="0 0 20 20"
-                                    fill="currentColor"
-                                >
-                                    <path
-                                        fillRule="evenodd"
-                                        d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
-                                        clipRule="evenodd"
-                                    />
-                                </svg>
-                            </span>
-                            <div className="min-w-0">
-                                <p className="font-medium text-sm text-gray-900 dark:text-white truncate">
-                                    {result.address}
-                                </p>
-                                <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
-                                    {[result.postal_code, result.city]
-                                        .filter(Boolean)
-                                        .join(' ')}
-                                </p>
-                            </div>
-                        </li>
-                    ))}
-
-                    {/* Manual entry fallback */}
-                    {allowManualEntry && query.length >= 3 && (
-                        <li
-                            onClick={() => {
-                                onSelectAction({
-                                    address: query,
-                                    city: '',
-                                    postal_code: '',
-                                    lat: 0,
-                                    lng: 0,
-                                    display: query,
-                                });
-                                setQuery(query);
-                                setIsOpen(false);
-                            }}
-                            className={`px-4 py-3 cursor-pointer transition-colors flex items-start gap-3 border-t border-zinc-100 dark:border-zinc-700 rounded-b-xl ${activeIndex === results.length
-                                    ? 'bg-zinc-100 dark:bg-zinc-700/50'
-                                    : 'hover:bg-zinc-50 dark:hover:bg-zinc-700/50'
+            {/* Dropdown Menu */}
+            <AnimatePresence>
+                {isOpen && (results.length > 0 || allowManualEntry) && (
+                    <motion.ul
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        className="absolute z-[1100] mt-3 w-full bg-white border border-zinc-100 rounded-[2rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] overflow-hidden"
+                    >
+                        {results.map((result, idx) => (
+                            <li
+                                key={idx}
+                                onClick={() => handleSelect(result)}
+                                onMouseEnter={() => setActiveIndex(idx)}
+                                className={`group px-6 py-4 cursor-pointer transition-all flex items-center gap-4 ${
+                                    idx === activeIndex ? 'bg-zinc-900 text-white' : 'hover:bg-zinc-50'
                                 }`}
-                            onMouseEnter={() => setActiveIndex(results.length)}
-                        >
-                            <span className="mt-0.5 text-zinc-400 shrink-0">️</span>
-                            <div className="min-w-0">
-                                <p className="font-medium text-sm text-zinc-700 dark:text-zinc-300 truncate">
-                                    {t('common.components.addressAutocomplete.useTyped', { query })}
-                                </p>
-                                <p className="text-xs text-zinc-400 dark:text-zinc-500">
-                                    {t('common.components.addressAutocomplete.notFound')}
-                                </p>
-                            </div>
-                        </li>
-                    )}
+                            >
+                                <div className={`p-2 rounded-xl transition-colors ${
+                                    idx === activeIndex ? 'bg-white/20' : 'bg-zinc-100'
+                                }`}>
+                                    <MapPin className={`w-4 h-4 ${idx === activeIndex ? 'text-white' : 'text-zinc-500'}`} />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                    <p className={`font-semibold text-sm truncate ${idx === activeIndex ? 'text-white' : 'text-zinc-900'}`}>
+                                        {result.address}
+                                    </p>
+                                    <p className={`text-[10px] uppercase tracking-widest font-black truncate ${
+                                        idx === activeIndex ? 'text-white/60' : 'text-zinc-400'
+                                    }`}>
+                                        {[result.postal_code, result.city].filter(Boolean).join(' • ')}
+                                    </p>
+                                </div>
+                            </li>
+                        ))}
 
-                    {/* Powered by */}
-                    <li className="px-4 py-1.5 text-[10px] text-zinc-400 dark:text-zinc-500 text-right border-t border-zinc-100 dark:border-zinc-700">
-                        {t('common.components.addressAutocomplete.poweredBy')}
-                    </li>
-                </ul>
-            )}
-
-            {/* No results */}
-            {isOpen && results.length === 0 && !loading && query.length >= 3 && !allowManualEntry && (
-                <div className="absolute z-50 mt-1 w-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-sm p-4 text-center">
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                        {t('common.components.addressAutocomplete.noResults')}
-                        {restrictToCities.length > 0 && (
-                            <span className="block text-xs mt-1">
-                                {t('common.components.addressAutocomplete.restrictedTo')} {restrictToCities.map(c => c.charAt(0).toUpperCase() + c.slice(1)).join(', ')}
-                            </span>
+                        {/* Manual Entry Falling back to typed text */}
+                        {allowManualEntry && query.length >= 3 && (
+                            <li
+                                onClick={() => {
+                                    onSelectAction({
+                                        address: query,
+                                        city: '',
+                                        postal_code: '',
+                                        lat: 0,
+                                        lng: 0,
+                                        display: query,
+                                    });
+                                    setQuery(query);
+                                    setIsOpen(false);
+                                }}
+                                className={`px-6 py-4 cursor-pointer transition-all flex items-center gap-4 border-t border-zinc-100 ${
+                                    activeIndex === results.length ? 'bg-zinc-900 text-white' : 'hover:bg-zinc-50'
+                                }`}
+                                onMouseEnter={() => setActiveIndex(results.length)}
+                            >
+                                <div className={`p-2 rounded-xl ${activeIndex === results.length ? 'bg-white/20' : 'bg-zinc-100'}`}>
+                                    <Navigation className={`w-4 h-4 ${activeIndex === results.length ? 'text-white' : 'text-zinc-500'}`} />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                    <p className="font-semibold text-sm truncate">
+                                        {t('common.components.addressAutocomplete.useTyped', { query })}
+                                    </p>
+                                    <p className={`text-[10px] uppercase tracking-widest font-black ${
+                                        activeIndex === results.length ? 'text-white/60' : 'text-zinc-400'
+                                    }`}>
+                                        {t('common.components.addressAutocomplete.notFound')}
+                                    </p>
+                                </div>
+                            </li>
                         )}
+
+                        {/* Branding / Footer */}
+                        <li className="px-6 py-2 bg-zinc-50/50 text-[8px] font-black uppercase tracking-[0.2em] text-zinc-300 text-right">
+                            {t('common.components.addressAutocomplete.poweredBy')}
+                        </li>
+                    </motion.ul>
+                )}
+            </AnimatePresence>
+
+            {/* Empty State */}
+            {isOpen && results.length === 0 && !loading && query.length >= 3 && !allowManualEntry && (
+                <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="absolute z-[1100] mt-3 w-full bg-white border border-zinc-100 rounded-[2rem] p-8 text-center shadow-2xl"
+                >
+                    <Search className="w-8 h-8 text-zinc-200 mx-auto mb-3" />
+                    <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest">
+                        {t('common.components.addressAutocomplete.noResults')}
                     </p>
-                </div>
+                </motion.div>
             )}
         </div>
     );

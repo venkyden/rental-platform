@@ -324,7 +324,7 @@ export default function LeaseGeneratorPage() {
                             <div className="mt-6">
                                 <div className="bg-zinc-50 border border-zinc-200 p-4 rounded-xl border border-green-200">
                                     <div className="flex items-start gap-3">
-                                        <div className="w-10 h-10 rounded-lg bg-zinc-900 dark:bg-white flex items-center justify-center text-white text-xl">
+                                        <div className="w-10 h-10 rounded-lg bg-zinc-900 flex items-center justify-center text-white text-xl">
                                             ️
                                         </div>
                                         <div className="flex-1">
@@ -353,7 +353,7 @@ export default function LeaseGeneratorPage() {
                                 <button
                                     onClick={handleCreateLease}
                                     disabled={generating}
-                                    className="flex-1 px-4 py-3 bg-zinc-100 dark:bg-zinc-800 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 font-medium disabled:opacity-50"
+                                    className="flex-1 px-4 py-3 bg-zinc-100 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 font-medium disabled:opacity-50"
                                 >
                                     {generating ? '⏳ Création...' : ' Créer le Bail'}
                                 </button>

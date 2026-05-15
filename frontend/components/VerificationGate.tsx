@@ -177,23 +177,23 @@ export default function VerificationGate({
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
                     <div className="bg-white rounded-2xl shadow-sm max-w-md w-full p-6 animate-in fade-in zoom-in duration-200">
                         <div className="text-center mb-6">
-                            <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4">
+                            <div className="w-16 h-16 bg-zinc-900 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4">
                                 
                             </div>
-                            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                            <h2 className="text-2xl font-bold text-zinc-900 mb-2">
                                 {content.title}
                             </h2>
-                            <p className="text-gray-600">
+                            <p className="text-zinc-600">
                                 {content.description}
                             </p>
                         </div>
 
                         {content.benefits.length > 0 && (
-                            <div className="bg-gray-50 rounded-xl p-4 mb-6">
+                            <div className="bg-zinc-50 rounded-xl p-4 mb-6">
                                 <ul className="space-y-2">
                                     {content.benefits.map((benefit, idx) => (
-                                        <li key={idx} className="text-sm text-gray-700 flex items-start gap-2">
-                                            <span className="text-green-600">{benefit.split(' ')[0]}</span>
+                                        <li key={idx} className="text-sm text-zinc-700 flex items-start gap-2">
+                                            <span className="text-zinc-900 font-semibold">•</span>
                                             <span>{benefit.split(' ').slice(1).join(' ')}</span>
                                         </li>
                                     ))}
@@ -204,13 +204,13 @@ export default function VerificationGate({
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setShowModal(false)}
-                                className="flex-1 py-3 text-gray-600 hover:bg-gray-100 rounded-xl font-medium transition-colors"
+                                className="flex-1 py-3 text-zinc-500 hover:bg-zinc-50 rounded-xl font-medium transition-colors"
                             >
                                 Later
                             </button>
                             <button
                                 onClick={handleVerifyNow}
-                                className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold hover:shadow-sm transition-all"
+                                className="flex-1 py-3 bg-zinc-900 text-white rounded-xl font-bold hover:shadow-sm transition-all"
                             >
                                 {content.buttonText}
                             </button>

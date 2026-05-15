@@ -50,19 +50,19 @@ interface DisputeDetail {
 }
 
 const STATUS_STYLES: Record<string, string> = {
-    open: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800',
-    awaiting_response: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800',
-    under_review: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border-purple-200 dark:border-purple-800',
-    closed: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800',
+    open: 'bg-zinc-900 text-white border-zinc-900',
+    awaiting_response: 'bg-zinc-100 text-zinc-900 border-zinc-200',
+    under_review: 'bg-zinc-100 text-zinc-500 border-zinc-200',
+    closed: 'bg-zinc-50 text-zinc-400 border-zinc-100',
 };
 
 const CONDITION_COLORS: Record<string, string> = {
-    new: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20',
-    good: 'text-green-600 bg-green-50 dark:bg-green-900/20',
-    fair: 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20',
-    poor: 'text-orange-600 bg-orange-50 dark:bg-orange-900/20',
-    damaged: 'text-red-600 bg-red-50 dark:bg-red-900/20',
-    missing: 'text-gray-600 bg-gray-100 dark:bg-gray-800',
+    new: 'text-zinc-900 bg-zinc-100 font-black',
+    good: 'text-zinc-700 bg-zinc-50',
+    fair: 'text-zinc-500 bg-zinc-50',
+    poor: 'text-zinc-400 bg-zinc-50',
+    damaged: 'text-white bg-zinc-900',
+    missing: 'text-zinc-300 bg-zinc-50 line-through',
 };
 
 export default function AdminDisputesPage() {
@@ -159,7 +159,7 @@ export default function AdminDisputesPage() {
 
     return (
         <ProtectedRoute>
-            <div className="min-h-screen bg-zinc-50 dark:bg-black text-zinc-900 dark:text-zinc-100">
+            <div className="min-h-screen bg-zinc-50 text-zinc-900">
                 <Navbar />
 
                 <main className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
@@ -167,26 +167,26 @@ export default function AdminDisputesPage() {
                     <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-6">
                         <div>
                             <div className="flex items-center gap-3 mb-2">
-                                <div className="w-10 h-10 rounded-2xl bg-zinc-900 dark:bg-white flex items-center justify-center text-white dark:text-black">
+                                <div className="w-10 h-10 rounded-2xl bg-zinc-900 flex items-center justify-center text-white">
                                     <Shield className="w-6 h-6" />
                                 </div>
                                 <h1 className="text-3xl font-extrabold tracking-tight">{t('facilitation.title')}</h1>
                             </div>
-                            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                            <p className="text-sm text-zinc-500">
                                 {t('facilitation.subtitle')}
-                                <span className="block font-bold text-teal-600 dark:text-teal-400 mt-1">{t('facilitation.neutralNotice')}</span>
+                                <span className="block font-black uppercase tracking-widest text-zinc-900 mt-1">{t('facilitation.neutralNotice')}</span>
                             </p>
                         </div>
 
-                        <div className="flex bg-white dark:bg-zinc-900 p-1 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm overflow-x-auto no-scrollbar">
+                        <div className="flex bg-white p-1 rounded-2xl border border-zinc-200 shadow-sm overflow-x-auto no-scrollbar">
                             {['', 'open', 'awaiting_response', 'under_review', 'closed'].map((f) => (
                                 <button
                                     key={f}
                                     onClick={() => setStatusFilter(f)}
                                     className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest whitespace-nowrap transition-all ${
                                         statusFilter === f 
-                                        ? 'bg-zinc-900 dark:bg-white text-white dark:text-black shadow-md' 
-                                        : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
+                                        ? 'bg-zinc-900 text-white shadow-md' 
+                                        : 'text-zinc-500 hover:text-zinc-900'
                                     }`}
                                 >
                                     {f ? t(`facilitation.filters.${f === 'under_review' ? 'review' : f === 'awaiting_response' ? 'awaiting' : f}`) : t('facilitation.filters.all')}
@@ -199,9 +199,9 @@ export default function AdminDisputesPage() {
                         /* Dispute List View */
                         <div className="grid gap-4">
                             {loading ? (
-                                <div className="py-20 flex justify-center"><div className="animate-spin h-8 w-8 border-b-2 border-zinc-900 dark:border-white rounded-full"></div></div>
+                                <div className="py-20 flex justify-center"><div className="animate-spin h-8 w-8 border-b-2 border-zinc-900 rounded-full"></div></div>
                             ) : disputes.length === 0 ? (
-                                <div className="bg-white dark:bg-zinc-900 rounded-[2rem] p-16 text-center border border-zinc-200 dark:border-zinc-800">
+                                <div className="bg-white rounded-[2rem] p-16 text-center border border-zinc-200">
                                     <Clock className="w-12 h-12 text-zinc-300 mx-auto mb-4" />
                                     <h3 className="text-xl font-bold">{t('facilitation.allClear')}</h3>
                                     <p className="text-zinc-500">{t('facilitation.noDisputes')}</p>
@@ -211,7 +211,7 @@ export default function AdminDisputesPage() {
                                     <button
                                         key={d.id}
                                         onClick={() => loadDetail(d.id)}
-                                        className="group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 flex flex-col md:flex-row md:items-center gap-6 hover:shadow-xl hover:scale-[1.01] transition-all text-left"
+                                        className="group bg-white border border-zinc-200 rounded-3xl p-6 flex flex-col md:flex-row md:items-center gap-6 hover:shadow-xl hover:scale-[1.01] transition-all text-left"
                                     >
                                         <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 border-2 ${STATUS_STYLES[d.status] || 'bg-zinc-100 text-zinc-500'}`}>
                                             {d.status === 'closed' ? <CheckCircle2 className="w-6 h-6" /> : <Clock className="w-6 h-6" />}
@@ -225,15 +225,15 @@ export default function AdminDisputesPage() {
                                                     {new Date(d.created_at).toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                                                 </span>
                                             </div>
-                                            <h3 className="text-lg font-bold truncate group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
+                                            <h3 className="text-lg font-bold truncate group-hover:text-zinc-900 transition-colors">
                                                 {d.title}
                                             </h3>
-                                            <div className="flex items-center gap-4 mt-2 text-[10px] font-bold uppercase text-zinc-400">
+                                            <div className="flex items-center gap-4 mt-2 text-[10px] font-black uppercase text-zinc-900">
                                                 <span>{t(`facilitation.categories.${d.category}`)}</span>
-                                                {d.amount_claimed && <span className="text-red-500">€{d.amount_claimed.toLocaleString()}</span>}
+                                                {d.amount_claimed && <span>€{d.amount_claimed.toLocaleString()}</span>}
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-2 text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
+                                        <div className="flex items-center gap-2 text-zinc-400 group-hover:text-zinc-900 transition-colors">
                                             <span className="text-[10px] font-bold uppercase tracking-tighter">{t('facilitation.reviewDetails')}</span>
                                             <ArrowRight className="w-4 h-4" />
                                         </div>
@@ -246,7 +246,7 @@ export default function AdminDisputesPage() {
                             <div className="flex items-center justify-between">
                                 <button 
                                     onClick={() => { setSelectedDisputeId(null); setDisputeDetail(null); }}
-                                    className="flex items-center gap-2 text-sm font-bold text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors"
+                                    className="flex items-center gap-2 text-sm font-bold text-zinc-500 hover:text-zinc-900 transition-colors"
                                 >
                                     <ChevronLeft className="w-5 h-5" />
                                     {t('facilitation.backToList')}
@@ -255,14 +255,14 @@ export default function AdminDisputesPage() {
                                 <div className="flex gap-2">
                                         <button 
                                             onClick={() => setViewMode('evidence')}
-                                            className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${viewMode === 'evidence' ? 'bg-zinc-900 dark:bg-white text-white dark:text-black shadow-md' : 'text-zinc-500'}`}
+                                            className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${viewMode === 'evidence' ? 'bg-zinc-900 text-white shadow-md' : 'text-zinc-500'}`}
                                         >
                                             {t('facilitation.evidence')}
                                         </button>
                                     {diffData && (
                                         <button 
                                             onClick={() => setViewMode('diff')}
-                                            className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${viewMode === 'diff' ? 'bg-zinc-900 dark:bg-white text-white dark:text-black shadow-md' : 'text-zinc-500'}`}
+                                            className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${viewMode === 'diff' ? 'bg-zinc-900 text-white shadow-md' : 'text-zinc-500'}`}
                                         >
                                             {t('facilitation.inventoryDiff')}
                                         </button>
@@ -274,27 +274,27 @@ export default function AdminDisputesPage() {
                                 <div className="lg:col-span-2 space-y-8">
                                     {viewMode === 'evidence' && disputeDetail && (
                                         <div className="space-y-8">
-                                            <div className="bg-white dark:bg-zinc-900 rounded-[2rem] p-8 border border-zinc-200 dark:border-zinc-800 shadow-sm">
+                                            <div className="bg-white rounded-[2rem] p-8 border border-zinc-200 shadow-sm">
                                                 <div className="flex items-center justify-between mb-6">
                                                     <h2 className="text-2xl font-extrabold tracking-tight">{disputeDetail.title}</h2>
                                                     {disputeDetail.is_late_filing && (
-                                                        <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-[10px] font-bold uppercase">
+                                                        <div className="flex items-center gap-1.5 px-3 py-1 bg-zinc-900 text-white rounded-full text-[10px] font-black uppercase tracking-widest">
                                                             <Clock className="w-3.5 h-3.5" />
                                                             {t('facilitation.lateFiling')}
                                                         </div>
                                                     )}
                                                 </div>
-                                                <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed mb-6">
+                                                <p className="text-zinc-600 leading-relaxed mb-6">
                                                     {disputeDetail.description}
                                                 </p>
                                                 
                                                 <div className="grid grid-cols-2 gap-4">
-                                                    <div className="p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl">
+                                                    <div className="p-4 bg-zinc-50 rounded-2xl">
                                                         <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">{t('facilitation.reporter')}</div>
                                                         <div className="font-bold">{disputeDetail.raised_by?.full_name || 'Unknown'}</div>
                                                         <div className="text-xs text-zinc-500">{disputeDetail.raised_by?.email}</div>
                                                     </div>
-                                                    <div className="p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl">
+                                                    <div className="p-4 bg-zinc-50 rounded-2xl">
                                                         <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">{t('facilitation.accused')}</div>
                                                         <div className="font-bold">{disputeDetail.accused?.full_name || 'N/A'}</div>
                                                         <div className="text-xs text-zinc-500">{disputeDetail.accused?.email || 'General issue'}</div>
@@ -313,7 +313,7 @@ export default function AdminDisputesPage() {
                                                             <button 
                                                                 key={i} 
                                                                 onClick={() => setPhotoModal({ url, label: `Evidence ${i+1}` })}
-                                                                className="aspect-square rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 hover:scale-105 transition-transform"
+                                                                className="aspect-square rounded-2xl overflow-hidden border border-zinc-200 hover:scale-105 transition-transform"
                                                             >
                                                                 <img src={resolveMediaUrl(url)} className="w-full h-full object-cover" />
                                                             </button>
@@ -328,7 +328,7 @@ export default function AdminDisputesPage() {
                                                     </h3>
                                                     {disputeDetail.responded_at ? (
                                                         <>
-                                                            <p className="text-xs bg-teal-50 dark:bg-teal-900/20 p-4 rounded-2xl border border-teal-100 dark:border-teal-800 text-teal-900 dark:text-teal-100 italic">
+                                                            <p className="text-xs bg-zinc-50 p-4 rounded-2xl border border-zinc-200 text-zinc-900 italic">
                                                                 "{disputeDetail.response_description}"
                                                             </p>
                                                             <div className="grid grid-cols-2 gap-3">
@@ -336,7 +336,7 @@ export default function AdminDisputesPage() {
                                                                     <button 
                                                                         key={i} 
                                                                         onClick={() => setPhotoModal({ url, label: `Counter Evidence ${i+1}` })}
-                                                                        className="aspect-square rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 hover:scale-105 transition-transform"
+                                                                        className="aspect-square rounded-2xl overflow-hidden border border-zinc-200 hover:scale-105 transition-transform"
                                                                     >
                                                                         <img src={resolveMediaUrl(url)} className="w-full h-full object-cover" />
                                                                     </button>
@@ -344,7 +344,7 @@ export default function AdminDisputesPage() {
                                                             </div>
                                                         </>
                                                     ) : (
-                                                        <div className="p-8 text-center bg-zinc-100 dark:bg-zinc-900 rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700 text-zinc-400 text-xs">
+                                                        <div className="p-8 text-center bg-zinc-100 rounded-2xl border border-dashed border-zinc-300 text-zinc-400 text-xs">
                                                             {t('facilitation.noResponse')}
                                                         </div>
                                                     )}
@@ -354,8 +354,8 @@ export default function AdminDisputesPage() {
                                     )}
 
                                     {viewMode === 'diff' && diffData && (
-                                        <div className="bg-white dark:bg-zinc-900 rounded-[2rem] border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-sm">
-                                            <div className="p-6 bg-zinc-50 dark:bg-zinc-800/50 border-b border-zinc-200 dark:border-zinc-700 flex justify-between items-center">
+                                        <div className="bg-white rounded-[2rem] border border-zinc-200 overflow-hidden shadow-sm">
+                                            <div className="p-6 bg-zinc-50 border-b border-zinc-200 flex justify-between items-center">
                                                 <h3 className="font-bold uppercase tracking-widest text-xs">{t('facilitation.conditionComparison')}</h3>
                                                 <div className="flex gap-4 text-[10px] font-bold">
                                                     <span className="text-zinc-500">{t('facilitation.moveIn')}: {new Date(diffData.move_in.date).toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US', { month: 'short', day: '2-digit' })}</span>
@@ -371,9 +371,9 @@ export default function AdminDisputesPage() {
                                                         <th className="p-4 font-bold uppercase tracking-widest text-center">{t('facilitation.status')}</th>
                                                     </tr>
                                                 </thead>
-                                                <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                                                <tbody className="divide-y divide-zinc-100">
                                                     {diffData.diff.map((row: any, idx: number) => (
-                                                        <tr key={idx} className={row.changed ? 'bg-red-50/30 dark:bg-red-900/10' : ''}>
+                                                        <tr key={idx} className={row.changed ? 'bg-zinc-900/5' : ''}>
                                                             <td className="p-4">
                                                                 <div className="font-bold">{row.name}</div>
                                                                 <div className="text-[10px] text-zinc-400">{row.category}</div>
@@ -394,9 +394,9 @@ export default function AdminDisputesPage() {
                                                             </td>
                                                             <td className="p-4 text-center">
                                                                 {row.changed ? (
-                                                                    <AlertTriangle className="w-4 h-4 text-red-500 mx-auto" />
+                                                                    <AlertTriangle className="w-4 h-4 text-zinc-900 mx-auto" />
                                                                 ) : (
-                                                                    <CheckCircle2 className="w-4 h-4 text-emerald-500 mx-auto" />
+                                                                    <CheckCircle2 className="w-4 h-4 text-zinc-300 mx-auto" />
                                                                 )}
                                                             </td>
                                                         </tr>
@@ -408,7 +408,7 @@ export default function AdminDisputesPage() {
                                 </div>
 
                                 <div className="space-y-6">
-                                    <div className="bg-white dark:bg-zinc-900 rounded-[2rem] p-8 border border-zinc-200 dark:border-zinc-800 shadow-xl">
+                                    <div className="bg-white rounded-[2rem] p-8 border border-zinc-200 shadow-xl">
                                         <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-6 flex items-center gap-2">
                                             <Gavel className="w-4 h-4" />
                                             {t('dashboard.sections.facilitation')}
@@ -418,7 +418,7 @@ export default function AdminDisputesPage() {
                                             <div>
                                                 <label className="block text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-2">{t('facilitation.observations')}</label>
                                                 <textarea 
-                                                    className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-2xl p-4 text-xs min-h-[100px] outline-none focus:border-zinc-900 dark:focus:border-white transition-all"
+                                                    className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl p-4 text-xs min-h-[100px] outline-none focus:border-zinc-900 transition-all"
                                                     placeholder={t('common.placeholders.factualObservations')}
                                                     value={observations}
                                                     onChange={e => setObservations(e.target.value)}
@@ -428,7 +428,7 @@ export default function AdminDisputesPage() {
                                             <div>
                                                 <label className="block text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-2">{t('facilitation.updateStatus')}</label>
                                                 <select 
-                                                    className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl p-3 text-xs outline-none"
+                                                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl p-3 text-xs outline-none"
                                                     value={newStatus}
                                                     onChange={e => setNewStatus(e.target.value as any)}
                                                 >
@@ -445,7 +445,7 @@ export default function AdminDisputesPage() {
                                                     <ExternalLink className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
                                                     <input 
                                                         type="text"
-                                                        className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl p-3 pr-10 text-[10px] outline-none"
+                                                        className="w-full bg-zinc-50 border border-zinc-200 rounded-xl p-3 pr-10 text-[10px] outline-none"
                                                         placeholder={t('common.placeholders.url')}
                                                         value={mediationUrl}
                                                         onChange={e => setMediationUrl(e.target.value)}
@@ -457,14 +457,14 @@ export default function AdminDisputesPage() {
                                                 <button 
                                                     onClick={() => handleUpdate(false)}
                                                     disabled={submitting}
-                                                    className="w-full py-4 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-2xl font-bold text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg"
+                                                    className="w-full py-4 bg-zinc-900 text-white rounded-2xl font-bold text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg"
                                                 >
                                                     {submitting ? t('common.saving') : t('facilitation.updateObservations')}
                                                 </button>
                                                 <button 
                                                     onClick={() => handleUpdate(true)}
                                                     disabled={submitting}
-                                                    className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-bold text-xs uppercase tracking-widest hover:shadow-emerald-600/20 shadow-lg transition-all"
+                                                    className="w-full py-4 bg-zinc-900 hover:bg-zinc-800 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl transition-all"
                                                 >
                                                     {t('facilitation.finalizeClose')}
                                                 </button>
@@ -473,14 +473,14 @@ export default function AdminDisputesPage() {
                                     </div>
 
                                     {/* Geo-Verification */}
-                                    <div className="bg-zinc-100 dark:bg-zinc-900 rounded-[2rem] p-6 border border-zinc-200 dark:border-zinc-800">
+                                    <div className="bg-zinc-100 rounded-[2rem] p-6 border border-zinc-200">
                                         <h4 className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-4 flex items-center gap-2">
                                             <MapPin className="w-4 h-4" />
                                             {t('facilitation.geoVerification')}
                                         </h4>
                                         <div className="flex items-center justify-between mb-2">
                                             <span className="text-xs font-bold">{t('facilitation.status')}</span>
-                                            <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-md ${disputeDetail?.location_verified === 'verified' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                                            <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md ${disputeDetail?.location_verified === 'verified' ? 'bg-zinc-900 text-white' : 'bg-white text-zinc-400 border border-zinc-200'}`}>
                                                 {disputeDetail?.location_verified === 'verified' ? t('facilitation.verified') : t('facilitation.unverified')}
                                             </span>
                                         </div>
@@ -493,9 +493,9 @@ export default function AdminDisputesPage() {
                                     </div>
 
                                     {/* Compliance Check */}
-                                    <div className="p-6 bg-indigo-50 dark:bg-indigo-950/20 rounded-[2rem] border border-indigo-100 dark:border-indigo-900/50">
-                                        <h4 className="text-[10px] font-bold uppercase tracking-widest text-indigo-400 mb-2">{t('facilitation.alurCheck')}</h4>
-                                        <p className="text-[10px] text-indigo-800/80 dark:text-indigo-200/80 leading-relaxed">
+                                    <div className="p-6 bg-zinc-900 rounded-[2rem] border border-zinc-800 shadow-2xl">
+                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">{t('facilitation.alurCheck')}</h4>
+                                        <p className="text-[10px] text-zinc-300 leading-relaxed">
                                             {t('facilitation.alurNotice')}
                                         </p>
                                     </div>

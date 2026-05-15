@@ -1,75 +1,112 @@
-import type { Metadata } from 'next';
+"use client";
 
-export const metadata: Metadata = {
-    title: 'GDPR & Data Rights | Roomivo',
-    description: 'Exercise your rights under the GDPR. Discover how Roomivo handles data portability, rectification, and your right to be forgotten.',
-};
+import { motion } from 'framer-motion';
+import { useLanguage } from '@/lib/LanguageContext';
+import PremiumLayout from '@/components/PremiumLayout';
 
 export default function GDPRPage() {
+    const { t } = useLanguage();
+
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: { staggerChildren: 0.15 }
+        }
+    };
+
+    const sectionVariants = {
+        hidden: { y: 20, opacity: 0 },
+        visible: {
+            y: 0,
+            opacity: 1,
+            transition: { type: "spring" as any, damping: 25, stiffness: 100 }
+        }
+    };
+
     return (
-        <div className="prose prose-zinc prose-a:text-teal-600 hover:prose-a:text-teal-500 max-w-none">
-            <h1 className="text-4xl font-extrabold tracking-tight text-zinc-900 sm:text-5xl mb-6">
-                GDPR & Data Rights
-            </h1>
-            <p className="text-lg text-zinc-500 mb-12 border-b border-zinc-100 pb-8">
-                Roomivo operates entirely within the European Union and is built from the ground up to comply
-                with the General Data Protection Regulation (GDPR). Your data belongs to you.
-            </p>
-
-            <section className="mb-12">
-                <h2 className="text-2xl font-bold tracking-tight text-zinc-900 mb-4">Your Fundamental Rights</h2>
-                <p>
-                    We provide transparent, automated mechanisms to exercise your rights:
-                </p>
-
-                <div className="grid sm:grid-cols-2 gap-6 mt-6 not-prose">
-                    <div className="bg-zinc-50 border border-zinc-200 rounded-xl p-6">
-                        <div className="flex items-center gap-3 mb-2">
-                            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-teal-100 text-teal-700"></span>
-                            <h3 className="text-lg font-bold text-zinc-900">Access & Portability</h3>
+        <PremiumLayout withNavbar={true}>
+            <div className="max-w-4xl mx-auto px-6 py-24">
+                <motion.div
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
+                    className="space-y-16"
+                >
+                    {/* Header */}
+                    <motion.div variants={sectionVariants} className="text-center space-y-4">
+                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl">
+                            {t('legal.gdpr.badge', undefined, 'Data Sovereignty')}
                         </div>
-                        <p className="text-zinc-600 text-sm">
-                            Extract a machine-readable archive (JSON/ZIP) of all personal data and verification proofs tied to your account.
+                        <h1 className="text-6xl sm:text-7xl font-black tracking-tighter text-zinc-900 uppercase">
+                            {t('legal.gdpr.title', undefined, 'GDPR & Rights')}
+                        </h1>
+                        <p className="text-xl text-zinc-500 font-medium max-w-2xl mx-auto">
+                            {t('legal.gdpr.subtitle', undefined, 'Built entirely within the European Union. Your data belongs to you.')}
                         </p>
+                    </motion.div>
+
+                    {/* Content Sections */}
+                    <div className="space-y-12">
+                        <motion.section variants={sectionVariants} className="glass-card !p-12 rounded-[3rem] border-zinc-100">
+                            <h2 className="text-2xl font-black tracking-tight text-zinc-900 mb-8 uppercase">
+                                {t('legal.gdpr.sections.fundamental.title', undefined, 'Fundamental Rights')}
+                            </h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-3">
+                                        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-900 text-white font-black text-xs">A</span>
+                                        <p className="text-sm font-black text-zinc-900 uppercase tracking-widest">{t('legal.gdpr.rights.access.title', undefined, 'Access & Portability')}</p>
+                                    </div>
+                                    <p className="text-sm text-zinc-600 leading-relaxed">
+                                        {t('legal.gdpr.rights.access.content', undefined, 'Extract a machine-readable archive of all personal data and verification proofs tied to your account.')}
+                                    </p>
+                                </div>
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-3">
+                                        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-900 text-white font-black text-xs">R</span>
+                                        <p className="text-sm font-black text-zinc-900 uppercase tracking-widest">{t('legal.gdpr.rights.rectification.title', undefined, 'Rectification')}</p>
+                                    </div>
+                                    <p className="text-sm text-zinc-600 leading-relaxed">
+                                        {t('legal.gdpr.rights.rectification.content', undefined, 'Instantly update inaccurate information. Modifying documents may trigger a mandatory re-verification.')}
+                                    </p>
+                                </div>
+                                <div className="space-y-4 md:col-span-2 pt-8 border-t border-zinc-50">
+                                    <div className="flex items-center gap-3">
+                                        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-900 text-white font-black text-xs">F</span>
+                                        <p className="text-sm font-black text-zinc-900 uppercase tracking-widest">{t('legal.gdpr.rights.forgotten.title', undefined, 'Right to be Forgotten')}</p>
+                                    </div>
+                                    <p className="text-sm text-zinc-600 leading-relaxed">
+                                        {t('legal.gdpr.rights.forgotten.content', undefined, 'Permanent deletion of your account and dossiers. Retention requirements may temporarily apply for active leases.')}
+                                    </p>
+                                </div>
+                            </div>
+                        </motion.section>
+
+                        <motion.section variants={sectionVariants} className="glass-card !p-12 rounded-[3rem] border-zinc-100 text-center">
+                            <h2 className="text-2xl font-black tracking-tight text-zinc-900 mb-6 uppercase">
+                                {t('legal.gdpr.sections.contact.title', undefined, 'Exercise Your Rights')}
+                            </h2>
+                            <p className="text-zinc-600 leading-relaxed text-lg max-w-2xl mx-auto mb-8">
+                                {t('legal.gdpr.sections.contact.content', undefined, 'Most rights can be exercised directly via your dashboard. For manual requests, contact our Data Protection Officer.')}
+                            </p>
+                            <div className="inline-block px-8 py-4 bg-zinc-900 text-white rounded-2xl font-mono text-sm tracking-widest shadow-2xl">
+                                dpo@roomivo.eu
+                            </div>
+                        </motion.section>
                     </div>
 
-                    <div className="bg-zinc-50 border border-zinc-200 rounded-xl p-6">
-                        <div className="flex items-center gap-3 mb-2">
-                            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-teal-100 text-teal-700">️</span>
-                            <h3 className="text-lg font-bold text-zinc-900">Rectification</h3>
-                        </div>
-                        <p className="text-zinc-600 text-sm">
-                            Instantly update inaccurate information. Note that modifying documents may trigger a mandatory re-verification of your Trust Score.
+                    {/* Footer Info */}
+                    <motion.div 
+                        variants={sectionVariants}
+                        className="pt-12 border-t border-zinc-100 text-center"
+                    >
+                        <p className="text-xs font-black text-zinc-400 uppercase tracking-[0.3em]">
+                            {t('legal.terms.lastUpdated', undefined, 'Last Updated')} • February 2026
                         </p>
-                    </div>
-
-                    <div className="bg-zinc-50 border border-zinc-200 rounded-xl p-6 sm:col-span-2">
-                        <div className="flex items-center gap-3 mb-2">
-                            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-red-700">️</span>
-                            <h3 className="text-lg font-bold text-zinc-900">The Right to be Forgotten</h3>
-                        </div>
-                        <p className="text-zinc-600 text-sm">
-                            You can request the permanent deletion of your account and associated dossiers.
-                            <strong>Please note:</strong> If you are currently in an active lease managed through Roomivo, legal retention requirements regarding financial transactions may temporarily override deletion requests until the lease is terminated.
-                        </p>
-                    </div>
-                </div>
-            </section>
-
-            <section className="mb-12">
-                <h2 className="text-2xl font-bold tracking-tight text-zinc-900 mb-4">How to Exercise Your Rights</h2>
-                <p>
-                    Most rights can be exercised directly from your dashboard's security settings. For complex inquiries or manual deletion requests,
-                    our dedicated Data Protection Officer is available. We legally mandate a response to all GDPR requests within 30 days.
-                </p>
-                <div className="bg-zinc-900 text-zinc-50 p-4 rounded-lg mt-4 font-mono text-sm inline-block">
-                    dpo@roomivo.eu
-                </div>
-            </section>
-
-            <div className="mt-16 pt-8 border-t border-zinc-100 text-sm text-zinc-400">
-                Last updated: February 28, 2026
+                    </motion.div>
+                </motion.div>
             </div>
-        </div>
+        </PremiumLayout>
     );
 }

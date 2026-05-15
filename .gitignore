@@ -60,4 +60,11 @@ app.db
 # Agent Specific
 artifacts/
 backend/scratch/
+scratch/
+bin/
+*.bak
+stderr.txt
+stdout.txt
+playwright-report/
+test-results/
 

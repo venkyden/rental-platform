@@ -21,25 +21,25 @@ interface AlertsData {
 
 const SEVERITY_CONFIG: Record<string, { bg: string; border: string; icon: string; text: string; badge: string }> = {
     critical: {
-        bg: 'bg-zinc-50 border border-zinc-200',
-        border: 'border-l-4 border-red-500',
+        bg: 'bg-white border-2 border-zinc-900',
+        border: '',
         icon: '',
-        text: 'text-red-800',
-        badge: 'bg-red-100 text-red-700',
+        text: 'text-zinc-900',
+        badge: 'bg-zinc-900 text-white',
     },
     warning: {
-        bg: 'bg-zinc-50 border border-zinc-200',
-        border: 'border-l-4 border-amber-500',
+        bg: 'bg-white border border-zinc-300',
+        border: '',
         icon: '',
-        text: 'text-amber-800',
-        badge: 'bg-amber-100 text-amber-700',
+        text: 'text-zinc-700',
+        badge: 'bg-zinc-200 text-zinc-800',
     },
     info: {
         bg: 'bg-zinc-50 border border-zinc-200',
-        border: 'border-l-4 border-blue-400',
+        border: '',
         icon: '',
-        text: 'text-blue-800',
-        badge: 'bg-blue-100 text-blue-700',
+        text: 'text-zinc-600',
+        badge: 'bg-zinc-100 text-zinc-600',
     },
 };
 

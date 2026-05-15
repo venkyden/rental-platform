@@ -10,7 +10,7 @@ from decimal import Decimal
 from typing import List, Optional
 from uuid import UUID
 
-from fastapi import (APIRouter, Depends, File, HTTPException, Query,
+from fastapi import (APIRouter, Depends, File, HTTPException, Query, Request,
                      UploadFile, status)
 from sqlalchemy import and_
 from sqlalchemy import delete as sql_delete
@@ -19,7 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm.attributes import flag_modified
 
 from app.core.database import get_db
-from app.models.property import Property, PropertyMedia, PropertyMediaSession
+from app.models.property import Property, PropertyMedia, PropertyMediaSession, SavedProperty
 from app.models.property_schemas import (MediaSessionCreate,
                                          MediaSessionResponse,
                                          MediaUploadMetadata, PropertyCreate,
@@ -86,138 +86,136 @@ async def create_property(
     return new_property
 
 
-@router.get("", response_model=List[PropertyResponse])
-async def list_properties(
-    city: Optional[str] = None,
-    min_rent: Optional[Decimal] = None,
-    max_rent: Optional[Decimal] = None,
-    bedrooms: Optional[int] = None,
-    property_type: Optional[str] = None,
-    furnished: Optional[bool] = None,
-    caf_eligible: Optional[bool] = None,
-    amenities: Optional[List[str]] = Query(None),
-    landlord_id: Optional[UUID] = None,
-    status: Optional[str] = "active",
-    skip: int = 0,
-    limit: int = 20,
-    current_user: Optional[User] = Depends(get_current_user_optional),
+@router.get("/wishlist", response_model=List[PropertyResponse])
+async def list_saved_properties(
+    request: Request,
     db: AsyncSession = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional),
 ):
-    """List properties with filters"""
+    """List all properties saved by the current user"""
+    logger.info(f"Wishlist request received for user: {current_user.id if current_user else 'None'}")
+    if not current_user:
+        return []
+    
+    # Extract params from request
+    params = dict(request.query_params)
+    city = params.get("city")
+    min_rent = params.get("min_rent")
+    max_rent = params.get("max_rent")
+    bedrooms = params.get("bedrooms")
+    property_type = params.get("property_type")
+    furnished = params.get("furnished")
+    caf_eligible = params.get("caf_eligible")
+    amenities = request.query_params.getlist("amenities")
+    landlord_id = params.get("landlord_id")
+    status = params.get("status", "active")
+    skip = params.get("skip", "0")
+    limit = params.get("limit", "20")
+    sort_by = params.get("sort_by", "created_at")
+    order_direction = params.get("order_direction", "desc")
+    verified_only = params.get("verified_only")
 
-    query = select(Property)
-
-    # Apply filters
-    filters = []
+    query = (
+        select(Property)
+        .join(SavedProperty, SavedProperty.property_id == Property.id)
+        .where(SavedProperty.user_id == current_user.id)
+    )
 
     if city:
-        filters.append(Property.city.ilike(f"%{city}%"))
+        query = query.where(Property.city.ilike(f"%{city}%"))
+    
+    # Parse numeric/bool params
+    try:
+        min_rent_val = float(min_rent) if min_rent and min_rent != "" else None
+        max_rent_val = float(max_rent) if max_rent and max_rent != "" else None
+    except (ValueError, TypeError):
+        min_rent_val = max_rent_val = None
 
-    if min_rent is not None or max_rent is not None:
-        # Total rent: for CC, charges already in monthly_rent; for HC, add charges
-        from sqlalchemy import case
+    if min_rent_val is not None or max_rent_val is not None:
         from decimal import Decimal
+        from sqlalchemy import case, func
+
+        min_rent_dec = Decimal(str(min_rent_val)) if min_rent_val is not None else None
+        max_rent_dec = Decimal(str(max_rent_val)) if max_rent_val is not None else None
 
         total_rent = Property.monthly_rent + case(
             (Property.charges_included == True, Decimal("0")),
             else_=func.coalesce(Property.charges, Decimal("0")),
         )
-        if min_rent is not None:
-            filters.append(total_rent >= min_rent)
-        if max_rent is not None:
-            filters.append(total_rent <= max_rent)
+        if min_rent_dec is not None:
+            query = query.where(total_rent >= min_rent_dec)
+        if max_rent_dec is not None:
+            query = query.where(total_rent <= max_rent_dec)
 
-    if bedrooms is not None:
-        filters.append(Property.bedrooms >= bedrooms)
+    if bedrooms and bedrooms != "":
+        try:
+            query = query.where(Property.bedrooms >= int(bedrooms))
+        except (ValueError, TypeError):
+            pass
 
     if property_type:
-        filters.append(Property.property_type == property_type)
+        query = query.where(Property.property_type == property_type)
 
-    if furnished is not None:
-        filters.append(Property.furnished == furnished)
+    if furnished and furnished != "":
+        val = furnished.lower() == "true" if isinstance(furnished, str) else bool(furnished)
+        query = query.where(Property.furnished == val)
 
-    if caf_eligible is not None:
-        filters.append(Property.caf_eligible == caf_eligible)
+    if caf_eligible and caf_eligible != "":
+        val = caf_eligible.lower() == "true" if isinstance(caf_eligible, str) else bool(caf_eligible)
+        query = query.where(Property.caf_eligible == val)
 
     if amenities:
-        # Check if property amenities (JSONB) contains ALL requested amenities
-        from sqlalchemy.dialects.postgresql import JSONB
-
         for amenity in amenities:
-            filters.append(Property.amenities.contains([amenity]))
+            query = query.where(Property.amenities.contains([amenity]))
 
-    # Default behavior for landlords/team members: show properties they own or are members of
-    # Safely get role value
-    try:
-        if current_user:
-            role_val = current_user.role.value if hasattr(current_user.role, "value") else str(current_user.role)
-        else:
-            role_val = None
-    except Exception:
-        role_val = None
+    if verified_only:
+        query = query.where(Property.ownership_verified == True)
 
-    is_management_role = role_val in ["landlord", "property_manager", "admin"]
-    
-    if is_management_role and not landlord_id:
-        # If no specific landlord_id is requested, show EVERYTHING the user has access to
+    if status:
+        query = query.where(Property.status == status)
+
+    if landlord_id:
         try:
-            from app.models.team import InviteStatus, TeamMember, TeamMemberProperty
-            from sqlalchemy import or_
-            
-            # Subquery for properties via team membership
-            # Using .scalar_subquery() for better compatibility in .in_()
-            team_prop_subquery = (
-                select(TeamMemberProperty.property_id)
-                .join(TeamMember, TeamMember.id == TeamMemberProperty.team_member_id)
-                .where(
-                    and_(
-                        TeamMember.member_user_id == current_user.id,
-                        TeamMember.status == InviteStatus.ACTIVE
-                    )
-                )
-            ).scalar_subquery()
+            query = query.where(Property.landlord_id == UUID(landlord_id))
+        except (ValueError, TypeError):
+            pass
 
-            filters.append(
-                or_(
-                    Property.landlord_id == current_user.id,
-                    Property.id.in_(team_prop_subquery)
-                )
-            )
-            
-            # Filter by status if provided, otherwise default to active
-            target_status = status if status else "active"
-            filters.append(Property.status == target_status)
-            
-        except Exception as e:
-            logger.error(f"Error in management role filter for user {getattr(current_user, 'id', 'unknown')}: {e}", exc_info=True)
-            # Fallback to just active properties
-            filters.append(Property.status == (status if status else "active"))
-    elif landlord_id:
-        filters.append(Property.landlord_id == landlord_id)
-        if status:
-            filters.append(Property.status == status)
-    elif status:
-        filters.append(Property.status == status)
+    # Sorting
+    if sort_by and hasattr(Property, sort_by):
+        col = getattr(Property, sort_by)
+        if order_direction == "desc":
+            query = query.order_by(col.desc())
+        else:
+            query = query.order_by(col.asc())
     else:
-        # Default: only show active properties to public
-        filters.append(Property.status == "active")
-    if filters:
-        query = query.where(and_(*filters))
+        query = query.order_by(SavedProperty.created_at.desc())
 
     # Pagination
-    query = query.offset(skip).limit(limit)
-
     try:
-        result = await db.execute(query)
-        properties = result.scalars().all()
-    except Exception as e:
-        logger.error(f"CRITICAL: Failed to execute properties query: {e}", exc_info=True)
-        # Fallback: try a very simple query to at least return SOMETHING if the complex one fails
-        fallback_query = select(Property).where(Property.status == "active").limit(limit)
-        result = await db.execute(fallback_query)
-        properties = result.scalars().all()
+        skip_val = int(skip) if skip else 0
+        limit_val = int(limit) if limit else 20
+    except (ValueError, TypeError):
+        skip_val = 0
+        limit_val = 20
 
-    return properties
+    query = query.offset(skip_val).limit(limit_val)
+    result = await db.execute(query)
+    properties = result.scalars().all()
+    
+    response = []
+    for prop in properties:
+        prop_dict = PropertyResponse.model_validate(prop).model_dump()
+        prop_dict["is_saved"] = True
+        
+        # Calculate match score if tenant
+        if current_user.role == "tenant":
+            match_data = matching_service.calculate_match_details(current_user, prop)
+            prop_dict["match_score"] = match_data["score"]
+            prop_dict["match_breakdown"] = match_data["breakdown"]
+            
+        response.append(prop_dict)
+        
+    return response
 
 
 @router.get("/recommendations", response_model=List[PropertyMatchResponse])
@@ -228,43 +226,213 @@ async def get_recommendations(
 ):
     """
     Get personalized property recommendations for the current tenant.
-    Calculates scores using the MatchingService.
     """
     if current_user.role != "tenant":
-        # Gracefully return empty list if called by landlord/manager
         return []
 
-    # 1. Fetch active properties
-    # In a real production app, we would pre-filter by city or budget for performance
     query = select(Property).where(Property.status == "active").limit(100)
     result = await db.execute(query)
     all_properties = result.scalars().all()
 
-    # 2. Calculate scores
     scored_properties = []
     for prop in all_properties:
         match_data = matching_service.calculate_match_details(current_user, prop)
-        
-        # Attach match details to the property object for the response schema
-        # We use a wrapper or dynamic attribute because Property is an ORM model
         prop_dict = PropertyMatchResponse.model_validate(prop).model_dump()
         prop_dict["match_score"] = match_data["score"]
         prop_dict["match_breakdown"] = match_data["breakdown"]
-        
         scored_properties.append(prop_dict)
 
-    # 3. Sort by score descending
     scored_properties.sort(key=lambda x: x["match_score"], reverse=True)
-
-    # 4. Return top N
     return scored_properties[:limit]
 
 
-@router.get("/{property_id}", response_model=PropertyResponse)
-async def get_property(property_id: UUID, db: AsyncSession = Depends(get_db)):
-    """Get property details"""
+@router.get("", response_model=List[PropertyResponse])
+async def list_properties(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional),
+):
+    """List properties with filters and sorting using direct request parameter access"""
+    # Extract params from request
+    params = dict(request.query_params)
+    city = params.get("city")
+    min_rent = params.get("min_rent")
+    max_rent = params.get("max_rent")
+    bedrooms = params.get("bedrooms")
+    property_type = params.get("property_type")
+    furnished = params.get("furnished")
+    caf_eligible = params.get("caf_eligible")
+    amenities = request.query_params.getlist("amenities")
+    landlord_id = params.get("landlord_id")
+    status = params.get("status", "active")
+    skip = params.get("skip", "0")
+    limit = params.get("limit", "20")
+    sort_by = params.get("sort_by", "created_at")
+    order_direction = params.get("order_direction", "desc")
+    verified_only = params.get("verified_only")
 
+    query = select(Property)
+
+    if city:
+        query = query.where(Property.city.ilike(f"%{city}%"))
+    
+    # Parse numeric/bool params
+    try:
+        min_rent_val = float(min_rent) if min_rent and min_rent != "" else None
+        max_rent_val = float(max_rent) if max_rent and max_rent != "" else None
+    except (ValueError, TypeError):
+        min_rent_val = max_rent_val = None
+
+    if min_rent_val is not None or max_rent_val is not None:
+        from decimal import Decimal
+        from sqlalchemy import case, func
+
+        min_rent_dec = Decimal(str(min_rent_val)) if min_rent_val is not None else None
+        max_rent_dec = Decimal(str(max_rent_val)) if max_rent_val is not None else None
+
+        total_rent = Property.monthly_rent + case(
+            (Property.charges_included == True, Decimal("0")),
+            else_=func.coalesce(Property.charges, Decimal("0")),
+        )
+        if min_rent_dec is not None:
+            query = query.where(total_rent >= min_rent_dec)
+        if max_rent_dec is not None:
+            query = query.where(total_rent <= max_rent_dec)
+
+    if bedrooms and bedrooms != "":
+        try:
+            query = query.where(Property.bedrooms >= int(bedrooms))
+        except (ValueError, TypeError):
+            pass
+
+    if property_type:
+        query = query.where(Property.property_type == property_type)
+
+    if furnished and furnished != "":
+        val = furnished.lower() == "true" if isinstance(furnished, str) else bool(furnished)
+        query = query.where(Property.furnished == val)
+
+    if caf_eligible and caf_eligible != "":
+        val = caf_eligible.lower() == "true" if isinstance(caf_eligible, str) else bool(caf_eligible)
+        query = query.where(Property.caf_eligible == val)
+
+    if amenities:
+        for amenity in amenities:
+            query = query.where(Property.amenities.contains([amenity]))
+
+    if verified_only:
+        query = query.where(Property.ownership_verified == True)
+
+    if status:
+        query = query.where(Property.status == status)
+
+    if landlord_id:
+        try:
+            query = query.where(Property.landlord_id == UUID(landlord_id))
+        except (ValueError, TypeError):
+            pass
+
+    # Sorting
+    if sort_by and hasattr(Property, sort_by):
+        col = getattr(Property, sort_by)
+        if order_direction == "desc":
+            query = query.order_by(col.desc())
+        else:
+            query = query.order_by(col.asc())
+    else:
+        query = query.order_by(Property.created_at.desc())
+
+    # Pagination
+    # Pagination
+    try:
+        skip_val = int(skip) if skip else 0
+        limit_val = int(limit) if limit else 20
+    except (ValueError, TypeError):
+        skip_val = 0
+        limit_val = 20
+
+    query = query.offset(skip_val).limit(limit_val)
+    result = await db.execute(query)
+    properties = result.scalars().all()
+    
+    response = []
+    for prop in properties:
+        prop_dict = PropertyResponse.model_validate(prop).model_dump()
+        prop_dict["is_saved"] = True
+        
+        # Calculate match score if tenant
+        if current_user.role == "tenant":
+            match_data = matching_service.calculate_match_details(current_user, prop)
+            prop_dict["match_score"] = match_data["score"]
+            prop_dict["match_breakdown"] = match_data["breakdown"]
+            
+        response.append(prop_dict)
+        
+    return response
+
+
+@router.post("/{property_id}/save", status_code=status.HTTP_201_CREATED)
+async def save_property(
+    property_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Save a property to wishlist"""
+    # Check if exists
     result = await db.execute(select(Property).where(Property.id == property_id))
+    if not result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Property not found")
+
+    # Check if already saved
+    existing = await db.execute(
+        select(SavedProperty).where(
+            and_(
+                SavedProperty.user_id == current_user.id,
+                SavedProperty.property_id == property_id
+            )
+        )
+    )
+    if existing.scalar_one_or_none():
+        return {"message": "Property already saved"}
+
+    saved = SavedProperty(user_id=current_user.id, property_id=property_id)
+    db.add(saved)
+    await db.commit()
+    return {"message": "Property saved to wishlist"}
+
+
+@router.delete("/{property_id}/save", status_code=status.HTTP_204_NO_CONTENT)
+async def unsave_property(
+    property_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Remove a property from wishlist"""
+    await db.execute(
+        sql_delete(SavedProperty).where(
+            and_(
+                SavedProperty.user_id == current_user.id,
+                SavedProperty.property_id == property_id
+            )
+        )
+    )
+    await db.commit()
+    return
+
+
+@router.get("/{property_id}", response_model=PropertyResponse)
+async def get_property(property_id: str, db: AsyncSession = Depends(get_db)):
+    """Get property details"""
+    # Defensive check against route priority issues
+    if property_id == "saved":
+        raise HTTPException(status_code=400, detail="Ambiguous route. Please use /properties/saved directly.")
+
+    try:
+        prop_uuid = UUID(property_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid property ID format")
+
+    result = await db.execute(select(Property).where(Property.id == prop_uuid))
     property_obj = result.scalar_one_or_none()
 
     if not property_obj:
@@ -274,7 +442,7 @@ async def get_property(property_id: UUID, db: AsyncSession = Depends(get_db)):
 
     # SECURE CHECK: Ensure photos JSONB is in sync with PropertyMedia table
     # This is necessary because the JSONB field might be out of sync if uploads happened concurrently
-    media_query = select(PropertyMedia).where(PropertyMedia.property_id == property_id)
+    media_query = select(PropertyMedia).where(PropertyMedia.property_id == prop_uuid)
     media_result = await db.execute(media_query)
     all_media = media_result.scalars().all()
 
@@ -297,7 +465,7 @@ async def get_property(property_id: UUID, db: AsyncSession = Depends(get_db)):
     # Increment view count
     await db.execute(
         update(Property)
-        .where(Property.id == property_id)
+        .where(Property.id == prop_uuid)
         .values(views_count=Property.views_count + 1)
     )
     await db.commit()
@@ -307,15 +475,19 @@ async def get_property(property_id: UUID, db: AsyncSession = Depends(get_db)):
 
 @router.put("/{property_id}", response_model=PropertyResponse)
 async def update_property(
-    property_id: UUID,
+    property_id: str,
     property_data: PropertyUpdate,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Update property"""
 
-    # Get property
-    result = await db.execute(select(Property).where(Property.id == property_id))
+    try:
+        prop_uuid = UUID(property_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid property ID format")
+
+    result = await db.execute(select(Property).where(Property.id == prop_uuid))
     property_obj = result.scalar_one_or_none()
 
     if not property_obj:
@@ -336,7 +508,7 @@ async def update_property(
             ).where(
                 and_(
                     TeamMember.member_user_id == current_user.id,
-                    TeamMemberProperty.property_id == property_id,
+                    TeamMemberProperty.property_id == prop_uuid,
                     TeamMember.status == "active"
                 )
             )
@@ -369,14 +541,18 @@ async def update_property(
 
 @router.delete("/{property_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_property(
-    property_id: UUID,
+    property_id: str,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Delete property"""
 
-    # Get property
-    result = await db.execute(select(Property).where(Property.id == property_id))
+    try:
+        prop_uuid = UUID(property_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid property ID format")
+
+    result = await db.execute(select(Property).where(Property.id == prop_uuid))
     property_obj = result.scalar_one_or_none()
 
     if not property_obj:

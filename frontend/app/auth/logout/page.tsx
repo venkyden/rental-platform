@@ -52,8 +52,8 @@ export default function LogoutPage() {
                 className="w-full max-w-sm bg-white rounded-2xl shadow-sm  p-8 text-center border border-zinc-100 relative overflow-hidden"
             >
                 {/* Decorative background glow */}
-                <div className="absolute -top-24 -right-24 w-48 h-48 bg-teal-50 rounded-full blur-3xl opacity-60" />
-                <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-teal-50 rounded-full blur-3xl opacity-60" />
+                <div className="absolute -top-24 -right-24 w-48 h-48 bg-zinc-100 rounded-full blur-3xl opacity-60" />
+                <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-zinc-100 rounded-full blur-3xl opacity-60" />
 
                 <div className="relative z-10">
                     <motion.div
@@ -91,7 +91,7 @@ export default function LogoutPage() {
                     {/* Premium Progress Bar */}
                     <div className="w-full h-1.5 bg-zinc-100 rounded-full overflow-hidden">
                         <motion.div
-                            className="h-full bg-teal-500 rounded-full"
+                            className="h-full bg-zinc-900 rounded-full"
                             initial={{ width: "0%" }}
                             animate={{ width: `${progress}%` }}
                             transition={{ duration: 0.1 }}

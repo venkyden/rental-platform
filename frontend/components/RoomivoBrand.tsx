@@ -38,7 +38,7 @@ export default function RoomivoBrand({
     const themeClasses = {
         dark: {
             container: 'bg-zinc-900 text-white',
-            text: 'text-zinc-900 dark:text-white',
+            text: 'text-zinc-900',
             mark: 'text-white'
         },
         light: {
@@ -60,11 +60,11 @@ export default function RoomivoBrand({
             {/* Logo Mark — The circular R */}
             <div
                 className={`${s.icon} flex items-center justify-center rounded-full shadow-2xl transition-transform duration-500 hover:scale-110 active:scale-95 ${
-                    theme === 'dark' ? 'bg-zinc-900 dark:bg-white' : 'bg-white dark:bg-zinc-900'
+                    theme === 'dark' ? 'bg-zinc-900' : 'bg-white'
                 } ${animate ? 'animate-in zoom-in duration-500' : ''}`}
             >
                 <span className={`${s.font} italic tracking-tighter ${
-                    theme === 'dark' ? 'text-white dark:text-zinc-900' : 'text-zinc-900 dark:text-white'
+                    theme === 'dark' ? 'text-white' : 'text-zinc-900'
                 }`} style={{ fontSize: s.svg }}>
                     R
                 </span>
@@ -74,12 +74,12 @@ export default function RoomivoBrand({
             {(variant === 'wordmark' || variant === 'full') && (
                 <div className="flex flex-col">
                     <h1 className={`${s.text} font-black tracking-tighter leading-none ${
-                        theme === 'glass' ? 'text-white' : 'bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 to-zinc-500 dark:from-white dark:to-zinc-400'
+                        theme === 'glass' ? 'text-white' : 'bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 to-zinc-500'
                     }`}>
                         Roomivo
                     </h1>
                     {variant === 'full' && (
-                        <p className={`${s.tagline} font-bold text-zinc-500 dark:text-zinc-400 mt-1 uppercase tracking-[0.2em]`}>
+                        <p className={`${s.tagline} font-bold text-zinc-500 mt-1 uppercase tracking-[0.2em]`}>
                             Premium Rentals
                         </p>
                     )}

@@ -29,19 +29,19 @@ const PERMISSION_LABELS: Record<string, { label: string; description: string; co
     manage_visits: {
         label: 'Manage Visits',
         description: '+ Create time slots, respond to messages',
-        color: 'bg-blue-100 text-blue-700'
+        color: 'bg-zinc-100 text-zinc-900'
     },
     full_access: {
         label: 'Full Access',
         description: '+ Edit properties, generate leases',
-        color: 'bg-green-100 text-green-700'
+        color: 'bg-zinc-900 text-white'
     }
 };
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-    pending: { label: 'Pending', color: 'bg-yellow-100 text-yellow-700' },
-    active: { label: 'Active', color: 'bg-green-100 text-green-700' },
-    revoked: { label: 'Revoked', color: 'bg-red-100 text-red-700' },
+    pending: { label: 'Pending', color: 'bg-zinc-100 text-zinc-400' },
+    active: { label: 'Active', color: 'bg-zinc-900 text-white' },
+    revoked: { label: 'Revoked', color: 'bg-zinc-100 text-zinc-900' },
     expired: { label: 'Expired', color: 'bg-gray-100 text-gray-700' }
 };
 
@@ -146,7 +146,7 @@ export default function TeamManager() {
                 </div>
                 <button
                     onClick={() => setShowInviteModal(true)}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium flex items-center gap-2"
+                    className="px-6 py-3 bg-zinc-900 text-white rounded-xl hover:bg-zinc-800 font-black uppercase tracking-widest text-xs flex items-center gap-2 transition-all active:scale-95 shadow-lg"
                 >
                      Invite a Member
                 </button>
@@ -164,7 +164,7 @@ export default function TeamManager() {
                     </p>
                     <button
                         onClick={() => setShowInviteModal(true)}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                        className="px-6 py-3 bg-zinc-900 text-white rounded-xl hover:bg-zinc-800 font-black uppercase tracking-widest text-xs transition-all active:scale-95"
                     >
                         Invite a Member
                     </button>
@@ -186,7 +186,7 @@ export default function TeamManager() {
                                 <tr key={member.id} className="hover:bg-gray-50">
                                     <td className="px-4 py-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-white font-bold">
+                                            <div className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center text-white font-bold">
                                                 {(member.name || member.email).charAt(0).toUpperCase()}
                                             </div>
                                             <div>
@@ -216,7 +216,7 @@ export default function TeamManager() {
                                         {member.status !== 'revoked' && (
                                             <button
                                                 onClick={() => handleRevoke(member.id)}
-                                                className="text-red-600 hover:text-red-800 text-sm font-medium"
+                                                className="text-zinc-900 hover:text-black text-xs font-black uppercase tracking-widest underline decoration-zinc-200 underline-offset-4"
                                             >
                                                 Revoke
                                             </button>
@@ -274,7 +274,7 @@ export default function TeamManager() {
                                 <div className="flex gap-3">
                                     <button
                                         onClick={copyInviteLink}
-                                        className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+                                        className="flex-1 py-4 bg-zinc-900 text-white rounded-xl hover:bg-zinc-800 font-black uppercase tracking-widest text-xs transition-all active:scale-95"
                                     >
                                          Copy Link
                                     </button>
@@ -283,7 +283,7 @@ export default function TeamManager() {
                                             setShowInviteModal(false);
                                             setInviteLink(null);
                                         }}
-                                        className="flex-1 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium"
+                                        className="flex-1 py-4 border border-zinc-200 rounded-xl hover:bg-zinc-50 font-black uppercase tracking-widest text-xs transition-all active:scale-95"
                                     >
                                         Close
                                     </button>
@@ -301,7 +301,7 @@ export default function TeamManager() {
                                         value={inviteEmail}
                                         onChange={(e) => setInviteEmail(e.target.value)}
                                         placeholder={t('common.placeholders.email')}
-                                        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                                        className="w-full px-4 py-3 bg-zinc-50 border-none rounded-xl font-bold text-zinc-900 focus:ring-2 focus:ring-zinc-900/10 transition-all"
                                     />
                                 </div>
 
@@ -315,7 +315,7 @@ export default function TeamManager() {
                                         value={inviteName}
                                         onChange={(e) => setInviteName(e.target.value)}
                                         placeholder={t('common.placeholders.fullName')}
-                                        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                                        className="w-full px-4 py-3 bg-zinc-50 border-none rounded-xl font-bold text-zinc-900 focus:ring-2 focus:ring-zinc-900/10 transition-all"
                                     />
                                 </div>
 
@@ -328,9 +328,9 @@ export default function TeamManager() {
                                         {Object.entries(PERMISSION_LABELS).map(([key, info]) => (
                                             <label
                                                 key={key}
-                                                className={`flex items-start gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${invitePermission === key
-                                                    ? 'border-blue-500 bg-blue-50'
-                                                    : 'border-gray-200 hover:border-gray-300'
+                                            className={`flex items-start gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all ${invitePermission === key
+                                                    ? 'border-zinc-900 bg-zinc-900 text-white shadow-lg'
+                                                    : 'border-zinc-100 hover:border-zinc-200 bg-zinc-50'
                                                     }`}
                                             >
                                                 <input
@@ -342,10 +342,10 @@ export default function TeamManager() {
                                                     className="mt-1"
                                                 />
                                                 <div>
-                                                    <div className="font-medium text-gray-900">
+                                                    <div className={`font-black uppercase tracking-widest text-xs ${invitePermission === key ? 'text-white' : 'text-zinc-900'}`}>
                                                         {info.label}
                                                     </div>
-                                                    <div className="text-sm text-gray-500">
+                                                    <div className={`text-[10px] font-bold mt-1 ${invitePermission === key ? 'text-zinc-400' : 'text-zinc-500'}`}>
                                                         {info.description}
                                                     </div>
                                                 </div>
@@ -392,7 +392,7 @@ export default function TeamManager() {
                                 <button
                                     onClick={handleInvite}
                                     disabled={!inviteEmail || !inviteName || inviting}
-                                    className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium disabled:opacity-50"
+                                    className="w-full py-4 bg-zinc-900 text-white rounded-xl font-black uppercase tracking-widest text-xs hover:bg-zinc-800 transition-all active:scale-95 disabled:opacity-50 shadow-lg"
                                 >
                                     {inviting ? 'Sending...' : 'Send Invitation'}
                                 </button>

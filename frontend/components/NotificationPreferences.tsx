@@ -71,7 +71,7 @@ export default function NotificationPreferences() {
                         <button
                             onClick={handleSave}
                             disabled={saving}
-                            className="px-6 py-3 bg-teal-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-teal-500/20 hover:scale-105 transition-all disabled:opacity-50"
+                            className="px-6 py-3 bg-zinc-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-zinc-900/20 hover:scale-105 transition-all disabled:opacity-50"
                         >
                             {saving ? t('settings.notifications.saving', undefined, 'Saving...') : t('settings.notifications.saveChanges', undefined, 'Save Changes')}
                         </button>
@@ -82,30 +82,30 @@ export default function NotificationPreferences() {
                 <div className="space-y-6 mb-12">
                     <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-6">{t('settings.notifications.channels', undefined, 'Channels')}</h3>
 
-                    <div className="flex items-center justify-between p-6 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-transparent hover:border-zinc-200 dark:hover:border-zinc-700 transition-all">
+                    <div className="flex items-center justify-between p-6 bg-zinc-50 rounded-2xl border border-transparent hover:border-zinc-200 transition-all">
                         <div className="flex items-center gap-4">
-                            <div className="p-3 bg-white dark:bg-zinc-700 rounded-xl shadow-sm">
-                                <Bell className="w-5 h-5 text-teal-500" />
+                            <div className="p-3 bg-white rounded-xl shadow-sm">
+                                <Bell className="w-5 h-5 text-zinc-900" />
                             </div>
                             <div>
-                                <p className="text-sm font-black text-zinc-900 dark:text-white uppercase tracking-wider">{t('settings.notifications.inApp', undefined, 'In-App')}</p>
+                                <p className="text-sm font-black text-zinc-900 uppercase tracking-wider">{t('settings.notifications.inApp', undefined, 'In-App')}</p>
                                 <p className="text-xs font-bold text-zinc-500">{t('settings.notifications.inAppDesc', undefined, 'Real-time alerts within the platform')}</p>
                             </div>
                         </div>
-                        <span className="text-[10px] font-black text-teal-500 uppercase tracking-widest">{t('settings.notifications.alwaysOn', undefined, 'Always On')}</span>
+                        <span className="text-[10px] font-black text-zinc-900 uppercase tracking-widest">{t('settings.notifications.alwaysOn', undefined, 'Always On')}</span>
                     </div>
 
                     {[
                         { key: 'email_notifications', label: t('settings.notifications.email', undefined, 'Email'), desc: t('settings.notifications.emailDesc', undefined, 'Critical updates and activity'), icon: Mail },
                         { key: 'sms_notifications', label: t('settings.notifications.whatsapp', undefined, 'WhatsApp'), desc: t('settings.notifications.whatsappDesc', undefined, 'Instant mobile notifications'), icon: MessageSquare }
                     ].map((channel) => (
-                        <div key={channel.key} className="flex items-center justify-between p-6 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-transparent hover:border-zinc-200 dark:hover:border-zinc-700 transition-all">
+                        <div key={channel.key} className="flex items-center justify-between p-6 bg-zinc-50 rounded-2xl border border-transparent hover:border-zinc-200 transition-all">
                             <div className="flex items-center gap-4">
-                                <div className="p-3 bg-white dark:bg-zinc-700 rounded-xl shadow-sm">
+                                <div className="p-3 bg-white rounded-xl shadow-sm">
                                     <channel.icon className="w-5 h-5 text-zinc-400" />
                                 </div>
                                 <div>
-                                    <p className="text-sm font-black text-zinc-900 dark:text-white uppercase tracking-wider">{channel.label}</p>
+                                    <p className="text-sm font-black text-zinc-900 uppercase tracking-wider">{channel.label}</p>
                                     <p className="text-xs font-bold text-zinc-500">{channel.desc}</p>
                                 </div>
                             </div>
@@ -116,7 +116,7 @@ export default function NotificationPreferences() {
                                     onChange={(e) => handleChange(channel.key as keyof ContactPreferences, e.target.checked)}
                                     className="sr-only peer"
                                 />
-                                <div className="w-12 h-6 bg-zinc-200 dark:bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-500"></div>
+                                <div className="w-12 h-6 bg-zinc-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-zinc-900"></div>
                             </label>
                         </div>
                     ))}
@@ -136,15 +136,15 @@ export default function NotificationPreferences() {
                                     key={option.value}
                                     onClick={() => handleChange('email_frequency', option.value)}
                                     className={`p-6 rounded-2xl border-2 text-left transition-all duration-500 ${preferences.email_frequency === option.value
-                                        ? 'border-teal-500 bg-teal-50/50 dark:bg-teal-900/10'
-                                        : 'border-transparent bg-zinc-50 dark:bg-zinc-800/50 hover:bg-zinc-100'
+                                        ? 'border-zinc-900 bg-zinc-50'
+                                        : 'border-transparent bg-zinc-50 hover:bg-zinc-100'
                                         }`}
                                 >
                                     <div className="flex justify-between items-start mb-4">
-                                        <option.icon className={`w-5 h-5 ${preferences.email_frequency === option.value ? 'text-teal-500' : 'text-zinc-400'}`} />
-                                        {preferences.email_frequency === option.value && <div className="bg-teal-500 rounded-full p-1"><Check className="w-3 h-3 text-white" /></div>}
+                                        <option.icon className={`w-5 h-5 ${preferences.email_frequency === option.value ? 'text-zinc-900' : 'text-zinc-400'}`} />
+                                        {preferences.email_frequency === option.value && <div className="bg-zinc-900 rounded-full p-1"><Check className="w-3 h-3 text-white" /></div>}
                                     </div>
-                                    <p className={`text-xs font-black uppercase tracking-widest ${preferences.email_frequency === option.value ? 'text-teal-600' : 'text-zinc-900 dark:text-white'}`}>
+                                    <p className={`text-xs font-black uppercase tracking-widest ${preferences.email_frequency === option.value ? 'text-zinc-900' : 'text-zinc-900'}`}>
                                         {option.label}
                                     </p>
                                 </button>
@@ -166,15 +166,15 @@ export default function NotificationPreferences() {
                                 key={option.value}
                                 onClick={() => handleChange('preferred_contact', option.value)}
                                 className={`p-6 rounded-2xl border-2 text-left transition-all duration-500 ${preferences.preferred_contact === option.value
-                                    ? 'border-teal-500 bg-teal-50/50 dark:bg-teal-900/10'
-                                    : 'border-transparent bg-zinc-50 dark:bg-zinc-800/50 hover:bg-zinc-100'
+                                    ? 'border-zinc-900 bg-zinc-50'
+                                    : 'border-transparent bg-zinc-50 hover:bg-zinc-100'
                                     }`}
                             >
                                 <div className="flex justify-between items-start mb-4">
-                                    <option.icon className={`w-5 h-5 ${preferences.preferred_contact === option.value ? 'text-teal-500' : 'text-zinc-400'}`} />
-                                    {preferences.preferred_contact === option.value && <div className="bg-teal-500 rounded-full p-1"><Check className="w-3 h-3 text-white" /></div>}
+                                    <option.icon className={`w-5 h-5 ${preferences.preferred_contact === option.value ? 'text-zinc-900' : 'text-zinc-400'}`} />
+                                    {preferences.preferred_contact === option.value && <div className="bg-zinc-900 rounded-full p-1"><Check className="w-3 h-3 text-white" /></div>}
                                 </div>
-                                <p className={`text-xs font-black uppercase tracking-widest ${preferences.preferred_contact === option.value ? 'text-teal-600' : 'text-zinc-900 dark:text-white'}`}>
+                                <p className={`text-xs font-black uppercase tracking-widest ${preferences.preferred_contact === option.value ? 'text-zinc-900' : 'text-zinc-900'}`}>
                                     {option.label}
                                 </p>
                             </button>
@@ -183,10 +183,10 @@ export default function NotificationPreferences() {
                 </div>
 
                 {/* Privacy Notice */}
-                <div className="mt-12 p-8 bg-zinc-900 dark:bg-zinc-800/80 rounded-3xl text-white">
+                <div className="mt-12 p-8 bg-zinc-900 rounded-3xl text-white">
                     <div className="flex items-start gap-4">
-                        <div className="p-3 bg-zinc-800 dark:bg-zinc-700 rounded-2xl">
-                            <ShieldCheck className="w-6 h-6 text-teal-400" />
+                        <div className="p-3 bg-zinc-800 rounded-2xl">
+                            <ShieldCheck className="w-6 h-6 text-zinc-100" />
                         </div>
                         <div>
                             <p className="text-sm font-black uppercase tracking-widest mb-2">{t('settings.notifications.privacyNotice', undefined, 'Privacy Protected')}</p>

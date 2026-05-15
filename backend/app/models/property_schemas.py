@@ -157,6 +157,7 @@ class PropertyResponse(BaseModel):
     accepted_guarantor_types: Optional[list] = []
 
     photos: Optional[list] = []
+    is_saved: bool = False
 
     status: str = "draft"
     views_count: int = 0
@@ -164,6 +165,10 @@ class PropertyResponse(BaseModel):
     created_at: datetime
     updated_at: Optional[datetime]
     published_at: Optional[datetime]
+
+    # Matching Details (Optional)
+    match_score: Optional[int] = None
+    match_breakdown: Optional[dict] = None
 
     class Config:
         from_attributes = True

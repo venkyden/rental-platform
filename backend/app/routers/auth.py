@@ -78,17 +78,21 @@ async def get_current_user_optional(
     """Get current user if authenticated, otherwise return None."""
     if not token:
         return None
-    payload = verify_token(token)
-    if payload is None:
+    try:
+        payload = verify_token(token)
+        if payload is None:
+            return None
+        email: str = payload.get("sub")
+        if email is None:
+            return None
+        result = await db.execute(select(User).where(User.email == email))
+        user = result.scalar_one_or_none()
+        if user is None or not user.is_active:
+            return None
+        return user
+    except Exception:
+        # Absolutely never raise 401 here
         return None
-    email: str = payload.get("sub")
-    if email is None:
-        return None
-    result = await db.execute(select(User).where(User.email == email))
-    user = result.scalar_one_or_none()
-    if user is None or not user.is_active:
-        return None
-    return user
 
 
 @router.post(

@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
 
 class ApiClient {
     public client: AxiosInstance;
@@ -12,6 +12,20 @@ class ApiClient {
             headers: {
                 'Content-Type': 'application/json',
             },
+            paramsSerializer: (params) => {
+                const searchParams = new URLSearchParams();
+                for (const key in params) {
+                    const value = params[key];
+                    if (value === undefined || value === null) continue;
+                    
+                    if (Array.isArray(value)) {
+                        value.forEach(item => searchParams.append(key, item));
+                    } else {
+                        searchParams.append(key, value.toString());
+                    }
+                }
+                return searchParams.toString();
+            }
         });
 
         // Add request interceptor to attach token
@@ -34,13 +48,17 @@ class ApiClient {
             async (error: AxiosError) => {
                 const originalRequest = error.config as any;
                 const isLoginPage = typeof window !== 'undefined' && window.location.pathname === '/auth/login';
+                const isPublicPage = typeof window !== 'undefined' && (
+                    window.location.pathname === '/search' || 
+                    window.location.pathname === '/' || 
+                    window.location.pathname.startsWith('/properties/')
+                );
 
                 // If the error is 401 and we haven't retried yet
                 if (error.response?.status === 401 && !originalRequest._retry) {
                     originalRequest._retry = true;
 
                     // If we're already on the login page, don't try to refresh or redirect
-                    // This prevents loops if the refresh token is missing or invalid
                     if (isLoginPage) {
                         this.clearToken();
                         return Promise.reject(error);
@@ -54,7 +72,6 @@ class ApiClient {
                             {},
                             { 
                                 withCredentials: true,
-                                // Add a timeout to refresh requests to avoid hanging
                                 timeout: 10000 
                             }
                         );
@@ -68,13 +85,20 @@ class ApiClient {
                             return this.client(originalRequest);
                         }
                     } catch (refreshError) {
-                        console.error('[API] Token refresh failed:', refreshError);
+                        console.warn('[API] Token refresh failed, falling back to guest mode:', refreshError);
                         // Refresh token failed or expired
                         this.clearToken();
                         
-                        // Only redirect if we're not already on the login page
+                        // If it's a public page, just retry the request WITHOUT the auth header
+                        if (isPublicPage) {
+                            console.log('[API] Retrying public request as guest...');
+                            delete originalRequest.headers.Authorization;
+                            return this.client(originalRequest);
+                        }
+
+                        // Otherwise, redirect to login if we're not already there
                         if (typeof window !== 'undefined' && !isLoginPage) {
-                            console.log('[API] Redirecting to login...');
+                            console.log('[API] Protected resource failed, redirecting to login...');
                             window.location.href = '/auth/login?expired=1';
                         }
                         return Promise.reject(refreshError);
@@ -243,6 +267,21 @@ class ApiClient {
 
     async getProperties(params: Record<string, any> = {}) {
         const response = await this.client.get('/properties', { params });
+        return response.data;
+    }
+
+    async saveProperty(propertyId: string) {
+        const response = await this.client.post(`/properties/${propertyId}/save`);
+        return response.data;
+    }
+
+    async unsaveProperty(propertyId: string) {
+        const response = await this.client.delete(`/properties/${propertyId}/save`);
+        return response.data;
+    }
+
+    async getSavedProperties(params: Record<string, any> = {}) {
+        const response = await this.client.get('/properties/wishlist', { params });
         return response.data;
     }
 }

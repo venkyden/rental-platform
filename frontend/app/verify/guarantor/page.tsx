@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api';
 import { useToast } from '@/lib/ToastContext';
+import { ShieldCheck, ArrowLeft, Upload, Link as LinkIcon } from 'lucide-react';
 
 export default function GuarantorVerifyPage() {
     const router = useRouter();
@@ -44,55 +45,65 @@ export default function GuarantorVerifyPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-            <div className="max-w-lg w-full bg-white rounded-2xl shadow-sm p-8 border border-gray-200">
-                <div className="text-6xl mb-6 text-center"></div>
-                <h1 className="text-2xl font-bold text-gray-900 mb-2 text-center">Add a Guarantor</h1>
-                <p className="text-center text-gray-500 mb-8">Select a method to guarantee your application.</p>
+        <div className="min-h-screen bg-zinc-50 flex items-center justify-center p-6">
+            <div className="max-w-xl w-full bg-white rounded-[2.5rem] shadow-sm p-12 border border-zinc-200">
+                <div className="flex flex-col items-center mb-10 text-center">
+                    <div className="p-4 bg-zinc-900 rounded-2xl mb-6 shadow-xl shadow-zinc-900/10">
+                        <ShieldCheck className="w-8 h-8 text-white" />
+                    </div>
+                    <h1 className="text-3xl font-black text-zinc-900 tracking-tight mb-3">Add a Guarantor</h1>
+                    <p className="text-zinc-500 text-lg">Select a method to guarantee your application.</p>
+                </div>
 
-                <div className="space-y-4 mb-8">
+                <div className="space-y-4 mb-10">
                     <button
                         onClick={() => handleConnect('Visale')}
-                        className="w-full p-4 border rounded-xl hover:bg-gray-50 cursor-pointer flex justify-between items-center transition-colors text-left"
+                        className="w-full p-6 border border-zinc-100 rounded-3xl hover:border-zinc-900 hover:bg-zinc-50 cursor-pointer flex justify-between items-center transition-all group disabled:opacity-50"
                         disabled={uploading}
                     >
-                        <div className="flex items-center gap-3">
-                            <span className="text-2xl">️</span>
-                            <div>
-                                <div className="font-medium">Connect Visale Guarantee</div>
-                                <div className="text-xs text-gray-500">Government Service (Free)</div>
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-zinc-50 flex items-center justify-center text-zinc-400 group-hover:text-zinc-900 transition-colors">
+                                <LinkIcon className="w-6 h-6" />
+                            </div>
+                            <div className="text-left">
+                                <div className="font-bold text-zinc-900">Connect Visale Guarantee</div>
+                                <div className="text-sm text-zinc-500">Government Service (Free)</div>
                             </div>
                         </div>
-                        <span className="text-blue-600 text-sm">Connect &rarr;</span>
+                        <span className="text-zinc-900 font-bold text-sm">Connect &rarr;</span>
                     </button>
 
                     <button
                         onClick={() => handleConnect('Garantme')}
-                        className="w-full p-4 border rounded-xl hover:bg-gray-50 cursor-pointer flex justify-between items-center transition-colors text-left"
+                        className="w-full p-6 border border-zinc-100 rounded-3xl hover:border-zinc-900 hover:bg-zinc-50 cursor-pointer flex justify-between items-center transition-all group disabled:opacity-50"
                         disabled={uploading}
                     >
-                        <div className="flex items-center gap-3">
-                            <span className="text-2xl"></span>
-                            <div>
-                                <div className="font-medium">Connect Garantme</div>
-                                <div className="text-xs text-gray-500">Certified Partner</div>
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-zinc-50 flex items-center justify-center text-zinc-400 group-hover:text-zinc-900 transition-colors">
+                                <ShieldCheck className="w-6 h-6" />
+                            </div>
+                            <div className="text-left">
+                                <div className="font-bold text-zinc-900">Connect Garantme</div>
+                                <div className="text-sm text-zinc-500">Certified Partner</div>
                             </div>
                         </div>
-                        <span className="text-blue-600 text-sm">Connect &rarr;</span>
+                        <span className="text-zinc-900 font-bold text-sm">Connect &rarr;</span>
                     </button>
 
                     <div
-                        onClick={() => fileInputRef.current?.click()}
-                        className="p-4 border rounded-xl hover:bg-gray-50 cursor-pointer flex justify-between items-center transition-colors"
+                        onClick={() => !uploading && fileInputRef.current?.click()}
+                        className="w-full p-6 border border-zinc-100 rounded-3xl hover:border-zinc-900 hover:bg-zinc-50 cursor-pointer flex justify-between items-center transition-all group disabled:opacity-50"
                     >
-                        <div className="flex items-center gap-3">
-                            <span className="text-2xl"></span>
-                            <div>
-                                <div className="font-medium">Physical Guarantor</div>
-                                <div className="text-xs text-gray-500">Upload single PDF with ID, Contract & Payslips</div>
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-zinc-50 flex items-center justify-center text-zinc-400 group-hover:text-zinc-900 transition-colors">
+                                <Upload className="w-6 h-6" />
+                            </div>
+                            <div className="text-left">
+                                <div className="font-bold text-zinc-900">Physical Guarantor</div>
+                                <div className="text-sm text-zinc-500">Upload single PDF with ID, Contract & Payslips</div>
                             </div>
                         </div>
-                        <span className="text-gray-400 text-sm">
+                        <span className="text-zinc-400 group-hover:text-zinc-900 font-bold text-sm">
                             {uploading ? 'Uploading...' : 'Upload →'}
                         </span>
                         <input
@@ -105,12 +116,13 @@ export default function GuarantorVerifyPage() {
                     </div>
                 </div>
 
-                <div className="flex gap-4">
+                <div className="flex flex-col gap-4">
                     <button
                         onClick={() => router.back()}
-                        className="flex-1 py-3 text-gray-500 hover:text-gray-700 transition-colors"
+                        className="w-full py-4 text-zinc-400 hover:text-zinc-900 font-bold transition-colors flex items-center justify-center gap-2"
                         disabled={uploading}
                     >
+                        <ArrowLeft className="w-4 h-4" />
                         Cancel
                     </button>
                 </div>

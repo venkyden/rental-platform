@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { apiClient } from '@/lib/api';
 import { useLanguage } from '@/lib/LanguageContext';
+import { Loader2, FileText } from 'lucide-react';
 
 interface LeaseManagerProps {
     propertyId: string;
@@ -102,14 +103,15 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
     };
 
     return (
-        <div className="mt-6 border-t pt-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                 {t('lease.title', undefined, 'Generate a Lease')}
+        <div className="mt-6 border-t border-zinc-100 pt-10">
+            <h3 className="text-2xl font-black text-zinc-900 mb-8 flex items-center gap-4 uppercase tracking-tighter">
+                <FileText className="w-6 h-6" />
+                {t('lease.title', undefined, 'Generate a Lease')}
             </h3>
 
             {/* Lease Type Selection */}
-            <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+            <div className="mb-8">
+                <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-3">
                     {t('lease.leaseType', undefined, 'Lease Type')} *
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -117,41 +119,45 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
                         <button
                             key={key}
                             onClick={() => setLeaseType(key)}
-                            className={`p-3 rounded-lg border-2 text-left transition-all ${leaseType === key
-                                    ? 'border-blue-500 bg-blue-50'
-                                    : 'border-gray-200 hover:border-gray-300'
+                            className={`p-5 rounded-2xl border-2 text-left transition-all ${leaseType === key
+                                    ? 'border-zinc-900 bg-zinc-900 text-white shadow-xl shadow-zinc-900/20'
+                                    : 'border-zinc-100 bg-zinc-50/50 hover:border-zinc-200'
                                 }`}
                         >
-                            <div className="font-semibold text-sm">{info.name}</div>
-                            <div className="text-xs text-gray-500">{info.duration}</div>
+                            <div className="font-black text-sm uppercase tracking-tight">{info.name}</div>
+                            <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mt-1 group-hover:text-zinc-500">{info.duration}</div>
                         </button>
                     ))}
                 </div>
             </div>
 
             {/* Selected Lease Info */}
-            <div className="mb-4 p-3 bg-gray-50 rounded-lg text-sm">
-                <div className="font-semibold text-gray-900 mb-2">{selectedType.name}</div>
-                <div className="grid grid-cols-2 gap-2 text-gray-600">
-                    <div>
-                        <span className="font-medium">{t('lease.duration', undefined, 'Duration')}:</span> {selectedType.duration}
+            <div className="mb-8 p-6 bg-zinc-50 rounded-[2rem] border border-zinc-100">
+                <div className="font-black text-zinc-900 mb-4 uppercase tracking-tighter">{selectedType.name}</div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{t('lease.duration', undefined, 'Duration')}:</span>
+                        <span className="text-xs font-bold text-zinc-900 uppercase tracking-tight">{selectedType.duration}</span>
                     </div>
-                    <div>
-                        <span className="font-medium">{t('lease.deposit', undefined, 'Deposit')}:</span> {selectedType.depositInfo}
+                    <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{t('lease.deposit', undefined, 'Deposit')}:</span>
+                        <span className="text-xs font-bold text-zinc-900 uppercase tracking-tight">{selectedType.depositInfo}</span>
                     </div>
-                    <div>
-                        <span className="font-medium">{t('lease.tenantNotice', undefined, 'Tenant Notice')}:</span> {selectedType.tenantNotice}
+                    <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{t('lease.tenantNotice', undefined, 'Tenant Notice')}:</span>
+                        <span className="text-xs font-bold text-zinc-900 uppercase tracking-tight">{selectedType.tenantNotice}</span>
                     </div>
-                    <div>
-                        <span className="font-medium">{t('lease.landlordNotice', undefined, 'Landlord Notice')}:</span> {selectedType.landlordNotice}
+                    <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{t('lease.landlordNotice', undefined, 'Landlord Notice')}:</span>
+                        <span className="text-xs font-bold text-zinc-900 uppercase tracking-tight">{selectedType.landlordNotice}</span>
                     </div>
                 </div>
             </div>
 
             {/* Duration for Bail Mobilité */}
             {leaseType === 'mobilite' && (
-                <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                <div className="mb-6">
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">
                         {t('lease.mobiliteDuration', undefined, 'Duration (1-10 months)')} *
                     </label>
                     <input
@@ -160,14 +166,14 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
                         max="10"
                         value={isNaN(durationMonths) ? '' : durationMonths}
                         onChange={(e) => setDurationMonths(e.target.value === '' ? 1 : parseInt(e.target.value) || 1)}
-                        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-5 py-4 bg-zinc-50 border-none rounded-2xl focus:ring-2 focus:ring-zinc-900/10 font-bold shadow-inner"
                     />
                 </div>
             )}
 
             {/* Tenant Email */}
-            <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+            <div className="mb-6">
+                <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">
                     {t('lease.tenantEmail', undefined, 'Tenant Email')} *
                 </label>
                 <input
@@ -175,44 +181,44 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
                     value={tenantEmail}
                     onChange={(e) => setTenantEmail(e.target.value)}
                     placeholder={t('common.placeholders.tenantEmail')}
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-5 py-4 bg-zinc-50 border-none rounded-2xl focus:ring-2 focus:ring-zinc-900/10 font-bold shadow-inner"
                 />
             </div>
 
             {/* Start Date */}
-            <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+            <div className="mb-10">
+                <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">
                     {t('lease.startDate', undefined, 'Lease Start Date')} *
                 </label>
                 <input
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-5 py-4 bg-zinc-50 border-none rounded-2xl focus:ring-2 focus:ring-zinc-900/10 font-bold shadow-inner"
                 />
             </div>
 
             {/* Financial Details */}
-            <div className="mb-4 p-3 bg-blue-50 rounded-lg">
-                <div className="text-sm font-medium text-blue-900 mb-2">{t('lease.financialConditions', undefined, 'Financial Conditions')}</div>
-                <div className="grid grid-cols-2 gap-3">
+            <div className="mb-4 p-4 bg-zinc-50 rounded-xl border border-zinc-100">
+                <div className="text-xs font-black uppercase tracking-widest text-zinc-400 mb-4">{t('lease.financialConditions', undefined, 'Financial Conditions')}</div>
+                <div className="grid grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-xs text-blue-700 mb-1">{t('lease.monthlyRent', undefined, 'Monthly Rent')}</label>
-                        <div className="font-bold text-blue-900">{monthlyRent} €</div>
+                        <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-1">{t('lease.monthlyRent', undefined, 'Monthly Rent')}</label>
+                        <div className="text-lg font-black text-zinc-900">{monthlyRent} €</div>
                     </div>
                     <div>
-                        <label className="block text-xs text-blue-700 mb-1">{t('lease.charges', undefined, 'Charges')}</label>
+                        <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-1">{t('lease.charges', undefined, 'Charges')}</label>
                         <input
                             type="number"
                             value={(customCharges === undefined || isNaN(customCharges)) ? '' : customCharges}
                             onChange={(e) => setCustomCharges(e.target.value === '' ? undefined : parseFloat(e.target.value) || 0)}
                             placeholder="0"
-                            className="w-full px-2 py-1 text-sm border rounded focus:ring-1 focus:ring-blue-500"
+                            className="w-full px-3 py-2 bg-white border border-zinc-200 rounded-lg focus:ring-2 focus:ring-zinc-900/10"
                         />
                     </div>
                     {leaseType !== 'mobilite' && (
                         <div className="col-span-2">
-                            <label className="block text-xs text-blue-700 mb-1">
+                            <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-1">
                                 {t('lease.securityDeposit', undefined, 'Security Deposit')} ({selectedType.depositInfo})
                             </label>
                             <input
@@ -220,7 +226,7 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
                                 value={(customDeposit === undefined || isNaN(customDeposit)) ? '' : customDeposit}
                                 onChange={(e) => setCustomDeposit(e.target.value === '' ? undefined : parseFloat(e.target.value) || 0)}
                                 placeholder={`${monthlyRent * 2}`}
-                                className="w-full px-2 py-1 text-sm border rounded focus:ring-1 focus:ring-blue-500"
+                                className="w-full px-3 py-2 bg-white border border-zinc-200 rounded-lg focus:ring-2 focus:ring-zinc-900/10"
                             />
                         </div>
                     )}
@@ -228,7 +234,7 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
             </div>
 
             {error && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                <div className="mb-4 p-4 bg-zinc-900 text-white rounded-xl text-xs font-black uppercase tracking-widest text-center">
                     {error}
                 </div>
             )}
@@ -236,27 +242,28 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
             <button
                 onClick={handleGenerate}
                 disabled={loading || !tenantEmail || !startDate}
-                className="w-full py-3 bg-zinc-100 dark:bg-zinc-800 text-white font-bold rounded-lg hover:shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-6 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.4em] rounded-[2rem] shadow-2xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed group overflow-hidden relative"
             >
-                {loading ? (
-                    <span className="flex items-center justify-center gap-2">
-                        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                        </svg>
-                        {t('lease.generating', undefined, 'Generating...')}
-                    </span>
-                ) : (
-                    ` ${t('lease.generateButton', undefined, 'Generate Lease Contract')}`
-                )}
+                <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
+                <span className="relative z-10 flex items-center justify-center gap-3">
+                    {loading ? (
+                        <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            {t('lease.generating', undefined, 'Transmitting...')}
+                        </>
+                    ) : (
+                        t('lease.generateButton', undefined, 'Initialize Lease Protocol')
+                    )}
+                </span>
             </button>
 
             {result?.downloadUrl && (
-                <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <div className="flex items-center gap-2 text-green-800 font-semibold mb-2">
-                         {t('lease.success', undefined, 'Lease generated!')} ({LEASE_TYPES[result.leaseType || 'meuble'].name})
+                <div className="mt-4 p-6 bg-zinc-900 text-white rounded-2xl border border-zinc-800">
+                    <div className="flex items-center gap-3 font-black uppercase tracking-widest mb-3">
+                        <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                        {t('lease.success', undefined, 'Lease generated!')}
                     </div>
-                    <p className="text-sm text-green-700 mb-3">
+                    <p className="text-xs font-bold text-zinc-400 mb-6 leading-relaxed">
                         {t('lease.successDesc', undefined, 'The contract includes all required clauses: notice periods, end of lease conditions, security deposit, obligations of both parties, inventory, and termination clause.')}
                     </p>
                     <a
@@ -267,7 +274,7 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
                         ) : '#'}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                        className="inline-flex items-center justify-center w-full px-6 py-4 bg-white text-zinc-900 rounded-xl font-black uppercase tracking-widest hover:bg-zinc-100 transition-all active:scale-95"
                     >
                          {t('lease.downloadPdf', undefined, 'Download PDF')}
                     </a>

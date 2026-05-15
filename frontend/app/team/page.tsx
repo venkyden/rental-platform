@@ -9,18 +9,18 @@ export default function TeamPage() {
 
     return (
         <ProtectedRoute>
-            <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
+            <div className="min-h-screen bg-zinc-50">
                 {/* Header */}
                 <header className="bg-white shadow">
                     <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-                        <div className="flex items-center gap-4">
+                         <div className="flex items-center gap-8">
                             <button
                                 onClick={() => router.push('/dashboard')}
-                                className="text-blue-600 hover:text-blue-800 font-medium"
+                                className="text-[10px] font-black text-zinc-400 hover:text-zinc-900 uppercase tracking-widest transition-colors"
                             >
                                 ← Dashboard
                             </button>
-                            <h1 className="text-2xl font-bold text-gray-900">
+                            <h1 className="text-4xl font-black text-zinc-900 uppercase tracking-tighter">
                                  Team Management
                             </h1>
                         </div>

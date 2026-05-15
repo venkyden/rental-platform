@@ -4,14 +4,19 @@ Real implementation for French payslip (bulletin de paie) verification.
 Uses AI for OCR and data extraction, with validation rules.
 """
 
-import json
-import os
-import re
+import hashlib
+import logging
+import asyncio
 from dataclasses import dataclass
 from datetime import date, datetime
 from decimal import Decimal
 from typing import BinaryIO, Optional, Dict, Any
 from app.services.french_government_api import french_gov_service
+from app.core.database import AsyncSessionLocal
+from app.models.document import DocumentExtraction
+from sqlalchemy import select
+
+logger = logging.getLogger(__name__)
 
 # Optional AI imports
 try:
@@ -61,6 +66,14 @@ class EmploymentVerificationService:
         if GEMINI_AVAILABLE and settings.GEMINI_API_KEY:
             self.ai_client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
+    async def verify_payslip(self, file_content: bytes, file_type: str, expected_name: str) -> dict:
+        """Alias for verify_document to maintain backward compatibility with tests."""
+        return await self.verify_document(file_content, file_type, expected_name, document_type="payslip")
+
+    def _get_file_hash(self, file_content: bytes) -> str:
+        """Generate a SHA-256 hash of the file content."""
+        return hashlib.sha256(file_content).hexdigest()
+
     async def verify_document(
         self, file_content: bytes, file_type: str, expected_name: str, document_type: str = "payslip"
     ) -> dict:
@@ -76,8 +89,60 @@ class EmploymentVerificationService:
                 "rejection_reason": Optional[str]
             }
         """
-        # Extract data using AI
-        extracted_data = await self._extract_document_data(file_content, file_type, document_type)
+        file_hash = self._get_file_hash(file_content)
+        cached_extraction = None
+
+        # Try to get from cache
+        async with AsyncSessionLocal() as session:
+            stmt = select(DocumentExtraction).where(DocumentExtraction.file_hash == file_hash)
+            result = await session.execute(stmt)
+            db_extraction = result.scalar_one_or_none()
+            
+            if db_extraction:
+                logger.info(f"OCR Cache Hit for hash {file_hash}")
+                data = db_extraction.extraction_data
+                cached_extraction = EmploymentData(
+                    employer_name=data.get("employer_name", "Unknown"),
+                    employee_name=data.get("employee_name", "Unknown"),
+                    gross_salary=Decimal(str(data.get("gross_salary", 0))),
+                    net_salary=Decimal(str(data.get("net_salary", 0))),
+                    pay_period=data.get("pay_period", ""),
+                    employment_type=data.get("employment_type", "Unknown"),
+                    siret=data.get("siret"),
+                    job_title=data.get("job_title"),
+                    confidence_score=data.get("confidence_score", 1.0),
+                )
+
+        # Extract data using AI if not cached
+        if cached_extraction:
+            extracted_data = cached_extraction
+        else:
+            extracted_data = await self._extract_document_data(file_content, file_type, document_type)
+            
+            # Store in cache if successful
+            if extracted_data:
+                async with AsyncSessionLocal() as session:
+                    new_extraction = DocumentExtraction(
+                        file_hash=file_hash,
+                        extraction_data={
+                            "employer_name": extracted_data.employer_name,
+                            "employee_name": extracted_data.employee_name,
+                            "gross_salary": float(extracted_data.gross_salary),
+                            "net_salary": float(extracted_data.net_salary),
+                            "pay_period": extracted_data.pay_period,
+                            "employment_type": extracted_data.employment_type,
+                            "siret": extracted_data.siret,
+                            "job_title": extracted_data.job_title,
+                            "confidence_score": float(extracted_data.confidence_score),
+                        }
+                    )
+                    session.add(new_extraction)
+                    try:
+                        await session.commit()
+                    except Exception as e:
+                        # Handle potential race condition or DB error
+                        await session.rollback()
+                        logger.warning(f"Failed to cache extraction: {e}")
 
         if not extracted_data:
             return {
@@ -160,11 +225,6 @@ class EmploymentVerificationService:
         if not self.ai_client:
             # No AI client available — cannot extract data
             return None
-
-        import asyncio
-        import logging
-
-        logger = logging.getLogger(__name__)
 
         models_to_try = ["gemini-2.5-flash", "gemini-2.0-flash"]
         max_retries = 2
@@ -280,7 +340,8 @@ Return ONLY the JSON, no explanation."""
             "student_id", "kbis", "urssaf", "scholarship", 
             "tax_return", "foreign_tax_return", "contract", "internship_contract",
             "caf", "benefits", "pension", "accounting", "bank_funds_certificate",
-            "visale_certificate", "garantme_certificate", "employer_certificate"
+            "visale_certificate", "garantme_certificate", "employer_certificate",
+            "professional_card", "bank_statement"
         )
 
         # 2. Salary sanity check

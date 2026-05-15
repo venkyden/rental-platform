@@ -192,7 +192,7 @@ export default function NewPropertyPage() {
         switch (step) {
             case 1: return !!(formData.title && formData.description);
             case 2: return !!(formData.address_line1 && formData.city && formData.postal_code);
-            case 3: return formData.bedrooms >= 0 && formData.size_sqm > 0;
+            case 3: return formData.bedrooms >= 0 && formData.size_sqm > 0 && !!formData.dpe_rating;
             case 4: return formData.accommodation_capacity > 0;
             case 5: return formData.monthly_rent > 0;
             default: return true;
@@ -226,7 +226,7 @@ export default function NewPropertyPage() {
                     {/* Header */}
                     <div className="flex items-center justify-between mb-16">
                         <div className="space-y-4">
-                            <h1 className="text-5xl font-black tracking-tighter uppercase text-zinc-900 dark:text-white leading-none">
+                            <h1 className="text-5xl font-black tracking-tighter uppercase text-zinc-900 leading-none">
                                 {t('properties.new.title')}
                             </h1>
                             <p className="text-zinc-500 font-medium tracking-tight">
@@ -235,20 +235,28 @@ export default function NewPropertyPage() {
                         </div>
                         <button 
                             onClick={() => router.push('/properties')}
-                            className="w-12 h-12 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center hover:scale-110 transition-transform"
+                            className="w-12 h-12 rounded-2xl bg-zinc-100 flex items-center justify-center hover:scale-110 transition-transform"
                         >
                             {t('properties.new.exit')}
                         </button>
                     </div>
 
-                    {/* Progress */}
+                    {/* Progress with Labels */}
                     {currentStep < 8 && (
                         <div className="mb-20">
-                            <div className="h-1.5 w-full bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                            <div className="flex justify-between mb-4 px-2">
+                                {['identity', 'location', 'specs', 'capacity', 'pricing', 'review', 'media'].map((step, idx) => (
+                                    <div key={idx} className={`text-[9px] font-black uppercase tracking-widest transition-colors ${currentStep === idx + 1 ? 'text-zinc-900' : 'text-zinc-300'}`}>
+                                        <span className="hidden sm:inline">{t(`properties.new.wizard.${step}`)}</span>
+                                        <span className="sm:hidden">{idx + 1}</span>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="h-1.5 w-full bg-zinc-100 rounded-full overflow-hidden">
                                 <motion.div 
                                     initial={{ width: 0 }}
                                     animate={{ width: `${(currentStep / 7) * 100}%` }}
-                                    className="h-full bg-teal-500 shadow-[0_0_20px_rgba(20,184,166,0.5)]"
+                                    className="h-full bg-zinc-900 shadow-[0_0_20px_rgba(0,0,0,0.1)]"
                                 />
                             </div>
                         </div>
@@ -275,11 +283,22 @@ export default function NewPropertyPage() {
                                                     value={formData.title}
                                                     onChange={(e) => updateFormData({ title: e.target.value })}
                                                     placeholder={t('properties.new.steps.identity.titlePlaceholder')}
-                                                    className="w-full bg-transparent text-4xl sm:text-6xl font-black tracking-tighter text-zinc-900 dark:text-white placeholder:text-zinc-200 dark:placeholder:text-zinc-800 border-none focus:ring-0"
+                                                    className="w-full bg-transparent text-3xl sm:text-6xl font-black tracking-tighter text-zinc-900 placeholder:text-zinc-200 border-none focus:ring-0"
                                                 />
                                             </div>
-                                            <div className="space-y-6">
-                                                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">{t('properties.new.steps.identity.narrativeLabel')}</label>
+                                            <div className="space-y-6 relative group">
+                                                <div className="flex justify-between items-center">
+                                                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">{t('properties.new.steps.identity.narrativeLabel')}</label>
+                                                    <button 
+                                                        onClick={() => {
+                                                            const suggestion = `Magnificent ${formData.property_type} located in the heart of ${formData.city || 'the city'}. This ${formData.size_sqm}m² property features ${formData.bedrooms} bedroom(s) and modern amenities. Ideal for those seeking comfort and convenience.`;
+                                                            updateFormData({ description: suggestion });
+                                                        }}
+                                                        className="flex items-center gap-2 px-3 py-1 bg-zinc-900/5 text-zinc-900 border border-zinc-900/10 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-zinc-900 hover:text-white transition-all opacity-0 group-hover:opacity-100"
+                                                    >
+                                                        <Zap className="w-3 h-3" /> {t('properties.new.steps.identity.aiSuggest', undefined, 'AI Suggest')}
+                                                    </button>
+                                                </div>
                                                 <textarea
                                                     value={formData.description}
                                                     onChange={(e) => updateFormData({ description: e.target.value })}
@@ -292,10 +311,10 @@ export default function NewPropertyPage() {
                                                     <button
                                                         key={type}
                                                         onClick={() => updateFormData({ property_type: type })}
-                                                        className={`p-8 rounded-[2.5rem] border-2 transition-all text-left group ${formData.property_type === type ? 'bg-zinc-900 dark:bg-white border-zinc-900 dark:border-white shadow-2xl' : 'border-zinc-100 dark:border-zinc-800 hover:border-zinc-300'}`}
+                                                        className={`p-8 rounded-[2.5rem] border-2 transition-all text-left group ${formData.property_type === type ? 'bg-zinc-900 border-zinc-900 shadow-2xl' : 'border-zinc-100 hover:border-zinc-300'}`}
                                                     >
                                                         <div className={`text-[10px] font-black uppercase tracking-[0.2em] mb-2 ${formData.property_type === type ? 'text-zinc-400' : 'text-zinc-500'}`}>{type}</div>
-                                                        <div className={`text-xl font-black ${formData.property_type === type ? 'text-white dark:text-zinc-900' : 'text-zinc-900 dark:text-white'}`}>
+                                                        <div className={`text-xl font-black ${formData.property_type === type ? 'text-white' : 'text-zinc-900'}`}>
                                                             {t(`properties.new.types.${type}`)}
                                                         </div>
                                                     </button>
@@ -308,7 +327,7 @@ export default function NewPropertyPage() {
                                         <div className="space-y-10">
                                             <div className="space-y-6">
                                                 <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">{t('properties.new.steps.geolocation.label')}</label>
-                                                <div className="glass-card !p-8 rounded-[3rem] border-zinc-100 dark:border-zinc-800/50">
+                                                <div className="glass-card !p-8 rounded-[3rem] border-zinc-100">
                                                     <AddressAutocomplete
                                                         onSelectAction={(result) => {
                                                             updateFormData({
@@ -332,7 +351,7 @@ export default function NewPropertyPage() {
                                                         type="text"
                                                         value={formData.city}
                                                         onChange={(e) => updateFormData({ city: e.target.value })}
-                                                        className="w-full bg-zinc-50 dark:bg-zinc-800/50 p-6 rounded-2xl border-none font-black text-xl"
+                                                        className="w-full bg-zinc-50 p-6 rounded-2xl border-none font-black text-xl"
                                                     />
                                                 </div>
                                                 <div className="space-y-4">
@@ -341,14 +360,14 @@ export default function NewPropertyPage() {
                                                         type="text"
                                                         value={formData.postal_code}
                                                         onChange={(e) => updateFormData({ postal_code: e.target.value })}
-                                                        className="w-full bg-zinc-50 dark:bg-zinc-800/50 p-6 rounded-2xl border-none font-black text-xl"
+                                                        className="w-full bg-zinc-50 p-6 rounded-2xl border-none font-black text-xl"
                                                     />
                                                 </div>
                                             </div>
                                             <button 
                                                 onClick={handleEnrichLocation}
                                                 disabled={enriching}
-                                                className="w-full py-6 bg-teal-500 text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] shadow-2xl hover:scale-[1.02] active:scale-95 transition-all"
+                                                className="w-full py-6 bg-zinc-900 text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] shadow-2xl hover:scale-[1.02] active:scale-95 transition-all"
                                             >
                                                 {enriching ? t('properties.new.steps.geolocation.enriching') : t('properties.new.steps.geolocation.enrichButton')}
                                             </button>
@@ -361,9 +380,9 @@ export default function NewPropertyPage() {
                                                 <div className="space-y-6">
                                                     <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">{t('properties.new.steps.details.bedrooms')}</label>
                                                     <div className="flex items-center gap-8">
-                                                        <button onClick={() => updateFormData({ bedrooms: Math.max(0, formData.bedrooms - 1) })} className="w-16 h-16 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-2xl font-black">-</button>
+                                                        <button onClick={() => updateFormData({ bedrooms: Math.max(0, formData.bedrooms - 1) })} className="w-16 h-16 rounded-full bg-zinc-100 flex items-center justify-center text-2xl font-black">-</button>
                                                         <span className="text-6xl font-black tracking-tighter">{formData.bedrooms}</span>
-                                                        <button onClick={() => updateFormData({ bedrooms: formData.bedrooms + 1 })} className="w-16 h-16 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-2xl font-black">+</button>
+                                                        <button onClick={() => updateFormData({ bedrooms: formData.bedrooms + 1 })} className="w-16 h-16 rounded-full bg-zinc-100 flex items-center justify-center text-2xl font-black">+</button>
                                                     </div>
                                                 </div>
                                                 <div className="space-y-6">
@@ -383,7 +402,7 @@ export default function NewPropertyPage() {
                                                         <button
                                                             key={r}
                                                             onClick={() => updateFormData({ dpe_rating: r })}
-                                                            className={`w-16 h-16 rounded-2xl flex items-center justify-center font-black text-xl transition-all ${formData.dpe_rating === r ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-2xl scale-110' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'}`}
+                                                            className={`w-16 h-16 rounded-2xl flex items-center justify-center font-black text-xl transition-all ${formData.dpe_rating === r ? 'bg-zinc-900 text-white shadow-2xl scale-110' : 'bg-zinc-100 text-zinc-400'}`}
                                                         >
                                                             {r}
                                                         </button>
@@ -410,16 +429,16 @@ export default function NewPropertyPage() {
                                             <div className="grid grid-cols-2 gap-8">
                                                 <button 
                                                     onClick={() => updateFormData({ charges_included: !formData.charges_included })}
-                                                    className={`p-8 rounded-[3rem] border-2 text-left transition-all ${formData.charges_included ? 'bg-teal-500/10 border-teal-500 shadow-2xl' : 'border-zinc-100 dark:border-zinc-800'}`}
+                                                    className={`p-8 rounded-[3rem] border-2 text-left transition-all ${formData.charges_included ? 'bg-zinc-900 border-zinc-900 text-white shadow-2xl' : 'border-zinc-100'}`}
                                                 >
-                                                    <div className="text-[10px] font-black uppercase tracking-[0.2em] mb-2 text-teal-600">{t('properties.new.steps.pricing.chargesLabel')}</div>
+                                                    <div className={`text-[10px] font-black uppercase tracking-[0.2em] mb-2 ${formData.charges_included ? 'text-zinc-400' : 'text-zinc-500'}`}>{t('properties.new.steps.pricing.chargesLabel')}</div>
                                                     <div className="text-xl font-black">{t('properties.new.steps.pricing.allInclusive')}</div>
                                                 </button>
                                                 <button 
                                                     onClick={() => updateFormData({ caf_eligible: !formData.caf_eligible })}
-                                                    className={`p-8 rounded-[3rem] border-2 text-left transition-all ${formData.caf_eligible ? 'bg-indigo-500/10 border-indigo-500 shadow-2xl' : 'border-zinc-100 dark:border-zinc-800'}`}
+                                                    className={`p-8 rounded-[3rem] border-2 text-left transition-all ${formData.caf_eligible ? 'bg-zinc-900 border-zinc-900 text-white shadow-2xl' : 'border-zinc-100'}`}
                                                 >
-                                                    <div className="text-[10px] font-black uppercase tracking-[0.2em] mb-2 text-indigo-600">{t('properties.new.steps.pricing.complianceLabel')}</div>
+                                                    <div className={`text-[10px] font-black uppercase tracking-[0.2em] mb-2 ${formData.caf_eligible ? 'text-zinc-400' : 'text-zinc-500'}`}>{t('properties.new.steps.pricing.complianceLabel')}</div>
                                                     <div className="text-xl font-black">{t('properties.new.steps.pricing.cafEligible')}</div>
                                                 </button>
                                             </div>
@@ -428,14 +447,14 @@ export default function NewPropertyPage() {
 
                                     {currentStep === 7 && (
                                         <div className="space-y-10">
-                                            <div className="glass-card !p-12 rounded-[4rem] border-zinc-100 dark:border-zinc-800/50 space-y-8">
+                                            <div className="glass-card !p-12 rounded-[4rem] border-zinc-100 space-y-8">
                                                 <h3 className="text-3xl font-black uppercase tracking-tighter italic">{t('properties.new.steps.review.title')}</h3>
                                                 <div className="space-y-4">
-                                                    <div className="flex justify-between items-center py-4 border-b border-zinc-100 dark:border-zinc-800/50">
+                                                    <div className="flex justify-between items-center py-4 border-b border-zinc-100">
                                                         <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{t('properties.new.steps.review.asset')}</span>
                                                         <span className="text-sm font-black uppercase">{formData.title}</span>
                                                     </div>
-                                                    <div className="flex justify-between items-center py-4 border-b border-zinc-100 dark:border-zinc-800/50">
+                                                    <div className="flex justify-between items-center py-4 border-b border-zinc-100">
                                                         <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{t('properties.new.steps.review.location')}</span>
                                                         <span className="text-sm font-black uppercase">{formData.city}</span>
                                                     </div>
@@ -448,7 +467,7 @@ export default function NewPropertyPage() {
                                             <button
                                                 onClick={handleSubmit}
                                                 disabled={loading}
-                                                className="w-full py-8 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-sm font-black uppercase tracking-[0.5em] rounded-[2.5rem] shadow-2xl hover:scale-[1.02] active:scale-95 transition-all"
+                                                className="w-full py-8 bg-zinc-900 text-white text-sm font-black uppercase tracking-[0.5em] rounded-[2.5rem] shadow-2xl hover:scale-[1.02] active:scale-95 transition-all"
                                             >
                                                 {loading ? t('properties.new.steps.review.initializing') : t('properties.new.steps.review.commitButton')}
                                             </button>
@@ -457,7 +476,7 @@ export default function NewPropertyPage() {
 
                                     {currentStep === 8 && (
                                         <div className="text-center space-y-12">
-                                            <div className="w-32 h-32 bg-emerald-500 rounded-[3rem] flex items-center justify-center mx-auto shadow-2xl shadow-emerald-500/20">
+                                            <div className="w-32 h-32 bg-zinc-900 rounded-[3rem] flex items-center justify-center mx-auto shadow-2xl shadow-zinc-900/20">
                                                 <CheckCircle2 className="w-16 h-16 text-white" />
                                             </div>
                                             <div className="space-y-6">
@@ -477,7 +496,7 @@ export default function NewPropertyPage() {
                                                 <button 
                                                     onClick={handlePublish}
                                                     disabled={publishing}
-                                                    className="px-16 py-6 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-xs font-black uppercase tracking-[0.4em] rounded-[2rem] shadow-2xl hover:scale-105 transition-all"
+                                                    className="px-16 py-6 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.4em] rounded-[2rem] shadow-2xl hover:scale-105 transition-all"
                                                 >
                                                     {publishing ? t('properties.new.steps.success.synchronizing') : t('properties.new.steps.success.forcePublish')}
                                                 </button>
@@ -499,14 +518,14 @@ export default function NewPropertyPage() {
                                     {currentStep > 1 && (
                                         <button 
                                             onClick={prevStep}
-                                            className="px-12 py-6 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] hover:bg-zinc-200 transition-all"
+                                            className="px-12 py-6 bg-zinc-100 text-zinc-500 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] hover:bg-zinc-200 transition-all"
                                         >
                                             {t('properties.new.navigation.back')}
                                         </button>
                                     )}
                                     <button 
                                         onClick={nextStep}
-                                        className="flex-1 py-6 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] shadow-2xl hover:scale-[1.02] active:scale-95 transition-all"
+                                        className="flex-1 py-6 bg-zinc-900 text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] shadow-2xl hover:scale-[1.02] active:scale-95 transition-all"
                                     >
                                         {t('properties.new.navigation.next')}
                                     </button>

@@ -8,12 +8,12 @@ import PremiumLayout from '@/components/PremiumLayout';
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
     return (
         <PremiumLayout withNavbar={false}>
-            <div className="relative min-h-screen w-full flex flex-col items-center justify-center p-6 overflow-hidden bg-white dark:bg-zinc-950">
+            <div className="relative min-h-screen w-full flex flex-col items-center justify-center p-6 overflow-hidden bg-white">
                 {/* Mesh Gradient Background */}
                 <div className="absolute inset-0 z-0 overflow-hidden">
-                    <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-teal-500/10 blur-[120px] animate-pulse" />
-                    <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-500/10 blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
-                    <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] rounded-full bg-emerald-500/5 blur-[100px]" />
+                    <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-zinc-900/5 blur-[120px] animate-pulse" />
+                    <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-zinc-900/5 blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
+                    <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] rounded-full bg-zinc-900/5 blur-[100px]" />
                 </div>
 
                 {/* Content Container */}
@@ -35,7 +35,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                         transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
                         className="w-full max-w-[480px]"
                     >
-                        <div className="glass-card !p-10 md:!p-14 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] dark:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] border-white/40 dark:border-zinc-800/50 rounded-[3rem]">
+                        <div className="glass-card !p-10 md:!p-14 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)]_32px_64px_-16px_rgba(0,0,0,0.5)] border-white/40 rounded-[3rem]">
                             {children}
                         </div>
                     </motion.div>
@@ -54,8 +54,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                                 { label: 'Privacy Protected', icon: 'LOCK' }
                             ].map((item, i) => (
                                 <div key={i} className="flex items-center gap-2">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-teal-500" />
-                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">{item.label}</span>
+                                    <div className="w-1.5 h-1.5 rounded-full bg-zinc-900" />
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">{item.label}</span>
                                 </div>
                             ))}
                         </div>

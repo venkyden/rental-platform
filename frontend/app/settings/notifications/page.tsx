@@ -18,11 +18,11 @@ export default function NotificationSettingsPage() {
                     {/* Sidebar */}
                     <div className="w-full md:w-80 shrink-0">
                         <div className="mb-12">
-                            <h1 className="text-4xl font-black tracking-tighter mb-4 bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 to-zinc-500 dark:from-white dark:to-zinc-400">{t('settings.title', undefined, 'Settings')}</h1>
+                            <h1 className="text-4xl font-black tracking-tighter mb-4 bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 to-zinc-500">{t('settings.title', undefined, 'Settings')}</h1>
                             <p className="text-zinc-500 font-medium">{t('settings.subtitle', undefined, 'Manage your digital identity and security preferences.')}</p>
                         </div>
 
-                        <div className="flex flex-row md:flex-col gap-2 p-1.5 bg-zinc-100 dark:bg-zinc-800/50 rounded-full md:rounded-[2rem] border border-zinc-200/50 dark:border-zinc-700/30 backdrop-blur-xl overflow-x-auto no-scrollbar scroll-smooth">
+                        <div className="flex flex-row md:flex-col gap-2 p-1.5 bg-zinc-100 rounded-full md:rounded-[2rem] border border-zinc-200/50 backdrop-blur-xl overflow-x-auto no-scrollbar scroll-smooth">
                             {[
                                 { id: 'account', icon: User, label: t('settings.tabs.profile', undefined, 'Profile'), path: '/settings/account' },
                                 { id: 'notifications', icon: Bell, label: t('settings.tabs.notifications', undefined, 'Notifications'), path: '/settings/notifications' },
@@ -34,18 +34,18 @@ export default function NotificationSettingsPage() {
                                         onClick={() => router.push(tab.path)}
                                         className={`flex items-center gap-3 px-5 md:px-6 py-3 md:py-4 rounded-full md:rounded-[1.5rem] text-[10px] md:text-sm font-black uppercase tracking-widest transition-all duration-500 whitespace-nowrap ${
                                             tab.id === 'notifications' 
-                                            ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-xl scale-100' 
-                                            : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'
+                                            ? 'bg-zinc-900 text-white shadow-xl scale-100' 
+                                            : 'text-zinc-400 hover:text-zinc-600'
                                         }`}
                                     >
-                                        <tab.icon className={`w-3.5 h-3.5 md:w-4 md:h-4 ${tab.id === 'notifications' ? 'text-teal-500' : ''}`} />
+                                        <tab.icon className={`w-3.5 h-3.5 md:w-4 md:h-4 ${tab.id === 'notifications' ? 'text-zinc-100' : ''}`} />
                                         {tab.label}
                                     </button>
                                     
                                     {tab.id === 'notifications' && (
                                         <div className="hidden md:flex px-6 py-4 flex-col gap-4">
                                             <button 
-                                                className="text-[10px] font-black uppercase tracking-widest text-left text-teal-500"
+                                                className="text-[10px] font-black uppercase tracking-widest text-left text-zinc-900"
                                             >
                                                 {t('settings.tabs.preferences', undefined, 'Preferences')}
                                             </button>

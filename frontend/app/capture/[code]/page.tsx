@@ -109,16 +109,16 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
     };
 
     return (
-        <div className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white font-sans selection:bg-teal-500/30">
+        <div className="min-h-screen bg-white text-zinc-900 font-sans selection:bg-zinc-900/10">
             <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-5 pointer-events-none"></div>
 
             <main className="max-w-xl mx-auto px-6 py-12 flex flex-col min-h-screen relative z-10">
                 <header className="flex items-center justify-between mb-16">
-                    <div className="w-12 h-12 bg-zinc-900 dark:bg-white flex items-center justify-center rounded-2xl">
-                        <Camera className="text-white dark:text-zinc-900 w-6 h-6" />
+                    <div className="w-12 h-12 bg-zinc-900 flex items-center justify-center rounded-2xl">
+                        <Camera className="text-white w-6 h-6" />
                     </div>
                     {pendingCount > 0 && (
-                        <div className="flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/20 text-amber-600 rounded-full text-[10px] font-black uppercase tracking-widest">
+                        <div className="flex items-center gap-2 px-4 py-2 bg-zinc-900 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">
                             <WifiOff className="w-3 h-3" />
                             {pendingCount} Pending
                         </div>
@@ -135,7 +135,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                             className="flex-1 flex flex-col"
                         >
                             <div className="space-y-6 mb-12">
-                                <div className="text-[10px] font-black uppercase tracking-[0.4em] text-teal-500">Security Protocol</div>
+                                <div className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">Security Protocol</div>
                                 <h1 className="text-5xl font-black tracking-tighter uppercase leading-[0.9]">
                                     Visual <br /> Telemetry
                                 </h1>
@@ -145,8 +145,8 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                             </div>
 
                             {sessionDetails?.target_address && (
-                                <div className="glass-card !p-8 rounded-[3rem] border-zinc-100 dark:border-zinc-800/50 mb-12 flex items-center gap-6">
-                                    <div className="w-12 h-12 bg-zinc-100 dark:bg-zinc-800 rounded-2xl flex items-center justify-center shrink-0">
+                                <div className="glass-card !p-8 rounded-[3rem] border-zinc-100 mb-12 flex items-center gap-6">
+                                    <div className="w-12 h-12 bg-zinc-100 rounded-2xl flex items-center justify-center shrink-0">
                                         <MapPin className="text-zinc-500 w-5 h-5" />
                                     </div>
                                     <div>
@@ -164,10 +164,10 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                                             <button
                                                 key={room.index}
                                                 onClick={() => setSelectedRoom(room)}
-                                                className={`p-6 rounded-[2.5rem] border-2 text-left transition-all ${selectedRoom?.index === room.index ? 'bg-zinc-900 dark:bg-white border-zinc-900 dark:border-white shadow-2xl' : 'border-zinc-100 dark:border-zinc-800'}`}
+                                                className={`p-6 rounded-[2.5rem] border-2 text-left transition-all ${selectedRoom?.index === room.index ? 'bg-zinc-900 border-zinc-900 shadow-2xl' : 'border-zinc-100'}`}
                                             >
                                                 <div className={`text-[10px] font-black uppercase tracking-widest mb-1 ${selectedRoom?.index === room.index ? 'text-zinc-400' : 'text-zinc-500'}`}>Room</div>
-                                                <div className={`text-sm font-black uppercase ${selectedRoom?.index === room.index ? 'text-white dark:text-zinc-900' : 'text-zinc-900 dark:text-white'}`}>{room.label}</div>
+                                                <div className={`text-sm font-black uppercase ${selectedRoom?.index === room.index ? 'text-white' : 'text-zinc-900'}`}>{room.label}</div>
                                             </button>
                                         ))}
                                     </div>
@@ -177,7 +177,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                             <div className="mt-auto pt-12">
                                 <button
                                     onClick={() => fileInputRef.current?.click()}
-                                    className="w-full py-8 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-xs font-black uppercase tracking-[0.4em] rounded-[2.5rem] shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-4"
+                                    className="w-full py-8 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.4em] rounded-[2.5rem] shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-4"
                                 >
                                     Initialize Camera
                                     <ChevronRight className="w-4 h-4" />
@@ -194,10 +194,10 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                             className="flex-1 flex flex-col"
                         >
                             <div className="space-y-8 flex-1">
-                                <div className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-500">Telemetry Review</div>
+                                <div className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">Telemetry Review</div>
                                 <div className="grid grid-cols-1 gap-6 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
                                     {previewUrls.map((url, i) => (
-                                        <div key={i} className="aspect-[4/3] rounded-[3rem] overflow-hidden bg-zinc-100 dark:bg-zinc-800 relative">
+                                        <div key={i} className="aspect-[4/3] rounded-[3rem] overflow-hidden bg-zinc-100 relative">
                                             <img src={url} className="w-full h-full object-cover" />
                                             <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                                             <div className="absolute bottom-6 left-6 text-white text-[10px] font-black uppercase tracking-widest">
@@ -211,13 +211,13 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                             <div className="pt-12 space-y-6">
                                 <button
                                     onClick={handleUpload}
-                                    className="w-full py-8 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-xs font-black uppercase tracking-[0.4em] rounded-[2.5rem] shadow-2xl hover:scale-105 active:scale-95 transition-all"
+                                    className="w-full py-8 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.4em] rounded-[2.5rem] shadow-2xl hover:scale-105 active:scale-95 transition-all"
                                 >
                                     Transmit Telemetry
                                 </button>
                                 <button
                                     onClick={() => fileInputRef.current?.click()}
-                                    className="w-full py-6 text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-all"
+                                    className="w-full py-6 text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 hover:text-zinc-900 transition-all"
                                 >
                                     Add More Channels
                                 </button>
@@ -232,7 +232,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                             animate={{ opacity: 1 }}
                             className="flex-1 flex flex-col items-center justify-center text-center space-y-12"
                         >
-                            <div className="w-24 h-24 border-4 border-zinc-100 dark:border-zinc-800 border-t-zinc-900 dark:border-t-white rounded-full animate-spin" />
+                            <div className="w-24 h-24 border-4 border-zinc-100 border-t-zinc-900 rounded-full animate-spin" />
                             <div className="space-y-4">
                                 <h2 className="text-3xl font-black uppercase tracking-tighter">Transmitting</h2>
                                 <p className="text-zinc-500 font-medium">Encrypting data packets and synchronizing with global registry...</p>
@@ -247,7 +247,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                             animate={{ opacity: 1, scale: 1 }}
                             className="flex-1 flex flex-col items-center justify-center text-center space-y-12"
                         >
-                            <div className="w-32 h-32 bg-emerald-500 rounded-[3rem] flex items-center justify-center shadow-2xl shadow-emerald-500/20">
+                            <div className="w-32 h-32 bg-zinc-900 rounded-[3rem] flex items-center justify-center shadow-2xl shadow-zinc-900/20">
                                 <CheckCircle2 className="w-16 h-16 text-white" />
                             </div>
                             <div className="space-y-4">
@@ -257,7 +257,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                             <div className="pt-12 flex flex-col gap-6 w-full">
                                 <button
                                     onClick={() => { setFiles([]); setPreviewUrls([]); setStep('intro'); }}
-                                    className="w-full py-8 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-xs font-black uppercase tracking-[0.4em] rounded-[2.5rem] shadow-2xl"
+                                    className="w-full py-8 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.4em] rounded-[2.5rem] shadow-2xl"
                                 >
                                     Capture New Node
                                 </button>
@@ -283,7 +283,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                     className="hidden"
                 />
 
-                <footer className="mt-20 pt-12 border-t border-zinc-100 dark:border-zinc-800/50 flex flex-col items-center gap-6">
+                <footer className="mt-20 pt-12 border-t border-zinc-100 flex flex-col items-center gap-6">
                     <div className="flex items-center gap-3">
                         <Shield className="w-4 h-4 text-zinc-300" />
                         <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-300">Roomivo Encrypted Node</span>

@@ -37,6 +37,13 @@ class LandlordStats(BaseModel):
     occupancy_rate: float
 
 
+class TenantStats(BaseModel):
+    total_applications: int
+    scheduled_visits: int
+    active_disputes: int
+    trust_score: int
+
+
 class AlertItem(BaseModel):
     type: str  # "expiring_lease" | "pending_application" | "unread_messages" | "vacant_property"
     severity: str  # "critical" | "warning" | "info"
@@ -49,6 +56,13 @@ class AlertItem(BaseModel):
 class AlertsResponse(BaseModel):
     total_alerts: int
     alerts: List[AlertItem]
+
+
+class PublicStats(BaseModel):
+    total_properties: int
+    verified_landlords: int
+    matches_last_30_days: int
+    active_cities: int
 
 
 # ──────────────────────────────────────────────
@@ -137,6 +151,37 @@ async def get_landlord_stats(
         unread_messages=unread_messages,
         revenue=float(potential_revenue),
         occupancy_rate=occupancy_rate,
+    )
+
+
+@router.get("/tenant/overview", response_model=TenantStats)
+async def get_tenant_stats(
+    current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
+):
+    """Get high-level stats for tenant dashboard."""
+    # 1. Total Applications
+    result_apps = await db.execute(
+        select(func.count(Application.id)).where(Application.tenant_id == current_user.id)
+    )
+    total_applications = result_apps.scalar_one_or_none() or 0
+
+    # 2. Scheduled Visits (Mocked to 0 for now as visits model might be in transition)
+    scheduled_visits = 0 
+
+    # 3. Active Disputes
+    from app.models.dispute import Dispute
+    result_disputes = await db.execute(
+        select(func.count(Dispute.id)).where(
+            and_(Dispute.user_id == current_user.id, Dispute.status != "resolved")
+        )
+    )
+    active_disputes = result_disputes.scalar_one_or_none() or 0
+
+    return TenantStats(
+        total_applications=total_applications,
+        scheduled_visits=scheduled_visits,
+        active_disputes=active_disputes,
+        trust_score=current_user.trust_score or 0
     )
 
 
@@ -252,3 +297,53 @@ async def get_landlord_alerts(
         )
 
     return AlertsResponse(total_alerts=len(alerts), alerts=alerts)
+
+
+@router.get("/public/overview", response_model=PublicStats)
+async def get_public_stats(db: AsyncSession = Depends(get_db)):
+    """Get public statistics for the landing page."""
+    try:
+        # 1. Total active properties
+        result_props = await db.execute(
+            select(func.count(Property.id)).where(Property.status == "active")
+        )
+        total_properties = result_props.scalar_one_or_none() or 0
+
+        # 2. Verified landlords
+        result_landlords = await db.execute(
+            select(func.count(User.id)).where(
+                and_(User.role == "landlord", User.identity_verified == True)
+            )
+        )
+        verified_landlords = result_landlords.scalar_one_or_none() or 0
+
+        # 3. Matches (Leases) in last 30 days
+        thirty_days_ago = date.today() - timedelta(days=30)
+        result_matches = await db.execute(
+            select(func.count(Lease.id)).where(
+                and_(Lease.status == "active", Lease.created_at >= thirty_days_ago)
+            )
+        )
+        matches_last_30_days = result_matches.scalar_one_or_none() or 0
+
+        # 4. Active cities
+        result_cities = await db.execute(
+            select(func.count(func.distinct(Property.city))).where(Property.status == "active")
+        )
+        active_cities = result_cities.scalar_one_or_none() or 0
+
+        return PublicStats(
+            total_properties=total_properties,
+            verified_landlords=verified_landlords,
+            matches_last_30_days=matches_last_30_days,
+            active_cities=active_cities,
+        )
+    except Exception as e:
+        print(f"CRITICAL ERROR in get_public_stats: {str(e)}")
+        # Return zeros instead of crashing to keep landing page functional
+        return PublicStats(
+            total_properties=0,
+            verified_landlords=0,
+            matches_last_30_days=0,
+            active_cities=0,
+        )

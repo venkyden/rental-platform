@@ -82,13 +82,15 @@ function ResetPasswordContent() {
 
     if (success) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950 py-12 px-4 sm:px-6 lg:px-8">
+            <div className="min-h-screen flex items-center justify-center bg-zinc-50 py-12 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-md w-full">
                     <div className="bg-white rounded-2xl shadow-sm p-8 text-center">
-                        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <span className="text-3xl"></span>
+                        <div className="w-16 h-16 bg-zinc-100 text-zinc-900 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
                         </div>
-                        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                        <h2 className="text-2xl font-black text-zinc-900 uppercase tracking-tight mb-2">
                             {t('auth.resetPassword.successTitle', undefined, 'Password Reset Successful!')}
                         </h2>
                         <p className="text-gray-600 mb-6">
@@ -96,7 +98,7 @@ function ResetPasswordContent() {
                         </p>
                         <Link
                             href="/auth/login"
-                            className="inline-block px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:shadow-sm transition-all"
+                            className="inline-block px-8 py-3 bg-zinc-900 text-white font-bold rounded-xl hover:bg-zinc-800 transition-all shadow-xl shadow-zinc-900/10"
                         >
                             {t('auth.resetPassword.signInNow', undefined, 'Sign in now')}
                         </Link>
@@ -107,27 +109,29 @@ function ResetPasswordContent() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen flex items-center justify-center bg-zinc-50 py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-md w-full">
                 <div className="bg-white rounded-2xl shadow-sm p-8">
                     <div className="text-center mb-8">
-                        <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <span className="text-3xl"></span>
+                        <div className="w-16 h-16 bg-zinc-100 text-zinc-900 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
                         </div>
-                        <h2 className="text-2xl font-bold text-gray-900">
+                        <h2 className="text-2xl font-black text-zinc-900 uppercase tracking-tight">
                             {t('auth.resetPassword.title', undefined, 'Set new password')}
                         </h2>
-                        <p className="mt-2 text-gray-600">
+                        <p className="mt-2 text-[11px] font-bold text-zinc-400 uppercase tracking-widest">
                             {t('auth.resetPassword.subtitle', undefined, 'Enter your new password below')}
                         </p>
                     </div>
 
                     {!token ? (
-                        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
-                            <p className="text-red-800">{error}</p>
+                        <div className="bg-zinc-900 rounded-2xl p-6 text-center shadow-xl shadow-zinc-900/20">
+                            <p className="text-sm font-bold text-white mb-4">{error}</p>
                             <Link
                                 href="/auth/forgot-password"
-                                className="mt-4 inline-block text-blue-600 hover:text-blue-800 font-medium"
+                                className="inline-block text-xs font-black uppercase tracking-widest text-zinc-300 hover:text-white transition-colors underline underline-offset-4"
                             >
                                 {t('auth.resetPassword.requestNew', undefined, 'Request new reset link')}
                             </Link>
@@ -135,8 +139,8 @@ function ResetPasswordContent() {
                     ) : (
                         <form onSubmit={handleSubmit} className="space-y-6">
                             {error && (
-                                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                                    <p className="text-sm text-red-800">{error}</p>
+                                <div className="bg-zinc-900 rounded-xl p-4 shadow-xl shadow-zinc-900/10">
+                                    <p className="text-sm font-bold text-white">{error}</p>
                                 </div>
                             )}
 
@@ -149,7 +153,7 @@ function ResetPasswordContent() {
                                     name="password"
                                     type="password"
                                     required
-                                    className="block w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                    className="block w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900/5 focus:border-zinc-900 transition-all font-bold"
                                     placeholder={t('common.placeholders.newPassword')}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
@@ -168,7 +172,7 @@ function ResetPasswordContent() {
                                     name="confirmPassword"
                                     type="password"
                                     required
-                                    className="block w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                    className="block w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900/5 focus:border-zinc-900 transition-all font-bold"
                                     placeholder={t('common.placeholders.confirmPassword')}
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
@@ -178,7 +182,7 @@ function ResetPasswordContent() {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full py-3 px-4 bg-blue-600 text-white font-medium rounded-lg hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                className="w-full py-4 px-4 bg-zinc-900 text-white font-black uppercase tracking-widest rounded-xl hover:bg-zinc-800 focus:outline-none focus:ring-4 focus:ring-zinc-900/10 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-xl shadow-zinc-900/10 active:scale-[0.98]"
                             >
                                 {loading ? (
                                     <span className="flex items-center justify-center gap-2">
@@ -196,7 +200,7 @@ function ResetPasswordContent() {
                             <div className="text-center">
                                 <Link
                                     href="/auth/login"
-                                    className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                                    className="text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 transition-colors underline underline-offset-4"
                                 >
                                     {t('auth.forgotPassword.backToSignIn', undefined, 'Back to sign in')}
                                 </Link>
@@ -212,9 +216,9 @@ function ResetPasswordContent() {
 function LoadingFallback() {
     const { t } = useLanguage();
     return (
-        <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950">
+        <div className="min-h-screen flex items-center justify-center bg-zinc-50">
             <div className="text-center">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-zinc-900"></div>
                 <p className="mt-4 text-gray-600">{t('common.loading', undefined, 'Loading...')}</p>
             </div>
         </div>

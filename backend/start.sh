@@ -7,23 +7,32 @@ echo "🚀 Starting Roomivo Backend Initialization..."
 # Pre-flight check: Wait for Database
 if [ -n "$DATABASE_URL" ]; then
     echo "🔍 Checking database connectivity..."
-    # Simple python check to see if we can connect
-    python3 -c "
+    MAX_RETRIES=30
+    RETRY_COUNT=0
+    until python3 -c "
 import sqlalchemy
 import os
 import sys
 url = os.getenv('DATABASE_URL').replace('postgres://', 'postgresql://', 1)
-# Ensure we use a synchronous driver for the pre-flight check
 if '+asyncpg' in url:
     url = url.replace('+asyncpg', '')
-engine = sqlalchemy.create_engine(url)
+engine = sqlalchemy.create_engine(url, connect_args={'connect_timeout': 5})
 try:
     with engine.connect() as conn:
-        print('✅ Database connection successful')
-except Exception as e:
-    print(f'❌ Database connection failed: {e}')
+        sys.exit(0)
+except Exception:
     sys.exit(1)
-" || (echo "⚠️ Database not ready. Waiting 5s..." && sleep 5)
+" || [ $RETRY_COUNT -eq $MAX_RETRIES ]; do
+        echo "⚠️ Database not ready ($RETRY_COUNT/$MAX_RETRIES). Waiting 2s..."
+        sleep 2
+        RETRY_COUNT=$((RETRY_COUNT + 1))
+    done
+
+    if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+        echo "❌ Database connection timed out after $MAX_RETRIES retries. Exiting."
+        exit 1
+    fi
+    echo "✅ Database connection successful"
 fi
 
 echo "🏗️ Running database migrations..."

@@ -7,6 +7,9 @@ from uuid import uuid4
 # Add the backend directory to the path so we can import app modules
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+from dotenv import load_dotenv
+load_dotenv()
+
 from sqlalchemy import select
 
 import app.models.dispute

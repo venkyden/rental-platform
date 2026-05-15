@@ -215,3 +215,20 @@ class PropertyMedia(Base):
     # Relationships
     property = relationship("Property", back_populates="media")
     session = relationship("PropertyMediaSession", back_populates="media")
+
+
+class SavedProperty(Base):
+    """User's wishlist / saved listings"""
+
+    __tablename__ = "saved_properties"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    property_id = Column(
+        UUID(as_uuid=True), ForeignKey("properties.id"), nullable=False
+    )
+    created_at = Column(TIMESTAMP, server_default=func.now())
+
+    # Relationships
+    user = relationship("User", backref="saved_properties")
+    property = relationship("Property", backref="saved_by_users")

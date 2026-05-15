@@ -24,6 +24,7 @@ interface UseGoogleSignInOptions {
   onError?: (error: string) => void;
   buttonId?: string;
   buttonText?: 'signin_with' | 'signup_with';
+  locale?: string;
 }
 
 export function useGoogleSignIn({
@@ -32,6 +33,7 @@ export function useGoogleSignIn({
   onError,
   buttonId,
   buttonText = 'signin_with',
+  locale,
 }: UseGoogleSignInOptions = { clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID }) {
   const scriptLoadedRef = useRef(false);
 
@@ -86,6 +88,8 @@ export function useGoogleSignIn({
           cancel_on_tap_outside: true,
           ux_mode: 'popup',
           itp_support: true,
+          use_fedcm_for_prompt: true,
+          locale: locale || undefined,
         });
         window.__GSI_INITIALIZED__ = true;
       }

@@ -103,7 +103,7 @@ export default function IncidentReportingPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-black">
+            <div className="min-h-screen flex items-center justify-center bg-zinc-50">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
             </div>
         );
@@ -118,11 +118,11 @@ export default function IncidentReportingPage() {
     ];
 
     return (
-        <div className="min-h-screen bg-zinc-50 dark:bg-black text-zinc-900 dark:text-zinc-100 pb-20">
+        <div className="min-h-screen bg-zinc-50 text-zinc-900 pb-20">
             {/* Header */}
-            <div className="bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 sticky top-0 z-20">
+            <div className="bg-white border-b border-zinc-200 sticky top-0 z-20">
                 <div className="max-w-3xl mx-auto px-4 h-16 flex items-center justify-between">
-                    <button onClick={() => router.back()} className="p-2 -ml-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors">
+                    <button onClick={() => router.back()} className="p-2 -ml-2 hover:bg-zinc-100 rounded-full transition-colors">
                         <ChevronLeft className="w-6 h-6" />
                     </button>
                     <h1 className="text-lg font-extrabold tracking-tight">{t('disputes.incident.title', undefined, undefined)}</h1>
@@ -132,14 +132,14 @@ export default function IncidentReportingPage() {
 
             <main className="max-w-3xl mx-auto px-4 py-8 space-y-8">
                 {/* Legal Banner */}
-                <section className="bg-zinc-900 dark:bg-white text-white dark:text-black rounded-3xl p-6 shadow-xl shadow-zinc-900/10 dark:shadow-white/5 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 dark:bg-black/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
+                <section className="bg-zinc-900 text-white rounded-3xl p-6 shadow-xl shadow-zinc-900/10 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
                     <div className="relative z-10">
-                        <div className="flex items-center gap-2 mb-2 text-teal-400 dark:text-teal-600">
+                        <div className="flex items-center gap-2 mb-2 text-teal-400">
                             <Shield className="w-5 h-5" />
                             <span className="text-[10px] font-extrabold uppercase tracking-widest">{t('disputes.incident.dutyTitle', undefined, undefined)}</span>
                         </div>
-                        <p className="text-sm text-zinc-300 dark:text-zinc-600 leading-relaxed font-medium">
+                        <p className="text-sm text-zinc-300 leading-relaxed font-medium">
                             {t('disputes.incident.dutyDesc', undefined, undefined)}
                         </p>
                     </div>
@@ -155,11 +155,11 @@ export default function IncidentReportingPage() {
                                 onClick={() => setCategory(cat.id)}
                                 className={`flex items-center gap-4 p-4 rounded-2xl border-2 transition-all text-left ${
                                     category === cat.id 
-                                    ? 'border-teal-600 bg-teal-50 dark:bg-teal-900/10' 
-                                    : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-zinc-300'
+                                    ? 'border-teal-600 bg-teal-50' 
+                                    : 'border-zinc-200 bg-white hover:border-zinc-300'
                                 }`}
                             >
-                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${category === cat.id ? 'bg-teal-600 text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500'}`}>
+                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${category === cat.id ? 'bg-teal-600 text-white' : 'bg-zinc-100 text-zinc-500'}`}>
                                     {cat.icon}
                                 </div>
                                 <div>
@@ -181,7 +181,7 @@ export default function IncidentReportingPage() {
                             <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-2 block px-1">{t('disputes.incident.form.title', undefined, undefined)}</label>
                             <input 
                                 type="text"
-                                className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 font-bold outline-none focus:border-zinc-900 dark:focus:border-white transition-all shadow-sm"
+                                className="w-full bg-white border border-zinc-200 rounded-2xl p-4 font-bold outline-none focus:border-zinc-900 transition-all shadow-sm"
                                 placeholder={t('disputes.incident.form.titlePlaceholder', undefined, undefined)}
                                 value={title}
                                 onChange={e => setTitle(e.target.value)}
@@ -191,7 +191,7 @@ export default function IncidentReportingPage() {
                         <div>
                             <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-2 block px-1">{t('disputes.incident.form.desc', undefined, undefined)}</label>
                             <textarea 
-                                className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 font-medium outline-none focus:border-zinc-900 dark:focus:border-white transition-all shadow-sm min-h-[120px]"
+                                className="w-full bg-white border border-zinc-200 rounded-2xl p-4 font-medium outline-none focus:border-zinc-900 transition-all shadow-sm min-h-[120px]"
                                 placeholder={t('disputes.incident.form.descPlaceholder', undefined, undefined)}
                                 value={description}
                                 onChange={e => setDescription(e.target.value)}
@@ -204,7 +204,7 @@ export default function IncidentReportingPage() {
                                 <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-zinc-400">€</span>
                                 <input 
                                     type="number"
-                                    className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 pl-8 font-bold outline-none focus:border-zinc-900 dark:focus:border-white transition-all shadow-sm"
+                                    className="w-full bg-white border border-zinc-200 rounded-2xl p-4 pl-8 font-bold outline-none focus:border-zinc-900 transition-all shadow-sm"
                                     placeholder={t('disputes.incident.form.costPlaceholder', undefined, undefined)}
                                     value={estimatedCost}
                                     onChange={e => setEstimatedCost(e.target.value)}
@@ -220,7 +220,7 @@ export default function IncidentReportingPage() {
                     
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                         {previews.map((src, i) => (
-                            <div key={i} className="aspect-square rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 relative group">
+                            <div key={i} className="aspect-square rounded-2xl overflow-hidden border border-zinc-200 relative group">
                                 <img src={src} className="w-full h-full object-cover" />
                                 <button 
                                     onClick={() => {
@@ -237,9 +237,9 @@ export default function IncidentReportingPage() {
                         {photos.length < 5 && (
                             <button 
                                 onClick={() => fileInputRef.current?.click()}
-                                className="aspect-square rounded-2xl border-2 border-dashed border-zinc-200 dark:border-zinc-800 flex flex-col items-center justify-center gap-2 hover:bg-white dark:hover:bg-zinc-900 transition-all text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                                className="aspect-square rounded-2xl border-2 border-dashed border-zinc-200 flex flex-col items-center justify-center gap-2 hover:bg-white transition-all text-zinc-400 hover:text-zinc-900"
                             >
-                                <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                                <div className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center">
                                     <Camera className="w-5 h-5" />
                                 </div>
                                 <span className="text-[10px] font-bold uppercase">{t('disputes.detail.addPhoto', undefined, undefined)}</span>
@@ -256,9 +256,9 @@ export default function IncidentReportingPage() {
                         onChange={handlePhotoCapture}
                     />
 
-                    <div className="flex gap-2 p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/50 rounded-2xl">
+                    <div className="flex gap-2 p-4 bg-amber-50 border border-amber-100 rounded-2xl">
                         <Info className="w-5 h-5 text-amber-600 shrink-0" />
-                        <p className="text-xs text-amber-800 dark:text-amber-200 leading-relaxed font-medium">
+                        <p className="text-xs text-amber-800 leading-relaxed font-medium">
                             {t('disputes.incident.form.photoTip', undefined, undefined)}
                         </p>
                     </div>

@@ -257,41 +257,44 @@ export default function DocumentCapture({ documentType, onComplete, onCancel }: 
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+             <div className="bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
                 {/* Header */}
-                <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
+                <div className="sticky top-0 bg-white/80 backdrop-blur-md border-b border-zinc-100 px-8 py-6 flex justify-between items-center z-10">
                     <div>
-                        <h3 className="text-xl font-bold text-gray-900">
-                            Document Verification
+                        <h3 className="text-2xl font-black text-zinc-900 uppercase tracking-tighter">
+                            Verification
                         </h3>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mt-1">
                             Step {currentStep + 1} of {totalSteps}
                         </p>
                     </div>
                     <button
                         onClick={handleCancel}
-                        className="text-gray-500 hover:text-gray-700 text-2xl"
+                        className="w-10 h-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-500 hover:text-zinc-900 transition-colors text-2xl font-light"
                     >
                         ×
                     </button>
                 </div>
 
                 {/* Progress Bar */}
-                <div className="px-6 pt-4">
-                    <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                 <div className="px-8 pt-6">
+                    <div className="h-1 bg-zinc-100 rounded-full overflow-hidden">
                         <div
-                            className="h-full bg-blue-600 transition-all duration-300"
+                            className="h-full bg-zinc-900 transition-all duration-700 ease-in-out"
                             style={{ width: `${progress}%` }}
                         />
                     </div>
                 </div>
 
-                {error && (
-                    <div className="mx-6 mt-4 p-4 bg-red-50 border border-red-200 rounded-md">
-                        <p className="text-sm text-red-800">{error}</p>
+                 {error && (
+                    <div className="mx-8 mt-6 p-5 bg-zinc-900 text-white rounded-2xl flex flex-col gap-3">
+                        <div className="flex items-center gap-3">
+                            <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                            <p className="text-[10px] font-black uppercase tracking-widest">{error}</p>
+                        </div>
                         {/* Fallback file upload when camera stream fails */}
-                        <div className="mt-3">
-                            <label className="inline-flex items-center gap-2 cursor-pointer text-sm font-medium text-blue-600 hover:text-blue-700">
+                        <div className="mt-2 pt-4 border-t border-white/10">
+                            <label className="inline-flex items-center gap-2 cursor-pointer text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-white transition-colors">
                                  Upload from gallery instead
                                 <input
                                     type="file"
@@ -305,56 +308,49 @@ export default function DocumentCapture({ documentType, onComplete, onCancel }: 
                 )}
 
                 {/* Guidelines */}
-                {showGuidelines && (
-                    <div className="p-6">
-                        <div className="text-center mb-6">
-                            <div className="text-6xl mb-3">
-                                {documentType === 'passport' ? '' : ''}
-                            </div>
-                            <h4 className="text-2xl font-bold text-gray-900 mb-2">
+                 {showGuidelines && (
+                    <div className="p-8">
+                        <div className="text-center mb-10">
+                            <h4 className="text-3xl font-black text-zinc-900 uppercase tracking-tighter mb-2">
                                 {currentInstruction.title}
                             </h4>
-                            <p className="text-gray-600">
+                            <p className="text-zinc-500 font-medium tracking-tight">
                                 {currentInstruction.description}
                             </p>
                         </div>
 
                         {/* Tips */}
-                        <div className="bg-blue-50 rounded-lg p-4 mb-6">
-                            <h5 className="font-semibold text-gray-900 mb-3"> Guidelines:</h5>
-                            <ul className="space-y-2">
+                         <div className="bg-zinc-50 rounded-[2rem] p-8 mb-10 border border-zinc-100">
+                            <h5 className="text-[10px] font-black text-zinc-900 uppercase tracking-[0.3em] mb-6"> Protocol:</h5>
+                            <ul className="space-y-4">
                                 {currentInstruction.tips.map((tip, index) => (
-                                    <li key={index} className="text-sm text-gray-700 flex items-start gap-2">
-                                        <span className="text-lg leading-none">{tip.startsWith('') ? '' : ''}</span>
-                                        <span>{tip.substring(2)}</span>
+                                    <li key={index} className="text-sm text-zinc-600 font-medium flex items-start gap-4">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-zinc-900 mt-1.5 shrink-0" />
+                                        <span>{tip.trim()}</span>
                                     </li>
                                 ))}
                             </ul>
-                        </div>
-
-                        {isMobile ? (
+                        </div>                         {isMobile ? (
                             /* Mobile: native camera capture */
                             <button
                                 onClick={handleMobileCapture}
-                                className="w-full py-4 bg-blue-600 text-white font-semibold rounded-lg hover:shadow-sm transform hover:scale-105 transition-all flex items-center justify-center gap-2"
+                                className="w-full py-6 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.4em] rounded-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-2xl flex items-center justify-center gap-3"
                             >
-                                <span className="text-2xl"></span>
                                 Take Photo
                             </button>
                         ) : (
                             /* Desktop: getUserMedia stream */
                             <button
                                 onClick={startCamera}
-                                className="w-full py-4 bg-blue-600 text-white font-semibold rounded-lg hover:shadow-sm transform hover:scale-105 transition-all flex items-center justify-center gap-2"
+                                className="w-full py-6 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.4em] rounded-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-2xl flex items-center justify-center gap-3"
                             >
-                                <span className="text-2xl"></span>
                                 Open Camera
                             </button>
                         )}
 
                         {/* Fallback upload for all devices */}
-                        <div className="mt-3 text-center">
-                            <label className="inline-flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-500 hover:text-gray-700">
+                         <div className="mt-6 text-center">
+                            <label className="inline-flex items-center gap-2 cursor-pointer text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 transition-colors">
                                  Or upload from gallery
                                 <input
                                     type="file"
@@ -399,18 +395,17 @@ export default function DocumentCapture({ documentType, onComplete, onCancel }: 
                             </div>
                         </div>
 
-                        <div className="flex gap-3">
+                         <div className="flex gap-4">
                             <button
                                 onClick={handleCancel}
-                                className="flex-1 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50"
+                                className="flex-1 py-4 bg-zinc-100 text-zinc-600 text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-zinc-200 transition-colors"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={capturePhoto}
-                                className="flex-1 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:shadow-sm transform hover:scale-105 transition-all flex items-center justify-center gap-2"
+                                className="flex-1 py-4 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-2xl flex items-center justify-center gap-2"
                             >
-                                <span className="text-xl"></span>
                                 Capture
                             </button>
                         </div>
@@ -425,9 +420,9 @@ export default function DocumentCapture({ documentType, onComplete, onCancel }: 
                             <p className="text-lg text-gray-700 mb-4">
                                 {capturedFiles.length} of {totalSteps} photo(s) captured
                             </p>
-                            <button
+                             <button
                                 onClick={handleRetake}
-                                className="text-blue-600 hover:text-blue-700 font-medium"
+                                className="text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 transition-colors"
                             >
                                 Start Over
                             </button>
