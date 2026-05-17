@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { apiClient } from '@/lib/api';
 import { useToast } from '@/lib/ToastContext';
 import { useLanguage } from '@/lib/LanguageContext';
+import { motion } from 'framer-motion';
+import { Key, Eye, EyeOff, Loader2, Check, AlertCircle } from 'lucide-react';
 
 function ResetPasswordContent() {
     const { t } = useLanguage();
@@ -18,6 +20,8 @@ function ResetPasswordContent() {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     useEffect(() => {
         const tokenParam = searchParams.get('token');
@@ -26,7 +30,7 @@ function ResetPasswordContent() {
         } else {
             setError(t('auth.resetPassword.errors.invalidLink', undefined, 'Invalid reset link. Please request a new password reset.'));
         }
-    }, [searchParams]);
+    }, [searchParams, t]);
 
     const validatePassword = (password: string): string | null => {
         if (password.length < 8) {
@@ -48,7 +52,6 @@ function ResetPasswordContent() {
         e.preventDefault();
         setError('');
 
-        // Validate password
         const passwordError = validatePassword(password);
         if (passwordError) {
             setError(passwordError);
@@ -82,133 +85,155 @@ function ResetPasswordContent() {
 
     if (success) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-zinc-50 py-12 px-4 sm:px-6 lg:px-8">
-                <div className="max-w-md w-full">
-                    <div className="bg-white rounded-2xl shadow-sm p-8 text-center">
-                        <div className="w-16 h-16 bg-zinc-100 text-zinc-900 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
-                        </div>
-                        <h2 className="text-2xl font-black text-zinc-900 uppercase tracking-tight mb-2">
-                            {t('auth.resetPassword.successTitle', undefined, 'Password Reset Successful!')}
-                        </h2>
-                        <p className="text-gray-600 mb-6">
-                            {t('auth.resetPassword.successDesc', undefined, "Your password has been reset successfully. You'll be redirected to the login page shortly.")}
-                        </p>
-                        <Link
-                            href="/auth/login"
-                            className="inline-block px-8 py-3 bg-zinc-900 text-white font-bold rounded-xl hover:bg-zinc-800 transition-all shadow-xl shadow-zinc-900/10"
-                        >
-                            {t('auth.resetPassword.signInNow', undefined, 'Sign in now')}
-                        </Link>
-                    </div>
+            <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="w-full text-center space-y-6"
+            >
+                <div className="w-16 h-16 bg-zinc-950 text-white rounded-full flex items-center justify-center mx-auto shadow-xl shadow-zinc-950/10">
+                    <Check className="w-8 h-8" strokeWidth={3} />
                 </div>
-            </div>
+                <div>
+                    <h2 className="text-2xl font-black text-zinc-900 uppercase tracking-tight">
+                        {t('auth.resetPassword.successTitle', undefined, 'Password Reset Successful!')}
+                    </h2>
+                    <p className="mt-2 text-xs text-zinc-500 font-medium max-w-sm mx-auto">
+                        {t('auth.resetPassword.successDesc', undefined, "Your password has been reset successfully. You'll be redirected to the login page shortly.")}
+                    </p>
+                </div>
+                <div className="pt-4">
+                    <Link
+                        href="/auth/login"
+                        className="block w-full py-4 bg-zinc-900 text-white font-black uppercase text-[10px] tracking-widest rounded-2xl hover:bg-zinc-800 hover:shadow-xl hover:shadow-zinc-900/10 active:scale-[0.98] transition-all"
+                    >
+                        {t('auth.resetPassword.signInNow', undefined, 'Sign in now')}
+                    </Link>
+                </div>
+            </motion.div>
         );
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-zinc-50 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full">
-                <div className="bg-white rounded-2xl shadow-sm p-8">
-                    <div className="text-center mb-8">
-                        <div className="w-16 h-16 bg-zinc-100 text-zinc-900 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                            </svg>
+        <div className="w-full space-y-6">
+            <div className="text-center">
+                <div className="w-16 h-16 bg-zinc-50 text-zinc-900 rounded-full flex items-center justify-center mx-auto mb-4 border border-zinc-100">
+                    <Key className="w-6 h-6" strokeWidth={2} />
+                </div>
+                <h2 className="text-2xl font-black text-zinc-900 uppercase tracking-tight">
+                    {t('auth.resetPassword.title', undefined, 'Set new password')}
+                </h2>
+                <p className="mt-2 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+                    {t('auth.resetPassword.subtitle', undefined, 'Enter your new password below')}
+                </p>
+            </div>
+
+            {!token ? (
+                <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-zinc-950 rounded-[2rem] p-8 text-center shadow-2xl shadow-zinc-950/20 space-y-4"
+                >
+                    <p className="text-xs font-bold text-white leading-relaxed">{error}</p>
+                    <div className="pt-2">
+                        <Link
+                            href="/auth/forgot-password"
+                            className="inline-block text-[10px] font-black uppercase tracking-widest text-zinc-300 hover:text-white transition-colors underline underline-offset-4"
+                        >
+                            {t('auth.resetPassword.requestNew', undefined, 'Request new reset link')}
+                        </Link>
+                    </div>
+                </motion.div>
+            ) : (
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    {error && (
+                        <motion.div 
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="bg-zinc-950 rounded-2xl p-4 shadow-xl shadow-zinc-950/10 flex items-start gap-3"
+                        >
+                            <AlertCircle className="text-white w-5 h-5 shrink-0 mt-0.5" strokeWidth={2} />
+                            <p className="text-xs font-bold text-white">{error}</p>
+                        </motion.div>
+                    )}
+
+                    <div className="space-y-1">
+                        <label htmlFor="password" className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1 mb-1 block">
+                            {t('auth.resetPassword.newPasswordLabel', undefined, 'New Password')}
+                        </label>
+                        <div className="relative">
+                            <input
+                                id="password"
+                                name="password"
+                                type={showPassword ? 'text' : 'password'}
+                                required
+                                className="w-full px-6 py-5 pr-14 rounded-2xl bg-zinc-50 border-none focus:ring-2 focus:ring-zinc-900/10 transition-all font-bold text-zinc-900 placeholder-zinc-300"
+                                placeholder="••••••••"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                            />
+                            <button 
+                                type="button" 
+                                onClick={() => setShowPassword(!showPassword)} 
+                                className="absolute right-5 inset-y-0 text-zinc-300 hover:text-zinc-900 transition-colors"
+                            >
+                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                            </button>
                         </div>
-                        <h2 className="text-2xl font-black text-zinc-900 uppercase tracking-tight">
-                            {t('auth.resetPassword.title', undefined, 'Set new password')}
-                        </h2>
-                        <p className="mt-2 text-[11px] font-bold text-zinc-400 uppercase tracking-widest">
-                            {t('auth.resetPassword.subtitle', undefined, 'Enter your new password below')}
+                        <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-tight leading-relaxed ml-1 pt-1 opacity-70">
+                            {t('auth.resetPassword.requirements', undefined, 'Must be 8+ characters with uppercase, lowercase, and number')}
                         </p>
                     </div>
 
-                    {!token ? (
-                        <div className="bg-zinc-900 rounded-2xl p-6 text-center shadow-xl shadow-zinc-900/20">
-                            <p className="text-sm font-bold text-white mb-4">{error}</p>
-                            <Link
-                                href="/auth/forgot-password"
-                                className="inline-block text-xs font-black uppercase tracking-widest text-zinc-300 hover:text-white transition-colors underline underline-offset-4"
+                    <div className="space-y-1">
+                        <label htmlFor="confirmPassword" className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1 mb-1 block">
+                            {t('auth.resetPassword.confirmPasswordLabel', undefined, 'Confirm Password')}
+                        </label>
+                        <div className="relative">
+                            <input
+                                id="confirmPassword"
+                                name="confirmPassword"
+                                type={showConfirmPassword ? 'text' : 'password'}
+                                required
+                                className="w-full px-6 py-5 pr-14 rounded-2xl bg-zinc-50 border-none focus:ring-2 focus:ring-zinc-900/10 transition-all font-bold text-zinc-900 placeholder-zinc-300"
+                                placeholder="••••••••"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                            />
+                            <button 
+                                type="button" 
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)} 
+                                className="absolute right-5 inset-y-0 text-zinc-300 hover:text-zinc-900 transition-colors"
                             >
-                                {t('auth.resetPassword.requestNew', undefined, 'Request new reset link')}
-                            </Link>
-                        </div>
-                    ) : (
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            {error && (
-                                <div className="bg-zinc-900 rounded-xl p-4 shadow-xl shadow-zinc-900/10">
-                                    <p className="text-sm font-bold text-white">{error}</p>
-                                </div>
-                            )}
-
-                            <div>
-                                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                                    {t('auth.resetPassword.newPasswordLabel', undefined, 'New Password')}
-                                </label>
-                                <input
-                                    id="password"
-                                    name="password"
-                                    type="password"
-                                    required
-                                    className="block w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900/5 focus:border-zinc-900 transition-all font-bold"
-                                    placeholder={t('common.placeholders.newPassword')}
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                />
-                                <p className="mt-1 text-xs text-gray-500">
-                                    {t('auth.resetPassword.requirements', undefined, 'Must be 8+ characters with uppercase, lowercase, and number')}
-                                </p>
-                            </div>
-
-                            <div>
-                                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-                                    {t('auth.resetPassword.confirmPasswordLabel', undefined, 'Confirm Password')}
-                                </label>
-                                <input
-                                    id="confirmPassword"
-                                    name="confirmPassword"
-                                    type="password"
-                                    required
-                                    className="block w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900/5 focus:border-zinc-900 transition-all font-bold"
-                                    placeholder={t('common.placeholders.confirmPassword')}
-                                    value={confirmPassword}
-                                    onChange={(e) => setConfirmPassword(e.target.value)}
-                                />
-                            </div>
-
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="w-full py-4 px-4 bg-zinc-900 text-white font-black uppercase tracking-widest rounded-xl hover:bg-zinc-800 focus:outline-none focus:ring-4 focus:ring-zinc-900/10 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-xl shadow-zinc-900/10 active:scale-[0.98]"
-                            >
-                                {loading ? (
-                                    <span className="flex items-center justify-center gap-2">
-                                        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                                        </svg>
-                                        {t('auth.resetPassword.resetting', undefined, 'Resetting...')}
-                                    </span>
-                                ) : (
-                                    t('auth.resetPassword.submit', undefined, 'Reset Password')
-                                )}
+                                {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                             </button>
+                        </div>
+                    </div>
 
-                            <div className="text-center">
-                                <Link
-                                    href="/auth/login"
-                                    className="text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 transition-colors underline underline-offset-4"
-                                >
-                                    {t('auth.forgotPassword.backToSignIn', undefined, 'Back to sign in')}
-                                </Link>
-                            </div>
-                        </form>
-                    )}
-                </div>
-            </div>
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full py-5 bg-zinc-900 text-white font-black uppercase text-[10px] tracking-widest rounded-2xl hover:bg-zinc-800 focus:outline-none focus:ring-4 focus:ring-zinc-900/10 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-xl shadow-zinc-900/10 active:scale-[0.98] mt-2"
+                    >
+                        {loading ? (
+                            <span className="flex items-center justify-center gap-2">
+                                <Loader2 className="animate-spin h-4 w-4" />
+                                {t('auth.resetPassword.resetting', undefined, 'Resetting...')}
+                            </span>
+                        ) : (
+                            t('auth.resetPassword.submit', undefined, 'Reset Password')
+                        )}
+                    </button>
+
+                    <div className="text-center pt-2">
+                        <Link
+                            href="/auth/login"
+                            className="text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 transition-colors underline underline-offset-4"
+                        >
+                            {t('auth.forgotPassword.backToSignIn', undefined, 'Back to sign in')}
+                        </Link>
+                    </div>
+                </form>
+            )}
         </div>
     );
 }
@@ -216,11 +241,9 @@ function ResetPasswordContent() {
 function LoadingFallback() {
     const { t } = useLanguage();
     return (
-        <div className="min-h-screen flex items-center justify-center bg-zinc-50">
-            <div className="text-center">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-zinc-900"></div>
-                <p className="mt-4 text-gray-600">{t('common.loading', undefined, 'Loading...')}</p>
-            </div>
+        <div className="flex flex-col items-center justify-center py-12 space-y-4">
+            <Loader2 className="animate-spin text-zinc-900 w-12 h-12" strokeWidth={2.5} />
+            <p className="text-zinc-600 font-bold uppercase text-[10px] tracking-widest">{t('common.loading', undefined, 'Loading...')}</p>
         </div>
     );
 }

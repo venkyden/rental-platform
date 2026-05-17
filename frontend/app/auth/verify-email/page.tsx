@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import axios from 'axios';
 import { useLanguage } from '@/lib/LanguageContext';
+import { motion } from 'framer-motion';
+import { Check, AlertCircle, Loader2 } from 'lucide-react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -54,87 +56,83 @@ function VerifyEmailContent() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-white py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full space-y-8">
-                <div>
-                    <h2 className="mt-6 text-center text-3xl font-black tracking-tighter text-zinc-900 uppercase">
-                        {t('auth.verifyEmail.title', undefined, 'Email Verification')}
-                    </h2>
-                </div>
+        <div className="w-full text-center space-y-6">
+            <div>
+                <h2 className="text-2xl font-black tracking-tighter text-zinc-900 uppercase">
+                    {t('auth.verifyEmail.title', undefined, 'Email Verification')}
+                </h2>
+                <p className="mt-2 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+                    {status === 'verifying' 
+                        ? t('auth.verifyEmail.verifyingSub', undefined, 'Authenticating your request') 
+                        : status === 'success' 
+                            ? t('auth.verifyEmail.successSub', undefined, 'Account fully activated') 
+                            : t('auth.verifyEmail.errorSub', undefined, 'Activation failed')}
+                </p>
+            </div>
 
-                <div className="mt-8 bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-                    {status === 'verifying' && (
-                        <div className="text-center">
-                            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-zinc-900"></div>
-                            <p className="mt-4 text-zinc-600 font-medium">{t('auth.verifyEmail.verifying', undefined, 'Verifying your email...')}</p>
-                        </div>
-                    )}
+            <div className="py-4">
+                {status === 'verifying' && (
+                    <motion.div 
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="flex flex-col items-center justify-center space-y-4"
+                    >
+                        <Loader2 className="animate-spin text-zinc-900 w-12 h-12" strokeWidth={2.5} />
+                        <p className="text-zinc-600 font-bold uppercase text-[10px] tracking-widest animate-pulse">
+                            {t('auth.verifyEmail.verifying', undefined, 'Verifying your email...')}
+                        </p>
+                    </motion.div>
+                )}
 
-                    {status === 'success' && (
-                        <div className="text-center">
-                            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-zinc-900">
-                                <svg
-                                    className="h-6 w-6 text-white"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M5 13l4 4L19 7"
-                                    />
-                                </svg>
-                            </div>
-                            <h3 className="mt-4 text-lg font-black tracking-tight text-zinc-900 uppercase">
-                                {t('auth.verifyEmail.success', undefined, 'Success!')}
-                            </h3>
-                            <p className="mt-2 text-sm text-zinc-600">{message}</p>
-                            <p className="mt-4 text-[10px] font-black uppercase tracking-widest text-zinc-400">
-                                {t('auth.verifyEmail.redirecting', undefined, 'Redirecting you...')}
-                            </p>
+                {status === 'success' && (
+                    <motion.div 
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="flex flex-col items-center justify-center space-y-4"
+                    >
+                        <div className="w-16 h-16 rounded-full bg-zinc-950 flex items-center justify-center shadow-xl shadow-zinc-950/10">
+                            <Check className="text-white w-8 h-8" strokeWidth={3} />
                         </div>
-                    )}
+                        <h3 className="text-lg font-black tracking-tight text-zinc-900 uppercase">
+                            {t('auth.verifyEmail.success', undefined, 'Success!')}
+                        </h3>
+                        <p className="text-xs text-zinc-500 font-medium max-w-sm px-4">{message}</p>
+                        <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 animate-pulse pt-2">
+                            {t('auth.verifyEmail.redirecting', undefined, 'Redirecting you...')}
+                        </p>
+                    </motion.div>
+                )}
 
-                    {status === 'error' && (
-                        <div className="text-center">
-                            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full border-2 border-zinc-900">
-                                <svg
-                                    className="h-6 w-6 text-zinc-900"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M6 18L18 6M6 6l12 12"
-                                    />
-                                </svg>
-                            </div>
-                            <h3 className="mt-4 text-lg font-black tracking-tight text-zinc-900 uppercase">
-                                {t('auth.verifyEmail.failed', undefined, 'Verification Failed')}
-                            </h3>
-                            <p className="mt-2 text-sm text-zinc-600">{message}</p>
-                            <div className="mt-6 space-y-2">
-                                <Link
-                                    href="/auth/login"
-                                    className="block w-full text-center px-4 py-3 bg-zinc-900 text-white rounded-xl font-bold hover:shadow-sm transition-all"
-                                >
-                                    {t('auth.verifyEmail.goToLogin', undefined, 'Go to Login')}
-                                </Link>
-                                <Link
-                                    href="/auth/register"
-                                    className="block w-full text-center px-4 py-3 border border-zinc-200 text-sm font-bold rounded-xl text-zinc-900 bg-white hover:bg-zinc-50 transition-all"
-                                >
-                                    {t('auth.verifyEmail.createNewAccount', undefined, 'Create New Account')}
-                                </Link>
-                            </div>
+                {status === 'error' && (
+                    <motion.div 
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="flex flex-col items-center justify-center space-y-4"
+                    >
+                        <div className="w-16 h-16 rounded-full bg-zinc-100 flex items-center justify-center">
+                            <AlertCircle className="text-zinc-900 w-8 h-8" strokeWidth={2.5} />
                         </div>
-                    )}
-                </div>
+                        <h3 className="text-lg font-black tracking-tight text-zinc-900 uppercase">
+                            {t('auth.verifyEmail.failed', undefined, 'Verification Failed')}
+                        </h3>
+                        <p className="text-xs text-zinc-500 font-medium max-w-sm px-4">{message}</p>
+                        
+                        <div className="w-full pt-6 space-y-3">
+                            <Link
+                                href="/auth/login"
+                                className="block w-full text-center py-4 bg-zinc-900 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-zinc-800 hover:shadow-xl hover:shadow-zinc-900/10 active:scale-[0.98] transition-all"
+                            >
+                                {t('auth.verifyEmail.goToLogin', undefined, 'Go to Login')}
+                            </Link>
+                            <Link
+                                href="/auth/register"
+                                className="block w-full text-center py-4 border-2 border-zinc-100 text-[10px] font-black uppercase tracking-widest rounded-2xl text-zinc-900 bg-white hover:bg-zinc-50 active:scale-[0.98] transition-all"
+                            >
+                                {t('auth.verifyEmail.createNewAccount', undefined, 'Create New Account')}
+                            </Link>
+                        </div>
+                    </motion.div>
+                )}
             </div>
         </div>
     );
@@ -143,11 +141,9 @@ function VerifyEmailContent() {
 function LoadingFallback() {
     const { t } = useLanguage();
     return (
-        <div className="min-h-screen flex items-center justify-center bg-white">
-            <div className="text-center">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-zinc-900"></div>
-                <p className="mt-4 text-zinc-600 font-medium">{t('common.loading', undefined, 'Loading...')}</p>
-            </div>
+        <div className="flex flex-col items-center justify-center py-12 space-y-4">
+            <Loader2 className="animate-spin text-zinc-900 w-12 h-12" strokeWidth={2.5} />
+            <p className="text-zinc-600 font-bold uppercase text-[10px] tracking-widest">{t('common.loading', undefined, 'Loading...')}</p>
         </div>
     );
 }

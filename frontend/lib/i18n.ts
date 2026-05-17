@@ -930,6 +930,33 @@ export const translations = {
         },
         auth: {
             google_signin: "Sign in with Google",
+            layout: {
+                trustBadge: {
+                    security: "Bank-Grade Security",
+                    verified: "Verified Profiles",
+                    privacy: "Privacy Protected"
+                }
+            },
+            forgotEmail: {
+                title: "Find your email",
+                subtitle: "Find your email address",
+                desc: "Enter your registered full name and phone number and we'll help you find your email address.",
+                fullName: "Full Name",
+                phone: "Phone Number",
+                submit: "Find Email",
+                successTitle: "Account Found",
+                successDesc: "We found an account matching your details.",
+                resultLabel: "Your email address is",
+                errors: {
+                    notFound: "No account found matching this name and phone number.",
+                    default: "Failed to find account. Please try again."
+                }
+            },
+            logout: {
+                title: "Signing you out",
+                subtitle: "Securely clearing your session...",
+                success: "Logged out successfully"
+            },
             verifyEmail: {
                 title: "Email Verification",
                 verifying: "Verifying your email...",
@@ -1046,6 +1073,12 @@ export const translations = {
                     landlordDesc: "I am renting a property",
                     manager: "Property Manager",
                     managerDesc: "I manage properties"
+                },
+                strength: {
+                    label: "Security Strength",
+                    weak: "Weak",
+                    medium: "Secure",
+                    strong: "Industrial Grade"
                 },
                 error: {
                     privacy: "You must accept the Privacy Policy to create an account",
@@ -2896,6 +2929,33 @@ export const translations = {
         },
         auth: {
             google_signin: "Se connecter avec Google",
+            layout: {
+                trustBadge: {
+                    security: "Sécurité de Niveau Bancaire",
+                    verified: "Profils Vérifiés",
+                    privacy: "Confidentialité Protégée"
+                }
+            },
+            forgotEmail: {
+                title: "Trouver votre e-mail",
+                subtitle: "Trouvez votre adresse e-mail",
+                desc: "Entrez votre nom complet et votre numéro de téléphone enregistrés pour trouver votre adresse e-mail.",
+                fullName: "Nom complet",
+                phone: "Numéro de téléphone",
+                submit: "Trouver l'e-mail",
+                successTitle: "Compte trouvé",
+                successDesc: "Nous avons trouvé un compte correspondant à vos informations.",
+                resultLabel: "Votre adresse e-mail est",
+                errors: {
+                    notFound: "Aucun compte trouvé avec ce nom et ce numéro de téléphone.",
+                    default: "Échec de la recherche de compte. Veuillez réessayer."
+                }
+            },
+            logout: {
+                title: "Déconnexion en cours",
+                subtitle: "Sécurisation et fermeture de votre session...",
+                success: "Déconnexion réussie"
+            },
             verifyEmail: {
                 title: "Vérification de l'email",
                 verifying: "Vérification de votre email...",
@@ -3012,6 +3072,12 @@ export const translations = {
                     landlordDesc: "Je loue un bien",
                     manager: "Gestionnaire",
                     managerDesc: "Je gère des biens"
+                },
+                strength: {
+                    label: "Force de sécurité",
+                    weak: "Faible",
+                    medium: "Sécurisé",
+                    strong: "Qualité Industrielle"
                 },
                 error: {
                     privacy: "Vous devez accepter la politique de confidentialité pour créer un compte",

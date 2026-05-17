@@ -13,6 +13,16 @@ import os
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost:5432/test_db")
 os.environ.setdefault("SECRET_KEY", "test-secret-key-not-for-production")
 
+# Monkeypatch httpx.Client to be compatible with older starlette.testclient in httpx>=0.28.0
+import httpx
+_orig_client_init = httpx.Client.__init__
+def _patched_client_init(self, *args, **kwargs):
+    app = kwargs.pop("app", None)
+    _orig_client_init(self, *args, **kwargs)
+    if app is not None:
+        self.app = app
+httpx.Client.__init__ = _patched_client_init
+
 import uuid
 from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock

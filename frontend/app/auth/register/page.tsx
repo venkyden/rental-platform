@@ -215,9 +215,9 @@ export default function RegisterPage() {
                         >
                             <div className="grid grid-cols-1 gap-3">
                                 {[
-                                    { id: 'tenant', label: t('auth.register.role.tenant', undefined, 'Tenant'), icon: <User />, desc: 'Finding a dream home' },
-                                    { id: 'landlord', label: t('auth.register.role.landlord', undefined, 'Landlord'), icon: <Home />, desc: 'Rent out properties' },
-                                    { id: 'property_manager', label: t('auth.register.role.agency', undefined, 'Agency'), icon: <Building />, desc: 'Manage portfolios' },
+                                    { id: 'tenant', label: t('auth.register.role.tenant', undefined, 'Tenant'), icon: <User />, desc: t('auth.register.role.tenantDesc', undefined, 'Finding a dream home') },
+                                    { id: 'landlord', label: t('auth.register.role.landlord', undefined, 'Landlord'), icon: <Home />, desc: t('auth.register.role.landlordDesc', undefined, 'Rent out properties') },
+                                    { id: 'property_manager', label: t('auth.register.role.manager', undefined, 'Agency'), icon: <Building />, desc: t('auth.register.role.managerDesc', undefined, 'Manage portfolios') },
                                 ].map((role) => (
                                     <button
                                         key={role.id}
@@ -363,9 +363,15 @@ export default function RegisterPage() {
                                     {/* Strength Bar */}
                                     <div className="mt-3 px-1">
                                         <div className="flex justify-between items-center mb-2">
-                                            <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Security Strength</p>
+                                            <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">
+                                                {t('auth.register.strength.label', undefined, 'Security Strength')}
+                                            </p>
                                             <p className={`text-[9px] font-black uppercase tracking-widest ${strengthColor.replace('bg-', 'text-')}`}>
-                                                {strength === 100 ? 'Industrial Grade' : strength >= 60 ? 'Secure' : 'Weak'}
+                                                {strength === 100 
+                                                    ? t('auth.register.strength.strong', undefined, 'Industrial Grade') 
+                                                    : strength >= 60 
+                                                        ? t('auth.register.strength.medium', undefined, 'Secure') 
+                                                        : t('auth.register.strength.weak', undefined, 'Weak')}
                                             </p>
                                         </div>
                                         <div className="h-1.5 w-full bg-zinc-100 rounded-full overflow-hidden">
@@ -407,15 +413,39 @@ export default function RegisterPage() {
                                                 required
                                                 checked={formData.gdprConsent}
                                                 onChange={handleChange}
-                                                className="peer sr-only"
+                                                className="sr-only"
                                             />
-                                            <div className="w-5 h-5 rounded-lg border-2 border-zinc-200 peer-checked:border-zinc-900 peer-checked:bg-zinc-900 transition-all flex items-center justify-center">
-                                                <Check className="text-white w-3 h-3 opacity-0 peer-checked:opacity-100 transition-opacity" strokeWidth={4} />
+                                            <div className={`w-5 h-5 rounded-lg border-2 transition-all flex items-center justify-center ${
+                                                formData.gdprConsent ? 'border-zinc-900 bg-zinc-900' : 'border-zinc-200'
+                                            }`}>
+                                                <Check className={`text-white w-3 h-3 transition-opacity ${formData.gdprConsent ? 'opacity-100' : 'opacity-0'}`} strokeWidth={4} />
                                             </div>
                                         </div>
                                         <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-tight leading-relaxed group-hover:text-zinc-600 transition-colors">
                                             {t('auth.register.accept', undefined, 'I agree to the')}{' '}
-                                            <Link href="/legal/privacy" className="text-zinc-900 underline underline-offset-4">{t('auth.register.privacy', undefined, 'Privacy Policy')}</Link>
+                                            <Link href="/legal/privacy" className="text-zinc-900 underline underline-offset-4">{t('auth.register.privacy', undefined, 'Privacy Policy')}</Link>{' '}
+                                            {t('auth.register.and', undefined, 'and')}{' '}
+                                            <Link href="/legal/terms" className="text-zinc-900 underline underline-offset-4">{t('auth.register.terms', undefined, 'Terms')}</Link>
+                                        </p>
+                                    </label>
+
+                                    <label className="flex items-start gap-4 cursor-pointer group">
+                                        <div className="relative flex items-center h-6 mt-0.5">
+                                            <input
+                                                name="marketingConsent"
+                                                type="checkbox"
+                                                checked={formData.marketingConsent}
+                                                onChange={handleChange}
+                                                className="sr-only"
+                                            />
+                                            <div className={`w-5 h-5 rounded-lg border-2 transition-all flex items-center justify-center ${
+                                                formData.marketingConsent ? 'border-zinc-900 bg-zinc-900' : 'border-zinc-200'
+                                            }`}>
+                                                <Check className={`text-white w-3 h-3 transition-opacity ${formData.marketingConsent ? 'opacity-100' : 'opacity-0'}`} strokeWidth={4} />
+                                            </div>
+                                        </div>
+                                        <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-tight leading-relaxed group-hover:text-zinc-600 transition-colors">
+                                            {t('auth.register.consent.marketing', undefined, 'Receive offers and news (optional)')}
                                         </p>
                                     </label>
                                 </motion.div>

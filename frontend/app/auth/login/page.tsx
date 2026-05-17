@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Eye, EyeOff, Lock, Mail, ChevronRight, Gavel } from 'lucide-react';
 import { apiClient } from '@/lib/api';
@@ -32,7 +32,7 @@ const shakeVariants = {
 /* ================================================================
    LOGIN PAGE
    ================================================================ */
-export default function LoginPage() {
+function LoginContent() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -42,14 +42,29 @@ export default function LoginPage() {
     const [googleLoading, setGoogleLoading] = useState(false);
     const { t } = useLanguage();
     const router = useRouter();
+    const searchParams = useSearchParams();
+
+    const getSafeRedirectUrl = useCallback((url: string | null) => {
+        if (!url) return null;
+        try {
+            const decoded = decodeURIComponent(url);
+            if (decoded.startsWith('/') && !decoded.startsWith('//')) {
+                return decoded;
+            }
+        } catch (e) {
+            // Ignore
+        }
+        return null;
+    }, []);
 
     /* ---------- Auto-redirect if already logged in ---------- */
     useEffect(() => {
         const token = localStorage.getItem('access_token');
         if (token && !window.location.search.includes('expired=1')) {
-            router.push('/dashboard');
+            const safeRedirect = getSafeRedirectUrl(searchParams.get('returnUrl'));
+            router.push(safeRedirect || '/dashboard');
         }
-    }, [router]);
+    }, [router, searchParams, getSafeRedirectUrl]);
 
     /* ---------- Google callback ---------- */
     const handleGoogleResponse = useCallback(
@@ -59,7 +74,8 @@ export default function LoginPage() {
             setGoogleLoading(true);
             try {
                 const result = await apiClient.googleLogin(credential);
-                router.push(result.redirect_path || '/dashboard');
+                const safeRedirect = getSafeRedirectUrl(searchParams.get('returnUrl'));
+                router.push(safeRedirect || result.redirect_path || '/dashboard');
             } catch (err: any) {
                 const detail = err.response?.data?.detail;
                 setError(typeof detail === 'string' ? detail : t('auth.login.error.googleFail', undefined, 'Google login failed'));
@@ -68,7 +84,7 @@ export default function LoginPage() {
                 setGoogleLoading(false);
             }
         },
-        [router, t],
+        [router, t, searchParams, getSafeRedirectUrl],
     );
 
     /* ---------- Setup Google Sign-In ---------- */
@@ -102,7 +118,8 @@ export default function LoginPage() {
 
         try {
             const response = await apiClient.login(email, password);
-            router.push(response.redirect_path || '/dashboard');
+            const safeRedirect = getSafeRedirectUrl(searchParams.get('returnUrl'));
+            router.push(safeRedirect || response.redirect_path || '/dashboard');
         } catch (err: any) {
             const detail = err.response?.data?.detail;
             let msg = t('auth.login.error.loginFail', undefined, 'Login failed');
@@ -254,5 +271,18 @@ export default function LoginPage() {
                 </div>
             </motion.div>
         </motion.div>
+    );
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex flex-col items-center justify-center p-8 min-h-[400px] space-y-4">
+                <div className="w-8 h-8 border-2 border-zinc-950/20 border-t-zinc-950 rounded-full animate-spin" />
+                <p className="text-zinc-400 font-bold uppercase text-[9px] tracking-widest animate-pulse">Initializing Secured Terminal...</p>
+            </div>
+        }>
+            <LoginContent />
+        </Suspense>
     );
 }

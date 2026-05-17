@@ -8,6 +8,8 @@ export default [
       "out/**",
       "build/**",
       "node_modules/**",
+      "playwright-report/**",
+      "test-results/**",
       "**/*.d.ts",
       // Service worker — uses browser SW globals (self, caches, clients)
       "public/sw.js",
