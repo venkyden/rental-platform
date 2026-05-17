@@ -16,7 +16,18 @@ export default function ValuePropSection() {
   const y1 = useTransform(scrollYProgress, [0, 1], [0, -100]);
   const y2 = useTransform(scrollYProgress, [0, 1], [0, 100]);
 
-  const features = [
+  interface Feature {
+    icon: React.ReactNode;
+    title: string;
+    desc: string;
+    span: string;
+    bg: string;
+    iconBg: string;
+    textColor?: string;
+    titleColor?: string;
+  }
+
+  const features: Feature[] = [
     {
       icon: <FileCheck className="w-8 h-8" />,
       title: t('landing.valueProp.dossier.title', undefined, 'Digital Dossier'),
@@ -28,7 +39,7 @@ export default function ValuePropSection() {
     {
       icon: <Sparkles className="w-8 h-8" />,
       title: t('landing.valueProp.matching.title', undefined, 'AI-Powered Matching'),
-      desc: t('landing.valueProp.matching.desc', undefined, 'Find properties that actually match your profile.'),
+      desc: t('landing.valueProp.matching.desc', undefined, 'Find properties matching your profile. Note: Suggestions are recommendations; final decisions are subject to human oversight.'),
       span: "md:col-span-1",
       bg: "bg-zinc-100",
       iconBg: "bg-white text-zinc-900"
@@ -98,7 +109,7 @@ export default function ValuePropSection() {
 
         {/* ─── Bento Grid ─── */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {features.map((feature: any, i) => (
+          {features.map((feature, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 30 }}

@@ -7,6 +7,8 @@ Uses AI for OCR and data extraction, with validation rules.
 import hashlib
 import logging
 import asyncio
+import json
+import re
 from dataclasses import dataclass
 from datetime import date, datetime
 from decimal import Decimal

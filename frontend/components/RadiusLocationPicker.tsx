@@ -9,7 +9,7 @@ interface RadiusLocationPickerProps {
     initialLat: number;
     initialLng: number;
     radiusMeters: number; // Radius in meters
-    onLocationChange: (lat: number, lng: number) => void;
+    onLocationChangeAction: (lat: number, lng: number) => void;
 }
 
 // Dynamic imports for Leaflet components
@@ -41,7 +41,7 @@ const MapEventHandler = dynamic(
     { ssr: false }
 );
 
-export default function RadiusLocationPicker({ initialLat, initialLng, radiusMeters, onLocationChange }: RadiusLocationPickerProps) {
+export default function RadiusLocationPicker({ initialLat, initialLng, radiusMeters, onLocationChangeAction }: RadiusLocationPickerProps) {
     const mapRef = useRef<LeafletMap | null>(null);
     const [center, setCenter] = useState({ lat: initialLat, lng: initialLng });
     const [isMounted, setIsMounted] = useState(false);
@@ -54,7 +54,7 @@ export default function RadiusLocationPicker({ initialLat, initialLng, radiusMet
         if (mapRef.current) {
             const newCenter = mapRef.current.getCenter();
             setCenter({ lat: newCenter.lat, lng: newCenter.lng });
-            onLocationChange(newCenter.lat, newCenter.lng);
+            onLocationChangeAction(newCenter.lat, newCenter.lng);
         }
     };
 

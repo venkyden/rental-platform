@@ -267,7 +267,7 @@ export default function OnboardingPage() {
                 <div className="fixed top-12 right-12 z-50">
                     <LanguageSwitcher />
                 </div>
-                <OnboardingQuestionnaire userType={userType} onComplete={handleComplete} />
+                <OnboardingQuestionnaire userType={userType} onCompleteAction={handleComplete} />
             </PremiumLayout>
         );
     }

@@ -1,37 +1,73 @@
+'use client';
+
+import { motion } from 'framer-motion';
+import { useLanguage } from '@/lib/LanguageContext';
+import { Search, Home, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
 export default function NotFound() {
-    return (
-        <div className="min-h-screen flex items-center justify-center px-6 relative overflow-hidden bg-slate-50">
-            {/* Background Effects */}
-            <div className="absolute inset-0 z-0">
-                <div className="absolute top-0 w-full h-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-teal-50/50 via-slate-50 to-white"></div>
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-teal-400/10 rounded-full blur-[100px] mix-blend-multiply pointer-events-none"></div>
-            </div>
-            <div className="z-10 max-w-md w-full text-center">
-                <div className="text-8xl font-extrabold mb-4" style={{ color: '#22B8B8' }}>
-                    404
-                </div>
-                <h1 className="text-2xl font-bold text-zinc-900 mb-3">Page not found</h1>
-                <p className="text-zinc-500 mb-8 leading-relaxed">
-                    Sorry, we couldn&apos;t find the page you&apos;re looking for. It may have been moved or deleted.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                    <Link
-                        href="/"
-                        className="px-6 py-3 text-sm font-semibold text-white rounded-xl shadow-md transition-all hover:shadow-sm hover:-translate-y-0.5"
-                        style={{ background: 'linear-gradient(135deg, #3DD6D0, #22B8B8)' }}
-                    >
-                        Go home
-                    </Link>
-                    <Link
-                        href="/search"
-                        className="px-6 py-3 text-sm font-semibold text-gray-700 bg-white border-2 border-gray-200 rounded-xl hover:border-gray-300 transition-all"
-                    >
-                        Browse listings
-                    </Link>
-                </div>
-            </div>
-        </div>
-    );
+  const { t } = useLanguage();
+
+  return (
+    <div className="min-h-screen flex items-center justify-center px-6 relative overflow-hidden bg-white">
+      {/* Dynamic vibrancy background grid */}
+      <div className="vibrancy-bg opacity-30 pointer-events-none" />
+
+      <div className="relative z-10 max-w-lg w-full text-center">
+        {/* Animated Error Code */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+          className="text-[120px] sm:text-[180px] font-black tracking-tighter text-zinc-900 leading-none italic uppercase mb-8 opacity-90 select-none"
+        >
+          404
+        </motion.div>
+
+        {/* Title */}
+        <motion.h1
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1, duration: 0.8 }}
+          className="text-3xl sm:text-5xl font-black text-zinc-900 tracking-tight uppercase italic mb-4"
+        >
+          {t('common.error.notFoundTitle', undefined, 'Page Not Found')}
+        </motion.h1>
+
+        {/* Description */}
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.8 }}
+          className="text-zinc-400 font-bold uppercase text-[10px] tracking-widest leading-relaxed max-w-md mx-auto mb-16"
+        >
+          {t('common.error.notFoundDesc', undefined, 'The page you are looking for does not exist, has been moved, or is temporarily unavailable.')}
+        </motion.p>
+
+        {/* Action Buttons */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.8 }}
+          className="flex flex-col sm:flex-row gap-4 justify-center"
+        >
+          <Link
+            href="/"
+            className="inline-flex items-center justify-center gap-3 px-8 py-5 bg-zinc-900 hover:bg-zinc-800 text-white font-black rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all uppercase tracking-widest text-[10px]"
+          >
+            <Home className="w-4 h-4" />
+            <span>{t('navigation.home', undefined, 'Go Home')}</span>
+          </Link>
+          
+          <Link
+            href="/search"
+            className="inline-flex items-center justify-center gap-3 px-8 py-5 bg-zinc-50 border border-zinc-200 hover:border-zinc-300 text-zinc-900 font-black rounded-full shadow-sm hover:scale-105 active:scale-95 transition-all uppercase tracking-widest text-[10px]"
+          >
+            <Search className="w-4 h-4" />
+            <span>{t('dashboard.quickActions.browse.title', undefined, 'Browse Listings')}</span>
+          </Link>
+        </motion.div>
+      </div>
+    </div>
+  );
 }

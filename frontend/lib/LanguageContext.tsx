@@ -22,6 +22,13 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
         }
     }, []);
 
+    // Dynamically update document html lang attribute
+    useEffect(() => {
+        if (typeof document !== 'undefined') {
+            document.documentElement.lang = language;
+        }
+    }, [language]);
+
     const handleSetLanguage = (lang: Language) => {
         setLanguage(lang);
         localStorage.setItem('app-language', lang);

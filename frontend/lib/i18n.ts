@@ -17,7 +17,7 @@ export const translations = {
                 title: "Why Choose Roomivo?",
                 subtitle: "The most secure and transparent way to rent in France.",
                 dossier: { title: "Digital Dossier", desc: "No more paper. Your verified identity and documents in one secure place." },
-                matching: { title: "AI-Powered Matching", desc: "Find properties that actually match your profile and criteria." },
+                matching: { title: "AI-Powered Matching", desc: "Find properties matching your profile. Note: Suggestions are recommendations; final decisions are subject to human oversight." },
                 legal: { title: "French Law Compliant", desc: "Digital leases generated according to the latest French regulations." },
                 payments: { title: "Secure Payments", desc: "Pay your rent and deposits through our integrated secure gateway." }
             },
@@ -27,17 +27,46 @@ export const translations = {
                 steps: {
                     profile: { title: "Create Profile", desc: "Build your verified digital rental identity." },
                     matching: { title: "Smart Matching", desc: "Connect with compatible listings instantly." },
-                    lease: { title: "Automated Lease", desc: "Sign legal contracts digitally and securely." }
+                    lease: { title: "Automated Lease", desc: "Sign standard contracts digitally. Leases conform to the French regulatory model (contrat-type réglementaire). Note: Generated drafts do not constitute immediate binding leases without mutual consent." }
                 }
             },
             stats: {
                 listings: "Active Listings",
                 landlords: "Verified Landlords",
-                matches: "Recent Matches"
+                matches: "Recent Matches",
+                cities: "Active Cities"
             },
+            liveUpdates: "Live Platform Activity",
             cta: {
                 tenant: { title: "Looking for a home?", desc: "Join thousands of tenants finding verified homes in France.", button: "Browse Listings" },
                 landlord: { title: "Are you a landlord?", desc: "List your property and find the perfect, verified tenant.", button: "List Property" }
+            },
+            compliance: {
+                title: "French Data & Rental Law Compliance",
+                subtitle: "Your data is managed in strict accordance with French regulations and European standards.",
+                conservation: {
+                    title: "Data Conservation",
+                    desc: "Rental application dossiers are kept for a maximum of 3 years following the last contact or active rental, in accordance with CNIL guidelines."
+                },
+                deletion: {
+                    title: "Right to Erasure",
+                    desc: "You can request complete and irreversible deletion of your dossier and documents at any time. Verification data is wiped within 48 hours."
+                },
+                renewal: {
+                    title: "Automated Lease & Renewal",
+                    desc: "Lease notifications and rent indexing calculations are generated in compliance with the Loi Alur and Article 10 of the July 6, 1989 law."
+                }
+            },
+            featured: {
+                badge: "Handpicked Select",
+                title: "Featured Listings",
+                subtitle: "Hand-selected and fully verified residential properties in France.",
+                view: "View",
+                mo: "mo",
+                tags: {
+                    verified: "GPS Verified",
+                    popular: "Trending"
+                }
             },
             footer: {
                 platform: "Platform",
@@ -49,6 +78,9 @@ export const translations = {
                 help: "Help",
                 slogan: "Rent securely in France"
             }
+        },
+        navigation: {
+            home: "Go Home"
         },
         cookies: {
             title: "Cookie Preferences",
@@ -75,6 +107,13 @@ export const translations = {
         },
         common: {
             locale: "en-GB",
+            error: {
+                notFoundTitle: "Page Not Found",
+                notFoundDesc: "The page you are looking for does not exist, has been moved, or is temporarily unavailable.",
+                genericTitle: "Something Went Wrong",
+                genericDesc: "An unexpected system error has occurred. Our engineering team has been notified.",
+                tryAgain: "Try Again"
+            },
             save: "Save",
             cancel: "Cancel",
             delete: "Delete",
@@ -1916,6 +1955,13 @@ export const translations = {
         },
         common: {
             locale: "fr-FR",
+            error: {
+                notFoundTitle: "Page non trouvée",
+                notFoundDesc: "La page que vous recherchez n'existe pas, a été déplacée ou est temporairement indisponible.",
+                genericTitle: "Une erreur est survenue",
+                genericDesc: "Une erreur système inattendue s'est produite. Notre équipe technique a été notifiée.",
+                tryAgain: "Réessayer"
+            },
             save: "Enregistrer",
             cancel: "Annuler",
             delete: "Supprimer",
@@ -2032,7 +2078,7 @@ export const translations = {
                 title: "Pourquoi Choisir Roomivo ?",
                 subtitle: "La façon la plus sécurisée et transparente de louer en France.",
                 dossier: { title: "Dossier Numérique", desc: "Plus de papier. Votre identité et vos documents vérifiés en un seul lieu sûr." },
-                matching: { title: "Matching IA", desc: "Trouvez des biens qui correspondent réellement à votre profil et vos critères." },
+                matching: { title: "Matching IA", desc: "Trouvez des biens correspondant à votre profil. Remarque : les suggestions sont des recommandations ; les décisions finales sont soumises à un contrôle humain." },
                 legal: { title: "Conforme à la Loi Française", desc: "Baux numériques générés selon les dernières réglementations françaises." },
                 payments: { title: "Paiements Sécurisés", desc: "Payez votre loyer et vos dépôts via notre passerelle sécurisée intégrée." }
             },
@@ -2042,17 +2088,46 @@ export const translations = {
                 steps: {
                     profile: { title: "Profil Vérifié", desc: "Créez votre identité numérique locative sécurisée." },
                     matching: { title: "Matching Intelligent", desc: "Connectez-vous instantanément aux meilleures annonces." },
-                    lease: { title: "Bail Automatisé", desc: "Signez vos contrats légaux en toute sécurité." }
+                    lease: { title: "Bail Automatisé", desc: "Signez vos contrats numériquement. Les baux sont conformes au contrat-type réglementaire. Remarque : les brouillons générés ne constituent pas un bail exécutoire sans accord mutuel." }
                 }
             },
             stats: {
                 listings: "Annonces actives",
                 landlords: "Bailleurs vérifiés",
-                matches: "Matchs récents"
+                matches: "Matchs récents",
+                cities: "Villes actives"
             },
+            liveUpdates: "Activité de la Plateforme en Direct",
             cta: {
                 tenant: { title: "Vous cherchez un logement ?", desc: "Rejoignez des milliers de locataires trouvant des biens vérifiés.", button: "Parcourir les annonces" },
                 landlord: { title: "Vous êtes propriétaire ?", desc: "Publiez votre annonce et trouvez le locataire idéal.", button: "Publier une annonce" }
+            },
+            compliance: {
+                title: "Conformité Règlementaire et Données",
+                subtitle: "Vos données et contrats sont gérés en stricte conformité avec la loi française et le RGPD.",
+                conservation: {
+                    title: "Conservation des Données",
+                    desc: "Les dossiers de candidature sont conservés au maximum 3 ans après le dernier contact, conformément aux recommandations de la CNIL."
+                },
+                deletion: {
+                    title: "Droit à l'Effacement",
+                    desc: "Demandez la suppression complète et irréversible de votre dossier et de vos pièces à tout moment. Données effacées sous 48 heures."
+                },
+                renewal: {
+                    title: "Bail et Renouvellement",
+                    desc: "Les baux et calculs d'indexation de loyers sont générés conformément à la Loi Alur et à l'article 10 de la loi du 6 juillet 1989."
+                }
+            },
+            featured: {
+                badge: "Sélection Exclusive",
+                title: "Annonces à la Une",
+                subtitle: "Propriétés résidentielles triées sur le volet et entièrement vérifiées en France.",
+                view: "Découvrir",
+                mo: "mois",
+                tags: {
+                    verified: "Vérifié GPS",
+                    popular: "Populaire"
+                }
             },
             footer: {
                 platform: "Plateforme",
@@ -2064,6 +2139,9 @@ export const translations = {
                 help: "Aide",
                 slogan: "Louez en toute sécurité en France"
             }
+        },
+        navigation: {
+            home: "Retour à l'accueil"
         },
         cookies: {
             title: "Préférences des Cookies",

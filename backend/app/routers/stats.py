@@ -302,6 +302,16 @@ async def get_landlord_alerts(
 @router.get("/public/overview", response_model=PublicStats)
 async def get_public_stats(db: AsyncSession = Depends(get_db)):
     """Get public statistics for the landing page."""
+    from app.core.cache import cache
+    
+    # Try getting from cache first
+    try:
+        cached_data = await cache.get("public_overview")
+        if cached_data:
+            return PublicStats(**cached_data)
+    except Exception as e:
+        print(f"Error reading public stats from cache: {e}")
+
     try:
         # 1. Total active properties
         result_props = await db.execute(
@@ -332,12 +342,20 @@ async def get_public_stats(db: AsyncSession = Depends(get_db)):
         )
         active_cities = result_cities.scalar_one_or_none() or 0
 
-        return PublicStats(
-            total_properties=total_properties,
-            verified_landlords=verified_landlords,
-            matches_last_30_days=matches_last_30_days,
-            active_cities=active_cities,
-        )
+        stats_data = {
+            "total_properties": total_properties,
+            "verified_landlords": verified_landlords,
+            "matches_last_30_days": matches_last_30_days,
+            "active_cities": active_cities,
+        }
+
+        # Cache for 30 seconds
+        try:
+            await cache.set("public_overview", stats_data, ttl=30)
+        except Exception as e:
+            print(f"Error writing public stats to cache: {e}")
+
+        return PublicStats(**stats_data)
     except Exception as e:
         print(f"CRITICAL ERROR in get_public_stats: {str(e)}")
         # Return zeros instead of crashing to keep landing page functional

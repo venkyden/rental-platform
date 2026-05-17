@@ -28,7 +28,6 @@ export const viewport: Viewport = {
   themeColor: "#18181b", // Zinc-900
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
 };
 
 import Script from "next/script";

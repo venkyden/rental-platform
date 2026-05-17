@@ -46,6 +46,18 @@ test.describe('Landing Page E2E Tests', () => {
         await expect(landlordBtn).toContainText('List Property');
     });
 
+    test('french compliance section renders', async ({ page }) => {
+        await expect(page.getByText('French Data & Rental Law Compliance')).toBeVisible();
+        await expect(page.getByText('Data Conservation')).toBeVisible();
+        await expect(page.getByText('Right to Erasure')).toBeVisible();
+    });
+
+    test('featured listings section renders', async ({ page }) => {
+        await expect(page.getByText('Featured Listings')).toBeVisible();
+        await expect(page.getByText('Haussmannian Luxury Apartment')).toBeVisible();
+        await expect(page.getByText('Chic Industrial Loft')).toBeVisible();
+    });
+
     test('language switcher changes text', async ({ page }) => {
         // Verify default english text (case-insensitive for CSS uppercase)
         await expect(page.getByText(/Browse Listings/i)).toBeVisible();
@@ -69,3 +81,4 @@ test.describe('Landing Page E2E Tests', () => {
         await expect(page.getByText(/Browse Listings/i)).toBeVisible();
     });
 });
+

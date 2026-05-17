@@ -10,16 +10,37 @@ import Link from 'next/link';
 export default function SearchHero() {
   const { t } = useLanguage();
   const [query, setQuery] = useState('');
-  const [stats, setStats] = useState({ total_properties: 0, verified_landlords: 0, matches_last_30_days: 0 });
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({ 
+    total_properties: 0, 
+    verified_landlords: 0, 
+    matches_last_30_days: 0,
+    active_cities: 0 
+  });
   const router = useRouter();
 
   // ─── Single Fetch for Stats ───
   useEffect(() => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+    setLoading(true);
     fetch(`${apiUrl}/stats/public/overview`)
-      .then(res => res.json())
-      .then(data => setStats(data))
-      .catch(err => console.error('Failed to fetch stats:', err));
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch public stats');
+        return res.json();
+      })
+      .then(data => {
+        setStats({
+          total_properties: data.total_properties || 0,
+          verified_landlords: data.verified_landlords || 0,
+          matches_last_30_days: data.matches_last_30_days || 0,
+          active_cities: data.active_cities || 0
+        });
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Failed to fetch stats:', err);
+        setLoading(false);
+      });
   }, []);
 
   const handleSearch = (e: React.FormEvent) => {
@@ -98,27 +119,31 @@ export default function SearchHero() {
           >
             <form 
               onSubmit={handleSearch}
+              role="search"
+              aria-label={t('landing.hero.searchPlaceholder', undefined, 'Where do you want to live?')}
               className="bg-white p-3 rounded-[3rem] flex flex-col sm:flex-row items-center shadow-[0_40px_100px_-20px_rgba(0,0,0,0.15)] border border-zinc-100 group transition-all duration-700 hover:shadow-[0_50px_120px_-20px_rgba(0,0,0,0.2)] focus-within:border-zinc-300"
             >
               <div className="flex-1 w-full flex items-center px-10 gap-6 py-6 sm:py-0">
-                <MapPin className="w-6 h-6 text-zinc-900 shrink-0" />
+                <MapPin className="w-6 h-6 text-zinc-900 shrink-0" aria-hidden="true" />
                 <input 
                   type="text" 
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder={t('landing.hero.searchPlaceholder', undefined, 'Where do you want to live?')}
+                  aria-label={t('landing.hero.searchPlaceholder', undefined, 'Where do you want to live?')}
                   className="w-full bg-transparent border-none focus:ring-0 text-2xl font-black text-zinc-900 placeholder:text-zinc-200 uppercase tracking-tight"
                 />
               </div>
               
-              <div className="hidden sm:block w-px h-16 bg-zinc-100 mx-4" />
+              <div className="hidden sm:block w-px h-16 bg-zinc-100 mx-4" aria-hidden="true" />
 
               <MagneticButton>
                 <button 
                   type="submit"
+                  aria-label={t('landing.hero.searchButton', undefined, 'Execute')}
                   className="w-full sm:w-auto bg-zinc-900 text-white px-16 py-7 rounded-[2.2rem] font-black uppercase tracking-[0.3em] text-[11px] flex items-center justify-center gap-4 hover:scale-[1.02] active:scale-[0.98] transition-all duration-500 shadow-2xl shadow-zinc-900/20 group/btn"
                 >
-                  <Search className="w-4 h-4 group-hover/btn:scale-125 transition-transform" strokeWidth={3} />
+                  <Search className="w-4 h-4 group-hover/btn:scale-125 transition-transform" strokeWidth={3} aria-hidden="true" />
                   <span>{t('landing.hero.searchButton', undefined, 'Execute')}</span>
                 </button>
               </MagneticButton>
@@ -139,12 +164,24 @@ export default function SearchHero() {
           </motion.div>
 
           {/* ─── Real-Time Stats ─── */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-16 max-w-5xl mx-auto pt-24 border-t border-zinc-100/60">
-            <CounterStat value={stats.total_properties} label={t('landing.stats.listings', undefined, 'Active Listings')} />
-            <CounterStat value={stats.verified_landlords} label={t('landing.stats.landlords', undefined, 'Verified Landlords')} />
-            <div className="col-span-2 md:col-span-1">
-              <CounterStat value={stats.matches_last_30_days} label={t('landing.stats.matches', undefined, 'Recent Matches')} />
-            </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 max-w-6xl mx-auto pt-24 border-t border-zinc-100/60">
+            {loading ? (
+              <>
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="text-center">
+                    <div className="skeleton w-36 h-14 mx-auto mb-4 bg-zinc-200/50" />
+                    <div className="skeleton w-24 h-4 mx-auto bg-zinc-200/50" />
+                  </div>
+                ))}
+              </>
+            ) : (
+              <>
+                <CounterStat value={stats.total_properties} label={t('landing.stats.listings', undefined, 'Active Listings')} />
+                <CounterStat value={stats.verified_landlords} label={t('landing.stats.landlords', undefined, 'Verified Landlords')} />
+                <CounterStat value={stats.matches_last_30_days} label={t('landing.stats.matches', undefined, 'Recent Matches')} />
+                <CounterStat value={stats.active_cities} label={t('landing.stats.cities', undefined, 'Active Cities')} />
+              </>
+            )}
           </div>
         </div>
       </div>

@@ -290,9 +290,6 @@ fastapi_app.include_router(inventory.router)
 from app.routers import dispute
 fastapi_app.include_router(dispute.router)
 
-from app.routers import stats
-fastapi_app.include_router(stats.router)
-
 from app.routers import admin
 fastapi_app.include_router(admin.router)
 

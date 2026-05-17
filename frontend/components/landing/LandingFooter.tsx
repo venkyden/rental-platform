@@ -53,7 +53,7 @@ export default function LandingFooter() {
             <div className="flex flex-wrap gap-8">
               <div className="flex items-center gap-3 text-zinc-400">
                 <ShieldCheck className="w-5 h-5 text-zinc-900" />
-                <span className="text-[10px] font-black uppercase tracking-widest">ALUR Compliant</span>
+                <span className="text-[10px] font-black uppercase tracking-widest">Secure Connection</span>
               </div>
               <div className="flex items-center gap-3 text-zinc-400">
                 <Lock className="w-5 h-5 text-zinc-900" />
@@ -61,7 +61,7 @@ export default function LandingFooter() {
               </div>
               <div className="flex items-center gap-3 text-zinc-400">
                 <Globe className="w-5 h-5 text-zinc-900" />
-                <span className="text-[10px] font-black uppercase tracking-widest">CNIL Registered</span>
+                <span className="text-[10px] font-black uppercase tracking-widest">GDPR Compliant</span>
               </div>
             </div>
           </div>

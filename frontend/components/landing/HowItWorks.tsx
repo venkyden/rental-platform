@@ -43,7 +43,7 @@ export default function HowItWorks() {
               className="inline-flex items-center gap-3 px-4 py-2 bg-zinc-900 text-white rounded-full text-[10px] font-black uppercase tracking-[0.4em] mb-8"
             >
               <CheckCircle2 className="w-3 h-3" />
-              Direct Pipeline
+              {t('landing.howItWorks.pipeline', undefined, 'Direct Pipeline')}
             </motion.div>
             <motion.h2 
               initial={{ opacity: 0, y: 30 }}

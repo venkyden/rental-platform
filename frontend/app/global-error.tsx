@@ -1,67 +1,65 @@
-'use client'; // Error boundaries must be Client Components
+'use client';
 
 import { useEffect } from 'react';
-import Link from 'next/link';
+import { ShieldAlert, RefreshCw } from 'lucide-react';
 
 export default function GlobalError({
-    error,
-    reset,
+  error,
+  reset,
 }: {
-    error: Error & { digest?: string };
-    reset: () => void;
+  error: Error & { digest?: string };
+  reset: () => void;
 }) {
-    useEffect(() => {
-        // Log the error to an error reporting service like Sentry
-        console.error('Unhandled specific client-side error caught by Global Error Boundary:', error);
-    }, [error]);
+  useEffect(() => {
+    console.error('Global Error Boundary caught:', error);
+  }, [error]);
 
-    return (
-        <html>
-            <body>
-                <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-                    <div className="max-w-md w-full text-center">
-                        <div className="bg-red-50 text-red-600 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
-                            <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                            </svg>
-                        </div>
+  return (
+    <html lang="en">
+      <body className="min-h-screen flex items-center justify-center bg-white px-6 relative overflow-hidden font-sans">
+        <div className="relative z-10 max-w-lg w-full text-center">
+          {/* Animated Warning Icon */}
+          <div className="w-24 h-24 rounded-[2rem] bg-zinc-950 flex items-center justify-center mx-auto mb-10 shadow-2xl border border-zinc-800 animate-pulse">
+            <ShieldAlert className="w-12 h-12 text-white" strokeWidth={1.5} />
+          </div>
 
-                        <h1 className="text-3xl font-bold text-gray-900 mb-4">
-                            Oops! Something went wrong.
-                        </h1>
+          {/* Title */}
+          <h1 className="text-3xl sm:text-5xl font-black text-zinc-900 tracking-tight uppercase italic mb-4">
+            Critical System Error
+          </h1>
 
-                        <p className="text-gray-600 mb-8">
-                            Sorry, the platform encountered an unexpected error. Our engineers have been notified.
-                        </p>
+          {/* Description */}
+          <p className="text-zinc-400 font-bold uppercase text-[10px] tracking-widest leading-relaxed max-w-md mx-auto mb-16">
+            A critical system error has occurred. The application is attempting to recover. Please try again or refresh your browser.
+          </p>
 
-                        <div className="space-y-4">
-                            <button
-                                onClick={() => reset()}
-                                className="w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-200"
-                            >
-                                Try Again
-                            </button>
+          {/* Action Buttons */}
+          <div className="flex justify-center">
+            <button
+              onClick={() => reset()}
+              className="inline-flex items-center justify-center gap-3 px-8 py-5 bg-zinc-900 hover:bg-zinc-800 text-white font-black rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all uppercase tracking-widest text-[10px]"
+            >
+              <RefreshCw className="w-4 h-4" />
+              <span>Try Again</span>
+            </button>
+          </div>
 
-                            <div className="pt-2">
-                                <Link
-                                    href="/"
-                                    className="text-blue-600 hover:text-blue-800 font-medium border border-transparent hover:underline"
-                                >
-                                    Or return to the homepage
-                                </Link>
-                            </div>
-                        </div>
-
-                        {process.env.NODE_ENV === 'development' && (
-                            <div className="mt-8 text-left bg-gray-100 p-4 rounded-md overflow-auto text-xs font-mono text-gray-800">
-                                <p className="font-bold text-red-600 mb-2">Error Details (Dev Only):</p>
-                                <p>{error.message}</p>
-                                {error.digest && <p className="mt-2 text-gray-500">Digest: {error.digest}</p>}
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </body>
-        </html>
-    );
+          {/* Developer Details */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="mt-16 text-left max-w-lg mx-auto">
+              <details className="group cursor-pointer">
+                <summary className="text-[9px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 transition-colors select-none">
+                  Critical Error Stack Trace
+                </summary>
+                <pre className="mt-4 p-6 bg-zinc-950 border border-zinc-900 text-red-400 font-mono text-[10px] rounded-3xl overflow-auto max-h-48 leading-relaxed">
+                  {error.message}
+                  {error.stack && `\n\n${error.stack}`}
+                </pre>
+              </details>
+            </div>
+          )}
+        </div>
+      </body>
+    </html>
+  );
 }

@@ -73,11 +73,11 @@ export default function RoomivoBrand({
             {/* Wordmark */}
             {(variant === 'wordmark' || variant === 'full') && (
                 <div className="flex flex-col">
-                    <h1 className={`${s.text} font-black tracking-tighter leading-none ${
+                    <span className={`${s.text} font-black tracking-tighter leading-none ${
                         theme === 'glass' ? 'text-white' : 'bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 to-zinc-500'
                     }`}>
                         Roomivo
-                    </h1>
+                    </span>
                     {variant === 'full' && (
                         <p className={`${s.tagline} font-bold text-zinc-500 mt-1 uppercase tracking-[0.2em]`}>
                             Premium Rentals

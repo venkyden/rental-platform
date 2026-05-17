@@ -5,6 +5,8 @@ import SearchHero from '@/components/landing/SearchHero';
 import ValuePropSection from '@/components/landing/ValuePropSection';
 import HowItWorks from '@/components/landing/HowItWorks';
 import DualCTA from '@/components/landing/DualCTA';
+import FrenchComplianceSection from '@/components/landing/FrenchComplianceSection';
+import FeaturedListings from '@/components/landing/FeaturedListings';
 import LandingFooter from '@/components/landing/LandingFooter';
 
 export const metadata: Metadata = {
@@ -69,6 +71,12 @@ export default function HomePage() {
 
         {/* ─── How It Works ─── */}
         <HowItWorks />
+
+        {/* ─── Featured Listings Carousel ─── */}
+        <FeaturedListings />
+
+        {/* ─── French Compliance Section ─── */}
+        <FrenchComplianceSection />
 
         {/* ─── Dual CTA ─── */}
         <DualCTA />

@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "next dev --webpack",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "test:e2e": "playwright test",
@@ -36,8 +36,8 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@playwright/test": "^1.52.0",
-    "eslint": "^10.0.2",
-    "eslint-config-next": "^0.2.4",
+    "eslint": "^9.14.0",
+    "eslint-config-next": "canary",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

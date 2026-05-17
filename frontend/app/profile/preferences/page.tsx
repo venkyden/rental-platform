@@ -68,7 +68,7 @@ export default function EditPreferencesPage() {
                         <OnboardingQuestionnaire
                             userType={user.role === 'tenant' ? 'tenant' : 'landlord'}
                             initialResponses={user.preferences || {}}
-                            onComplete={handleComplete}
+                            onCompleteAction={handleComplete}
                         />
                     </div>
                 </main>

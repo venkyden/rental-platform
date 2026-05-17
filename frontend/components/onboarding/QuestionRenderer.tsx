@@ -12,22 +12,22 @@ import { Question, FRENCH_UNIVERSITIES } from './onboardingQuestions';
 interface QuestionRendererProps {
     question: Question;
     responses: Record<string, any>;
-    onAnswer: (value: any) => void;
-    onRangeUpdate: (id: string, value: number) => void;
+    onAnswerAction: (value: any) => void;
+    onRangeUpdateAction: (id: string, value: number) => void;
     multiSelectValues: string[];
-    onMultiSelectToggle: (value: string, max: number) => void;
-    sanitizeInput: (input: string) => string;
+    onMultiSelectToggleAction: (value: string, max: number) => void;
+    sanitizeInputAction: (input: string) => string;
     userType: 'tenant' | 'landlord' | 'agency';
 }
 
 export default function QuestionRenderer({
     question,
     responses,
-    onAnswer,
-    onRangeUpdate,
+    onAnswerAction,
+    onRangeUpdateAction,
     multiSelectValues,
-    onMultiSelectToggle,
-    sanitizeInput,
+    onMultiSelectToggleAction,
+    sanitizeInputAction,
     userType,
 }: QuestionRendererProps) {
     const { t } = useLanguage();
@@ -115,7 +115,7 @@ export default function QuestionRenderer({
                 whileTap={{ scale: 0.98 }}
                 onClick={() => {
                     if (selectedAddress) {
-                        onAnswer({
+                        onAnswerAction({
                             address: selectedAddress.address,
                             city: selectedAddress.city,
                             postal_code: selectedAddress.postal_code,
@@ -149,10 +149,10 @@ export default function QuestionRenderer({
                         } else if (val && typeof val === 'string' && val.includes('|')) {
                             const [uniId, city, label] = val.split('|');
                             setShowManualUniversityInput(false);
-                            onAnswer({ 
-                                university_id: sanitizeInput(uniId), 
-                                university_name: sanitizeInput(label), 
-                                city: sanitizeInput(city) 
+                            onAnswerAction({ 
+                                university_id: sanitizeInputAction(uniId), 
+                                university_name: sanitizeInputAction(label), 
+                                city: sanitizeInputAction(city) 
                             });
                         }
                     }}
@@ -199,10 +199,10 @@ export default function QuestionRenderer({
                                 whileTap={{ scale: 0.98 }}
                                 onClick={() => {
                                     if (manualUniName.trim() && manualUniCity.trim()) {
-                                        onAnswer({
+                                        onAnswerAction({
                                             university_id: 'custom',
-                                            university_name: sanitizeInput(manualUniName),
-                                            city: sanitizeInput(manualUniCity)
+                                            university_name: sanitizeInputAction(manualUniName),
+                                            city: sanitizeInputAction(manualUniCity)
                                         });
                                     }
                                 }}
@@ -246,7 +246,7 @@ export default function QuestionRenderer({
                         initialLat={currentLat}
                         initialLng={currentLng}
                         radiusMeters={mapRadius}
-                        onLocationChange={(lat: number, lng: number) => setMapCenter({ lat, lng })}
+                        onLocationChangeAction={(lat: number, lng: number) => setMapCenter({ lat, lng })}
                     />
                     <div className="absolute top-6 left-6 right-6 flex items-center justify-center pointer-events-none">
                         <div className="px-6 py-3 bg-white/90 backdrop-blur shadow-xl rounded-full border border-zinc-100 flex items-center gap-3">
@@ -284,7 +284,7 @@ export default function QuestionRenderer({
                 <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => onAnswer({ lat: currentLat, lng: currentLng, radius: mapRadius })}
+                    onClick={() => onAnswerAction({ lat: currentLat, lng: currentLng, radius: mapRadius })}
                     className="w-full py-8 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.5em] rounded-[2rem] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.2)] transition-all"
                 >
                     {t('common.confirm_area', undefined, 'Confirm Search Area')}
@@ -314,7 +314,7 @@ export default function QuestionRenderer({
                         max={question.max || 100}
                         step={question.step || 1}
                         value={value}
-                        onChange={(e) => onRangeUpdate(question.id, parseInt(e.target.value))}
+                        onChange={(e) => onRangeUpdateAction(question.id, parseInt(e.target.value))}
                         className="w-full h-1.5 bg-zinc-100 rounded-full appearance-none cursor-pointer accent-zinc-900"
                     />
                     
@@ -326,7 +326,7 @@ export default function QuestionRenderer({
                 <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => onAnswer(value)}
+                    onClick={() => onAnswerAction(value)}
                     className="w-full py-8 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.5em] rounded-[2rem] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.2)]"
                 >
                     {t('common.next')}
@@ -351,7 +351,7 @@ export default function QuestionRenderer({
                             variants={itemVariants}
                             whileHover={{ scale: 1.03 }}
                             whileTap={{ scale: 0.97 }}
-                            onClick={() => onMultiSelectToggle(option.value, question.maxSelections || 5)}
+                            onClick={() => onMultiSelectToggleAction(option.value, question.maxSelections || 5)}
                             className={`px-8 py-8 text-left rounded-[2.5rem] transition-all duration-300 relative overflow-hidden flex items-center justify-between group ${
                                 isSelected
                                 ? 'bg-zinc-900 text-white shadow-2xl'
@@ -373,7 +373,7 @@ export default function QuestionRenderer({
             <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => onAnswer(multiSelectValues)}
+                onClick={() => onAnswerAction(multiSelectValues)}
                 disabled={multiSelectValues.length === 0}
                 className="w-full py-8 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.5em] rounded-[2rem] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.2)] disabled:opacity-30"
             >
@@ -395,7 +395,7 @@ export default function QuestionRenderer({
                     variants={itemVariants}
                     whileHover={{ scale: 1.02, x: 10 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => onAnswer(option.value)}
+                    onClick={() => onAnswerAction(option.value)}
                     className="w-full text-left px-10 py-8 bg-white hover:bg-zinc-900 rounded-[2.5rem] border border-zinc-100 hover:border-zinc-900 transition-all group flex items-center justify-between"
                 >
                     <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 group-hover:text-white transition-colors">
@@ -416,7 +416,7 @@ export default function QuestionRenderer({
                     type="text"
                     placeholder={question.placeholder}
                     className="w-full px-12 py-10 text-2xl font-bold text-zinc-900 bg-zinc-50 border-none rounded-[3rem] focus:ring-2 focus:ring-zinc-900 transition-all placeholder:text-zinc-200 text-center"
-                    onKeyPress={(e) => e.key === 'Enter' && e.currentTarget.value && onAnswer(e.currentTarget.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && e.currentTarget.value && onAnswerAction(e.currentTarget.value)}
                     autoFocus
                 />
             </div>
@@ -425,7 +425,7 @@ export default function QuestionRenderer({
                 whileTap={{ scale: 0.98 }}
                 onClick={() => {
                     const input = document.querySelector('input[type="text"]') as HTMLInputElement;
-                    if (input?.value) onAnswer(input.value);
+                    if (input?.value) onAnswerAction(input.value);
                 }}
                 className="w-full py-8 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.5em] rounded-[2rem] shadow-2xl transition-all"
             >

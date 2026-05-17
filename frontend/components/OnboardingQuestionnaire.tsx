@@ -10,7 +10,7 @@ import { ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 interface QuestionnaireProps {
     userType: 'tenant' | 'landlord' | 'agency';
     initialResponses?: Record<string, any>;
-    onComplete: (responses: Record<string, any>) => void;
+    onCompleteAction: (responses: Record<string, any>) => void;
 }
 
 /* ----------------------------------------------------------------
@@ -44,7 +44,7 @@ const cardVariants: Variants = {
     })
 };
 
-export default function OnboardingQuestionnaire({ userType, initialResponses, onComplete }: QuestionnaireProps) {
+export default function OnboardingQuestionnaire({ userType, initialResponses, onCompleteAction }: QuestionnaireProps) {
     const { t } = useLanguage();
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
     const [direction, setDirection] = useState(1);
@@ -118,7 +118,7 @@ export default function OnboardingQuestionnaire({ userType, initialResponses, on
     const handleComplete = async (finalResponses: Record<string, any>) => {
         setLoading(true);
         try {
-            await onComplete({ ...finalResponses, user_type: userType });
+            await onCompleteAction({ ...finalResponses, user_type: userType });
         } catch (error) {
             setLoading(false);
         }
@@ -236,11 +236,11 @@ export default function OnboardingQuestionnaire({ userType, initialResponses, on
                                 <QuestionRenderer
                                     question={currentQuestion}
                                     responses={responses}
-                                    onAnswer={handleAnswer}
-                                    onRangeUpdate={handleRangeUpdate}
+                                    onAnswerAction={handleAnswer}
+                                    onRangeUpdateAction={handleRangeUpdate}
                                     multiSelectValues={multiSelectValues}
-                                    onMultiSelectToggle={handleMultiSelectToggle}
-                                    sanitizeInput={(i) => i.replace(/<[^>]*>?/gm, '')}
+                                    onMultiSelectToggleAction={handleMultiSelectToggle}
+                                    sanitizeInputAction={(i) => i.replace(/<[^>]*>?/gm, '')}
                                     userType={userType}
                                 />
                             </div>

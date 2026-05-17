@@ -69,7 +69,7 @@ export default function Navbar() {
 
                     {/* Desktop Navigation */}
                     {user && (
-                        <nav className="hidden md:flex items-center gap-1 ml-2 p-1 bg-zinc-900/5 rounded-full border border-zinc-900/5">
+                        <nav aria-label={t('navigation.primary', undefined, 'Primary Navigation')} className="hidden md:flex items-center gap-1 ml-2 p-1 bg-zinc-900/5 rounded-full border border-zinc-900/5">
                             {navLinks.map((link) => {
                                 const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);
                                 return (
@@ -282,7 +282,7 @@ export default function Navbar() {
                             exit={{ opacity: 0, y: -20, scale: 0.95 }}
                             className="md:hidden mt-4 glass !rounded-[2rem] overflow-hidden shadow-2xl pointer-events-auto border-white/20 max-w-lg mx-auto"
                         >
-                            <nav className="p-6 flex flex-col gap-4">
+                            <nav aria-label={t('navigation.mobile', undefined, 'Mobile Navigation')} className="p-6 flex flex-col gap-4">
                                 <div className="grid grid-cols-2 gap-3">
                                     {navLinks.map((link) => {
                                         const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);
