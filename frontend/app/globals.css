@@ -157,3 +157,20 @@ input {
 .notranslate {
   font-variant-numeric: tabular-nums;
 }
+
+/* ─── Accessibility: Motion Reduction ─── */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ─── iOS Viewport Input Zoom Fix ─── */
+@media screen and (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}

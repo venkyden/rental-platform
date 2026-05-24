@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useSegment } from '@/lib/SegmentContext';
 import { useAuth } from '@/lib/useAuth';
 import { apiClient } from '@/lib/api';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import Image from 'next/image';
 import PremiumLayout from '@/components/PremiumLayout';
 import { useLanguage } from '@/lib/LanguageContext';
 import { resolveMediaUrl } from '@/lib/mediaUrl';
@@ -48,6 +49,7 @@ function SearchContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const initialQuery = searchParams.get('q') || '';
+    const shouldReduceMotion = useReducedMotion();
 
     // Data State
     const [properties, setProperties] = useState<Property[]>([]);
@@ -81,44 +83,45 @@ function SearchContent() {
         }
     }, [config]);
 
-    useEffect(() => {
-        const fetchProperties = async (isLoadMore = false) => {
-            try {
-                if (!isLoadMore) {
-                    setLoading(true);
-                    setProperties([]);
-                }
-                setError('');
-                const params: any = { 
-                    status: 'active', 
-                    max_rent: priceRange,
-                    skip: isLoadMore ? properties.length : 0,
-                    limit: ITEMS_PER_PAGE,
-                    sort_by: sortBy,
-                    order_direction: orderDir
-                };
-                if (location.length > 2) params.city = location;
-                if (furnished) params.furnished = true;
-                if (cafOnly) params.caf_eligible = true;
-                if (propertyType) params.property_type = propertyType;
-                if (colocation) params.amenities = ['colocation'];
-                
-                const response = savedOnly 
-                    ? await apiClient.getSavedProperties(params)
-                    : await apiClient.getProperties(params);
-                
-                if (isLoadMore) {
-                    setProperties(prev => [...prev, ...response]);
-                } else {
-                    setProperties(response);
-                }
-            } catch (err) {
-                setError(t('search.status.error', undefined, undefined));
-            } finally {
-                setLoading(false);
+    const fetchProperties = async (isLoadMore = false, currentCount = 0) => {
+        try {
+            if (!isLoadMore) {
+                setLoading(true);
+                setProperties([]);
             }
-        };
-        const timeoutId = setTimeout(() => fetchProperties(), 500);
+            setError('');
+            const params: any = { 
+                status: 'active', 
+                max_rent: priceRange,
+                skip: isLoadMore ? currentCount : 0,
+                limit: ITEMS_PER_PAGE,
+                sort_by: sortBy,
+                order_direction: orderDir
+            };
+            if (location.length > 2) params.city = location;
+            if (furnished) params.furnished = true;
+            if (cafOnly) params.caf_eligible = true;
+            if (propertyType) params.property_type = propertyType;
+            if (colocation) params.amenities = ['colocation'];
+            
+            const response = savedOnly 
+                ? await apiClient.getSavedProperties(params)
+                : await apiClient.getProperties(params);
+            
+            if (isLoadMore) {
+                setProperties(prev => [...prev, ...response]);
+            } else {
+                setProperties(response);
+            }
+        } catch (err) {
+            setError(t('search.status.error', undefined, undefined));
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        const timeoutId = setTimeout(() => fetchProperties(false), 500);
         return () => clearTimeout(timeoutId);
     }, [priceRange, location, furnished, colocation, cafOnly, propertyType, sortBy, orderDir, savedOnly]);
 
@@ -149,22 +152,7 @@ function SearchContent() {
     };
 
     const handleLoadMore = async () => {
-        const params: any = { 
-            status: 'active', 
-            max_rent: priceRange,
-            skip: properties.length,
-            limit: ITEMS_PER_PAGE,
-            sort_by: sortBy,
-            order_direction: orderDir
-        };
-        if (location.length > 2) params.city = location;
-        if (furnished) params.furnished = true;
-        if (cafOnly) params.caf_eligible = true;
-        if (propertyType) params.property_type = propertyType;
-        if (colocation) params.amenities = ['colocation'];
-
-        const response = await apiClient.client.get('/properties', { params });
-        setProperties(prev => [...prev, ...response.data]);
+        await fetchProperties(true, properties.length);
     };
 
     if (segmentLoading || authLoading) return <div className="min-h-screen flex items-center justify-center font-black uppercase tracking-[0.4em] text-zinc-400 animate-pulse">{t('search.status.loading', undefined, undefined)}</div>;
@@ -174,7 +162,7 @@ function SearchContent() {
             {/* Industry Grade Living Background */}
             <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
                 <motion.div 
-                    animate={{ 
+                    animate={shouldReduceMotion ? undefined : { 
                         scale: [1, 1.2, 1],
                         rotate: [0, 90, 0],
                         x: [0, 50, 0],
@@ -184,7 +172,7 @@ function SearchContent() {
                     className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-zinc-900/5 rounded-full blur-[120px]"
                 />
                 <motion.div 
-                    animate={{ 
+                    animate={shouldReduceMotion ? undefined : { 
                         scale: [1.2, 1, 1.2],
                         rotate: [0, -90, 0],
                         x: [0, -50, 0],
@@ -241,7 +229,7 @@ function SearchContent() {
                             <input
                                 type="text"
                                 placeholder={t('search.filters.locationPlaceholder', undefined, 'Where would you like to live?')}
-                                className="w-full bg-transparent border-none focus:ring-0 text-xs font-black uppercase tracking-[0.1em] text-zinc-900 placeholder:text-zinc-400 placeholder:font-black placeholder:tracking-[0.1em]"
+                                className="w-full bg-transparent border-none focus:ring-0 text-base md:text-xs font-black uppercase tracking-[0.1em] text-zinc-900 placeholder:text-zinc-400 placeholder:font-black placeholder:tracking-[0.1em]"
                                 value={location}
                                 onChange={(e) => setLocation(e.target.value)}
                             />
@@ -263,7 +251,7 @@ function SearchContent() {
                             <select 
                                 value={propertyType}
                                 onChange={(e) => setPropertyType(e.target.value)}
-                                className="px-8 py-4 bg-zinc-100/50 rounded-[1.5rem] text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 border-none focus:ring-0 cursor-pointer hover:bg-zinc-100 transition-colors"
+                                className="px-8 py-4 bg-zinc-100/50 rounded-[1.5rem] text-base md:text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 border-none focus:ring-0 cursor-pointer hover:bg-zinc-100 transition-colors"
                             >
                                 <option value="">{t('search.filters.allTypes', undefined, 'All Types')}</option>
                                 <option value="apartment">{t('properties.new.types.apartment')}</option>
@@ -279,7 +267,7 @@ function SearchContent() {
                                     setSortBy(field);
                                     setOrderDir(dir);
                                 }}
-                                className="px-8 py-4 bg-zinc-100/50 rounded-[1.5rem] text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 border-none focus:ring-0 cursor-pointer hover:bg-zinc-100 transition-colors"
+                                className="px-8 py-4 bg-zinc-100/50 rounded-[1.5rem] text-base md:text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 border-none focus:ring-0 cursor-pointer hover:bg-zinc-100 transition-colors"
                             >
                                 <option value="created_at:desc">{t('search.sort.newest')}</option>
                                 <option value="monthly_rent:asc">{t('search.sort.priceAsc')}</option>
@@ -405,10 +393,12 @@ function SearchContent() {
                                         >
                                             <div className="aspect-[16/12] bg-zinc-100 relative overflow-hidden">
                                                 {property.photos?.[0] ? (
-                                                    <img 
+                                                    <Image 
                                                         src={resolveMediaUrl(property.photos[0].url)} 
                                                         alt={property.title} 
-                                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" 
+                                                        fill
+                                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                                        className="object-cover group-hover:scale-110 transition-transform duration-1000" 
                                                     />
                                                 ) : (
                                                     <div className="w-full h-full flex items-center justify-center text-zinc-300 font-black text-3xl italic tracking-tighter">ROOMIVO</div>

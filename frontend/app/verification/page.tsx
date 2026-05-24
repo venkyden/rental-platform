@@ -1,14 +1,32 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/useAuth';
 import { useLanguage } from '@/lib/LanguageContext';
 import { useRouter } from 'next/navigation';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import PremiumLayout from '@/components/PremiumLayout';
 import VerificationUpload from '@/components/VerificationUpload';
-import { motion, Variants } from 'framer-motion';
-import { CheckCircle2, Clock, ShieldCheck, Briefcase, UserCheck, ChevronLeft, TrendingUp, Home } from 'lucide-react';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
+import { 
+    CheckCircle2, 
+    Clock, 
+    ShieldCheck, 
+    Briefcase, 
+    UserCheck, 
+    ChevronLeft, 
+    TrendingUp, 
+    Home, 
+    Lock, 
+    FileText, 
+    ArrowRight,
+    Loader2,
+    ShieldAlert,
+    Info,
+    AlertCircle
+} from 'lucide-react';
+import { apiClient } from '@/lib/api';
+import { useToast } from '@/lib/ToastContext';
 
 const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -25,21 +43,76 @@ const itemVariants: Variants = {
     show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } }
 };
 
+interface VerificationStatusData {
+    identity_verified: boolean;
+    employment_verified: boolean;
+    income_verified: boolean;
+    income_status: string;
+    ownership_verified: boolean;
+    kbis_verified?: boolean;
+    carte_g_verified?: boolean;
+    identity_data: any;
+    employment_data: any;
+    ownership_data: any;
+    income_data: any;
+    guarantor_type: string | null;
+    guarantor_status: string | null;
+    guarantor_data: any;
+    visale_id: string | null;
+    garantme_ref: string | null;
+    trust_score: number;
+}
+
 export default function VerificationPage() {
-    const { user } = useAuth();
+    const { user, checkAuth } = useAuth();
     const { t } = useLanguage();
     const router = useRouter();
-    const [activeTab, setActiveTab] = useState<'identity' | 'employment' | 'property'>('identity');
+    const toast = useToast();
+    
+    const [activeTab, setActiveTab] = useState<'identity' | 'income' | 'guarantor' | 'property'>('identity');
     const [refreshKey, setRefreshKey] = useState(0);
+    const [loading, setLoading] = useState(true);
+    const [statusData, setStatusData] = useState<VerificationStatusData | null>(null);
+    const [animatedScore, setAnimatedScore] = useState(0);
+
+    const fetchStatusData = async (silent = false) => {
+        if (!silent) setLoading(true);
+        try {
+            const res = await apiClient.client.get('/verification/status');
+            setStatusData(res.data);
+            // Trigger animation on load or refresh
+            setAnimatedScore(res.data.trust_score);
+        } catch (err) {
+            console.error('Error fetching verification status details:', err);
+            toast.error('Failed to load verification status');
+        } finally {
+            if (!silent) setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchStatusData();
+    }, [refreshKey]);
+
+    const handleSuccess = async () => {
+        toast.success('Document uploaded successfully!');
+        setRefreshKey(prev => prev + 1);
+        await checkAuth();
+        await fetchStatusData(true);
+    };
 
     if (!user) return null;
 
-    const handleSuccess = () => {
-        setRefreshKey(prev => prev + 1);
-        setTimeout(() => {
-            router.push('/dashboard');
-        }, 2000);
-    };
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-slate-50">
+                <Loader2 className="w-8 h-8 text-zinc-900 animate-spin" />
+            </div>
+        );
+    }
+
+    const isTenant = user.role === 'tenant';
+    const hasPropertyTab = user.role === 'landlord' || user.role === 'property_manager';
 
     return (
         <ProtectedRoute>
@@ -74,68 +147,69 @@ export default function VerificationPage() {
                         </div>
                     </motion.div>
 
-                    {/* Progress Overview - Premium Grid */}
+                    {/* Progress Overview Grid */}
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
                         <motion.div variants={containerVariants} className="lg:col-span-8 grid grid-cols-1 md:grid-cols-3 gap-8">
-                            {/* Email Card */}
-                            <motion.div variants={itemVariants} className="glass-card !p-10 flex flex-col items-center text-center group">
-                                <div className="w-16 h-16 bg-zinc-900 text-white rounded-[1.5rem] flex items-center justify-center mb-8 shadow-2xl group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
-                                    <CheckCircle2 className="w-8 h-8" />
-                                </div>
-                                <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] mb-3">
-                                    {t('dashboard.verification.verification.progress.email', undefined, 'Email')}
-                                </h3>
-                                <p className="text-lg font-black text-zinc-900 uppercase tracking-tight">
-                                    {t('dashboard.verification.verification.verified', undefined, 'Verified')}
-                                </p>
-                            </motion.div>
-
-                            {/* Identity Card */}
-                            <motion.div variants={itemVariants} className={`glass-card !p-10 flex flex-col items-center text-center group ${user.identity_verified ? 'border-zinc-900/30' : ''}`}>
-                                <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center mb-8 shadow-xl transition-all duration-500 group-hover:scale-110 group-hover:-rotate-6 ${user.identity_verified ? 'bg-zinc-900 text-white shadow-2xl' : 'bg-zinc-100 text-zinc-400'}`}>
-                                    {user.identity_verified ? (
-                                        <UserCheck className="w-8 h-8" />
-                                    ) : (
-                                        <Clock className="w-8 h-8" />
-                                    )}
+                            {/* Identity Progress Card */}
+                            <motion.div variants={itemVariants} className={`glass-card !p-10 flex flex-col items-center text-center group ${statusData?.identity_verified ? 'border-emerald-100 bg-emerald-50/10' : ''}`}>
+                                <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center mb-8 shadow-xl transition-all duration-500 group-hover:scale-110 ${statusData?.identity_verified ? 'bg-emerald-950 text-white' : 'bg-zinc-100 text-zinc-400'}`}>
+                                    {statusData?.identity_verified ? <UserCheck className="w-8 h-8" /> : <Lock className="w-6 h-6" />}
                                 </div>
                                 <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] mb-3">
                                     {t('dashboard.verification.verification.progress.identity', undefined, 'Identity')}
                                 </h3>
-                                <p className={`text-lg font-black uppercase tracking-tight ${user.identity_verified ? 'text-zinc-900' : 'text-zinc-400'}`}>
-                                    {user.identity_verified ? t('dashboard.verification.verification.verified', undefined, 'Verified') : t('dashboard.verification.verification.pending', undefined, 'Pending')}
+                                <p className={`text-lg font-black uppercase tracking-tight ${statusData?.identity_verified ? 'text-zinc-950' : 'text-zinc-400'}`}>
+                                    {statusData?.identity_verified ? t('dashboard.verification.verification.verified', undefined, 'Verified') : 'Unverified'}
                                 </p>
                             </motion.div>
 
-                            {/* Professional/Ownership Card */}
-                            {(() => {
-                                const isLandlord = user.role === 'landlord' || user.role === 'property_manager';
-                                const isVerified = isLandlord ? user.ownership_verified : user.employment_verified;
-                                const label = isLandlord 
-                                    ? t('dashboard.verification.verification.progress.ownership', undefined, 'Ownership') 
-                                    : t('dashboard.verification.verification.progress.employment', undefined, 'Employment');
-                                
-                                return (
-                                    <motion.div variants={itemVariants} className={`glass-card !p-10 flex flex-col items-center text-center group ${isVerified ? 'border-zinc-900/30' : ''}`}>
-                                        <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center mb-8 shadow-xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 ${isVerified ? 'bg-zinc-900 text-white shadow-2xl' : 'bg-zinc-100 text-zinc-400'}`}>
-                                            {isVerified ? (
-                                                isLandlord ? <Home className="w-8 h-8" /> : <Briefcase className="w-8 h-8" />
-                                            ) : (
-                                                <Clock className="w-8 h-8" />
-                                            )}
-                                        </div>
-                                        <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] mb-3">
-                                            {label}
-                                        </h3>
-                                        <p className={`text-lg font-black uppercase tracking-tight ${isVerified ? 'text-zinc-900' : 'text-zinc-400'}`}>
-                                            {isVerified ? t('dashboard.verification.verification.verified', undefined, 'Verified') : t('dashboard.verification.verification.pending', undefined, 'Pending')}
-                                        </p>
-                                    </motion.div>
-                                );
-                            })()}
+                            {/* Income Progress Card */}
+                            {isTenant && (
+                                <motion.div variants={itemVariants} className={`glass-card !p-10 flex flex-col items-center text-center group ${statusData?.income_verified ? 'border-emerald-100 bg-emerald-50/10' : ''}`}>
+                                    <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center mb-8 shadow-xl transition-all duration-500 group-hover:scale-110 ${statusData?.income_verified ? 'bg-emerald-950 text-white' : 'bg-zinc-100 text-zinc-400'}`}>
+                                        {statusData?.income_verified ? <Briefcase className="w-8 h-8" /> : <Clock className="w-8 h-8" />}
+                                    </div>
+                                    <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] mb-3">
+                                        {t('dashboard.verification.verification.tabs.income', undefined, 'Income')}
+                                    </h3>
+                                    <p className={`text-lg font-black uppercase tracking-tight ${statusData?.income_verified ? 'text-zinc-950' : 'text-zinc-400'}`}>
+                                        {statusData?.income_verified ? t('dashboard.verification.verification.verified', undefined, 'Verified') : (statusData?.income_status || 'Unverified')}
+                                    </p>
+                                </motion.div>
+                            )}
+
+                            {/* Guarantor Progress Card */}
+                            {isTenant && (
+                                <motion.div variants={itemVariants} className={`glass-card !p-10 flex flex-col items-center text-center group ${statusData?.guarantor_status === 'verified' ? 'border-emerald-100 bg-emerald-50/10' : ''}`}>
+                                    <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center mb-8 shadow-xl transition-all duration-500 group-hover:scale-110 ${statusData?.guarantor_status === 'verified' ? 'bg-emerald-950 text-white' : 'bg-zinc-100 text-zinc-400'}`}>
+                                        {statusData?.guarantor_status === 'verified' ? <ShieldCheck className="w-8 h-8" /> : <ShieldAlert className="w-8 h-8" />}
+                                    </div>
+                                    <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] mb-3">
+                                        {t('dashboard.verification.verification.tabs.guarantor', undefined, 'Guarantor')}
+                                    </h3>
+                                    <p className={`text-lg font-black uppercase tracking-tight ${statusData?.guarantor_status === 'verified' ? 'text-zinc-950' : 'text-zinc-400'}`}>
+                                        {statusData?.guarantor_status === 'verified' ? t('dashboard.verification.verification.verified', undefined, 'Verified') : (statusData?.guarantor_status || 'None')}
+                                    </p>
+                                </motion.div>
+                            )}
+
+                            {/* Ownership Progress Card (Landlord Only) */}
+                            {hasPropertyTab && (
+                                <motion.div variants={itemVariants} className={`glass-card !p-10 flex flex-col items-center text-center group ${statusData?.ownership_verified ? 'border-emerald-100 bg-emerald-50/10' : ''}`}>
+                                    <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center mb-8 shadow-xl transition-all duration-500 group-hover:scale-110 ${statusData?.ownership_verified ? 'bg-emerald-950 text-white' : 'bg-zinc-100 text-zinc-400'}`}>
+                                        {statusData?.ownership_verified ? <Home className="w-8 h-8" /> : <Clock className="w-8 h-8" />}
+                                    </div>
+                                    <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] mb-3">
+                                        {t('dashboard.verification.verification.progress.ownership', undefined, 'Ownership')}
+                                    </h3>
+                                    <p className={`text-lg font-black uppercase tracking-tight ${statusData?.ownership_verified ? 'text-zinc-950' : 'text-zinc-400'}`}>
+                                        {statusData?.ownership_verified ? t('dashboard.verification.verification.verified', undefined, 'Verified') : t('dashboard.verification.verification.pending', undefined, 'Pending')}
+                                    </p>
+                                </motion.div>
+                            )}
                         </motion.div>
 
-                        {/* Trust Score Card - Ultra Premium */}
+                        {/* Trust Score Card */}
                         <motion.div variants={itemVariants} className="lg:col-span-4 glass-card !p-12 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.3)] bg-zinc-900 text-white border-none rounded-[3rem] relative overflow-hidden group">
                             <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full blur-[60px] -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-1000" />
                             
@@ -149,32 +223,28 @@ export default function VerificationPage() {
                                         <circle cx="96" cy="96" r="88" stroke="rgba(255,255,255,0.05)" strokeWidth="16" fill="none" />
                                         <motion.circle 
                                             initial={{ strokeDasharray: "0 560" }}
-                                            animate={{ strokeDasharray: `${(user.trust_score / 100) * 552.92} 560` }}
-                                            transition={{ duration: 2, ease: [0.16, 1, 0.3, 1] }}
+                                            animate={{ strokeDasharray: `${(animatedScore / 100) * 552.92} 560` }}
+                                            transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
                                             cx="96" cy="96" r="88" stroke="url(#scoreGradient)" strokeWidth="16" fill="none" strokeLinecap="round" 
                                         />
                                         <defs>
                                             <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                                                 <stop offset="0%" stopColor="#ffffff" />
-                                                <stop offset="100%" stopColor="#d4d4d8" />
+                                                <stop offset="100%" stopColor="#a1a1aa" />
                                             </linearGradient>
                                         </defs>
                                     </svg>
                                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                        <motion.span 
-                                            initial={{ scale: 0.5, opacity: 0 }}
-                                            animate={{ scale: 1, opacity: 1 }}
-                                            className="text-7xl font-black tracking-tighter"
-                                        >
-                                            {user.trust_score}
-                                        </motion.span>
+                                        <span className="text-7xl font-black tracking-tighter">
+                                            {animatedScore}
+                                        </span>
                                         <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] mt-2">
                                             {t('dashboard.points', undefined, 'Score')}
                                         </span>
                                     </div>
                                 </div>
                                 <p className="mt-8 text-center text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
-                                    {user.trust_score < 100 
+                                    {animatedScore < 100 
                                         ? t('dashboard.verification.verification.progress.boost', undefined, 'Complete verification to boost score') 
                                         : t('dashboard.verification.verification.progress.max', undefined, 'Maximum Trust Score Achieved')}
                                 </p>
@@ -182,23 +252,27 @@ export default function VerificationPage() {
                         </motion.div>
                     </div>
 
-                    {/* Main Verification Container */}
-                    <motion.div variants={itemVariants} className="glass-card !p-0 rounded-[3rem] overflow-hidden shadow-2xl">
-                        {/* Tab Selectors - Premium Pill */}
+                    {/* Main Verification Dashboard Container */}
+                    <motion.div variants={itemVariants} className="glass-card !p-0 rounded-[3rem] overflow-hidden shadow-2xl border-zinc-100">
+                        {/* Tab Headers */}
                         <div className="p-6 bg-zinc-50/50 border-b border-zinc-100">
                             <div className="flex flex-wrap gap-4">
                                 {[
                                     { id: 'identity', label: t('dashboard.verification.verification.tabs.identity', undefined, 'Identity Verification') },
-                                    (user.role === 'landlord' || user.role === 'property_manager')
-                                        ? { id: 'property', label: t('dashboard.verification.verification.tabs.property', undefined, 'Ownership Verification') }
-                                        : { id: 'employment', label: t('dashboard.verification.verification.tabs.employment', undefined, 'Employment Verification') }
+                                    ...(isTenant ? [
+                                        { id: 'income', label: t('dashboard.verification.verification.tabs.income', undefined, 'Income Verification') },
+                                        { id: 'guarantor', label: t('dashboard.verification.verification.tabs.guarantor', undefined, 'Guarantor Verification') }
+                                    ] : []),
+                                    ...(hasPropertyTab ? [
+                                        { id: 'property', label: t('dashboard.verification.verification.tabs.property', undefined, 'Ownership Verification') }
+                                    ] : [])
                                 ].map((tab) => (
                                     <button
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id as any)}
-                                        className={`px-10 py-5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 ${activeTab === tab.id
+                                        className={`px-8 py-4.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 ${activeTab === tab.id
                                             ? 'bg-zinc-900 text-white shadow-2xl scale-105'
-                                            : 'text-zinc-400 hover:text-zinc-900'
+                                            : 'text-zinc-400 hover:text-zinc-950'
                                             }`}
                                     >
                                         {tab.label}
@@ -207,69 +281,213 @@ export default function VerificationPage() {
                             </div>
                         </div>
 
-                        {/* Verification Content Area */}
+                        {/* Content Area */}
                         <div className="p-12 sm:p-20">
-                            <motion.div
-                                key={activeTab}
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                            >
-                                {activeTab === 'identity' && (
-                                    !user.identity_verified ? (
+                            <AnimatePresence mode="wait">
+                                <motion.div
+                                    key={activeTab}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    transition={{ duration: 0.3 }}
+                                >
+                                    {/* IDENTITY TAB */}
+                                    {activeTab === 'identity' && (
+                                        statusData?.identity_verified ? (
+                                            <div className="text-center py-16 space-y-6">
+                                                <div className="w-24 h-24 bg-zinc-900 text-white rounded-[2.5rem] flex items-center justify-center mx-auto shadow-2xl">
+                                                    <UserCheck className="w-12 h-12" />
+                                                </div>
+                                                <h3 className="text-4xl font-black text-zinc-900 tracking-tighter uppercase">
+                                                    {t('dashboard.verification.verification.success.identity', undefined, 'Identity Verified!')}
+                                                </h3>
+                                                <p className="text-zinc-500 font-bold max-w-sm mx-auto text-lg">
+                                                    {t('dashboard.verification.verification.success.identityMsg', undefined, 'Your identity has been successfully verified. You now have full access to high-trust rental listings.')}
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            <VerificationUpload
+                                                key={`identity-${refreshKey}`}
+                                                verificationType="identity"
+                                                onSuccessAction={handleSuccess}
+                                                user={user}
+                                            />
+                                        )
+                                    )}
+
+                                    {/* INCOME TAB */}
+                                    {activeTab === 'income' && (
+                                        !statusData?.identity_verified ? (
+                                            /* Locked State (Identity Required First) */
+                                            <div className="text-center py-16 space-y-6 max-w-md mx-auto">
+                                                <div className="w-20 h-20 bg-zinc-100 text-zinc-400 rounded-3xl flex items-center justify-center mx-auto shadow-inner">
+                                                    <Lock className="w-8 h-8" />
+                                                </div>
+                                                <h3 className="text-2xl font-black text-zinc-900 uppercase tracking-tighter">
+                                                    Identity Verification Required
+                                                </h3>
+                                                <p className="text-zinc-500 font-medium">
+                                                    To comply with French Loi Alur regulations, resource and income documentation must be tied to a verified identity. Please verify your identity first.
+                                                </p>
+                                                <button
+                                                    onClick={() => setActiveTab('identity')}
+                                                    className="inline-flex items-center gap-2 px-6 py-4.5 bg-zinc-900 hover:bg-zinc-800 text-white text-[10px] font-black uppercase tracking-wider rounded-2xl transition-all mt-4"
+                                                >
+                                                    Verify Identity First <ArrowRight className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        ) : statusData?.income_verified ? (
+                                            <div className="text-center py-16 space-y-6">
+                                                <div className="w-24 h-24 bg-zinc-900 text-white rounded-[2.5rem] flex items-center justify-center mx-auto shadow-2xl">
+                                                    <CheckCircle2 className="w-12 h-12" />
+                                                </div>
+                                                <h3 className="text-4xl font-black text-zinc-900 tracking-tighter uppercase">
+                                                    Income Verified
+                                                </h3>
+                                                <p className="text-zinc-500 font-bold max-w-sm mx-auto text-lg">
+                                                    Your financial resources have been successfully verified. This significantly boosts your standing in dossiers.
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            <VerificationUpload
+                                                key={`income-${refreshKey}`}
+                                                verificationType="employment"
+                                                onSuccessAction={handleSuccess}
+                                                user={user}
+                                            />
+                                        )
+                                    )}
+
+                                    {/* GUARANTOR TAB */}
+                                    {activeTab === 'guarantor' && (
+                                        !statusData?.identity_verified ? (
+                                            /* Locked State (Identity Required First) */
+                                            <div className="text-center py-16 space-y-6 max-w-md mx-auto">
+                                                <div className="w-20 h-20 bg-zinc-100 text-zinc-400 rounded-3xl flex items-center justify-center mx-auto shadow-inner">
+                                                    <Lock className="w-8 h-8" />
+                                                </div>
+                                                <h3 className="text-2xl font-black text-zinc-900 uppercase tracking-tighter">
+                                                    Identity Verification Required
+                                                </h3>
+                                                <p className="text-zinc-500 font-medium">
+                                                    Please verify your identity first to lock in your guarantor configuration.
+                                                </p>
+                                                <button
+                                                    onClick={() => setActiveTab('identity')}
+                                                    className="inline-flex items-center gap-2 px-6 py-4.5 bg-zinc-900 hover:bg-zinc-800 text-white text-[10px] font-black uppercase tracking-wider rounded-2xl transition-all mt-4"
+                                                >
+                                                    Verify Identity First <ArrowRight className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-12">
+                                                {statusData?.guarantor_type ? (
+                                                    <div className="max-w-xl mx-auto space-y-8">
+                                                        <div className="p-8 rounded-[2.5rem] bg-zinc-50 border border-zinc-100 space-y-6">
+                                                            <div className="flex justify-between items-center pb-4 border-b border-zinc-200/50">
+                                                                <span className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">Registered Guarantor Type</span>
+                                                                <span className="font-bold text-zinc-900 capitalize">
+                                                                    {statusData.guarantor_type === 'visale' && 'Visale (Action Logement)'}
+                                                                    {statusData.guarantor_type === 'garantme' && 'Garantme'}
+                                                                    {statusData.guarantor_type === 'physical' && 'Physical Person'}
+                                                                    {statusData.guarantor_type === 'none' && 'No Guarantor'}
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex justify-between items-center pb-4 border-b border-zinc-200/50">
+                                                                <span className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">Status</span>
+                                                                <span className={`text-[10px] px-3 py-1 rounded-full font-bold uppercase tracking-wider ${
+                                                                    statusData.guarantor_status === 'verified' ? 'bg-emerald-50 text-emerald-700' :
+                                                                    statusData.guarantor_status === 'pending' ? 'bg-amber-50 text-amber-700' :
+                                                                    'bg-zinc-100 text-zinc-600'
+                                                                }`}>
+                                                                    {statusData.guarantor_status}
+                                                                </span>
+                                                            </div>
+                                                            {statusData.guarantor_type === 'visale' && statusData.visale_id && (
+                                                                <div className="flex justify-between items-center">
+                                                                    <span className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">Dossier ID</span>
+                                                                    <span className="font-mono font-bold text-zinc-900">{statusData.visale_id}</span>
+                                                                </div>
+                                                            )}
+                                                            {statusData.guarantor_type === 'garantme' && statusData.garantme_ref && (
+                                                                <div className="flex justify-between items-center">
+                                                                    <span className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">Reference Code</span>
+                                                                    <span className="font-mono font-bold text-zinc-900">{statusData.garantme_ref}</span>
+                                                                </div>
+                                                            )}
+                                                            {statusData.guarantor_type === 'physical' && statusData.guarantor_data?.files && (
+                                                                <div className="space-y-3 pt-2">
+                                                                    <span className="text-[10px] font-black text-zinc-400 uppercase tracking-wider block">Files Verified</span>
+                                                                    <div className="grid gap-2">
+                                                                        {statusData.guarantor_data.files.map((file: any, index: number) => (
+                                                                            <div key={index} className="flex justify-between items-center text-sm py-1 border-b border-zinc-100 last:border-0">
+                                                                                <span className="font-medium text-zinc-700 capitalize">{file.document_type.replace('_', ' ')}</span>
+                                                                                <span className="text-xs text-zinc-400">{file.filename}</span>
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+
+                                                        <div className="flex gap-4">
+                                                            <button
+                                                                onClick={() => router.push('/verify/guarantor')}
+                                                                className="w-full py-5 bg-zinc-950 hover:bg-zinc-900 text-white font-black text-xs uppercase tracking-widest rounded-3xl transition-all"
+                                                            >
+                                                                Manage / Change Guarantor
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-center py-16 space-y-8 max-w-md mx-auto">
+                                                        <div className="w-20 h-20 bg-zinc-100 text-zinc-400 rounded-3xl flex items-center justify-center mx-auto shadow-inner">
+                                                            <ShieldAlert className="w-8 h-8" />
+                                                        </div>
+                                                        <div className="space-y-2">
+                                                            <h3 className="text-2xl font-black text-zinc-900 uppercase tracking-tighter">
+                                                                No Guarantor Configured
+                                                            </h3>
+                                                            <p className="text-zinc-500 font-medium">
+                                                                Most French landlords will not consider applications without a guarantor. Configure a guarantee system now to make your dossier competitive.
+                                                            </p>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => router.push('/verify/guarantor')}
+                                                            className="inline-flex items-center gap-2 px-8 py-5 bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-black uppercase tracking-widest rounded-3xl transition-all active:scale-[0.98]"
+                                                        >
+                                                            Set Up Guarantor <ArrowRight className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )
+                                    )}
+
+                                    {/* PROPERTY TAB (LANDLORD ONLY) */}
+                                    {activeTab === 'property' && (
                                         <VerificationUpload
-                                            key={`identity-${refreshKey}`}
-                                            verificationType="identity"
+                                            key={`property-${refreshKey}`}
+                                            verificationType="property"
                                             onSuccessAction={handleSuccess}
                                             user={user}
                                         />
-                                    ) : (
-                                        <div className="text-center py-20">
-                                            <div className="w-24 h-24 bg-zinc-900 text-white rounded-[2rem] flex items-center justify-center mx-auto mb-10 shadow-2xl">
-                                                <UserCheck className="w-12 h-12" />
-                                            </div>
-                                            <h3 className="text-4xl font-black text-zinc-900 mb-4 tracking-tighter uppercase">
-                                                {t('dashboard.verification.verification.success.identity', undefined, 'Identity Verified!')}
-                                            </h3>
-                                            <p className="text-zinc-500 font-bold max-w-sm mx-auto text-lg leading-relaxed">
-                                                {t('dashboard.verification.verification.success.identityMsg', undefined, 'Your identity has been successfully verified. You now have full access to high-trust rental listings.')}
-                                            </p>
-                                        </div>
-                                    )
-                                )}
+                                    )}
+                                </motion.div>
+                            </AnimatePresence>
+                        </div>
+                    </motion.div>
 
-                                {activeTab === 'employment' && (
-                                    !user.employment_verified ? (
-                                        <VerificationUpload
-                                            key={`employment-${refreshKey}`}
-                                            verificationType="employment"
-                                            onSuccessAction={handleSuccess}
-                                            user={user}
-                                        />
-                                    ) : (
-                                        <div className="text-center py-20">
-                                            <div className="w-24 h-24 bg-zinc-900 text-white rounded-[2rem] flex items-center justify-center mx-auto mb-10 shadow-2xl">
-                                                <Briefcase className="w-12 h-12" />
-                                            </div>
-                                            <h3 className="text-4xl font-black text-zinc-900 mb-4 tracking-tighter uppercase">
-                                                {t('dashboard.verification.verification.success.employment', undefined, 'Employment Verified!')}
-                                            </h3>
-                                            <p className="text-zinc-500 font-bold max-w-sm mx-auto text-lg leading-relaxed">
-                                                {t('dashboard.verification.verification.success.employmentMsg', undefined, 'Your employment has been successfully verified. This significantly improves your profile standing.')}
-                                            </p>
-                                        </div>
-                                    )
-                                )}
-
-                                {activeTab === 'property' && (
-                                    <VerificationUpload
-                                        key={`property-${refreshKey}`}
-                                        verificationType="property"
-                                        onSuccessAction={handleSuccess}
-                                        user={user}
-                                    />
-                                )}
-                            </motion.div>
+                    {/* CNIL Data notice and retention timeline */}
+                    <motion.div variants={itemVariants} className="p-8 rounded-[2.5rem] bg-zinc-900 text-zinc-400 max-w-4xl mx-auto space-y-4 text-left border border-white/5 shadow-2xl relative overflow-hidden">
+                        <div className="flex gap-4 items-start">
+                            <Info className="w-5 h-5 text-white shrink-0 mt-0.5" />
+                            <div className="space-y-2">
+                                <h4 className="text-xs font-black text-white uppercase tracking-wider">CNIL GDPR Data Retention Policy</h4>
+                                <p className="text-xs leading-relaxed font-medium">
+                                    All uploaded documents (identity cards, tax assessments, payslips, guarantor proofs) are kept strictly confidential, encrypted at rest, and watermarked to prevent fraud. In compliance with French CNIL regulations, these verification files are permanently and automatically deleted 3 years after the last active contact on Roomivo, or immediately upon user deletion requests.
+                                </p>
+                            </div>
                         </div>
                     </motion.div>
                 </motion.div>

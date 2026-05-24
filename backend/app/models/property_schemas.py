@@ -7,7 +7,7 @@ from decimal import Decimal
 from typing import List, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class PropertyCreate(BaseModel):
@@ -61,6 +61,34 @@ class PropertyCreate(BaseModel):
     accepted_guarantor_types: Optional[List[str]] = (
         []
     )  # physical, visale, garantme, organisation
+    accepted_tenant_types: Optional[List[str]] = (
+        []
+    )  # employee, student, freelancer, retired, other
+
+    # French Compliance (Loi ALUR / Loi ELAN)
+    dpe_rating: Optional[str] = Field(None, pattern=r'^[A-G]$')  # Energy performance A-G
+    dpe_value: Optional[int] = Field(None, ge=0)  # kWh/m²/year
+    ges_rating: Optional[str] = Field(None, pattern=r'^[A-G]$')  # Greenhouse gas A-G
+    ges_value: Optional[int] = Field(None, ge=0)  # kg CO2/m²/year
+    surface_type: Optional[str] = None  # 'standard' or 'loi_carrez'
+    construction_year: Optional[int] = Field(None, ge=1800, le=2100)
+    # Rent control (encadrement des loyers) — mandatory in Paris, Lyon, Lille, etc.
+    loyer_reference: Optional[Decimal] = Field(None, ge=0)  # Reference rent €/m²
+    loyer_reference_majore: Optional[Decimal] = Field(None, ge=0)  # Max reference rent €/m²
+    complement_de_loyer: Optional[Decimal] = Field(None, ge=0)  # Justified supplement
+    complement_de_loyer_justification: Optional[str] = None  # Why supplement is charged
+    # Natural risks
+    natural_risks_compliant: bool = False  # ERP/ERNMT report provided
+
+    @field_validator("title", "description", "charges_description", mode="before")
+    @classmethod
+    def sanitize_strings(cls, v):
+        if v is None:
+            return v
+        if not isinstance(v, str):
+            return v
+        from app.core.sanitize import sanitize_html
+        return sanitize_html(v)
 
 
 class PropertyUpdate(BaseModel):
@@ -105,6 +133,30 @@ class PropertyUpdate(BaseModel):
     caf_eligible: Optional[bool] = None
     guarantor_required: Optional[bool] = None
     accepted_guarantor_types: Optional[List[str]] = None
+    accepted_tenant_types: Optional[List[str]] = None
+
+    # French Compliance
+    dpe_rating: Optional[str] = Field(None, pattern=r'^[A-G]$')
+    dpe_value: Optional[int] = Field(None, ge=0)
+    ges_rating: Optional[str] = Field(None, pattern=r'^[A-G]$')
+    ges_value: Optional[int] = Field(None, ge=0)
+    surface_type: Optional[str] = None
+    construction_year: Optional[int] = Field(None, ge=1800, le=2100)
+    loyer_reference: Optional[Decimal] = Field(None, ge=0)
+    loyer_reference_majore: Optional[Decimal] = Field(None, ge=0)
+    complement_de_loyer: Optional[Decimal] = Field(None, ge=0)
+    complement_de_loyer_justification: Optional[str] = None
+    natural_risks_compliant: Optional[bool] = None
+
+    @field_validator("title", "description", "charges_description", mode="before")
+    @classmethod
+    def sanitize_strings(cls, v):
+        if v is None:
+            return v
+        if not isinstance(v, str):
+            return v
+        from app.core.sanitize import sanitize_html
+        return sanitize_html(v)
 
 
 class PropertyResponse(BaseModel):
@@ -155,12 +207,28 @@ class PropertyResponse(BaseModel):
     caf_eligible: bool = False
     guarantor_required: bool = False
     accepted_guarantor_types: Optional[list] = []
+    accepted_tenant_types: Optional[list] = []
+
+    # French Compliance
+    dpe_rating: Optional[str] = None
+    dpe_value: Optional[int] = None
+    ges_rating: Optional[str] = None
+    ges_value: Optional[int] = None
+    surface_type: Optional[str] = None
+    construction_year: Optional[int] = None
+    loyer_reference: Optional[Decimal] = None
+    loyer_reference_majore: Optional[Decimal] = None
+    complement_de_loyer: Optional[Decimal] = None
+    complement_de_loyer_justification: Optional[str] = None
+    natural_risks_compliant: bool = False
 
     photos: Optional[list] = []
     is_saved: bool = False
+    ownership_verified: bool = False
 
     status: str = "draft"
     views_count: int = 0
+    lease_duration_months: Optional[int] = None
 
     created_at: datetime
     updated_at: Optional[datetime]

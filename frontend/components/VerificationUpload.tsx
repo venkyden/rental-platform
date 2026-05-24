@@ -53,6 +53,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
     const [qrSession, setQrSession] = useState<{ code: string; captureUrl: string; expiresAt: string } | null>(null);
     const [qrLoading, setQrLoading] = useState(false);
     const pollRef = useRef<NodeJS.Timeout | null>(null);
+    const eventSourceRef = useRef<EventSource | null>(null);
 
     // Property verification state
     const [properties, setProperties] = useState<any[]>([]);
@@ -100,6 +101,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
 
         return () => {
             if (pollRef.current) clearInterval(pollRef.current);
+            if (eventSourceRef.current) eventSourceRef.current.close();
         };
     }, [verificationType, isMobile, user]);
 
@@ -113,12 +115,44 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                 captureUrl: data.capture_url,
                 expiresAt: data.expires_at,
             });
-            startPolling(data.verification_code);
+            startSseConnection(data.verification_code);
         } catch (err) {
             setError(t('dashboard.verification.verification.errors.sessionCreationFailed', undefined, 'Failed to create verification session'));
         } finally {
             setQrLoading(false);
         }
+    };
+
+    const startSseConnection = (code: string) => {
+        if (eventSourceRef.current) eventSourceRef.current.close();
+        if (pollRef.current) clearInterval(pollRef.current);
+
+        const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/verification/identity/session/${code}/stream`;
+        console.log('[SSE] Connecting to:', url);
+
+        const es = new EventSource(url);
+        eventSourceRef.current = es;
+
+        es.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                console.log('[SSE] Update:', data);
+                if (data.completed) {
+                    es.close();
+                    eventSourceRef.current = null;
+                    onSuccessAction();
+                }
+            } catch (err) {
+                console.error('[SSE] JSON parse error:', err);
+            }
+        };
+
+        es.onerror = (err) => {
+            console.warn('[SSE] connection issue, falling back to HTTP polling:', err);
+            es.close();
+            eventSourceRef.current = null;
+            startPolling(code);
+        };
     };
 
     const startPolling = (code: string) => {
@@ -234,7 +268,15 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
-            setFiles(Array.from(e.target.files));
+            const selectedFiles = Array.from(e.target.files);
+            const hasHeic = selectedFiles.some(file => 
+                file.name.toLowerCase().endsWith('.heic') || 
+                file.name.toLowerCase().endsWith('.heif')
+            );
+            if (hasHeic) {
+                toast.success('HEIC image detected. Bypassing client-side image operations, uploading directly.');
+            }
+            setFiles(selectedFiles);
             setError('');
         }
     };
@@ -259,7 +301,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                 formData.append('file', files[i]);
                 formData.append('document_type', documentType);
                 formData.append('side', i === 0 ? 'front' : 'back');
-                const endpoint = verificationType === 'identity' ? '/verification/identity/upload' : verificationType === 'property' ? '/verification/property/upload' : '/verification/employment/upload';
+                const endpoint = verificationType === 'identity' ? '/verification/identity/upload' : verificationType === 'property' ? '/verification/property/upload' : '/verification/income/upload';
                 await apiClient.client.post(endpoint, formData, {
                     headers: { 'Content-Type': 'multipart/form-data' },
                     params: { document_type: documentType, ...(verificationType === 'property' && { property_id: selectedPropertyId }) }

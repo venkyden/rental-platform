@@ -60,7 +60,7 @@ export default function ForgotEmailPage() {
                     )}
                 </div>
                 <h2 className="text-3xl font-extrabold text-zinc-900 mb-3 tracking-tight">
-                    {status === 'success' ? t('auth.forgotEmail.successTitle', undefined, 'Account Found') : t('auth.login.forgotEmail', undefined, 'Find your email')}
+                    {status === 'success' ? t('auth.forgotEmail.successTitle', undefined, 'Account Found') : t('auth.forgotEmail.title', undefined, 'Find your email')}
                 </h2>
                 <p className="text-zinc-500 text-sm max-w-sm mx-auto leading-relaxed">
                     {status === 'success'
@@ -96,7 +96,7 @@ export default function ForgotEmailPage() {
                             htmlFor="fullName"
                             className="block text-sm font-medium text-zinc-800 mb-1.5"
                         >
-                            Full Name
+                            {t('auth.forgotEmail.fullName', undefined, 'Full Name')}
                         </label>
                         <input
                             id="fullName"
@@ -114,7 +114,7 @@ export default function ForgotEmailPage() {
                             htmlFor="phone"
                             className="block text-sm font-medium text-zinc-800 mb-1.5"
                         >
-                            Phone Number
+                            {t('auth.forgotEmail.phone', undefined, 'Phone Number')}
                         </label>
                         <input
                             id="phone"
@@ -132,7 +132,7 @@ export default function ForgotEmailPage() {
                         disabled={status === 'loading' || !fullName || !phone}
                         className="flex w-full justify-center px-4 py-3 rounded-xl border border-transparent text-sm font-semibold text-white bg-zinc-900 hover:bg-zinc-800 focus:outline-none focus:ring-4 focus:ring-zinc-900/20 transition-all shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
                     >
-                        {status === 'loading' ? t('common.loading') : t('auth.login.forgotEmail', undefined, 'Find Email')}
+                        {status === 'loading' ? t('common.loading') : t('auth.forgotEmail.submit', undefined, 'Find Email')}
                     </button>
                     
                     <div className="flex justify-center mt-6">

@@ -104,3 +104,239 @@ class TestPropertySearch:
         """Pagination params should be accepted."""
         resp = landlord_client.get("/properties?skip=0&limit=5")
         assert resp.status_code in (200, 500)
+
+
+class TestPropertyCompliance:
+    """Tests for French law compliance and security hardening on property listings."""
+
+    def test_create_property_xss_sanitization(self, landlord_client):
+        """Pydantic schemas should sanitize HTML/JS input in text fields."""
+        from app.main import app
+        from app.core.database import get_db
+        from unittest.mock import AsyncMock, MagicMock
+        import uuid
+        from datetime import datetime
+        from conftest import MOCK_LANDLORD
+
+        landlord_id = MOCK_LANDLORD.id
+        mock_db = MagicMock()
+        created_property = None
+        def mock_add(obj):
+            nonlocal created_property
+            created_property = obj
+            obj.id = uuid.uuid4()
+            obj.ownership_verified = False
+            obj.status = "draft"
+            obj.views_count = 0
+            obj.created_at = datetime.utcnow()
+            obj.landlord_id = landlord_id
+
+        mock_db.add = mock_add
+        mock_db.commit = AsyncMock()
+        mock_db.refresh = AsyncMock()
+
+        async def override_get_db():
+            yield mock_db
+
+        target_app = app.app if hasattr(app, 'app') else app
+        target_app.dependency_overrides[get_db] = override_get_db
+
+        try:
+            resp = landlord_client.post(
+                "/properties",
+                json={
+                    "title": "Apartment <script>alert('XSS')</script> Nice",
+                    "description": "Lovely place <img src=x onerror=alert(1)>",
+                    "address_line1": "15 Rue de Vaugirard",
+                    "city": "Paris",
+                    "postal_code": "75015",
+                    "monthly_rent": 1500,
+                    "property_type": "apartment",
+                    "bedrooms": 1,
+                    "size_sqm": 45,
+                    "dpe_rating": "D"
+                },
+            )
+            assert resp.status_code in (200, 201)
+            assert created_property is not None
+            # <script> and </script> tags should be stripped, and single quotes HTML escaped
+            assert "<script>" not in created_property.title
+            assert "alert(&#x27;XSS&#x27;)" in created_property.title
+            # <img ...> tag should be stripped
+            assert "<img" not in created_property.description
+            assert "Lovely place" in created_property.description
+        finally:
+            from conftest import mock_get_db
+            target_app.dependency_overrides[get_db] = mock_get_db
+
+    def test_publish_dpe_g_ban(self, landlord_client):
+        """Publishing a property with DPE rating 'G' should fail (400 Bad Request) under French Law."""
+        from app.main import app
+        from app.core.database import get_db
+        from app.models.property import Property
+        from unittest.mock import AsyncMock, MagicMock
+        import uuid
+        from conftest import MOCK_LANDLORD
+
+        property_id = uuid.uuid4()
+        mock_prop = MagicMock(spec=Property)
+        mock_prop.id = property_id
+        mock_prop.landlord_id = MOCK_LANDLORD.id
+        mock_prop.dpe_rating = "G"
+        mock_prop.deposit = None
+        mock_prop.monthly_rent = 1000
+        mock_prop.room_details = []
+        mock_prop.photos = ["photo1.jpg"]
+
+        mock_db = MagicMock()
+        mock_db.execute = AsyncMock(
+            return_value=MagicMock(
+                scalar_one_or_none=MagicMock(return_value=mock_prop)
+            )
+        )
+        mock_db.commit = AsyncMock()
+        mock_db.refresh = AsyncMock()
+
+        async def override_get_db():
+            yield mock_db
+
+        target_app = app.app if hasattr(app, 'app') else app
+        target_app.dependency_overrides[get_db] = override_get_db
+
+        try:
+            resp = landlord_client.post(f"/properties/{property_id}/publish")
+            assert resp.status_code == 400
+            assert "DPE rating G" in resp.json()["detail"]
+        finally:
+            from conftest import mock_get_db
+            target_app.dependency_overrides[get_db] = mock_get_db
+
+    def test_publish_deposit_cap_unfurnished(self, landlord_client):
+        """Unfurnished properties cannot have a security deposit exceeding 1 month's rent."""
+        from app.main import app
+        from app.core.database import get_db
+        from app.models.property import Property
+        from unittest.mock import AsyncMock, MagicMock
+        import uuid
+        from conftest import MOCK_LANDLORD
+
+        property_id = uuid.uuid4()
+        mock_prop = MagicMock(spec=Property)
+        mock_prop.id = property_id
+        mock_prop.landlord_id = MOCK_LANDLORD.id
+        mock_prop.dpe_rating = "D"
+        mock_prop.furnished = False
+        mock_prop.monthly_rent = 1000
+        mock_prop.deposit = 1200  # Exceeds 1000 (1 month)
+        mock_prop.room_details = []
+        mock_prop.photos = ["photo1.jpg"]
+
+        mock_db = MagicMock()
+        mock_db.execute = AsyncMock(
+            return_value=MagicMock(
+                scalar_one_or_none=MagicMock(return_value=mock_prop)
+            )
+        )
+        mock_db.commit = AsyncMock()
+        mock_db.refresh = AsyncMock()
+
+        async def override_get_db():
+            yield mock_db
+
+        target_app = app.app if hasattr(app, 'app') else app
+        target_app.dependency_overrides[get_db] = override_get_db
+
+        try:
+            resp = landlord_client.post(f"/properties/{property_id}/publish")
+            assert resp.status_code == 400
+            assert "Security deposit exceeds" in resp.json()["detail"]
+        finally:
+            from conftest import mock_get_db
+            target_app.dependency_overrides[get_db] = mock_get_db
+
+    def test_publish_deposit_cap_furnished(self, landlord_client):
+        """Furnished properties cannot have a security deposit exceeding 2 months' rent."""
+        from app.main import app
+        from app.core.database import get_db
+        from app.models.property import Property
+        from unittest.mock import AsyncMock, MagicMock
+        import uuid
+        from conftest import MOCK_LANDLORD
+
+        property_id = uuid.uuid4()
+        mock_prop = MagicMock(spec=Property)
+        mock_prop.id = property_id
+        mock_prop.landlord_id = MOCK_LANDLORD.id
+        mock_prop.dpe_rating = "D"
+        mock_prop.furnished = True
+        mock_prop.monthly_rent = 1000
+        mock_prop.deposit = 2500  # Exceeds 2000 (2 months)
+        mock_prop.room_details = []
+        mock_prop.photos = ["photo1.jpg"]
+
+        mock_db = MagicMock()
+        mock_db.execute = AsyncMock(
+            return_value=MagicMock(
+                scalar_one_or_none=MagicMock(return_value=mock_prop)
+            )
+        )
+        mock_db.commit = AsyncMock()
+        mock_db.refresh = AsyncMock()
+
+        async def override_get_db():
+            yield mock_db
+
+        target_app = app.app if hasattr(app, 'app') else app
+        target_app.dependency_overrides[get_db] = override_get_db
+
+        try:
+            resp = landlord_client.post(f"/properties/{property_id}/publish")
+            assert resp.status_code == 400
+            assert "Security deposit exceeds" in resp.json()["detail"]
+        finally:
+            from conftest import mock_get_db
+            target_app.dependency_overrides[get_db] = mock_get_db
+
+    def test_publish_habitable_surface_cap(self, landlord_client):
+        """Properties below 9m² habitable surface cannot be published."""
+        from app.main import app
+        from app.core.database import get_db
+        from app.models.property import Property
+        from unittest.mock import AsyncMock, MagicMock
+        import uuid
+        from conftest import MOCK_LANDLORD
+
+        property_id = uuid.uuid4()
+        mock_prop = MagicMock(spec=Property)
+        mock_prop.id = property_id
+        mock_prop.landlord_id = MOCK_LANDLORD.id
+        mock_prop.dpe_rating = "D"
+        mock_prop.deposit = None
+        mock_prop.monthly_rent = 1000
+        mock_prop.size_sqm = 8  # Below 9m2
+        mock_prop.room_details = []
+        mock_prop.photos = ["photo1.jpg"]
+
+        mock_db = MagicMock()
+        mock_db.execute = AsyncMock(
+            return_value=MagicMock(
+                scalar_one_or_none=MagicMock(return_value=mock_prop)
+            )
+        )
+        mock_db.commit = AsyncMock()
+        mock_db.refresh = AsyncMock()
+
+        async def override_get_db():
+            yield mock_db
+
+        target_app = app.app if hasattr(app, 'app') else app
+        target_app.dependency_overrides[get_db] = override_get_db
+
+        try:
+            resp = landlord_client.post(f"/properties/{property_id}/publish")
+            assert resp.status_code == 400
+            assert "surface area must be at least 9m²" in resp.json()["detail"]
+        finally:
+            from conftest import mock_get_db
+            target_app.dependency_overrides[get_db] = mock_get_db
+

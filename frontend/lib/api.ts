@@ -98,8 +98,8 @@ class ApiClient {
 
                         // Otherwise, redirect to login if we're not already there
                         if (typeof window !== 'undefined' && !isLoginPage) {
-                            console.log('[API] Protected resource failed, redirecting to login...');
-                            window.location.href = '/auth/login?expired=1';
+                            console.log('[API] Protected resource failed (token refresh failed), allowing ProtectedRoute to handle unauthenticated state...');
+                            // window.location.href = '/auth/login?expired=1';
                         }
                         return Promise.reject(refreshError);
                     }

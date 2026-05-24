@@ -29,6 +29,12 @@ from app.models.user import User
 from app.routers.auth import get_current_user, get_current_user_optional
 from app.services.matching_service import matching_service
 
+# Rate limiting
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+
+limiter = Limiter(key_func=get_remote_address)
+
 router = APIRouter(prefix="/properties", tags=["Properties"])
 logger = logging.getLogger(__name__)
 
@@ -62,7 +68,9 @@ def calculate_distance(
 
 
 @router.post("", response_model=PropertyResponse, status_code=status.HTTP_201_CREATED)
+@limiter.limit("10/minute")
 async def create_property(
+    request: Request,
     property_data: PropertyCreate,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -86,19 +94,12 @@ async def create_property(
     return new_property
 
 
-@router.get("/wishlist", response_model=List[PropertyResponse])
-async def list_saved_properties(
-    request: Request,
-    db: AsyncSession = Depends(get_db),
-    current_user: Optional[User] = Depends(get_current_user_optional),
+def _apply_property_filters(
+    query,
+    params: dict,
+    amenities: List[str],
+    default_sort_col,
 ):
-    """List all properties saved by the current user"""
-    logger.info(f"Wishlist request received for user: {current_user.id if current_user else 'None'}")
-    if not current_user:
-        return []
-    
-    # Extract params from request
-    params = dict(request.query_params)
     city = params.get("city")
     min_rent = params.get("min_rent")
     max_rent = params.get("max_rent")
@@ -106,20 +107,11 @@ async def list_saved_properties(
     property_type = params.get("property_type")
     furnished = params.get("furnished")
     caf_eligible = params.get("caf_eligible")
-    amenities = request.query_params.getlist("amenities")
     landlord_id = params.get("landlord_id")
     status = params.get("status", "active")
-    skip = params.get("skip", "0")
-    limit = params.get("limit", "20")
     sort_by = params.get("sort_by", "created_at")
     order_direction = params.get("order_direction", "desc")
     verified_only = params.get("verified_only")
-
-    query = (
-        select(Property)
-        .join(SavedProperty, SavedProperty.property_id == Property.id)
-        .where(SavedProperty.user_id == current_user.id)
-    )
 
     if city:
         query = query.where(Property.city.ilike(f"%{city}%"))
@@ -180,15 +172,49 @@ async def list_saved_properties(
         except (ValueError, TypeError):
             pass
 
-    # Sorting
-    if sort_by and hasattr(Property, sort_by):
+    # Sorting — SECURITY: allowlist to prevent column enumeration
+    ALLOWED_SORT_FIELDS = ['created_at', 'monthly_rent', 'size_sqm', 'views_count', 'published_at', 'bedrooms']
+    if sort_by and sort_by in ALLOWED_SORT_FIELDS and hasattr(Property, sort_by):
         col = getattr(Property, sort_by)
         if order_direction == "desc":
             query = query.order_by(col.desc())
         else:
             query = query.order_by(col.asc())
     else:
-        query = query.order_by(SavedProperty.created_at.desc())
+        query = query.order_by(default_sort_col)
+
+    return query
+
+
+@router.get("/wishlist", response_model=List[PropertyResponse])
+async def list_saved_properties(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional),
+):
+    """List all properties saved by the current user"""
+    logger.info(f"Wishlist request received for user: {current_user.id if current_user else 'None'}")
+    if not current_user:
+        return []
+    
+    # Extract params from request
+    params = dict(request.query_params)
+    amenities = request.query_params.getlist("amenities")
+    skip = params.get("skip", "0")
+    limit = params.get("limit", "20")
+
+    query = (
+        select(Property)
+        .join(SavedProperty, SavedProperty.property_id == Property.id)
+        .where(SavedProperty.user_id == current_user.id)
+    )
+
+    query = _apply_property_filters(
+        query=query,
+        params=params,
+        amenities=amenities,
+        default_sort_col=SavedProperty.created_at.desc(),
+    )
 
     # Pagination
     try:
@@ -247,6 +273,7 @@ async def get_recommendations(
 
 
 @router.get("", response_model=List[PropertyResponse])
+@limiter.limit("60/minute")
 async def list_properties(
     request: Request,
     db: AsyncSession = Depends(get_db),
@@ -255,92 +282,17 @@ async def list_properties(
     """List properties with filters and sorting using direct request parameter access"""
     # Extract params from request
     params = dict(request.query_params)
-    city = params.get("city")
-    min_rent = params.get("min_rent")
-    max_rent = params.get("max_rent")
-    bedrooms = params.get("bedrooms")
-    property_type = params.get("property_type")
-    furnished = params.get("furnished")
-    caf_eligible = params.get("caf_eligible")
     amenities = request.query_params.getlist("amenities")
-    landlord_id = params.get("landlord_id")
-    status = params.get("status", "active")
     skip = params.get("skip", "0")
     limit = params.get("limit", "20")
-    sort_by = params.get("sort_by", "created_at")
-    order_direction = params.get("order_direction", "desc")
-    verified_only = params.get("verified_only")
 
     query = select(Property)
-
-    if city:
-        query = query.where(Property.city.ilike(f"%{city}%"))
-    
-    # Parse numeric/bool params
-    try:
-        min_rent_val = float(min_rent) if min_rent and min_rent != "" else None
-        max_rent_val = float(max_rent) if max_rent and max_rent != "" else None
-    except (ValueError, TypeError):
-        min_rent_val = max_rent_val = None
-
-    if min_rent_val is not None or max_rent_val is not None:
-        from decimal import Decimal
-        from sqlalchemy import case, func
-
-        min_rent_dec = Decimal(str(min_rent_val)) if min_rent_val is not None else None
-        max_rent_dec = Decimal(str(max_rent_val)) if max_rent_val is not None else None
-
-        total_rent = Property.monthly_rent + case(
-            (Property.charges_included == True, Decimal("0")),
-            else_=func.coalesce(Property.charges, Decimal("0")),
-        )
-        if min_rent_dec is not None:
-            query = query.where(total_rent >= min_rent_dec)
-        if max_rent_dec is not None:
-            query = query.where(total_rent <= max_rent_dec)
-
-    if bedrooms and bedrooms != "":
-        try:
-            query = query.where(Property.bedrooms >= int(bedrooms))
-        except (ValueError, TypeError):
-            pass
-
-    if property_type:
-        query = query.where(Property.property_type == property_type)
-
-    if furnished and furnished != "":
-        val = furnished.lower() == "true" if isinstance(furnished, str) else bool(furnished)
-        query = query.where(Property.furnished == val)
-
-    if caf_eligible and caf_eligible != "":
-        val = caf_eligible.lower() == "true" if isinstance(caf_eligible, str) else bool(caf_eligible)
-        query = query.where(Property.caf_eligible == val)
-
-    if amenities:
-        for amenity in amenities:
-            query = query.where(Property.amenities.contains([amenity]))
-
-    if verified_only:
-        query = query.where(Property.ownership_verified == True)
-
-    if status:
-        query = query.where(Property.status == status)
-
-    if landlord_id:
-        try:
-            query = query.where(Property.landlord_id == UUID(landlord_id))
-        except (ValueError, TypeError):
-            pass
-
-    # Sorting
-    if sort_by and hasattr(Property, sort_by):
-        col = getattr(Property, sort_by)
-        if order_direction == "desc":
-            query = query.order_by(col.desc())
-        else:
-            query = query.order_by(col.asc())
-    else:
-        query = query.order_by(Property.created_at.desc())
+    query = _apply_property_filters(
+        query=query,
+        params=params,
+        amenities=amenities,
+        default_sort_col=Property.created_at.desc(),
+    )
 
     # Pagination
     # Pagination
@@ -356,15 +308,31 @@ async def list_properties(
     properties = result.scalars().all()
     
     response = []
+
+    # Batch-fetch saved property IDs for the current user
+    saved_property_ids = set()
+    if current_user:
+        saved_result = await db.execute(
+            select(SavedProperty.property_id).where(
+                SavedProperty.user_id == current_user.id
+            )
+        )
+        saved_property_ids = {row[0] for row in saved_result.all()}
+
     for prop in properties:
         prop_dict = PropertyResponse.model_validate(prop).model_dump()
-        prop_dict["is_saved"] = True
+        prop_dict["is_saved"] = prop.id in saved_property_ids
         
-        # Calculate match score if tenant
-        if current_user.role == "tenant":
-            match_data = matching_service.calculate_match_details(current_user, prop)
-            prop_dict["match_score"] = match_data["score"]
-            prop_dict["match_breakdown"] = match_data["breakdown"]
+        # Calculate match score if authenticated tenant
+        if current_user and current_user.role == "tenant":
+            try:
+                match_data = matching_service.calculate_match_details(current_user, prop)
+                prop_dict["match_score"] = match_data["score"]
+                prop_dict["match_breakdown"] = match_data["breakdown"]
+            except Exception as e:
+                logger.warning(f"Match calculation failed for property {prop.id}: {e}")
+                prop_dict["match_score"] = None
+                prop_dict["match_breakdown"] = None
             
         response.append(prop_dict)
         
@@ -372,7 +340,9 @@ async def list_properties(
 
 
 @router.post("/{property_id}/save", status_code=status.HTTP_201_CREATED)
+@limiter.limit("30/minute")
 async def save_property(
+    request: Request,
     property_id: UUID,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -421,7 +391,11 @@ async def unsave_property(
 
 
 @router.get("/{property_id}", response_model=PropertyResponse)
-async def get_property(property_id: str, db: AsyncSession = Depends(get_db)):
+async def get_property(
+    property_id: str,
+    current_user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db)
+):
     """Get property details"""
     # Defensive check against route priority issues
     if property_id == "saved":
@@ -459,18 +433,51 @@ async def get_property(property_id: str, db: AsyncSession = Depends(get_db)):
                     "media_type": m.media_type,
                 })
             property_obj.photos = new_photos
-            # We don't commit here as this is a GET request, but it's okay because 
-            # the response_model will pick up the updated property_obj.attrs.
+            flag_modified(property_obj, "photos")
 
-    # Increment view count
-    await db.execute(
-        update(Property)
-        .where(Property.id == prop_uuid)
-        .values(views_count=Property.views_count + 1)
-    )
-    await db.commit()
+    # Increment view count (exclude property owner to prevent inflation)
+    # Use a raw UPDATE to avoid flushing the photo sync unintentionally
+    is_owner = current_user and current_user.id == property_obj.landlord_id
+    if not is_owner:
+        await db.execute(
+            update(Property)
+            .where(Property.id == prop_uuid)
+            .values(views_count=Property.views_count + 1)
+        )
+        await db.commit()
+        property_obj.views_count += 1
+    else:
+        # If we modified photos, we need to commit
+        await db.commit()
 
-    return property_obj
+    prop_dict = PropertyResponse.model_validate(property_obj).model_dump()
+    
+    # Calculate is_saved
+    is_saved = False
+    if current_user:
+        saved_result = await db.execute(
+            select(SavedProperty).where(
+                and_(
+                    SavedProperty.user_id == current_user.id,
+                    SavedProperty.property_id == prop_uuid
+                )
+            )
+        )
+        if saved_result.scalar_one_or_none():
+            is_saved = True
+    prop_dict["is_saved"] = is_saved
+
+    # Calculate match score if authenticated tenant
+    if current_user and current_user.role == "tenant":
+        try:
+            match_data = matching_service.calculate_match_details(current_user, property_obj)
+            prop_dict["match_score"] = match_data["score"]
+            prop_dict["match_breakdown"] = match_data["breakdown"]
+        except Exception as e:
+            logger.warning(f"Error calculating match details: {e}")
+            pass
+
+    return prop_dict
 
 
 @router.put("/{property_id}", response_model=PropertyResponse)
@@ -575,7 +582,9 @@ async def delete_property(
 
 
 @router.post("/{property_id}/publish", response_model=PropertyResponse)
+@limiter.limit("10/minute")
 async def publish_property(
+    request: Request,
     property_id: UUID,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -661,6 +670,42 @@ async def publish_property(
                 detail="Property must have at least 1 photo or video to publish",
             )
 
+    # ── French Compliance Validations ──────────────────────────────────────
+
+    # DPE rating is mandatory for all rental listings (since Jan 2021)
+    if not property_obj.dpe_rating:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="DPE (Diagnostic de Performance Énergétique) rating is required to publish a listing. This is mandatory under French law.",
+        )
+
+    # DPE G ban: Properties with DPE G cannot be rented since January 2023
+    if property_obj.dpe_rating == "G":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Properties with DPE rating G are prohibited from being rented since January 2023 (Loi Climat et Résilience). Please improve the energy performance before listing.",
+        )
+
+    # Deposit cap validation (Loi du 6 juillet 1989, Art. 22)
+    if property_obj.deposit is not None and property_obj.monthly_rent:
+        max_deposit_months = 2 if property_obj.furnished else 1
+        max_deposit = property_obj.monthly_rent * max_deposit_months
+        if property_obj.deposit > max_deposit:
+            label = "2 months" if property_obj.furnished else "1 month"
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Security deposit exceeds the legal maximum of {label} rent (€{max_deposit:.2f}) for {'furnished' if property_obj.furnished else 'unfurnished'} properties.",
+            )
+
+    # Minimum habitable surface (Décret n° 2002-120)
+    if property_obj.size_sqm and property_obj.size_sqm < 9:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Property surface area must be at least 9m² to be considered habitable under French law (Décret n° 2002-120).",
+        )
+
+    # ── End French Compliance ────────────────────────────────────────────
+
     # Publish
     property_obj.status = "active"
     property_obj.published_at = datetime.utcnow()
@@ -672,7 +717,9 @@ async def publish_property(
 
 
 @router.post("/{property_id}/media-session", response_model=MediaSessionResponse)
+@limiter.limit("10/minute")
 async def create_media_session(
+    request: Request,
     property_id: UUID,
     room_index: Optional[int] = Query(None, description="Room index (0-based)"),
     room_label: Optional[str] = Query(None, description="Room label e.g. 'Bedroom 1'"),
@@ -799,13 +846,40 @@ async def get_media_session(
 
 
 @router.post("/media/upload")
+@limiter.limit("20/minute")
 async def upload_media(
+    request: Request,
     file: UploadFile = File(...),
     metadata: str = Query(...),  # JSON string
     verification_code: str = Query(...),
     db: AsyncSession = Depends(get_db),
 ):
     """Upload property media with GPS verification"""
+    # File type validation
+    ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
+    MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB limit
+    
+    file_ext = os.path.splitext(file.filename.lower())[1]
+    if file_ext not in ALLOWED_EXTENSIONS or file.content_type not in {"image/jpeg", "image/png", "image/webp"}:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid file type. Only JPEG, PNG, and WEBP images are allowed."
+        )
+
+    # File size validation
+    try:
+        file.file.seek(0, 2)
+        file_size = file.file.tell()
+        file.file.seek(0)
+    except Exception:
+        file_size = 0
+
+    if file_size > MAX_FILE_SIZE:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File size exceeds the 10MB limit."
+        )
+
     import json
 
     # Parse metadata

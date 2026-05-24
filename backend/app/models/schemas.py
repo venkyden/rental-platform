@@ -58,9 +58,13 @@ class UserResponse(BaseModel):
     email_verified: bool = False
     identity_verified: bool = False
     employment_verified: bool = False
+    income_verified: bool = False
+    income_status: Optional[str] = "unverified"
     ownership_verified: Optional[bool] = False
     kbis_verified: Optional[bool] = False
     carte_g_verified: Optional[bool] = False
+    guarantor_type: Optional[str] = None
+    guarantor_status: Optional[str] = "unverified"
     trust_score: int = 0
     segment: Optional[str] = None
     preferences: Optional[Dict[str, Any]] = None

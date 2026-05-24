@@ -60,7 +60,7 @@ class MatchingService:
             prefs = {}
 
         # 1. Tenant Preference / Identity (20 points)
-        accepted_types = property.accepted_tenant_types or []
+        accepted_types = getattr(property, 'accepted_tenant_types', None) or []
         tenant_type = self._map_situation_to_type(prefs)
 
         if not accepted_types:

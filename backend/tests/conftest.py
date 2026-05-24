@@ -8,6 +8,10 @@ Schema/validation tests (test_config, test_auth schemas) don't need a DB at all.
 """
 
 import os
+import sys
+
+# Add parent directory of tests/ (which is the backend/ folder containing 'app') to sys.path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 # Set required env vars BEFORE any app imports trigger Settings() initialization
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost:5432/test_db")
@@ -50,6 +54,18 @@ def make_mock_user(role: str = "tenant", email: str = "test@example.com"):
     user.hashed_password = "$argon2id$v=19$m=65536,t=3,p=4$I+ScU2ptzRlDaC0FoLS2Ng$FqCEMSmSbogAGkouI7YR+twSn5by1ojMvpbyy944E50"
     user.identity_verified = False
     user.employment_verified = False
+    user.income_verified = False
+    user.income_status = "unverified"
+    user.income_data = None
+    user.guarantor_type = None
+    user.guarantor_status = "unverified"
+    user.guarantor_data = None
+    user.visale_id = None
+    user.garantme_ref = None
+    user.ownership_verified = False
+    user.ownership_data = None
+    user.kbis_verified = False
+    user.carte_g_verified = False
     user.trust_score = 50
     user.segment = None
     user.available_roles = ["tenant"]

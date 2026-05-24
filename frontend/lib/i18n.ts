@@ -127,6 +127,7 @@ export const translations = {
             loading: "Loading...",
             recommended: "Recommended for your profile",
             requiredByLaw: "Required by Law",
+            close: "Close",
             actions: {
                 profile: "My Profile",
                 verification: "ID Verification",
@@ -213,6 +214,61 @@ export const translations = {
                         copied: "Link copied to clipboard!"
                     }
                 }
+            }
+        },
+        verify: {
+            identity: {
+                title: "Identity Verification",
+                description: "Verify your identity in compliance with French regulations.",
+                selectDocType: "Select Document Type",
+                passport: "Passport",
+                idCard: "National Identity Card",
+                residencePermit: "Residence Permit",
+                driversLicense: "Driver's License",
+                step1: "Scan the QR code with your mobile or continue here",
+                step2: "Take a photo of your ID",
+                step3: "Submit for secure validation",
+                consentLabel: "I explicitly consent to the processing of my biometric data and identity document for verification purposes, in accordance with Roomivo's GDPR policy.",
+                consentRequired: "Consent is required to proceed with identity verification."
+            },
+            income: {
+                title: "Income & Resources Verification",
+                description: "To comply with French rental standards (rent should be max 33% of income), please verify your resources.",
+                docGuide: "Depending on your situation:",
+                studentGuide: "Student ID or enrollment certificate",
+                cdiGuide: "Last 3 payslips (bulletins de paie) + last tax return (avis d'imposition)",
+                freelanceGuide: "Kbis extract + last 2 tax returns",
+                benefitsGuide: "Proof of social benefits (CAF / APL)",
+                uploadTaxReturn: "Upload last French tax return (Avis d'imposition)",
+                uploadPayslips: "Upload last 3 payslips",
+                selectDocType: "Select resource document type",
+                success: "Income verification submitted successfully!"
+            },
+            guarantor: {
+                title: "Guarantor Verification",
+                description: "French landlords typically require a rent guarantee. Select the option that matches your situation.",
+                visale: "Visale (Action Logement)",
+                visaleDesc: "Free government guarantee for students and CDI < 1500€/mo.",
+                garantme: "Garantme (Private Guarantee)",
+                garantmeDesc: "Private guarantee with a 3.5% premium, ideal for foreign students and freelancers.",
+                physical: "Physical Guarantor",
+                physicalDesc: "A physical person living in France who will co-sign your lease.",
+                none: "No Guarantor",
+                noneDesc: "Proceed without a guarantor (only if landlord explicitly allows).",
+                visaleDossierId: "Visale Dossier ID",
+                visaleDossierIdPlaceholder: "VS-12345678",
+                garantmeRef: "Garantme Reference Code",
+                garantmeRefPlaceholder: "GM-123456",
+                visaleLinkText: "Get your Visale guarantee certificate on visale.fr",
+                garantmeLinkText: "Get your Garantme certificate on garantme.fr",
+                uploadCertificate: "Upload Guarantee Certificate (optional)",
+                uploadFiles: "Upload Guarantor ID + 3 Payslips + Proof of Address",
+                success: "Guarantor successfully registered!",
+                enterDossierId: "Please enter your Visale Dossier ID.",
+                enterGarantmeRef: "Please enter your Garantme Reference Code.",
+                invalidFormat: "Invalid format. Please check the entered code.",
+                deleteConfirm: "Are you sure you want to remove this guarantor? Your trust score will be reduced.",
+                removed: "Guarantor removed successfully."
             }
         },
         // Onboarding
@@ -408,7 +464,12 @@ export const translations = {
             resendButton: "Resend Verification Email",
             alreadyVerified: "I've verified my email →",
             differentAccount: "Sign in with a different account",
-            spamFolder: "Can't find the email? Check your spam folder or request a new one."
+            spamFolder: "Can't find the email? Check your spam folder or request a new one.",
+            bannerText: "Verify your email to secure your account and unlock all features. Link sent to",
+            bannerResend: "Resend Link",
+            bannerSending: "Sending...",
+            bannerSuccess: "Sent!",
+            bannerVerified: "Refresh"
         },
 
         visitBooking: {
@@ -516,6 +577,8 @@ export const translations = {
                     tabs: {
                         identity: "Identity Verification",
                         employment: "Employment Verification",
+                        income: "Income Verification",
+                        guarantor: "Guarantor Verification",
                         property: "Ownership Verification"
                     },
                     identityTitle: "Identity Verification",
@@ -895,7 +958,22 @@ export const translations = {
                         chargesLabel: "Charges",
                         allInclusive: "All-Inclusive",
                         complianceLabel: "Compliance",
-                        cafEligible: "CAF Eligible"
+                        cafEligible: "CAF Eligible",
+                        rentControlTitle: "Loi ELAN Rent Control",
+                        rentControlToggle: "Enable Rent Control",
+                        rentControlToggleDesc: "Toggle if this property is in a rent-controlled zone (e.g. Paris, Lyon, Lille, Bordeaux...)",
+                        loyerReferenceLabel: "Reference Rent (€/m²)",
+                        loyerReferenceMajoreLabel: "Majorated Reference Rent (€/m²)",
+                        complementLoyerLabel: "Rent Supplement (€)",
+                        complementLoyerJustificationLabel: "Rent Supplement Justification",
+                        complementLoyerJustificationPlaceholder: "Explain why this supplement is justified (e.g. view of Eiffel Tower, private terrace...)",
+                        naturalRisksTitle: "Loi ALUR Compliance",
+                        naturalRisksLabel: "Natural and Technological Risks (ERP)",
+                        naturalRisksDesc: "I self-certify that the Natural & Technological Risks (ERP) report will be provided to the tenant.",
+                        rentControlWarning: "Warning: The monthly base rent per sqm (€{{rentPerSqm}}/m²) exceeds the maximum majorated reference rent (€{{maxRentPerSqm}}/m²). A rent supplement is required.",
+                        depositWarningUnfurnished: "Warning: The security deposit cannot exceed 1 month's rent for unfurnished properties.",
+                        depositWarningFurnished: "Warning: The security deposit cannot exceed 2 months' rent for furnished properties.",
+                        decencyWarning: "Warning: The habitable surface is below the legal decency standard of 9m² per occupant."
                     },
                     review: {
                         title: "Review Protocol",
@@ -930,6 +1008,10 @@ export const translations = {
         },
         auth: {
             google_signin: "Sign in with Google",
+            modal: {
+                secure: "Roomivo Secure",
+                close: "Close authentication modal"
+            },
             layout: {
                 trustBadge: {
                     security: "Bank-Grade Security",
@@ -2008,6 +2090,7 @@ export const translations = {
             loading: "Chargement...",
             recommended: "Recommandé pour votre profil",
             requiredByLaw: "Obligatoire par la loi",
+            close: "Fermer",
             actions: {
                 profile: "Mon Profil",
                 verification: "Vérification d'identité",
@@ -2197,6 +2280,61 @@ export const translations = {
                 essentialOnly: "Essentiels Uniquement",
                 savePreferences: "Enregistrer les Préférences",
                 customize: "Personnaliser"
+            }
+        },
+        verify: {
+            identity: {
+                title: "Vérification d'Identité",
+                description: "Vérifiez votre identité en conformité avec la réglementation française.",
+                selectDocType: "Sélectionnez le type de document",
+                passport: "Passeport",
+                idCard: "Carte Nationale d'Identité",
+                residencePermit: "Titre de Séjour",
+                driversLicense: "Permis de Conduire",
+                step1: "Scannez le code QR avec votre mobile ou continuez ici",
+                step2: "Prenez une photo de votre pièce d'identité",
+                step3: "Soumettez pour validation sécurisée",
+                consentLabel: "Je consens explicitement au traitement de mes données biométriques et de ma pièce d'identité pour la vérification, conformément à la politique RGPD de Roomivo.",
+                consentRequired: "Le consentement est obligatoire pour procéder à la vérification d'identité."
+            },
+            income: {
+                title: "Vérification des Revenus & Ressources",
+                description: "Pour se conformer aux standards locatifs français (le loyer ne doit pas dépasser 33% des revenus), veuillez vérifier vos ressources.",
+                docGuide: "Selon votre situation :",
+                studentGuide: "Carte d'étudiant ou certificat de scolarité",
+                cdiGuide: "3 derniers bulletins de paie + dernier avis d'imposition",
+                freelanceGuide: "Extrait Kbis + 2 derniers avis d'imposition",
+                benefitsGuide: "Attestation de droits CAF / APL",
+                uploadTaxReturn: "Télécharger le dernier avis d'imposition",
+                uploadPayslips: "Télécharger les 3 derniers bulletins de paie",
+                selectDocType: "Sélectionnez le type de justificatif",
+                success: "Justificatif de ressources soumis avec succès !"
+            },
+            guarantor: {
+                title: "Garant & Cautionnement",
+                description: "Les bailleurs en France exigent généralement une garantie. Sélectionnez l'option qui correspond à votre situation.",
+                visale: "Garantie Visale (Action Logement)",
+                visaleDesc: "Garantie d'État gratuite pour les étudiants et CDI de moins de 1500 €/mois.",
+                garantme: "Garantme (Garant Privé)",
+                garantmeDesc: "Garant privé avec frais de 3,5 %, idéal pour les étudiants étrangers et freelances.",
+                physical: "Garant Physique (Particulier)",
+                physicalDesc: "Une personne physique résidant en France qui co-signera votre bail.",
+                none: "Sans Garant",
+                noneDesc: "Continuer sans garant (uniquement si le propriétaire l'autorise).",
+                visaleDossierId: "Numéro de visa Visale",
+                visaleDossierIdPlaceholder: "VS-12345678",
+                garantmeRef: "Référence Garantme",
+                garantmeRefPlaceholder: "GM-123456",
+                visaleLinkText: "Obtenez votre visa sur visale.fr",
+                garantmeLinkText: "Obtenez votre garantie sur garantme.fr",
+                uploadCertificate: "Télécharger le certificat de garantie (optionnel)",
+                uploadFiles: "Télécharger pièce d'identité, 3 bulletins de paie et justificatif de domicile du garant",
+                success: "Garant enregistré avec succès !",
+                enterDossierId: "Veuillez saisir votre numéro de visa Visale.",
+                enterGarantmeRef: "Veuillez saisir votre référence Garantme.",
+                invalidFormat: "Format invalide. Veuillez vérifier le code saisi.",
+                deleteConfirm: "Êtes-vous sûr de vouloir supprimer ce garant ? Votre score de confiance sera diminué.",
+                removed: "Garant supprimé avec succès."
             }
         },
         // Onboarding
@@ -2391,7 +2529,12 @@ export const translations = {
             resendButton: "Renvoyer l'e-mail de vérification",
             alreadyVerified: "J'ai vérifié mon e-mail →",
             differentAccount: "Se connecter avec un autre compte",
-            spamFolder: "Vous ne trouvez pas l'e-mail ? Vérifiez vos spams ou demandez-en un nouveau."
+            spamFolder: "Vous ne trouvez pas l'e-mail ? Vérifiez vos spams ou demandez-en un nouveau.",
+            bannerText: "Vérifiez votre e-mail pour sécuriser votre compte et débloquer toutes les fonctionnalités. Lien envoyé à",
+            bannerResend: "Renvoyer",
+            bannerSending: "Envoi...",
+            bannerSuccess: "Envoyé !",
+            bannerVerified: "Actualiser"
         },
         visitBooking: {
             title: "Planifier une visite",
@@ -2498,6 +2641,8 @@ export const translations = {
                     tabs: {
                         identity: "Vérification d'Identité",
                         employment: "Vérification d'Emploi",
+                        income: "Vérification de Revenus",
+                        guarantor: "Vérification de Garant",
                         property: "Vérification de Propriété"
                     },
                     identityTitle: "Vérification d'Identité",
@@ -2894,7 +3039,22 @@ export const translations = {
                         chargesLabel: "Charges",
                         allInclusive: "Tout compris",
                         complianceLabel: "Conformité",
-                        cafEligible: "Éligible CAF"
+                        cafEligible: "Éligible CAF",
+                        rentControlTitle: "Encadrement des loyers (Loi ELAN)",
+                        rentControlToggle: "Activer l'encadrement des loyers",
+                        rentControlToggleDesc: "Cochez si la propriété est dans une zone d'encadrement des loyers (ex. Paris, Lyon, Lille, Bordeaux...)",
+                        loyerReferenceLabel: "Loyer de référence (€/m²)",
+                        loyerReferenceMajoreLabel: "Loyer de référence majoré (€/m²)",
+                        complementLoyerLabel: "Complément de loyer (€)",
+                        complementLoyerJustificationLabel: "Justification du complément de loyer",
+                        complementLoyerJustificationPlaceholder: "Expliquez pourquoi ce complément est justifié (ex: vue sur la Tour Eiffel, terrasse privée...)",
+                        naturalRisksTitle: "Conformité Loi ALUR",
+                        naturalRisksLabel: "État des risques et pollutions (ERP)",
+                        naturalRisksDesc: "Je certifie sur l'honneur que l'état des risques et pollutions (ERP) sera fourni au locataire.",
+                        rentControlWarning: "Attention : Le loyer de base par m² (€{{rentPerSqm}}/m²) dépasse le loyer de référence majoré (€{{maxRentPerSqm}}/m²). Un complément de loyer est obligatoire.",
+                        depositWarningUnfurnished: "Attention : Le dépôt de garantie ne peut pas dépasser 1 mois de loyer pour les logements non meublés.",
+                        depositWarningFurnished: "Attention : Le dépôt de garantie ne peut pas dépasser 2 mois de loyer pour les logements meublés.",
+                        decencyWarning: "Attention : La surface habitable est inférieure au critère de décence légal de 9m² par occupant."
                     },
                     review: {
                         title: "Protocole de Révision",
@@ -2929,6 +3089,10 @@ export const translations = {
         },
         auth: {
             google_signin: "Se connecter avec Google",
+            modal: {
+                secure: "Roomivo Sécurisé",
+                close: "Fermer la modal d'authentification"
+            },
             layout: {
                 trustBadge: {
                     security: "Sécurité de Niveau Bancaire",

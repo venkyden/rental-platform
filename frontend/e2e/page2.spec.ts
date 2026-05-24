@@ -13,7 +13,7 @@ test.describe('Page 2: Search Marketplace', () => {
         await expect(page.locator('h1')).toContainText(/Discovery|Home/i);
         
         // Check for the living background (mesh blobs)
-        const livingBg = page.locator('.fixed.inset-0.z-0');
+        const livingBg = page.locator('.fixed.inset-0.z-0').first();
         await expect(livingBg).toBeVisible();
         
         // Check for the filter bar

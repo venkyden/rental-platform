@@ -253,10 +253,13 @@ export default function RegisterPage() {
                                     </button>
                                 ))}
                             </div>
-
                             <div className="pt-6">
                                 <div id="google-signup-btn" className="flex justify-center transform scale-110" />
-                                {googleLoading && <p className="text-[9px] font-black text-zinc-900 text-center mt-4 animate-pulse uppercase tracking-widest">Verifying Google...</p>}
+                                {googleLoading && (
+                                    <p className="text-[9px] font-black text-zinc-900 text-center mt-4 animate-pulse uppercase tracking-widest">
+                                        {t('auth.register.connectingGoogle', undefined, 'Verifying Google...')}
+                                    </p>
+                                )}
                             </div>
                         </motion.div>
                     )}

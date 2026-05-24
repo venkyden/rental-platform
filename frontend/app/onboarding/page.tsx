@@ -49,6 +49,28 @@ export default function OnboardingPage() {
     const [acceptedTerms, setAcceptedTerms] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState('');
+    const [initialResponses, setInitialResponses] = useState<Record<string, any>>({});
+    const [loadingResume, setLoadingResume] = useState(true);
+
+    useEffect(() => {
+        const fetchResume = async () => {
+            try {
+                const res = await apiClient.client.get('/onboarding/resume');
+                if (res.data && res.data.responses) {
+                    setInitialResponses(res.data.responses);
+                }
+            } catch (err) {
+                console.error('Failed to load resume onboarding state', err);
+            } finally {
+                setLoadingResume(false);
+            }
+        };
+        if (user) {
+            fetchResume();
+        } else {
+            setLoadingResume(false);
+        }
+    }, [user]);
 
     const userType = useMemo(() => {
         if (!user?.role) return 'tenant';
@@ -86,7 +108,7 @@ export default function OnboardingPage() {
         }
     };
 
-    if (loading) return (
+    if (loading || loadingResume) return (
         <div className="min-h-screen flex items-center justify-center bg-white">
             <div className="flex flex-col items-center gap-6">
                 <div className="w-16 h-16 border-4 border-zinc-100 border-t-zinc-900 rounded-full animate-spin" />
@@ -267,7 +289,7 @@ export default function OnboardingPage() {
                 <div className="fixed top-12 right-12 z-50">
                     <LanguageSwitcher />
                 </div>
-                <OnboardingQuestionnaire userType={userType} onCompleteAction={handleComplete} />
+                <OnboardingQuestionnaire userType={userType} initialResponses={initialResponses} onCompleteAction={handleComplete} />
             </PremiumLayout>
         );
     }

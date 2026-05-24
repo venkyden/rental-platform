@@ -64,6 +64,9 @@ class Property(Base):
     accepted_guarantor_types = Column(
         JSONB
     )  # ['physical', 'visale', 'garantme', 'organisation']
+    accepted_tenant_types = Column(
+        JSONB
+    )  # ['employee', 'student', 'freelancer', 'retired', 'other']
 
     # Availability
     available_from = Column(Date)
@@ -78,6 +81,15 @@ class Property(Base):
         String(20), default="standard"
     )  # 'loi_carrez' for apartments (required)
     construction_year = Column(Integer)  # For DPE context
+
+    # Rent Control (Encadrement des Loyers) — Loi ELAN Art. 140
+    loyer_reference = Column(DECIMAL(10, 2))  # Reference rent €/m²
+    loyer_reference_majore = Column(DECIMAL(10, 2))  # Max reference rent €/m²
+    complement_de_loyer = Column(DECIMAL(10, 2))  # Justified supplement
+    complement_de_loyer_justification = Column(Text)
+
+    # Natural Risks (ERP/ERNMT)
+    natural_risks_compliant = Column(Boolean, default=False)
 
     # Features & Amenities
     amenities = Column(JSONB)  # ['parking', 'elevator', 'balcony', etc.]
@@ -101,6 +113,10 @@ class Property(Base):
     ownership_verified = Column(Boolean, default=False)
     from app.utils.encryption import EncryptedJSON
     ownership_data = Column(EncryptedJSON)
+
+    # Accepted Tenant Types (for matching service)
+    # Note: Also stored in accepted_tenant_types JSONB above — this relationship
+    # is purely for backward compatibility
 
     # Metadata
     created_at = Column(TIMESTAMP, server_default=func.now())

@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     FOURTHLINE_API_KEY: Optional[str] = None
     SENDGRID_API_KEY: Optional[str] = None
     RESEND_API_KEY: Optional[str] = None
+    FROM_EMAIL: Optional[str] = "onboarding@roomivo.com"
 
     # Google OAuth
     GOOGLE_CLIENT_ID: Optional[str] = None
@@ -58,6 +59,7 @@ class Settings(BaseSettings):
             "http://localhost:3000",
             "http://localhost:3001",
             "http://127.0.0.1:3000",
+            "http://127.0.0.1:3001",
             "https://roomivo-frontend-0jyi.onrender.com",
             "https://roomivo.eu",
             "https://www.roomivo.eu",
@@ -66,6 +68,7 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = True
+        extra = "ignore"
 
 
 settings = Settings()

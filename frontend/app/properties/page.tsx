@@ -14,6 +14,7 @@ import { useLanguage } from '@/lib/LanguageContext';
 import { toast } from 'react-hot-toast';
 import { PropertyCardSkeleton } from '@/components/SkeletonLoaders';
 import { Building } from 'lucide-react';
+import Image from 'next/image';
 
 const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -49,6 +50,8 @@ export default function PropertiesPage() {
     const [properties, setProperties] = useState<Property[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState<'all' | 'draft' | 'active'>('all');
+    const ITEMS_PER_PAGE = 12;
+    const [hasMore, setHasMore] = useState(false);
     
     // Verification State
     const [verifyingProperty, setVerifyingProperty] = useState<string | null>(null);
@@ -58,20 +61,31 @@ export default function PropertiesPage() {
             router.replace('/dashboard');
             return;
         }
-        loadProperties();
+        loadProperties(false);
     }, [filter, user, router]);
 
-    const loadProperties = async () => {
+    const loadProperties = async (isLoadMore = false) => {
         if (!user || user.role !== 'landlord') return;
 
         try {
+            if (!isLoadMore) {
+                setLoading(true);
+            }
             const response = await apiClient.client.get('/properties', {
                 params: {
                     landlord_id: user.id,
-                    status: filter === 'all' ? undefined : filter
+                    status: filter === 'all' ? undefined : filter,
+                    skip: isLoadMore ? properties.length : 0,
+                    limit: ITEMS_PER_PAGE
                 }
             });
-            setProperties(response.data);
+            const data = response.data;
+            if (isLoadMore) {
+                setProperties(prev => [...prev, ...data]);
+            } else {
+                setProperties(data);
+            }
+            setHasMore(data.length === ITEMS_PER_PAGE);
         } catch (error) {
             console.error('Error loading properties:', error);
         } finally {
@@ -79,12 +93,16 @@ export default function PropertiesPage() {
         }
     };
 
+    const handleLoadMore = () => {
+        loadProperties(true);
+    };
+
     const handleDelete = async (id: string) => {
         if (!confirm(t('property.landlord.deleteConfirm', undefined, 'Are you sure you want to delete this property?'))) return;
 
         try {
             await apiClient.client.delete(`/properties/${id}`);
-            loadProperties();
+            loadProperties(false);
             toast.success(t('property.error.deleteSuccess', undefined, 'Property deleted successfully'));
         } catch (error) {
             toast.error('Error deleting property');
@@ -172,11 +190,17 @@ export default function PropertiesPage() {
                                 <motion.div 
                                     variants={itemVariants} 
                                     key={property.id} 
-                                    className="group glass-card !p-0 overflow-hidden flex flex-col border-zinc-100 hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.15)]_40px_80px_-20px_rgba(0,0,0,0.4)] transition-all duration-1000 rounded-[3rem] relative"
+                                    className="group glass-card !p-0 overflow-hidden flex flex-col border-zinc-100 hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.15)] transition-all duration-1000 rounded-[3rem] relative"
                                 >
                                     <div className="aspect-[16/11] bg-zinc-100 relative overflow-hidden">
                                         {property.photos?.[0] ? (
-                                            <img src={resolveMediaUrl(property.photos[0].url)} alt={property.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
+                                            <Image 
+                                                src={resolveMediaUrl(property.photos[0].url)} 
+                                                alt={property.title} 
+                                                fill 
+                                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                                className="object-cover group-hover:scale-110 transition-transform duration-1000" 
+                                            />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center text-zinc-300 font-black italic uppercase tracking-widest text-xs">{t('property.media.noMedia', undefined, 'No Imagery')}</div>
                                         )}
@@ -245,6 +269,17 @@ export default function PropertiesPage() {
                                 </motion.div>
                             ))}
                         </motion.div>
+                    )}
+
+                    {hasMore && (
+                        <div className="mt-20 flex justify-center pb-20">
+                            <button 
+                                onClick={handleLoadMore}
+                                className="px-16 py-6 bg-white text-zinc-900 border border-zinc-200 text-[10px] font-black uppercase tracking-[0.4em] rounded-[2rem] shadow-xl hover:bg-zinc-50 transition-all hover:scale-105 active:scale-95"
+                            >
+                                {t('search.loadMore', undefined, 'Discover More Listings')}
+                            </button>
+                        </div>
                     )}
                 </div>
 

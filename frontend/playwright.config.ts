@@ -6,8 +6,8 @@ export default defineConfig({
     retries: 1,
     fullyParallel: true,
     reporter: [['html', { open: 'never' }]],
-    use: {
-        baseURL: 'http://127.0.0.1:3000',
+        use: {
+        baseURL: 'http://127.0.0.1:3001',
         headless: true,
         screenshot: 'only-on-failure',
         trace: 'retain-on-failure',
@@ -26,12 +26,10 @@ export default defineConfig({
             },
         },
     ],
-    /*
     webServer: {
-        command: 'cd .. && PORT=3000 npm run dev --prefix frontend -p 3000 -H 127.0.0.1',
-        url: 'http://127.0.0.1:3000',
-        reuseExistingServer: !process.env.CI,
-        timeout: 120000,
+        command: 'npm run start -- -p 3001 -H 127.0.0.1',
+        url: 'http://127.0.0.1:3001',
+        reuseExistingServer: true,
+        timeout: 60_000,
     },
-    */
 });

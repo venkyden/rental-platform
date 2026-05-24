@@ -15,8 +15,8 @@ test.describe('Landing Page E2E Tests', () => {
         // Check for the Search button
         await expect(page.locator('button[type="submit"]')).toBeVisible();
         // Check for Trending Cities
-        await expect(page.getByText('Paris')).toBeVisible();
-        await expect(page.getByText('Lyon')).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Paris', exact: true })).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Lyon', exact: true })).toBeVisible();
     });
 
     test('value proposition bento grid renders', async ({ page }) => {
@@ -31,7 +31,7 @@ test.describe('Landing Page E2E Tests', () => {
         // Check for Steps
         await expect(page.getByText('Create Profile')).toBeVisible();
         await expect(page.getByText('Smart Matching')).toBeVisible();
-        await expect(page.getByText('Automated Lease')).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Automated Lease', exact: true })).toBeVisible();
     });
 
     test('dual cta section renders with correct buttons', async ({ page }) => {

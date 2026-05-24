@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { getTenantQuestions, getLandlordQuestions, getAgencyQuestions } from './onboarding/onboardingQuestions';
 import QuestionRenderer from './onboarding/QuestionRenderer';
 import { useLanguage } from '@/lib/LanguageContext';
 import { ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
+import { apiClient } from '@/lib/api';
 
 interface QuestionnaireProps {
     userType: 'tenant' | 'landlord' | 'agency';
@@ -58,6 +59,28 @@ export default function OnboardingQuestionnaire({ userType, initialResponses, on
         return getLandlordQuestions();
     }, [userType]);
 
+    // Resume from the first unanswered question
+    useEffect(() => {
+        if (initialResponses && Object.keys(initialResponses).length > 0) {
+            setResponses(initialResponses);
+            let firstUnansweredIndex = 0;
+            for (let i = 0; i < allQuestions.length; i++) {
+                const q = allQuestions[i];
+                const isShown = !q.showIf || q.showIf(initialResponses);
+                if (isShown) {
+                    if (initialResponses[q.id] === undefined) {
+                        firstUnansweredIndex = i;
+                        break;
+                    }
+                }
+            }
+            setCurrentStepIndex(firstUnansweredIndex);
+            if (allQuestions[firstUnansweredIndex]?.type === 'multiselect') {
+                setMultiSelectValues(initialResponses[allQuestions[firstUnansweredIndex].id] || []);
+            }
+        }
+    }, [initialResponses, allQuestions]);
+
     const getNextQuestionIndex = (startIndex: number, currentResponses: Record<string, any>) => {
         for (let i = startIndex; i < allQuestions.length; i++) {
             const q = allQuestions[i];
@@ -85,10 +108,19 @@ export default function OnboardingQuestionnaire({ userType, initialResponses, on
     const progress = (currentVisibleIndex / totalVisibleQuestions) * 100;
     const currentQuestion = allQuestions[currentStepIndex];
 
-    const handleAnswer = (value: any) => {
+    const handleAnswer = async (value: any) => {
         const newResponses = { ...responses, [currentQuestion.id]: value };
         setResponses(newResponses);
         setDirection(1);
+
+        // Auto-save the answered question to backend
+        try {
+            await apiClient.client.put('/onboarding/preferences', {
+                responses: { [currentQuestion.id]: value }
+            });
+        } catch (err) {
+            console.error('[Onboarding] Auto-save error:', err);
+        }
 
         const nextIndex = getNextQuestionIndex(currentStepIndex + 1, newResponses);
         setTimeout(() => {

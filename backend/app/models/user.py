@@ -55,16 +55,25 @@ class User(Base):
     identity_status = Column(String, default="unverified") # unverified, pending, verified, rejected
     employment_verified = Column(Boolean, default=False)
     employment_status = Column(String, default="unverified")
+    income_verified = Column(Boolean, default=False)
+    income_status = Column(String, default="unverified")
     ownership_verified = Column(Boolean, default=False)
     ownership_status = Column(String, default="unverified")
     kbis_verified = Column(Boolean, default=False)
     carte_g_verified = Column(Boolean, default=False)
+    
+    guarantor_type = Column(String, nullable=True) # 'visale' | 'garantme' | 'physical' | 'none'
+    guarantor_status = Column(String, default="unverified")
+    visale_id = Column(String, nullable=True)
+    garantme_ref = Column(String, nullable=True)
 
     # Identity verification data (Encrypted for GDPR Compliance)
     from app.utils.encryption import EncryptedJSON
     identity_data = Column(EncryptedJSON, nullable=True)
     employment_data = Column(EncryptedJSON, nullable=True)
     ownership_data = Column(EncryptedJSON, nullable=True)
+    income_data = Column(EncryptedJSON, nullable=True)
+    guarantor_data = Column(EncryptedJSON, nullable=True)
 
     # Trust scoring
     trust_score = Column(Integer, default=0)  # 0-100

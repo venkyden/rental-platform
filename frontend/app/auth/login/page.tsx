@@ -257,7 +257,7 @@ function LoginContent() {
                 
                 {googleLoading && (
                     <p className="text-[9px] font-black text-zinc-900 text-center animate-pulse uppercase tracking-widest">
-                        Handshaking with Google...
+                        {t('auth.login.connectingGoogle', undefined, 'Handshaking with Google...')}
                     </p>
                 )}
 

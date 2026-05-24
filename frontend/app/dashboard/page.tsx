@@ -49,8 +49,10 @@ export default function DashboardPage() {
     const [recentConversations, setRecentConversations] = useState<any[]>([]);
 
     useEffect(() => {
+        if (!user) return;
+
         const fetchStats = async () => {
-            if (!user || (user.role !== 'landlord' && user.role !== 'property_manager')) {
+            if (user.role !== 'landlord' && user.role !== 'property_manager') {
                 setLoadingStats(false);
                 return;
             }

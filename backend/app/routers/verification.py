@@ -4,10 +4,13 @@ Verification API endpoints for identity and employment verification.
 
 import json
 import secrets
+import re
+import asyncio
 from datetime import datetime, timedelta
 from typing import Optional
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -60,12 +63,20 @@ class VerificationStatusResponse(BaseModel):
 
     identity_verified: bool
     employment_verified: bool
+    income_verified: bool = False
+    income_status: str = "unverified"
     ownership_verified: bool = False
     kbis_verified: bool = False
     carte_g_verified: bool = False
     identity_data: Optional[dict] = None
     employment_data: Optional[dict] = None
     ownership_data: Optional[dict] = None
+    income_data: Optional[dict] = None
+    guarantor_type: Optional[str] = None
+    guarantor_status: str = "unverified"
+    guarantor_data: Optional[dict] = None
+    visale_id: Optional[str] = None
+    garantme_ref: Optional[str] = None
     trust_score: int
 
 
@@ -223,6 +234,35 @@ async def check_identity_session_status(code: str):
     return {"completed": session["completed"]}
 
 
+@router.get("/identity/session/{code}/stream")
+async def check_identity_session_status_stream(code: str):
+    """SSE endpoint for desktop to check if mobile has completed upload"""
+    async def event_generator():
+        while True:
+            session = await _get_session(code)
+            if not session:
+                yield "event: error\ndata: Session not found\n\n"
+                break
+            
+            yield f"data: {json.dumps({'completed': session['completed']})}\n\n"
+            
+            if session["completed"]:
+                break
+                
+            await asyncio.sleep(1.5)
+            
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        }
+    )
+
+
+
 @router.post("/identity/upload-mobile")
 async def upload_identity_mobile(
     verification_code: str = Query(...),
@@ -340,18 +380,43 @@ async def upload_identity_mobile(
         "details": result.get("rejection_reason") or "Identity document verified successfully",
     }
 
-@router.post("/employment/upload")
-async def upload_employment_document(
+_upload_rate_limits: dict[str, list[datetime]] = {}
+
+def _check_upload_rate_limit(user_id: str, doc_type: str):
+    now = datetime.utcnow()
+    key = f"{user_id}:{doc_type}"
+    
+    # Clean up old timestamps
+    if key in _upload_rate_limits:
+        _upload_rate_limits[key] = [t for t in _upload_rate_limits[key] if now - t < timedelta(hours=1)]
+    else:
+        _upload_rate_limits[key] = []
+        
+    if len(_upload_rate_limits[key]) >= 5:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Rate limit exceeded. Maximum 5 uploads per hour per document type.",
+        )
+        
+    _upload_rate_limits[key].append(now)
+
+
+@router.post("/income/upload")
+async def upload_income_document(
     document_type: str = Form(...),
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Upload professional/resources document for verification.
+    Upload income/resource document for verification.
     """
+    # Rate limiting
+    _check_upload_rate_limit(str(current_user.id), document_type)
 
-    # Validate file type
+    # File size validation: max 10MB per file
+    MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
+    
     allowed_types = ["image/jpeg", "image/png", "image/jpg", "application/pdf", "image/heic", "image/heif"]
     if file.content_type not in allowed_types:
         raise HTTPException(
@@ -359,10 +424,15 @@ async def upload_employment_document(
             detail=f"Invalid file type: {file.content_type}. Please upload JPEG, PNG, HEIC, or PDF",
         )
 
-    # Read file content
+    # Read content to check file size
     content = await file.read()
+    if len(content) > MAX_FILE_SIZE:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File size exceeds the 10MB limit.",
+        )
 
-    # Import service here to avoid circular imports if any
+    # Import service
     from app.services.employment import employment_service
 
     # Process document
@@ -374,7 +444,7 @@ async def upload_employment_document(
             document_type=document_type,
         )
     except Exception as e:
-        logger.error(f"Employment verification crashed: {e}", exc_info=True)
+        logger.error(f"Income verification crashed: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Verification processing error: {str(e)}",
@@ -387,10 +457,11 @@ async def upload_employment_document(
         )
 
     # Update user verification status
-    current_user.employment_verified = result["verified"]
+    current_user.income_verified = result["verified"]
+    current_user.income_status = result["status"]
     if result["verified"]:
-        # Add trust score points (30 for verified employment)
-        current_user.trust_score = min(100, current_user.trust_score + 30)
+        # Add trust score points (+20 for verified income)
+        current_user.trust_score = min(100, current_user.trust_score + 20)
 
     # Apply watermark before upload
     watermarked_content = apply_watermark(content)
@@ -401,19 +472,19 @@ async def upload_employment_document(
         file_data=BytesIO(watermarked_content),
         filename=file.filename,
         content_type=file.content_type,
-        folder=f"verification/employment/{current_user.id}"
+        folder=f"verification/income/{current_user.id}"
     )
     
     file_url = storage_result["url"]
 
-    # Store verification data — convert any Decimal values to float for JSON serialization
+    # Store verification data
     extracted = result.get("data")
     if extracted and isinstance(extracted, dict):
         for k, v in extracted.items():
             if hasattr(v, 'as_integer_ratio'):  # duck-type check for Decimal/float
                 extracted[k] = float(v)
 
-    current_user.employment_data = {
+    current_user.income_data = {
         "verified": result["verified"],
         "upload_date": datetime.utcnow().isoformat(),
         "filename": file.filename,
@@ -428,12 +499,32 @@ async def upload_employment_document(
     await db.refresh(current_user)
 
     return {
-        "message": "Employment document processed",
+        "message": "Income document processed",
         "verified": result["verified"],
         "status": result["status"],
         "trust_score": current_user.trust_score,
         "details": result.get("rejection_reason") or "Verification successful",
     }
+
+
+@router.post("/employment/upload")
+async def upload_employment_document(
+    document_type: str = Form(...),
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Upload professional/resources document for verification.
+    Backward compatibility endpoint.
+    """
+    res = await upload_income_document(document_type, file, current_user, db)
+    # Also update employment fields for safety
+    current_user.employment_verified = current_user.income_verified
+    current_user.employment_status = current_user.income_status
+    current_user.employment_data = current_user.income_data
+    await db.commit()
+    return res
 
 
 @router.get("/status", response_model=VerificationStatusResponse)
@@ -442,42 +533,203 @@ async def get_verification_status(current_user: User = Depends(get_current_user)
     return {
         "identity_verified": current_user.identity_verified,
         "employment_verified": current_user.employment_verified,
+        "income_verified": current_user.income_verified,
+        "income_status": current_user.income_status,
         "ownership_verified": current_user.ownership_verified,
         "kbis_verified": current_user.kbis_verified,
         "carte_g_verified": current_user.carte_g_verified,
         "identity_data": current_user.identity_data,
         "employment_data": current_user.employment_data,
         "ownership_data": current_user.ownership_data,
+        "income_data": current_user.income_data,
+        "guarantor_type": current_user.guarantor_type,
+        "guarantor_status": current_user.guarantor_status,
+        "guarantor_data": current_user.guarantor_data,
+        "visale_id": current_user.visale_id,
+        "garantme_ref": current_user.garantme_ref,
         "trust_score": current_user.trust_score,
     }
+
+
+class GuarantorInitRequest(BaseModel):
+    """Request to initialize guarantor flow"""
+    guarantor_type: str  # 'visale' | 'garantme' | 'physical' | 'none'
+
+
+@router.post("/guarantor/init")
+async def init_guarantor(
+    request: GuarantorInitRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Initialize or change guarantor type"""
+    # If switching away from verified, decrement trust score
+    if current_user.guarantor_status == "verified":
+        current_user.trust_score = max(0, current_user.trust_score - 15)
+        
+    current_user.guarantor_type = request.guarantor_type
+    current_user.guarantor_status = "unverified"
+    current_user.guarantor_data = None
+    current_user.visale_id = None
+    current_user.garantme_ref = None
+    
+    if request.guarantor_type == "none":
+        current_user.guarantor_status = "verified"
+        
+    await db.commit()
+    await db.refresh(current_user)
+    
+    return {
+        "message": f"Guarantor flow initialized for type: {request.guarantor_type}",
+        "guarantor_type": current_user.guarantor_type,
+        "guarantor_status": current_user.guarantor_status,
+        "trust_score": current_user.trust_score,
+    }
+
+
+@router.post("/guarantor/visale")
+async def verify_visale(
+    visale_id: str = Form(...),
+    file: Optional[UploadFile] = File(None),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Register Visale dossier ID and optional certificate"""
+    clean_id = visale_id.strip().upper()
+    if not re.match(r"^VS-[A-Z0-9]{6,12}$", clean_id):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid Visale Dossier ID format. Expected format: VS-XXXXXXXX (e.g. VS-12345678)"
+        )
+        
+    file_url = None
+    storage_key = None
+    if file:
+        allowed_types = ["image/jpeg", "image/png", "image/jpg", "application/pdf"]
+        if file.content_type not in allowed_types:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid file type: {file.content_type}. Please upload JPEG, PNG, or PDF",
+            )
+        content = await file.read()
+        watermarked_content = apply_watermark(content)
+        from io import BytesIO
+        storage_result = await storage.upload_file(
+            file_data=BytesIO(watermarked_content),
+            filename=file.filename,
+            content_type=file.content_type,
+            folder=f"verification/guarantor/{current_user.id}"
+        )
+        file_url = storage_result["url"]
+        storage_key = storage_result.get("key")
+        
+    current_user.guarantor_type = "visale"
+    current_user.visale_id = clean_id
+    
+    if current_user.guarantor_status != "verified":
+        current_user.trust_score = min(100, current_user.trust_score + 15)
+        
+    current_user.guarantor_status = "verified"
+    current_user.guarantor_data = {
+        "visale_id": clean_id,
+        "file_url": file_url,
+        "storage_key": storage_key,
+        "verified_at": datetime.utcnow().isoformat()
+    }
+    
+    await db.commit()
+    await db.refresh(current_user)
+    
+    return {
+        "message": "Visale dossier registered successfully",
+        "guarantor_type": current_user.guarantor_type,
+        "guarantor_status": current_user.guarantor_status,
+        "trust_score": current_user.trust_score,
+    }
+
+
+@router.post("/guarantor/garantme")
+async def verify_garantme(
+    garantme_ref: str = Form(...),
+    file: Optional[UploadFile] = File(None),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Register Garantme reference code and optional certificate"""
+    clean_ref = garantme_ref.strip().upper()
+    if not re.match(r"^(GM-)?[A-Z0-9]{6,10}$", clean_ref):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid Garantme reference code format. Expected format: GM-XXXXXX or XXXXXX"
+        )
+        
+    file_url = None
+    storage_key = None
+    if file:
+        allowed_types = ["image/jpeg", "image/png", "image/jpg", "application/pdf"]
+        if file.content_type not in allowed_types:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid file type: {file.content_type}. Please upload JPEG, PNG, or PDF",
+            )
+        content = await file.read()
+        watermarked_content = apply_watermark(content)
+        from io import BytesIO
+        storage_result = await storage.upload_file(
+            file_data=BytesIO(watermarked_content),
+            filename=file.filename,
+            content_type=file.content_type,
+            folder=f"verification/guarantor/{current_user.id}"
+        )
+        file_url = storage_result["url"]
+        storage_key = storage_result.get("key")
+        
+    current_user.guarantor_type = "garantme"
+    current_user.garantme_ref = clean_ref
+    
+    if current_user.guarantor_status != "verified":
+        current_user.trust_score = min(100, current_user.trust_score + 15)
+        
+    current_user.guarantor_status = "verified"
+    current_user.guarantor_data = {
+        "garantme_ref": clean_ref,
+        "file_url": file_url,
+        "storage_key": storage_key,
+        "verified_at": datetime.utcnow().isoformat()
+    }
+    
+    await db.commit()
+    await db.refresh(current_user)
+    
+    return {
+        "message": "Garantme reference registered successfully",
+        "guarantor_type": current_user.guarantor_type,
+        "guarantor_status": current_user.guarantor_status,
+        "trust_score": current_user.trust_score,
+    }
+
 
 @router.post("/guarantor/upload")
 async def upload_guarantor_document(
     file: UploadFile = File(...),
+    document_type: str = Form("id_card"),  # 'id_card' | 'payslip' | 'tax_assessment' | 'proof_address'
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """
-    Minimalist endpoint for Guarantor Dossier upload.
-    Accepts a single combined PDF and stores it.
-    """
-    from app.models.document import Document, DocumentType
-    import os
-    import secrets
+    """Upload documents for physical guarantor flow"""
+    # Rate limit check
+    _check_upload_rate_limit(str(current_user.id), document_type)
 
-    allowed_types = ["image/jpeg", "image/png", "image/jpg", "application/pdf"]
+    allowed_types = ["image/jpeg", "image/png", "image/jpg", "application/pdf", "image/heic", "image/heif"]
     if file.content_type not in allowed_types:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid file type: {file.content_type}. Please upload JPEG, PNG, or PDF",
+            detail=f"Invalid file type: {file.content_type}. Please upload JPEG, PNG, HEIC, or PDF",
         )
 
     content = await file.read()
-    
-    # Apply watermark for security
     watermarked_content = apply_watermark(content)
     
-    # Save file to Cloud Storage
     from io import BytesIO
     storage_result = await storage.upload_file(
         file_data=BytesIO(watermarked_content),
@@ -485,26 +737,58 @@ async def upload_guarantor_document(
         content_type=file.content_type,
         folder=f"verification/guarantor/{current_user.id}"
     )
-    
     file_url = storage_result["url"]
-
-    new_doc = Document(
-        user_id=current_user.id,
-        document_type=DocumentType.GUARANTOR_FORM,
-        file_url=file_url,
-        file_name=file.filename,
-        mime_type=file.content_type,
-        verification_status="pending",
-        # Store key for easier deletion
-        extra_data={"storage_key": storage_result.get("key")}
-    )
     
-    db.add(new_doc)
+    # Initialize guarantor_data if empty or if type changed
+    if not current_user.guarantor_data or current_user.guarantor_type != "physical":
+        current_user.guarantor_data = {"files": []}
+        
+    current_user.guarantor_type = "physical"
+    current_user.guarantor_status = "pending"
+    
+    files_list = current_user.guarantor_data.get("files", [])
+    files_list.append({
+        "document_type": document_type,
+        "filename": file.filename,
+        "file_url": file_url,
+        "storage_key": storage_result.get("key"),
+        "uploaded_at": datetime.utcnow().isoformat()
+    })
+    
+    current_user.guarantor_data = {"files": files_list}
+    
     await db.commit()
-
+    await db.refresh(current_user)
+    
     return {
-        "message": "Guarantor dossier uploaded successfully",
-        "file_url": file_url
+        "message": "Guarantor document uploaded successfully",
+        "guarantor_type": current_user.guarantor_type,
+        "guarantor_status": current_user.guarantor_status,
+        "files": files_list,
+    }
+
+
+@router.delete("/guarantor")
+async def delete_guarantor(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Remove guarantor and reset credentials"""
+    if current_user.guarantor_status == "verified":
+        current_user.trust_score = max(0, current_user.trust_score - 15)
+        
+    current_user.guarantor_type = None
+    current_user.guarantor_status = "unverified"
+    current_user.guarantor_data = None
+    current_user.visale_id = None
+    current_user.garantme_ref = None
+    
+    await db.commit()
+    await db.refresh(current_user)
+    
+    return {
+        "message": "Guarantor removed successfully",
+        "trust_score": current_user.trust_score,
     }
 
 

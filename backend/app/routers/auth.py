@@ -131,6 +131,9 @@ async def register(
         email_verified=False,
         identity_verified=False,
         employment_verified=False,
+        income_verified=False,
+        income_status="unverified",
+        guarantor_status="unverified",
         trust_score=0,
         onboarding_status={},
         onboarding_completed=False,
@@ -598,6 +601,9 @@ async def google_auth(
                 available_roles=[role_enum.value],
                 email_verified=email_verified,
                 hashed_password=None,
+                income_verified=False,
+                income_status="unverified",
+                guarantor_status="unverified",
             )
             db.add(user)
             audit_logger.info(f"GOOGLE_REGISTER email={email} role={role_str}")
