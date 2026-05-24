@@ -9,7 +9,7 @@ if [ -n "$DATABASE_URL" ]; then
     echo "🔍 Checking database connectivity..."
     MAX_RETRIES=30
     RETRY_COUNT=0
-    until python3 -c "
+    until python -c "
 import sqlalchemy
 import os
 import sys

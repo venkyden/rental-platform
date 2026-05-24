@@ -12,7 +12,7 @@ try:
     from weasyprint import CSS, HTML
 
     WEASYPRINT_AVAILABLE = True
-except ImportError:
+except Exception:
     HTML = None
     CSS = None
     WEASYPRINT_AVAILABLE = False
