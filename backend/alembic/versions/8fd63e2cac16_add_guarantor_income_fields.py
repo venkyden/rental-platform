@@ -17,18 +17,27 @@ depends_on = None
 
 
 def upgrade() -> None:
-    # Add new columns to users table
-    op.add_column('users', sa.Column('income_verified', sa.Boolean(), server_default='false', nullable=True))
-    op.add_column('users', sa.Column('income_status', sa.String(), server_default='unverified', nullable=True))
-    op.add_column('users', sa.Column('income_data', sa.String(), nullable=True))
-    op.add_column('users', sa.Column('guarantor_type', sa.String(), nullable=True))
-    op.add_column('users', sa.Column('guarantor_status', sa.String(), server_default='unverified', nullable=True))
-    op.add_column('users', sa.Column('guarantor_data', sa.String(), nullable=True))
-    op.add_column('users', sa.Column('visale_id', sa.String(), nullable=True))
-    op.add_column('users', sa.Column('garantme_ref', sa.String(), nullable=True))
+    conn = op.get_bind()
+    columns = sa.inspect(conn).get_columns("users")
+    existing_column_names = [c["name"] for c in columns]
 
-    # Data migration: Copy employment fields to income fields
-    op.execute("UPDATE users SET income_verified = employment_verified, income_status = employment_status, income_data = employment_data")
+    def add_if_missing(name, type_, **kwargs):
+        if name not in existing_column_names:
+            op.add_column('users', sa.Column(name, type_, **kwargs))
+
+    # Add new columns to users table if missing
+    add_if_missing('income_verified', sa.Boolean(), server_default='false', nullable=True)
+    add_if_missing('income_status', sa.String(), server_default='unverified', nullable=True)
+    add_if_missing('income_data', sa.String(), nullable=True)
+    add_if_missing('guarantor_type', sa.String(), nullable=True)
+    add_if_missing('guarantor_status', sa.String(), server_default='unverified', nullable=True)
+    add_if_missing('guarantor_data', sa.String(), nullable=True)
+    add_if_missing('visale_id', sa.String(), nullable=True)
+    add_if_missing('garantme_ref', sa.String(), nullable=True)
+
+    # Data migration: Copy employment fields to income fields (only if source columns exist)
+    if 'employment_verified' in existing_column_names and 'employment_status' in existing_column_names and 'employment_data' in existing_column_names:
+        op.execute("UPDATE users SET income_verified = employment_verified, income_status = employment_status, income_data = employment_data")
 
 
 def downgrade() -> None:
