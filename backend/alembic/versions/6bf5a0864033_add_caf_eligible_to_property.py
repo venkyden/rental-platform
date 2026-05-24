@@ -17,7 +17,11 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.add_column('properties', sa.Column('caf_eligible', sa.Boolean(), server_default='false', nullable=False))
+    conn = op.get_bind()
+    columns = sa.inspect(conn).get_columns("properties")
+    existing_column_names = [c["name"] for c in columns]
+    if 'caf_eligible' not in existing_column_names:
+        op.add_column('properties', sa.Column('caf_eligible', sa.Boolean(), server_default='false', nullable=False))
 
 
 def downgrade() -> None:

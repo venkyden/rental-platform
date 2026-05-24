@@ -15,26 +15,44 @@ branch_labels = None
 depends_on = None
 
 def upgrade() -> None:
-    # 1. Add missing status columns
+    conn = op.get_bind()
+    columns = sa.inspect(conn).get_columns("users")
+    existing_column_names = [c["name"] for c in columns]
+
+    def get_column_type(name):
+        for c in columns:
+            if c["name"] == name:
+                return c["type"]
+        return None
+
     # We use batch_alter_table for compatibility and cleaner syntax
     with op.batch_alter_table('users') as batch_op:
-        # Add status columns if they don't exist
-        # Note: server_default='unverified' ensures existing rows have a valid status
-        batch_op.add_column(sa.Column('identity_status', sa.String(), server_default='unverified', nullable=True))
-        batch_op.add_column(sa.Column('employment_status', sa.String(), server_default='unverified', nullable=True))
-        batch_op.add_column(sa.Column('ownership_status', sa.String(), server_default='unverified', nullable=True))
+        # 1. Add missing status columns
+        if 'identity_status' not in existing_column_names:
+            batch_op.add_column(sa.Column('identity_status', sa.String(), server_default='unverified', nullable=True))
+        if 'employment_status' not in existing_column_names:
+            batch_op.add_column(sa.Column('employment_status', sa.String(), server_default='unverified', nullable=True))
+        if 'ownership_status' not in existing_column_names:
+            batch_op.add_column(sa.Column('ownership_status', sa.String(), server_default='unverified', nullable=True))
         
         # 2. Change JSON columns to String to support encrypted payloads
-        # We use postgresql_using to explicitly cast existing JSON data to text
-        batch_op.alter_column('identity_data', 
-                            type_=sa.String(), 
-                            postgresql_using='identity_data::text')
-        batch_op.alter_column('employment_data', 
-                            type_=sa.String(), 
-                            postgresql_using='employment_data::text')
-        batch_op.alter_column('ownership_data', 
-                            type_=sa.String(), 
-                            postgresql_using='ownership_data::text')
+        identity_type = get_column_type('identity_data')
+        if identity_type is not None and not isinstance(identity_type, sa.String):
+            batch_op.alter_column('identity_data', 
+                                type_=sa.String(), 
+                                postgresql_using='identity_data::text')
+                                
+        employment_type = get_column_type('employment_data')
+        if employment_type is not None and not isinstance(employment_type, sa.String):
+            batch_op.alter_column('employment_data', 
+                                type_=sa.String(), 
+                                postgresql_using='employment_data::text')
+                                
+        ownership_type = get_column_type('ownership_data')
+        if ownership_type is not None and not isinstance(ownership_type, sa.String):
+            batch_op.alter_column('ownership_data', 
+                                type_=sa.String(), 
+                                postgresql_using='ownership_data::text')
 
 def downgrade() -> None:
     with op.batch_alter_table('users') as batch_op:

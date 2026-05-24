@@ -37,19 +37,19 @@ if [ -n "$DATABASE_URL" ]; then
     
     # We execute python (which points to active virtualenv) to perform pre-flight
     until python -c "
-import sqlalchemy
 import os
 import sys
-url = os.getenv('DATABASE_URL').replace('postgres://', 'postgresql://', 1)
-if '+asyncpg' in url:
-    url = url.replace('+asyncpg', '')
-engine = sqlalchemy.create_engine(url, connect_args={'connect_timeout': 5})
 try:
+    import sqlalchemy
+    url = os.getenv('DATABASE_URL').replace('postgres://', 'postgresql://', 1)
+    if '+asyncpg' in url:
+        url = url.replace('+asyncpg', '')
+    engine = sqlalchemy.create_engine(url, connect_args={'connect_timeout': 5})
     with engine.connect() as conn:
         sys.exit(0)
 except Exception as e:
-        print('Connection error:', str(e))
-        sys.exit(1)
+    print('Connection error:', str(e))
+    sys.exit(1)
 " || [ $RETRY_COUNT -eq $MAX_RETRIES ]; do
         echo "⚠️ Database not ready ($RETRY_COUNT/$MAX_RETRIES). Waiting 2s..."
         sleep 2
@@ -61,6 +61,9 @@ except Exception as e:
         exit 1
     fi
     echo "✅ Database connection successful"
+    
+    echo "🔍 Inspecting current database schema before migration..."
+    python inspect_db.py
 else
     echo "⚠️ DATABASE_URL is not set. Skipping pre-flight checks."
 fi
