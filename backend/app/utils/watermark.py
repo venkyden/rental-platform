@@ -1,8 +1,17 @@
 import io
-from PIL import Image, ImageDraw, ImageFont
 import logging
 
 logger = logging.getLogger(__name__)
+
+# PIL is optional - graceful fallback
+try:
+    from PIL import Image, ImageDraw, ImageFont
+    PIL_AVAILABLE = True
+except ImportError:
+    Image = None
+    ImageDraw = None
+    ImageFont = None
+    PIL_AVAILABLE = False
 
 def apply_watermark(file_content: bytes, watermark_text: str = "DOCUMENT POUR LOCATION ROOMIVO") -> bytes:
     """
@@ -10,6 +19,10 @@ def apply_watermark(file_content: bytes, watermark_text: str = "DOCUMENT POUR LO
     Currently supports JPEG, PNG, WEBP.
     Returns the watermarked image as bytes.
     """
+    if not PIL_AVAILABLE:
+        logger.warning("Pillow (PIL) is not installed. Returning original file content without watermark.")
+        return file_content
+
     try:
         # Load the image
         img = Image.open(io.BytesIO(file_content))

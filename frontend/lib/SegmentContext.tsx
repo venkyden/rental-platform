@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import Link from 'next/link';
 import { apiClient } from '@/lib/api';
 import { useLanguage } from '@/lib/LanguageContext';
 
@@ -180,16 +181,16 @@ export function QuickActions({ className = '' }: { className?: string }) {
     return (
         <div className={`grid grid-cols-2 md:grid-cols-4 gap-4 ${className}`}>
             {config.quick_actions.map((action) => (
-                <a
+                <Link
                     key={action.id}
                     href={action.path}
-                    className="flex flex-col items-center p-4 bg-white rounded-xl shadow-sm border hover:shadow-md transition-shadow"
+                    className="flex flex-col items-center p-6 bg-white/80 backdrop-blur-xl rounded-2xl shadow-sm border border-white/50 hover:shadow-md transition-shadow group"
                 >
-                    <span className="text-2xl mb-2">{action.icon}</span>
-                    <span className="text-sm text-center font-medium text-gray-700">
+                    <span className="text-2xl mb-2 group-hover:scale-110 transition-transform">{action.icon}</span>
+                    <span className="text-sm text-center font-semibold text-zinc-700 group-hover:text-zinc-950 transition-colors">
                         {translateLabel(action.label)}
                     </span>
-                </a>
+                </Link>
             ))}
         </div>
     );
@@ -236,19 +237,19 @@ export function CommonActionsBar({ className = '' }: { className?: string }) {
     return (
         <div className={`flex gap-2 ${className}`}>
             {commonActions.map((action) => (
-                <a
+                <Link
                     key={action.id}
                     href={action.path}
-                    className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                    className="flex items-center gap-2 px-3 py-2 text-sm bg-zinc-100/50 backdrop-blur-md hover:bg-zinc-100 rounded-lg transition-colors border border-white/20"
                 >
                     <span>{action.icon}</span>
-                    <span>{action.label}</span>
+                    <span className="font-medium text-zinc-700">{action.label}</span>
                     {action.badge && (
-                        <span className="px-1.5 py-0.5 text-xs bg-orange-100 text-orange-700 rounded">
+                        <span className="px-1.5 py-0.5 text-xs bg-zinc-900 text-white rounded font-bold uppercase tracking-widest">
                             {action.badge}
                         </span>
                     )}
-                </a>
+                </Link>
             ))}
         </div>
     );
@@ -260,14 +261,14 @@ export function SegmentBadge() {
 
     if (loading || !config) return null;
 
-    const bgColor = config.segment_type === 'demand'
-        ? 'bg-blue-100 text-blue-800'
-        : 'bg-green-100 text-green-800';
+    const badgeColor = config.segment_type === 'demand'
+        ? 'bg-zinc-950 text-white'
+        : 'bg-zinc-900 text-zinc-100';
 
     return (
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${bgColor}`}>
+        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${badgeColor} border border-white/10`}>
             {config.segment_name}
-            {config?.settings?.show_premium_badge && ' '}
+            {config?.settings?.show_premium_badge && ' (PREMIUM)'}
         </span>
     );
 }
@@ -290,26 +291,26 @@ export function VerificationProgress() {
     const percentage = Math.round((completed / steps.length) * 100);
 
     return (
-        <div className="bg-white rounded-xl p-4 shadow-sm border">
-            <div className="flex justify-between items-center mb-2">
-                <span className="font-medium text-gray-900">
+        <div className="glass-card !p-6 rounded-[2rem] shadow-xl border-zinc-100">
+            <div className="flex justify-between items-center mb-4">
+                <span className="font-black text-zinc-950 uppercase text-[10px] tracking-widest">
                     {t('common.verification.title', undefined, 'Profile Verification')}
                 </span>
-                <span className="text-sm text-gray-500">{percentage}%</span>
+                <span className="text-xs font-black text-zinc-900">{percentage}%</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
+            <div className="w-full bg-zinc-100 rounded-full h-2 mb-4 overflow-hidden border border-zinc-200">
                 <div
-                    className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                    className="bg-zinc-900 h-full rounded-full transition-all duration-500"
                     style={{ width: `${percentage}%` }}
                 />
             </div>
             <div className="grid grid-cols-4 gap-2">
                 {steps.map((step) => (
                     <div key={step.key} className="text-center">
-                        <div className={`text-lg ${step.done ? 'text-green-500' : 'text-gray-300'}`}>
-                            {step.done ? '' : '○'}
+                        <div className={`text-lg font-bold mb-1 ${step.done ? 'text-zinc-950' : 'text-zinc-300'}`}>
+                            {step.done ? '✓' : '○'}
                         </div>
-                        <div className="text-xs text-gray-500">{step.label}</div>
+                        <div className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">{step.label}</div>
                     </div>
                 ))}
             </div>

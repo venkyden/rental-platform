@@ -150,13 +150,50 @@ class ApplicationCreate(BaseModel):
     cover_letter: Optional[str] = None
 
 
+class TenantSummary(BaseModel):
+    """Minimal tenant profile exposed in application responses."""
+    id: UUID
+    full_name: Optional[str] = None
+    email: str
+    profile_picture_url: Optional[str] = None
+    trust_score: int = 0
+    identity_verified: bool = False
+    employment_verified: bool = False
+    income_verified: bool = False
+    guarantor_type: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+class PropertySummary(BaseModel):
+    """Minimal property info exposed in application responses."""
+    id: UUID
+    title: str
+    city: str
+    address_line1: Optional[str] = None
+    monthly_rent: Optional[float] = None
+    charges: Optional[float] = None
+    deposit: Optional[float] = None
+    property_type: Optional[str] = None
+    furnished: Optional[bool] = None
+    surface_area: Optional[float] = None
+
+    class Config:
+        from_attributes = True
+
+
 class ApplicationResponse(BaseModel):
     id: UUID
     property_id: UUID
     tenant_id: UUID
     status: str
-    cover_letter: Optional[str]
+    cover_letter: Optional[str] = None
     created_at: datetime
+    updated_at: Optional[datetime] = None
+    # Enriched relational data (populated when joined)
+    tenant: Optional[TenantSummary] = None
+    property: Optional[PropertySummary] = None
 
     class Config:
         from_attributes = True

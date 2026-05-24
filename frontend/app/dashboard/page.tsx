@@ -51,6 +51,15 @@ export default function DashboardPage() {
     useEffect(() => {
         if (!user) return;
 
+        // Smart redirect to role-specific dashboards
+        if (user.role === 'landlord') {
+            router.replace('/dashboard/landlord');
+            return;
+        } else if (user.role === 'property_manager') {
+            router.replace('/dashboard/agency');
+            return;
+        }
+
         const fetchStats = async () => {
             if (user.role !== 'landlord' && user.role !== 'property_manager') {
                 setLoadingStats(false);
@@ -176,12 +185,11 @@ export default function DashboardPage() {
     ];
 
     return (
-        <ProtectedRoute>
-            <PremiumLayout withNavbar={true}>
-                <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-10 pointer-events-none"></div>
-                
-                <motion.div
-                    variants={containerVariants}
+        <>
+            <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-10 pointer-events-none"></div>
+            
+            <motion.div
+                variants={containerVariants}
                     initial="hidden"
                     animate="show"
                     className="space-y-16 relative z-10"
@@ -447,7 +455,6 @@ export default function DashboardPage() {
                         </motion.div>
                     )}
                 </motion.div>
-            </PremiumLayout>
-        </ProtectedRoute>
+        </>
     );
 }

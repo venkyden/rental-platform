@@ -41,6 +41,7 @@ class LeaseGenerateRequest(BaseModel):
 class LeaseResponse(BaseModel):
     id: UUID
     property_id: UUID
+    landlord_id: Optional[UUID] = None
     tenant_id: Optional[UUID] = None
     status: str
     start_date: Optional[str] = None

@@ -85,6 +85,7 @@ def make_mock_user(role: str = "tenant", email: str = "test@example.com"):
 
 MOCK_TENANT = make_mock_user("tenant", "tenant@test.com")
 MOCK_LANDLORD = make_mock_user("landlord", "landlord@test.com")
+MOCK_PROPERTY_MANAGER = make_mock_user("property_manager", "pm@test.com")
 MOCK_ADMIN = make_mock_user("admin", "admin@test.com")
 
 
@@ -166,6 +167,17 @@ def admin_client():
     target_app = main_app.app if hasattr(main_app, 'app') else main_app
     target_app.dependency_overrides[get_db] = mock_get_db
     target_app.dependency_overrides[get_current_user] = lambda: MOCK_ADMIN
+    with TestClient(main_app) as c:
+        yield c
+    target_app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def pm_client():
+    """TestClient authenticated as a property manager."""
+    target_app = main_app.app if hasattr(main_app, 'app') else main_app
+    target_app.dependency_overrides[get_db] = mock_get_db
+    target_app.dependency_overrides[get_current_user] = lambda: MOCK_PROPERTY_MANAGER
     with TestClient(main_app) as c:
         yield c
     target_app.dependency_overrides.clear()

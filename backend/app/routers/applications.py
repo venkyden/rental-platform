@@ -18,6 +18,7 @@ from app.models.property import Property
 from app.models.schemas import ApplicationCreate, ApplicationResponse
 from app.models.user import User
 from app.routers.auth import get_current_user
+from app.services.notification_service import NotificationService
 
 router = APIRouter(prefix="/applications", tags=["Applications"])
 
@@ -62,7 +63,26 @@ async def create_application(
 
     db.add(new_app)
     await db.commit()
-    await db.refresh(new_app)
+
+    # Load with details for response and notifications
+    result = await db.execute(
+        select(Application)
+        .options(
+            selectinload(Application.tenant),
+            selectinload(Application.property)
+        )
+        .where(Application.id == new_app.id)
+    )
+    new_app = result.scalar_one()
+
+    # Notify Landlord
+    notification_service = NotificationService(db)
+    await notification_service.notify_application_received(
+        landlord_id=new_app.property.landlord_id,
+        tenant_name=current_user.full_name or current_user.email,
+        property_title=new_app.property.title,
+        application_id=new_app.id,
+    )
 
     return new_app
 
@@ -74,6 +94,10 @@ async def list_my_applications(
     """List applications submitted by the current user"""
     result = await db.execute(
         select(Application)
+        .options(
+            selectinload(Application.tenant),
+            selectinload(Application.property)
+        )
         .where(Application.tenant_id == current_user.id)
         .order_by(Application.created_at.desc())
     )
@@ -89,10 +113,43 @@ async def list_received_applications(
     result = await db.execute(
         select(Application)
         .join(Application.property)
+        .options(
+            selectinload(Application.tenant),
+            selectinload(Application.property)
+        )
         .where(Property.landlord_id == current_user.id)
         .order_by(Application.created_at.desc())
     )
     return result.scalars().all()
+
+
+@router.get("/{application_id}", response_model=ApplicationResponse)
+async def get_application(
+    application_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get detailed application by ID"""
+    result = await db.execute(
+        select(Application)
+        .options(
+            selectinload(Application.tenant),
+            selectinload(Application.property)
+        )
+        .where(Application.id == application_id)
+    )
+    application = result.scalar_one_or_none()
+    if not application:
+        raise HTTPException(status_code=404, detail="Application not found")
+
+    # Authorize: Only the applying tenant or the property landlord can view it
+    if (application.tenant_id != current_user.id and 
+        application.property.landlord_id != current_user.id):
+        raise HTTPException(
+            status_code=403, detail="Not authorized to view this application"
+        )
+
+    return application
 
 
 class ApplicationUpdate(PydanticBaseModel):
@@ -107,10 +164,13 @@ async def update_application_status(
     db: AsyncSession = Depends(get_db),
 ):
     """Update application status (Landlord only)"""
-    # 1. Get Application + Property
+    # 1. Get Application + Property + Tenant
     result = await db.execute(
         select(Application)
-        .options(selectinload(Application.property))
+        .options(
+            selectinload(Application.property),
+            selectinload(Application.tenant)
+        )
         .where(Application.id == application_id)
     )
     application = result.scalar_one_or_none()
@@ -119,11 +179,6 @@ async def update_application_status(
         raise HTTPException(status_code=404, detail="Application not found")
 
     # 2. Verify Ownership
-    # Note: application.property might need lazy load handling if not joined above.
-    # Use explicit join or lazy loading. simpler to just join in query if needed,
-    # but let's assume relationship lazy loading works or we need to be explicit.
-    # The 'selectinload' is safer for async.
-
     if application.property.landlord_id != current_user.id:
         raise HTTPException(
             status_code=403, detail="Not authorized to manage this application"
@@ -135,5 +190,58 @@ async def update_application_status(
 
     await db.commit()
     await db.refresh(application)
+
+    # Send notification
+    notification_service = NotificationService(db)
+    await notification_service.notify_application_status_changed(
+        tenant_id=application.tenant_id,
+        property_title=application.property.title,
+        new_status=update_data.status.value,
+        application_id=application.id,
+    )
+
+    return application
+
+
+@router.delete("/{application_id}", response_model=ApplicationResponse)
+async def withdraw_application(
+    application_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Withdraw application (Tenant applicant only)"""
+    result = await db.execute(
+        select(Application)
+        .options(
+            selectinload(Application.tenant),
+            selectinload(Application.property)
+        )
+        .where(Application.id == application_id)
+    )
+    application = result.scalar_one_or_none()
+    if not application:
+        raise HTTPException(status_code=404, detail="Application not found")
+
+    # Only applicant can withdraw
+    if application.tenant_id != current_user.id:
+        raise HTTPException(
+            status_code=403, detail="Only the applying tenant can withdraw this application"
+        )
+
+    application.status = ApplicationStatus.WITHDRAWN
+    application.updated_at = datetime.utcnow()
+
+    await db.commit()
+    await db.refresh(application)
+
+    # Notify Landlord
+    notification_service = NotificationService(db)
+    await notification_service.create_notification(
+        user_id=application.property.landlord_id,
+        notification_type="application",
+        title="Application Withdrawn",
+        message=f"The application for {application.property.title} was withdrawn by the applicant.",
+        action_url=f"/applications/received"
+    )
 
     return application

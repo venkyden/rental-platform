@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/useAuth';
 import { ChevronDown, UserCircle, Building, Home, Plus, Check, Loader2 } from 'lucide-react';
 import { useLanguage } from '@/lib/LanguageContext';
+import { useToast } from '@/lib/ToastContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface RoleSwitcherProps {
@@ -45,6 +46,8 @@ export default function RoleSwitcher({ currentRole, availableRoles, onSwitch }: 
     const { t } = useLanguage();
     const { switchRole: globalSwitchRole } = useAuth();
 
+    const toast = useToast();
+
     const currentConfig = ROLE_CONFIG[currentRole] || ROLE_CONFIG.tenant;
     const otherRoles = availableRoles.filter((r) => r !== currentRole && ROLE_CONFIG[r]);
     const lockableRoles = UNLOCKABLE_ROLES.filter((r) => !availableRoles.includes(r));
@@ -82,7 +85,7 @@ export default function RoleSwitcher({ currentRole, availableRoles, onSwitch }: 
             onSwitch?.();
         } catch (err: any) {
             console.error('Role unlock failed:', err);
-            alert('To unlock this role, please sign up again using the role selector on the registration page.');
+            toast.error('To unlock this role, please sign up again using the role selector on the registration page.');
         } finally {
             setUnlocking(false);
         }

@@ -1,173 +1,277 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import PremiumLayout from '@/components/PremiumLayout';
-import { apiClient } from '@/lib/api';
-import { BarChart3, TrendingUp, Users, Home, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import useSWR from 'swr';
+import { useAuth } from '@/lib/useAuth';
 import { useLanguage } from '@/lib/LanguageContext';
+import { apiClient } from '@/lib/api';
+import ProtectedRoute from '@/components/ProtectedRoute';
+import PremiumLayout from '@/components/PremiumLayout';
+import KpiCard from '@/components/dashboard/KpiCard';
+import RevenueChart from '@/components/dashboard/RevenueChart';
+import { 
+    BarChart3, 
+    TrendingUp, 
+    Home, 
+    ArrowUpRight, 
+    Building, 
+    FileText 
+} from 'lucide-react';
 
 interface AnalyticsStats {
-    totalProperties: number;
-    activeProperties: number;
-    totalViews: number;
-    occupancyRate: number;
-    potentialRevenue: number;
+    active_properties: number;
+    pending_applications: number;
+    total_views: number;
+    unread_messages: number;
+    revenue: number;
+    occupancy_rate: number;
+}
+
+interface ChartPoint {
+    date: string;
+    views: number;
+    applications: number;
+    revenue: number;
+}
+
+interface RevenueChartResponse {
+    points: ChartPoint[];
 }
 
 export default function AnalyticsPage() {
-    const [stats, setStats] = useState<AnalyticsStats | null>(null);
-    const [loading, setLoading] = useState(true);
-    const { t, language } = useLanguage();
+    const { user, loading: authLoading } = useAuth();
+    const { language, t } = useLanguage();
+    const router = useRouter();
+    const [period, setPeriod] = useState<'7D' | '30D' | '90D' | '1Y'>('30D');
 
+    const fetcher = (url: string) => apiClient.client.get(url, {
+        headers: { 'Accept-Language': language }
+    }).then(res => res.data);
+
+    // Guard unauthorized direct access
     useEffect(() => {
-        const fetchAnalytics = async () => {
-            try {
-                const response = await apiClient.client.get('/properties');
-                const properties = response.data;
-                
-                const statsData: AnalyticsStats = {
-                    totalProperties: properties.length,
-                    activeProperties: properties.filter((p: any) => p.status === 'active').length,
-                    totalViews: properties.reduce((sum: number, p: any) => sum + (p.views_count || 0), 0),
-                    occupancyRate: properties.length > 0 ? (properties.filter((p: any) => p.status === 'active').length / properties.length) * 100 : 0,
-                    potentialRevenue: properties.reduce((sum: number, p: any) => sum + (p.monthly_rent || 0), 0)
-                };
-                
-                setStats(statsData);
-            } catch (err) {
-                console.error('Failed to fetch analytics:', err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchAnalytics();
-    }, []);
-
-     const cards = [
-        {
-            title: t('analytics.totalViews', undefined, 'Total Views'),
-            value: stats?.totalViews.toLocaleString(language === 'fr' ? 'fr-FR' : 'en-US') || '0',
-            change: '+12%',
-            trend: 'up',
-            icon: <TrendingUp className="w-5 h-5 text-zinc-900" />,
-            color: 'zinc'
-        },
-        {
-            title: t('analytics.occupancy', undefined, 'Occupancy Rate'),
-            value: `${stats?.occupancyRate.toFixed(1)}%`,
-            change: '+2.4%',
-            trend: 'up',
-            icon: <Home className="w-5 h-5 text-zinc-900" />,
-            color: 'zinc'
-        },
-        {
-            title: t('analytics.potentialRevenue', undefined, 'Potential Revenue'),
-            value: `${stats?.potentialRevenue.toLocaleString(language === 'fr' ? 'fr-FR' : 'en-US')}€`,
-            change: '+5.1%',
-            trend: 'up',
-            icon: <ArrowUpRight className="w-5 h-5 text-zinc-900" />,
-            color: 'zinc'
-        },
-        {
-            title: t('analytics.activeListings', undefined, 'Active Listings'),
-            value: stats?.activeProperties.toString() || '0',
-            change: '0%',
-            trend: 'neutral',
-            icon: <Building className="w-5 h-5 text-zinc-900" />,
-            color: 'zinc'
+        if (!authLoading && !user) {
+            router.replace('/auth/login');
+        } else if (!authLoading && user && user.role !== 'landlord' && user.role !== 'property_manager' && user.role !== 'admin') {
+            router.replace('/dashboard');
         }
-    ];
+    }, [user, authLoading, router]);
+
+    // Fetch Overview Stats
+    const { 
+        data: stats, 
+        isLoading: statsLoading 
+    } = useSWR<AnalyticsStats>(
+        user ? '/stats/landlord/overview' : null,
+        fetcher,
+        { refreshInterval: 30000 }
+    );
+
+    // Fetch timeseries revenue chart data (dynamic based on period selection)
+    const { 
+        data: chartData, 
+        isLoading: chartLoading 
+    } = useSWR<RevenueChartResponse>(
+        user ? `/stats/landlord/revenue-chart?period=${period}` : null,
+        fetcher,
+        { refreshInterval: 30000 }
+    );
+
+    // Dynamic trend/delta calculations based on timeseries halves
+    const calculateTrendDelta = (points: ChartPoint[] | undefined, metric: 'views' | 'applications' | 'revenue') => {
+        if (!points || points.length < 2) return { value: '0%', isPositive: true };
+
+        const half = Math.floor(points.length / 2);
+        const prevHalf = points.slice(0, half);
+        const currHalf = points.slice(half);
+
+        const prevSum = prevHalf.reduce((sum, p) => sum + p[metric], 0);
+        const currSum = currHalf.reduce((sum, p) => sum + p[metric], 0);
+
+        if (prevSum === 0) {
+            return {
+                value: currSum > 0 ? '+100%' : '0%',
+                isPositive: currSum >= 0
+            };
+        }
+
+        const pct = ((currSum - prevSum) / prevSum) * 100;
+        const sign = pct >= 0 ? '+' : '';
+        return {
+            value: `${sign}${pct.toFixed(1)}%`,
+            isPositive: pct >= 0
+        };
+    };
+
+    if (authLoading || !user) {
+        return (
+            <ProtectedRoute>
+                <PremiumLayout withNavbar={true}>
+                    <div className="min-h-[50vh] flex items-center justify-center" aria-live="polite">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-zinc-950"></div>
+                    </div>
+                </PremiumLayout>
+            </ProtectedRoute>
+        );
+    }
+
+    const viewsDelta = calculateTrendDelta(chartData?.points, 'views');
+    const revenueDelta = calculateTrendDelta(chartData?.points, 'revenue');
+    const appsDelta = calculateTrendDelta(chartData?.points, 'applications');
 
     return (
-        <PremiumLayout>
-            <div className="max-w-6xl mx-auto py-12 px-4">
-                <div className="flex items-center justify-between mb-12">
-                    <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 rounded-2xl bg-zinc-900/5 flex items-center justify-center border border-zinc-900/10">
-                            <BarChart3 className="w-8 h-8 text-zinc-900" />
+        <ProtectedRoute>
+            <PremiumLayout withNavbar={true}>
+                <div className="max-w-6xl mx-auto py-12 px-4 space-y-12" role="main">
+                    
+                    {/* Header Block */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                        <div className="flex items-center gap-4">
+                            <div className="w-16 h-16 rounded-2xl bg-zinc-900/5 flex items-center justify-center border border-zinc-900/10 shadow-sm">
+                                <BarChart3 className="w-8 h-8 text-zinc-900" />
+                            </div>
+                            <div className="text-left">
+                                <h1 className="text-4xl font-black tracking-tight text-zinc-900 uppercase">
+                                    {t('dashboard.sections.analytics', undefined, 'Portfolio Analytics')}
+                                </h1>
+                                <p className="text-zinc-500 font-medium">
+                                    {t('analytics.subtitle', undefined, 'Track your property performance and financial growth.')}
+                                </p>
+                            </div>
                         </div>
-                        <div>
-                            <h1 className="text-4xl font-black tracking-tight text-zinc-900">
-                                {t('dashboard.sections.analytics', undefined, 'Portfolio Analytics')}
-                            </h1>
-                            <p className="text-zinc-500 font-medium">
-                                {t('analytics.subtitle', undefined, 'Track your property performance and financial growth.')}
-                            </p>
-                        </div>
-                    </div>
-                    <div className="flex gap-2 bg-zinc-100 p-1 rounded-xl">
-                        {[
-                            { id: '7D', label: t('analytics.periods.d7', undefined, '7D') },
-                            { id: '30D', label: t('analytics.periods.d30', undefined, '30D') },
-                            { id: '90D', label: t('analytics.periods.d90', undefined, '90D') },
-                            { id: '1Y', label: t('analytics.periods.y1', undefined, '1Y') }
-                        ].map(period => (
-                            <button 
-                                key={period.id} 
-                                className={`px-4 py-2 text-xs font-black rounded-lg transition-all ${period.id === '30D' ? 'bg-white shadow-sm' : 'text-zinc-400 hover:text-zinc-600'}`}
-                            >
-                                {period.label}
-                            </button>
-                        ))}
-                    </div>
-                </div>
 
-                {loading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {[1, 2, 3, 4].map(i => (
-                            <div key={i} className="h-32 bg-zinc-100 animate-pulse rounded-3xl" />
-                        ))}
-                    </div>
-                ) : (
-                    <>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-                            {cards.map((card, i) => (
-                                <div key={i} className="glass-card !p-6 group hover:scale-[1.02] transition-all">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <div className="p-2 rounded-lg bg-zinc-900/5 border border-zinc-900/10">
-                                            {card.icon}
-                                        </div>
-                                        <div className={`flex items-center gap-1 text-[10px] font-black uppercase tracking-tighter ${card.trend === 'up' ? 'text-zinc-900' : 'text-zinc-400'}`}>
-                                            {card.trend === 'up' && <ArrowUpRight className="w-3 h-3" />}
-                                            {card.change}
-                                        </div>
-                                    </div>
-                                    <div className="text-3xl font-black text-zinc-900 mb-1">
-                                        {card.value}
-                                    </div>
-                                    <div className="text-xs font-black uppercase tracking-widest text-zinc-400">
-                                        {card.title}
-                                    </div>
-                                </div>
+                        {/* Period Selector Tabs */}
+                        <div 
+                            className="flex gap-1.5 bg-zinc-100 p-1.5 rounded-2xl self-start sm:self-auto shadow-inner" 
+                            role="group" 
+                            aria-label={t('analytics.periodSelection', undefined, 'Select period')}
+                        >
+                            {[
+                                { id: '7D', label: t('analytics.periods.d7', undefined, '7D') },
+                                { id: '30D', label: t('analytics.periods.d30', undefined, '30D') },
+                                { id: '90D', label: t('analytics.periods.d90', undefined, '90D') },
+                                { id: '1Y', label: t('analytics.periods.y1', undefined, '1Y') }
+                            ].map(p => (
+                                <button 
+                                    key={p.id}
+                                    onClick={() => setPeriod(p.id as any)}
+                                    className={`px-4 py-2.5 text-xs font-black rounded-xl transition-all active:scale-95 ${
+                                        period === p.id 
+                                            ? 'bg-white text-zinc-950 shadow-sm' 
+                                            : 'text-zinc-400 hover:text-zinc-600'
+                                    }`}
+                                    aria-current={period === p.id ? 'step' : undefined}
+                                >
+                                    {p.label}
+                                </button>
                             ))}
                         </div>
+                    </div>
 
-                        <div className="grid lg:grid-cols-3 gap-8">
-                            <div className="lg:col-span-2 glass-card !p-8 h-[400px] flex flex-col items-center justify-center text-center">
-                                <BarChart3 className="w-16 h-16 text-zinc-100 mb-6" />
-                                <h3 className="text-xl font-bold text-zinc-400 mb-2">
+                    {/* KPI Cards Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                        <KpiCard
+                            label={t('analytics.totalViews', undefined, 'Total Views')}
+                            value={stats?.total_views.toLocaleString(language === 'fr' ? 'fr-FR' : 'en-US') ?? '0'}
+                            icon={<TrendingUp className="w-5 h-5" />}
+                            loading={statsLoading}
+                            delta={{
+                                value: viewsDelta.value,
+                                isPositive: viewsDelta.isPositive,
+                                timeframe: t('analytics.trend.vsPrevPeriod', undefined, 'vs prev period')
+                            }}
+                        />
+                        <KpiCard
+                            label={t('analytics.occupancy', undefined, 'Occupancy Rate')}
+                            value={stats ? `${stats.occupancy_rate.toFixed(1)}%` : '0.0%'}
+                            icon={<Home className="w-5 h-5" />}
+                            loading={statsLoading}
+                            delta={stats ? {
+                                value: stats.occupancy_rate >= 80 ? 'Optimal' : 'Stable',
+                                isPositive: stats.occupancy_rate >= 80,
+                                timeframe: 'Lease status'
+                            } : undefined}
+                        />
+                        <KpiCard
+                            label={t('analytics.potentialRevenue', undefined, 'Potential Revenue')}
+                            value={stats ? `${stats.revenue.toLocaleString(language === 'fr' ? 'fr-FR' : 'en-US')}€` : '0€'}
+                            icon={<ArrowUpRight className="w-5 h-5" />}
+                            loading={statsLoading}
+                            delta={{
+                                value: revenueDelta.value,
+                                isPositive: revenueDelta.isPositive,
+                                timeframe: t('analytics.trend.vsPrevPeriod', undefined, 'vs prev period')
+                            }}
+                        />
+                        <KpiCard
+                            label={t('analytics.activeListings', undefined, 'Active Listings')}
+                            value={stats?.active_properties ?? 0}
+                            icon={<Building className="w-5 h-5" />}
+                            loading={statsLoading}
+                        />
+                    </div>
+
+                    {/* Core Interactive Charts Grid */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                        
+                        {/* Left Main Chart - Views over Time */}
+                        <div className="lg:col-span-2 glass-card !p-10 rounded-[2.5rem] border-zinc-100 shadow-xl relative overflow-hidden text-left flex flex-col">
+                            <div className="mb-8">
+                                <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 mb-2">
                                     {t('analytics.viewsOverTime', undefined, 'Views Over Time')}
                                 </h3>
-                                <p className="text-zinc-400 max-w-xs mx-auto text-sm">
-                                    {t('analytics.chartNotice', undefined, 'Interactive charts are being generated for your portfolio. Check back in a few hours.')}
-                                </p>
+                                <h2 className="text-3xl font-black text-zinc-950 tracking-tight">
+                                    {t('analytics.trafficGrowth', undefined, 'Traffic & Visibility')}
+                                    <span className="text-xs text-zinc-400 font-bold uppercase tracking-widest ml-3">
+                                        {period} Timeline
+                                    </span>
+                                </h2>
                             </div>
-                            <div className="glass-card !p-8 flex flex-col items-center justify-center text-center">
-                                <Users className="w-16 h-16 text-zinc-100 mb-6" />
-                                <h3 className="text-xl font-bold text-zinc-400 mb-2">
-                                    {t('analytics.demographics', undefined, 'Tenant Demographics')}
-                                </h3>
-                                <p className="text-zinc-400 max-w-xs mx-auto text-sm">
-                                    {t('analytics.demoNotice', undefined, 'Understand who is looking at your properties to optimize your marketing.')}
-                                </p>
+                            
+                            <div className="h-64 flex items-end w-full">
+                                {chartLoading ? (
+                                    <div className="w-full h-full bg-zinc-50 animate-pulse rounded-2xl" />
+                                ) : chartData?.points ? (
+                                    <RevenueChart points={chartData.points} metric="views" />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-zinc-400 text-sm font-black uppercase tracking-widest">
+                                        No data available
+                                    </div>
+                                )}
                             </div>
                         </div>
-                    </>
-                )}
-            </div>
-        </PremiumLayout>
+
+                        {/* Right Secondary Chart - Applications Trend */}
+                        <div className="glass-card !p-10 rounded-[2.5rem] border-zinc-100 shadow-xl relative overflow-hidden text-left flex flex-col">
+                            <div className="mb-8">
+                                <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 mb-2">
+                                    {t('analytics.applicationsTrend', undefined, 'Applications Trend')}
+                                </h3>
+                                <h2 className="text-3xl font-black text-zinc-950 tracking-tight">
+                                    {t('analytics.conversionRate', undefined, 'Applications')}
+                                    <span className="text-xs text-zinc-400 font-bold uppercase tracking-widest ml-3">
+                                        {period} Count
+                                    </span>
+                                </h2>
+                            </div>
+
+                            <div className="h-64 flex items-end w-full">
+                                {chartLoading ? (
+                                    <div className="w-full h-full bg-zinc-50 animate-pulse rounded-2xl" />
+                                ) : chartData?.points ? (
+                                    <RevenueChart points={chartData.points} metric="applications" />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-zinc-400 text-sm font-black uppercase tracking-widest">
+                                        No data available
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </PremiumLayout>
+        </ProtectedRoute>
     );
 }
-
-import { Building } from 'lucide-react';

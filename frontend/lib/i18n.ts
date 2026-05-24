@@ -531,6 +531,31 @@ export const translations = {
                 verified: "Your trust score is perfect!",
                 improve: "Improve Score"
             },
+            compliance: {
+                title: "French Law Compliance",
+                alur: "Loi ALUR",
+                depositCountdown: "Deposit Return: {{days}} days remaining",
+                depositReturned: "Deposit returned",
+                depositOverdue: "Deposit return overdue by {{days}} days",
+                rentControl: "Rent Control (Encadrement)",
+                rentWithinLimit: "Within zone reference rent",
+                rentExceeded: "Exceeds zone limit by {{amount}}€/mo",
+                dpe: "Energy Rating (DPE)",
+                dpeBanWarning: "Class {{rating}} properties banned for lease from {{year}}",
+                dpeCompliant: "All properties energy compliant",
+                noticePeriod: "Notice Period (Préavis)",
+                noticeExpiring: "Lease ends in {{days}} days (Notice period active)",
+                noticeFurnished: "1 month notice (Furnished)",
+                noticeUnfurnished: "3 months notice (Unfurnished)"
+            },
+            alerts: {
+                title: "Landlord Action Center",
+                empty: "No urgent actions. Perfect morning coffee status! ☕",
+                resolve: "Resolve",
+                critical: "Critical",
+                warning: "Warning",
+                info: "Info"
+            },
             quickActions: {
                 title: "Quick Actions",
                 my_disputes: "My Disputes",
@@ -1567,7 +1592,7 @@ export const translations = {
         },
         "lease": {
                 "meuble": {
-                        "name": "Furnished Rental",
+                        "name": "Furnished Lease",
                         "desc": "Standard lease for furnished property",
                         "duration": "1 year (renewable)",
                         "tenantNotice": "1 month",
@@ -1575,7 +1600,7 @@ export const translations = {
                         "depositInfo": "2 months max"
                 },
                 "vide": {
-                        "name": "Unfurnished Rental",
+                        "name": "Unfurnished Lease",
                         "desc": "Lease for unfurnished property",
                         "duration": "3 years (renewable)",
                         "tenantNotice": "3 months",
@@ -1600,7 +1625,12 @@ export const translations = {
                 },
                 "error": {
                         "missingFields": "Please fill all required fields",
-                        "generationFailed": "Error generating lease"
+                        "generationFailed": "Error generating lease",
+                        "applicationInvalid": "Application is not valid or approved.",
+                        "onlyApprovedCandidates": "Only approved candidates can be transitioned to a lease.",
+                        "back": "Back to Applications",
+                        "setupTitle": "Lease Setup",
+                        "startDatePast": "Effective date cannot be in the past."
                 },
                 "title": "Generate a Lease",
                 "leaseType": "Lease Type",
@@ -1619,7 +1649,51 @@ export const translations = {
                 "generateButton": "Generate Lease Contract",
                 "success": "Lease generated!",
                 "successDesc": "The contract includes all required clauses: notice periods, end of lease conditions, security deposit, obligations of both parties, inventory, and termination clause.",
-                "downloadPdf": "Download PDF"
+                "downloadPdf": "Download PDF",
+                "preview": "Preview Lease",
+                "propertySummary": "Property Summary",
+                "address": "Address",
+                "alurCompliance": "IRL Index: Loi ALUR Compliance Active",
+                "contractPreview": "Lease Contract Preview",
+                "clickPreview": "Click Preview to generate the contract",
+                "alurNote": "The document will strictly conform to the French ALUR legislation.",
+                "steps": {
+                        "configuration": "Configuration",
+                        "financials": "Financials",
+                        "review": "Review"
+                },
+                "wizard": {
+                        "title": "New Lease Creation",
+                        "subtitle": "Legally compliant contracts generated instantly",
+                        "generalInfo": "General Info",
+                        "assetSelection": "Asset Selection",
+                        "chooseProperty": "-- Choose Property --",
+                        "approvedCandidate": "Approved Candidate",
+                        "selectPropertyFirst": "-- Select property first --",
+                        "noApprovedCandidates": "No approved candidates",
+                        "selectTenant": "-- Select tenant --",
+                        "protocolType": "Protocol Type",
+                        "effectiveDate": "Effective Date",
+                        "duration": "Duration (Months)",
+                        "nextStage": "Next Stage",
+                        "financialTerms": "Financial Terms",
+                        "netRent": "Net Rent (€)",
+                        "charges": "Charges (€)",
+                        "deposit": "Deposit (€)",
+                        "guarantorProtocol": "Guarantor Protocol",
+                        "guarantorFullName": "Guarantor Full Name",
+                        "guarantorNote": "Optional: Leave blank if no guarantor required.",
+                        "lessorSignature": "Lessor Signature",
+                        "signatureSubtitle": "Digital validation of lease document authenticity",
+                        "clearSignature": "Clear Signature",
+                        "goBack": "Go Back",
+                        "generateProtocol": "Generate Protocol",
+                        "processing": "Processing...",
+                        "previewTitle": "Protocol Preview",
+                        "modify": "Modify",
+                        "print": "Print",
+                        "finalize": "Finalize Protocol"
+                }
         },
         "docs": {
                 "student_id": "Student ID / Enrollment Certificate",
@@ -1826,8 +1900,10 @@ export const translations = {
                 categories: {
                     damage: "Property Damage",
                     appliance: "Appliance Failure",
+                    appliance_failure: "Appliance Failure",
                     cleaning: "Cleaning / Hygiene",
                     shared: "Shared Space Issue",
+                    shared_liability: "Shared Space Issue",
                     other: "Other"
                 },
                 titleLabel: "Issue Title",
@@ -1839,7 +1915,16 @@ export const translations = {
                 submitting: "Submitting...",
                 submitBtn: "Submit Incident Report",
                 success: "Incident reported successfully",
-                error: "Failed to report incident"
+                error: "Failed to report incident",
+                step1: "1. Select Category",
+                step2: "2. Provide Incident Details",
+                step3: "3. Photo Evidence",
+                form: {
+                    title: "Issue Title",
+                    desc: "Detailed Description"
+                },
+                dutyTitle: "Obligation to Report",
+                dutyDesc: "As a tenant, you are legally required to report any property damage or failures promptly to preserve your guarantee and prevent further degradation."
             },
             messages: {
                 loadError: "Failed to load your disputes",
@@ -1852,6 +1937,47 @@ export const translations = {
                 submitting: "Submitting..."
             }
         },
+        applications: {
+            myApplications: "My Applications",
+            receivedApplications: "Received Applications",
+            noApplications: "No Applications",
+            noApplicationsDesc: "Your journey hasn't started yet.",
+            browseProperties: "Browse Properties",
+            newSearch: "New Search",
+            submittedOn: "Submitted on {{date}}",
+            viewProperty: "View Property",
+            status: {
+                all: "All",
+                pending: "Pending",
+                reviewing: "Reviewing",
+                approved: "Approved",
+                rejected: "Rejected",
+                withdrawn: "Withdrawn",
+                lease_created: "Lease Created"
+            },
+            withdraw: "Withdraw Application",
+            withdrawConfirm: "Are you sure you want to withdraw this application? This action cannot be undone.",
+            withdrawSuccess: "Application withdrawn successfully",
+            trustScore: "Trust Score",
+            verified: "Verified",
+            unverified: "Unverified",
+            employment: "Employment",
+            identity: "Identity",
+            resources: "Resources",
+            approve: "Approve",
+            reject: "Reject",
+            approveConfirm: "Are you sure you want to approve this application? All other applications for this property will be automatically rejected.",
+            rejectConfirm: "Are you sure you want to reject this application?",
+            approveSuccess: "Application approved successfully",
+            rejectSuccess: "Application rejected successfully",
+            createLease: "Create Lease",
+            filters: "Filters",
+            all: "All",
+            coverLetter: "Cover Letter",
+            tenantDossier: "Tenant Dossier",
+            viewDossier: "View Dossier"
+        },
+
         settings: {
             title: "Settings",
             subtitle: "Manage your digital identity and security preferences.",
@@ -2593,6 +2719,31 @@ export const translations = {
                 complete: "Complétez vos vérifications pour booster votre score",
                 verified: "Votre score de confiance est parfait !",
                 improve: "Améliorer le score"
+            },
+            compliance: {
+                title: "Conformité Légale",
+                alur: "Loi ALUR",
+                depositCountdown: "Dépôt de garantie : {{days}} jours restants",
+                depositReturned: "Dépôt de garantie restitué",
+                depositOverdue: "Restitution en retard de {{days}} jours",
+                rentControl: "Encadrement des Loyers",
+                rentWithinLimit: "Conforme au loyer de référence",
+                rentExceeded: "Dépasse la limite de la zone de {{amount}}€/mois",
+                dpe: "Diagnostic Performance (DPE)",
+                dpeBanWarning: "Les biens de classe {{rating}} seront interdits à la location en {{year}}",
+                dpeCompliant: "Tous les biens sont énergétiquement conformes",
+                noticePeriod: "Délai de Préavis",
+                noticeExpiring: "Le bail se termine dans {{days}} jours (Préavis en cours)",
+                noticeFurnished: "Préavis de 1 mois (Meublé)",
+                noticeUnfurnished: "Préavis de 3 mois (Non meublé)"
+            },
+            alerts: {
+                title: "Centre d'Action Propriétaire",
+                empty: "Aucune action urgente. Statut café du matin parfait ! ☕",
+                resolve: "Résoudre",
+                critical: "Critique",
+                warning: "Avertissement",
+                info: "Info"
             },
             quickActions: {
                 title: "Actions rapides",
@@ -3664,7 +3815,7 @@ export const translations = {
         },
         "lease": {
                 "meuble": {
-                        "name": "Location meublée",
+                        "name": "Bail Meublé",
                         "desc": "Bail standard pour bien meublé",
                         "duration": "1 an (renouvelable)",
                         "tenantNotice": "1 mois",
@@ -3672,7 +3823,7 @@ export const translations = {
                         "depositInfo": "2 mois max"
                 },
                 "vide": {
-                        "name": "Location vide",
+                        "name": "Bail Vide",
                         "desc": "Bail pour bien non meublé",
                         "duration": "3 ans (renouvelable)",
                         "tenantNotice": "3 mois",
@@ -3680,7 +3831,7 @@ export const translations = {
                         "depositInfo": "1 mois max"
                 },
                 "mobilite": {
-                        "name": "Bail mobilité",
+                        "name": "Bail Mobilité",
                         "desc": "Courte durée (étudiants, stagiaires, mutation)",
                         "duration": "1-10 mois (non renouvelable)",
                         "tenantNotice": "1 mois",
@@ -3688,7 +3839,7 @@ export const translations = {
                         "depositInfo": "Interdit"
                 },
                 "etudiant": {
-                        "name": "Bail étudiant",
+                        "name": "Bail Étudiant",
                         "desc": "Spécifique aux étudiants",
                         "duration": "9 mois (non renouvelable)",
                         "tenantNotice": "1 mois",
@@ -3697,7 +3848,12 @@ export const translations = {
                 },
                 "error": {
                         "missingFields": "Veuillez remplir tous les champs obligatoires",
-                        "generationFailed": "Erreur lors de la génération du bail"
+                        "generationFailed": "Erreur lors de la génération du bail",
+                        "applicationInvalid": "La candidature n'est pas valide ou approuvée.",
+                        "onlyApprovedCandidates": "Seules les candidatures approuvées peuvent faire l'objet d'un bail.",
+                        "back": "Retour aux Candidatures",
+                        "setupTitle": "Configuration du Bail",
+                        "startDatePast": "La date d'effet ne peut pas être dans le passé."
                 },
                 "title": "Générer un bail",
                 "leaseType": "Type de bail",
@@ -3721,7 +3877,51 @@ export const translations = {
                 "generateButton": "Générer le contrat de bail",
                 "success": "Bail généré !",
                 "successDesc": "Le contrat inclut toutes les clauses obligatoires : préavis, conditions de fin de bail, dépôt de garantie, obligations, état des lieux et clause résolutoire.",
-                "downloadPdf": "Télécharger le PDF"
+                "downloadPdf": "Télécharger le PDF",
+                "preview": "Prévisualiser le Bail",
+                "propertySummary": "Résumé du Bien",
+                "address": "Adresse",
+                "alurCompliance": "Indice IRL : Conformité Loi ALUR active",
+                "contractPreview": "Aperçu du Contrat de Bail",
+                "clickPreview": "Cliquez sur Aperçu pour générer le contrat",
+                "alurNote": "Le document se conformera strictement à la législation ALUR française.",
+                "steps": {
+                        "configuration": "Configuration",
+                        "financials": "Finances",
+                        "review": "Révision"
+                },
+                "wizard": {
+                        "title": "Création d'un Nouveau Bail",
+                        "subtitle": "Des contrats conformes générés instantanément",
+                        "generalInfo": "Infos Générales",
+                        "assetSelection": "Sélection du Bien",
+                        "chooseProperty": "-- Choisir le Bien --",
+                        "approvedCandidate": "Candidat Approuvé",
+                        "selectPropertyFirst": "-- Sélectionnez d'abord le bien --",
+                        "noApprovedCandidates": "Aucun candidat approuvé",
+                        "selectTenant": "-- Choisir le locataire --",
+                        "protocolType": "Type de Contrat",
+                        "effectiveDate": "Date d'Effet",
+                        "duration": "Durée (Mois)",
+                        "nextStage": "Étape Suivante",
+                        "financialTerms": "Conditions Financières",
+                        "netRent": "Loyer Hors Charges (€)",
+                        "charges": "Charges (€)",
+                        "deposit": "Dépôt de Garantie (€)",
+                        "guarantorProtocol": "Protocole du Garant",
+                        "guarantorFullName": "Nom complet du garant",
+                        "guarantorNote": "Optionnel : Laissez vide si aucun garant n'est requis.",
+                        "lessorSignature": "Signature du Bailleur",
+                        "signatureSubtitle": "Validation numérique de l'authenticité du bail",
+                        "clearSignature": "Effacer la signature",
+                        "goBack": "Retour",
+                        "generateProtocol": "Générer le contrat",
+                        "processing": "Génération...",
+                        "previewTitle": "Aperçu du Contrat",
+                        "modify": "Modifier",
+                        "print": "Imprimer",
+                        "finalize": "Finaliser le Contrat"
+                }
         },
         "docs": {
                 "student_id": "Carte étudiante / Certificat de scolarité",
@@ -3942,8 +4142,10 @@ export const translations = {
                 categories: {
                     damage: "Dommage Immobilier",
                     appliance: "Panne d'Équipement",
+                    appliance_failure: "Panne d'Équipement",
                     cleaning: "Nettoyage / Hygiène",
                     shared: "Problème de Parties Communes",
+                    shared_liability: "Problème de Parties Communes",
                     other: "Autre"
                 },
                 titleLabel: "Titre du problème",
@@ -3955,7 +4157,16 @@ export const translations = {
                 submitting: "Envoi...",
                 submitBtn: "Soumettre le rapport d'incident",
                 success: "Incident signalé avec succès",
-                error: "Échec du signalement de l'incident"
+                error: "Échec du signalement de l'incident",
+                step1: "1. Sélectionner la catégorie",
+                step2: "2. Détails de l'incident",
+                step3: "3. Preuves photo",
+                form: {
+                    title: "Titre du problème",
+                    desc: "Description détaillée"
+                },
+                dutyTitle: "Obligation de Signalement",
+                dutyDesc: "En tant que locataire, vous êtes légalement tenu de signaler rapidement tout dommage ou panne afin de préserver votre garantie et d'éviter toute dégradation supplémentaire."
             },
             messages: {
                 loadError: "Échec du chargement de vos litiges",
@@ -3968,6 +4179,47 @@ export const translations = {
                 submitting: "Envoi..."
             }
         },
+        applications: {
+            myApplications: "Mes Candidatures",
+            receivedApplications: "Candidatures Reçues",
+            noApplications: "Aucune candidature",
+            noApplicationsDesc: "Votre aventure n'a pas encore commencé.",
+            browseProperties: "Parcourir les biens",
+            newSearch: "Nouvelle recherche",
+            submittedOn: "Soumis le {{date}}",
+            viewProperty: "Voir le bien",
+            status: {
+                all: "Tout",
+                pending: "En attente",
+                reviewing: "À l'étude",
+                approved: "Acceptée",
+                rejected: "Refusée",
+                withdrawn: "Retirée",
+                lease_created: "Bail créé"
+            },
+            withdraw: "Retirer ma candidature",
+            withdrawConfirm: "Êtes-vous sûr de vouloir retirer votre candidature ? Cette action est irréversible.",
+            withdrawSuccess: "Candidature retirée avec succès",
+            trustScore: "Score de confiance",
+            verified: "Vérifié",
+            unverified: "Non vérifié",
+            employment: "Emploi",
+            identity: "Identité",
+            resources: "Ressources",
+            approve: "Accepter",
+            reject: "Refuser",
+            approveConfirm: "Êtes-vous sûr de vouloir accepter cette candidature ? Toutes les autres candidatures pour ce bien seront automatiquement refusées.",
+            rejectConfirm: "Êtes-vous sûr de vouloir refuser cette candidature ?",
+            approveSuccess: "Candidature acceptée avec succès",
+            rejectSuccess: "Candidature refusée avec succès",
+            createLease: "Créer le bail",
+            filters: "Filtres",
+            all: "Tout",
+            coverLetter: "Lettre de motivation",
+            tenantDossier: "Dossier du locataire",
+            viewDossier: "Voir le dossier"
+        },
+
         settings: {
             title: "Paramètres",
             subtitle: "Gérez votre identité numérique et vos préférences de sécurité.",

@@ -2,22 +2,34 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/useAuth';
+import { motion } from 'framer-motion';
+import { FileText, Calendar, Shield, Info, ArrowLeft, Eye, Check } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import PremiumLayout from '@/components/PremiumLayout';
+import { useAuth } from '@/lib/useAuth';
 import { apiClient } from '@/lib/api';
+import { useToast } from '@/lib/ToastContext';
+import { useLanguage } from '@/lib/LanguageContext';
 
 // Compact GLI Widget for Lease Generation
 function GLILeaseWidget({ monthlyRent, propertyId }: { monthlyRent: number; propertyId: string }) {
+    const { t } = useLanguage();
+    const toast = useToast();
     const [loading, setLoading] = useState(false);
     const [quote, setQuote] = useState<any>(null);
     const [applied, setApplied] = useState(false);
+    const [tenantIncome, setTenantIncome] = useState<number>(monthlyRent * 3);
 
     const getQuote = async () => {
+        if (tenantIncome <= 0) {
+            toast.error('Please enter a valid income');
+            return;
+        }
         setLoading(true);
         try {
             const response = await apiClient.client.post('/verification/gli/quote', {
                 monthly_rent: monthlyRent,
-                tenant_monthly_income: monthlyRent * 3.5, // Assume eligible tenant
+                tenant_monthly_income: tenantIncome,
                 tenant_employment_type: 'cdi',
                 tenant_employment_verified: true,
                 tenant_identity_verified: true
@@ -25,6 +37,7 @@ function GLILeaseWidget({ monthlyRent, propertyId }: { monthlyRent: number; prop
             setQuote(response.data);
         } catch (error) {
             console.error('GLI quote error:', error);
+            toast.error('Failed to calculate GLI quote');
         } finally {
             setLoading(false);
         }
@@ -35,14 +48,16 @@ function GLILeaseWidget({ monthlyRent, propertyId }: { monthlyRent: number; prop
         try {
             await apiClient.client.post(`/verification/gli/apply?property_id=${propertyId}`, {
                 monthly_rent: monthlyRent,
-                tenant_monthly_income: monthlyRent * 3.5,
+                tenant_monthly_income: tenantIncome,
                 tenant_employment_type: 'cdi',
                 tenant_employment_verified: true,
                 tenant_identity_verified: true
             });
             setApplied(true);
+            toast.success(t('dashboard.landlord.widgets.gli.success') || 'GLI Underwriting request submitted!');
         } catch (error) {
             console.error('GLI apply error:', error);
+            toast.error('Failed to submit GLI application');
         } finally {
             setLoading(false);
         }
@@ -50,50 +65,65 @@ function GLILeaseWidget({ monthlyRent, propertyId }: { monthlyRent: number; prop
 
     if (applied) {
         return (
-            <div className="flex items-center gap-2 text-green-700 font-medium">
-                <span className="text-xl"></span>
+            <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-xs uppercase tracking-wider mt-2">
+                <Check className="w-4 h-4" />
                 GLI souscrite! Vous serez contacté sous 24h.
             </div>
         );
     }
 
-    if (!quote) {
-        return (
-            <button
-                onClick={getQuote}
-                disabled={loading}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium disabled:opacity-50"
-            >
-                {loading ? '⏳ Calcul...' : ' Obtenir un devis GLI'}
-            </button>
-        );
-    }
-
-    if (!quote.eligible) {
-        return (
-            <div className="text-yellow-700 text-sm">
-                ️ Non éligible: {quote.eligibility_reason}
-            </div>
-        );
-    }
-
     return (
-        <div className="flex items-center gap-4">
-            <div className="text-sm">
-                <span className="font-bold text-green-700">{quote.monthly_premium}€/mois</span>
-                <span className="text-gray-500"> ({quote.premium_rate}% du loyer)</span>
+        <div className="space-y-4 mt-4">
+            <div className="flex flex-col sm:flex-row gap-3 items-end">
+                <div className="flex-1">
+                    <label className="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-1.5">
+                        {t('dashboard.landlord.widgets.gli.income')} (€/mo)
+                    </label>
+                    <input
+                        type="number"
+                        value={tenantIncome}
+                        onChange={(e) => setTenantIncome(Number(e.target.value))}
+                        className="w-full px-4 py-2.5 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-zinc-950 text-sm font-semibold"
+                    />
+                </div>
+                {!quote ? (
+                    <button
+                        onClick={getQuote}
+                        disabled={loading}
+                        className="px-5 py-3 bg-zinc-950 hover:bg-zinc-900 dark:bg-white dark:hover:bg-zinc-100 text-white dark:text-zinc-950 rounded-xl text-xs font-bold uppercase tracking-wider disabled:opacity-50 transition-all shrink-0"
+                    >
+                        {loading ? '...' : t('dashboard.landlord.widgets.gli.calculate')}
+                    </button>
+                ) : null}
             </div>
-            <button
-                onClick={handleApply}
-                disabled={loading}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium disabled:opacity-50"
-            >
-                {loading ? '⏳' : ' Souscrire'}
-            </button>
+
+            {quote && (
+                <div className="pt-3 border-t border-zinc-100 dark:border-zinc-850 flex items-center justify-between gap-4 flex-wrap">
+                    {!quote.eligible ? (
+                        <div className="text-rose-500 font-bold text-xs uppercase tracking-wider flex items-center gap-1">
+                            <Info className="w-4 h-4" />
+                            {t('dashboard.landlord.widgets.gli.ineligible')}: {quote.eligibility_reason}
+                        </div>
+                    ) : (
+                        <>
+                            <div className="text-sm font-medium">
+                                <span className="font-bold text-emerald-600">{quote.monthly_premium}€/mois</span>
+                                <span className="text-zinc-400"> ({quote.premium_rate}% {t('dashboard.landlord.widgets.gli.rent').toLowerCase()})</span>
+                            </div>
+                            <button
+                                onClick={handleApply}
+                                disabled={loading}
+                                className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider disabled:opacity-50 transition-all"
+                            >
+                                {loading ? '...' : t('dashboard.landlord.widgets.gli.subscribe')}
+                            </button>
+                        </>
+                    )}
+                </div>
+            )}
         </div>
     );
 }
-
 
 interface Application {
     id: string;
@@ -105,6 +135,7 @@ interface Application {
         email: string;
     };
     property?: {
+        id: string;
         title: string;
         address_line1: string;
         city: string;
@@ -117,6 +148,9 @@ export default function LeaseGeneratorPage() {
     const { id } = useParams();
     const router = useRouter();
     const { user } = useAuth();
+    const toast = useToast();
+    const { t } = useLanguage();
+
     const [application, setApplication] = useState<Application | null>(null);
     const [loading, setLoading] = useState(true);
     const [generating, setGenerating] = useState(false);
@@ -127,15 +161,35 @@ export default function LeaseGeneratorPage() {
     const [startDate, setStartDate] = useState('');
     const [durationMonths, setDurationMonths] = useState(12);
     const [guarantorName, setGuarantorName] = useState('');
+    const [depositAmount, setDepositAmount] = useState<number>(0);
+    const [rentAmount, setRentAmount] = useState<number>(0);
+    const [chargesAmount, setChargesAmount] = useState<number>(0);
 
     useEffect(() => {
+        document.title = "Create Lease Protocol | Roomivo";
+        let metaDesc = document.querySelector('meta[name="description"]');
+        if (!metaDesc) {
+            metaDesc = document.createElement('meta');
+            metaDesc.setAttribute('name', 'description');
+            document.head.appendChild(metaDesc);
+        }
+        metaDesc.setAttribute('content', 'Generate and review legal lease agreements compliant with French rental law (Loi ALUR) for your approved tenants.');
+
         loadApplication();
     }, [id]);
 
     const loadApplication = async () => {
         try {
             const response = await apiClient.client.get(`/applications/${id}`);
-            setApplication(response.data);
+            const appData = response.data;
+            setApplication(appData);
+
+            if (appData.property) {
+                setRentAmount(appData.property.monthly_rent || 0);
+                setChargesAmount(appData.property.charges || 0);
+                // Default deposit for meublé = 2 months rent
+                setDepositAmount((appData.property.monthly_rent || 0) * 2);
+            }
 
             // Default start date to 1st of next month
             const nextMonth = new Date();
@@ -144,13 +198,78 @@ export default function LeaseGeneratorPage() {
             setStartDate(nextMonth.toISOString().split('T')[0]);
         } catch (error) {
             console.error('Error loading application:', error);
+            toast.error('Failed to load application details');
         } finally {
             setLoading(false);
         }
     };
 
+    // French Law Lease Type Constraints
+    useEffect(() => {
+        if (!application?.property) return;
+        const rent = rentAmount;
+
+        switch (leaseType) {
+            case 'vide':
+                setDurationMonths(36); // standard 3 years
+                setDepositAmount(rent * 1); // Loi Alur: max 1 month deposit for unfurnished
+                break;
+            case 'meuble':
+                setDurationMonths(12); // standard 12 months
+                setDepositAmount(rent * 2); // Loi Alur: max 2 months deposit for furnished
+                break;
+            case 'etudiant':
+                setDurationMonths(9); // standard 9 months student lease
+                setDepositAmount(rent * 2); // max 2 months
+                break;
+            case 'mobilite':
+                setDurationMonths(10); // max 10 months mobility lease
+                setDepositAmount(0); // Loi Alur: deposit is FORBIDDEN for mobility lease!
+                break;
+            default:
+                setDurationMonths(12);
+                setDepositAmount(rent * 2);
+        }
+    }, [leaseType, rentAmount]);
+
+    const validateForm = () => {
+        const today = new Date().toISOString().split('T')[0];
+        if (startDate < today) {
+            toast.error('Lease start date cannot be in the past');
+            return false;
+        }
+        if (rentAmount <= 0) {
+            toast.error('Rent must be greater than 0');
+            return false;
+        }
+        if (chargesAmount < 0) {
+            toast.error('Charges cannot be negative');
+            return false;
+        }
+
+        // Validate deposit limits according to French law
+        if (leaseType === 'vide' && depositAmount > rentAmount * 1) {
+            toast.error('Loi ALUR compliance: Deposit for unfurnished lease cannot exceed 1 month rent');
+            return false;
+        }
+        if (leaseType === 'meuble' && depositAmount > rentAmount * 2) {
+            toast.error('Loi ALUR compliance: Deposit for furnished lease cannot exceed 2 months rent');
+            return false;
+        }
+        if (leaseType === 'mobilite' && depositAmount > 0) {
+            toast.error('Loi ALUR compliance: Guarantee deposit is strictly forbidden for mobility leases');
+            return false;
+        }
+        if (leaseType === 'mobilite' && (durationMonths < 1 || durationMonths > 10)) {
+            toast.error('Bail Mobilité compliance: Duration must be between 1 and 10 months');
+            return false;
+        }
+
+        return true;
+    };
+
     const handlePreview = async () => {
-        if (!application) return;
+        if (!application || !validateForm()) return;
         setGenerating(true);
 
         try {
@@ -159,37 +278,49 @@ export default function LeaseGeneratorPage() {
                 lease_type: leaseType,
                 start_date: startDate,
                 duration_months: durationMonths,
+                rent_override: rentAmount,
+                charges_override: chargesAmount,
+                deposit_override: depositAmount,
                 guarantor_name: guarantorName || undefined
             }, {
                 responseType: 'text'
             });
             setPreviewHtml(response.data);
+            toast.success(t('lease.success') || 'Preview generated!');
         } catch (error) {
             console.error('Error generating preview:', error);
-            alert('Failed to generate lease preview');
+            toast.error(t('lease.error.generationFailed') || 'Failed to generate preview');
         } finally {
             setGenerating(false);
         }
     };
 
     const handleCreateLease = async () => {
-        if (!application) return;
+        if (!application || !validateForm()) return;
         setGenerating(true);
 
         try {
-            await apiClient.client.post('/leases/create', {
+            const response = await apiClient.client.post('/leases/create', {
                 application_id: application.id,
                 lease_type: leaseType,
                 start_date: startDate,
                 duration_months: durationMonths,
+                rent_override: rentAmount,
+                charges_override: chargesAmount,
+                deposit_override: depositAmount,
                 guarantor_name: guarantorName || undefined
             });
 
-            alert('Bail créé avec succès!');
-            router.push('/dashboard');
+            toast.success('Bail enregistré avec succès !');
+            // Redirect to newly created lease or dashboard
+            if (response.data?.lease_id) {
+                router.push(`/leases/${response.data.lease_id}`);
+            } else {
+                router.push('/dashboard');
+            }
         } catch (error) {
             console.error('Error creating lease:', error);
-            alert('Failed to create lease');
+            toast.error('Failed to create lease contract');
         } finally {
             setGenerating(false);
         }
@@ -198,8 +329,8 @@ export default function LeaseGeneratorPage() {
     if (loading) {
         return (
             <ProtectedRoute>
-                <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-                    <div className="w-16 h-16 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+                <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center">
+                    <div className="w-12 h-12 border-4 border-zinc-200 dark:border-zinc-800 border-t-zinc-950 dark:border-t-white rounded-full animate-spin" />
                 </div>
             </ProtectedRoute>
         );
@@ -208,16 +339,18 @@ export default function LeaseGeneratorPage() {
     if (!application || application.status !== 'approved') {
         return (
             <ProtectedRoute>
-                <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-                    <div className="bg-white p-8 rounded-xl shadow-sm text-center">
-                        <div className="text-6xl mb-4">️</div>
-                        <h2 className="text-xl font-bold text-gray-900 mb-2">Application non valide</h2>
-                        <p className="text-gray-600 mb-4">Seules les candidatures approuvées peuvent générer un bail.</p>
+                <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-zinc-900 p-8 rounded-3xl text-center border border-zinc-150 dark:border-zinc-800 max-w-sm w-full shadow-lg">
+                        <div className="w-14 h-14 bg-rose-50 dark:bg-rose-950/20 rounded-2xl flex items-center justify-center text-rose-500 mx-auto mb-4">
+                            <Info className="w-8 h-8" />
+                        </div>
+                        <h2 className="text-xl font-black text-zinc-900 dark:text-white mb-2 uppercase tracking-tight">{t('lease.error.applicationInvalid')}</h2>
+                        <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-6">{t('lease.error.onlyApprovedCandidates')}</p>
                         <button
                             onClick={() => router.back()}
-                            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                            className="w-full py-3 bg-zinc-950 hover:bg-zinc-900 dark:bg-white dark:hover:bg-zinc-100 text-white dark:text-zinc-950 text-xs font-bold uppercase tracking-wider rounded-xl transition-all"
                         >
-                            Retour
+                            {t('lease.error.back')}
                         </button>
                     </div>
                 </div>
@@ -227,163 +360,224 @@ export default function LeaseGeneratorPage() {
 
     return (
         <ProtectedRoute>
-            <div className="min-h-screen bg-gray-100">
-                <header className="bg-white shadow">
-                    <div className="max-w-7xl mx-auto py-6 px-4 flex justify-between items-center">
+            <PremiumLayout withNavbar={true}>
+                <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+                    <header className="mb-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div>
-                            <h1 className="text-2xl font-bold text-gray-900"> Génération du Bail</h1>
-                            <p className="text-gray-600">
-                                Pour: {application.tenant?.full_name || 'Locataire'}
+                            <button
+                                onClick={() => router.back()}
+                                className="text-sm font-semibold text-zinc-400 hover:text-zinc-200 transition-colors flex items-center gap-2 mb-3"
+                            >
+                                <ArrowLeft className="w-4 h-4" /> {t('onboarding.back')}
+                            </button>
+                            <h1 className="text-3xl font-black text-zinc-950 dark:text-white uppercase tracking-tight">
+                                {t('lease.title')}
+                            </h1>
+                            <p className="text-zinc-500 dark:text-zinc-400 text-sm font-medium mt-1">
+                                {t('dashboard.landlord.welcome').replace('{{name}}', '')} {t('verify.guarantor.physical')} ({application.tenant?.full_name || 'Locataire'})
                             </p>
                         </div>
-                        <button
-                            onClick={() => router.back()}
-                            className="text-gray-600 hover:text-gray-900"
-                        >
-                            ← Retour
-                        </button>
-                    </div>
-                </header>
+                    </header>
 
-                <main className="max-w-7xl mx-auto py-8 px-4">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <main className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                         {/* Configuration Form */}
-                        <div className="bg-white rounded-xl shadow-sm p-6">
-                            <h2 className="text-lg font-bold text-gray-900 mb-6">️ Configuration du Bail</h2>
+                        <div className="bg-white dark:bg-zinc-900/60 rounded-3xl shadow-sm p-8 border border-zinc-150 dark:border-zinc-800/80 lg:col-span-5 space-y-6">
+                            <h2 className="text-lg font-black text-zinc-900 dark:text-white uppercase tracking-tight flex items-center gap-2 pb-4 border-b border-zinc-100 dark:border-zinc-800/60">
+                                <FileText className="w-5 h-5 text-zinc-400" />
+                                {t('lease.error.setupTitle')}
+                            </h2>
 
                             <div className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Type de Bail
+                                    <label className="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-1.5">
+                                        {t('lease.leaseType')}
                                     </label>
                                     <select
                                         value={leaseType}
                                         onChange={(e) => setLeaseType(e.target.value)}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                                        className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-zinc-950 text-sm font-semibold"
                                     >
-                                        <option value="meuble">Location Meublée (Loi 89)</option>
+                                        <option value="meuble">{t('lease.meuble.name')} (Loi 89)</option>
+                                        <option value="vide">{t('lease.vide.name')} (Loi 89)</option>
+                                        <option value="mobilite">{t('lease.mobilite.name')}</option>
+                                        <option value="etudiant">{t('lease.etudiant.name')}</option>
                                         <option value="colocation">Colocation Meublée</option>
                                         <option value="code_civil">Bail Code Civil</option>
-                                        <option value="simple">Contrat Simple</option>
                                     </select>
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Date de Début
+                                    <label className="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-1.5">
+                                        {t('lease.startDate')}
                                     </label>
                                     <input
                                         type="date"
                                         value={startDate}
                                         onChange={(e) => setStartDate(e.target.value)}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                                        className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-zinc-950 text-sm font-semibold"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Durée (mois)
+                                    <label className="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-1.5">
+                                        {t('lease.duration')} (mois)
                                     </label>
-                                    <select
-                                        value={durationMonths}
-                                        onChange={(e) => setDurationMonths(parseInt(e.target.value))}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                                    >
-                                        <option value={9}>9 mois (Étudiant)</option>
-                                        <option value={12}>12 mois (Standard)</option>
-                                        <option value={24}>24 mois</option>
-                                        <option value={36}>36 mois</option>
-                                    </select>
+                                    {leaseType === 'mobilite' ? (
+                                        <input
+                                            type="number"
+                                            min={1}
+                                            max={10}
+                                            value={durationMonths}
+                                            onChange={(e) => setDurationMonths(Math.max(1, Math.min(10, Number(e.target.value))))}
+                                            className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-zinc-950 text-sm font-semibold"
+                                        />
+                                    ) : (
+                                        <select
+                                            value={durationMonths}
+                                            onChange={(e) => setDurationMonths(Number(e.target.value))}
+                                            className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-zinc-950 text-sm font-semibold"
+                                            disabled={leaseType === 'etudiant' || leaseType === 'meuble' || leaseType === 'vide'}
+                                        >
+                                            <option value={9}>9 mois (Étudiant)</option>
+                                            <option value={12}>12 mois (1 An)</option>
+                                            <option value={36}>36 mois (3 Ans)</option>
+                                        </select>
+                                    )}
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Garant (optionnel)
+                                    <label className="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-1.5">
+                                        {t('lease.monthlyRent')} (€)
+                                    </label>
+                                    <input
+                                        type="number"
+                                        value={rentAmount}
+                                        onChange={(e) => setRentAmount(Number(e.target.value))}
+                                        className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-zinc-950 text-sm font-semibold"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-1.5">
+                                        {t('lease.charges')} (€)
+                                    </label>
+                                    <input
+                                        type="number"
+                                        value={chargesAmount}
+                                        onChange={(e) => setChargesAmount(Number(e.target.value))}
+                                        className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-zinc-950 text-sm font-semibold"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-1.5">
+                                        {t('lease.securityDeposit')} (€)
+                                    </label>
+                                    <input
+                                        type="number"
+                                        value={depositAmount}
+                                        onChange={(e) => setDepositAmount(Number(e.target.value))}
+                                        disabled={leaseType === 'mobilite'}
+                                        className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-zinc-950 text-sm font-semibold disabled:opacity-50"
+                                    />
+                                    {leaseType === 'mobilite' && (
+                                        <p className="text-[10px] text-amber-500 font-bold uppercase tracking-wider mt-1.5">
+                                            {t('lease.mobilite.depositInfo')}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-1.5">
+                                        {t('verify.guarantor.title')} (Optionnel)
                                     </label>
                                     <input
                                         type="text"
                                         value={guarantorName}
                                         onChange={(e) => setGuarantorName(e.target.value)}
-                                        placeholder="Guarantor name"
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                                        placeholder="E.g., John Doe"
+                                        className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-zinc-950 text-sm font-semibold"
                                     />
                                 </div>
                             </div>
 
-                            {/* Property Summary */}
-                            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                                <h3 className="text-sm font-medium text-gray-700 mb-2">Summary</h3>
-                                <div className="text-sm text-gray-600 space-y-1">
-                                    <p><strong>Property:</strong> {application.property?.title}</p>
-                                    <p><strong>Address:</strong> {application.property?.address_line1}, {application.property?.city}</p>
-                                    <p><strong>Rent:</strong> {application.property?.monthly_rent}€ + {application.property?.charges || 0}€ charges</p>
-                                </div>
+                            {/* Property Details Summary */}
+                            <div className="p-5 bg-zinc-50 dark:bg-zinc-950/40 rounded-2xl border border-zinc-100 dark:border-zinc-850 text-xs font-medium space-y-2">
+                                <h3 className="font-bold text-zinc-900 dark:text-white uppercase tracking-wider mb-2">{t('lease.propertySummary')}</h3>
+                                <p><strong className="text-zinc-400">{t('dashboard.landlord.widgets.visits.date')}:</strong> {application.property?.title}</p>
+                                <p><strong className="text-zinc-400">{t('lease.address')}:</strong> {application.property?.address_line1}, {application.property?.city}</p>
+                                <p><strong className="text-zinc-400">{t('lease.alurCompliance')}</strong></p>
                             </div>
 
-                            {/* GLI Insurance Section */}
-                            <div className="mt-6">
-                                <div className="bg-zinc-50 border border-zinc-200 p-4 rounded-xl border border-green-200">
-                                    <div className="flex items-start gap-3">
-                                        <div className="w-10 h-10 rounded-lg bg-zinc-900 flex items-center justify-center text-white text-xl">
-                                            ️
-                                        </div>
-                                        <div className="flex-1">
-                                            <h3 className="font-bold text-gray-900">Rent Guarantee Insurance (GLI)</h3>
-                                            <p className="text-sm text-gray-600 mt-1 mb-3">
-                                                Protégez vos revenus locatifs. En cas d'impayé, vous êtes couvert jusqu'à 24 mois de loyer.
-                                            </p>
-                                            <GLILeaseWidget
-                                                monthlyRent={application.property?.monthly_rent || 0}
-                                                propertyId={application.property_id}
-                                            />
-                                        </div>
+                            {/* GLI Section */}
+                            <div className="p-5 bg-zinc-50 dark:bg-zinc-950/40 border border-emerald-100 dark:border-emerald-950/40 rounded-2xl">
+                                <div className="flex items-start gap-3.5">
+                                    <div className="w-10 h-10 rounded-xl bg-zinc-950 dark:bg-white flex items-center justify-center text-white dark:text-zinc-950 text-lg shrink-0">
+                                        <Shield className="w-5 h-5" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <h3 className="font-black text-sm text-zinc-950 dark:text-white uppercase tracking-tight">
+                                            {t('dashboard.quickActions.gli.title')} (GLI)
+                                        </h3>
+                                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 leading-relaxed">
+                                            {t('dashboard.landlord.widgets.gli.subtitle')}
+                                        </p>
+                                        <GLILeaseWidget
+                                            monthlyRent={rentAmount}
+                                            propertyId={application.property_id}
+                                        />
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Actions */}
-                            <div className="mt-6 flex gap-4">
+                            {/* Action Buttons */}
+                            <div className="flex gap-4 pt-4">
                                 <button
                                     onClick={handlePreview}
                                     disabled={generating}
-                                    className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium disabled:opacity-50"
+                                    className="flex-1 py-4 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 text-xs font-bold uppercase tracking-widest rounded-xl disabled:opacity-50 transition-colors flex items-center justify-center gap-1.5"
                                 >
-                                    {generating ? '⏳ Génération...' : '️ Aperçu'}
+                                    <Eye className="w-4 h-4" /> {generating ? '...' : t('lease.preview')}
                                 </button>
                                 <button
                                     onClick={handleCreateLease}
                                     disabled={generating}
-                                    className="flex-1 px-4 py-3 bg-zinc-100 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 font-medium disabled:opacity-50"
+                                    className="flex-1 py-4 bg-zinc-950 hover:bg-zinc-900 dark:bg-white dark:hover:bg-zinc-100 text-white dark:text-zinc-950 text-xs font-bold uppercase tracking-widest rounded-xl disabled:opacity-50 transition-colors shadow-lg"
                                 >
-                                    {generating ? '⏳ Création...' : ' Créer le Bail'}
+                                    {generating ? '...' : t('lease.generateButton')}
                                 </button>
                             </div>
                         </div>
 
-                        {/* Preview */}
-                        <div className="bg-white rounded-xl shadow-sm p-6">
-                            <h2 className="text-lg font-bold text-gray-900 mb-4"> Aperçu du Bail</h2>
+                        {/* Preview Iframe */}
+                        <div className="bg-white dark:bg-zinc-900/60 rounded-3xl shadow-sm p-8 border border-zinc-150 dark:border-zinc-800/80 lg:col-span-7 h-full min-h-[600px] flex flex-col">
+                            <h2 className="text-lg font-black text-zinc-900 dark:text-white uppercase tracking-tight flex items-center gap-2 mb-6 pb-4 border-b border-zinc-100 dark:border-zinc-800/60">
+                                <Eye className="w-5 h-5 text-zinc-400" />
+                                {t('lease.contractPreview')}
+                            </h2>
 
                             {previewHtml ? (
-                                <div className="border border-gray-200 rounded-lg overflow-hidden">
+                                <div className="border border-zinc-150 dark:border-zinc-800 rounded-2xl overflow-hidden flex-1 bg-white">
                                     <iframe
                                         srcDoc={previewHtml}
-                                        className="w-full h-[600px]"
+                                        className="w-full h-[650px]"
                                         title="Lease Preview"
+                                        sandbox=""
                                     />
                                 </div>
                             ) : (
-                                <div className="h-[600px] bg-gray-50 rounded-lg flex items-center justify-center text-gray-400">
-                                    <div className="text-center">
-                                        <div className="text-6xl mb-4"></div>
-                                        <p>Cliquez sur "Aperçu" pour voir le bail</p>
+                                <div className="flex-1 min-h-[500px] bg-zinc-50 dark:bg-zinc-950/40 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl flex items-center justify-center text-zinc-400 dark:text-zinc-500">
+                                    <div className="text-center max-w-sm p-6">
+                                        <FileText className="w-12 h-12 mx-auto mb-4 text-zinc-300 dark:text-zinc-700" />
+                                        <p className="text-sm font-semibold uppercase tracking-wider">{t('lease.clickPreview')}</p>
+                                        <p className="text-xs text-zinc-400 mt-2">{t('lease.alurNote')}</p>
                                     </div>
                                 </div>
                             )}
                         </div>
-                    </div>
-                </main>
-            </div>
+                    </main>
+                </div>
+            </PremiumLayout>
         </ProtectedRoute>
     );
 }
