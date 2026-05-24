@@ -4,11 +4,38 @@ set -x # Print commands and their arguments as they are executed
 
 echo "🚀 Starting Roomivo Backend Initialization..."
 
+# Locate and activate virtualenv
+if [ -d ".venv" ]; then
+    echo "🟢 Activating local .venv..."
+    source .venv/bin/activate
+elif [ -d "../.venv" ]; then
+    echo "🟢 Activating parent .venv..."
+    source ../.venv/bin/activate
+elif [ -d "/opt/render/project/src/.venv" ]; then
+    echo "🟢 Activating Render project root .venv..."
+    source /opt/render/project/src/.venv/bin/activate
+elif [ -d "/opt/render/project/src/backend/.venv" ]; then
+    echo "🟢 Activating Render backend .venv..."
+    source /opt/render/project/src/backend/.venv/bin/activate
+else
+    echo "⚠️ No virtual environment folder found. Running in system global environment."
+fi
+
+# Print diagnostics
+echo "🔍 Environment Diagnostics:"
+echo "   Python path: $(which python || echo 'not found')"
+echo "   Python version: $(python --version 2>&1 || echo 'N/A')"
+echo "   Alembic path: $(which alembic || echo 'not found')"
+echo "   Uvicorn path: $(which uvicorn || echo 'not found')"
+
 # Pre-flight check: Wait for Database
 if [ -n "$DATABASE_URL" ]; then
-    echo "🔍 Checking database connectivity..."
+    MASKED_DB_URL=$(echo "$DATABASE_URL" | sed 's/\/\/.*@/\/\/xxx:xxx@/')
+    echo "🔍 Checking database connectivity: $MASKED_DB_URL"
     MAX_RETRIES=30
     RETRY_COUNT=0
+    
+    # We execute python (which points to active virtualenv) to perform pre-flight
     until python -c "
 import sqlalchemy
 import os
@@ -20,8 +47,9 @@ engine = sqlalchemy.create_engine(url, connect_args={'connect_timeout': 5})
 try:
     with engine.connect() as conn:
         sys.exit(0)
-except Exception:
-    sys.exit(1)
+except Exception as e:
+        print('Connection error:', str(e))
+        sys.exit(1)
 " || [ $RETRY_COUNT -eq $MAX_RETRIES ]; do
         echo "⚠️ Database not ready ($RETRY_COUNT/$MAX_RETRIES). Waiting 2s..."
         sleep 2
@@ -33,6 +61,8 @@ except Exception:
         exit 1
     fi
     echo "✅ Database connection successful"
+else
+    echo "⚠️ DATABASE_URL is not set. Skipping pre-flight checks."
 fi
 
 echo "🏗️ Running database migrations..."
