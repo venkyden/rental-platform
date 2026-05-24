@@ -35,22 +35,8 @@ if [ -n "$DATABASE_URL" ]; then
     MAX_RETRIES=30
     RETRY_COUNT=0
     
-    # We execute python (which points to active virtualenv) to perform pre-flight
-    until python -c "
-import os
-import sys
-try:
-    import sqlalchemy
-    url = os.getenv('DATABASE_URL').replace('postgres://', 'postgresql://', 1)
-    if '+asyncpg' in url:
-        url = url.replace('+asyncpg', '')
-    engine = sqlalchemy.create_engine(url, connect_args={'connect_timeout': 5})
-    with engine.connect() as conn:
-        sys.exit(0)
-except Exception as e:
-    print('Connection error:', str(e))
-    sys.exit(1)
-" || [ $RETRY_COUNT -eq $MAX_RETRIES ]; do
+    # We execute check_db_conn.py to perform pre-flight
+    until python check_db_conn.py || [ $RETRY_COUNT -eq $MAX_RETRIES ]; do
         echo "⚠️ Database not ready ($RETRY_COUNT/$MAX_RETRIES). Waiting 2s..."
         sleep 2
         RETRY_COUNT=$((RETRY_COUNT + 1))
