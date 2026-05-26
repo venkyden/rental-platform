@@ -1,47 +1,16 @@
 'use client';
 
-import { motion, useSpring, useTransform, animate, Variants } from 'framer-motion';
-import { ChevronRight, Search, MapPin, Sparkles } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ChevronRight, Search, MapPin } from 'lucide-react';
 import { useLanguage } from '@/lib/LanguageContext';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import Link from 'next/link';
 
 export default function SearchHero() {
   const { t } = useLanguage();
   const [query, setQuery] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({ 
-    total_properties: 0, 
-    verified_landlords: 0, 
-    matches_last_30_days: 0,
-    active_cities: 0 
-  });
   const router = useRouter();
-
-  // ─── Single Fetch for Stats ───
-  useEffect(() => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
-    setLoading(true);
-    fetch(`${apiUrl}/stats/public/overview`)
-      .then(res => {
-        if (!res.ok) throw new Error('Failed to fetch public stats');
-        return res.json();
-      })
-      .then(data => {
-        setStats({
-          total_properties: data.total_properties || 0,
-          verified_landlords: data.verified_landlords || 0,
-          matches_last_30_days: data.matches_last_30_days || 0,
-          active_cities: data.active_cities || 0
-        });
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error('Failed to fetch stats:', err);
-        setLoading(false);
-      });
-  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,19 +34,7 @@ export default function SearchHero() {
 
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         <div className="text-center">
-          {/* ─── Floating Badge ─── */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-3 px-5 py-2.5 bg-zinc-50 text-zinc-900 rounded-full text-[10px] font-black uppercase tracking-[0.3em] mb-12 border border-zinc-200 shadow-xl shadow-zinc-900/5 transition-all hover:bg-white hover:border-zinc-300 group cursor-default"
-          >
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-zinc-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-zinc-900"></span>
-            </span>
-            {t('landing.liveUpdates', undefined, 'Live Platform Activity')}
-            <Sparkles className="w-3 h-3 text-zinc-400 group-hover:rotate-12 transition-transform" />
-          </motion.div>
+
 
           {/* ─── Hero Title ─── */}
           <motion.h1 
@@ -115,7 +72,7 @@ export default function SearchHero() {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-            className="max-w-5xl mx-auto mb-32"
+            className="max-w-5xl mx-auto"
           >
             <form 
               onSubmit={handleSearch}
@@ -162,27 +119,6 @@ export default function SearchHero() {
               ))}
             </div>
           </motion.div>
-
-          {/* ─── Real-Time Stats ─── */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 max-w-6xl mx-auto pt-24 border-t border-zinc-100/60">
-            {loading ? (
-              <>
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="text-center">
-                    <div className="skeleton w-36 h-14 mx-auto mb-4 bg-zinc-200/50" />
-                    <div className="skeleton w-24 h-4 mx-auto bg-zinc-200/50" />
-                  </div>
-                ))}
-              </>
-            ) : (
-              <>
-                <CounterStat value={stats.total_properties} label={t('landing.stats.listings', undefined, 'Active Listings')} />
-                <CounterStat value={stats.verified_landlords} label={t('landing.stats.landlords', undefined, 'Verified Landlords')} />
-                <CounterStat value={stats.matches_last_30_days} label={t('landing.stats.matches', undefined, 'Recent Matches')} />
-                <CounterStat value={stats.active_cities} label={t('landing.stats.cities', undefined, 'Active Cities')} />
-              </>
-            )}
-          </div>
         </div>
       </div>
     </section>
@@ -190,30 +126,6 @@ export default function SearchHero() {
 }
 
 // ─── Sub-Components ───
-
-function CounterStat({ value, label }: { value: number; label: string }) {
-  const count = useSpring(0, { bounce: 0, duration: 2500 });
-  const display = useTransform(count, (latest) => Math.floor(latest).toLocaleString());
-
-  useEffect(() => {
-    count.set(value);
-  }, [value, count]);
-
-  return (
-    <div className="text-center group">
-      <motion.div 
-        className="text-5xl sm:text-6xl font-black text-zinc-900 tracking-tighter mb-4 notranslate italic"
-        translate="no"
-      >
-        <motion.span>{display}</motion.span>
-        <span className="text-zinc-300 ml-1">+</span>
-      </motion.div>
-      <div className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-400 group-hover:text-zinc-900 transition-colors duration-700">
-        {label}
-      </div>
-    </div>
-  );
-}
 
 function MagneticButton({ children }: { children: React.ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
