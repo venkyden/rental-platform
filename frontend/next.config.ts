@@ -29,16 +29,16 @@ const nextConfig: NextConfig = {
           },
           {
             /* 
-              Cross-Origin-Opener-Policy: 'unsafe-none' is used to ensure compatibility with 
-              Google Identity Services (GSI) / Google Sign-In popups and iframes.
-              Using 'same-origin-allow-popups' may trigger console warnings/errors regarding window.postMessage.
+              Cross-Origin-Opener-Policy: 'same-origin-allow-popups' is used to ensure compatibility with 
+              Google Identity Services (GSI) / Google Sign-In popups. Without this, modern browsers 
+              will isolate cross-origin popups, blocking window.postMessage communication.
               
               Note: Errors like 'FrameDoesNotExistError' or 'runtime.lastError' in the console 
               are typically caused by browser extensions (e.g. Grammarly, Loom) and are not 
               related to the application code.
             */
             key: 'Cross-Origin-Opener-Policy',
-            value: 'unsafe-none',
+            value: 'same-origin-allow-popups',
           },
           {
             key: 'Cross-Origin-Embedder-Policy',
