@@ -375,4 +375,32 @@ class TestPropertyCompliance:
         assert prop.dpe_rating is None
         assert prop.ges_rating is None
 
+    def test_generate_description_success(self, landlord_client):
+        """POST /properties/generate-description should return generated description."""
+        from unittest.mock import MagicMock, patch
+        from app.core.config import settings
+        
+        # Setup settings with a fake API key for testing
+        with patch.object(settings, "GEMINI_API_KEY", "fake-api-key"):
+            mock_client = MagicMock()
+            mock_response = MagicMock()
+            mock_response.text = "Beautiful apartment in Paris."
+            mock_client.models.generate_content.return_value = mock_response
+            
+            with patch("google.genai.Client", return_value=mock_client):
+                resp = landlord_client.post(
+                    "/properties/generate-description",
+                    json={
+                        "property_type": "apartment",
+                        "address": "15 Rue de Vaugirard",
+                        "city": "Paris",
+                        "size_sqm": 45.0,
+                        "bedrooms": 1,
+                        "amenities": ["elevator", "balcony"]
+                    }
+                )
+                assert resp.status_code == 200
+                assert resp.json()["description"] == "Beautiful apartment in Paris."
+
+
 

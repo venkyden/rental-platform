@@ -3,7 +3,7 @@ import uuid
 
 from sqlalchemy import JSON, Boolean, Column, Date, DateTime
 from sqlalchemy import Enum as SQLEnum
-from sqlalchemy import Float, ForeignKey, Integer, String
+from sqlalchemy import ForeignKey, Integer, Numeric, String
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import relationship
 
@@ -65,9 +65,9 @@ class Lease(Base):
     # Contract details
     start_date = Column(Date, nullable=False)
     end_date = Column(Date, nullable=True)  # Null for CDI 3-year renewable
-    rent_amount = Column(Float, nullable=False)
-    deposit_amount = Column(Float, nullable=False)
-    charges_amount = Column(Float, nullable=False)
+    rent_amount = Column(Numeric(10, 2), nullable=False)
+    deposit_amount = Column(Numeric(10, 2), nullable=False)
+    charges_amount = Column(Numeric(10, 2), nullable=False)
     lease_type = Column(
         SQLEnum(
             LeaseType,

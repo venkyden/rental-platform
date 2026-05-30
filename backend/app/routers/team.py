@@ -13,6 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, EmailStr
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.core.database import get_db
 from app.models.property import Property
@@ -138,25 +139,13 @@ async def get_team_members(
                 TeamMember.status != InviteStatus.REVOKED,
             )
         )
+        .options(selectinload(TeamMember.property_access))
         .order_by(TeamMember.created_at.desc())
     )
     members = result.scalars().all()
 
     response = []
     for member in members:
-        # Count assigned properties
-        prop_count = (
-            (
-                await db.execute(
-                    select(TeamMemberProperty).where(
-                        TeamMemberProperty.team_member_id == member.id
-                    )
-                )
-            )
-            .scalars()
-            .all()
-        )
-
         response.append(
             TeamMemberResponse(
                 id=str(member.id),
@@ -164,7 +153,7 @@ async def get_team_members(
                 name=member.name,
                 permission_level=member.permission_level.value,
                 status=member.status.value,
-                property_count=len(prop_count),
+                property_count=len(member.property_access),
                 created_at=member.created_at,
                 accepted_at=member.accepted_at,
             )
@@ -193,18 +182,18 @@ async def get_my_invites(
                     TeamMember.status == InviteStatus.PENDING,
                 )
             )
+            .options(selectinload(TeamMember.landlord))
             .order_by(TeamMember.created_at.desc())
         )
-        
+
         result = await db.execute(query)
         invites = result.scalars().all()
 
         response = []
         for invite in invites:
-            # Safely get landlord name
-            landlord_result = await db.execute(select(User).where(User.id == invite.landlord_id))
-            landlord = landlord_result.scalar_one_or_none()
-            
+            # Landlord eager-loaded above (no per-invite query)
+            landlord = invite.landlord
+
             # Safely extract permission level value
             perm_level = invite.permission_level
             if hasattr(perm_level, "value"):

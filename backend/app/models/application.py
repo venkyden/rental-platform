@@ -27,13 +27,15 @@ class Application(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 
     # Links
-    tenant_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    tenant_id = Column(
+        UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True
+    )
     property_id = Column(
-        UUID(as_uuid=True), ForeignKey("properties.id"), nullable=False
+        UUID(as_uuid=True), ForeignKey("properties.id"), nullable=False, index=True
     )
 
     # Data
-    status = Column(String, default="pending", nullable=False)
+    status = Column(String, default="pending", nullable=False, index=True)
     cover_letter = Column(Text, nullable=True)
 
     # Snapshot of profile/docs at time of application (optional, for immutability)

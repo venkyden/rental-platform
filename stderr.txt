@@ -1,1 +1,0 @@
-Error: Please install the 'mcp' package: pip install mcp

@@ -54,22 +54,25 @@ export default function MentionsLegalesPage() {
                             </h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-zinc-600">
                                 <div className="space-y-2">
-                                    <p className="text-xs font-black text-zinc-400 uppercase tracking-widest">{t('legal.notice.editor.labels.company', undefined, 'Company')}</p>
+                                    <p className="text-xs font-black text-zinc-400 uppercase tracking-widest">{t('legal.notice.editor.labels.company', undefined, 'Publisher')}</p>
                                     <p className="font-bold text-zinc-900">{t('legal.notice.editor.company')}</p>
                                 </div>
                                 <div className="space-y-2">
-                                    <p className="text-xs font-black text-zinc-400 uppercase tracking-widest">{t('legal.notice.editor.labels.form', undefined, 'Legal Form')}</p>
+                                    <p className="text-xs font-black text-zinc-400 uppercase tracking-widest">{t('legal.notice.editor.labels.form', undefined, 'Legal Status')}</p>
                                     <p className="font-bold text-zinc-900">{t('legal.notice.editor.form')}</p>
                                 </div>
                                 <div className="space-y-2">
-                                    <p className="text-xs font-black text-zinc-400 uppercase tracking-widest">{t('legal.notice.editor.labels.capital', undefined, 'Capital')}</p>
+                                    <p className="text-xs font-black text-zinc-400 uppercase tracking-widest">{t('legal.notice.editor.labels.capital', undefined, 'Registration')}</p>
                                     <p className="font-bold text-zinc-900">{t('legal.notice.editor.capital')}</p>
                                 </div>
                                 <div className="space-y-2">
-                                    <p className="text-xs font-black text-zinc-400 uppercase tracking-widest">{t('legal.notice.editor.labels.hq', undefined, 'Headquarters')}</p>
+                                    <p className="text-xs font-black text-zinc-400 uppercase tracking-widest">{t('legal.notice.editor.labels.hq', undefined, 'Contact')}</p>
                                     <p className="font-bold text-zinc-900">{t('legal.notice.editor.hq')}</p>
                                 </div>
                             </div>
+                            <p className="mt-8 text-sm text-zinc-500 leading-relaxed border-l-2 border-zinc-200 pl-4">
+                                {t('legal.notice.editor.note', undefined, 'Roomivo is a student-entrepreneur project developed under the SNEE (Statut National Étudiant-Entrepreneur), supported by PÉPITE Pays de la Loire (French Ministry of Higher Education) and the Audencia entrepreneurship hub. As a project still in incubation it is not yet registered as a company and has no SIRET number; this notice will be updated upon incorporation.')}
+                            </p>
                         </motion.section>
 
                         <motion.section variants={sectionVariants} className="glass-card !p-12 rounded-[3rem] border-zinc-100">
@@ -78,14 +81,14 @@ export default function MentionsLegalesPage() {
                             </h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-zinc-600">
                                 <div className="space-y-2">
-                                    <p className="text-xs font-black text-zinc-400 uppercase tracking-widest">{t('legal.notice.infrastructure.frontend.title', undefined, 'Frontend Hosting')}</p>
-                                    <p className="font-bold text-zinc-900">{t('legal.notice.infrastructure.frontend.company', undefined, 'Vercel Inc.')}</p>
-                                    <p className="text-sm">{t('legal.notice.infrastructure.frontend.address', undefined, '440 N Barranca Ave #4133, Covina, CA 91723, USA')}</p>
+                                    <p className="text-xs font-black text-zinc-400 uppercase tracking-widest">{t('legal.notice.infrastructure.frontend.title', undefined, 'Hosting Provider')}</p>
+                                    <p className="font-bold text-zinc-900">{t('legal.notice.infrastructure.frontend.company', undefined, 'Render Services, Inc.')}</p>
+                                    <p className="text-sm">{t('legal.notice.infrastructure.frontend.address', undefined, '525 Brannan Street, Suite 300, San Francisco, CA 94107, USA')}</p>
                                 </div>
                                 <div className="space-y-2">
-                                    <p className="text-xs font-black text-zinc-400 uppercase tracking-widest">{t('legal.notice.infrastructure.backend.title', undefined, 'Backend Logic')}</p>
-                                    <p className="font-bold text-zinc-900">{t('legal.notice.infrastructure.backend.company', undefined, 'Railway Corporation')}</p>
-                                    <p className="text-sm">{t('legal.notice.infrastructure.backend.address', undefined, '548 Market St, San Francisco, CA 94104, USA')}</p>
+                                    <p className="text-xs font-black text-zinc-400 uppercase tracking-widest">{t('legal.notice.infrastructure.backend.title', undefined, 'Data Region')}</p>
+                                    <p className="font-bold text-zinc-900">{t('legal.notice.infrastructure.backend.company', undefined, 'European Union — Frankfurt, Germany')}</p>
+                                    <p className="text-sm">{t('legal.notice.infrastructure.backend.address', undefined, 'Personal data is hosted within the EU (GDPR-compliant region).')}</p>
                                 </div>
                             </div>
                         </motion.section>
@@ -97,7 +100,7 @@ export default function MentionsLegalesPage() {
                         className="pt-12 border-t border-zinc-100 text-center"
                     >
                         <p className="text-xs font-black text-zinc-400 uppercase tracking-[0.3em]">
-                            Propriété de Roomivo SAS • Tous droits réservés
+                            Roomivo • Projet étudiant-entrepreneur (SNEE) — PÉPITE Pays de la Loire / Audencia
                         </p>
                     </motion.div>
                 </motion.div>

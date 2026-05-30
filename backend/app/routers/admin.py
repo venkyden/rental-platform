@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -142,19 +142,31 @@ async def storage_health():
     return storage.get_health()
 
 @router.get("/verifications/pending", response_model=List[VerificationReview])
-async def get_pending_verifications(db: AsyncSession = Depends(get_db)):
+async def get_pending_verifications(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=500),
+    db: AsyncSession = Depends(get_db),
+):
     """
     List all verifications that require manual review.
     Checks users (identity/employment) and properties (ownership).
+
+    Paginated to avoid loading unbounded result sets; `skip`/`limit` are
+    applied to each source query (users and properties).
     """
     pending = []
 
     # 1. Check Users (Identity & Employment)
-    user_query = select(User).where(
-        or_(
-            User.identity_status == "pending_review",
-            User.employment_status == "pending_review"
+    user_query = (
+        select(User)
+        .where(
+            or_(
+                User.identity_status == "pending_review",
+                User.employment_status == "pending_review"
+            )
         )
+        .offset(skip)
+        .limit(limit)
     )
     user_result = await db.execute(user_query)
     users = user_result.scalars().all()
@@ -183,7 +195,12 @@ async def get_pending_verifications(db: AsyncSession = Depends(get_db)):
             ))
 
     # 2. Check Properties
-    prop_query = select(Property).where(Property.ownership_verified == False) # Simplified for MVP
+    prop_query = (
+        select(Property)
+        .where(Property.ownership_verified == False)  # Simplified for MVP
+        .offset(skip)
+        .limit(limit)
+    )
     # In a real app, we'd have a specific status field for property verification
     prop_result = await db.execute(prop_query)
     properties = prop_result.scalars().all()

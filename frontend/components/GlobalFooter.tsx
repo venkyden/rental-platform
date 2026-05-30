@@ -69,7 +69,7 @@ export default function GlobalFooter() {
 
                 <div className="mt-16 pt-8 border-t border-zinc-100 flex flex-col md:flex-row justify-between items-center gap-6">
                     <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em]">
-                        &copy; {currentYear} Roomivo SAS • {t('globalFooter.rights')}
+                        &copy; {currentYear} Roomivo • {t('globalFooter.rights')}
                     </p>
                     {pathname !== '/auth/login' && !pathname?.startsWith('/auth/') && (
                         <div className="flex items-center gap-4">

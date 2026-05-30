@@ -301,3 +301,15 @@ class PropertyMatchResponse(PropertyResponse):
     """Schema for property response with match details"""
     match_score: int
     match_breakdown: dict
+
+
+class DescriptionGenerationRequest(BaseModel):
+    """Schema for requesting description generation"""
+
+    property_type: str
+    address: Optional[str] = ""
+    city: Optional[str] = ""
+    size_sqm: Optional[float] = None
+    bedrooms: Optional[int] = None
+    amenities: Optional[List[str]] = []
+

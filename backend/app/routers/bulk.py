@@ -142,11 +142,16 @@ async def get_import_template(
 async def export_properties(
     format: str = Query("csv", pattern="^(csv|xml)$"),
     status: Optional[str] = Query(None),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(1000, ge=1, le=5000),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Export all properties as CSV or XML.
+    Export the caller's properties as CSV or XML.
+
+    Paginated with `skip`/`limit` (default 1000, max 5000) to bound memory;
+    callers with more than `limit` properties page through with `skip`.
     """
     if current_user.role not in [UserRole.LANDLORD, UserRole.PROPERTY_MANAGER, UserRole.ADMIN]:
         raise HTTPException(status_code=403, detail="Only landlords or managers can export")
@@ -155,6 +160,7 @@ async def export_properties(
     query = select(Property).where(Property.landlord_id == current_user.id)
     if status:
         query = query.where(Property.status == status)
+    query = query.offset(skip).limit(limit)
 
     result = await db.execute(query)
     properties = result.scalars().all()

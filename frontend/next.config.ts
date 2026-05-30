@@ -38,15 +38,17 @@ const nextConfig: NextConfig = {
               related to the application code.
             */
             key: 'Cross-Origin-Opener-Policy',
-            value: 'unsafe-none',
-          },
-          {
-            key: 'Cross-Origin-Embedder-Policy',
-            value: 'unsafe-none',
+            value: 'same-origin-allow-popups',
           },
           {
             key: 'Cross-Origin-Resource-Policy',
             value: 'cross-origin',
+          },
+          {
+            // Browsers ignore HSTS over plain HTTP, so this is a no-op in local
+            // dev and enforces HTTPS only once served over TLS in production.
+            key: 'Strict-Transport-Security',
+            value: 'max-age=31536000; includeSubDomains; preload',
           },
         ],
       },

@@ -4,7 +4,7 @@ from datetime import datetime
 
 from sqlalchemy import Column, DateTime
 from sqlalchemy import Enum as SQLEnum
-from sqlalchemy import Float, ForeignKey, String, Text
+from sqlalchemy import Float, ForeignKey, Numeric, String, Text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import relationship
 
@@ -67,7 +67,7 @@ class Dispute(Base):
     responded_at = Column(DateTime, nullable=True)
 
     # Financial context
-    amount_claimed = Column(Float, nullable=True)
+    amount_claimed = Column(Numeric(10, 2), nullable=True)
 
     # Facilitation (Roomivo is NOT a mediator — observations only)
     admin_observations = Column(Text, nullable=True)

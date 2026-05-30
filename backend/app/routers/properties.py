@@ -5,7 +5,7 @@ Property listing API endpoints.
 import os
 import secrets
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from typing import List, Optional
 from uuid import UUID
@@ -24,7 +24,7 @@ from app.models.property_schemas import (MediaSessionCreate,
                                          MediaSessionResponse,
                                          MediaUploadMetadata, PropertyCreate,
                                          PropertyResponse, PropertyUpdate,
-                                         PropertyMatchResponse)
+                                         PropertyMatchResponse, DescriptionGenerationRequest)
 from app.models.user import User
 from app.routers.auth import get_current_user, get_current_user_optional
 from app.services.matching_service import matching_service
@@ -92,6 +92,61 @@ async def create_property(
     await db.refresh(new_property)
 
     return new_property
+
+
+@router.post("/generate-description", response_model=dict)
+@limiter.limit("5/minute")
+async def generate_property_description(
+    request: Request,
+    payload: DescriptionGenerationRequest,
+    current_user: User = Depends(get_current_user),
+):
+    """Generate a property description using Gemini based on property parameters"""
+    from app.core.config import settings
+    from google import genai
+    import google.genai.errors
+
+    if not settings.GEMINI_API_KEY:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="AI description generation is not configured on this server.",
+        )
+
+    try:
+        client = genai.Client(api_key=settings.GEMINI_API_KEY)
+        
+        # Build prompt
+        prompt = (
+            f"Write a beautiful, engaging real estate rental listing description in English (with a French translation below it) "
+            f"for a {payload.property_type}. "
+        )
+        if payload.address or payload.city:
+            prompt += f"Location: {payload.address or ''} {payload.city or ''}. "
+        if payload.size_sqm:
+            prompt += f"Size: {payload.size_sqm} square meters. "
+        if payload.bedrooms:
+            prompt += f"Bedrooms: {payload.bedrooms}. "
+        if payload.amenities:
+            prompt += f"Amenities: {', '.join(payload.amenities)}. "
+            
+        prompt += (
+            "\nMake it appealing to potential tenants, highlight convenience, and structure it with brief paragraphs or bullet points. "
+            "Return ONLY the description text, do not include any other markdown formatting wrapper (e.g. do not wrap in backticks or markdown code block) or conversational intro/outro."
+        )
+
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=[prompt],
+        )
+
+        return {"description": response.text.strip()}
+    except Exception as e:
+        logger.error(f"Failed to generate description with Gemini: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to generate description using AI.",
+        )
+
 
 
 def _apply_property_filters(
@@ -704,11 +759,27 @@ async def publish_property(
             detail="Property surface area must be at least 9m² to be considered habitable under French law (Décret n° 2002-120).",
         )
 
+    # Rent control (encadrement des loyers) — Loi ALUR/ELAN, zones tendues
+    from app.services.french_compliance import validate_rent_control
+
+    rent_control_error = validate_rent_control(
+        monthly_rent=property_obj.monthly_rent,
+        size_sqm=property_obj.size_sqm,
+        loyer_reference_majore=property_obj.loyer_reference_majore,
+        complement_de_loyer=property_obj.complement_de_loyer,
+        complement_de_loyer_justification=property_obj.complement_de_loyer_justification,
+    )
+    if rent_control_error:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=rent_control_error,
+        )
+
     # ── End French Compliance ────────────────────────────────────────────
 
     # Publish
     property_obj.status = "active"
-    property_obj.published_at = datetime.utcnow()
+    property_obj.published_at = datetime.now(timezone.utc)
 
     await db.commit()
     await db.refresh(property_obj)

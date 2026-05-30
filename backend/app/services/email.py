@@ -5,10 +5,35 @@ For local development, emails are printed to console.
 For production, configure SMTP settings in environment variables.
 """
 
+import asyncio
+import logging
 import os
 from typing import Optional
 
 import resend
+
+logger = logging.getLogger(__name__)
+
+
+def _send_via_resend(from_email: str, to_email: str, subject: str,
+                     html_content: str, text_content: Optional[str] = None) -> bool:
+    """Blocking Resend dispatch. Kept module-level so it can be reused by the
+    Celery task (durable queue path) as well as the inline executor path."""
+    params = {
+        "from": from_email,
+        "to": [to_email],
+        "subject": subject,
+        "html": html_content,
+    }
+    if text_content:
+        params["text"] = text_content
+    try:
+        response = resend.Emails.send(params)
+        logger.info("Resend email dispatched to %s: %s", to_email, response)
+        return True
+    except Exception as exc:
+        logger.error("Failed to send email via Resend to %s: %s", to_email, exc)
+        return False
 
 
 class EmailService:
@@ -34,34 +59,29 @@ class EmailService:
         html_content: str,
         text_content: Optional[str] = None,
     ) -> bool:
-        """Send an HTML email via Resend API"""
-        try:
-            if self.use_console:
-                # For local development - print to console
-                print("\n" + "=" * 80)
-                print(f"📧 EMAIL TO: {to_email}")
-                print(f"📧 SUBJECT: {subject}")
-                print("=" * 80)
-                print(html_content)
-                print("=" * 80 + "\n")
-                return True
+        """Send an HTML email via Resend.
 
-            # Send via Resend
-            params = {
-                "from": self.from_email,
-                "to": [to_email],
-                "subject": subject,
-                "html": html_content,
-            }
-            if text_content:
-                params["text"] = text_content
-
-            response = resend.Emails.send(params)
-            print(f"✅ Resend Email dispatched successfully to {to_email}: {response}")
+        The Resend SDK call is synchronous (blocking network I/O), so it is run
+        in a thread-pool executor to avoid blocking the asyncio event loop and
+        starving other requests. Callers on latency-sensitive routes should
+        still schedule this via FastAPI ``BackgroundTasks`` so the HTTP response
+        is not delayed by mail delivery.
+        """
+        if self.use_console:
+            # For local development - log instead of dispatching
+            logger.info("📧 [console email] TO=%s SUBJECT=%s", to_email, subject)
             return True
-        except Exception as e:
-            print(f"❌ Failed to send email via Resend to {to_email}: {e}")
-            return False
+
+        loop = asyncio.get_running_loop()
+        return await loop.run_in_executor(
+            None,
+            _send_via_resend,
+            self.from_email,
+            to_email,
+            subject,
+            html_content,
+            text_content,
+        )
 
     async def send_verification_email(
         self, to_email: str, token: str, full_name: str

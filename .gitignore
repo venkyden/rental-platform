@@ -60,6 +60,8 @@ app.db
 # Agent Specific
 artifacts/
 backend/scratch/
+backend/app/scratch/
+frontend/scratch/
 scratch/
 bin/
 test_*.py
@@ -70,4 +72,13 @@ tmp.json
 !backend/start.sh
 !backend/start_local.sh
 !start_tests.sh
+
+# Local junk / debug artifacts (never commit)
+*.bak
+dummy.*
+large_dummy.*
+stderr.txt
+stdout.txt
+user_response_prep.txt
+node_modules_old/
 

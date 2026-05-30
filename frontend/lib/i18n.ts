@@ -1809,28 +1809,29 @@ export const translations = {
                 subtitle: 'Administrative Compliance',
                 editor: {
                     title: 'Site Editor',
-                    company: 'Roomivo SAS',
-                    form: 'Société par Actions Simplifiée (SAS)',
-                    capital: 'Capital: 10,000 €',
-                    hq: 'Headquarters: Paris, France',
+                    company: 'Roomivo',
+                    form: 'Student-entrepreneur project — SNEE (National Student-Entrepreneur Status)',
+                    capital: 'Not yet incorporated — no SIRET (incubated via PÉPITE Pays de la Loire / Audencia)',
+                    hq: 'Contact: contact@roomivo.eu',
+                    note: 'Roomivo is a student-entrepreneur project developed under the SNEE (Statut National Étudiant-Entrepreneur), supported by PÉPITE Pays de la Loire (French Ministry of Higher Education) and the Audencia entrepreneurship hub. As a project still in incubation it is not yet registered as a company and has no SIRET number; this notice will be updated upon incorporation.',
                     labels: {
-                        company: 'Company',
-                        form: 'Legal Form',
-                        capital: 'Capital',
-                        hq: 'Headquarters'
+                        company: 'Publisher',
+                        form: 'Legal Status',
+                        capital: 'Registration',
+                        hq: 'Contact'
                     }
                 },
                 infrastructure: {
                     title: 'Infrastructure',
                     frontend: {
-                        title: 'Frontend Hosting',
-                        company: 'Vercel Inc.',
-                        address: '440 N Barranca Ave #4133, Covina, CA 91723, USA'
+                        title: 'Hosting Provider',
+                        company: 'Render Services, Inc.',
+                        address: '525 Brannan Street, Suite 300, San Francisco, CA 94107, USA'
                     },
                     backend: {
-                        title: 'Backend Logic',
-                        company: 'Railway Corporation',
-                        address: '548 Market St, San Francisco, CA 94104, USA'
+                        title: 'Data Region',
+                        company: 'European Union — Frankfurt, Germany',
+                        address: 'Personal data is hosted within the EU (GDPR-compliant region).'
                     }
                 }
             },
@@ -2162,10 +2163,17 @@ export const translations = {
                     subtitle: 'Mentions Légales',
                     editor: {
                         title: 'Site Editor',
-                        company: 'Roomivo SAS',
-                        form: 'Société par Actions Simplifiée (SAS)',
-                        capital: 'Capital: 10,000 €',
-                        hq: 'Headquarters: Paris, France'
+                        company: 'Roomivo',
+                        form: 'Student-entrepreneur project — SNEE (National Student-Entrepreneur Status)',
+                        capital: 'Not yet incorporated — no SIRET (incubated via PÉPITE Pays de la Loire / Audencia)',
+                        hq: 'Contact: contact@roomivo.eu',
+                        note: 'Roomivo is a student-entrepreneur project developed under the SNEE (Statut National Étudiant-Entrepreneur), supported by PÉPITE Pays de la Loire (French Ministry of Higher Education) and the Audencia entrepreneurship hub. As a project still in incubation it is not yet registered as a company and has no SIRET number; this notice will be updated upon incorporation.',
+                        labels: {
+                            company: 'Publisher',
+                            form: 'Legal Status',
+                            capital: 'Registration',
+                            hq: 'Contact'
+                        }
                     }
                 }
             }
@@ -4051,28 +4059,29 @@ export const translations = {
                 subtitle: 'Conformité Administrative',
                 editor: {
                     title: 'Éditeur du Site',
-                    company: 'Roomivo SAS',
-                    form: 'Société par Actions Simplifiée (SAS)',
-                    capital: 'Capital : 10 000 €',
-                    hq: 'Siège social : Paris, France',
+                    company: 'Roomivo',
+                    form: 'Projet d\'étudiant-entrepreneur — Statut National Étudiant-Entrepreneur (SNEE)',
+                    capital: 'Non immatriculé — pas de SIRET (incubé via PÉPITE Pays de la Loire / Audencia)',
+                    hq: 'Contact : contact@roomivo.eu',
+                    note: 'Roomivo est un projet d\'étudiant-entrepreneur développé sous le Statut National Étudiant-Entrepreneur (SNEE), accompagné par PÉPITE Pays de la Loire (Ministère de l\'Enseignement supérieur et de la Recherche) et le Hub entrepreneurial d\'Audencia. En phase d\'incubation, le projet n\'est pas encore immatriculé et ne dispose pas de numéro SIRET ; ces mentions seront mises à jour lors de la création de la structure.',
                     labels: {
-                        company: 'Société',
-                        form: 'Forme Juridique',
-                        capital: 'Capital',
-                        hq: 'Siège Social'
+                        company: 'Éditeur',
+                        form: 'Statut Juridique',
+                        capital: 'Immatriculation',
+                        hq: 'Contact'
                     }
                 },
                 infrastructure: {
                     title: 'Infrastructure',
                     frontend: {
-                        title: 'Hébergement Frontend',
-                        company: 'Vercel Inc.',
-                        address: '440 N Barranca Ave #4133, Covina, CA 91723, USA'
+                        title: 'Hébergeur',
+                        company: 'Render Services, Inc.',
+                        address: '525 Brannan Street, Suite 300, San Francisco, CA 94107, USA'
                     },
                     backend: {
-                        title: 'Logique Backend',
-                        company: 'Railway Corporation',
-                        address: '548 Market St, San Francisco, CA 94104, USA'
+                        title: 'Région des Données',
+                        company: 'Union Européenne — Francfort, Allemagne',
+                        address: 'Les données personnelles sont hébergées dans l\'UE (région conforme au RGPD).'
                     }
                 }
             },
@@ -4404,10 +4413,17 @@ export const translations = {
                     subtitle: 'Informations Légales',
                     editor: {
                         title: 'Éditeur du Site',
-                        company: 'Roomivo SAS',
-                        form: 'Société par Actions Simplifiée (SAS)',
-                        capital: 'Capital : 10 000 €',
-                        hq: 'Siège social : Paris, France'
+                        company: 'Roomivo',
+                        form: 'Projet d\'étudiant-entrepreneur — Statut National Étudiant-Entrepreneur (SNEE)',
+                        capital: 'Non immatriculé — pas de SIRET (incubé via PÉPITE Pays de la Loire / Audencia)',
+                        hq: 'Contact : contact@roomivo.eu',
+                        note: 'Roomivo est un projet d\'étudiant-entrepreneur développé sous le Statut National Étudiant-Entrepreneur (SNEE), accompagné par PÉPITE Pays de la Loire (Ministère de l\'Enseignement supérieur et de la Recherche) et le Hub entrepreneurial d\'Audencia. En phase d\'incubation, le projet n\'est pas encore immatriculé et ne dispose pas de numéro SIRET ; ces mentions seront mises à jour lors de la création de la structure.',
+                        labels: {
+                            company: 'Éditeur',
+                            form: 'Statut Juridique',
+                            capital: 'Immatriculation',
+                            hq: 'Contact'
+                        }
                     }
                 }
             }

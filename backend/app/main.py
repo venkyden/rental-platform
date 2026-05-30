@@ -99,31 +99,22 @@ fastapi_app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    expose_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"],
+    expose_headers=["Content-Disposition"],
     max_age=600,
 )
 
 
 from fastapi.exceptions import RequestValidationError
-from datetime import datetime
 
 @fastapi_app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    error_msg = f"Validation error on {request.method} {request.url.path}: {exc.errors()}\n"
-    error_msg += f"Request body: {exc.body}\n"
-    logger.error(error_msg)
-    
-    # Also write to a file we can read
-    try:
-        with open("validation_errors.log", "a") as f:
-            f.write(f"--- {datetime.now()} ---\n")
-            f.write(error_msg)
-            f.write("\n")
-    except Exception:
-        pass
-
+    # Log to the application logger only — never write to the app server disk
+    # in the request path (blocking I/O + grows an untracked artifact file).
+    logger.warning(
+        "Validation error on %s %s: %s", request.method, request.url.path, exc.errors()
+    )
     return JSONResponse(
         status_code=422,
         content={"detail": exc.errors(), "body": str(exc.body)},
@@ -143,22 +134,41 @@ async def add_security_headers(request: Request, call_next):
         # eventually gets these headers.
         raise e
         
-    # Allow Google Auth popups to communicate back to the window.
-    # We set this to 'unsafe-none' to ensure popups can postMessage freely in all browser contexts.
-    response.headers["Cross-Origin-Opener-Policy"] = "unsafe-none"
-    response.headers["Cross-Origin-Embedder-Policy"] = "unsafe-none"
+    # Allow Google Auth popups to postMessage back to the opener window while
+    # still isolating our browsing context. 'same-origin-allow-popups' is the
+    # correct value for Google Identity Services (unlike 'unsafe-none', which
+    # disables isolation entirely and exposes us to cross-origin attacks).
+    response.headers["Cross-Origin-Opener-Policy"] = "same-origin-allow-popups"
     response.headers["Cross-Origin-Resource-Policy"] = "cross-origin"
-    
-    # Additional security headers
+
+    # Core security headers
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
-    
-    # Optimized CSP for Google Identity Services (GSI)
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = (
+        "accelerometer=(), autoplay=(self), camera=(self), display-capture=(self), "
+        "encrypted-media=(self), fullscreen=(self), geolocation=(self), gyroscope=(), "
+        "magnetometer=(), microphone=(self), midi=(), payment=(), usb=()"
+    )
+
+    # HSTS only in production (avoid pinning HTTPS on local http dev).
+    if settings.ENVIRONMENT == "production":
+        response.headers["Strict-Transport-Security"] = (
+            "max-age=31536000; includeSubDomains; preload"
+        )
+
+    # CSP for Google Identity Services (GSI). 'unsafe-eval' removed — GSI does
+    # not require it; 'unsafe-inline' retained for inline bootstrap scripts
+    # (nonce-based hardening tracked in the backlog).
     response.headers["Content-Security-Policy"] = (
         "default-src 'self'; "
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://*.google.com https://cdn.jsdelivr.net; "
+        "base-uri 'self'; "
+        "frame-ancestors 'none'; "
+        "object-src 'none'; "
+        "script-src 'self' 'unsafe-inline' https://accounts.google.com https://*.google.com https://cdn.jsdelivr.net; "
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; "
         "img-src 'self' data: https:; "
+        "font-src 'self' https://fonts.gstatic.com data:; "
         "connect-src 'self' https://accounts.google.com https://*.google.com; "
         "frame-src https://accounts.google.com https://*.google.com;"
     )

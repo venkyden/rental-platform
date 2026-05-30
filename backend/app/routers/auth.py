@@ -4,7 +4,7 @@ import html
 import uuid
 from datetime import datetime, timedelta
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, Response, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -100,7 +100,10 @@ async def get_current_user_optional(
 )
 @limiter.limit("20/minute")  # Rate limit: 20 registrations per minute per IP
 async def register(
-    request: Request, user_data: UserRegister, db: AsyncSession = Depends(get_db)
+    request: Request,
+    user_data: UserRegister,
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
 ):
     """Register a new user"""
     client_host = request.client.host if request.client else "unknown"
@@ -148,7 +151,8 @@ async def register(
         data={"sub": new_user.email, "type": "email_verification"},
         expires_delta=timedelta(hours=24),
     )
-    await email_service.send_verification_email(
+    background_tasks.add_task(
+        email_service.send_verification_email,
         to_email=new_user.email,
         token=verification_token,
         full_name=new_user.full_name or "User",
@@ -433,6 +437,7 @@ async def change_password(
 @router.post("/request-email-change")
 async def request_email_change(
     request: RequestEmailChangeRequest,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -452,10 +457,11 @@ async def request_email_change(
     )
 
     # Send confirmation email to the NEW email address
-    await email_service.send_email_change_verification(
+    background_tasks.add_task(
+        email_service.send_email_change_verification,
         to_email=request.new_email,
         token=change_token,
-        full_name=current_user.full_name or "User"
+        full_name=current_user.full_name or "User",
     )
 
     return {"message": f"Verification link sent to {request.new_email}"}
@@ -701,6 +707,7 @@ async def google_auth(
 async def forgot_email(
     request: Request,
     payload: ForgotEmailRequest,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -737,9 +744,10 @@ async def forgot_email(
         masked_email = user.email
 
     # Send email reminder
-    await email_service.send_forgot_email_reminder(
+    background_tasks.add_task(
+        email_service.send_forgot_email_reminder,
         to_email=user.email,
-        full_name=user.full_name or "User"
+        full_name=user.full_name or "User",
     )
 
     client_host = request.client.host if request.client else "unknown"
@@ -750,7 +758,9 @@ async def forgot_email(
 
 @router.post("/forgot-password")
 async def forgot_password(
-    request: ForgotPasswordRequest, db: AsyncSession = Depends(get_db)
+    request: ForgotPasswordRequest,
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
 ):
     """Send password reset email"""
     result = await db.execute(select(User).where(User.email == request.email))
@@ -765,8 +775,11 @@ async def forgot_password(
         )
 
         # Send password reset email
-        await email_service.send_password_reset_email(
-            to_email=user.email, token=reset_token, full_name=user.full_name or "User"
+        background_tasks.add_task(
+            email_service.send_password_reset_email,
+            to_email=user.email,
+            token=reset_token,
+            full_name=user.full_name or "User",
         )
 
     return {"message": "If the email exists, a password reset link has been sent"}
@@ -836,7 +849,9 @@ async def verify_email(token: str, db: AsyncSession = Depends(get_db)):
 
 @router.post("/resend-verification")
 async def resend_verification(
-    current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
+    background_tasks: BackgroundTasks,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
 ):
     """Resend verification email to current user"""
     if current_user.email_verified:
@@ -851,7 +866,8 @@ async def resend_verification(
     )
 
     # Send verification email
-    await email_service.send_verification_email(
+    background_tasks.add_task(
+        email_service.send_verification_email,
         to_email=current_user.email,
         token=verification_token,
         full_name=current_user.full_name or "User",

@@ -104,6 +104,7 @@ export default function NewPropertyPage() {
     const [roomAmenityInputs, setRoomAmenityInputs] = useState<Record<number, string>>({});
     const [showRentControl, setShowRentControl] = useState(false);
     const toast = useToast();
+    const [generatingAi, setGeneratingAi] = useState(false);
 
     const [formData, setFormData] = useState<PropertyFormData>({
         title: '',
@@ -211,6 +212,32 @@ export default function NewPropertyPage() {
             console.error('Publish error:', error);
         } finally {
             setPublishing(false);
+        }
+    };
+
+    const handleAiSuggest = async () => {
+        if (!formData.address_line1 || !formData.city) {
+            toast.info(t('properties.new.steps.identity.aiSuggestAddressWarning', undefined, 'For a localized description, please enter the address in Step 2 first.'));
+        }
+        setGeneratingAi(true);
+        try {
+            const response = await apiClient.client.post('/properties/generate-description', {
+                property_type: formData.property_type,
+                address: formData.address_line1,
+                city: formData.city,
+                size_sqm: formData.size_sqm,
+                bedrooms: formData.bedrooms,
+                amenities: formData.amenities,
+            });
+            updateFormData({ description: response.data.description });
+            toast.success(t('properties.new.steps.identity.aiSuggestSuccess', undefined, 'AI description generated successfully!'));
+        } catch (error: any) {
+            console.error('AI suggest error:', error);
+            const fallback = `Magnificent ${formData.property_type} located in the heart of ${formData.city || 'the city'}. This ${formData.size_sqm}m² property features ${formData.bedrooms} bedroom(s) and modern amenities. Ideal for those seeking comfort and convenience.`;
+            updateFormData({ description: fallback });
+            toast.error(error.response?.data?.detail || 'Failed to generate AI description. Loaded default template.');
+        } finally {
+            setGeneratingAi(false);
         }
     };
 
@@ -338,13 +365,11 @@ export default function NewPropertyPage() {
                                                 <div className="flex justify-between items-center">
                                                     <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">{t('properties.new.steps.identity.narrativeLabel')}</label>
                                                     <button 
-                                                        onClick={() => {
-                                                            const suggestion = `Magnificent ${formData.property_type} located in the heart of ${formData.city || 'the city'}. This ${formData.size_sqm}m² property features ${formData.bedrooms} bedroom(s) and modern amenities. Ideal for those seeking comfort and convenience.`;
-                                                            updateFormData({ description: suggestion });
-                                                        }}
-                                                        className="flex items-center gap-2 px-3 py-1 bg-zinc-900/5 text-zinc-900 border border-zinc-900/10 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-zinc-900 hover:text-white transition-all opacity-0 group-hover:opacity-100"
+                                                         onClick={handleAiSuggest}
+                                                         disabled={generatingAi}
+                                                         className="flex items-center gap-2 px-3 py-1 bg-zinc-900/5 text-zinc-900 border border-zinc-900/10 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-zinc-900 hover:text-white transition-all opacity-0 group-hover:opacity-100"
                                                     >
-                                                        <Zap className="w-3 h-3" /> {t('properties.new.steps.identity.aiSuggest', undefined, 'AI Suggest')}
+                                                         <Zap className={`w-3 h-3 ${generatingAi ? 'animate-spin' : ''}`} /> {generatingAi ? 'Generating...' : t('properties.new.steps.identity.aiSuggest', undefined, 'AI Suggest')}
                                                     </button>
                                                 </div>
                                                 <textarea
