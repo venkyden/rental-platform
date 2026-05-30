@@ -950,15 +950,27 @@ async def upload_media(
 ):
     """Upload property media with GPS verification"""
     # File type validation
-    ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
-    MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB limit
+    ALLOWED_IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".heic", ".heif"}
+    ALLOWED_VIDEO_EXTENSIONS = {".mp4", ".mov", ".webm", ".avi", ".m4v"}
+    ALLOWED_IMAGE_MIMETYPES = {"image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"}
+    ALLOWED_VIDEO_MIMETYPES = {"video/mp4", "video/quicktime", "video/webm", "video/x-msvideo", "video/x-m4v"}
+    ALLOWED_EXTENSIONS = ALLOWED_IMAGE_EXTENSIONS | ALLOWED_VIDEO_EXTENSIONS
+    ALLOWED_MIMETYPES = ALLOWED_IMAGE_MIMETYPES | ALLOWED_VIDEO_MIMETYPES
+
+    MAX_IMAGE_SIZE = 10 * 1024 * 1024   # 10MB for images
+    MAX_VIDEO_SIZE = 100 * 1024 * 1024  # 100MB for videos
     
-    file_ext = os.path.splitext(file.filename.lower())[1]
-    if file_ext not in ALLOWED_EXTENSIONS or file.content_type not in {"image/jpeg", "image/png", "image/webp"}:
+    file_ext = os.path.splitext(file.filename.lower())[1] if file.filename else ""
+    content_type = (file.content_type or "").lower()
+
+    if file_ext not in ALLOWED_EXTENSIONS and content_type not in ALLOWED_MIMETYPES:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid file type. Only JPEG, PNG, and WEBP images are allowed."
+            detail=f"Invalid file type '{file_ext}'. Allowed: images ({', '.join(sorted(ALLOWED_IMAGE_EXTENSIONS))}), videos ({', '.join(sorted(ALLOWED_VIDEO_EXTENSIONS))})."
         )
+
+    is_video = file_ext in ALLOWED_VIDEO_EXTENSIONS or content_type in ALLOWED_VIDEO_MIMETYPES
+    max_file_size = MAX_VIDEO_SIZE if is_video else MAX_IMAGE_SIZE
 
     # File size validation
     try:
@@ -968,10 +980,11 @@ async def upload_media(
     except Exception:
         file_size = 0
 
-    if file_size > MAX_FILE_SIZE:
+    if file_size > max_file_size:
+        limit_mb = max_file_size // (1024 * 1024)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="File size exceeds the 10MB limit."
+            detail=f"File size exceeds the {limit_mb}MB limit for {'videos' if is_video else 'images'}."
         )
 
     import json

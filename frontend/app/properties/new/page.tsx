@@ -320,7 +320,10 @@ export default function NewPropertyPage() {
     };
 
 
-    const nextStep = () => {
+    const nextStep = async () => {
+        if (currentStep === 2) {
+            await handleEnrichLocation();
+        }
         if (currentStep === 3) {
             if (formData.room_details.length !== formData.bedrooms) {
                 const newRoomDetails = Array(formData.bedrooms).fill({}).map((_, i) => formData.room_details[i] || {
@@ -1287,9 +1290,10 @@ export default function NewPropertyPage() {
                                     )}
                                     <button 
                                         onClick={nextStep}
-                                        className="flex-1 py-6 bg-zinc-900 text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] shadow-2xl hover:scale-[1.02] active:scale-95 transition-all"
+                                        disabled={enriching}
+                                        className="flex-1 py-6 bg-zinc-900 text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] shadow-2xl hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                                     >
-                                        {t('properties.new.navigation.next')}
+                                        {enriching ? t('common.loading', undefined, 'Loading...') : t('properties.new.navigation.next')}
                                     </button>
                                 </div>
                             )}
