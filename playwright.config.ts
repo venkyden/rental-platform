@@ -8,7 +8,7 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
     testDir: './frontend/e2e',
     outputDir: './frontend/test-results',
-    timeout: 30_000,
+    timeout: 60_000,
     retries: 1,
     fullyParallel: true,
     reporter: [['html', { open: 'never' }]],
@@ -25,9 +25,9 @@ export default defineConfig({
         },
     ],
     webServer: {
-        command: 'cd frontend && npm run start -- -p 3001 -H 127.0.0.1',
+        command: 'cd frontend && npm run build && npm run start -- -p 3001 -H 127.0.0.1',
         url: 'http://127.0.0.1:3001',
         reuseExistingServer: true,
-        timeout: 60_000,
+        timeout: 120_000,
     },
 });

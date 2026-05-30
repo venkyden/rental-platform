@@ -259,12 +259,24 @@ export default function EditPropertyPage() {
     const handleSubmit = async () => {
         setLoading(true);
         try {
-            await apiClient.client.put(`/properties/${propertyId}`, formData);
+            // Clean empty strings for optional fields in payload
+            const payload = { ...formData };
+            if (payload.dpe_rating === '') payload.dpe_rating = undefined as any;
+            if (payload.ges_rating === '') payload.ges_rating = undefined as any;
+            if (payload.complement_de_loyer_justification === '') {
+                payload.complement_de_loyer_justification = undefined as any;
+            }
+
+            await apiClient.client.put(`/properties/${propertyId}`, payload);
             toast.success(t('properties.edit.saveSuccess', undefined, 'Property updated successfully'));
             router.push(`/properties/${propertyId}`);
         } catch (error: any) {
             console.error('Update error:', error);
-            toast.error(t('properties.edit.saveFailed', undefined, 'Failed to update property'));
+            let errorMsg = error.response?.data?.detail || t('properties.edit.saveFailed', undefined, 'Failed to update property');
+            if (Array.isArray(errorMsg)) {
+                errorMsg = errorMsg.map((err: any) => `${err.loc[err.loc.length - 1]}: ${err.msg}`).join(', ');
+            }
+            toast.error(errorMsg);
         } finally {
             setLoading(false);
         }

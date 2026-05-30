@@ -68,7 +68,7 @@ const content = {
                 subSections: [
                     {
                         subtitle: 'How to exercise your right of withdrawal',
-                        body: 'Send a clear, unambiguous statement (email or letter) to legal@roomivo.com, including your name, order reference, date of purchase, and a statement that you wish to withdraw. You may use the withdrawal form at the bottom of this page.',
+                        body: 'Send a clear, unambiguous statement (email or letter) to legal@roomivo.eu, including your name, order reference, date of purchase, and a statement that you wish to withdraw. You may use the withdrawal form at the bottom of this page.',
                     },
                     {
                         subtitle: 'Refund',
@@ -115,7 +115,7 @@ const content = {
             {
                 title: '10. Complaints & Mediation',
                 paragraphs: [
-                    'For any complaint regarding a paid service, contact us at legal@roomivo.com. We will acknowledge your complaint within 48 hours and aim to resolve it within 15 business days.',
+                    'For any complaint regarding a paid service, contact us at legal@roomivo.eu. We will acknowledge your complaint within 48 hours and aim to resolve it within 15 business days.',
                     'If we are unable to resolve your complaint, you may refer the dispute to the consumer mediation service designated in our Legal Notice (Mentions Légales). You may also use the EU Online Dispute Resolution platform at https://ec.europa.eu/consumers/odr.',
                 ],
             },
@@ -127,14 +127,14 @@ const content = {
             },
             {
                 title: '12. Contact',
-                contact: { email: 'legal@roomivo.com' },
+                contact: { email: 'legal@roomivo.eu' },
             },
         ],
         withdrawalForm: {
             title: 'Withdrawal Form Template',
             note: 'Complete and return this form only if you wish to withdraw from your purchase.',
             fields: [
-                'To: Roomivo — legal@roomivo.com',
+                'To: Roomivo — legal@roomivo.eu',
                 'I hereby notify you that I withdraw from my purchase of the following service:',
                 'Service: _______________',
                 'Order reference: _______________',
@@ -210,7 +210,7 @@ const content = {
                 subSections: [
                     {
                         subtitle: 'Comment exercer votre droit de rétractation',
-                        body: 'Envoyez une déclaration claire et sans ambiguïté (email ou courrier) à legal@roomivo.com, incluant votre nom, référence de commande, date d\'achat et une déclaration de rétractation. Vous pouvez utiliser le formulaire de rétractation en bas de cette page.',
+                        body: 'Envoyez une déclaration claire et sans ambiguïté (email ou courrier) à legal@roomivo.eu, incluant votre nom, référence de commande, date d\'achat et une déclaration de rétractation. Vous pouvez utiliser le formulaire de rétractation en bas de cette page.',
                     },
                     {
                         subtitle: 'Remboursement',
@@ -257,7 +257,7 @@ const content = {
             {
                 title: '10. Réclamations et Médiation',
                 paragraphs: [
-                    'Pour toute réclamation relative à un service payant, contactez legal@roomivo.com. Nous accuserons réception sous 48 heures et viserons une résolution sous 15 jours ouvrés.',
+                    'Pour toute réclamation relative à un service payant, contactez legal@roomivo.eu. Nous accuserons réception sous 48 heures et viserons une résolution sous 15 jours ouvrés.',
                     'À défaut, vous pouvez saisir le service de médiation désigné dans nos Mentions Légales. Vous pouvez également utiliser la plateforme de résolution en ligne de l\'UE : https://ec.europa.eu/consumers/odr.',
                 ],
             },
@@ -269,14 +269,14 @@ const content = {
             },
             {
                 title: '12. Contact',
-                contact: { email: 'legal@roomivo.com' },
+                contact: { email: 'legal@roomivo.eu' },
             },
         ],
         withdrawalForm: {
             title: 'Formulaire de Rétractation',
             note: 'Complétez et renvoyez ce formulaire uniquement si vous souhaitez vous rétracter.',
             fields: [
-                'À : Roomivo — legal@roomivo.com',
+                'À : Roomivo — legal@roomivo.eu',
                 'Je vous notifie par la présente ma rétractation du contrat portant sur le service suivant :',
                 'Service : _______________',
                 'Référence de commande : _______________',
@@ -384,7 +384,7 @@ function SectionRenderer({ section }: { section: Section }) {
 
 export default function LegalPage() {
     const [lang, setLang] = React.useState('en');
-    const t = content[lang as keyof typeof content];
+    const t = lang === 'fr' ? content.fr : content.en;
 
     return (
         <div className="min-h-screen bg-zinc-50 py-24 px-4 sm:px-6 lg:px-8">

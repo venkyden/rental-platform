@@ -5,6 +5,8 @@ test.describe('Phase 6: Slide-Up Auth Modal & Hybrid Verification Gates', () => 
     test.beforeEach(async ({ page }) => {
         page.on('console', msg => console.log(`BROWSER [${msg.type()}]:`, msg.text()));
         page.on('pageerror', err => console.log('BROWSER ERROR:', err.message, err.stack));
+        page.on('request', request => console.log('REQ >>', request.method(), request.url()));
+        page.on('response', response => console.log('RES <<', response.status(), response.url()));
 
         // Enforce English default locale via local storage
         await page.goto('/');
@@ -152,6 +154,158 @@ test.describe('Phase 6: Slide-Up Auth Modal & Hybrid Verification Gates', () => 
             const softBanner = page.locator('.bg-zinc-950').first();
             await expect(softBanner).toBeVisible();
             await expect(softBanner).toContainText(/Verify your email/i);
+        });
+    });
+
+    test.describe('4. Page-Level Auth State Sync', () => {
+        test('successful page-level login synchronizes state and does not prompt login again on dashboard', async ({ page }) => {
+            // Mock API routes
+            await page.route(/:8000\/auth\/login/, async (route) => {
+                await route.fulfill({
+                    status: 200,
+                    contentType: 'application/json',
+                    body: JSON.stringify({
+                        access_token: 'dummy-token-page-login',
+                        token_type: 'bearer',
+                        redirect_path: '/dashboard',
+                        segment: 'standard_tenant',
+                        segment_name: 'Standard Tenant',
+                        available_roles: ['tenant']
+                    }),
+                });
+            });
+
+            await page.route(/:8000\/auth\/me$/, async (route) => {
+                await route.fulfill({
+                    status: 200,
+                    contentType: 'application/json',
+                    body: JSON.stringify({
+                        id: 'dummy-user-id',
+                        email: 'test@roomivo.com',
+                        full_name: 'Test User',
+                        role: 'tenant',
+                        email_verified: true,
+                        identity_verified: true,
+                        employment_verified: true,
+                        trust_score: 95,
+                        onboarding_completed: true,
+                        available_roles: ['tenant']
+                    }),
+                });
+            });
+
+            await page.route(/:8000\/auth\/me\/segment-config/, async (route) => {
+                await route.fulfill({
+                    status: 200,
+                    contentType: 'application/json',
+                    body: JSON.stringify({
+                        segment: 'standard_tenant',
+                        segment_name: 'Standard Tenant',
+                        segment_type: 'demand',
+                        dashboard_path: '/dashboard',
+                        common_features: [],
+                        segment_features: [],
+                        all_features: [],
+                        quick_actions: [],
+                        settings: {},
+                        verification_status: {
+                            id_verified: true,
+                            email_verified: true,
+                            employment_verified: true,
+                            onboarding_completed: true
+                        }
+                    }),
+                });
+            });
+
+            await page.route(/:8000\/inbox\/unread-count/, async (route) => {
+                await route.fulfill({
+                    status: 200,
+                    contentType: 'application/json',
+                    body: JSON.stringify({ total_unread: 0 }),
+                });
+            });
+
+            await page.route(/:8000\/inbox/, async (route) => {
+                await route.fulfill({
+                    status: 200,
+                    contentType: 'application/json',
+                    body: JSON.stringify([]),
+                });
+            });
+
+            await page.route(/:8000\/properties\/recommendations/, async (route) => {
+                await route.fulfill({
+                    status: 200,
+                    contentType: 'application/json',
+                    body: JSON.stringify([]),
+                });
+            });
+
+            await page.route(/:8000\/stats\/tenant\/overview/, async (route) => {
+                await route.fulfill({
+                    status: 200,
+                    contentType: 'application/json',
+                    body: JSON.stringify({
+                        total_applications: 0,
+                        scheduled_visits: 0,
+                        active_disputes: 0
+                    }),
+                });
+            });
+
+            await page.route(/:8000\/notifications\/unread-count/, async (route) => {
+                await route.fulfill({
+                    status: 200,
+                    contentType: 'application/json',
+                    body: JSON.stringify({ unread_count: 0 }),
+                });
+            });
+
+            await page.route(/:8000\/notifications/, async (route) => {
+                await route.fulfill({
+                    status: 200,
+                    contentType: 'application/json',
+                    body: JSON.stringify([]),
+                });
+            });
+
+            await page.route(/:8000\/auth\/refresh/, async (route) => {
+                await route.fulfill({
+                    status: 200,
+                    contentType: 'application/json',
+                    body: JSON.stringify({
+                        access_token: 'dummy-token-page-login',
+                        token_type: 'bearer',
+                        redirect_path: '/dashboard',
+                        segment: 'standard_tenant',
+                        segment_name: 'Standard Tenant',
+                        available_roles: ['tenant']
+                    }),
+                });
+            });
+
+            // Clear cookies and access token to prevent auto-login / auto-redirect
+            await page.context().clearCookies();
+            await page.evaluate(() => localStorage.removeItem('access_token'));
+
+            // Go to login page
+            await page.goto('/auth/login');
+
+            // Fill login form
+            await page.locator('input[type="email"]').fill('test@roomivo.com');
+            await page.locator('input[type="password"]').fill('Password123!');
+
+            // Click submit button
+            await page.locator('button[type="submit"]').click();
+
+            // Wait for redirection to dashboard
+            await page.waitForURL('**/dashboard');
+
+            // Verify that we are on the dashboard and the gated auth modal is NOT showing
+            await expect(page).toHaveURL(/.*dashboard/);
+            const modal = page.locator('text=Roomivo Secure');
+            await expect(modal).not.toBeVisible();
         });
     });
 });

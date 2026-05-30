@@ -8,6 +8,7 @@ import { apiClient } from '@/lib/api';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { useLanguage } from '@/lib/LanguageContext';
 import { useGoogleSignIn } from '@/lib/useGoogleSignIn';
+import { useAuth } from '@/lib/useAuth';
 
 /* ----------------------------------------------------------------
    Framer-motion variants
@@ -43,6 +44,7 @@ function LoginContent() {
     const { t } = useLanguage();
     const router = useRouter();
     const searchParams = useSearchParams();
+    const { checkAuth } = useAuth();
 
     const getSafeRedirectUrl = useCallback((url: string | null) => {
         if (!url) return null;
@@ -74,6 +76,7 @@ function LoginContent() {
             setGoogleLoading(true);
             try {
                 const result = await apiClient.googleLogin(credential);
+                await checkAuth();
                 const safeRedirect = getSafeRedirectUrl(searchParams.get('returnUrl'));
                 router.push(safeRedirect || result.redirect_path || '/dashboard');
             } catch (err: any) {
@@ -84,7 +87,7 @@ function LoginContent() {
                 setGoogleLoading(false);
             }
         },
-        [router, t, searchParams, getSafeRedirectUrl],
+        [router, t, searchParams, getSafeRedirectUrl, checkAuth],
     );
 
     /* ---------- Setup Google Sign-In ---------- */
@@ -118,6 +121,7 @@ function LoginContent() {
 
         try {
             const response = await apiClient.login(email, password);
+            await checkAuth();
             const safeRedirect = getSafeRedirectUrl(searchParams.get('returnUrl'));
             router.push(safeRedirect || response.redirect_path || '/dashboard');
         } catch (err: any) {

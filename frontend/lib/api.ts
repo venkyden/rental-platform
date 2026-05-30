@@ -47,16 +47,28 @@ class ApiClient {
             (response) => response,
             async (error: AxiosError) => {
                 const originalRequest = error.config as any;
+                const requestUrl = originalRequest?.url || '';
                 const isLoginPage = typeof window !== 'undefined' && window.location.pathname === '/auth/login';
                 const isPublicPage = typeof window !== 'undefined' && (
                     window.location.pathname === '/search' || 
                     window.location.pathname === '/' || 
                     window.location.pathname.startsWith('/properties/')
                 );
+                const isAuthRequest = typeof requestUrl === 'string' && (
+                    requestUrl.includes('/auth/login') || 
+                    requestUrl.includes('/auth/refresh') || 
+                    requestUrl.includes('/auth/google') || 
+                    requestUrl.includes('/auth/register')
+                );
 
                 // If the error is 401 and we haven't retried yet
                 if (error.response?.status === 401 && !originalRequest._retry) {
                     originalRequest._retry = true;
+
+                    // If this is an authentication request, do not attempt to refresh
+                    if (isAuthRequest) {
+                        return Promise.reject(error);
+                    }
 
                     // If we're already on the login page, don't try to refresh or redirect
                     if (isLoginPage) {
@@ -119,12 +131,14 @@ class ApiClient {
     }
 
     setToken(token: string): void {
+        console.log('[apiClient] setToken called, token:', token);
         if (typeof window !== 'undefined') {
             localStorage.setItem('access_token', token);
         }
     }
 
     clearToken(): void {
+        console.log('[apiClient] clearToken called');
         if (typeof window !== 'undefined') {
             localStorage.removeItem('access_token');
         }

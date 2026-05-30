@@ -44,16 +44,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const checkAuth = async () => {
         const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+        console.log('[AuthContext] checkAuth entry, token:', token);
         if (!token) {
+            console.log('[AuthContext] checkAuth no token, setting user to null');
             setUser(null);
             setLoading(false);
             return;
         }
 
         try {
+            console.log('[AuthContext] checkAuth calling getMe...');
             const userData = await apiClient.getMe();
+            console.log('[AuthContext] checkAuth getMe success:', userData.email);
             setUser(userData);
         } catch (error) {
+            console.error('[AuthContext] checkAuth getMe failed:', error);
             setUser(null);
         } finally {
             setLoading(false);

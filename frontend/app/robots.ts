@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/admin/', '/dashboard/', '/inbox/', '/settings/', '/api/'],
     },
-    sitemap: 'https://roomivo.com/sitemap.xml',
+    sitemap: 'https://roomivo.eu/sitemap.xml',
   };
 }

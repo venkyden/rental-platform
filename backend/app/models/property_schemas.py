@@ -90,6 +90,13 @@ class PropertyCreate(BaseModel):
         from app.core.sanitize import sanitize_html
         return sanitize_html(v)
 
+    @field_validator("dpe_rating", "ges_rating", mode="before")
+    @classmethod
+    def empty_to_none(cls, v):
+        if v == "":
+            return None
+        return v
+
 
 class PropertyUpdate(BaseModel):
     """Schema for updating a property"""
@@ -157,6 +164,13 @@ class PropertyUpdate(BaseModel):
             return v
         from app.core.sanitize import sanitize_html
         return sanitize_html(v)
+
+    @field_validator("dpe_rating", "ges_rating", mode="before")
+    @classmethod
+    def empty_to_none(cls, v):
+        if v == "":
+            return None
+        return v
 
 
 class PropertyResponse(BaseModel):

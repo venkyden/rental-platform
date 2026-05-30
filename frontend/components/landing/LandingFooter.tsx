@@ -32,7 +32,7 @@ export default function LandingFooter() {
       links: [
         { href: '/support', label: t('landing.footer.help', undefined, 'Help Center') },
         { href: '/guide', label: t('dashboard.quickActions.help', undefined, 'Guides') },
-        { href: 'mailto:contact@roomivo.com', label: 'contact@roomivo.com' }
+        { href: 'mailto:contact@roomivo.eu', label: 'contact@roomivo.eu' }
       ]
     }
   ];
@@ -53,15 +53,15 @@ export default function LandingFooter() {
             <div className="flex flex-wrap gap-8">
               <div className="flex items-center gap-3 text-zinc-400">
                 <ShieldCheck className="w-5 h-5 text-zinc-900" />
-                <span className="text-[10px] font-black uppercase tracking-widest">Secure Connection</span>
+                <span className="text-[10px] font-black uppercase tracking-widest">{t('landing.footer.secureConnection', undefined, 'Secure Connection')}</span>
               </div>
               <div className="flex items-center gap-3 text-zinc-400">
                 <Lock className="w-5 h-5 text-zinc-900" />
-                <span className="text-[10px] font-black uppercase tracking-widest">AES-256 Encrypted</span>
+                <span className="text-[10px] font-black uppercase tracking-widest">{t('landing.footer.aesEncrypted', undefined, 'AES-256 Encrypted')}</span>
               </div>
               <div className="flex items-center gap-3 text-zinc-400">
                 <Globe className="w-5 h-5 text-zinc-900" />
-                <span className="text-[10px] font-black uppercase tracking-widest">GDPR Compliant</span>
+                <span className="text-[10px] font-black uppercase tracking-widest">{t('landing.footer.gdprCompliant', undefined, 'GDPR Compliant')}</span>
               </div>
             </div>
           </div>
@@ -86,12 +86,12 @@ export default function LandingFooter() {
         <div className="border-t border-zinc-100 pt-12 flex flex-col md:flex-row items-center justify-between gap-8 text-zinc-400 text-[10px] font-black tracking-[0.2em] uppercase">
           <div className="flex items-center gap-4">
              <span className="w-2 h-2 bg-zinc-900 rounded-full animate-pulse" />
-             <span>All Systems Operational</span>
+             <span>{t('landing.footer.systemsOperational', undefined, 'All Systems Operational')}</span>
           </div>
           <span>© {new Date().getFullYear()} Roomivo Platform. {t('globalFooter.rights', undefined, 'All rights reserved.')}</span>
           <div className="flex gap-8">
-            <Link href="/legal/terms" className="hover:text-zinc-900 transition-colors">Terms</Link>
-            <Link href="/legal/privacy" className="hover:text-zinc-900 transition-colors">Privacy</Link>
+            <Link href="/legal/terms" className="hover:text-zinc-900 transition-colors">{t('landing.footer.termsLink', undefined, 'Terms')}</Link>
+            <Link href="/legal/privacy" className="hover:text-zinc-900 transition-colors">{t('landing.footer.privacyLink', undefined, 'Privacy')}</Link>
           </div>
         </div>
       </div>

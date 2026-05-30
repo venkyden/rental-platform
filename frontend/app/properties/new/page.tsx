@@ -172,7 +172,15 @@ export default function NewPropertyPage() {
     const handleSubmit = async () => {
         setLoading(true);
         try {
-            const response = await apiClient.client.post('/properties', formData);
+            // Clean empty strings for optional fields in payload
+            const payload = { ...formData };
+            if (payload.dpe_rating === '') payload.dpe_rating = undefined as any;
+            if (payload.ges_rating === '') payload.ges_rating = undefined as any;
+            if (payload.complement_de_loyer_justification === '') {
+                payload.complement_de_loyer_justification = undefined as any;
+            }
+
+            const response = await apiClient.client.post('/properties', payload);
             const newPropertyId = response.data.id;
             setPropertyId(newPropertyId);
 
@@ -183,6 +191,11 @@ export default function NewPropertyPage() {
             setCurrentStep(8);
         } catch (error: any) {
             console.error('Submit error:', error);
+            let errorMsg = error.response?.data?.detail || 'Failed to submit property details';
+            if (Array.isArray(errorMsg)) {
+                errorMsg = errorMsg.map((err: any) => `${err.loc[err.loc.length - 1]}: ${err.msg}`).join(', ');
+            }
+            toast.error(errorMsg);
         } finally {
             setLoading(false);
         }

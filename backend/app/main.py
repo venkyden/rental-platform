@@ -144,8 +144,8 @@ async def add_security_headers(request: Request, call_next):
         raise e
         
     # Allow Google Auth popups to communicate back to the window.
-    # 'same-origin-allow-popups' is critical for window.postMessage with Google Identity Services.
-    response.headers["Cross-Origin-Opener-Policy"] = "same-origin-allow-popups"
+    # We set this to 'unsafe-none' to ensure popups can postMessage freely in all browser contexts.
+    response.headers["Cross-Origin-Opener-Policy"] = "unsafe-none"
     response.headers["Cross-Origin-Embedder-Policy"] = "unsafe-none"
     response.headers["Cross-Origin-Resource-Policy"] = "cross-origin"
     
@@ -191,7 +191,7 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
             "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
             "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With, Accept, Language",
             "Access-Control-Allow-Credentials": "true",
-            "Cross-Origin-Opener-Policy": "same-origin-allow-popups",
+            "Cross-Origin-Opener-Policy": "unsafe-none",
             "Cross-Origin-Embedder-Policy": "unsafe-none",
             "Cross-Origin-Resource-Policy": "cross-origin",
         }
@@ -229,7 +229,7 @@ async def global_exception_handler(request: Request, exc: Exception):
             "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
             "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With, Accept, Language",
             "Access-Control-Allow-Credentials": "true",
-            "Cross-Origin-Opener-Policy": "same-origin-allow-popups",
+            "Cross-Origin-Opener-Policy": "unsafe-none",
             "Cross-Origin-Embedder-Policy": "unsafe-none",
             "Cross-Origin-Resource-Policy": "cross-origin",
         }
@@ -433,7 +433,7 @@ class CORSSafetyNet:
                     (b"access-control-allow-methods", b"GET, POST, PUT, DELETE, OPTIONS, PATCH"),
                     (b"access-control-allow-headers", b"Content-Type, Authorization, X-Requested-With, Accept, Language"),
                     (b"access-control-allow-credentials", b"true"),
-                    (b"cross-origin-opener-policy", b"same-origin-allow-popups"),
+                    (b"cross-origin-opener-policy", b"unsafe-none"),
                     (b"cross-origin-embedder-policy", b"unsafe-none"),
                     (b"cross-origin-resource-policy", b"cross-origin"),
                 ]

@@ -8,6 +8,7 @@ import { apiClient } from '@/lib/api';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { useLanguage } from '@/lib/LanguageContext';
 import { useGoogleSignIn } from '@/lib/useGoogleSignIn';
+import { useAuth } from '@/lib/useAuth';
 
 /* ----------------------------------------------------------------
    Framer-motion variants
@@ -45,6 +46,7 @@ export default function RegisterPage() {
     const [googleLoading, setGoogleLoading] = useState(false);
     const { t } = useLanguage();
     const router = useRouter();
+    const { checkAuth } = useAuth();
 
     const roleRef = useRef(formData.role);
     roleRef.current = formData.role;
@@ -57,6 +59,7 @@ export default function RegisterPage() {
             try {
                 const roleToUse = roleRef.current || 'tenant';
                 const result = await apiClient.googleLogin(credential, roleToUse);
+                await checkAuth();
                 router.push(result.redirect_path || '/dashboard');
             } catch (err: unknown) {
                 const axiosErr = err as { response?: { data?: { detail?: string } } };
@@ -66,7 +69,7 @@ export default function RegisterPage() {
                 setGoogleLoading(false);
             }
         },
-        [router, t],
+        [router, t, checkAuth],
     );
 
     useGoogleSignIn({
@@ -158,6 +161,7 @@ export default function RegisterPage() {
                 marketing_consent: formData.marketingConsent,
             });
             const loginRes = await apiClient.login(formData.email, formData.password);
+            await checkAuth();
             router.push(loginRes.redirect_path || '/dashboard');
         } catch (err: any) {
             const detail = err.response?.data?.detail;

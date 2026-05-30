@@ -71,10 +71,12 @@ export default function GlobalFooter() {
                     <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em]">
                         &copy; {currentYear} Roomivo SAS • {t('globalFooter.rights')}
                     </p>
-                    <div className="flex items-center gap-4">
-                        <div className="w-2 h-2 rounded-full bg-zinc-900 animate-pulse" />
-                        <span className="text-[10px] font-black text-zinc-900 uppercase tracking-[0.3em]">{t('globalFooter.status', undefined, 'System Operational')}</span>
-                    </div>
+                    {pathname !== '/auth/login' && !pathname?.startsWith('/auth/') && (
+                        <div className="flex items-center gap-4">
+                            <div className="w-2 h-2 rounded-full bg-zinc-900 animate-pulse" />
+                            <span className="text-[10px] font-black text-zinc-900 uppercase tracking-[0.3em]">{t('globalFooter.status', undefined, 'System Operational')}</span>
+                        </div>
+                    )}
                 </div>
             </div>
         </footer>

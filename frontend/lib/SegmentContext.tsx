@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { apiClient } from '@/lib/api';
 import { useLanguage } from '@/lib/LanguageContext';
 
+import { useAuth } from '@/lib/useAuth';
+
 interface QuickAction {
     id: string;
     label: string;
@@ -67,6 +69,7 @@ const SegmentContext = createContext<SegmentContextType>({
 export function SegmentProvider({ children }: { children: ReactNode }) {
     const [config, setConfig] = useState<SegmentConfig | null>(null);
     const [loading, setLoading] = useState(true);
+    const { user } = useAuth();
 
     const fetchConfig = async () => {
         try {
@@ -84,13 +87,13 @@ export function SegmentProvider({ children }: { children: ReactNode }) {
     };
 
     useEffect(() => {
-        const token = localStorage.getItem('access_token');
-        if (token) {
+        if (user) {
             fetchConfig();
         } else {
+            setConfig(null);
             setLoading(false);
         }
-    }, []);
+    }, [user]);
 
     // Check if user has access to a feature (common OR segment-specific)
     const hasFeature = (feature: string): boolean => {

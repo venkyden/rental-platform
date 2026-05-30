@@ -38,7 +38,7 @@ const nextConfig: NextConfig = {
               related to the application code.
             */
             key: 'Cross-Origin-Opener-Policy',
-            value: 'same-origin-allow-popups',
+            value: 'unsafe-none',
           },
           {
             key: 'Cross-Origin-Embedder-Policy',
@@ -65,7 +65,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  output: 'standalone',
+  // output: 'standalone',
 };
 
 export default nextConfig;

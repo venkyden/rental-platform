@@ -17,10 +17,10 @@ export const metadata: Metadata = {
     title: BRAND.title,
     description: BRAND.description,
     type: 'website',
-    url: 'https://roomivo.com',
+    url: 'https://roomivo.eu',
     images: [
       {
-        url: 'https://roomivo.com/og-image.png',
+        url: 'https://roomivo.eu/og-image.png',
         width: 1200,
         height: 630,
         alt: 'Roomivo - Smart Rental Platform'
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: BRAND.title,
     description: BRAND.description,
-    images: ['https://roomivo.com/og-image.png'],
+    images: ['https://roomivo.eu/og-image.png'],
   }
 };
 
@@ -39,8 +39,8 @@ const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
   name: 'Roomivo',
-  url: 'https://roomivo.com',
-  logo: 'https://roomivo.com/logo.png',
+  url: 'https://roomivo.eu',
+  logo: 'https://roomivo.eu/logo.png',
   description: BRAND.description,
   sameAs: [
     'https://twitter.com/roomivo',
@@ -53,8 +53,9 @@ export default function HomePage() {
     <div className="min-h-screen relative overflow-hidden bg-white">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      >
+        {JSON.stringify(jsonLd)}
+      </script>
       <div className="vibrancy-bg" />
 
       {/* ─── Navbar ─── */}

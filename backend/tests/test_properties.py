@@ -340,3 +340,39 @@ class TestPropertyCompliance:
             from conftest import mock_get_db
             target_app.dependency_overrides[get_db] = mock_get_db
 
+    def test_property_create_empty_ratings_to_none(self):
+        """Pydantic schemas should convert empty string ratings to None."""
+        from app.models.property_schemas import PropertyCreate
+        
+        data = {
+            "title": "Apartment for rent in Paris",
+            "description": "Lovely place",
+            "address_line1": "15 Rue de Vaugirard",
+            "city": "Paris",
+            "postal_code": "75015",
+            "monthly_rent": 1500,
+            "property_type": "apartment",
+            "bedrooms": 1,
+            "size_sqm": 45,
+            "dpe_rating": "",
+            "ges_rating": "",
+        }
+        
+        prop = PropertyCreate(**data)
+        assert prop.dpe_rating is None
+        assert prop.ges_rating is None
+
+    def test_property_update_empty_ratings_to_none(self):
+        """Pydantic schemas should convert empty string ratings to None on update."""
+        from app.models.property_schemas import PropertyUpdate
+        
+        data = {
+            "dpe_rating": "",
+            "ges_rating": "",
+        }
+        
+        prop = PropertyUpdate(**data)
+        assert prop.dpe_rating is None
+        assert prop.ges_rating is None
+
+
