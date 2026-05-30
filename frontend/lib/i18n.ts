@@ -937,17 +937,18 @@ export const translations = {
         properties: {
             new: {
                 title: "Listing Protocol",
-                stepStatus: "Step {{current}} of 7: {{status}}",
+                stepStatus: "Step {{current}} of 8: {{status}}",
                 initializing: "Initializing Asset Registry",
                 exit: "×",
                 wizard: {
-                    identity: "Details",
+                    identity: "Identity",
                     location: "Location",
-                    specs: "Spaces",
+                    specs: "Specs",
                     capacity: "Capacity",
                     pricing: "Pricing",
-                    review: "Review",
-                    media: "Media"
+                    features: "Amenities",
+                    narrative: "Narrative",
+                    review: "Review"
                 },
                 error: {
                     mandatoryDpe: "DPE Rating is mandatory in France.",
@@ -963,17 +964,16 @@ export const translations = {
                     identity: {
                         label: "01 // Identity",
                         titlePlaceholder: "Lister Title (e.g., Haussmann Luxury Suite)",
-                        narrativeLabel: "02 // Narrative",
-                        descriptionPlaceholder: "Elaborate on the architectural significance and living experience..."
                     },
                     geolocation: {
-                        label: "03 // Geolocation",
+                        label: "02 // Geolocation",
                         city: "City",
                         zip: "Zip",
                         enrichButton: "Verify Connectivity & POIs",
                         enriching: "Enriching Data..."
                     },
                     details: {
+                        label: "03 // Details",
                         bedrooms: "Bedrooms",
                         surface: "Surface (m²)",
                         energyProtocol: "Energy Protocol (DPE)"
@@ -1000,6 +1000,17 @@ export const translations = {
                         depositWarningFurnished: "Warning: The security deposit cannot exceed 2 months' rent for furnished properties.",
                         decencyWarning: "Warning: The habitable surface is below the legal decency standard of 9m² per occupant."
                     },
+                    narrative: {
+                        label: "07 // Narrative",
+                        descriptionEnPlaceholder: "Elaborate on the architectural significance and living experience in English...",
+                        descriptionFrPlaceholder: "Elaborate on the architectural significance and living experience in French...",
+                        aiSuggest: "AI Suggest",
+                        aiSuggestLanguage: "Generation Language",
+                        englishTab: "English",
+                        frenchTab: "French",
+                        aiSuggestSuccess: "AI description generated successfully!",
+                        aiSuggestAddressWarning: "For a localized description, please enter the address in Step 2 first."
+                    },
                     review: {
                         title: "Review Protocol",
                         asset: "Asset",
@@ -1007,7 +1018,9 @@ export const translations = {
                         pricing: "Pricing",
                         perMonth: "mo",
                         commitButton: "Commit to Registry",
-                        initializing: "Initializing..."
+                        initializing: "Initializing...",
+                        declaration: "I declare that all the information provided in this listing is accurate and true to the best of my knowledge. I understand that providing false information may result in legal consequences.",
+                        declarationRequired: "You must accept the declaration before submitting."
                     },
                     success: {
                         title: "Draft Created",
@@ -3152,17 +3165,18 @@ export const translations = {
         properties: {
             new: {
                 title: "Protocole de Mise en Location",
-                stepStatus: "Étape {{current}} sur 7 : {{status}}",
+                stepStatus: "Étape {{current}} sur 8 : {{status}}",
                 initializing: "Initialisation du Registre des Actifs",
                 exit: "×",
                 wizard: {
-                    identity: "Détails",
+                    identity: "Identité",
                     location: "Localisation",
                     specs: "Espaces",
                     capacity: "Capacité",
                     pricing: "Loyer",
-                    review: "Révision",
-                    media: "Médias"
+                    features: "Équipements",
+                    narrative: "Description",
+                    review: "Révision"
                 },
                 error: {
                     mandatoryDpe: "Le diagnostic DPE est obligatoire en France.",
@@ -3178,17 +3192,16 @@ export const translations = {
                     identity: {
                         label: "01 // Identité",
                         titlePlaceholder: "Titre de l'Annonce (ex : Suite de Luxe Haussmann)",
-                        narrativeLabel: "02 // Description",
-                        descriptionPlaceholder: "Détaillez l'importance architecturale et l'expérience de vie..."
                     },
                     geolocation: {
-                        label: "03 // Géolocalisation",
+                        label: "02 // Géolocalisation",
                         city: "Ville",
                         zip: "Code Postal",
                         enrichButton: "Vérifier la Connectivité & POIs",
                         enriching: "Enrichissement des données..."
                     },
                     details: {
+                        label: "03 // Détails",
                         bedrooms: "Chambres",
                         surface: "Surface (m²)",
                         energyProtocol: "Protocole Énergétique (DPE)"
@@ -3215,6 +3228,17 @@ export const translations = {
                         depositWarningFurnished: "Attention : Le dépôt de garantie ne peut pas dépasser 2 mois de loyer pour les logements meublés.",
                         decencyWarning: "Attention : La surface habitable est inférieure au critère de décence légal de 9m² par occupant."
                     },
+                    narrative: {
+                        label: "07 // Description",
+                        descriptionEnPlaceholder: "Rédiger ou générer la description en anglais...",
+                        descriptionFrPlaceholder: "Rédiger ou générer la description en français...",
+                        aiSuggest: "Suggestion IA",
+                        aiSuggestLanguage: "Langue de Génération",
+                        englishTab: "Anglais",
+                        frenchTab: "Français",
+                        aiSuggestSuccess: "Description IA générée avec succès !",
+                        aiSuggestAddressWarning: "Pour une description localisée, veuillez d'abord renseigner l'adresse à l'étape 2."
+                    },
                     review: {
                         title: "Protocole de Révision",
                         asset: "Actif",
@@ -3222,7 +3246,9 @@ export const translations = {
                         pricing: "Tarification",
                         perMonth: "mois",
                         commitButton: "Valider l'Inscription",
-                        initializing: "Initialisation..."
+                        initializing: "Initialisation...",
+                        declaration: "Je déclare que toutes les informations fournies dans cette annonce sont exactes et conformes à ce que je sais. Je comprends que la fourniture de fausses informations peut entraîner des conséquences juridiques.",
+                        declarationRequired: "Vous devez accepter la déclaration avant de soumettre."
                     },
                     success: {
                         title: "Brouillon Créé",

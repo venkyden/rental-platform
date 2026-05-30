@@ -93,7 +93,7 @@ const TENANT_TYPES = ['student', 'employee', 'freelancer', 'family'];
 const UTILITIES = ['wifi', 'elec', 'gas', 'water'];
 const BEDDING_TYPES = ['Single', 'Double', 'Queen', 'King', 'Bunk', 'Sofa Bed'];
 
-const STEP_LABELS = ['identity', 'location', 'details', 'capacity', 'pricing', 'amenities', 'review'] as const;
+const STEP_LABELS = ['identity', 'location', 'specs', 'capacity', 'pricing', 'features', 'narrative', 'review'] as const;
 
 export default function EditPropertyPage() {
     const router = useRouter();
@@ -114,6 +114,16 @@ export default function EditPropertyPage() {
     const [landmarkInput, setLandmarkInput] = useState('');
     const [roomAmenityInputs, setRoomAmenityInputs] = useState<Record<number, string>>({});
     const [showRentControl, setShowRentControl] = useState(false);
+    const [descriptionEn, setDescriptionEn] = useState('');
+    const [descriptionFr, setDescriptionFr] = useState('');
+    const [descLanguage, setDescLanguage] = useState<'en' | 'fr'>('en');
+
+    const { language } = useLanguage();
+    useEffect(() => {
+        if (language === 'fr' || language === 'en') {
+            setDescLanguage(language);
+        }
+    }, [language]);
 
     const [formData, setFormData] = useState<PropertyFormData>({
         title: '',
@@ -167,6 +177,31 @@ export default function EditPropertyPage() {
 
                 const rentControlActive = property.loyer_reference !== undefined && property.loyer_reference !== null;
                 setShowRentControl(rentControlActive);
+
+                const desc = property.description || '';
+                const enMatch = desc.match(/### English\n([\s\S]*?)(?=\n\n### Français|$)/);
+                const frMatch = desc.match(/### Français\n([\s\S]*?)(?=\n\n### English|$)/);
+
+                let parsedEn = '';
+                let parsedFr = '';
+
+                if (enMatch) {
+                    parsedEn = enMatch[1].trim();
+                }
+                if (frMatch) {
+                    parsedFr = frMatch[1].trim();
+                }
+
+                if (!enMatch && !frMatch && desc.trim()) {
+                    if (language === 'fr') {
+                        parsedFr = desc.trim();
+                    } else {
+                        parsedEn = desc.trim();
+                    }
+                }
+
+                setDescriptionEn(parsedEn);
+                setDescriptionFr(parsedFr);
 
                 setFormData({
                     title: property.title || '',
@@ -259,7 +294,7 @@ export default function EditPropertyPage() {
 
     const handleAiSuggest = async () => {
         if (!formData.address_line1 || !formData.city) {
-            toast.info(t('properties.new.steps.identity.aiSuggestAddressWarning', undefined, 'For a localized description, please enter the address in Step 2 first.'));
+            toast.info(t('properties.new.steps.narrative.aiSuggestAddressWarning', undefined, 'For a localized description, please enter the address in Step 2 first.'));
         }
         setGeneratingAi(true);
         try {
@@ -267,16 +302,38 @@ export default function EditPropertyPage() {
                 property_type: formData.property_type,
                 address: formData.address_line1,
                 city: formData.city,
+                postal_code: formData.postal_code,
+                country: formData.country,
                 size_sqm: formData.size_sqm,
                 bedrooms: formData.bedrooms,
+                bathrooms: formData.bathrooms,
+                furnished: formData.furnished,
+                rooms_count: formData.rooms_count,
+                monthly_rent: formData.monthly_rent,
                 amenities: formData.amenities,
+                custom_amenities: formData.custom_amenities,
+                public_transport: formData.public_transport,
+                nearby_landmarks: formData.nearby_landmarks,
+                language: descLanguage,
             });
-            updateFormData({ description: response.data.description });
-            toast.success(t('properties.new.steps.identity.aiSuggestSuccess', undefined, 'AI description generated successfully!'));
+
+            if (descLanguage === 'en') {
+                setDescriptionEn(response.data.description);
+            } else {
+                setDescriptionFr(response.data.description);
+            }
+            toast.success(t('properties.new.steps.narrative.aiSuggestSuccess', undefined, 'AI description generated successfully!'));
         } catch (error: any) {
             console.error('AI suggest error:', error);
-            const fallback = `Magnificent ${formData.property_type} located in the heart of ${formData.city || 'the city'}. This ${formData.size_sqm}m² property features ${formData.bedrooms} bedroom(s) and modern amenities. Ideal for those seeking comfort and convenience.`;
-            updateFormData({ description: fallback });
+            const fallback = descLanguage === 'en'
+                ? `Magnificent ${formData.property_type} located in the heart of ${formData.city || 'the city'}. This ${formData.size_sqm}m² property features ${formData.bedrooms} bedroom(s) and modern amenities. Ideal for those seeking comfort and convenience.`
+                : `Magnifique ${formData.property_type} situé au coeur de ${formData.city || 'la ville'}. Cette propriété de ${formData.size_sqm}m² comprend ${formData.bedrooms} chambre(s) et des équipements modernes. Idéal pour ceux qui recherchent le confort et la commodité.`;
+            
+            if (descLanguage === 'en') {
+                setDescriptionEn(fallback);
+            } else {
+                setDescriptionFr(fallback);
+            }
             toast.error(error.response?.data?.detail || 'Failed to generate AI description. Loaded default template.');
         } finally {
             setGeneratingAi(false);
@@ -293,6 +350,17 @@ export default function EditPropertyPage() {
             if (payload.complement_de_loyer_justification === '') {
                 payload.complement_de_loyer_justification = undefined as any;
             }
+
+            // Merge bilingual descriptions
+            let combinedDescription = "";
+            if (descriptionEn.trim() && descriptionFr.trim()) {
+                combinedDescription = `### English\n${descriptionEn.trim()}\n\n### Français\n${descriptionFr.trim()}`;
+            } else if (descriptionEn.trim()) {
+                combinedDescription = descriptionEn.trim();
+            } else if (descriptionFr.trim()) {
+                combinedDescription = descriptionFr.trim();
+            }
+            payload.description = combinedDescription;
 
             await apiClient.client.put(`/properties/${propertyId}`, payload);
             toast.success(t('properties.edit.saveSuccess', undefined, 'Property updated successfully'));
@@ -311,7 +379,7 @@ export default function EditPropertyPage() {
 
     const validateStep = (step: number): boolean => {
         switch (step) {
-            case 1: return !!(formData.title && formData.description);
+            case 1: return !!formData.title;
             case 2: return !!(formData.address_line1 && formData.city && formData.postal_code);
             case 3: {
                 const isValid = formData.bedrooms >= 0 && formData.size_sqm > 0 && !!formData.dpe_rating;
@@ -338,6 +406,7 @@ export default function EditPropertyPage() {
                 }
                 return isValid;
             }
+            case 7: return !!(descriptionEn.trim() || descriptionFr.trim());
             default: return true;
         }
     };
@@ -355,7 +424,7 @@ export default function EditPropertyPage() {
                 updateFormData({ room_details: newRoomDetails });
             }
         }
-        if (validateStep(currentStep)) setCurrentStep(prev => Math.min(7, prev + 1));
+        if (validateStep(currentStep)) setCurrentStep(prev => Math.min(8, prev + 1));
     };
 
     const prevStep = () => setCurrentStep(prev => Math.max(1, prev - 1));
@@ -407,10 +476,10 @@ export default function EditPropertyPage() {
                                 <button
                                     key={idx}
                                     onClick={() => setCurrentStep(idx + 1)}
-                                    aria-label={t(`property.create.steps.${step === 'identity' ? 'basic' : step === 'details' ? 'details' : step === 'capacity' ? 'layout' : step === 'pricing' ? 'pricing' : step === 'amenities' ? 'features' : step === 'review' ? 'review' : step}`, undefined, step)}
+                                    aria-label={t(`properties.new.wizard.${step}`, undefined, step)}
                                     className={`text-[9px] font-black uppercase tracking-widest transition-colors cursor-pointer hover:text-zinc-600 ${currentStep === idx + 1 ? 'text-zinc-900' : 'text-zinc-300'}`}
                                 >
-                                    <span className="hidden sm:inline">{t(`properties.new.wizard.${step === 'details' ? 'specs' : step === 'capacity' ? 'capacity' : step === 'amenities' ? 'media' : step}`, undefined, step)}</span>
+                                    <span className="hidden sm:inline">{t(`properties.new.wizard.${step}`)}</span>
                                     <span className="sm:hidden">{idx + 1}</span>
                                 </button>
                             ))}
@@ -418,7 +487,7 @@ export default function EditPropertyPage() {
                         <div className="h-1.5 w-full bg-zinc-100 rounded-full overflow-hidden">
                             <motion.div
                                 initial={{ width: 0 }}
-                                animate={{ width: `${(currentStep / 7) * 100}%` }}
+                                animate={{ width: `${(currentStep / 8) * 100}%` }}
                                 className="h-full bg-zinc-900 shadow-[0_0_20px_rgba(0,0,0,0.1)]"
                             />
                         </div>
@@ -450,28 +519,6 @@ export default function EditPropertyPage() {
                                                     placeholder={t('properties.new.steps.identity.titlePlaceholder', undefined, 'Property title')}
                                                     aria-label={t('property.create.basic.propertyTitle', undefined, 'Property Title')}
                                                     className="w-full bg-transparent text-3xl sm:text-6xl font-black tracking-tighter text-zinc-900 placeholder:text-zinc-200 border-none focus:ring-0"
-                                                />
-                                            </div>
-                                            <div className="space-y-6 relative group">
-                                                <div className="flex justify-between items-center">
-                                                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
-                                                        {t('properties.new.steps.identity.narrativeLabel', undefined, '02 // Narrative')}
-                                                    </label>
-                                                    <button 
-                                                         onClick={handleAiSuggest}
-                                                         disabled={generatingAi}
-                                                         type="button"
-                                                         className="flex items-center gap-2 px-3 py-1 bg-zinc-900/5 text-zinc-900 border border-zinc-900/10 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-zinc-900 hover:text-white transition-all opacity-0 group-hover:opacity-100"
-                                                    >
-                                                         <Zap className={`w-3 h-3 ${generatingAi ? 'animate-spin' : ''}`} /> {generatingAi ? 'Generating...' : t('properties.new.steps.identity.aiSuggest', undefined, 'AI Suggest')}
-                                                    </button>
-                                                </div>
-                                                <textarea
-                                                    value={formData.description}
-                                                    onChange={(e) => updateFormData({ description: e.target.value })}
-                                                    placeholder={t('properties.new.steps.identity.descriptionPlaceholder', undefined, 'Describe the property...')}
-                                                    aria-label={t('property.create.basic.description', undefined, 'Property Description')}
-                                                    className="w-full h-48 bg-transparent text-xl font-medium text-zinc-500 placeholder:text-zinc-200 border-none focus:ring-0 resize-none"
                                                 />
                                             </div>
                                             <div className="grid grid-cols-2 gap-8">
@@ -1502,8 +1549,74 @@ export default function EditPropertyPage() {
                                         </div>
                                     )}
 
-                                    {/* Step 7: Review & Submit */}
+                                    {/* Step 7: Narrative */}
                                     {currentStep === 7 && (
+                                         <div className="space-y-10 animate-fade-in">
+                                             <div className="space-y-6">
+                                                 <div className="flex justify-between items-center">
+                                                     <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                                                         {t('properties.new.steps.narrative.label')}
+                                                     </label>
+                                                     
+                                                     <button
+                                                         type="button"
+                                                         onClick={handleAiSuggest}
+                                                         disabled={generatingAi}
+                                                         className="flex items-center gap-2 px-4 py-2 bg-zinc-900 text-white rounded-xl text-xs font-black uppercase tracking-wider hover:scale-105 active:scale-95 transition-all shadow-md disabled:opacity-50"
+                                                     >
+                                                         <Zap className={`w-3.5 h-3.5 ${generatingAi ? 'animate-spin' : ''}`} />
+                                                         {generatingAi ? 'Generating...' : t('properties.new.steps.narrative.aiSuggest')}
+                                                     </button>
+                                                 </div>
+
+                                                 <div className="flex gap-4 border-b border-zinc-100 pb-4">
+                                                     <button
+                                                         type="button"
+                                                         onClick={() => setDescLanguage('en')}
+                                                         className={`pb-2 px-4 text-xs font-black uppercase tracking-wider transition-all border-b-2 ${
+                                                             descLanguage === 'en'
+                                                                 ? 'border-zinc-900 text-zinc-900 font-bold'
+                                                                 : 'border-transparent text-zinc-400 hover:text-zinc-600'
+                                                         }`}
+                                                     >
+                                                         {t('properties.new.steps.narrative.englishTab')}
+                                                     </button>
+                                                     <button
+                                                         type="button"
+                                                         onClick={() => setDescLanguage('fr')}
+                                                         className={`pb-2 px-4 text-xs font-black uppercase tracking-wider transition-all border-b-2 ${
+                                                             descLanguage === 'fr'
+                                                                 ? 'border-zinc-900 text-zinc-900 font-bold'
+                                                                 : 'border-transparent text-zinc-400 hover:text-zinc-600'
+                                                         }`}
+                                                     >
+                                                         {t('properties.new.steps.narrative.frenchTab')}
+                                                     </button>
+                                                 </div>
+
+                                                 <div className="relative">
+                                                     {descLanguage === 'en' ? (
+                                                         <textarea
+                                                             value={descriptionEn}
+                                                             onChange={(e) => setDescriptionEn(e.target.value)}
+                                                             placeholder={t('properties.new.steps.narrative.descriptionEnPlaceholder')}
+                                                             className="w-full h-64 bg-zinc-50 p-6 rounded-3xl border-none font-medium text-sm text-zinc-600 focus:ring-0 resize-none"
+                                                         />
+                                                     ) : (
+                                                         <textarea
+                                                             value={descriptionFr}
+                                                             onChange={(e) => setDescriptionFr(e.target.value)}
+                                                             placeholder={t('properties.new.steps.narrative.descriptionFrPlaceholder')}
+                                                             className="w-full h-64 bg-zinc-50 p-6 rounded-3xl border-none font-medium text-sm text-zinc-600 focus:ring-0 resize-none"
+                                                         />
+                                                     )}
+                                                 </div>
+                                             </div>
+                                         </div>
+                                    )}
+
+                                    {/* Step 8: Review & Submit */}
+                                    {currentStep === 8 && (
                                         <div className="space-y-10">
                                             <div className="glass-card !p-12 rounded-[4rem] border-zinc-100 space-y-8">
                                                 <h3 className="text-3xl font-black uppercase tracking-tighter italic">
@@ -1637,7 +1750,7 @@ export default function EditPropertyPage() {
                             </AnimatePresence>
 
                             {/* Nav Controls */}
-                            {currentStep < 7 && (
+                            {currentStep < 8 && (
                                 <div className="mt-20 flex gap-6">
                                     {currentStep > 1 && (
                                         <button

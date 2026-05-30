@@ -376,11 +376,10 @@ class TestPropertyCompliance:
         assert prop.ges_rating is None
 
     def test_generate_description_success(self, landlord_client):
-        """POST /properties/generate-description should return generated description."""
+        """POST /properties/generate-description should return generated description in English by default."""
         from unittest.mock import MagicMock, patch
         from app.core.config import settings
         
-        # Setup settings with a fake API key for testing
         with patch.object(settings, "GEMINI_API_KEY", "fake-api-key"):
             mock_client = MagicMock()
             mock_response = MagicMock()
@@ -401,6 +400,46 @@ class TestPropertyCompliance:
                 )
                 assert resp.status_code == 200
                 assert resp.json()["description"] == "Beautiful apartment in Paris."
+                
+                # Verify that prompt requested English
+                called_args, called_kwargs = mock_client.models.generate_content.call_args
+                prompt = called_kwargs["contents"]
+                assert any("English" in p for p in prompt)
+                assert not any("French" in p for p in prompt)
+
+    def test_generate_description_french(self, landlord_client):
+        """POST /properties/generate-description should request French when language=fr."""
+        from unittest.mock import MagicMock, patch
+        from app.core.config import settings
+        
+        with patch.object(settings, "GEMINI_API_KEY", "fake-api-key"):
+            mock_client = MagicMock()
+            mock_response = MagicMock()
+            mock_response.text = "Bel appartement à Paris."
+            mock_client.models.generate_content.return_value = mock_response
+            
+            with patch("google.genai.Client", return_value=mock_client):
+                resp = landlord_client.post(
+                    "/properties/generate-description",
+                    json={
+                        "property_type": "apartment",
+                        "address": "15 Rue de Vaugirard",
+                        "city": "Paris",
+                        "size_sqm": 45.0,
+                        "bedrooms": 1,
+                        "amenities": ["elevator", "balcony"],
+                        "language": "fr"
+                    }
+                )
+                assert resp.status_code == 200
+                assert resp.json()["description"] == "Bel appartement à Paris."
+                
+                # Verify that prompt requested French
+                called_args, called_kwargs = mock_client.models.generate_content.call_args
+                prompt = called_kwargs["contents"]
+                assert any("French" in p for p in prompt)
+                assert not any("English" in p for p in prompt)
+
 
 
 

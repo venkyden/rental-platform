@@ -115,23 +115,45 @@ async def generate_property_description(
     try:
         client = genai.Client(api_key=settings.GEMINI_API_KEY)
         
-        # Build prompt
+        # Build prompt based on requested language
+        lang_name = "French" if payload.language == "fr" else "English"
+        
         prompt = (
-            f"Write a beautiful, engaging real estate rental listing description in English (with a French translation below it) "
+            f"Write a beautiful, engaging, professional real estate rental listing description in {lang_name} "
             f"for a {payload.property_type}. "
         )
         if payload.address or payload.city:
-            prompt += f"Location: {payload.address or ''} {payload.city or ''}. "
+            prompt += f"Location: {payload.address or ''}, {payload.city or ''}"
+            if payload.postal_code:
+                prompt += f" ({payload.postal_code})"
+            if payload.country:
+                prompt += f", {payload.country}"
+            prompt += ". "
         if payload.size_sqm:
-            prompt += f"Size: {payload.size_sqm} square meters. "
+            prompt += f"Size: {payload.size_sqm} m². "
         if payload.bedrooms:
             prompt += f"Bedrooms: {payload.bedrooms}. "
+        if payload.rooms_count:
+            prompt += f"Total Rooms: {payload.rooms_count}. "
+        if payload.bathrooms:
+            prompt += f"Bathrooms: {payload.bathrooms}. "
+        if payload.furnished is not None:
+            prompt += f"Furnished: {'Yes' if payload.furnished else 'No'}. "
+        if payload.monthly_rent:
+            prompt += f"Monthly rent: {payload.monthly_rent} EUR. "
         if payload.amenities:
             prompt += f"Amenities: {', '.join(payload.amenities)}. "
+        if payload.custom_amenities:
+            prompt += f"Custom Amenities: {', '.join(payload.custom_amenities)}. "
+        if payload.public_transport:
+            prompt += f"Nearby Public Transport: {', '.join(payload.public_transport)}. "
+        if payload.nearby_landmarks:
+            prompt += f"Nearby Landmarks: {', '.join(payload.nearby_landmarks)}. "
             
         prompt += (
-            "\nMake it appealing to potential tenants, highlight convenience, and structure it with brief paragraphs or bullet points. "
-            "Return ONLY the description text, do not include any other markdown formatting wrapper (e.g. do not wrap in backticks or markdown code block) or conversational intro/outro."
+            f"\nMake the description appealing to potential tenants, highlight convenience, and structure it with brief paragraphs or bullet points. "
+            f"Write the entire description ONLY in {lang_name}. Do not include any translation or notes. "
+            f"Return ONLY the description text, do not include any other markdown formatting wrapper (e.g. do not wrap in backticks or markdown code block) or conversational intro/outro."
         )
 
         response = client.models.generate_content(
@@ -146,6 +168,7 @@ async def generate_property_description(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to generate description using AI.",
         )
+
 
 
 

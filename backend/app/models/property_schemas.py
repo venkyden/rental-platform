@@ -309,7 +309,18 @@ class DescriptionGenerationRequest(BaseModel):
     property_type: str
     address: Optional[str] = ""
     city: Optional[str] = ""
+    postal_code: Optional[str] = ""
+    country: Optional[str] = ""
     size_sqm: Optional[float] = None
     bedrooms: Optional[int] = None
+    bathrooms: Optional[float] = None
+    furnished: Optional[bool] = None
+    rooms_count: Optional[int] = None
+    monthly_rent: Optional[float] = None
     amenities: Optional[List[str]] = []
+    custom_amenities: Optional[List[str]] = []
+    public_transport: Optional[List[str]] = []
+    nearby_landmarks: Optional[List[str]] = []
+    language: Optional[str] = "en"
+
 
