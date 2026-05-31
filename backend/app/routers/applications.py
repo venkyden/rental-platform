@@ -50,8 +50,11 @@ async def create_application(
     )
     existing = result.scalar_one_or_none()
     if existing:
+        # 409 Conflict — duplicate application is a resource-state conflict,
+        # not a malformed request (per API design standards).
         raise HTTPException(
-            status_code=400, detail="You have already applied to this property"
+            status_code=status.HTTP_409_CONFLICT,
+            detail="You have already applied to this property",
         )
 
     # 3. Create Application

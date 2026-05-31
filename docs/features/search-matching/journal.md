@@ -9,14 +9,14 @@ Property search/filtering and AI-assisted tenant↔property recommendations by s
   `/properties/wishlist`), `app/services/matching_service.py`, `app/core/segment_routing.py`.
 - Frontend: `/search`, `components/{SearchMap,LocationPicker,RadiusLocationPicker,AddressAutocomplete}.tsx`.
 
-## Audit findings
+## Audit findings (verified by code review 2026-05)
 - 🟢 `GET /properties` is rate-limited (60/min) and is the primary load-test target
   (`tests/load/hot_paths.js`).
-- 🟡 **N+1 risk:** recommendation/list endpoints should use `selectinload` for landlord +
-  media to avoid per-row queries (the DB audit already added some `selectinload`; re-verify
-  for the recommendations path).
-- 🟡 Matching calls an external LLM (Gemini) — must stay off the request hot path / cached;
-  confirm it is not blocking `GET /properties`.
+- 🟢 **No N+1:** `PropertyResponse` serializes only scalar/JSON columns (`photos` is a
+  JSONB column, not the `media` relationship), so list/recommendations don't lazy-load
+  relationships per row — and async SQLAlchemy would raise rather than silently N+1.
+- 🟡 Matching calls an external LLM (Gemini) — keep off the request hot path / cached;
+  confirm it never blocks `GET /properties`.
 
 ## Backlog
 - `EXPLAIN ANALYZE` the search query under the k6 baseline; ensure composite indexes match
