@@ -1,0 +1,2007 @@
+{
+  "/Users/venkat/rental-platform/analyze_ecosystem.py": {
+    "mtime": 1771941406.2506273,
+    "ast_hash": "0cde4e24f1efed61b077125351e8058d",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/pyrightconfig.json": {
+    "mtime": 1778847099.6829243,
+    "ast_hash": "1a773a2d5a9f2547c3ce18d2f7198a6d",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/start_tests.sh": {
+    "mtime": 1778842208.6527143,
+    "ast_hash": "fa1dbc06a52a78d8203bcf449cd2b50e",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/test_api.js": {
+    "mtime": 1771941406.3043618,
+    "ast_hash": "ab0c5b7010be161499839d75441b13f7",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/check_db.py": {
+    "mtime": 1772854479.1219869,
+    "ast_hash": "88715b3012dae8d5f35b8d8cab0c0a46",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/fix_i18n.js": {
+    "mtime": 1777529133.3593519,
+    "ast_hash": "afba045946c4e49001d83421acc380e1",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/playwright.config.ts": {
+    "mtime": 1780161302.3527837,
+    "ast_hash": "dc63b9045e6b512014eda837f624c9d5",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/fix_t.js": {
+    "mtime": 1777526198.0350294,
+    "ast_hash": "f0563184052d2696ecb6ff3a5b5ab338",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/postcss.config.mjs": {
+    "mtime": 1771573770.5950475,
+    "ast_hash": "239f3ebf717465dc636818a1a619398d",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/fix_t.py": {
+    "mtime": 1777526177.1608362,
+    "ast_hash": "c7a629f19d037b242981b251db6b54e9",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/sentry.server.config.ts": {
+    "mtime": 1771941406.3010888,
+    "ast_hash": "6abc671eabdcfa5394b6430d4bdfbf36",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/next-env.d.ts": {
+    "mtime": 1780163760.9300568,
+    "ast_hash": "2a74d3909800ca5467fa83b0ab4a4890",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/sentry.client.config.ts": {
+    "mtime": 1780168181.0286603,
+    "ast_hash": "04aaa04cdc0e13f658f40bc5d050ee43",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/sentry.edge.config.ts": {
+    "mtime": 1771941406.3009484,
+    "ast_hash": "6abc671eabdcfa5394b6430d4bdfbf36",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/package.json": {
+    "mtime": 1779588784.8582342,
+    "ast_hash": "c6fbc13ea9c3947e3e2552f398f5c651",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/tsconfig.json": {
+    "mtime": 1771941406.3019948,
+    "ast_hash": "949d968c942cad8198084655e0a2f61b",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/playwright.config.ts": {
+    "mtime": 1780161306.3867412,
+    "ast_hash": "a4fbafe8f3dc6dff3ab440cb3c0e5b6d",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/eslint.config.mjs": {
+    "mtime": 1778979516.602483,
+    "ast_hash": "e7e86560ffb5f89fe2038123197e68c5",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/next.config.ts": {
+    "mtime": 1780167729.268839,
+    "ast_hash": "f738d2abc8cb086d4c1f1dbcd6af022d",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/robots.ts": {
+    "mtime": 1779946207.3232188,
+    "ast_hash": "7f9863d8b5cb27245747088d93985a5b",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/opengraph-image.tsx": {
+    "mtime": 1778976205.163107,
+    "ast_hash": "713c487ad1eb306fe91711551c4c5949",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/sitemap.ts": {
+    "mtime": 1779946210.7497504,
+    "ast_hash": "5bbc83fb20508ae43e1307b777704ce1",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/layout.tsx": {
+    "mtime": 1778976183.960269,
+    "ast_hash": "2890cf1e7ff537a1c8c269fab1cd6d26",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/error.tsx": {
+    "mtime": 1778976532.5620914,
+    "ast_hash": "77fd5c8ac17811d3e964bd5255a139cb",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/page.tsx": {
+    "mtime": 1779946361.6101,
+    "ast_hash": "bc6304e7bd708a50581baee277bbf528",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/global-error.tsx": {
+    "mtime": 1778976551.8646693,
+    "ast_hash": "27ce3b4fdb4b92056810c08207c5d5b2",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/not-found.tsx": {
+    "mtime": 1778976518.798358,
+    "ast_hash": "683d8c95bac7095331ee6a69c6d3c52e",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/template.tsx": {
+    "mtime": 1771941406.2926881,
+    "ast_hash": "a62aa5e043a053ff15ba10c9ca8889e7",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/guide/[slug]/page.tsx": {
+    "mtime": 1778497725.4921808,
+    "ast_hash": "8f41e7da8dbf0793af76cb7c0f399876",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/settings/preferences/page.tsx": {
+    "mtime": 1778497651.4539063,
+    "ast_hash": "0521dd6523c5a926755908e47842442c",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/settings/privacy/page.tsx": {
+    "mtime": 1778498030.278592,
+    "ast_hash": "2cd836b9bcbbebec3d5c8d9e34b5110e",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/settings/account/page.tsx": {
+    "mtime": 1778498042.567563,
+    "ast_hash": "a4a6eb171567f0f9b889af86c450d115",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/settings/notifications/page.tsx": {
+    "mtime": 1778497692.1096685,
+    "ast_hash": "58c46f56c079c555d35c210e0904908d",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/capture/[code]/page.tsx": {
+    "mtime": 1778498051.3378751,
+    "ast_hash": "4b4399b48bae8c25df94aa06996899ba",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/bulk/page.tsx": {
+    "mtime": 1778498113.5708597,
+    "ast_hash": "69dca9cd025108099a56af456cfcfca1",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/inbox/page.tsx": {
+    "mtime": 1778498088.027011,
+    "ast_hash": "1c27e4f8daa30d3600222878db950d4e",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/verify/identity/page.tsx": {
+    "mtime": 1779542064.3091464,
+    "ast_hash": "fb7d35265b615c467ee287f046b0bb1c",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/verify/income/page.tsx": {
+    "mtime": 1779542067.8444817,
+    "ast_hash": "b07f51dbf563bdb5a0c09e3aa03e4c9e",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/verify/guarantor/page.tsx": {
+    "mtime": 1779542164.520026,
+    "ast_hash": "8b5f1f6f8736ed81fbfc7036527fefec",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/auth/layout.tsx": {
+    "mtime": 1778979201.2540627,
+    "ast_hash": "ca00605746ee175abc29eca4fef3b72d",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/auth/logout/page.tsx": {
+    "mtime": 1778498095.2471495,
+    "ast_hash": "0cbacb02ceee0453b6d305f9f1d6e6c3",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/auth/verify-email/page.tsx": {
+    "mtime": 1778979310.8992908,
+    "ast_hash": "a1da16dcfa0b48cd26ff78ade524f84d",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/auth/register/page.tsx": {
+    "mtime": 1780185559.2466912,
+    "ast_hash": "9f9252e32f577ef1d791f2ed2f68de67",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/auth/forgot-password/page.tsx": {
+    "mtime": 1778497886.1223779,
+    "ast_hash": "c8cb0d6b77d5fd2c1e208d4f4c17d32b",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/auth/verify-email-change/page.tsx": {
+    "mtime": 1778498005.327075,
+    "ast_hash": "b223c6542b2d6f2b3129f0864d180856",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/auth/reset-password/page.tsx": {
+    "mtime": 1780185564.2230296,
+    "ast_hash": "7f5c591b086498f7d9c28a910de14924",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/auth/forgot-email/page.tsx": {
+    "mtime": 1779386268.0803096,
+    "ast_hash": "19a706477edf4352e35c43abab3f2e27",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/auth/login/page.tsx": {
+    "mtime": 1780185503.1825528,
+    "ast_hash": "a21d7c1c3f3772baf96fabc92e90d6c9",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/disputes/page.tsx": {
+    "mtime": 1778499787.0861142,
+    "ast_hash": "d4e95137b20488a4cbe5fbf7fdb7d48c",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/disputes/new/page.tsx": {
+    "mtime": 1778498151.8750913,
+    "ast_hash": "f9d832f067387162c2a23e1342ba397b",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/disputes/[id]/page.tsx": {
+    "mtime": 1778498172.4046922,
+    "ast_hash": "6df784e2d84e8bfe36ee7a48984a6bf0",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/admin/disputes/page.tsx": {
+    "mtime": 1778499807.7960494,
+    "ast_hash": "c73e6219076ddd48dafe2a1b2201d72b",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/gli/page.tsx": {
+    "mtime": 1778499819.69052,
+    "ast_hash": "d9d315d23d68e73155d083d71f19a58f",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/verify-capture/[code]/page.tsx": {
+    "mtime": 1779542195.4511604,
+    "ast_hash": "25b587a5ec6669b47c7941dc9eb1a72e",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/search/page.tsx": {
+    "mtime": 1779412452.933298,
+    "ast_hash": "27652bf37d43009040c1b8d6094728dd",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/dashboard/layout.tsx": {
+    "mtime": 1772238795.9874365,
+    "ast_hash": "09652f58f13e98b96292846f556107f0",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/dashboard/page.tsx": {
+    "mtime": 1779588769.0850835,
+    "ast_hash": "d89c0dfcf611e3d092faad8fdc3d8837",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/dashboard/landlord/page.tsx": {
+    "mtime": 1779588814.5488272,
+    "ast_hash": "6597de5e1067d2c7da6cfcbd625691bb",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/dashboard/agency/page.tsx": {
+    "mtime": 1779588919.0563135,
+    "ast_hash": "cbf95c91cc945ecc3f0d2bf63b156c22",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/invite/[token]/page.tsx": {
+    "mtime": 1778499938.1403368,
+    "ast_hash": "c5f5b19217828a6fcd49250e84ae3b78",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/verification/page.tsx": {
+    "mtime": 1779542217.9233186,
+    "ast_hash": "97bc1c8eb56ab907eb05cc0f8af1f93d",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/leases/new/page.tsx": {
+    "mtime": 1779590943.2197235,
+    "ast_hash": "8f445d952232ad8e1e055164c43f5621",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/leases/[id]/incident/page.tsx": {
+    "mtime": 1779590935.2938578,
+    "ast_hash": "fe5a4f4e0873d3d657b360fe3f9081d7",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/profile/page.tsx": {
+    "mtime": 1778500465.5831847,
+    "ast_hash": "50a95e85caf36047e64e8684ac0a9ec9",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/profile/preferences/page.tsx": {
+    "mtime": 1778975855.4398608,
+    "ast_hash": "b2de7fc6edca3cfda676ba80763572bf",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/properties/layout.tsx": {
+    "mtime": 1772851724.5663817,
+    "ast_hash": "7fd0385c3f15c784a4255c66db73870f",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/properties/page.tsx": {
+    "mtime": 1780185264.5539265,
+    "ast_hash": "5b1398a0c4f4cd85ab3e23ccaa9f0ab7",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/properties/new/page.tsx": {
+    "mtime": 1780184886.5360029,
+    "ast_hash": "73751d504424d129e68d71756e724b6f",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/properties/[id]/PropertyDetailClient.tsx": {
+    "mtime": 1779411999.8056836,
+    "ast_hash": "8b2a0a257213f0e3a7b1f72e35ed6e38",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/properties/[id]/page.tsx": {
+    "mtime": 1779412047.941235,
+    "ast_hash": "ab69f5bf2be960fbf9c0f0cbd579de3a",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/properties/[id]/edit/page.tsx": {
+    "mtime": 1780186995.7442064,
+    "ast_hash": "05111c88fb853888ec3f51b64bd383e2",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/team/page.tsx": {
+    "mtime": 1778500738.8440504,
+    "ast_hash": "4b3d59f161c7ebfdb14c62bb65ff7318",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/support/page.tsx": {
+    "mtime": 1777508989.1208186,
+    "ast_hash": "575d81e41fe9e5af7948bd20faaf44de",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/relocation/page.tsx": {
+    "mtime": 1778500571.1478534,
+    "ast_hash": "15c2e2e28a35b9a036813ee83a4b391a",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/inventory/new/page.tsx": {
+    "mtime": 1771941406.2862394,
+    "ast_hash": "1788d6318a6befb716d15ea0f9ff5a60",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/inventory/[id]/page.tsx": {
+    "mtime": 1778500535.3774998,
+    "ast_hash": "b8ef7c3f328c177d15966a5baf17da4a",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/applications/page.tsx": {
+    "mtime": 1779590937.3418763,
+    "ast_hash": "10554720b0a5ed5dd70a54d2ea312bc9",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/applications/received/page.tsx": {
+    "mtime": 1779590939.0317016,
+    "ast_hash": "775105100b583ad20413592d7945d40f",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/applications/[id]/lease/page.tsx": {
+    "mtime": 1779590949.8612092,
+    "ast_hash": "a54514e44bae5ede1ea4d113da42cebe",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/lib/utils/geo.ts": {
+    "mtime": 1771941406.2882626,
+    "ast_hash": "9787dcf2c2b1fd538755bcd19a839ba1",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/lib/api/inventory.ts": {
+    "mtime": 1771941406.2877896,
+    "ast_hash": "a08193dc573b23fc351905bbee497d7f",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/lib/api/lease.ts": {
+    "mtime": 1777521598.864314,
+    "ast_hash": "287c5fa3e5f59d56fd4b93558a97029b",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/lib/api/dispute.ts": {
+    "mtime": 1777518022.5976636,
+    "ast_hash": "a978ee3d50b82ab02c1aa25a382607da",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/lib/api/media.ts": {
+    "mtime": 1777518012.8675451,
+    "ast_hash": "46db4b7c96481769c32d3c1c00c7c27f",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/documents/page.tsx": {
+    "mtime": 1778500443.4732046,
+    "ast_hash": "448300d60deacd16261ade95fc779fb8",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/legal/layout.tsx": {
+    "mtime": 1778500670.698266,
+    "ast_hash": "15edfc666fc78296c26e93cb4b5a5e62",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/legal/cgv/page.tsx": {
+    "mtime": 1779946355.3430603,
+    "ast_hash": "d57fc953a430bdd3649c34137bcc03bf",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/legal/privacy/page.tsx": {
+    "mtime": 1778497951.1557086,
+    "ast_hash": "1d18fe3074b398b5287f44eaf8feb338",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/legal/terms/page.tsx": {
+    "mtime": 1778497958.3356369,
+    "ast_hash": "5f5f5f0086e73768e5e6c5c0fe327feb",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/legal/gdpr/page.tsx": {
+    "mtime": 1778500857.271902,
+    "ast_hash": "0a96f619423a68776f26a6306f2d1cba",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/legal/mentions-legales/page.tsx": {
+    "mtime": 1780168359.3891387,
+    "ast_hash": "d9a83c74880e74a64bf8c5f0d91a0c94",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/legal/cookies/page.tsx": {
+    "mtime": 1778500840.3493495,
+    "ast_hash": "3feec79d3ade6d6f7f7398ae33309bfa",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/webhooks/page.tsx": {
+    "mtime": 1778500586.0075462,
+    "ast_hash": "b56a1a67f278c891671946b5620ffd7e",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/onboarding/page.tsx": {
+    "mtime": 1779542260.0307858,
+    "ast_hash": "5dd8e54dd42d20752f6bed02df717017",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/app/analytics/page.tsx": {
+    "mtime": 1779588898.9842997,
+    "ast_hash": "f4ed9f8d7be974891a4329fb65e63a46",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/Navbar.tsx": {
+    "mtime": 1778976497.6018133,
+    "ast_hash": "22028adec0bae7366a87711b7bbed96e",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/WizardProgress.tsx": {
+    "mtime": 1777508989.153929,
+    "ast_hash": "8c9c4e3d38f86673d3ce274c5c023d15",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/GlobalFooter.tsx": {
+    "mtime": 1780168104.3180208,
+    "ast_hash": "1626efc223d14c70ddf868efa9d10776",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/RoomivoBrand.tsx": {
+    "mtime": 1778976468.8346863,
+    "ast_hash": "3abd318203b80723d839319b78596a3d",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/ToastContainer.tsx": {
+    "mtime": 1777508989.1458573,
+    "ast_hash": "9740c409b6a55b41ac43de78cb92d3ee",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/LocationPicker.tsx": {
+    "mtime": 1777508989.1301844,
+    "ast_hash": "a828bf8018771e1ffd4da5b85eea12a3",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/ProtectedRoute.tsx": {
+    "mtime": 1780185521.937252,
+    "ast_hash": "8b3468dbe537ffa0b65b6ed337cc4422",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/StaticMapView.tsx": {
+    "mtime": 1778100753.7412324,
+    "ast_hash": "a82dd64b9a8b40abfc0d6074e541af12",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/VisitScheduler.tsx": {
+    "mtime": 1778500233.7346406,
+    "ast_hash": "c64361dbc431ec14acb7278122979778",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/PremiumLayout.tsx": {
+    "mtime": 1778497741.9698563,
+    "ast_hash": "4ca29b055ad6527f93b1629104818b01",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/LeaseManager.tsx": {
+    "mtime": 1778500203.3885205,
+    "ast_hash": "e268c18a38493baed96b5974059cec43",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/GLIQuoteWidget.tsx": {
+    "mtime": 1778499685.7687538,
+    "ast_hash": "68b5e9ed655d5f8b8b58f9ed2b17a45c",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/ServiceWorkerRegistration.tsx": {
+    "mtime": 1771573770.59268,
+    "ast_hash": "7649beba14cc838332959c281c440a46",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/RentalDossier.tsx": {
+    "mtime": 1778499726.0889263,
+    "ast_hash": "9ce07403052fcd98354a83e52f063826",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/NotificationBell.tsx": {
+    "mtime": 1778499546.1384873,
+    "ast_hash": "3f9411875189fc56c788dd34f5ce3c26",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/OnboardingRequired.tsx": {
+    "mtime": 1778499756.715873,
+    "ast_hash": "a1f11896b02c32bb251e62d1e4f97700",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/RadiusLocationPicker.tsx": {
+    "mtime": 1778975802.4414353,
+    "ast_hash": "6649e15f5097be28153a40471824eebc",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/TeamManager.tsx": {
+    "mtime": 1778499745.3287303,
+    "ast_hash": "30495e980ed676ba8c195bb1c77a3beb",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/NotificationPreferences.tsx": {
+    "mtime": 1778497710.8362482,
+    "ast_hash": "0c72c21ee5d75d28123f4f5e16dd646d",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/Combobox.tsx": {
+    "mtime": 1778496916.8325438,
+    "ast_hash": "0b722926d6e7cf4a9cac9f9587c61dff",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/QRCodeDisplay.tsx": {
+    "mtime": 1777893182.9858327,
+    "ast_hash": "0cf620430d7e59bfd4f6fa5a0951cdf7",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/AppHeader.tsx": {
+    "mtime": 1777976913.7250855,
+    "ast_hash": "8ca3db1609076939b7f35f70cf022fef",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/UnifiedInbox.tsx": {
+    "mtime": 1778500019.770065,
+    "ast_hash": "fb4a221f8a393a4953b0b2668f7b1e57",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/SkeletonLoaders.tsx": {
+    "mtime": 1778497450.3905964,
+    "ast_hash": "be5ac69add1a7405b81b02a035b32142",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/VerificationGate.tsx": {
+    "mtime": 1778499578.8579757,
+    "ast_hash": "71a545d88b735f389df8ead71b70c657",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/CookieConsentBanner.tsx": {
+    "mtime": 1778497790.249451,
+    "ast_hash": "6b98d4b59a828eb1556210d75f99e7cf",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/VisitBookingWizard.tsx": {
+    "mtime": 1778500256.2578106,
+    "ast_hash": "0b361a0986be2b8cad8a70e98da40129",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/CameraCapture.tsx": {
+    "mtime": 1778500369.1479073,
+    "ast_hash": "809bd6beff578bb30b545fb4f40b4984",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/ConversationView.tsx": {
+    "mtime": 1778500041.295327,
+    "ast_hash": "52334f08bae32a774aa25b198246108d",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/SearchMap.tsx": {
+    "mtime": 1778497481.2796378,
+    "ast_hash": "1565e02f4cf5208659dcfe10662e6c58",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/DocumentCapture.tsx": {
+    "mtime": 1778500404.3377762,
+    "ast_hash": "77fca3fea45e1e75920e5a0427f441c8",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/ActionCenter.tsx": {
+    "mtime": 1778499554.4805946,
+    "ast_hash": "1b4250a0702cc5a4fbf6a55550e1c649",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/EmptyState.tsx": {
+    "mtime": 1778497440.9522977,
+    "ast_hash": "6c34c5dbe88190d51a082137f0ea35bd",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/EmailVerificationRequired.tsx": {
+    "mtime": 1778980073.5080452,
+    "ast_hash": "9fc3a8c6b38e77029b610f8d065a39e2",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/VerificationUpload.tsx": {
+    "mtime": 1779542183.8764417,
+    "ast_hash": "5f6eee83fe4fe5da75d3e8f8634b26f1",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/OnboardingQuestionnaire.tsx": {
+    "mtime": 1779542252.682966,
+    "ast_hash": "1d1277af306d82a72186331534185414",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/ServiceWorkerRegister.tsx": {
+    "mtime": 1771941406.2960227,
+    "ast_hash": "4a4809a7550aad5bea94da2fb49530a7",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/LanguageSwitcher.tsx": {
+    "mtime": 1778843065.0736237,
+    "ast_hash": "ae5aa75da19f49c1a0250e3df956175f",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/AddressAutocomplete.tsx": {
+    "mtime": 1778496879.7557814,
+    "ast_hash": "4479254bb5f6a793abca00a481e86002",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/landing/SearchHero.tsx": {
+    "mtime": 1779813537.0447297,
+    "ast_hash": "4c54d41b1f70e2048e742381f5341445",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/landing/FrenchComplianceSection.tsx": {
+    "mtime": 1778976292.675072,
+    "ast_hash": "e4f6f7289e7dd49ab1d3abee7fac74cd",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/landing/HowItWorks.tsx": {
+    "mtime": 1778976275.4400737,
+    "ast_hash": "6c93947ef615cf1dbfe39014568d8ccf",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/landing/FeaturedListings.tsx": {
+    "mtime": 1778976418.9890006,
+    "ast_hash": "8f3e07d387195b60f5be705d3b8fc1f2",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/landing/DualCTA.tsx": {
+    "mtime": 1778497075.8866265,
+    "ast_hash": "ecd827ded6ec0031bf34750fed32dd93",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/landing/ValuePropSection.tsx": {
+    "mtime": 1778976250.2452948,
+    "ast_hash": "919118191de147eb287b6b45dce09046",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/landing/LandingFooter.tsx": {
+    "mtime": 1779946368.6005228,
+    "ast_hash": "75dce6393c7bcd4c2d9e85fdce8b67ab",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/dashboard/TenantFeatures.tsx": {
+    "mtime": 1778501185.3813107,
+    "ast_hash": "ddd4201c982731f3f37427e2146bded5",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/dashboard/KpiCard.tsx": {
+    "mtime": 1779588772.0325727,
+    "ast_hash": "3e0532391a61ef2303461547c048b7ce",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/dashboard/AlertCenter.tsx": {
+    "mtime": 1779588914.5375752,
+    "ast_hash": "c5eeb97cde2abd11d5c02a1359578379",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/dashboard/AgencyKpiRow.tsx": {
+    "mtime": 1779588807.3105047,
+    "ast_hash": "2767461eb03a18c943906254802b793e",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/dashboard/RoleSwitcher.tsx": {
+    "mtime": 1779588764.2927763,
+    "ast_hash": "484aa8d25e503ed6faa3a7dd872616e3",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/dashboard/ComplianceWidget.tsx": {
+    "mtime": 1779588800.1093016,
+    "ast_hash": "b15a6aeab61d43d4471a755eb835ce70",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/dashboard/RevenueChart.tsx": {
+    "mtime": 1779588804.3034577,
+    "ast_hash": "d3a61b800f545447d59d395839ecd440",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/onboarding/QuestionRenderer.tsx": {
+    "mtime": 1778975828.7095444,
+    "ast_hash": "455de6faaa2b0a76b7ed4aacdba196cc",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/components/onboarding/onboardingQuestions.ts": {
+    "mtime": 1778098859.8184667,
+    "ast_hash": "27cb47831a23acc32901eca736493c56",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/public/manifest.json": {
+    "mtime": 1777874847.5735674,
+    "ast_hash": "ca9b4dc9840c365eedde6637504e143a",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/public/sw.js": {
+    "mtime": 1771573770.5955353,
+    "ast_hash": "fd6e809771fc7a2d5e0c22631f914b5f",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/lib/SegmentContext.tsx": {
+    "mtime": 1779815618.822302,
+    "ast_hash": "a9e81a7e1310bc1810531f6a5c147b91",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/lib/useGoogleSignIn.ts": {
+    "mtime": 1778228969.6632388,
+    "ast_hash": "251f589533ffe4b02f3f8941a29c7ce0",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/lib/i18n.ts": {
+    "mtime": 1780172477.3118465,
+    "ast_hash": "a87ad62d010f62be9a210f3c86e195d0",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/lib/useAuth.tsx": {
+    "mtime": 1777875518.4411798,
+    "ast_hash": "2e2ee60d96fcff42ef09bc508e5c5d7c",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/lib/test_final.ts": {
+    "mtime": 1777874930.9553177,
+    "ast_hash": "981d99a70f9d8376552b9c6a866b1848",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/lib/api.ts": {
+    "mtime": 1780185550.8759906,
+    "ast_hash": "e3bc9869b2b877d31f125b10ed9df211",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/lib/ToastContext.tsx": {
+    "mtime": 1771573770.5941346,
+    "ast_hash": "ca012f65d9c0a883df9e2da16826dd95",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/lib/mediaUrl.ts": {
+    "mtime": 1774120694.498237,
+    "ast_hash": "bee52aad5ea9ab8e241685d07be67af3",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/lib/constants.ts": {
+    "mtime": 1772235658.8632662,
+    "ast_hash": "7de11e4f94850edbdc05afe15672158d",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/lib/AuthContext.tsx": {
+    "mtime": 1779816847.7520578,
+    "ast_hash": "de154313a89fe39e9cbfb9461022e6ec",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/lib/offlineQueue.ts": {
+    "mtime": 1771941406.2988083,
+    "ast_hash": "b0d15ec23acb789f60f4eed949ed4c0f",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/lib/LanguageContext.tsx": {
+    "mtime": 1778976179.6697717,
+    "ast_hash": "dca3e5d8af82c54e0987be13b01cec96",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/e2e/smoke.spec.ts": {
+    "mtime": 1778980159.5292068,
+    "ast_hash": "244367429d44ecae8baa0cfd35dc7ebd",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/e2e/landing.spec.ts": {
+    "mtime": 1779387694.9565368,
+    "ast_hash": "a1bd26366faa7c6cadd9eb5a224cccc9",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/e2e/page2.spec.ts": {
+    "mtime": 1779387698.7694094,
+    "ast_hash": "2f5524a3b3750198ecd1b05d7f693afd",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/e2e/auth_modal.spec.ts": {
+    "mtime": 1779816718.39103,
+    "ast_hash": "ada52543b81343bd2f3a850720463254",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/e2e/properties_wizard.spec.ts": {
+    "mtime": 1780172160.040561,
+    "ast_hash": "6cac25de58ed4e07c4071f18e7ecfda8",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/check_leases_db.py": {
+    "mtime": 1777697814.5779512,
+    "ast_hash": "c30c2fbd2043fbe09f4c8a20efb03807",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/e2e_test.py": {
+    "mtime": 1771944027.3626237,
+    "ast_hash": "6c44196f2115494ec252ca2bcb89dca1",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/check_users.py": {
+    "mtime": 1778493597.103345,
+    "ast_hash": "a4ea7fdf06e3972f15a8667f6959b6b5",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/start_local.sh": {
+    "mtime": 1778498239.902216,
+    "ast_hash": "13e42e9c13d768d8a403d4f7ca58dec3",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/roomivo_mcp.py": {
+    "mtime": 1778843193.1361387,
+    "ast_hash": "74ba11133b199008c9370bdabb41da1b",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/create_tables.sql": {
+    "mtime": 1771573770.5827508,
+    "ast_hash": "e8a68e214fb0d98fdba05f26b02a13ab",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/repro.py": {
+    "mtime": 1778173456.5852163,
+    "ast_hash": "85bb128bf1da73d42c6b956783964dcb",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/verify_v3_config.py": {
+    "mtime": 1771944027.3785977,
+    "ast_hash": "52fdec2d3a59fd2341a03bb0da63883f",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/check_db_conn.py": {
+    "mtime": 1779638514.874732,
+    "ast_hash": "b49e0962d8e481fbf4035da0322abdac",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/check_db.py": {
+    "mtime": 1778173630.6349673,
+    "ast_hash": "02c83ac219b6710883e8ead1ffa9770c",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/clean_003.py": {
+    "mtime": 1771944026.8448946,
+    "ast_hash": "db60d0323a32df79e89227bc7de27f8e",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/run_mcp.sh": {
+    "mtime": 1778843046.3245957,
+    "ast_hash": "c958892e05974be6883f738b4b9c5b89",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/inspect_db.py": {
+    "mtime": 1779637891.9631696,
+    "ast_hash": "a40381c58478efd340f1c1f493e809e6",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/check_imports.py": {
+    "mtime": 1778493630.637672,
+    "ast_hash": "12fade65afd0944dbefbe1f3346c0a02",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/create_segment_users.py": {
+    "mtime": 1771944027.3953993,
+    "ast_hash": "fa3c1633ca67370a4880be7c5440affe",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/start.sh": {
+    "mtime": 1779638518.7326858,
+    "ast_hash": "263cf080ccbda2214f382f47341c9722",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/seed_test_data.py": {
+    "mtime": 1778176782.2128959,
+    "ast_hash": "6c0d364890b8f58964dcab42331f876d",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/verify_leases_list.py": {
+    "mtime": 1777697955.7415297,
+    "ast_hash": "7543929ee0ddd3c17c6b8a192242258b",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/migrations/003_properties.sql": {
+    "mtime": 1771573770.583096,
+    "ast_hash": "7a7e3fc9b9fc1ad810192dd9deb1f9a7",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/migrations/add_listing_compliance_fields.sql": {
+    "mtime": 1771941406.2757568,
+    "ast_hash": "bb37e96e42b7a2d855600f4219f71f47",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/__init__.py": {
+    "mtime": 1771573770.5764534,
+    "ast_hash": "dfb1c9d9a8960f6b9de8529f54dffe02",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/main.py": {
+    "mtime": 1780167710.0120203,
+    "ast_hash": "118af45d9aad8a1e6255c92da827e1e7",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/routers/auth.py": {
+    "mtime": 1780186546.4359777,
+    "ast_hash": "a0f4ba063a99bba4c2e15be74e55ba86",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/routers/leases.py": {
+    "mtime": 1779589615.7972293,
+    "ast_hash": "ad05b38ba4b1567b9ae57714a48dec55",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/routers/property_manager.py": {
+    "mtime": 1780186546.4370084,
+    "ast_hash": "d170fb2a34d6a28f6402a466f9b30147",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/routers/media.py": {
+    "mtime": 1771944027.4348195,
+    "ast_hash": "e7794238f6421ec8833d17561180f5d1",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/routers/verification.py": {
+    "mtime": 1780186546.4385893,
+    "ast_hash": "32d3f522ead6ba8ce9a67d1c51e013e5",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/routers/properties.py": {
+    "mtime": 1780186909.0246613,
+    "ast_hash": "14ab0f1b456ff666b6adf48234752825",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/routers/bulk.py": {
+    "mtime": 1780165597.346686,
+    "ast_hash": "eb3434016fb608829c007ad7d8841c00",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/routers/feedback.py": {
+    "mtime": 1771944027.4488235,
+    "ast_hash": "94466d2d64896a12db3a8e190486dc09",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/routers/onboarding.py": {
+    "mtime": 1777979514.2660863,
+    "ast_hash": "9694dea50885699c2b50e5f7b44829ba",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/routers/documents.py": {
+    "mtime": 1778070176.3126638,
+    "ast_hash": "1b1cf1bb671a40903140a1dc9142a465",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/routers/applications.py": {
+    "mtime": 1780188088.1177745,
+    "ast_hash": "0d007b08189959f600fc3e8167d41fb6",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/routers/gdpr.py": {
+    "mtime": 1780186586.661444,
+    "ast_hash": "eac8d87064c11e365396bc379937cd88",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/routers/dispute.py": {
+    "mtime": 1780186546.4445717,
+    "ast_hash": "f167a04ffb277110637d94935742480f",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/routers/team.py": {
+    "mtime": 1780187176.0069966,
+    "ast_hash": "8003a0772371bd90f3de0b3106473052",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/routers/location.py": {
+    "mtime": 1771944027.4673014,
+    "ast_hash": "99bc8bfabea14cb1cf39d3388e7d20e0",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/routers/erp_webhooks.py": {
+    "mtime": 1780186546.4456322,
+    "ast_hash": "f41bc8e1008e55cedcdc010aae50bb45",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/routers/admin.py": {
+    "mtime": 1780165584.5582252,
+    "ast_hash": "a495e205d11b7f1a212e5b28e80ff46f",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/routers/stats.py": {
+    "mtime": 1780186546.447461,
+    "ast_hash": "d312b0379255ca5aac9ac28cf837032b",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/routers/messages.py": {
+    "mtime": 1780186546.4481382,
+    "ast_hash": "26eb5613a0d8423a0df61185bcc2fba9",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/routers/notifications.py": {
+    "mtime": 1771944027.4812753,
+    "ast_hash": "087b246ae7d516c3c61c87f7633d0743",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/routers/webhooks.py": {
+    "mtime": 1780187204.0981662,
+    "ast_hash": "07947cb777de144a76acd6a3e3a19e36",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/routers/identity.py": {
+    "mtime": 1771944027.4864023,
+    "ast_hash": "1a26f8c6528037513790ea72a1593daf",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/routers/visits.py": {
+    "mtime": 1780186546.4490757,
+    "ast_hash": "8f418c552cb66c9f8daf92456a60870c",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/routers/inventory.py": {
+    "mtime": 1771944027.4912503,
+    "ast_hash": "97fcbcc8eb1acb0bdb5f2fbf4356290b",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/core/segment_routing.py": {
+    "mtime": 1777534134.8790426,
+    "ast_hash": "b7e8d87ee27baf9292b85067255c6578",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/core/config.py": {
+    "mtime": 1779539586.769433,
+    "ast_hash": "ffe40dcbafc71af1c5b4807a5c33c5d2",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/core/database.py": {
+    "mtime": 1772668459.852286,
+    "ast_hash": "4a4edca1af31a4ecccaf773aeb6222c8",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/core/security.py": {
+    "mtime": 1780167431.5397503,
+    "ast_hash": "f0cbfbbe833027d7a0bfebf59a896f58",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/core/team_permissions.py": {
+    "mtime": 1771944027.5052357,
+    "ast_hash": "4bd533d9e8aaffaa10e36c8defa16ece",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/core/cache.py": {
+    "mtime": 1778095969.7288933,
+    "ast_hash": "32d04f362df1bbfa81bf72a9af47f500",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/core/circuit_breaker.py": {
+    "mtime": 1771944027.5104625,
+    "ast_hash": "46667b17ce0f95c321d689f30801d836",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/core/permissions.py": {
+    "mtime": 1771944027.5126479,
+    "ast_hash": "0e1ab01c9506c5500283db2a34ec12fb",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/core/sanitize.py": {
+    "mtime": 1771944026.2939186,
+    "ast_hash": "d7c682b91e17ad530f10da13634b8d6e",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/core/timeutils.py": {
+    "mtime": 1780186509.5513709,
+    "ast_hash": "35e4b64c4943f39718d4c09e49be6647",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/utils/encryption.py": {
+    "mtime": 1778094769.629578,
+    "ast_hash": "cc0840b0593885d477dc897f122810ad",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/utils/watermark.py": {
+    "mtime": 1779591576.8038251,
+    "ast_hash": "f99625d69bf9b42190bc676892225d62",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/utils/location.py": {
+    "mtime": 1772107824.6888273,
+    "ast_hash": "003080c2983b4bd4c23a254e254ba43f",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/models/property_manager.py": {
+    "mtime": 1780186546.4526322,
+    "ast_hash": "d5e2c939d6fc77e9c470bd0b42c4e4fb",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/models/user.py": {
+    "mtime": 1780186546.4530604,
+    "ast_hash": "31ed5333e1e08c8aec100963e64b974f",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/models/feature_flag.py": {
+    "mtime": 1780186546.453657,
+    "ast_hash": "0d2fc5cf53f86885b620e669d4572ae1",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/models/property.py": {
+    "mtime": 1779411054.519153,
+    "ast_hash": "9e06be6cdb9679501032ebaf69f3cd49",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/models/feedback.py": {
+    "mtime": 1780186546.4541945,
+    "ast_hash": "02d288f708117c30467d9eaabb4028e5",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/models/notification.py": {
+    "mtime": 1780186546.4545581,
+    "ast_hash": "e468449af63fee7054d46eb473df7c04",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/models/dispute.py": {
+    "mtime": 1780186546.455071,
+    "ast_hash": "e563e9ff089dc41279aa700aad5ae4e0",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/models/property_schemas.py": {
+    "mtime": 1780171088.660284,
+    "ast_hash": "b4b074cd01124dc63446ceb38b9520d2",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/models/visits_and_leases.py": {
+    "mtime": 1780165376.5463715,
+    "ast_hash": "e360d70bbbc7b4e42f3bee76673134e7",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/models/__init__.py": {
+    "mtime": 1778066529.6092434,
+    "ast_hash": "c8c8eb4fab6100061bbb3f88814d5da5",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/models/team.py": {
+    "mtime": 1780186546.4558742,
+    "ast_hash": "f1916b069293f2188f47667cd89d947a",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/models/application.py": {
+    "mtime": 1780165471.228599,
+    "ast_hash": "565d68ed2ee0aef784e5ef293fa6512a",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/models/webhook_subscriptions.py": {
+    "mtime": 1780186546.4563825,
+    "ast_hash": "2866d9ce13059822c2c0ea7026df7c37",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/models/schemas.py": {
+    "mtime": 1779589476.9803529,
+    "ast_hash": "d967a84ca28e6392c5d6ca525af9c3d8",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/models/document.py": {
+    "mtime": 1780165479.9553008,
+    "ast_hash": "a92c3808e8abefba3081b5de8288672d",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/models/messages.py": {
+    "mtime": 1773328925.7927227,
+    "ast_hash": "91a9873f1e276cd8963c0a2437c967f7",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/models/inventory_schemas.py": {
+    "mtime": 1772667043.1821065,
+    "ast_hash": "89fa31aba1976c63efd3a509c264317b",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/models/dispute_schemas.py": {
+    "mtime": 1777517794.9597833,
+    "ast_hash": "6eca4d3e000145e4207cc89f209388c8",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/models/inventory.py": {
+    "mtime": 1780186546.4572515,
+    "ast_hash": "274927e66a636d6de84fb2881b215a87",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/workers/tasks.py": {
+    "mtime": 1780167787.519179,
+    "ast_hash": "64542e8c2271b2031c460a75f3b8e4dd",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/workers/celery_app.py": {
+    "mtime": 1772238275.2051203,
+    "ast_hash": "64b927083ee5d97c5db0d8fd60a05d41",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/workers/__init__.py": {
+    "mtime": 1772238273.1234136,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/services/notification_delivery.py": {
+    "mtime": 1771944027.5652082,
+    "ast_hash": "d6cc8f394eb7a54fd91cf73ff5aa19c3",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/services/gli.py": {
+    "mtime": 1771944027.567824,
+    "ast_hash": "a42204f0016cdae0dfae9c435160a583",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/services/french_government_api.py": {
+    "mtime": 1777980137.5348575,
+    "ast_hash": "be0429c0ebe059775137b8e8f341e32b",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/services/feature_flag_service.py": {
+    "mtime": 1771944027.5701387,
+    "ast_hash": "cb09834345c5c71a270ae93be78167e2",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/services/french_compliance.py": {
+    "mtime": 1780167605.1528056,
+    "ast_hash": "1e3de23aed68ec3394e0aacb8c8bf266",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/services/property.py": {
+    "mtime": 1778064580.265738,
+    "ast_hash": "77071bacc501f8f04eaf0e50aaa43bc5",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/services/notification_service.py": {
+    "mtime": 1780186546.4599555,
+    "ast_hash": "368b62f46d046f5e6c43bf563a2cef99",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/services/gli_service.py": {
+    "mtime": 1771944027.5828953,
+    "ast_hash": "da0827f58f6476fd5f68397f7e36264a",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/services/lease_templates.py": {
+    "mtime": 1777787819.9541605,
+    "ast_hash": "b259642888ab0f21d0a38f1f5cc7479a",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/services/pdf_generator.py": {
+    "mtime": 1779591969.3623214,
+    "ast_hash": "7429a03d91b9b9e71b7c29e658e1956f",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/services/matching_service.py": {
+    "mtime": 1780186546.461137,
+    "ast_hash": "653649f5f289282c2089e0568cd168ea",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/services/lease_generator.py": {
+    "mtime": 1771944027.5970542,
+    "ast_hash": "13cf02033cc3909bdc546fdbfe35e203",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/services/identity_service.py": {
+    "mtime": 1780186546.461766,
+    "ast_hash": "0de0c31f94639f50523ab866bfe51a84",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/services/feedback_service.py": {
+    "mtime": 1771944027.6017878,
+    "ast_hash": "4609256c73dda61b41b17f2ab1036ad3",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/services/email.py": {
+    "mtime": 1780167778.382321,
+    "ast_hash": "9559731d713bfb5e74bd646e7bb619bd",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/services/document_generator.py": {
+    "mtime": 1771944027.6072724,
+    "ast_hash": "fa7a0fd72f0ba66332d7f6bfa0846271",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/services/employment.py": {
+    "mtime": 1778975776.0634449,
+    "ast_hash": "8aec0fa79d1d6a068cf6fde3ebbbe294",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/services/stripe_identity_service.py": {
+    "mtime": 1777788592.4448655,
+    "ast_hash": "5fcbc4d5151ce0004ec4366da05357dc",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/services/storage.py": {
+    "mtime": 1778096352.1141868,
+    "ast_hash": "32b6dbe6ae3356ff5fa24ca6d4d7691d",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/services/cross_verification.py": {
+    "mtime": 1777980161.1872451,
+    "ast_hash": "f3d566748ba81a3773a14180995a516b",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/app/services/identity.py": {
+    "mtime": 1778521676.997818,
+    "ast_hash": "75437c28d999b6621cf6e2c2880f458e",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/tests/conftest.py": {
+    "mtime": 1779588665.9490905,
+    "ast_hash": "1bf13959ddba946a8da3983557baa15b",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/tests/test_stats.py": {
+    "mtime": 1779588668.175298,
+    "ast_hash": "9dd74f08e1e8012e58f9f2faec648a05",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/tests/verify_stripe_mock.py": {
+    "mtime": 1771944027.6293056,
+    "ast_hash": "80fcc275a86abf88c938c0599a2e6e5e",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/tests/test_hardening_verified.py": {
+    "mtime": 1778070418.5786974,
+    "ast_hash": "075113a53c36b4f3a137b0093af18f5b",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/tests/test_auth.py": {
+    "mtime": 1778071324.6256769,
+    "ast_hash": "5d42a15c224a78b2ccaf25785cc33cb1",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/tests/verify_platform.py": {
+    "mtime": 1771944027.6344578,
+    "ast_hash": "011f8dbbce1203537aa379e26c9bfc77",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/tests/verify_user_db.py": {
+    "mtime": 1771944027.6365757,
+    "ast_hash": "10d7ce8d2449419573c765a21865bd33",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/tests/comprehensive_test.py": {
+    "mtime": 1778070437.2806218,
+    "ast_hash": "004af2c0dc06146db94db6eb088dd815",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/tests/test_security_headers.py": {
+    "mtime": 1780168569.3574185,
+    "ast_hash": "4e1b326a1b976244ca6653b05757730e",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/tests/test_media.py": {
+    "mtime": 1771944609.3648698,
+    "ast_hash": "6c248c61d85345589283633445671305",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/tests/test_ocr_cache.py": {
+    "mtime": 1778521607.3861468,
+    "ast_hash": "5cee184a304369ff87f02cea98e99bc9",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/tests/comprehensive_test_results.json": {
+    "mtime": 1779540771.6199653,
+    "ast_hash": "99da0327fb5a77ca92dd838f31b72b33",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/tests/debug_import.py": {
+    "mtime": 1771944026.9357502,
+    "ast_hash": "f382edd0ed5e5e5b6a247b7132c352ce",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/tests/_test_ocr_cache.py": {
+    "mtime": 1778501741.8727586,
+    "ast_hash": "90b20deaa36baec1fdc62ad54aa2d407",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/tests/test_config.py": {
+    "mtime": 1777515383.9064062,
+    "ast_hash": "5a59794329a93452a578af46bbc406fb",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/tests/test_french_compliance.py": {
+    "mtime": 1780168557.5265756,
+    "ast_hash": "aa1b325c6b3a74a17e04c00b590166c9",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/tests/dry_run_encryption.py": {
+    "mtime": 1778070454.3651898,
+    "ast_hash": "d5ebc7b6e7280585278b9425e8607abc",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/tests/test_properties.py": {
+    "mtime": 1780171834.0878072,
+    "ast_hash": "44c007db865bb04f5ad52f2c712e4e70",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/tests/load/auth_flow.js": {
+    "mtime": 1780168618.403036,
+    "ast_hash": "d7af99a0f54b678d872429dc216668a2",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/tests/load/hot_paths.js": {
+    "mtime": 1780168606.9363468,
+    "ast_hash": "ff0d3ea316c7baa96eaa80c53d62e452",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/scripts/generate_key.py": {
+    "mtime": 1778094776.61074,
+    "ast_hash": "2febedd215dd53994d9e5994417ef1ea",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/env.py": {
+    "mtime": 1778064364.3005984,
+    "ast_hash": "d1e529eddc2afca285dbf1929d016368",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/004_messaging.py": {
+    "mtime": 1771944027.6591947,
+    "ast_hash": "d509ff0e8645288f2494f78c01fb7cac",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/7f687bd4f0e9_add_document_extraction_cache_table.py": {
+    "mtime": 1771944027.6618335,
+    "ast_hash": "f72f877b8049c1f0ca33ad673de2e5b6",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/008_auth_security.py": {
+    "mtime": 1771944027.6642306,
+    "ast_hash": "296c7247096571266b2e4b201127c3be",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/f3b4c5d6e7f8_add_timestamps_to_lease.py": {
+    "mtime": 1777697755.6145337,
+    "ast_hash": "9b1b1ed7906279512bde7ece8bff9d25",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/010_notifications.py": {
+    "mtime": 1771944027.666516,
+    "ast_hash": "6138bdd3221f22fb5b0af641641b8b6e",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/8831b118955d_add_bio_and_profile_picture_url_to_users.py": {
+    "mtime": 1772670100.7784638,
+    "ast_hash": "f8364717cd63ddc903311386b4a3e73b",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/6d1f57373f33_add_agency_verification_fields.py": {
+    "mtime": 1777531887.6500115,
+    "ast_hash": "9b504b7426829dee584f85df8e1e6a19",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/e2b3c4d5f6a8_add_fk_indexes.py": {
+    "mtime": 1780165463.5714285,
+    "ast_hash": "a8514438df2a6faf71956d6746057d21",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/f1380d161d84_increase_device_id_length.py": {
+    "mtime": 1774123685.230392,
+    "ast_hash": "c0264f50b292cb715874ff59251476e4",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/a3da0984d64a_add_dispute_model.py": {
+    "mtime": 1771944027.6690018,
+    "ast_hash": "20f31e4dce36bf0ab55a86393f74d482",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/6c17267e50bc_merge_heads.py": {
+    "mtime": 1777513674.5977921,
+    "ast_hash": "4ddcdc32597c137321b72af17d766e20",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/002c_add_missing_user_columns.py": {
+    "mtime": 1771944027.6715035,
+    "ast_hash": "01d4c1e28d68501f8e1cf9354ab33e0d",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/44ebd345175e_add_location_verification_fields.py": {
+    "mtime": 1771944027.6739783,
+    "ast_hash": "569085e8d3afe0d2b47869e0325f1ede",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/005_team_members.py": {
+    "mtime": 1771944027.6766963,
+    "ast_hash": "52b77ec31c9ee97d87e64dcb19ea3e47",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/cb5f4fb85427_add_inventory_and_inventoryitem_models.py": {
+    "mtime": 1771944027.6793678,
+    "ast_hash": "f8ee667322c8c82e872b1285f4d3ac14",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/d827573aade4_add_missing_fields_to_media_sessions.py": {
+    "mtime": 1771944027.6820028,
+    "ast_hash": "922e467ba8313d084598c223ed646827",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/001_initial_schema.py": {
+    "mtime": 1771944027.6846008,
+    "ast_hash": "44ebf059377f404f13eec1f41633327b",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/2da9d18bd859_add_refreshtoken_model.py": {
+    "mtime": 1772669375.3155808,
+    "ast_hash": "bf731989102016c4f5158c9aace80dbe",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/7541346c694b_add_gps_accuracy_and_location_verified.py": {
+    "mtime": 1772676356.6279032,
+    "ast_hash": "5b157ed12f5d752b35dc532a9aa08a8e",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/006_webhooks.py": {
+    "mtime": 1771944027.6869106,
+    "ast_hash": "b00286a112f75e9bfa51f5fdc8f1cc79",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/002a_add_properties_tables.py": {
+    "mtime": 1771944027.6897187,
+    "ast_hash": "c5cc9714d6d2bbdca6e294d92d8862d4",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/20260522025316_add_french_compliance_fields.py": {
+    "mtime": 1779592698.7067108,
+    "ast_hash": "2bd2117859430afe104873530fba64e0",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/6bf5a0864033_add_caf_eligible_to_property.py": {
+    "mtime": 1779637968.7482612,
+    "ast_hash": "5a08eb7ef90a69862f69e8bfae3238c7",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/b2baa825acf7_add_missing_tables.py": {
+    "mtime": 1771944027.693328,
+    "ast_hash": "f7de7c6798b13e1df971dbd88af2b679",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/002b_add_onboarding.py": {
+    "mtime": 1771944027.6958125,
+    "ast_hash": "b10acfb54a02aa2921fee5cde6e5c2fa",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/7a1f4b76a25d_add_room_index_to_media_and_visits.py": {
+    "mtime": 1772673266.2509775,
+    "ast_hash": "599d828dfcc45193f29b26aac251920e",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/e28eaa60ce07_add_google_id_and_marketing_consent_to_.py": {
+    "mtime": 1771944027.6984751,
+    "ast_hash": "c4d55c9ef7224ea4d4328ee8896a7dbe",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/a1b2c3d4e5f6_remove_is_caf_eligible.py": {
+    "mtime": 1774125556.7778332,
+    "ast_hash": "39736c547a276cd10d54f8cfd3e23419",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/46555b96e1d9_add_feedback_table.py": {
+    "mtime": 1771944027.7011878,
+    "ast_hash": "340ccd0b9bb0bce22fe6350fadae2e8c",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/c1d2e3f4g5h6_add_ownership_verification.py": {
+    "mtime": 1777510039.5363922,
+    "ast_hash": "449059f9396bcab209a88538af29f8b6",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/0f55a1a92c1f_add_ownership_verification_to_user.py": {
+    "mtime": 1778066820.5444422,
+    "ast_hash": "ba9edc311e066af072b769138371de45",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/003_visits_and_leases.py": {
+    "mtime": 1771944027.7036088,
+    "ast_hash": "b0927711b52fbdee9de987335311ef88",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/009_user_identity_fields.py": {
+    "mtime": 1771944027.7060761,
+    "ast_hash": "79255e224c49464a8aca74217df9e009",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/002_property_manager_role.py": {
+    "mtime": 1771944027.7084062,
+    "ast_hash": "3bd03b3fa3981b0b09f1896ccc6ae294",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/004_add_detailed_room_config.py": {
+    "mtime": 1772469073.9485383,
+    "ast_hash": "4875051facb5bf0c15a6ff0bdc0a5104",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/8b85d2793a6b_add_saved_properties_table.py": {
+    "mtime": 1780171073.9909396,
+    "ast_hash": "fba7d7a79f2592900583bcf469e50715",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/007_user_address_fields.py": {
+    "mtime": 1771944027.710615,
+    "ast_hash": "abb182cb9f7f08674f01c27a1aac947e",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/01efdd595222_add_signature_columns_to_lease.py": {
+    "mtime": 1771944027.7129424,
+    "ast_hash": "4a032a2b5ecdb9f5703f0b3b88114564",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/14dfb920f895_add_feature_flags.py": {
+    "mtime": 1771944027.7154472,
+    "ast_hash": "ed6392ac9ee43c1395b545fa803ea887",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/41ea184ba52d_add_matching_fields.py": {
+    "mtime": 1771944027.7178812,
+    "ast_hash": "fb27236adb9e684cdb3773a297b99f5c",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/5c1f57373f32_overhaul_dispute_for_facilitation.py": {
+    "mtime": 1777518582.067247,
+    "ast_hash": "ffd97e7c27c3ed275e2589543aa247ca",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/d1a2b3c4e5f7_money_columns_to_numeric.py": {
+    "mtime": 1780165451.2530365,
+    "ast_hash": "c525ca415c2d35fd319c6a59f74ff7be",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/205b604ae1c0_add_multi_role_columns.py": {
+    "mtime": 1779637973.2439907,
+    "ast_hash": "53a8e31a63cfb0aa1edd97f608598600",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/fix_user_schema_encryption.py": {
+    "mtime": 1779637963.8382154,
+    "ast_hash": "945e6fdb867ce1529e20825ec8154531",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/925349010477_alter_properties_ownership_data_to_.py": {
+    "mtime": 1780171035.9592097,
+    "ast_hash": "0ed5f94011d1c1b692071454f2c78ea1",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/8fd63e2cac16_add_guarantor_income_fields.py": {
+    "mtime": 1779592702.7997406,
+    "ast_hash": "4f742ec9f512ac9b1ca30bbf8e0dee26",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/alembic/versions/6c1df4b5c544_add_notifications_table.py": {
+    "mtime": 1771944027.7202559,
+    "ast_hash": "ca0fc0f494e800491a95c1833fe5b0e9",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/render.yaml": {
+    "mtime": 1777875774.336749,
+    "ast_hash": "cd2b74fcfab911a68cb7cfba223d3063",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/QUICKSTART.md": {
+    "mtime": 1771573770.5745242,
+    "ast_hash": "25060df11a5ce5e3eea52adaf2a91333",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/docker-compose.dev.yml": {
+    "mtime": 1772238161.954786,
+    "ast_hash": "f2f4337f5b5a406ea07b9da904b9e5be",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/README.md": {
+    "mtime": 1777826828.0417855,
+    "ast_hash": "1fedd7b8dd63c2ef221d14ed0e35bfca",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/docker-compose.prod.yml": {
+    "mtime": 1780186788.353666,
+    "ast_hash": "a0160011307b842ee82ee576d64e797d",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/ENGINEERING_STANDARDS.md": {
+    "mtime": 1771941406.25037,
+    "ast_hash": "6fa80204bb4a07b563ca32b05df1ce47",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/MONITORING.md": {
+    "mtime": 1771941406.2504985,
+    "ast_hash": "f3bcf5fb4c811493175df9cf8a0a76c7",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/errors.txt": {
+    "mtime": 1777526138.1514761,
+    "ast_hash": "33b92514b7b1791204f4e7f7b229c0ae",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/errors2.txt": {
+    "mtime": 1777526651.541116,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/README.md": {
+    "mtime": 1771573770.5838118,
+    "ast_hash": "f15aaa42d5d299d091b1171097ea56ad",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/playwright-report/index.html": {
+    "mtime": 1780186421.3407857,
+    "ast_hash": "717433f21d894d651fc748ee9cd9c2ac",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/ENV_VARIABLES.md": {
+    "mtime": 1771941406.2512133,
+    "ast_hash": "1d7f7e033185013abcc0a1be93f0d062",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/ZERO_COST_GUIDE.md": {
+    "mtime": 1771941406.2515163,
+    "ast_hash": "711c983d76d8cdeb02ac6025caba65b4",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/COST_ANALYSIS.md": {
+    "mtime": 1771941406.251075,
+    "ast_hash": "324120b07e3f8698e9829a927790eeb9",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/requirements.txt": {
+    "mtime": 1779591573.611597,
+    "ast_hash": "00f40454656f02cb242c16b4ce2e4add",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/DB_AUDIT_2026-05-30.md": {
+    "mtime": 1780165667.719812,
+    "ast_hash": "903859635fef109c59405c0a4ddfb5e8",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/RECOMMENDED_STACK.md": {
+    "mtime": 1771941406.2513566,
+    "ast_hash": "10902224167fa3afcb7077d6cab9ca06",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/email_verification_plan.md": {
+    "mtime": 1771573770.5829515,
+    "ast_hash": "ecaa3387fbda843341c02538599ec156",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/backend/tests/load/README.md": {
+    "mtime": 1780168595.6862197,
+    "ast_hash": "c3b50fe2b28270fe370d90c77fb330ef",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/docs/features/README.md": {
+    "mtime": 1780168761.6853306,
+    "ast_hash": "cdcd58c6beae2537e4b899d098e76c22",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/docs/features/gdpr-privacy/journal.md": {
+    "mtime": 1780168776.9701407,
+    "ast_hash": "7fb9e696bbed23c0067aa7b58d744608",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/docs/features/auth/journal.md": {
+    "mtime": 1780187265.8913603,
+    "ast_hash": "cfbd45051b8e144f46861317d4259fcc",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/docs/features/security-infrastructure/journal.md": {
+    "mtime": 1780187274.8927536,
+    "ast_hash": "2d9d3780f94b94650014a044c5cd6d48",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/docs/features/leases-visits/journal.md": {
+    "mtime": 1780168863.390638,
+    "ast_hash": "25ad726d7401fda065d37d19e152d73b",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/docs/features/messaging-disputes/journal.md": {
+    "mtime": 1780168842.972521,
+    "ast_hash": "a2ddd78a14ae3b58849134f2a9e7d41e",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/docs/features/verification-kyc/journal.md": {
+    "mtime": 1780168831.8712244,
+    "ast_hash": "af96ac4d5649a5c6ee342b0ce6f6950b",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/docs/features/applications/journal.md": {
+    "mtime": 1780188100.2914257,
+    "ast_hash": "b53214ec0d5c7ebb2766a7edf6015c86",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/docs/features/listings-compliance/journal.md": {
+    "mtime": 1780168791.2364287,
+    "ast_hash": "9ac4699baa5043c02dc336804a1ceb74",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/docs/features/search-matching/journal.md": {
+    "mtime": 1780188108.640108,
+    "ast_hash": "d92e9f467d654c7f039e79235d849ef9",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/.github/workflows/docker-build.yml": {
+    "mtime": 1772805344.3822057,
+    "ast_hash": "de1d975771145b85cb9477ba6c68394e",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/.github/workflows/ci.yml": {
+    "mtime": 1780186647.2740183,
+    "ast_hash": "558e12bb8a5a6487ae737ab64ee15ca7",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/.github/workflows/main.yml": {
+    "mtime": 1771941406.25019,
+    "ast_hash": "d0f65cadf83ffdca8e7d0cb612812cb0",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/.agent/workflows/quality_gate.md": {
+    "mtime": 1771941406.2496815,
+    "ast_hash": "3a7521c2c9295eaa74a25e4459f74a12",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/.agent/rules/code_review_agent.md": {
+    "mtime": 1779463311.181525,
+    "ast_hash": "e7da63f099aa110b060cfd4ac24e50dd",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/.agent/rules/general_behavioral_guidelines.md": {
+    "mtime": 1780164137.49584,
+    "ast_hash": "3bb8c8b3b6ed0f962cd52810f97a4f61",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/.agent/rules/api_design_agent.md": {
+    "mtime": 1779463302.0224612,
+    "ast_hash": "a8d7acd39db3b3509a5d402b9ac136fd",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/.agent/rules/devops_expert.md": {
+    "mtime": 1779463325.493725,
+    "ast_hash": "c6c3c5b0a596bfb884720a985c7748ff",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/.agent/rules/master_rules.md": {
+    "mtime": 1780164151.911765,
+    "ast_hash": "da28a5ce0970d3ff07be23e9e2f2f493",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/.agent/rules/debugging_agent.md": {
+    "mtime": 1779463320.337775,
+    "ast_hash": "8cb07ecf011062a4076925146383f918",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/.agent/rules/code_migration_agent.md": {
+    "mtime": 1779463306.6431022,
+    "ast_hash": "4faefb5e72900e57a2b73a4cfc6081c0",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/.agent/rules/database_design_agent.md": {
+    "mtime": 1779463315.629283,
+    "ast_hash": "1a4a47750cc06528cd995cd13be6943c",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/.agent/rules/test_writing_agent.md": {
+    "mtime": 1779463343.9947941,
+    "ast_hash": "441b164e2e5faa1e778f5c629b27a4b4",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/.agent/rules/performance_optimization_agent.md": {
+    "mtime": 1779463330.1750305,
+    "ast_hash": "905e31e4e3e83aae56f5db5a06c81102",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/.agent/rules/refactoring_agent.md": {
+    "mtime": 1779463334.7070324,
+    "ast_hash": "9ba159800c0ba430d1dd27077026cafe",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/.agent/rules/security_audit_agent.md": {
+    "mtime": 1779463339.2055902,
+    "ast_hash": "2fa251636ae9221c4fdbb40e62c85ba5",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/openspec/project.md": {
+    "mtime": 1780168704.7563565,
+    "ast_hash": "178a4ccd995e96ae8288dfd782f8ff19",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/openspec/changes/2026-05-critical-remediation/proposal.md": {
+    "mtime": 1780168722.7610888,
+    "ast_hash": "71757ff4e352e92daa9103f00b53576d",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/openspec/changes/2026-05-backlog-hardening/proposal.md": {
+    "mtime": 1780187256.9211442,
+    "ast_hash": "ae26c87343b6f6a49a19115edf95ac65",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/public/grid.svg": {
+    "mtime": 1777878558.5832996,
+    "ast_hash": "44d00efcf0eeb4020df89658e1d33f63",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/public/file.svg": {
+    "mtime": 1771573770.595192,
+    "ast_hash": "d09f95206c3fa0bb9bd9fefabfd0ea71",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/public/apartment_1.png": {
+    "mtime": 1778976358.472785,
+    "ast_hash": "fd5b444a314aa54594f0d91abaf8deae",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/public/apartment_2.png": {
+    "mtime": 1778976386.7916343,
+    "ast_hash": "ed87c8ff7580030ace5edffa93df4dc1",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/public/apartment_3.png": {
+    "mtime": 1778976410.7541094,
+    "ast_hash": "91c4fc56f64f0ead29e638d50c3cbb62",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/public/vercel.svg": {
+    "mtime": 1771573770.5956097,
+    "ast_hash": "c0af2f507b369b085b35ef4bbe3bcf1e",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/public/next.svg": {
+    "mtime": 1771573770.5954509,
+    "ast_hash": "8e061864f388b47f33a1c3780831193e",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/public/globe.svg": {
+    "mtime": 1771573770.5952814,
+    "ast_hash": "2aaafa6a49b6563925fe440891e32717",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/public/window.svg": {
+    "mtime": 1771573770.595702,
+    "ast_hash": "a2760511c65806022ad20adf74370ff3",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/public/icons/icon-192.png": {
+    "mtime": 1772235143.819228,
+    "ast_hash": "34de2220ea21387c6d74a134241645b2",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/public/icons/icon.svg": {
+    "mtime": 1772235120.4968324,
+    "ast_hash": "16400aff70519f22ded461d00024e704",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/public/icons/logo.svg": {
+    "mtime": 1772235038.0199268,
+    "ast_hash": "ca14a6fbe3fcf3c4cbba8e5d6ec26c05",
+    "semantic_hash": ""
+  },
+  "/Users/venkat/rental-platform/frontend/public/icons/icon-512.png": {
+    "mtime": 1772235134.5479364,
+    "ast_hash": "d29adb5a281dfa7b2981ae7df1e9bc96",
+    "semantic_hash": ""
+  }
+}
