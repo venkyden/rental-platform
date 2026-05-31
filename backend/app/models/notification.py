@@ -5,6 +5,7 @@ Notification models for the platform notification system.
 import enum
 import uuid
 from datetime import datetime
+from app.core.timeutils import naive_utcnow
 
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String, Text
 from sqlalchemy.dialects.postgresql import UUID
@@ -51,7 +52,7 @@ class Notification(Base):
     read_at = Column(DateTime, nullable=True)
 
     # Timestamps
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=naive_utcnow)
 
     # Relationships
     user = relationship("User", backref="notifications")

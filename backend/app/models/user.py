@@ -1,6 +1,7 @@
 import enum
 import uuid
 from datetime import datetime
+from app.core.timeutils import naive_utcnow
 
 from sqlalchemy import JSON, TIMESTAMP, Boolean, Column, DateTime
 from sqlalchemy import Enum as SQLEnum
@@ -97,8 +98,8 @@ class User(Base):
     contact_preferences = Column(JSON, nullable=True)  # Notification/contact prefs
 
     # Timestamps
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=naive_utcnow)
+    updated_at = Column(DateTime, default=naive_utcnow, onupdate=naive_utcnow)
     last_login = Column(DateTime, nullable=True)
     refresh_token_version = Column(Integer, default=1)
 
@@ -128,7 +129,7 @@ class VerificationRecord(Base):
     verification_data = Column(JSON, nullable=True)
 
     # Timestamps
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=naive_utcnow)
     completed_at = Column(DateTime, nullable=True)
 
 
@@ -146,4 +147,4 @@ class OnboardingResponse(Base):
     detected_segment = Column(String, nullable=True)  # D1, D2, D3, S1, S2, S3
 
     # Metadata
-    completed_at = Column(DateTime, default=datetime.utcnow)
+    completed_at = Column(DateTime, default=naive_utcnow)

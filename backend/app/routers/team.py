@@ -6,10 +6,11 @@ Allows landlords to invite team members, manage permissions, and assign properti
 import logging
 import secrets
 from datetime import datetime, timedelta
+from app.core.timeutils import naive_utcnow
 from typing import List, Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from pydantic import BaseModel, EmailStr
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -224,6 +225,7 @@ async def get_my_invites(
 @router.post("/members", response_model=TeamMemberDetailResponse)
 async def invite_team_member(
     data: InviteTeamMemberRequest,
+    background_tasks: BackgroundTasks,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -277,7 +279,7 @@ async def invite_team_member(
         permission_level=permission,
         status=InviteStatus.PENDING,
         invite_token=secrets.token_urlsafe(32),
-        invite_expires_at=datetime.utcnow() + timedelta(days=7),
+        invite_expires_at=naive_utcnow() + timedelta(days=7),
     )
     db.add(member)
     await db.flush()  # Get member.id
@@ -300,8 +302,9 @@ async def invite_team_member(
     await db.commit()
     await db.refresh(member)
 
-    # Send invite email
-    await email_service.send_team_invite_email(
+    # Send invite email (off the request path)
+    background_tasks.add_task(
+        email_service.send_team_invite_email,
         to_email=member.email,
         name=member.name or member.email,
         landlord_name=current_user.full_name or current_user.email,
@@ -463,7 +466,7 @@ async def revoke_team_member(
         raise HTTPException(status_code=403, detail="Not authorized")
 
     member.status = InviteStatus.REVOKED
-    member.revoked_at = datetime.utcnow()
+    member.revoked_at = naive_utcnow()
 
     await db.commit()
 
@@ -532,7 +535,7 @@ async def accept_invite(
         raise HTTPException(status_code=400, detail="Invite already used or revoked")
 
     # Check expiry
-    if member.invite_expires_at and datetime.utcnow() > member.invite_expires_at:
+    if member.invite_expires_at and naive_utcnow() > member.invite_expires_at:
         member.status = InviteStatus.EXPIRED
         await db.commit()
         raise HTTPException(status_code=400, detail="Invite has expired")
@@ -547,7 +550,7 @@ async def accept_invite(
     # Accept invite
     member.member_user_id = current_user.id
     member.status = InviteStatus.ACTIVE
-    member.accepted_at = datetime.utcnow()
+    member.accepted_at = naive_utcnow()
 
     # Unlock Landlord role for the team member if not already unlocked
     current_roles = list(current_user.available_roles or ["tenant"])
@@ -608,5 +611,5 @@ async def get_invite_info(token: str, db: AsyncSession = Depends(get_db)):
         "permission_level": member.permission_level.value,
         "property_count": prop_count,
         "expired": member.invite_expires_at
-        and datetime.utcnow() > member.invite_expires_at,
+        and naive_utcnow() > member.invite_expires_at,
     }

@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from app.core.timeutils import naive_utcnow
 
 from sqlalchemy import Boolean, Column, DateTime, String
 from sqlalchemy.dialects.postgresql import UUID
@@ -14,5 +15,5 @@ class FeatureFlag(Base):
     name = Column(String, unique=True, index=True, nullable=False)
     is_enabled = Column(Boolean, default=False, nullable=False)
     description = Column(String, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=naive_utcnow)
+    updated_at = Column(DateTime, default=naive_utcnow, onupdate=naive_utcnow)

@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from app.core.timeutils import naive_utcnow
 
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
@@ -32,7 +33,7 @@ class PropertyManagerAccess(Base):
     )  # Stored as string for flexibility
 
     # Timestamps
-    granted_at = Column(DateTime, default=datetime.utcnow)
+    granted_at = Column(DateTime, default=naive_utcnow)
     revoked_at = Column(DateTime, nullable=True)
 
     # Metadata

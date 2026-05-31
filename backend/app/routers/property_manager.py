@@ -1,4 +1,5 @@
 from datetime import datetime
+from app.core.timeutils import naive_utcnow
 from typing import List, Optional
 from uuid import UUID
 
@@ -181,7 +182,7 @@ async def revoke_access(
 
     # Revoke access
     access.is_active = False
-    access.revoked_at = datetime.utcnow()
+    access.revoked_at = naive_utcnow()
     await db.commit()
 
     return {"message": "Access revoked successfully"}

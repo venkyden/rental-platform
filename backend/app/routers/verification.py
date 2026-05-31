@@ -7,6 +7,7 @@ import secrets
 import re
 import asyncio
 from datetime import datetime, timedelta
+from app.core.timeutils import naive_utcnow
 from typing import Optional
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
@@ -153,7 +154,7 @@ async def upload_identity_document(
     # Store verification data
     current_user.identity_data = {
         "verified": result["verified"],
-        "upload_date": datetime.utcnow().isoformat(),
+        "upload_date": naive_utcnow().isoformat(),
         "filename": file.filename,
         "file_url": file_url,
         "storage_key": storage_result.get("key"),
@@ -176,7 +177,7 @@ async def upload_identity_document(
 
 def _cleanup_expired_sessions():
     """Remove expired sessions from memory"""
-    now_iso = datetime.utcnow().isoformat()
+    now_iso = naive_utcnow().isoformat()
     expired = [k for k, v in _verification_sessions.items() if v.get("expires_at", "") < now_iso]
     for k in expired:
         del _verification_sessions[k]
@@ -195,7 +196,7 @@ async def create_identity_verification_session(
     code = secrets.token_urlsafe(32)
     session_data = {
         "user_id": str(current_user.id),
-        "expires_at": (datetime.utcnow() + timedelta(hours=1)).isoformat(),
+        "expires_at": (naive_utcnow() + timedelta(hours=1)).isoformat(),
         "completed": False,
     }
     await _save_session(code, session_data)
@@ -207,7 +208,7 @@ async def create_identity_verification_session(
     return {
         "verification_code": code,
         "capture_url": capture_url,
-        "expires_at": (datetime.utcnow() + timedelta(hours=1)).isoformat(),
+        "expires_at": (naive_utcnow() + timedelta(hours=1)).isoformat(),
     }
 
 
@@ -347,7 +348,7 @@ async def upload_identity_mobile(
 
     user.identity_data = {
         "verified": result["verified"],
-        "upload_date": datetime.utcnow().isoformat(),
+        "upload_date": naive_utcnow().isoformat(),
         "filename": file.filename,
         "file_url": file_url,
         "source": "mobile_capture",
@@ -383,7 +384,7 @@ async def upload_identity_mobile(
 _upload_rate_limits: dict[str, list[datetime]] = {}
 
 def _check_upload_rate_limit(user_id: str, doc_type: str):
-    now = datetime.utcnow()
+    now = naive_utcnow()
     key = f"{user_id}:{doc_type}"
     
     # Clean up old timestamps
@@ -486,7 +487,7 @@ async def upload_income_document(
 
     current_user.income_data = {
         "verified": result["verified"],
-        "upload_date": datetime.utcnow().isoformat(),
+        "upload_date": naive_utcnow().isoformat(),
         "filename": file.filename,
         "file_url": file_url,
         "storage_key": storage_result.get("key"),
@@ -634,7 +635,7 @@ async def verify_visale(
         "visale_id": clean_id,
         "file_url": file_url,
         "storage_key": storage_key,
-        "verified_at": datetime.utcnow().isoformat()
+        "verified_at": naive_utcnow().isoformat()
     }
     
     await db.commit()
@@ -695,7 +696,7 @@ async def verify_garantme(
         "garantme_ref": clean_ref,
         "file_url": file_url,
         "storage_key": storage_key,
-        "verified_at": datetime.utcnow().isoformat()
+        "verified_at": naive_utcnow().isoformat()
     }
     
     await db.commit()
@@ -752,7 +753,7 @@ async def upload_guarantor_document(
         "filename": file.filename,
         "file_url": file_url,
         "storage_key": storage_result.get("key"),
-        "uploaded_at": datetime.utcnow().isoformat()
+        "uploaded_at": naive_utcnow().isoformat()
     })
     
     current_user.guarantor_data = {"files": files_list}
@@ -840,7 +841,7 @@ async def upload_property_document(
             file_content=content,
             file_type=file.content_type,
             expected_owner_name=current_user.full_name,
-            expected_address=property_obj.address_line1,
+            expected_address=f"{property_obj.address_line1} {property_obj.address_line2 or ''} {property_obj.city} {property_obj.postal_code} {property_obj.country}".strip(),
             document_type=document_type,
         )
     except Exception as e:
@@ -874,7 +875,7 @@ async def upload_property_document(
     property_obj.ownership_verified = verification_result["verified"]
     property_obj.ownership_data = {
         "verified": verification_result["verified"],
-        "upload_date": datetime.utcnow().isoformat(),
+        "upload_date": naive_utcnow().isoformat(),
         "filename": file.filename,
         "file_url": file_url,
         "status": verification_result["status"],
@@ -1022,7 +1023,7 @@ async def apply_gli(
         )
 
     # Mock application submission
-    application_id = f"GLI-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
+    application_id = f"GLI-{naive_utcnow().strftime('%Y%m%d%H%M%S')}"
 
     return {
         "status": "submitted",

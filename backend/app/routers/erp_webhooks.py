@@ -9,6 +9,7 @@ import ipaddress
 import json
 import socket
 from datetime import datetime
+from app.core.timeutils import naive_utcnow
 from typing import List, Optional
 from urllib.parse import urlparse
 from uuid import UUID
@@ -308,7 +309,7 @@ async def test_webhook(
     # Send test event
     test_payload = {
         "event": "test",
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": naive_utcnow().isoformat(),
         "data": {
             "message": "This is a test webhook from Rental Platform",
             "subscription_id": str(subscription_id),
@@ -392,7 +393,7 @@ async def send_webhook(
     Send webhook to subscription URL.
     Records delivery in database.
     """
-    start_time = datetime.utcnow()
+    start_time = naive_utcnow()
 
     # Create signature
     payload_str = json.dumps(payload)
@@ -417,7 +418,7 @@ async def send_webhook(
                 subscription.url, content=payload_str, headers=headers
             )
 
-        end_time = datetime.utcnow()
+        end_time = naive_utcnow()
         duration = int((end_time - start_time).total_seconds() * 1000)
 
         delivery.success = response.status_code < 400
@@ -436,7 +437,7 @@ async def send_webhook(
         result = {"success": delivery.success, "status_code": delivery.status_code}
 
     except Exception as e:
-        end_time = datetime.utcnow()
+        end_time = naive_utcnow()
         duration = int((end_time - start_time).total_seconds() * 1000)
 
         delivery.success = False
@@ -476,7 +477,7 @@ async def trigger_webhooks(
         if event_type in (sub.events or []):
             payload = {
                 "event": event_type,
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": naive_utcnow().isoformat(),
                 "data": data,
             }
             await send_webhook(sub, event_type, payload, db)

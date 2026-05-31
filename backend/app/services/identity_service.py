@@ -4,6 +4,7 @@ Handles ID verification (document + selfie) via Stripe Identity API.
 """
 
 from datetime import datetime
+from app.core.timeutils import naive_utcnow
 from typing import Optional
 from uuid import UUID
 
@@ -56,7 +57,7 @@ class IdentityService:
             status=VerificationStatus.PENDING,
             verification_data={
                 "stripe_session_id": session.id,
-                "created_at": datetime.utcnow().isoformat(),
+                "created_at": naive_utcnow().isoformat(),
             },
         )
         db.add(record)
@@ -95,7 +96,7 @@ class IdentityService:
             user.identity_verified = True
             user.identity_data = {
                 "stripe_session_id": session_id,
-                "verified_at": datetime.utcnow().isoformat(),
+                "verified_at": naive_utcnow().isoformat(),
                 "verification_type": "stripe_identity",
             }
 
@@ -107,7 +108,7 @@ class IdentityService:
                 db,
                 session_id,
                 VerificationStatus.VERIFIED,
-                {"verified_at": datetime.utcnow().isoformat()},
+                {"verified_at": naive_utcnow().isoformat()},
             )
 
             await db.commit()
@@ -156,7 +157,7 @@ class IdentityService:
                 **extra_data,
             }
             if status == VerificationStatus.VERIFIED:
-                record.completed_at = datetime.utcnow()
+                record.completed_at = naive_utcnow()
 
 
 identity_service = IdentityService()

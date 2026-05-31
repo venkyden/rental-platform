@@ -3,6 +3,7 @@ import httpx
 import html
 import uuid
 from datetime import datetime, timedelta
+from app.core.timeutils import naive_utcnow
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, Response, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -130,7 +131,7 @@ async def register(
         role=user_data.role,
         available_roles=[user_data.role],
         marketing_consent=user_data.marketing_consent,
-        marketing_consent_at=datetime.utcnow() if user_data.marketing_consent else None,
+        marketing_consent_at=naive_utcnow() if user_data.marketing_consent else None,
         email_verified=False,
         identity_verified=False,
         employment_verified=False,
@@ -219,7 +220,7 @@ async def login(
     )
 
     # Update last login
-    user.last_login = datetime.utcnow()
+    user.last_login = naive_utcnow()
     await db.commit()
 
     # Get segment-based redirect
@@ -620,7 +621,7 @@ async def google_auth(
             )
 
         # Update last login
-        user.last_login = datetime.utcnow()
+        user.last_login = naive_utcnow()
         await db.commit()
         await db.refresh(user)
     except HTTPException:

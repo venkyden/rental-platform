@@ -4,6 +4,7 @@ Respects user contact preferences and verification status.
 """
 
 from datetime import datetime
+from app.core.timeutils import naive_utcnow
 from typing import List, Optional
 from uuid import UUID
 
@@ -282,7 +283,7 @@ class NotificationService:
             update(Notification)
             .where(Notification.id == notification_id)
             .where(Notification.user_id == user_id)
-            .values(read=True, read_at=datetime.utcnow())
+            .values(read=True, read_at=naive_utcnow())
         )
         await self.db.commit()
         return result.rowcount > 0
@@ -293,7 +294,7 @@ class NotificationService:
             update(Notification)
             .where(Notification.user_id == user_id)
             .where(Notification.read == False)
-            .values(read=True, read_at=datetime.utcnow())
+            .values(read=True, read_at=naive_utcnow())
         )
         await self.db.commit()
         return result.rowcount

@@ -25,7 +25,13 @@ webhooks, feedback, and deploy/infra.
   SQLAlchemy ORM (no raw SQL/injection); Render EU (Frankfurt) region; Docker multi-stage
   non-root build.
 
-## Backlog (deferred, documented in the change proposal)
-- Redis `requirepass`; uncomment nginx TLS + HSTS at the proxy; secret-scanning in CI;
-  nonce-based CSP to drop `unsafe-inline`; patch-pin Docker base images;
-  explicit FK `ON DELETE/UPDATE` actions.
+## Resolved in backlog pass (2026-05) — see `openspec/changes/2026-05-backlog-hardening`
+- ✅ Redis `requirepass` + authed healthcheck + password in `REDIS_URL` (compose).
+- ✅ nginx HSTS added; TLS block completed (prior `listen 443 ssl` had certs commented → couldn't start).
+- ✅ CI: TruffleHog secret-scan job; fixed trigger (`main` → also `master`); new tests included.
+- ✅ Docker base images pinned (`python:3.11.9-slim`, `node:20.18-alpine`, `nginx:stable-alpine`).
+- ✅ Whole-app `datetime` de-deprecation via `app/core/timeutils.py`.
+
+## Backlog (still deferred — need a live DB/runtime)
+- Explicit FK `ON DELETE/UPDATE` actions migration (data-loss risk → DB test required).
+- Nonce-based CSP to drop `unsafe-inline`; migrate naive timestamp columns to tz-aware.

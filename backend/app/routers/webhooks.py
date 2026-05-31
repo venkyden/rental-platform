@@ -9,7 +9,7 @@ import json
 import os
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -30,6 +30,7 @@ def verify_signature(payload: bytes, signature: str, secret: str) -> bool:
 @router.post("/verification/callback")
 async def verification_webhook(
     request: Request,
+    background_tasks: BackgroundTasks,
     x_signature: str = Header(None, alias="X-Webhook-Signature"),
     db: AsyncSession = Depends(get_db),
 ):
@@ -97,8 +98,9 @@ async def verification_webhook(
 
         await db.commit()
 
-        # Send congratulatory email
-        await email_service.send_verification_success_email(
+        # Send congratulatory email (off the webhook response path)
+        background_tasks.add_task(
+            email_service.send_verification_success_email,
             to_email=user.email,
             full_name=user.full_name or user.email,
             verification_type=verification_type,
@@ -115,8 +117,9 @@ async def verification_webhook(
         # Log failure for review
         print(f"Verification failed for user {user_id}: {data.get('rejection_reason')}")
 
-        # Send failure notification to user
-        await email_service.send_verification_failed_email(
+        # Send failure notification to user (off the webhook response path)
+        background_tasks.add_task(
+            email_service.send_verification_failed_email,
             to_email=user.email,
             full_name=user.full_name or user.email,
             reason=data.get("rejection_reason"),
@@ -136,6 +139,7 @@ import stripe
 @router.post("/stripe")
 async def stripe_webhook(
     request: Request,
+    background_tasks: BackgroundTasks,
     stripe_signature: str = Header(None, alias="Stripe-Signature"),
     db: AsyncSession = Depends(get_db),
 ):
@@ -175,10 +179,11 @@ async def stripe_webhook(
                 user.trust_score = min(100, user.trust_score + 40) # Verified ID is high value
                 await db.commit()
                 
-                await email_service.send_verification_success_email(
+                background_tasks.add_task(
+                    email_service.send_verification_success_email,
                     to_email=user.email,
                     full_name=user.full_name or "User",
-                    verification_type="identity"
+                    verification_type="identity",
                 )
 
     # 2. Handle Payments

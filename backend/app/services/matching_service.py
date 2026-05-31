@@ -5,6 +5,7 @@ Implements "Soft Scoring" logic (Weighted Preferences) as per Differentiation St
 """
 
 from datetime import datetime
+from app.core.timeutils import naive_utcnow
 from typing import Any, Dict, List, Optional
 from decimal import Decimal
 
@@ -196,7 +197,7 @@ class MatchingService:
             score += 10
             breakdown["timing"] = "flexible"
         else:
-            days_until_avail = (avail_date - datetime.utcnow().date()).days
+            days_until_avail = (avail_date - naive_utcnow().date()).days
             if move_in_req == "asap" and days_until_avail > 14:
                 score -= 5
                 breakdown["timing"] = "late"

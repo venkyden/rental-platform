@@ -4,6 +4,7 @@ Handles conversations, messages, and read status.
 """
 
 from datetime import datetime
+from app.core.timeutils import naive_utcnow
 from typing import List, Optional
 from uuid import UUID
 
@@ -397,7 +398,7 @@ async def send_message(
     db.add(msg)
 
     # Update conversation
-    conv.last_message_at = datetime.utcnow()
+    conv.last_message_at = naive_utcnow()
 
     # Increment unread count for the OTHER party
     if current_user.id == conv.landlord_id:
@@ -453,7 +454,7 @@ async def mark_as_read(
                 Message.is_read == False,
             )
         )
-        .values(is_read=True, read_at=datetime.utcnow())
+        .values(is_read=True, read_at=naive_utcnow())
     )
 
     await db.commit()
@@ -538,7 +539,7 @@ async def create_system_message(
     db.add(msg)
 
     # Update conversation
-    conv.last_message_at = datetime.utcnow()
+    conv.last_message_at = naive_utcnow()
     conv.unread_count_tenant += 1
 
     await db.commit()

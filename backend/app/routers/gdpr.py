@@ -9,6 +9,8 @@ Endpoints:
 import logging
 from datetime import datetime, timezone
 
+from app.core.timeutils import naive_utcnow
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -265,7 +267,7 @@ async def delete_user_data(
             contact_preferences=None,
             segment=None,
             is_active=False,
-            updated_at=datetime.now(timezone.utc),
+            updated_at=naive_utcnow(),
         )
     )
     await db.commit()

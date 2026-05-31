@@ -7,6 +7,7 @@ import enum
 import secrets
 import uuid
 from datetime import datetime
+from app.core.timeutils import naive_utcnow
 
 from sqlalchemy import Boolean, Column, DateTime
 from sqlalchemy import Enum as SQLEnum
@@ -76,7 +77,7 @@ class TeamMember(Base):
     invite_expires_at = Column(DateTime, nullable=True)  # Optional expiry
 
     # Timestamps
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=naive_utcnow)
     accepted_at = Column(DateTime, nullable=True)
     revoked_at = Column(DateTime, nullable=True)
 
@@ -121,7 +122,7 @@ class TeamMemberProperty(Base):
         nullable=True,
     )
 
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=naive_utcnow)
 
     # Relationships
     team_member = relationship("TeamMember", back_populates="property_access")

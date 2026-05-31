@@ -10,6 +10,7 @@ Decree 2015-1437 (état des lieux), EU ODR Regulation.
 """
 
 from datetime import datetime
+from app.core.timeutils import naive_utcnow
 from typing import List, Optional
 from uuid import UUID
 
@@ -73,7 +74,7 @@ async def _verify_participant(dispute: Dispute, user: User, db: AsyncSession):
 
 async def _check_rate_limit(lease_id: UUID, db: AsyncSession):
     """Max 3 disputes per lease per 24 hours."""
-    cutoff = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    cutoff = naive_utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
     result = await db.execute(
         select(Dispute)
         .where(Dispute.lease_id == lease_id)
@@ -296,7 +297,7 @@ async def respond_to_dispute(
 
     dispute.response_description = response_in.response_description
     dispute.response_evidence_urls = response_in.response_evidence_urls or []
-    dispute.responded_at = datetime.utcnow()
+    dispute.responded_at = naive_utcnow()
     dispute.status = DisputeStatus.UNDER_REVIEW  # Move to next stage for admin facilitation
 
     await db.commit()
@@ -555,11 +556,11 @@ async def admin_update_dispute(
 
     if update_in.mediation_redirect_url:
         dispute.mediation_redirect_url = update_in.mediation_redirect_url
-        dispute.mediation_redirected_at = datetime.utcnow()
+        dispute.mediation_redirected_at = naive_utcnow()
 
     if update_in.close:
         dispute.status = DisputeStatus.CLOSED
-        dispute.closed_at = datetime.utcnow()
+        dispute.closed_at = naive_utcnow()
 
     await db.commit()
     await db.refresh(dispute)

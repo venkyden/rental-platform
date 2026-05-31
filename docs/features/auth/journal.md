@@ -25,7 +25,7 @@ password reset, multi-role switching, team membership, onboarding/segments, noti
   rejects unauthenticated access.
 - Existing `tests/test_auth.py` (schemas/flows) still green.
 
-## Backlog
-- Remaining naive `datetime.utcnow()` in `auth.py` (e.g. `marketing_consent_at`) → datetime sweep.
-- Convert remaining non-auth email senders (team invite, verification success/failed) to
-  `BackgroundTasks`/Celery for consistency.
+## Resolved in backlog pass (2026-05)
+- Naive `datetime.utcnow()` across `auth.py` → centralized `naive_utcnow()` (whole-app sweep).
+- Remaining email senders (team invite, verification success/failed in `team.py` /
+  `webhooks.py`) now offloaded via `BackgroundTasks` — zero synchronous `await email_service.*`.

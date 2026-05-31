@@ -1,6 +1,7 @@
 import enum
 import uuid
 from datetime import datetime
+from app.core.timeutils import naive_utcnow
 
 from sqlalchemy import Column, DateTime
 from sqlalchemy import Enum as SQLEnum
@@ -78,8 +79,8 @@ class Dispute(Base):
     location_verified = Column(String, nullable=True)  # "verified", "unverified", "denied"
     report_distance_meters = Column(Float, nullable=True)
 
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=naive_utcnow)
+    updated_at = Column(DateTime, default=naive_utcnow, onupdate=naive_utcnow)
     closed_at = Column(DateTime, nullable=True)
 
     # Relationships

@@ -3,6 +3,7 @@ API endpoints for managing Rental Applications (Candidatures).
 """
 
 from datetime import datetime
+from app.core.timeutils import naive_utcnow
 from typing import List
 from uuid import UUID
 
@@ -186,7 +187,7 @@ async def update_application_status(
 
     # 3. Update
     application.status = update_data.status
-    application.updated_at = datetime.utcnow()
+    application.updated_at = naive_utcnow()
 
     await db.commit()
     await db.refresh(application)
@@ -229,7 +230,7 @@ async def withdraw_application(
         )
 
     application.status = ApplicationStatus.WITHDRAWN
-    application.updated_at = datetime.utcnow()
+    application.updated_at = naive_utcnow()
 
     await db.commit()
     await db.refresh(application)

@@ -64,8 +64,9 @@ backend/app/scratch/
 frontend/scratch/
 scratch/
 bin/
-test_*.py
-test_db*.py
+# Root-level scratch test scripts only — do NOT ignore backend/tests/*
+/test_*.py
+/test_db*.py
 tmp.json
 *.sh
 !backend/run_mcp.sh
@@ -81,4 +82,8 @@ stderr.txt
 stdout.txt
 user_response_prep.txt
 node_modules_old/
+backend/test_*.py
+frontend/test-results/
+frontend/playwright-report/data/
+frontend/playwright-report/trace/
 

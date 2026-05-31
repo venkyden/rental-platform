@@ -1,6 +1,7 @@
 import enum
 import uuid
 from datetime import datetime
+from app.core.timeutils import naive_utcnow
 
 from sqlalchemy import Column, DateTime
 from sqlalchemy import Enum as SQLEnum
@@ -48,7 +49,7 @@ class Inventory(Base):
         default=InventoryStatus.DRAFT,
         nullable=False,
     )
-    date = Column(DateTime, default=datetime.utcnow, nullable=False)
+    date = Column(DateTime, default=naive_utcnow, nullable=False)
 
     # Signatures (Coords + Timestamp + IP)
     signature_tenant = Column(JSONB, nullable=True)

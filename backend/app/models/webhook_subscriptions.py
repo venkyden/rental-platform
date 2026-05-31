@@ -6,6 +6,7 @@ Allows landlords to subscribe to events and receive HTTP notifications.
 import secrets
 import uuid
 from datetime import datetime
+from app.core.timeutils import naive_utcnow
 
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String, Text
 from sqlalchemy.dialects.postgresql import ARRAY, UUID
@@ -46,8 +47,8 @@ class WebhookSubscription(Base):
     failure_count = Column(String, default="0")  # Track consecutive failures
 
     # Timestamps
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=naive_utcnow)
+    updated_at = Column(DateTime, default=naive_utcnow, onupdate=naive_utcnow)
 
     # Relationship
     landlord = relationship("User", backref="webhook_subscriptions")
@@ -81,7 +82,7 @@ class WebhookDelivery(Base):
     error_message = Column(Text, nullable=True)
 
     # Timing
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=naive_utcnow)
     delivered_at = Column(DateTime, nullable=True)
     duration_ms = Column(String, nullable=True)  # Response time
 

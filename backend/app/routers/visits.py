@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+from app.core.timeutils import utcnow
 from typing import List, Optional
 from uuid import UUID
 
@@ -154,7 +155,7 @@ async def get_property_visit_slots(
     conditions = [
         VisitSlot.property_id == property_id,
         VisitSlot.is_booked == False,
-        VisitSlot.start_time > datetime.utcnow(),
+        VisitSlot.start_time > utcnow(),
     ]
 
     if room_index is not None:
@@ -180,7 +181,7 @@ async def get_slots_by_room(
         .where(
             and_(
                 VisitSlot.property_id == property_id,
-                VisitSlot.start_time > datetime.utcnow(),
+                VisitSlot.start_time > utcnow(),
             )
         )
         .order_by(VisitSlot.room_index, VisitSlot.start_time)

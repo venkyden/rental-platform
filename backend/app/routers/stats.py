@@ -4,6 +4,7 @@ Aggregates data for dashboards — Overview, Alerts, Revenue Chart.
 """
 
 from datetime import date, datetime, timedelta
+from app.core.timeutils import naive_utcnow
 from typing import List, Optional
 from uuid import UUID
 
@@ -574,7 +575,7 @@ async def get_landlord_visits(
     total_visits = res_total.scalar_one_or_none() or 0
     
     # Booked slots that are upcoming
-    now = datetime.utcnow()
+    now = naive_utcnow()
     stmt_upcoming = select(func.count(VisitSlot.id)).where(
         and_(
             VisitSlot.landlord_id == current_user.id,
