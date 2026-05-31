@@ -255,7 +255,14 @@ export default function OnboardingQuestionnaire({ userType, initialResponses, on
                                     {currentQuestion.emoji}
                                 </motion.div>
                                 <h2 className="text-4xl md:text-5xl font-black text-zinc-900 mb-6 tracking-tighter leading-tight uppercase">
-                                    {t(`onboarding.questions.${userType}.${currentQuestion.id}.question`, undefined, currentQuestion.question)}
+                                    {(() => {
+                                        const qKey = currentQuestion.question;
+                                        if (qKey.startsWith('onboarding.questions.')) {
+                                            return t(qKey, undefined, qKey);
+                                        }
+                                        const translationUserType = userType === 'agency' ? 'landlord' : userType;
+                                        return t(`onboarding.questions.${translationUserType}.${currentQuestion.id}.question`, undefined, qKey);
+                                    })()}
                                 </h2>
                                 {currentQuestion.description && (
                                     <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] max-w-xs mx-auto leading-relaxed">

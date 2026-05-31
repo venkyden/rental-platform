@@ -359,7 +359,13 @@ export default function QuestionRenderer({
                             }`}
                         >
                             <span className={`text-[10px] font-black uppercase tracking-[0.2em] relative z-10 transition-colors ${isSelected ? 'text-white' : 'group-hover:text-zinc-900'}`}>
-                                {t(option.label.startsWith('options.') ? `onboarding.questions.${userType}.${question.id}.${option.label}` : option.label, undefined, option.label)}
+                                {(() => {
+                                    const translationUserType = userType === 'agency' ? 'landlord' : userType;
+                                    const labelKey = option.label.startsWith('options.') 
+                                        ? `onboarding.questions.${translationUserType}.${question.id}.${option.label}` 
+                                        : option.label;
+                                    return t(labelKey, undefined, option.label);
+                                })()}
                             </span>
                             {isSelected && (
                                 <motion.div layoutId="check" className="shrink-0">
@@ -399,7 +405,13 @@ export default function QuestionRenderer({
                     className="w-full text-left px-10 py-8 bg-white hover:bg-zinc-900 rounded-[2.5rem] border border-zinc-100 hover:border-zinc-900 transition-all group flex items-center justify-between"
                 >
                     <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 group-hover:text-white transition-colors">
-                        {t(option.label.startsWith('options.') ? `onboarding.questions.${userType}.${question.id}.${option.label}` : option.label, undefined, option.label)}
+                        {(() => {
+                            const translationUserType = userType === 'agency' ? 'landlord' : userType;
+                            const labelKey = option.label.startsWith('options.') 
+                                ? `onboarding.questions.${translationUserType}.${question.id}.${option.label}` 
+                                : option.label;
+                            return t(labelKey, undefined, option.label);
+                        })()}
                     </span>
                     <div className="w-8 h-8 rounded-full border border-zinc-100 flex items-center justify-center group-hover:border-zinc-700 transition-colors">
                         <ArrowRight className="w-4 h-4 text-transparent group-hover:text-white group-hover:translate-x-1 transition-all" />

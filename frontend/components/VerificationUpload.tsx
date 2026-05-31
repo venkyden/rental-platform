@@ -176,8 +176,9 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
     };
 
     const getEmploymentDocumentTypes = () => {
-        // Handle the new role-based structure (user.preferences.tenant) or legacy flat structure
-        const rolePrefs = user?.preferences?.[user?.role === 'tenant' ? 'tenant' : 'landlord'] || user?.preferences || {};
+        // Handle the new role-based structure (user.preferences.tenant/landlord/property_manager) or legacy flat structure
+        const role = user?.role || 'tenant';
+        const rolePrefs = user?.preferences?.[role] || user?.preferences || {};
         
         const contractType = rolePrefs?.contract_type;
         const situation = rolePrefs?.situation;
@@ -496,16 +497,32 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                         </label>
                         <p className="text-sm font-black text-zinc-900 uppercase tracking-widest">
                             {(() => {
-                                const rolePrefs = user?.preferences?.[user?.role === 'tenant' ? 'tenant' : 'landlord'] || user?.preferences || {};
-                                const value = rolePrefs.situation || rolePrefs.contract_type || rolePrefs.property_count || 'Standard';
+                                const role = user?.role || 'tenant';
+                                const rolePrefs = user?.preferences?.[role] || user?.preferences || {};
+                                
+                                // Determine the key (question type) based on role or what exists in rolePrefs
+                                let questionId = 'contract_type';
+                                if (role === 'landlord' || role === 'property_manager') {
+                                    questionId = 'property_count';
+                                } else if (rolePrefs.situation) {
+                                    questionId = 'situation';
+                                } else if (rolePrefs.contract_type) {
+                                    questionId = 'contract_type';
+                                }
+                                
+                                const value = rolePrefs[questionId] || 'Standard';
                                 
                                 // Format property count values into readable ranges
-                                if (value === '1_4') return t('dashboard.verification.verification.property.count.few', undefined, '1 - 4 Properties');
-                                if (value === '5_100') return t('dashboard.verification.verification.property.count.medium', undefined, '5 - 100 Properties');
-                                if (value === '100_plus') return t('dashboard.verification.verification.property.count.many', undefined, '100+ Properties');
+                                if (value === '1_4') return t('onboarding.questions.landlord.property_count.options.1_4', undefined, '1 - 4 Properties');
+                                if (value === '5_100') return t('onboarding.questions.landlord.property_count.options.5_100', undefined, '5 - 100 Properties');
+                                if (value === '100_plus') return t('onboarding.questions.landlord.property_count.options.100_plus', undefined, '100+ Properties');
                                 
-                                // Try to translate from onboarding options
-                                const translated = t(`onboarding.questions.${user?.role || 'tenant'}.${rolePrefs.situation ? 'situation' : 'contract_type'}.options.${value}`, undefined, '');
+                                // Construct translation key dynamically
+                                // Both landlord and property_manager (agency) use the 'landlord' translation path for questions
+                                const translationRole = (role === 'landlord' || role === 'property_manager') ? 'landlord' : 'tenant';
+                                const translationKey = `onboarding.questions.${translationRole}.${questionId}.options.${value}`;
+                                
+                                const translated = t(translationKey, undefined, '');
                                 if (translated) return translated;
 
                                 return typeof value === 'string' ? value.replace(/_/g, ' ') : String(value);

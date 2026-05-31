@@ -256,9 +256,6 @@ class ApiClient {
         const metadataStr = typeof metadata === 'string' ? metadata : JSON.stringify(metadata);
 
         const response = await this.client.post('/properties/media/upload', formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
             params: {
                 metadata: metadataStr,
                 verification_code: verificationCode,

@@ -198,10 +198,14 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                                 <div className="grid grid-cols-1 gap-6 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
                                     {previewUrls.map((url, i) => (
                                         <div key={i} className="aspect-[4/3] rounded-[3rem] overflow-hidden bg-zinc-100 relative">
-                                            <img src={url} className="w-full h-full object-cover" />
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                                            <div className="absolute bottom-6 left-6 text-white text-[10px] font-black uppercase tracking-widest">
-                                                {files[i].type.startsWith('video') ? 'Stream' : 'Still'} // {i + 1}
+                                            {files[i].type.startsWith('video') ? (
+                                                <video src={url} className="w-full h-full object-cover" controls playsInline muted />
+                                            ) : (
+                                                <img src={url} className="w-full h-full object-cover" alt="Preview" />
+                                            )}
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
+                                            <div className="absolute bottom-6 left-6 text-white text-[10px] font-black uppercase tracking-widest pointer-events-none">
+                                                {files[i].type.startsWith('video') ? 'Stream' : 'Still'} &mdash; {i + 1}
                                             </div>
                                         </div>
                                     ))}

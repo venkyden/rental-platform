@@ -35,7 +35,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     };
 
     const t = React.useCallback((key: string, params?: Record<string, string | number>, fallback?: string): string => {
-        if (!key || typeof key !== 'string') return fallback || '';
+        if (!key || typeof key !== 'string') return fallback !== undefined ? fallback : '';
         const keys = key.split('.');
         let value: any = translations[language];
 
@@ -43,11 +43,11 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
             if (value && typeof value === 'object' && k in value) {
                 value = value[k];
             } else {
-                return fallback || key;
+                return fallback !== undefined ? fallback : key;
             }
         }
 
-        if (typeof value !== 'string') return fallback || key;
+        if (typeof value !== 'string') return fallback !== undefined ? fallback : key;
 
         // Simple interpolation: replaces {{name}} with params.name
         if (params) {
