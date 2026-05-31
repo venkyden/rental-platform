@@ -69,7 +69,7 @@ class InventoryItem(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     inventory_id = Column(
-        UUID(as_uuid=True), ForeignKey("inventories.id"), nullable=False, index=True
+        UUID(as_uuid=True), ForeignKey("inventories.id", ondelete="CASCADE"), nullable=False, index=True
     )
 
     name = Column(String, nullable=False)  # e.g. "Kitchen Walls", "Sofa"

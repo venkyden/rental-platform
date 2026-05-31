@@ -156,7 +156,7 @@ class PropertyMediaSession(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     property_id = Column(
-        UUID(as_uuid=True), ForeignKey("properties.id"), nullable=False
+        UUID(as_uuid=True), ForeignKey("properties.id", ondelete="CASCADE"), nullable=False
     )
 
     # Shareable link details
@@ -194,7 +194,7 @@ class PropertyMedia(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     property_id = Column(
-        UUID(as_uuid=True), ForeignKey("properties.id"), nullable=False
+        UUID(as_uuid=True), ForeignKey("properties.id", ondelete="CASCADE"), nullable=False
     )
     session_id = Column(UUID(as_uuid=True), ForeignKey("property_media_sessions.id"))
 
@@ -239,9 +239,9 @@ class SavedProperty(Base):
     __tablename__ = "saved_properties"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     property_id = Column(
-        UUID(as_uuid=True), ForeignKey("properties.id"), nullable=False
+        UUID(as_uuid=True), ForeignKey("properties.id", ondelete="CASCADE"), nullable=False
     )
     created_at = Column(TIMESTAMP, server_default=func.now())
 

@@ -67,12 +67,18 @@ jobs:
           pip install -r requirements.txt
           pip install pytest pytest-asyncio httpx
 
-      - name: Run tests
+      - name: Run unit/mock tests
         run: >-
           python -m pytest
           tests/test_config.py tests/test_auth.py tests/test_properties.py
           tests/test_french_compliance.py tests/test_security_headers.py
           -v --tb=short
+
+      - name: Build schema (migrations) for integration tests
+        run: python -m alembic upgrade head
+
+      - name: Run real-DB integration tests (IDOR / concurrency / cascade)
+        run: python -m pytest tests_integration/ -v --tb=short
 
   frontend:
     name: Frontend Build

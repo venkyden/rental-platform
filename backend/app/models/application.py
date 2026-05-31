@@ -5,7 +5,7 @@ Application model for rental candidatures.
 import enum
 import uuid
 
-from sqlalchemy import TIMESTAMP, Column, ForeignKey, String, Text
+from sqlalchemy import TIMESTAMP, Column, ForeignKey, String, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -23,6 +23,11 @@ class ApplicationStatus(str, enum.Enum):
 
 class Application(Base):
     __tablename__ = "applications"
+    __table_args__ = (
+        # A tenant may apply to a given property only once. DB-enforced so the
+        # app-level pre-check can't be defeated by a concurrent double-submit.
+        UniqueConstraint("tenant_id", "property_id", name="uq_application_tenant_property"),
+    )
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 

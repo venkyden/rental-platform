@@ -57,13 +57,26 @@ class TeamMember(Base):
 
     # Default permission level (can be overridden per-property)
     permission_level = Column(
-        SQLEnum(PermissionLevel, name="permission_level_enum", native_enum=True),
+        # values_callable so the DB enum stores the lowercase .value (matching the
+        # PG type) rather than the uppercase member name — otherwise every query
+        # against this column raises InvalidTextRepresentationError.
+        SQLEnum(
+            PermissionLevel,
+            name="permission_level_enum",
+            native_enum=True,
+            values_callable=lambda x: [e.value for e in x],
+        ),
         default=PermissionLevel.VIEW_ONLY,
     )
 
     # Invite status
     status = Column(
-        SQLEnum(InviteStatus, name="invite_status_enum", native_enum=True),
+        SQLEnum(
+            InviteStatus,
+            name="invite_status_enum",
+            native_enum=True,
+            values_callable=lambda x: [e.value for e in x],
+        ),
         default=InviteStatus.PENDING,
     )
 
@@ -104,10 +117,10 @@ class TeamMemberProperty(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 
     team_member_id = Column(
-        UUID(as_uuid=True), ForeignKey("team_members.id"), nullable=False, index=True
+        UUID(as_uuid=True), ForeignKey("team_members.id", ondelete="CASCADE"), nullable=False, index=True
     )
     property_id = Column(
-        UUID(as_uuid=True), ForeignKey("properties.id"), nullable=False, index=True
+        UUID(as_uuid=True), ForeignKey("properties.id", ondelete="CASCADE"), nullable=False, index=True
     )
 
     # Optional: override permission level for this specific property

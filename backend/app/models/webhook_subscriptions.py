@@ -66,7 +66,7 @@ class WebhookDelivery(Base):
 
     subscription_id = Column(
         UUID(as_uuid=True),
-        ForeignKey("webhook_subscriptions.id"),
+        ForeignKey("webhook_subscriptions.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )

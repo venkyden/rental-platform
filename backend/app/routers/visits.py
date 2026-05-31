@@ -214,7 +214,10 @@ async def book_visit(
     db: AsyncSession = Depends(get_db),
 ):
     """Book a visit slot"""
-    query = select(VisitSlot).where(VisitSlot.id == slot_id)
+    # Lock the row FOR UPDATE so two concurrent bookings serialize: the second
+    # transaction blocks until the first commits, then sees is_booked=True.
+    # Without this lock both requests read is_booked=False and double-book.
+    query = select(VisitSlot).where(VisitSlot.id == slot_id).with_for_update()
     result = await db.execute(query)
     slot = result.scalar_one_or_none()
 

@@ -25,6 +25,14 @@ password reset, multi-role switching, team membership, onboarding/segments, noti
   rejects unauthenticated access.
 - Existing `tests/test_auth.py` (schemas/flows) still green.
 
+## Bug found via real-DB IDOR test (2026-05-31)
+- 🔴 **Team enum mismatch.** `InviteStatus`/`PermissionLevel` columns lacked
+  `values_callable`, so SQLAlchemy bound uppercase member names while the PG enums
+  use lowercase values → every team-permission query crashed
+  (`InvalidTextRepresentationError`). This made non-owner property update return
+  **500 instead of 403** and broke team-member property editing entirely.
+  **Fixed** in `app/models/team.py`. Covered by `tests_integration/test_idor.py`.
+
 ## Resolved in backlog pass (2026-05)
 - Naive `datetime.utcnow()` across `auth.py` → centralized `naive_utcnow()` (whole-app sweep).
 - Remaining email senders (team invite, verification success/failed in `team.py` /

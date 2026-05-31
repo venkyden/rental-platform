@@ -15,9 +15,11 @@ Visit-slot scheduling/booking and French-compliant lease generation/signing.
 
 ## Audit findings
 - 🟢 Lease/visit models already use timezone-aware datetimes.
-- 🟡 **Concurrency:** double-booking a single visit slot must be prevented atomically
-  (row lock / unique booking). Verify; add a real-DB concurrency test (backlog).
+- 🔴 **Fixed: double-booking race.** `POST /visits/book/{slot_id}` read `is_booked`
+  then wrote with no lock → two concurrent bookings double-booked. Now uses
+  `SELECT … FOR UPDATE` (`with_for_update()`); proven by
+  `tests_integration/test_concurrency.py` (one 200, one 400).
 - 🟡 Lease PDF download authorization scoped to lease parties — confirmed by code review.
 
 ## Backlog
-- Real-DB concurrency test for `POST /visits/book/{slot_id}` (two tenants, one slot).
+- Consider a partial unique index on `visit_slots(id) where is_booked` as defence-in-depth.
