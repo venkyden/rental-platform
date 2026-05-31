@@ -8,9 +8,10 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import PremiumLayout from '@/components/PremiumLayout';
 import { apiClient } from '@/lib/api';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
-import { Camera, RefreshCw, CheckCircle2, ChevronLeft, ChevronRight, Info, Shield, MapPin, Euro, Layout, Zap, Building, Plus, Image } from 'lucide-react';
+import { Camera, RefreshCw, CheckCircle2, ChevronLeft, ChevronRight, Info, Shield, MapPin, Euro, Layout, Zap, Building, Plus, Image, X } from 'lucide-react';
 import { motion, Variants, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/lib/LanguageContext';
+import QRCodeDisplay from '@/components/QRCodeDisplay';
 
 const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -103,6 +104,10 @@ export default function EditPropertyPage() {
     const { t } = useLanguage();
     const [generatingAi, setGeneratingAi] = useState(false);
     const propertyId = params?.id as string;
+
+    const [declared, setDeclared] = useState(false);
+    const [mediaSession, setMediaSession] = useState<any>(null);
+    const [showMediaModal, setShowMediaModal] = useState(false);
 
     const [currentStep, setCurrentStep] = useState(1);
     const [loading, setLoading] = useState(false);
@@ -340,7 +345,25 @@ export default function EditPropertyPage() {
         }
     };
 
+    const handleManageMedia = async () => {
+        if (!propertyId) return;
+        try {
+            const sessionRes = await apiClient.client.post(
+                `/properties/${propertyId}/media-session`
+            );
+            setMediaSession(sessionRes.data);
+            setShowMediaModal(true);
+        } catch (error) {
+            console.error('Failed to create media session:', error);
+            toast.error('Failed to create media session');
+        }
+    };
+
     const handleSubmit = async () => {
+        if (!declared) {
+            toast.error(t('properties.new.steps.review.declarationRequired', undefined, 'You must declare that the information is true.'));
+            return;
+        }
         setLoading(true);
         try {
             // Clean empty strings for optional fields in payload
@@ -1539,7 +1562,7 @@ export default function EditPropertyPage() {
                                                     </div>
                                                 </div>
                                                 <button
-                                                    onClick={() => router.push(`/properties/${propertyId}`)}
+                                                    onClick={handleManageMedia}
                                                     aria-label={t('properties.edit.mediaSection.manageMedia', undefined, 'Manage Media')}
                                                     className="w-full py-4 border-2 border-zinc-200 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] hover:border-zinc-900 transition-all"
                                                 >
@@ -1699,6 +1722,39 @@ export default function EditPropertyPage() {
                                                     </div>
                                                 </div>
                                             </div>
+
+                                            {/* Declaration Acknowledgment */}
+                                            <label
+                                                htmlFor="declaration-checkbox"
+                                                className={`flex items-start gap-4 p-6 rounded-3xl border-2 cursor-pointer transition-all mb-8 ${
+                                                    declared
+                                                        ? 'border-zinc-900 bg-zinc-50'
+                                                        : 'border-zinc-200 bg-white hover:border-zinc-400'
+                                                }`}
+                                            >
+                                                <div className="relative mt-0.5 flex-shrink-0">
+                                                    <input
+                                                        id="declaration-checkbox"
+                                                        type="checkbox"
+                                                        checked={declared}
+                                                        onChange={(e) => setDeclared(e.target.checked)}
+                                                        className="sr-only"
+                                                    />
+                                                    <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${
+                                                        declared ? 'bg-zinc-900 border-zinc-900' : 'border-zinc-300 bg-white'
+                                                    }`}>
+                                                        {declared && (
+                                                            <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                                            </svg>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <span className="text-xs font-semibold text-zinc-600 leading-relaxed">
+                                                    {t('properties.new.steps.review.declaration', undefined, 'I declare that all the information provided is true and accurate to my knowledge.')}
+                                                </span>
+                                            </label>
+
                                             {(() => {
                                                 const isDepositLimitExceeded = formData.deposit !== undefined && formData.monthly_rent > 0 && 
                                                     formData.deposit > formData.monthly_rent * (formData.furnished ? 2 : 1);
@@ -1735,7 +1791,7 @@ export default function EditPropertyPage() {
                                                         )}
                                                         <button
                                                             onClick={handleSubmit}
-                                                            disabled={loading || hasHardComplianceErrors}
+                                                            disabled={loading || hasHardComplianceErrors || !declared}
                                                             aria-label={t('properties.edit.saveButton', undefined, 'Save Changes')}
                                                             className="w-full py-8 bg-zinc-900 text-white text-sm font-black uppercase tracking-[0.5em] rounded-[2.5rem] shadow-2xl hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                                         >
@@ -1773,6 +1829,52 @@ export default function EditPropertyPage() {
                         </div>
                     </div>
                 </div>
+
+                {/* Media Modal */}
+                <AnimatePresence>
+                    {showMediaModal && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-white/80 backdrop-blur-xl"
+                        >
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                                className="bg-white rounded-[3rem] shadow-2xl p-8 max-w-lg w-full relative border border-zinc-100"
+                            >
+                                <button
+                                    onClick={() => setShowMediaModal(false)}
+                                    className="absolute top-8 right-8 p-3 bg-zinc-100 rounded-full hover:bg-zinc-200 transition-colors"
+                                    aria-label="Close"
+                                >
+                                    <X className="w-5 h-5 text-zinc-600" />
+                                </button>
+                                
+                                <div className="text-center space-y-8 pt-4">
+                                    <div className="w-20 h-20 bg-zinc-900 rounded-[2rem] flex items-center justify-center mx-auto shadow-xl shadow-zinc-900/20">
+                                        <Camera className="w-10 h-10 text-white" />
+                                    </div>
+                                    <div className="space-y-4">
+                                        <h3 className="text-3xl font-black tracking-tighter uppercase">{t('properties.edit.mediaSection.addMedia', undefined, 'Add Media')}</h3>
+                                        <p className="text-sm text-zinc-500 font-medium px-4">{t('properties.new.steps.success.description', undefined, 'Scan the QR code with your mobile device to upload photos and videos.')}</p>
+                                    </div>
+                                    
+                                    <div className="glass-card !p-8 rounded-[3rem] inline-block shadow-lg mx-auto">
+                                        <QRCodeDisplay 
+                                            verificationCode={mediaSession?.verification_code || ''} 
+                                            captureUrl={`${window.location.origin}/capture/${mediaSession?.id}`}
+                                            expiresAt={mediaSession?.expires_at || new Date().toISOString()}
+                                        />
+                                    </div>
+                                </div>
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
             </PremiumLayout>
         </ProtectedRoute>
     );

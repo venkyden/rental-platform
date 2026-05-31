@@ -60,6 +60,8 @@ class ApiClient {
                     requestUrl.includes('/auth/google') || 
                     requestUrl.includes('/auth/register')
                 );
+                const authHeader = originalRequest?.headers?.Authorization || originalRequest?.headers?.authorization;
+                const hasAuthHeader = !!authHeader;
 
                 // If the error is 401 and we haven't retried yet
                 if (error.response?.status === 401 && !originalRequest._retry) {
@@ -67,6 +69,11 @@ class ApiClient {
 
                     // If this is an authentication request, do not attempt to refresh
                     if (isAuthRequest) {
+                        return Promise.reject(error);
+                    }
+
+                    // If the request did not send an Authorization header, bypass refresh and clearing logic
+                    if (!hasAuthHeader) {
                         return Promise.reject(error);
                     }
 

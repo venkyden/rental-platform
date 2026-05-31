@@ -164,6 +164,7 @@ function ResetPasswordContent() {
                             <input
                                 id="password"
                                 name="password"
+                                autoComplete="new-password"
                                 type={showPassword ? 'text' : 'password'}
                                 required
                                 className="w-full px-6 py-5 pr-14 rounded-2xl bg-zinc-50 border-none focus:ring-2 focus:ring-zinc-900/10 transition-all font-bold text-zinc-900 placeholder-zinc-300"
@@ -192,6 +193,7 @@ function ResetPasswordContent() {
                             <input
                                 id="confirmPassword"
                                 name="confirmPassword"
+                                autoComplete="new-password"
                                 type={showConfirmPassword ? 'text' : 'password'}
                                 required
                                 className="w-full px-6 py-5 pr-14 rounded-2xl bg-zinc-50 border-none focus:ring-2 focus:ring-zinc-900/10 transition-all font-bold text-zinc-900 placeholder-zinc-300"

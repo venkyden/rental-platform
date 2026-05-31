@@ -299,18 +299,16 @@ export default function PropertiesPage() {
                                 className="relative bg-white rounded-[3rem] shadow-[0_60px_120px_-20px_rgba(0,0,0,0.5)] max-w-2xl w-full max-h-[90vh] overflow-hidden border border-white/20"
                             >
                                 <div className="p-16">
-                                    <div className="mb-12 text-center">
-                                        <h2 className="text-4xl font-black tracking-tighter uppercase mb-4">{t('verification.cards.ownership.title', undefined, 'Ownership Validation')}</h2>
-                                        <p className="text-zinc-500 font-medium">{t('verification.cards.ownership.desc', undefined, 'Please upload official property deeds or utility bills to verify this listing.')}</p>
+                                    <div className="mt-8">
+                                        <VerificationUpload 
+                                            verificationType="property"
+                                            propertyId={verifyingProperty}
+                                            onSuccessAction={() => {
+                                                setVerifyingProperty(null);
+                                                loadProperties();
+                                            }}
+                                        />
                                     </div>
-                                    <VerificationUpload 
-                                        verificationType="property"
-                                        propertyId={verifyingProperty}
-                                        onSuccessAction={() => {
-                                            setVerifyingProperty(null);
-                                            loadProperties();
-                                        }}
-                                    />
                                 </div>
                             </motion.div>
                         </div>

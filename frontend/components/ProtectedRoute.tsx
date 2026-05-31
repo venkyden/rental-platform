@@ -420,6 +420,9 @@ export default function ProtectedRoute({
                                                         <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
                                                         <input
                                                             type="email"
+                                                            name="email"
+                                                            id="modal-email"
+                                                            autoComplete="username"
                                                             value={loginEmail}
                                                             onChange={(e) => setLoginEmail(e.target.value)}
                                                             placeholder="name@example.com"
@@ -439,6 +442,9 @@ export default function ProtectedRoute({
                                                         <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
                                                         <input
                                                             type={showPassword ? 'text' : 'password'}
+                                                            name="password"
+                                                            id="modal-password"
+                                                            autoComplete="current-password"
                                                             value={loginPassword}
                                                             onChange={(e) => setLoginPassword(e.target.value)}
                                                             placeholder="••••••••"

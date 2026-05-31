@@ -284,6 +284,8 @@ export default function RegisterPage() {
                                     </label>
                                     <input
                                         name="full_name"
+                                        id="full_name"
+                                        autoComplete="name"
                                         type="text"
                                         required
                                         value={formData.full_name}
@@ -299,6 +301,8 @@ export default function RegisterPage() {
                                     </label>
                                     <input
                                         name="email"
+                                        id="email"
+                                        autoComplete="username"
                                         type="email"
                                         required
                                         value={formData.email}
@@ -314,6 +318,8 @@ export default function RegisterPage() {
                                     </label>
                                     <input
                                         name="phone"
+                                        id="phone"
+                                        autoComplete="tel"
                                         type="tel"
                                         value={formData.phone}
                                         onChange={(e) => setFormData(p => ({ ...p, phone: formatPhone(e.target.value) }))}
@@ -356,6 +362,8 @@ export default function RegisterPage() {
                                     <div className="relative">
                                         <input
                                             name="password"
+                                            id="password"
+                                            autoComplete="new-password"
                                             type={showPassword ? 'text' : 'password'}
                                             required
                                             value={formData.password}
@@ -398,6 +406,8 @@ export default function RegisterPage() {
                                     <div className="relative">
                                         <input
                                             name="confirmPassword"
+                                            id="confirmPassword"
+                                            autoComplete="new-password"
                                             type={showConfirmPassword ? 'text' : 'password'}
                                             required
                                             value={formData.confirmPassword}

@@ -183,6 +183,9 @@ function LoginContent() {
                             <Mail className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-300 group-focus-within:text-zinc-900 transition-colors" strokeWidth={2.5} />
                             <input
                                 type="email"
+                                name="email"
+                                id="email"
+                                autoComplete="username"
                                 required
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
@@ -205,6 +208,9 @@ function LoginContent() {
                             <Lock className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-300 group-focus-within:text-zinc-900 transition-colors" strokeWidth={2.5} />
                             <input
                                 type={showPassword ? 'text' : 'password'}
+                                name="password"
+                                id="password"
+                                autoComplete="current-password"
                                 required
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
