@@ -1,11 +1,12 @@
 {
-    "name": "Rental Platform",
-    "short_name": "RentalPlatform",
-    "description": "Find and manage rental properties with trust and transparency",
+    "name": "Roomivo — Smart Rental Platform",
+    "short_name": "Roomivo",
+    "description": "Verified rentals in France: identity verification, AI matching, and digital leases.",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#ffffff",
-    "theme_color": "#4F46E5",
+    "theme_color": "#18181b",
+    "lang": "fr",
     "icons": [
         {
             "src": "/icons/icon-192.png",
@@ -18,6 +19,12 @@
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
         }
     ],
     "categories": [

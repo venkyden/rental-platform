@@ -5,9 +5,11 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { apiClient } from '@/lib/api';
 import RoomivoBrand from '@/components/RoomivoBrand';
+import { useLanguage } from '@/lib/LanguageContext';
 
 export default function LogoutPage() {
     const router = useRouter();
+    const { t } = useLanguage();
     const [progress, setProgress] = useState(0);
 
     useEffect(() => {
@@ -27,8 +29,9 @@ export default function LogoutPage() {
             try {
                 await apiClient.logout();
                 // Clear any local storage/state overrides here if needed
-            } catch (error) {
-                console.error('Logout error:', error);
+            } catch {
+                // Best-effort: even if the network call fails, the local token is
+                // already cleared by apiClient.logout(); proceed to redirect.
             }
 
             // Redirect smoothly once animation completes (approx 1.2s)
@@ -76,7 +79,7 @@ export default function LogoutPage() {
                         transition={{ delay: 0.2 }}
                         className="text-2xl font-bold text-zinc-900 mb-2 tracking-tight"
                     >
-                        Signing you out
+                        {t('auth.logout.title', undefined, 'Signing you out')}
                     </motion.h1>
 
                     <motion.p
@@ -85,7 +88,7 @@ export default function LogoutPage() {
                         transition={{ delay: 0.3 }}
                         className="text-zinc-500 text-sm mb-8"
                     >
-                        Securely clearing your session...
+                        {t('auth.logout.subtitle', undefined, 'Securely clearing your session...')}
                     </motion.p>
 
                     {/* Premium Progress Bar */}

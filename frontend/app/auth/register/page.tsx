@@ -197,12 +197,14 @@ export default function RegisterPage() {
 
             {error && (
                 <motion.div
+                    role="alert"
+                    aria-live="assertive"
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     className="mb-8 rounded-3xl bg-zinc-900 p-4 flex items-center gap-3 shadow-xl shadow-zinc-900/20"
                 >
                     <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                    <p className="text-[10px] font-black uppercase tracking-widest text-white">{error}</p>
+                    <p className="text-xs font-bold tracking-wide text-white">{error}</p>
                 </motion.div>
             )}
 
@@ -279,7 +281,7 @@ export default function RegisterPage() {
                         >
                             <div className="space-y-4">
                                 <motion.div variants={itemVariants}>
-                                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1 mb-2 block">
+                                    <label htmlFor="full_name" className="text-xs font-bold text-zinc-500 tracking-wide ml-1 mb-2 block">
                                         {t('auth.register.fullName', undefined, 'Full Name')}
                                     </label>
                                     <input
@@ -296,12 +298,13 @@ export default function RegisterPage() {
                                 </motion.div>
 
                                 <motion.div variants={itemVariants}>
-                                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1 mb-2 block">
+                                    <label htmlFor="email" className="text-xs font-bold text-zinc-500 tracking-wide ml-1 mb-2 block">
                                         {t('auth.register.email', undefined, 'Email')}
                                     </label>
                                     <input
                                         name="email"
                                         id="email"
+                                        inputMode="email"
                                         autoComplete="username"
                                         type="email"
                                         required
@@ -313,7 +316,7 @@ export default function RegisterPage() {
                                 </motion.div>
 
                                 <motion.div variants={itemVariants}>
-                                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1 mb-2 block">
+                                    <label htmlFor="phone" className="text-xs font-bold text-zinc-500 tracking-wide ml-1 mb-2 block">
                                         {t('auth.register.phone', undefined, 'Phone Number')}
                                     </label>
                                     <input
@@ -356,8 +359,8 @@ export default function RegisterPage() {
                         >
                             <div className="space-y-4">
                                 <motion.div variants={itemVariants}>
-                                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1 mb-2 block">
-                                        {t('auth.register.password', undefined, 'Security Lock')}
+                                    <label htmlFor="password" className="text-xs font-bold text-zinc-500 tracking-wide ml-1 mb-2 block">
+                                        {t('auth.register.password', undefined, 'Password')}
                                     </label>
                                     <div className="relative">
                                         <input
@@ -371,7 +374,7 @@ export default function RegisterPage() {
                                             placeholder="••••••••"
                                             className="w-full px-6 py-5 pr-14 rounded-2xl bg-zinc-50 border-none focus:ring-2 focus:ring-zinc-900/10 transition-all font-bold text-zinc-900"
                                         />
-                                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-5 inset-y-0 text-zinc-300 hover:text-zinc-900 transition-colors">
+                                        <button type="button" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? t('auth.common.hidePassword', undefined, 'Hide password') : t('auth.common.showPassword', undefined, 'Show password')} aria-pressed={showPassword} className="absolute right-5 inset-y-0 text-zinc-300 hover:text-zinc-900 transition-colors">
                                             {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                                         </button>
                                     </div>
@@ -383,7 +386,7 @@ export default function RegisterPage() {
                                             </p>
                                             <p className={`text-[9px] font-black uppercase tracking-widest ${strengthColor.replace('bg-', 'text-')}`}>
                                                 {strength === 100 
-                                                    ? t('auth.register.strength.strong', undefined, 'Industrial Grade') 
+                                                    ? t('auth.register.strength.strong', undefined, 'Very strong') 
                                                     : strength >= 60 
                                                         ? t('auth.register.strength.medium', undefined, 'Secure') 
                                                         : t('auth.register.strength.weak', undefined, 'Weak')}
@@ -400,8 +403,8 @@ export default function RegisterPage() {
                                 </motion.div>
 
                                 <motion.div variants={itemVariants}>
-                                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1 mb-2 block">
-                                        {t('auth.register.confirmPassword', undefined, 'Confirm Lock')}
+                                    <label htmlFor="confirmPassword" className="text-xs font-bold text-zinc-500 tracking-wide ml-1 mb-2 block">
+                                        {t('auth.register.confirmPassword', undefined, 'Confirm Password')}
                                     </label>
                                     <div className="relative">
                                         <input
@@ -415,7 +418,7 @@ export default function RegisterPage() {
                                             placeholder="••••••••"
                                             className="w-full px-6 py-5 pr-14 rounded-2xl bg-zinc-50 border-none focus:ring-2 focus:ring-zinc-900/10 transition-all font-bold text-zinc-900"
                                         />
-                                        <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-5 inset-y-0 text-zinc-300 hover:text-zinc-900 transition-colors">
+                                        <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} aria-label={showConfirmPassword ? t('auth.common.hidePassword', undefined, 'Hide password') : t('auth.common.showPassword', undefined, 'Show password')} aria-pressed={showConfirmPassword} className="absolute right-5 inset-y-0 text-zinc-300 hover:text-zinc-900 transition-colors">
                                             {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                                         </button>
                                     </div>
@@ -480,12 +483,12 @@ export default function RegisterPage() {
                                     {loading ? (
                                         <div className="flex items-center gap-3">
                                             <div className="w-3 h-3 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                                            {t('auth.register.signingUp', undefined, 'Securing Account')}
+                                            {t('auth.register.signingUp', undefined, 'Creating account…')}
                                         </div>
                                     ) : (
                                         <>
                                             <ShieldCheck size={16} strokeWidth={3} />
-                                            {t('auth.register.signUp', undefined, 'Finalize Account')}
+                                            {t('auth.register.signUp', undefined, 'Create account')}
                                         </>
                                     )}
                                 </button>

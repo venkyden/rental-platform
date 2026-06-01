@@ -44,21 +44,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const checkAuth = async () => {
         const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
-        console.log('[AuthContext] checkAuth entry, token:', token);
         if (!token) {
-            console.log('[AuthContext] checkAuth no token, setting user to null');
             setUser(null);
             setLoading(false);
             return;
         }
 
         try {
-            console.log('[AuthContext] checkAuth calling getMe...');
             const userData = await apiClient.getMe();
-            console.log('[AuthContext] checkAuth getMe success:', userData.email);
             setUser(userData);
-        } catch (error) {
-            console.error('[AuthContext] checkAuth getMe failed:', error);
+        } catch {
             setUser(null);
         } finally {
             setLoading(false);
@@ -106,19 +101,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const switchRole = async (targetRole: string) => {
         setLoading(true);
         try {
-            console.log(`[Auth] Switching to role: ${targetRole}`);
             const data = await apiClient.switchRole(targetRole);
-            
+
             // Refresh user data to get new role and available roles
             await checkAuth();
-            
+
             if (data.redirect_path) {
                 router.push(data.redirect_path);
             }
             return data;
-        } catch (error) {
-            console.error('[Auth] Role switch failed:', error);
-            throw error;
         } finally {
             setLoading(false);
         }

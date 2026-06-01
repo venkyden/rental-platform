@@ -5,30 +5,40 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Eye, EyeOff, Lock, Mail, ChevronRight, Gavel } from 'lucide-react';
 import { apiClient } from '@/lib/api';
-import { motion, AnimatePresence, Variants } from 'framer-motion';
+import { motion, AnimatePresence, Variants, useReducedMotion } from 'framer-motion';
 import { useLanguage } from '@/lib/LanguageContext';
 import { useGoogleSignIn } from '@/lib/useGoogleSignIn';
 import { useAuth } from '@/lib/useAuth';
+import { isValidEmail } from '@/app/lib/utils/validation';
 
 /* ----------------------------------------------------------------
-   Framer-motion variants
+   Framer-motion variants (factories so they can honour reduced-motion)
    ---------------------------------------------------------------- */
-const containerVariants: Variants = {
+const makeContainerVariants = (reduce: boolean): Variants => ({
     hidden: { opacity: 0 },
-    show: { opacity: 1, transition: { staggerChildren: 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] } },
-};
+    show: {
+        opacity: 1,
+        transition: reduce
+            ? { duration: 0 }
+            : { staggerChildren: 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] },
+    },
+});
 
-const itemVariants: Variants = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } },
-};
+const makeItemVariants = (reduce: boolean): Variants => ({
+    hidden: reduce ? { opacity: 0 } : { opacity: 0, y: 20 },
+    show: {
+        opacity: 1,
+        y: 0,
+        transition: reduce ? { duration: 0 } : { type: 'spring', stiffness: 300, damping: 24 },
+    },
+});
 
-const shakeVariants = {
-    error: {
-        x: [0, -10, 10, -10, 10, 0],
-        transition: { duration: 0.4 }
-    }
-};
+const makeShakeVariants = (reduce: boolean): Variants => ({
+    show: {},
+    error: reduce
+        ? {}
+        : { x: [0, -10, 10, -10, 10, 0], transition: { duration: 0.4 } },
+});
 
 /* ================================================================
    LOGIN PAGE
@@ -45,6 +55,13 @@ function LoginContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { checkAuth } = useAuth();
+    // Respect the OS "reduce motion" setting. framer-motion animates via JS
+    // transforms, so the global CSS reduced-motion rule does not cover it; we
+    // gate the variants manually.
+    const reduceMotion = useReducedMotion() ?? false;
+    const containerVariants = makeContainerVariants(reduceMotion);
+    const itemVariants = makeItemVariants(reduceMotion);
+    const shakeVariants = makeShakeVariants(reduceMotion);
 
     const getSafeRedirectUrl = useCallback((url: string | null) => {
         if (!url) return null;
@@ -91,7 +108,7 @@ function LoginContent() {
     );
 
     /* ---------- Setup Google Sign-In ---------- */
-    const { revoke } = useGoogleSignIn({
+    useGoogleSignIn({
         clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
         buttonId: 'google-signin-btn',
         buttonText: 'signin_with',
@@ -104,19 +121,29 @@ function LoginContent() {
         },
     });
 
-    const handleClearGoogleHint = async () => {
-        const emailToRevoke = prompt(t('auth.login.promptEmailToForget', undefined, 'Enter your Google email to forget:'));
-        if (emailToRevoke) {
-            await revoke(emailToRevoke);
-            window.location.reload();
-        }
-    };
-
     /* ---------- Email/password submit ---------- */
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
+        // In-flight guard: prevents button-mashing from firing parallel logins
+        // (each failed attempt counts against the server-side per-account lockout).
+        if (loading) return;
         setError('');
         setIsError(false);
+
+        // Client-side input validation (UX layer; backend re-validates).
+        if (!isValidEmail(email)) {
+            setError(t('auth.register.error.emailInvalid', undefined, 'Please enter a valid email'));
+            setIsError(true);
+            setTimeout(() => setIsError(false), 500);
+            return;
+        }
+        if (!password) {
+            setError(t('auth.login.error.passwordRequired', undefined, 'Please enter your password'));
+            setIsError(true);
+            setTimeout(() => setIsError(false), 500);
+            return;
+        }
+
         setLoading(true);
 
         try {
@@ -156,17 +183,19 @@ function LoginContent() {
                 </p>
             </motion.div>
 
-            {/* Error Message */}
+            {/* Error Message — announced to assistive tech */}
             <AnimatePresence>
                 {error && (
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.9, y: -10 }}
+                        role="alert"
+                        aria-live="assertive"
+                        initial={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.9, y: -10 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.9, y: -10 }}
+                        exit={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.9, y: -10 }}
                         className="mb-8 rounded-3xl bg-zinc-900 p-5 flex items-center gap-4 shadow-xl shadow-zinc-900/20"
                     >
                         <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                        <p className="text-[10px] font-black uppercase tracking-widest text-white">{error}</p>
+                        <p className="text-xs font-bold tracking-wide text-white">{error}</p>
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -175,8 +204,8 @@ function LoginContent() {
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <motion.div variants={itemVariants}>
                         <div className="flex justify-between mb-2 px-1">
-                            <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
-                                {t('auth.login.email', undefined, 'Email Address')}
+                            <label htmlFor="email" className="text-xs font-bold text-zinc-500 tracking-wide">
+                                {t('auth.login.email', undefined, 'Email address')}
                             </label>
                         </div>
                         <div className="relative group">
@@ -185,8 +214,10 @@ function LoginContent() {
                                 type="email"
                                 name="email"
                                 id="email"
+                                inputMode="email"
                                 autoComplete="username"
                                 required
+                                aria-invalid={isError}
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder={t('common.placeholders.email', undefined, 'name@example.com')}
@@ -197,11 +228,11 @@ function LoginContent() {
 
                     <motion.div variants={itemVariants}>
                         <div className="flex justify-between mb-2 px-1">
-                            <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
-                                {t('auth.login.password', undefined, 'Security Lock')}
+                            <label htmlFor="password" className="text-xs font-bold text-zinc-500 tracking-wide">
+                                {t('auth.login.password', undefined, 'Password')}
                             </label>
-                            <Link href="/auth/forgot-password" className="text-[10px] font-black text-zinc-900 uppercase tracking-widest hover:text-zinc-600 transition-colors">
-                                {t('auth.login.forgotPassword', undefined, 'Forgot?')}
+                            <Link href="/auth/forgot-password" className="text-xs font-bold text-zinc-900 tracking-wide hover:text-zinc-600 transition-colors">
+                                {t('auth.login.forgotPassword', undefined, 'Forgot password?')}
                             </Link>
                         </div>
                         <div className="relative group">
@@ -212,6 +243,7 @@ function LoginContent() {
                                 id="password"
                                 autoComplete="current-password"
                                 required
+                                aria-invalid={isError}
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="••••••••"
@@ -220,6 +252,10 @@ function LoginContent() {
                             <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
+                                aria-label={showPassword
+                                    ? t('auth.common.hidePassword', undefined, 'Hide password')
+                                    : t('auth.common.showPassword', undefined, 'Show password')}
+                                aria-pressed={showPassword}
                                 className="absolute right-5 top-1/2 -translate-y-1/2 text-zinc-300 hover:text-zinc-900 transition-colors"
                             >
                                 {showPassword ? <EyeOff size={20} strokeWidth={2.5} /> : <Eye size={20} strokeWidth={2.5} />}
@@ -267,7 +303,7 @@ function LoginContent() {
                 
                 {googleLoading && (
                     <p className="text-[9px] font-black text-zinc-900 text-center animate-pulse uppercase tracking-widest">
-                        {t('auth.login.connectingGoogle', undefined, 'Handshaking with Google...')}
+                        {t('auth.login.connectingGoogle', undefined, 'Connecting to Google…')}
                     </p>
                 )}
 
@@ -284,14 +320,21 @@ function LoginContent() {
     );
 }
 
+function LoginFallback() {
+    const { t } = useLanguage();
+    return (
+        <div className="flex flex-col items-center justify-center p-8 min-h-[400px] space-y-4" role="status" aria-live="polite">
+            <div className="w-8 h-8 border-2 border-zinc-950/20 border-t-zinc-950 rounded-full animate-spin" />
+            <p className="text-zinc-400 font-bold text-xs tracking-wide">
+                {t('auth.login.loading', undefined, 'Loading…')}
+            </p>
+        </div>
+    );
+}
+
 export default function LoginPage() {
     return (
-        <Suspense fallback={
-            <div className="flex flex-col items-center justify-center p-8 min-h-[400px] space-y-4">
-                <div className="w-8 h-8 border-2 border-zinc-950/20 border-t-zinc-950 rounded-full animate-spin" />
-                <p className="text-zinc-400 font-bold uppercase text-[9px] tracking-widest animate-pulse">Initializing Secured Terminal...</p>
-            </div>
-        }>
+        <Suspense fallback={<LoginFallback />}>
             <LoginContent />
         </Suspense>
     );

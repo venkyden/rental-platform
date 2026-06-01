@@ -28,23 +28,24 @@ export default function ForgotEmailPage() {
     const [phone, setPhone] = useState('');
     const [status, setStatus] = useState<'idle' | 'loading' | 'success'>('idle');
     const [error, setError] = useState('');
-    const [maskedEmail, setMaskedEmail] = useState('');
     const { t } = useLanguage();
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
+        if (status === 'loading') return;
         setError('');
         setStatus('loading');
 
         try {
-            const response = await apiClient.client.post('/auth/forgot-email', {
+            // Backend always returns a generic 200 (no account enumeration); we
+            // show a neutral "if an account exists" confirmation either way.
+            await apiClient.client.post('/auth/forgot-email', {
                 full_name: fullName,
                 phone: phone,
             });
-            setMaskedEmail(response.data.masked_email);
             setStatus('success');
         } catch (err: any) {
-            setError(err.response?.data?.detail || 'No account found matching this name and phone number.');
+            setError(err.response?.data?.detail || t('auth.forgotEmail.errors.default', undefined, 'Something went wrong. Please try again.'));
             setStatus('idle');
         }
     }
@@ -60,21 +61,17 @@ export default function ForgotEmailPage() {
                     )}
                 </div>
                 <h2 className="text-3xl font-extrabold text-zinc-900 mb-3 tracking-tight">
-                    {status === 'success' ? t('auth.forgotEmail.successTitle', undefined, 'Account Found') : t('auth.forgotEmail.title', undefined, 'Find your email')}
+                    {status === 'success' ? t('auth.forgotEmail.successTitle', undefined, 'Check your inbox') : t('auth.forgotEmail.title', undefined, 'Find your email')}
                 </h2>
                 <p className="text-zinc-500 text-sm max-w-sm mx-auto leading-relaxed">
                     {status === 'success'
-                        ? t('auth.forgotEmail.successDesc', undefined, 'We found an account matching your details.')
-                        : t('auth.forgotEmail.desc', undefined, "Enter your registered full name and phone number and we'll help you find your email address.")}
+                        ? t('auth.forgotEmail.successDesc', undefined, "If an account matches the details you provided, we've sent a reminder to its email address.")
+                        : t('auth.forgotEmail.desc', undefined, "Enter your registered full name and phone number and we'll send a reminder to the matching email address.")}
                 </p>
             </motion.div>
 
             {status === 'success' ? (
                 <motion.div variants={itemVariants} className="space-y-6">
-                    <div className="bg-zinc-50 border border-zinc-100 rounded-xl p-6 text-center">
-                        <p className="text-sm text-zinc-500 mb-2">{t('auth.forgotEmail.resultLabel', undefined, 'Your email address is')}</p>
-                        <p className="text-2xl font-bold text-zinc-900">{maskedEmail}</p>
-                    </div>
                     <Link
                         href="/auth/login"
                         className="flex w-full justify-center px-4 py-3 rounded-xl border border-transparent text-sm font-semibold text-white bg-zinc-900 hover:bg-zinc-800 focus:outline-none focus:ring-4 focus:ring-zinc-500/20 transition-all shadow-sm"
@@ -85,9 +82,9 @@ export default function ForgotEmailPage() {
             ) : (
                 <motion.form variants={itemVariants} className="space-y-5" onSubmit={handleSubmit}>
                     {error && (
-                        <div className="rounded-xl bg-zinc-900 border border-zinc-900 p-4 flex items-center gap-3">
+                        <div role="alert" aria-live="assertive" className="rounded-xl bg-zinc-900 border border-zinc-900 p-4 flex items-center gap-3">
                             <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                            <p className="text-[10px] font-black uppercase tracking-widest text-white">{error}</p>
+                            <p className="text-xs font-bold tracking-wide text-white">{error}</p>
                         </div>
                     )}
 

@@ -1,6 +1,5 @@
 import logging
 import httpx
-import html
 import uuid
 from datetime import datetime, timedelta
 from app.core.timeutils import naive_utcnow
@@ -22,6 +21,7 @@ from app.models.schemas import (ForgotPasswordRequest, ForgotEmailRequest, Googl
                                 SwitchRoleRequest)
 from app.models.user import User
 from app.services.email import email_service
+from app.core.cache import cache
 
 # Set up audit logger
 audit_logger = logging.getLogger("audit")
@@ -42,6 +42,39 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
+# ------------------------------------------------------------------
+# Per-account login lockout (defence-in-depth on top of per-IP rate
+# limiting). Backed by Redis so it works across instances; if Redis is
+# unavailable it fails open — the IP rate limit still applies.
+# ------------------------------------------------------------------
+_LOCKOUT_THRESHOLD = 5
+_LOCKOUT_WINDOW_SECONDS = 15 * 60
+
+
+def _login_fail_key(email: str) -> str:
+    return f"login_fail:{(email or '').strip().lower()}"
+
+
+async def _login_failure_count(email: str) -> int:
+    data = await cache.get(_login_fail_key(email))
+    return int(data.get("count", 0)) if isinstance(data, dict) else 0
+
+
+async def _record_login_failure(email: str) -> None:
+    count = await _login_failure_count(email) + 1
+    await cache.set(
+        _login_fail_key(email), {"count": count}, ttl=_LOCKOUT_WINDOW_SECONDS
+    )
+
+
+async def _clear_login_failures(email: str) -> None:
+    await cache.delete(_login_fail_key(email))
+
+
+async def _is_account_locked(email: str) -> bool:
+    return await _login_failure_count(email) >= _LOCKOUT_THRESHOLD
+
+
 async def get_current_user(
     token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)
 ) -> User:
@@ -54,6 +87,13 @@ async def get_current_user(
 
     payload = verify_token(token)
     if payload is None:
+        raise credentials_exception
+
+    # Only genuine access tokens may authenticate a request. Password-reset,
+    # email-verification and email-change tokens are signed with the same key
+    # but carry a different "type"; without this check they could be replayed
+    # as Bearer credentials (token confusion).
+    if payload.get("type") != "access":
         raise credentials_exception
 
     email: str = payload.get("sub")
@@ -82,6 +122,8 @@ async def get_current_user_optional(
     try:
         payload = verify_token(token)
         if payload is None:
+            return None
+        if payload.get("type") != "access":
             return None
         email: str = payload.get("sub")
         if email is None:
@@ -126,7 +168,7 @@ async def register(
         id=uuid.uuid4(),
         email=user_data.email,
         hashed_password=hashed_password,
-        full_name=html.escape(user_data.full_name.strip()) if user_data.full_name else None,
+        full_name=user_data.full_name.strip() if user_data.full_name else None,
         phone=user_data.phone.strip() if user_data.phone else None,
         role=user_data.role,
         available_roles=[user_data.role],
@@ -176,11 +218,23 @@ async def login(
     audit_logger.info(
         f"LOGIN_ATTEMPT email={form_data.username} ip={client_host}"
     )
+
+    # Per-account lockout check (defence-in-depth against credential stuffing).
+    if await _is_account_locked(form_data.username):
+        audit_logger.warning(
+            f"LOGIN_LOCKED email={form_data.username} ip={client_host}"
+        )
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many failed login attempts. Please try again in a few minutes.",
+        )
+
     # Find user
     result = await db.execute(select(User).where(User.email == form_data.username))
     user = result.scalar_one_or_none()
 
     if not user or not user.hashed_password or not verify_password(form_data.password, user.hashed_password):
+        await _record_login_failure(form_data.username)
         audit_logger.warning(
             f"LOGIN_FAILED email={form_data.username} ip={client_host}"
         )
@@ -189,6 +243,9 @@ async def login(
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+    # Successful credential check — clear any accumulated failures.
+    await _clear_login_failures(form_data.username)
 
     if not user.is_active:
         raise HTTPException(
@@ -355,7 +412,7 @@ async def update_me(
 ):
     """Update current user profile (name, bio)"""
     if user_update.full_name is not None:
-        current_user.full_name = html.escape(user_update.full_name)
+        current_user.full_name = user_update.full_name.strip()
     if user_update.bio is not None:
         current_user.bio = user_update.bio
         
@@ -500,6 +557,9 @@ async def confirm_email_change(
 
     user.email = new_email
     user.email_verified = True  # Implicitly verified since they clicked the link
+    # Changing the login identifier invalidates existing sessions (their access
+    # tokens carry the old email as "sub"); force a fresh login.
+    user.refresh_token_version += 1
     await db.commit()
 
     return {"message": "Email address updated successfully"}
@@ -712,9 +772,15 @@ async def forgot_email(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Recover an email address using full name and phone number.
-    Returns a masked version of the email to protect privacy.
+    Help a user recover which email they registered with, by name + phone.
+
+    Privacy: this endpoint must NOT reveal whether an account exists (no account
+    enumeration, no PII leak). It ALWAYS returns the same generic 200 response;
+    when a match is found we email the reminder to that address out-of-band. We
+    never return the (even masked) address to the unauthenticated caller.
     """
+    client_host = request.client.host if request.client else "unknown"
+
     # Case-insensitive search using ilike
     query = select(User).where(
         User.full_name.ilike(payload.full_name.strip()),
@@ -723,38 +789,23 @@ async def forgot_email(
     result = await db.execute(query)
     user = result.scalars().first()
 
-    if not user:
-        # Generic error message to prevent enumeration
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="No account found matching this name and phone number."
+    if user:
+        background_tasks.add_task(
+            email_service.send_forgot_email_reminder,
+            to_email=user.email,
+            full_name=user.full_name or "User",
         )
-
-    # Mask the email
-    email_parts = user.email.split("@")
-    if len(email_parts) == 2:
-        username, domain = email_parts
-        if len(username) > 2:
-            masked_username = username[0] + "*" * (len(username) - 2) + username[-1]
-        elif len(username) == 2:
-            masked_username = username[0] + "*"
-        else:
-            masked_username = username
-        masked_email = f"{masked_username}@{domain}"
+        audit_logger.info(f"FORGOT_EMAIL_MATCH ip={client_host}")
     else:
-        masked_email = user.email
+        audit_logger.info(f"FORGOT_EMAIL_NO_MATCH ip={client_host}")
 
-    # Send email reminder
-    background_tasks.add_task(
-        email_service.send_forgot_email_reminder,
-        to_email=user.email,
-        full_name=user.full_name or "User",
-    )
-
-    client_host = request.client.host if request.client else "unknown"
-    audit_logger.info(f"FORGOT_EMAIL_SUCCESS masked_email={masked_email} ip={client_host}")
-
-    return {"message": "Account found and email reminder sent", "masked_email": masked_email}
+    # Identical response in both branches → no enumeration signal.
+    return {
+        "message": (
+            "If an account matches the details you provided, we've sent a "
+            "reminder to its email address."
+        )
+    }
 
 
 @router.post("/forgot-password")
@@ -769,9 +820,16 @@ async def forgot_password(
 
     # Always return success (don't reveal if email exists)
     if user:
-        # Create reset token (valid for 1 hour)
+        # Create reset token (valid for 1 hour). Binding the current
+        # refresh_token_version makes the link single-use: resetting the
+        # password bumps the version, invalidating this (and any other
+        # outstanding) reset link.
         reset_token = create_access_token(
-            data={"sub": user.email, "type": "password_reset"},
+            data={
+                "sub": user.email,
+                "type": "password_reset",
+                "rtv": user.refresh_token_version,
+            },
             expires_delta=timedelta(hours=1),
         )
 
@@ -808,8 +866,19 @@ async def reset_password(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
 
-    # Update password
+    # Single-use enforcement: the link is bound to the session version that was
+    # current when it was issued. Once used (or once any other session-revoking
+    # action runs), the version no longer matches and the link is dead.
+    token_rtv = payload.get("rtv")
+    if token_rtv is not None and token_rtv != user.refresh_token_version:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This reset link has already been used or is no longer valid",
+        )
+
+    # Update password and revoke all existing sessions / outstanding reset links.
     user.hashed_password = get_password_hash(request.new_password)
+    user.refresh_token_version += 1
     await db.commit()
 
     return {"message": "Password reset successful"}

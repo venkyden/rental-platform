@@ -5,21 +5,38 @@ import { SegmentProvider } from "@/lib/SegmentContext";
 import { LanguageProvider } from "@/lib/LanguageContext";
 import ToastContainer from "@/components/ToastContainer";
 import GlobalFooter from "@/components/GlobalFooter";
-import { BRAND } from "@/lib/constants";
+import { BRAND, SITE_URL } from "@/lib/constants";
 
 
 
 export const metadata: Metadata = {
-  title: BRAND.title,
+  // metadataBase makes all relative OG/Twitter image URLs resolve against the
+  // real origin instead of localhost (previously broke social-share previews).
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: BRAND.title,
+    template: `%s · ${BRAND.name}`,
+  },
   description: BRAND.description,
+  applicationName: BRAND.name,
   manifest: "/manifest.json",
+  alternates: {
+    canonical: "/",
+    languages: {
+      fr: "/",
+      en: "/",
+    },
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
     title: "Roomivo",
   },
   icons: {
-    icon: "/icons/icon-192.png",
+    icon: [
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
     apple: "/icons/icon-192.png",
   },
 };

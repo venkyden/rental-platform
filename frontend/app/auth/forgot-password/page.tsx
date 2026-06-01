@@ -97,7 +97,7 @@ export default function ForgotPasswordPage() {
 
             <motion.form variants={containerVariants} className="space-y-5" onSubmit={handleSubmit}>
                 {error && (
-                    <motion.div variants={itemVariants} className="rounded-xl bg-zinc-900 p-4 shadow-xl shadow-zinc-900/10">
+                    <motion.div variants={itemVariants} role="alert" aria-live="assertive" className="rounded-xl bg-zinc-900 p-4 shadow-xl shadow-zinc-900/10">
                         <p className="text-sm font-medium text-white">{error}</p>
                     </motion.div>
                 )}

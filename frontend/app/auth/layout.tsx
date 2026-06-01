@@ -18,11 +18,13 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                     <LanguageSwitcher />
                 </div>
 
-                {/* Mesh Gradient Background */}
-                <div className="absolute inset-0 z-0 overflow-hidden">
-                    <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-zinc-900/5 blur-[120px] animate-pulse" />
-                    <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-zinc-900/5 blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
-                    <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] rounded-full bg-zinc-900/5 blur-[100px]" />
+                {/* Mesh gradient background. Lighter blur + motion-safe pulse:
+                    large blur radii are GPU-expensive and jank on Android / older
+                    Safari, and the pulse is suppressed under prefers-reduced-motion. */}
+                <div className="absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
+                    <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-zinc-900/5 blur-3xl motion-safe:animate-pulse" />
+                    <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-zinc-900/5 blur-3xl motion-safe:animate-pulse" style={{ animationDelay: '2s' }} />
+                    <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] rounded-full bg-zinc-900/5 blur-3xl" />
                 </div>
 
                 {/* Content Container */}

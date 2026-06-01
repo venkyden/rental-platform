@@ -45,6 +45,9 @@ function ResetPasswordContent() {
         if (!/[0-9]/.test(password)) {
             return t('auth.resetPassword.errors.number', undefined, 'Password must contain at least one number');
         }
+        if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+            return t('auth.resetPassword.errors.special', undefined, 'Password must contain at least one special character');
+        }
         return null;
     };
 
@@ -149,6 +152,8 @@ function ResetPasswordContent() {
                         <motion.div 
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
+                            role="alert"
+                            aria-live="assertive"
                             className="bg-zinc-950 rounded-2xl p-4 shadow-xl shadow-zinc-950/10 flex items-start gap-3"
                         >
                             <AlertCircle className="text-white w-5 h-5 shrink-0 mt-0.5" strokeWidth={2} />
@@ -172,9 +177,11 @@ function ResetPasswordContent() {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                             />
-                            <button 
-                                type="button" 
-                                onClick={() => setShowPassword(!showPassword)} 
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                aria-label={showPassword ? t('auth.common.hidePassword', undefined, 'Hide password') : t('auth.common.showPassword', undefined, 'Show password')}
+                                aria-pressed={showPassword}
                                 className="absolute right-5 inset-y-0 text-zinc-300 hover:text-zinc-900 transition-colors"
                             >
                                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -201,9 +208,11 @@ function ResetPasswordContent() {
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
                             />
-                            <button 
-                                type="button" 
-                                onClick={() => setShowConfirmPassword(!showConfirmPassword)} 
+                            <button
+                                type="button"
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                aria-label={showConfirmPassword ? t('auth.common.hidePassword', undefined, 'Hide password') : t('auth.common.showPassword', undefined, 'Show password')}
+                                aria-pressed={showConfirmPassword}
                                 className="absolute right-5 inset-y-0 text-zinc-300 hover:text-zinc-900 transition-colors"
                             >
                                 {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}

@@ -39,6 +39,16 @@ class EncryptionService:
             self.fernet = Fernet(Fernet.generate_key())
             self.mode = "ephemeral"
 
+        # Fail fast in production: real user PII (ID documents, income, KBIS…)
+        # must never be protected by a key derived from SECRET_KEY ("fallback")
+        # or by a throwaway in-memory key ("ephemeral", which silently destroys
+        # data on restart). Require an explicit MASTER_ENCRYPTION_KEY.
+        if settings.ENVIRONMENT == "production" and self.mode != "secure":
+            raise RuntimeError(
+                "Insecure encryption mode '%s' in production. Set MASTER_ENCRYPTION_KEY "
+                "to a stable Fernet key (EncryptionService.generate_key())." % self.mode
+            )
+
     @staticmethod
     def generate_key() -> str:
         """Utility to generate a secure 32-byte Base64 encoded key for MASTER_ENCRYPTION_KEY"""
@@ -66,11 +76,17 @@ class EncryptionService:
             decrypted_data = self.fernet.decrypt(encrypted_str.encode())
             return json.loads(decrypted_data.decode())
         except Exception:
-            # Fallback for old unencrypted JSON strings
+            # Fallback for old unencrypted JSON strings (pre-encryption rows).
             try:
                 return json.loads(encrypted_str)
             except Exception:
-                # If it's not JSON and decryption failed, return as is or None
+                # Neither valid ciphertext for this key nor legacy plaintext JSON.
+                # This almost always means a wrong/rotated key or corrupted data —
+                # surface it loudly rather than silently dropping the PII.
+                logger.error(
+                    "Failed to decrypt stored value (wrong key, rotated key, or "
+                    "corruption). Returning None.",
+                )
                 return None
 
 encryption_service = EncryptionService()

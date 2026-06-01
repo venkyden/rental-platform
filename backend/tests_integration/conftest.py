@@ -58,6 +58,17 @@ async def sessionmaker_(engine):
     return async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 
+@pytest.fixture(autouse=True)
+def _disable_rate_limiter():
+    """Per-IP rate limits (register/login/etc.) would trip during a full suite
+    run from a single test IP. Disable slowapi for tests; production keeps it."""
+    from app.routers.auth import limiter
+    previous = limiter.enabled
+    limiter.enabled = False
+    yield
+    limiter.enabled = previous
+
+
 @pytest_asyncio.fixture
 async def client(engine, sessionmaker_):
     # Clean slate

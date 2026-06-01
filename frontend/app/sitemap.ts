@@ -1,38 +1,54 @@
 import { MetadataRoute } from 'next';
+import { SITE_URL } from '@/lib/constants';
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://roomivo.eu';
-  
-  return [
-    {
-      url: baseUrl,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 1,
-    },
-    {
-      url: `${baseUrl}/search`,
-      lastModified: new Date(),
-      changeFrequency: 'hourly',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/support`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.5,
-    },
-    {
-      url: `${baseUrl}/legal/terms`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.3,
-    },
-    {
-      url: `${baseUrl}/legal/privacy`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.3,
-    },
-  ];
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+
+// Revalidate the sitemap hourly so new listings get discovered without a redeploy.
+export const revalidate = 3600;
+
+// Public, indexable static routes (auth/dashboard/settings stay out — see robots.ts).
+const STATIC_ROUTES: Array<{ path: string; changeFrequency: MetadataRoute.Sitemap[number]['changeFrequency']; priority: number }> = [
+  { path: '', changeFrequency: 'daily', priority: 1 },
+  { path: '/search', changeFrequency: 'hourly', priority: 0.9 },
+  { path: '/support', changeFrequency: 'weekly', priority: 0.5 },
+  { path: '/legal/terms', changeFrequency: 'monthly', priority: 0.3 },
+  { path: '/legal/privacy', changeFrequency: 'monthly', priority: 0.3 },
+  { path: '/legal/cgv', changeFrequency: 'monthly', priority: 0.3 },
+  { path: '/legal/cookies', changeFrequency: 'monthly', priority: 0.3 },
+  { path: '/legal/gdpr', changeFrequency: 'monthly', priority: 0.3 },
+  { path: '/legal/mentions-legales', changeFrequency: 'monthly', priority: 0.3 },
+];
+
+async function getPropertyEntries(): Promise<MetadataRoute.Sitemap> {
+  // Best-effort: a sitemap must never fail the build/route if the API is down.
+  try {
+    const res = await fetch(`${API_URL}/properties?limit=1000`, {
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    const items: any[] = Array.isArray(data) ? data : data?.data ?? [];
+    return items
+      .filter((p) => p?.id)
+      .map((p) => ({
+        url: `${SITE_URL}/properties/${p.id}`,
+        lastModified: p.updated_at ? new Date(p.updated_at) : new Date(),
+        changeFrequency: 'daily' as const,
+        priority: 0.7,
+      }));
+  } catch {
+    return [];
+  }
+}
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const staticEntries: MetadataRoute.Sitemap = STATIC_ROUTES.map((r) => ({
+    url: `${SITE_URL}${r.path}`,
+    lastModified: new Date(),
+    changeFrequency: r.changeFrequency,
+    priority: r.priority,
+  }));
+
+  const propertyEntries = await getPropertyEntries();
+  return [...staticEntries, ...propertyEntries];
 }

@@ -56,7 +56,7 @@ function VerifyEmailContent() {
     }
 
     return (
-        <div className="w-full text-center space-y-6">
+        <div className="w-full text-center space-y-6" role={status === 'error' ? 'alert' : 'status'} aria-live={status === 'error' ? 'assertive' : 'polite'}>
             <div>
                 <h2 className="text-2xl font-black tracking-tighter text-zinc-900 uppercase">
                     {t('auth.verifyEmail.title', undefined, 'Email Verification')}

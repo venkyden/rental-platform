@@ -4,6 +4,27 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
 
 class ApiClient {
     public client: AxiosInstance;
+    // Single-flight refresh: concurrent 401s share ONE /auth/refresh call.
+    // The backend rotates the refresh token and bumps refresh_token_version on
+    // each refresh, so parallel refreshes would invalidate each other and log
+    // the user out across tabs/requests. This promise serialises them.
+    private refreshPromise: Promise<string | null> | null = null;
+
+    private refreshAccessToken(): Promise<string | null> {
+        if (!this.refreshPromise) {
+            this.refreshPromise = axios
+                .post(`${API_URL}/auth/refresh`, {}, { withCredentials: true, timeout: 10000 })
+                .then((res) => {
+                    const newAccessToken = res.data?.access_token ?? null;
+                    if (newAccessToken) this.setToken(newAccessToken);
+                    return newAccessToken;
+                })
+                .finally(() => {
+                    this.refreshPromise = null;
+                });
+        }
+        return this.refreshPromise;
+    }
 
     constructor() {
         this.client = axios.create({
@@ -84,42 +105,25 @@ class ApiClient {
                     }
 
                     try {
-                        console.log('[API] 401 detected, attempting token refresh...');
-                        // Attempt to refresh the token using the HttpOnly cookie
-                        const refreshResponse = await axios.post(
-                            `${API_URL}/auth/refresh`,
-                            {},
-                            { 
-                                withCredentials: true,
-                                timeout: 10000 
-                            }
-                        );
-
-                        const newAccessToken = refreshResponse.data.access_token;
+                        // Attempt to refresh via the httpOnly cookie. Concurrent
+                        // 401s coalesce into one refresh (see refreshAccessToken).
+                        const newAccessToken = await this.refreshAccessToken();
                         if (newAccessToken) {
-                            console.log('[API] Token refresh successful');
-                            this.setToken(newAccessToken);
                             // Retry the original request with the new token
                             originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
                             return this.client(originalRequest);
                         }
                     } catch (refreshError) {
-                        console.warn('[API] Token refresh failed, falling back to guest mode:', refreshError);
                         // Refresh token failed or expired
                         this.clearToken();
-                        
+
                         // If it's a public page, just retry the request WITHOUT the auth header
                         if (isPublicPage) {
-                            console.log('[API] Retrying public request as guest...');
                             delete originalRequest.headers.Authorization;
                             return this.client(originalRequest);
                         }
 
-                        // Otherwise, redirect to login if we're not already there
-                        if (typeof window !== 'undefined' && !isLoginPage) {
-                            console.log('[API] Protected resource failed (token refresh failed), allowing ProtectedRoute to handle unauthenticated state...');
-                            // window.location.href = '/auth/login?expired=1';
-                        }
+                        // Otherwise let ProtectedRoute handle the unauthenticated state.
                         return Promise.reject(refreshError);
                     }
                 }
@@ -138,14 +142,12 @@ class ApiClient {
     }
 
     setToken(token: string): void {
-        console.log('[apiClient] setToken called, token:', token);
         if (typeof window !== 'undefined') {
             localStorage.setItem('access_token', token);
         }
     }
 
     clearToken(): void {
-        console.log('[apiClient] clearToken called');
         if (typeof window !== 'undefined') {
             localStorage.removeItem('access_token');
         }

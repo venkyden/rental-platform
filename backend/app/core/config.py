@@ -1,5 +1,6 @@
 from typing import Optional
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings
 
 
@@ -64,6 +65,20 @@ class Settings(BaseSettings):
             "https://roomivo.eu",
             "https://www.roomivo.eu",
         ]
+
+    @model_validator(mode="after")
+    def _validate_production_secrets(self) -> "Settings":
+        """Refuse to start in production with weak or missing secrets."""
+        if self.ENVIRONMENT == "production":
+            if not self.SECRET_KEY or len(self.SECRET_KEY) < 32:
+                raise ValueError(
+                    "SECRET_KEY must be set to at least 32 characters in production."
+                )
+            if not self.MASTER_ENCRYPTION_KEY:
+                raise ValueError(
+                    "MASTER_ENCRYPTION_KEY must be set in production (GDPR PII encryption)."
+                )
+        return self
 
     class Config:
         env_file = ".env"

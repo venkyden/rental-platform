@@ -1046,6 +1046,10 @@ export const translations = {
         },
         auth: {
             google_signin: "Sign in with Google",
+            common: {
+                showPassword: "Show password",
+                hidePassword: "Hide password"
+            },
             modal: {
                 secure: "Roomivo Secure",
                 close: "Close authentication modal"
@@ -1103,6 +1107,17 @@ export const translations = {
                     default: "Failed to send reset email. Please try again."
                 }
             },
+            verifyEmailChange: {
+                verifying: "Verifying...",
+                verifyingDesc: "Verifying your new email address...",
+                missingToken: "Verification token is missing. Please check your email link.",
+                successTitle: "Email Updated",
+                successDesc: "Your email address has been successfully updated!",
+                redirecting: "Redirecting you to your profile...",
+                failedTitle: "Verification Failed",
+                failedDesc: "Failed to verify email change. The link may have expired.",
+                returnToSettings: "Return to Settings"
+            },
             resetPassword: {
                 title: "Set new password",
                 subtitle: "Enter your new password below",
@@ -1122,6 +1137,7 @@ export const translations = {
                     uppercase: "Password must contain at least one uppercase letter",
                     lowercase: "Password must contain at least one lowercase letter",
                     number: "Password must contain at least one number",
+                    special: "Password must contain at least one special character",
                     default: "Failed to reset password. The link may be expired."
                 }
             },
@@ -1145,7 +1161,8 @@ export const translations = {
                     google: "Google sign-in did not return a credential. Please try again.",
                     googleFail: "Google sign-in failed. Please try again.",
                     googleScript: "Could not load Google Sign-In. Please use email login.",
-                    loginFail: "Login failed. Please try again."
+                    loginFail: "Login failed. Please try again.",
+                    passwordRequired: "Please enter your password"
                 }
             },
             register: {
@@ -1198,7 +1215,7 @@ export const translations = {
                     label: "Security Strength",
                     weak: "Weak",
                     medium: "Secure",
-                    strong: "Industrial Grade"
+                    strong: "Very strong"
                 },
                 error: {
                     privacy: "You must accept the Privacy Policy to create an account",
@@ -3274,6 +3291,10 @@ export const translations = {
         },
         auth: {
             google_signin: "Se connecter avec Google",
+            common: {
+                showPassword: "Afficher le mot de passe",
+                hidePassword: "Masquer le mot de passe"
+            },
             modal: {
                 secure: "Roomivo Sécurisé",
                 close: "Fermer la modal d'authentification"
@@ -3331,6 +3352,17 @@ export const translations = {
                     default: "Échec de l'envoi de l'email. Veuillez réessayer."
                 }
             },
+            verifyEmailChange: {
+                verifying: "Vérification...",
+                verifyingDesc: "Vérification de votre nouvelle adresse e-mail...",
+                missingToken: "Le jeton de vérification est manquant. Veuillez vérifier le lien dans votre e-mail.",
+                successTitle: "E-mail mis à jour",
+                successDesc: "Votre adresse e-mail a été mise à jour avec succès !",
+                redirecting: "Redirection vers votre profil...",
+                failedTitle: "Échec de la vérification",
+                failedDesc: "Échec de la vérification du changement d'e-mail. Le lien a peut-être expiré.",
+                returnToSettings: "Retour aux paramètres"
+            },
             resetPassword: {
                 title: "Nouveau mot de passe",
                 subtitle: "Entrez votre nouveau mot de passe ci-dessous",
@@ -3350,6 +3382,7 @@ export const translations = {
                     uppercase: "Le mot de passe doit contenir au moins une majuscule",
                     lowercase: "Le mot de passe doit contenir au moins une minuscule",
                     number: "Le mot de passe doit contenir au moins un chiffre",
+                    special: "Le mot de passe doit contenir au moins un caractère spécial",
                     default: "Échec de la réinitialisation. Le lien a peut-être expiré."
                 }
             },
@@ -3373,7 +3406,8 @@ export const translations = {
                     google: "La connexion Google n'a pas retourné de justificatif. Veuillez réessayer.",
                     googleFail: "La connexion Google a échoué. Veuillez réessayer.",
                     googleScript: "Impossible de charger la connexion Google. Veuillez utiliser la connexion par e-mail.",
-                    loginFail: "Échec de la connexion. Veuillez réessayer."
+                    loginFail: "Échec de la connexion. Veuillez réessayer.",
+                    passwordRequired: "Veuillez saisir votre mot de passe"
                 }
             },
             register: {
@@ -3426,7 +3460,7 @@ export const translations = {
                     label: "Force de sécurité",
                     weak: "Faible",
                     medium: "Sécurisé",
-                    strong: "Qualité Industrielle"
+                    strong: "Très fort"
                 },
                 error: {
                     privacy: "Vous devez accepter la politique de confidentialité pour créer un compte",

@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { BRAND } from '@/lib/constants';
+import { BRAND, SITE_URL } from '@/lib/constants';
 import Navbar from '@/components/Navbar';
 import SearchHero from '@/components/landing/SearchHero';
 import ValuePropSection from '@/components/landing/ValuePropSection';
@@ -13,34 +13,29 @@ export const metadata: Metadata = {
   title: `${BRAND.title} - Smart Rental Platform`,
   description: BRAND.description,
   keywords: ['rentals', 'france', 'apartments', 'roomivo', 'landlord', 'tenant', 'verified rentals'],
+  alternates: { canonical: '/' },
   openGraph: {
     title: BRAND.title,
     description: BRAND.description,
     type: 'website',
-    url: 'https://roomivo.eu',
-    images: [
-      {
-        url: 'https://roomivo.eu/og-image.png',
-        width: 1200,
-        height: 630,
-        alt: 'Roomivo - Smart Rental Platform'
-      }
-    ]
+    url: SITE_URL,
+    siteName: BRAND.name,
+    // OG/Twitter images are supplied automatically by app/opengraph-image.tsx
+    // (next/og generated). No hand-maintained /og-image.png asset needed.
   },
   twitter: {
     card: 'summary_large_image',
     title: BRAND.title,
     description: BRAND.description,
-    images: ['https://roomivo.eu/og-image.png'],
   }
 };
 
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
-  name: 'Roomivo',
-  url: 'https://roomivo.eu',
-  logo: 'https://roomivo.eu/logo.png',
+  name: BRAND.name,
+  url: SITE_URL,
+  logo: `${SITE_URL}/icons/icon-512.png`,
   description: BRAND.description,
   sameAs: [
     'https://twitter.com/roomivo',
@@ -53,9 +48,8 @@ export default function HomePage() {
     <div className="min-h-screen relative overflow-hidden bg-white">
       <script
         type="application/ld+json"
-      >
-        {JSON.stringify(jsonLd)}
-      </script>
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="vibrancy-bg" />
 
       {/* ─── Navbar ─── */}
