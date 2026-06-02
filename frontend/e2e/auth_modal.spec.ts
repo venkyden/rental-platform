@@ -299,13 +299,15 @@ test.describe('Phase 6: Slide-Up Auth Modal & Hybrid Verification Gates', () => 
             // Click submit button
             await page.locator('button[type="submit"]').click();
 
-            // Wait for redirection to dashboard
-            await page.waitForURL('**/dashboard');
+            // Wait for redirection to dashboard. Generous timeout: under full-suite
+            // parallel load the dashboard's many API calls + redirect can be slow,
+            // which previously made this step flaky on webkit.
+            await page.waitForURL('**/dashboard', { timeout: 30_000 });
 
             // Verify that we are on the dashboard and the gated auth modal is NOT showing
             await expect(page).toHaveURL(/.*dashboard/);
             const modal = page.locator('text=Roomivo Secure');
-            await expect(modal).not.toBeVisible();
+            await expect(modal).not.toBeVisible({ timeout: 15_000 });
         });
     });
 });

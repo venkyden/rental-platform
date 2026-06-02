@@ -125,11 +125,11 @@ test.describe('Landlord Listing Wizard', () => {
         // Go to new property creation page
         await page.goto('/properties/new');
 
-        // Verify Step 1. The page is heavy and sits behind ProtectedRoute (async
-        // auth check), so wait for the title input to mount before asserting —
-        // generous timeout absorbs first-load + auth bootstrap.
+        // Verify Step 1. This is a heavy page (~1300-line component) behind
+        // ProtectedRoute (async auth check); under parallel load its first render
+        // can be slow, so wait generously for the title input before asserting.
         const titleInput = page.locator('input[placeholder*="Listing title"]');
-        await expect(titleInput).toBeVisible({ timeout: 20000 });
+        await expect(titleInput).toBeVisible({ timeout: 45000 });
         await expect(page.locator('h1')).toContainText(/Create a listing/i);
         await titleInput.fill('Haussmann Luxury Suite');
 

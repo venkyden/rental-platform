@@ -5,6 +5,10 @@ export default defineConfig({
     timeout: 60_000,
     retries: 1,
     fullyParallel: true,
+    // Cap workers: heavy pages (wizard, dashboard) hitting one server in parallel
+    // caused contention-induced flakes. 2 workers keeps throughput while removing
+    // the pile-up. CI can override via PWTEST_WORKERS / --workers.
+    workers: 2,
     reporter: [['html', { open: 'never' }]],
         use: {
         baseURL: 'http://127.0.0.1:3001',
