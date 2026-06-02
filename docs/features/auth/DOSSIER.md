@@ -22,7 +22,14 @@ Last updated: 2026-05-31 (commit d87b6b0). Batch-1 backend security fixes applie
 > - reset-password client validation now includes the special-char rule (matches backend `ResetPasswordRequest`); added `auth.resetPassword.errors.special` (EN+FR).
 > - copy cleanup: gimmick i18n value `strength.strong` "Industrial Grade"/"Qualité Industrielle" → "Very strong"/"Très fort"; gimmick code fallbacks cleaned.
 > - auth i18n parity = 133/133 (run `node --experimental-strip-types frontend/scripts/check-i18n-parity.mjs "auth."`).
-> **Auth STILL TODO:** localStorage→in-memory token migration (blocked: LeaseManager `?token=` download URLs + verify-email reads token directly — migrate those first); Playwright e2e for auth flows; the verb-y REST route names (v2 API).
+> **Pass 3 DONE — Playwright e2e + forgot-email copy fix:**
+> - New `frontend/e2e/auth_pages.spec.ts`: 9 tests (labelled inputs, password-toggle aria, client email/empty-password validation announced via role=alert, FR/EN i18n parity, forgot-password labelled, forgot-email neutral no-leak message, reset-password no-token path). 18/18 green across chromium + webkit (Safari engine). Installed webkit+firefox browsers locally.
+> - Found & fixed a real leak the backend de-enumeration had left in the UI: forgot-email i18n still said "Account Found"/"We found an account" + rendered masked email ("Your email address is"). Rewrote `forgotEmail` copy (EN+FR) to neutral "Check your inbox / if an account matches…"; removed dead `resultLabel`/`errors.notFound` keys. Auth i18n parity now 131/131.
+> - e2e gotchas documented: run from `frontend/` (`npx playwright test`) NOT repo root (dual @playwright/test install conflict); scope error-banner selector to exclude Next's `#__next-route-announcer__` (also role=alert); mock API routes by `:8000` origin + POST method so the page navigation isn't hijacked.
+>
+> **Auth STILL TODO (deferred, documented):**
+> - localStorage→in-memory token migration — BLOCKED: LeaseManager `?token=` download URLs + verify-email read token directly, AND the entire existing e2e harness seeds auth via `localStorage.setItem('access_token',…)`. Needs a download-auth redesign + e2e harness change first. High blast radius; do as its own change.
+> - REST verb route names (`/auth/switch-role`, `/forgot-password`, …) — intentionally NOT renamed: would break the deployed FE↔BE contract + all tests for cosmetic gain. Deferred to a versioned v2 API.
 
 ---
 
