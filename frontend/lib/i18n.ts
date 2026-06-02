@@ -936,9 +936,9 @@ export const translations = {
         },
         properties: {
             new: {
-                title: "Listing Protocol",
+                title: "Create a listing",
                 stepStatus: "Step {{current}} of 8: {{status}}",
-                initializing: "Initializing Asset Registry",
+                initializing: "Let's get started",
                 exit: "×",
                 wizard: {
                     identity: "Identity",
@@ -963,20 +963,20 @@ export const translations = {
                 steps: {
                     identity: {
                         label: "01 // Identity",
-                        titlePlaceholder: "Lister Title (e.g., Haussmann Luxury Suite)",
+                        titlePlaceholder: "Listing title (e.g., Haussmann Luxury Suite)",
                     },
                     geolocation: {
-                        label: "02 // Geolocation",
+                        label: "02 // Location",
                         city: "City",
                         zip: "Zip",
-                        enrichButton: "Verify Connectivity & POIs",
-                        enriching: "Enriching Data..."
+                        enrichButton: "Verify transit & nearby places",
+                        enriching: "Loading nearby data..."
                     },
                     details: {
                         label: "03 // Details",
                         bedrooms: "Bedrooms",
                         surface: "Surface (m²)",
-                        energyProtocol: "Energy Protocol (DPE)"
+                        energyProtocol: "Energy rating (DPE)"
                     },
                     pricing: {
                         monthlyRent: "Monthly Rent",
@@ -1001,9 +1001,9 @@ export const translations = {
                         decencyWarning: "Warning: The habitable surface is below the legal decency standard of 9m² per occupant."
                     },
                     narrative: {
-                        label: "07 // Narrative",
-                        descriptionEnPlaceholder: "Elaborate on the architectural significance and living experience in English...",
-                        descriptionFrPlaceholder: "Elaborate on the architectural significance and living experience in French...",
+                        label: "07 // Description",
+                        descriptionEnPlaceholder: "Describe the property and what it's like to live there, in English...",
+                        descriptionFrPlaceholder: "Describe the property and what it's like to live there, in French...",
                         aiSuggest: "AI Suggest",
                         aiSuggestLanguage: "Generation Language",
                         englishTab: "English",
@@ -1012,35 +1012,35 @@ export const translations = {
                         aiSuggestAddressWarning: "For a localized description, please enter the address in Step 2 first."
                     },
                     review: {
-                        title: "Review Protocol",
-                        asset: "Asset",
+                        title: "Review & publish",
+                        asset: "Property",
                         location: "Location",
                         pricing: "Pricing",
                         perMonth: "mo",
-                        commitButton: "Commit to Registry",
-                        initializing: "Initializing...",
+                        commitButton: "Create listing",
+                        initializing: "Creating...",
                         declaration: "I declare that all the information provided in this listing is accurate and true to the best of my knowledge. I understand that providing false information may result in legal consequences.",
                         declarationRequired: "You must accept the declaration before submitting."
                     },
                     success: {
                         title: "Draft Created",
-                        description: "Asset registered as DRAFT. Finalize by capturing visual telemetry via mobile device.",
-                        forcePublish: "Force Publish",
-                        synchronizing: "Synchronizing...",
-                        return: "Return to Terminal"
+                        description: "Your listing is saved as a draft. Finish by adding photos from your phone.",
+                        forcePublish: "Publish now",
+                        synchronizing: "Publishing...",
+                        return: "Back to dashboard"
                     }
                 },
                 navigation: {
                     back: "Back",
-                    next: "Next Protocol"
+                    next: "Continue"
                 },
                 sidebar: {
-                    title: "Listing Intelligence",
-                    description: "Assets with high-fidelity descriptions and verified geolocation data experience a 400% increase in tenant engagement protocols.",
-                    optimizationRank: "Optimization Rank",
-                    rankValue: "Elite",
-                    networkReach: "Network Reach",
-                    reachValue: "Global"
+                    title: "Listing tips",
+                    description: "Listings with detailed descriptions and a verified address get far more interest from tenants.",
+                    optimizationRank: "Listing quality",
+                    rankValue: "Excellent",
+                    networkReach: "Visibility",
+                    reachValue: "Nationwide"
                 }
             }
         },
@@ -3181,9 +3181,9 @@ export const translations = {
         },
         properties: {
             new: {
-                title: "Protocole de Mise en Location",
+                title: "Créer une annonce",
                 stepStatus: "Étape {{current}} sur 8 : {{status}}",
-                initializing: "Initialisation du Registre des Actifs",
+                initializing: "Commençons",
                 exit: "×",
                 wizard: {
                     identity: "Identité",
@@ -3211,17 +3211,17 @@ export const translations = {
                         titlePlaceholder: "Titre de l'Annonce (ex : Suite de Luxe Haussmann)",
                     },
                     geolocation: {
-                        label: "02 // Géolocalisation",
+                        label: "02 // Localisation",
                         city: "Ville",
                         zip: "Code Postal",
-                        enrichButton: "Vérifier la Connectivité & POIs",
-                        enriching: "Enrichissement des données..."
+                        enrichButton: "Vérifier transports & lieux à proximité",
+                        enriching: "Chargement des données à proximité..."
                     },
                     details: {
                         label: "03 // Détails",
                         bedrooms: "Chambres",
                         surface: "Surface (m²)",
-                        energyProtocol: "Protocole Énergétique (DPE)"
+                        energyProtocol: "Diagnostic énergétique (DPE)"
                     },
                     pricing: {
                         monthlyRent: "Loyer Mensuel",
@@ -3257,35 +3257,35 @@ export const translations = {
                         aiSuggestAddressWarning: "Pour une description localisée, veuillez d'abord renseigner l'adresse à l'étape 2."
                     },
                     review: {
-                        title: "Protocole de Révision",
-                        asset: "Actif",
+                        title: "Vérifier et publier",
+                        asset: "Bien",
                         location: "Emplacement",
                         pricing: "Tarification",
                         perMonth: "mois",
-                        commitButton: "Valider l'Inscription",
-                        initializing: "Initialisation...",
+                        commitButton: "Créer l'annonce",
+                        initializing: "Création...",
                         declaration: "Je déclare que toutes les informations fournies dans cette annonce sont exactes et conformes à ce que je sais. Je comprends que la fourniture de fausses informations peut entraîner des conséquences juridiques.",
                         declarationRequired: "Vous devez accepter la déclaration avant de soumettre."
                     },
                     success: {
-                        title: "Brouillon Créé",
-                        description: "Actif enregistré comme BROUILLON. Finalisez en capturant la télémétrie visuelle via un appareil mobile.",
-                        forcePublish: "Forcer la Publication",
-                        synchronizing: "Synchronisation...",
-                        return: "Retour au Terminal"
+                        title: "Brouillon créé",
+                        description: "Votre annonce est enregistrée comme brouillon. Terminez en ajoutant des photos depuis votre téléphone.",
+                        forcePublish: "Publier maintenant",
+                        synchronizing: "Publication...",
+                        return: "Retour au tableau de bord"
                     }
                 },
                 navigation: {
                     back: "Retour",
-                    next: "Protocole Suivant"
+                    next: "Continuer"
                 },
                 sidebar: {
-                    title: "Intelligence de l'Annonce",
-                    description: "Les actifs avec des descriptions de haute fidélité et des données de géolocalisation vérifiées connaissent une augmentation de 400% des protocoles d'engagement des locataires.",
-                    optimizationRank: "Rang d'Optimisation",
-                    rankValue: "Élite",
-                    networkReach: "Portée du Réseau",
-                    reachValue: "Mondiale"
+                    title: "Conseils pour l'annonce",
+                    description: "Les annonces avec une description détaillée et une adresse vérifiée suscitent beaucoup plus d'intérêt de la part des locataires.",
+                    optimizationRank: "Qualité de l'annonce",
+                    rankValue: "Excellente",
+                    networkReach: "Visibilité",
+                    reachValue: "Nationale"
                 }
             }
         },

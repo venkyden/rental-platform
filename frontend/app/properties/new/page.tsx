@@ -11,7 +11,7 @@ import { useToast } from '@/lib/ToastContext';
 import { apiClient } from '@/lib/api';
 import QRCodeDisplay from '@/components/QRCodeDisplay';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
-import { motion, Variants, AnimatePresence } from 'framer-motion';
+import { motion, Variants, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Building, MapPin, Euro, Info, Layout, Plus, CheckCircle2, ChevronRight, ChevronLeft, Zap, Shield, Camera } from 'lucide-react';
 
 const containerVariants: Variants = {
@@ -92,6 +92,9 @@ export default function NewPropertyPage() {
     const router = useRouter();
     const { user } = useAuth();
     const { t } = useLanguage();
+    // Honour OS "reduce motion": framer animates via JS transforms, so the
+    // global CSS reduced-motion rule doesn't cover the step transitions.
+    const reduceMotion = useReducedMotion() ?? false;
     const [currentStep, setCurrentStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [enriching, setEnriching] = useState(false);
@@ -392,10 +395,10 @@ export default function NewPropertyPage() {
                             <AnimatePresence mode="wait">
                                 <motion.div
                                     key={currentStep}
-                                    initial={{ opacity: 0, x: 20 }}
+                                    initial={reduceMotion ? false : { opacity: 0, x: 20 }}
                                     animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: -20 }}
-                                    transition={{ duration: 0.4, ease: "circOut" }}
+                                    exit={reduceMotion ? { opacity: 0 } : { opacity: 0, x: -20 }}
+                                    transition={{ duration: reduceMotion ? 0 : 0.4, ease: "circOut" }}
                                     className="space-y-12"
                                 >
                                     {currentStep === 1 && (
