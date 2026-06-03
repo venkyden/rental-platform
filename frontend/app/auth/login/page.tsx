@@ -78,7 +78,7 @@ function LoginContent() {
 
     /* ---------- Auto-redirect if already logged in ---------- */
     useEffect(() => {
-        const token = localStorage.getItem('access_token');
+        const token = apiClient.getToken();
         if (token && !window.location.search.includes('expired=1')) {
             const safeRedirect = getSafeRedirectUrl(searchParams.get('returnUrl'));
             router.push(safeRedirect || '/dashboard');

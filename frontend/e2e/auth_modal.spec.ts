@@ -109,12 +109,15 @@ test.describe('Phase 6: Slide-Up Auth Modal & Hybrid Verification Gates', () => 
                 });
             });
 
-            // Fulfill the token requirement to satisfy checkAuth rehydration
-            await page.goto('/');
-            await page.evaluate(() => {
-                localStorage.setItem('access_token', 'dummy-token-for-testing');
+            // Seed in-memory token: checkAuth() rehydrates via /auth/refresh on mount.
+            await page.route('**/auth/refresh', async (route) => {
+                await route.fulfill({
+                    status: 200,
+                    contentType: 'application/json',
+                    body: JSON.stringify({ access_token: 'dummy-token-for-testing', token_type: 'bearer' }),
+                });
             });
-            
+
             // Visit a sensitive path like property creation
             await page.goto('/properties/new');
             
@@ -138,12 +141,15 @@ test.describe('Phase 6: Slide-Up Auth Modal & Hybrid Verification Gates', () => 
                 });
             });
 
-            // Fulfill the token requirement to satisfy checkAuth rehydration
-            await page.goto('/');
-            await page.evaluate(() => {
-                localStorage.setItem('access_token', 'dummy-token-for-testing');
+            // Seed in-memory token: checkAuth() rehydrates via /auth/refresh on mount.
+            await page.route('**/auth/refresh', async (route) => {
+                await route.fulfill({
+                    status: 200,
+                    contentType: 'application/json',
+                    body: JSON.stringify({ access_token: 'dummy-token-for-testing', token_type: 'bearer' }),
+                });
             });
-            
+
             // Visit general dashboard path (low-friction)
             await page.goto('/dashboard');
             
@@ -160,6 +166,15 @@ test.describe('Phase 6: Slide-Up Auth Modal & Hybrid Verification Gates', () => 
     test.describe('4. Page-Level Auth State Sync', () => {
         test('successful page-level login synchronizes state and does not prompt login again on dashboard', async ({ page }) => {
             // Mock API routes
+
+            // Explicitly reject refresh so checkAuth() on the login page mount fails
+            // fast and deterministically — without this, a real backend session could
+            // cause checkAuth to rehydrate and auto-redirect before the test fills the
+            // form (in-memory token survives across soft navigations in the same process).
+            await page.route('**/auth/refresh', async (route) => {
+                await route.fulfill({ status: 401, contentType: 'application/json', body: JSON.stringify({ detail: 'No session' }) });
+            });
+
             await page.route(/:8000\/auth\/login/, async (route) => {
                 await route.fulfill({
                     status: 200,
@@ -270,24 +285,8 @@ test.describe('Phase 6: Slide-Up Auth Modal & Hybrid Verification Gates', () => 
                 });
             });
 
-            await page.route(/:8000\/auth\/refresh/, async (route) => {
-                await route.fulfill({
-                    status: 200,
-                    contentType: 'application/json',
-                    body: JSON.stringify({
-                        access_token: 'dummy-token-page-login',
-                        token_type: 'bearer',
-                        redirect_path: '/dashboard',
-                        segment: 'standard_tenant',
-                        segment_name: 'Standard Tenant',
-                        available_roles: ['tenant']
-                    }),
-                });
-            });
-
-            // Clear cookies and access token to prevent auto-login / auto-redirect
+            // Clear cookies to prevent auto-login / auto-redirect (no localStorage token to clear).
             await page.context().clearCookies();
-            await page.evaluate(() => localStorage.removeItem('access_token'));
 
             // Go to login page
             await page.goto('/auth/login');

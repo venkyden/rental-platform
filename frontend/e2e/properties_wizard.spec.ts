@@ -10,11 +10,8 @@ test.describe('Landlord Listing Wizard', () => {
         page.on('console', msg => console.log(`BROWSER [${msg.type()}]:`, msg.text()));
         page.on('pageerror', err => console.log('BROWSER ERROR:', err.message, err.stack));
 
-        // Seed auth state BEFORE any page script runs (survives every navigation),
-        // so ProtectedRoute's checkAuth() always sees the token — avoids the
-        // race where the secure-login gate renders instead of the wizard.
+        // Set language before any page script runs.
         await page.addInitScript(() => {
-            localStorage.setItem('access_token', 'dummy-token-for-landlord');
             localStorage.setItem('app-language', 'en');
         });
 
@@ -38,7 +35,7 @@ test.describe('Landlord Listing Wizard', () => {
             });
         });
 
-        // Mock refresh so an incidental 401 never clears the seeded token.
+        // Mock refresh — checkAuth() rehydrates the in-memory token from this on mount.
         await page.route('**/auth/refresh', async (route) => {
             await route.fulfill({
                 status: 200,

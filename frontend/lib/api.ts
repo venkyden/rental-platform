@@ -2,6 +2,10 @@ import axios, { AxiosInstance, AxiosError } from 'axios';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
 
+// Access token lives in module memory only — never in localStorage/sessionStorage.
+// XSS cannot read it; the httpOnly refresh cookie is the durable session credential.
+let _accessToken: string | null = null;
+
 class ApiClient {
     public client: AxiosInstance;
     // Single-flight refresh: concurrent 401s share ONE /auth/refresh call.
@@ -10,7 +14,7 @@ class ApiClient {
     // the user out across tabs/requests. This promise serialises them.
     private refreshPromise: Promise<string | null> | null = null;
 
-    private refreshAccessToken(): Promise<string | null> {
+    refreshAccessToken(): Promise<string | null> {
         if (!this.refreshPromise) {
             this.refreshPromise = axios
                 .post(`${API_URL}/auth/refresh`, {}, { withCredentials: true, timeout: 10000 })
@@ -133,24 +137,17 @@ class ApiClient {
         );
     }
 
-    // Token management
-    private getToken(): string | null {
-        if (typeof window !== 'undefined') {
-            return localStorage.getItem('access_token');
-        }
-        return null;
+    // Token management — in-memory only (no localStorage/sessionStorage)
+    getToken(): string | null {
+        return _accessToken;
     }
 
     setToken(token: string): void {
-        if (typeof window !== 'undefined') {
-            localStorage.setItem('access_token', token);
-        }
+        _accessToken = token;
     }
 
     clearToken(): void {
-        if (typeof window !== 'undefined') {
-            localStorage.removeItem('access_token');
-        }
+        _accessToken = null;
     }
 
     // Auth endpoints

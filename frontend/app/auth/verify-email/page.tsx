@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import axios from 'axios';
+import { apiClient } from '@/lib/api';
 import { useLanguage } from '@/lib/LanguageContext';
 import { motion } from 'framer-motion';
 import { Check, AlertCircle, Loader2 } from 'lucide-react';
@@ -39,7 +40,7 @@ function VerifyEmailContent() {
 
             // Redirect based on login status after 3 seconds
             setTimeout(() => {
-                const accessToken = localStorage.getItem('access_token');
+                const accessToken = apiClient.getToken();
                 if (accessToken) {
                     router.push('/dashboard');
                 } else {
