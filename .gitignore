@@ -84,6 +84,5 @@ user_response_prep.txt
 node_modules_old/
 backend/test_*.py
 frontend/test-results/
-frontend/playwright-report/data/
-frontend/playwright-report/trace/
+frontend/playwright-report/
 
