@@ -269,8 +269,8 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
                     <a
                         href={result.downloadUrl ? (
                             result.downloadUrl.startsWith('http') 
-                                ? `${result.downloadUrl}?token=${typeof window !== 'undefined' ? localStorage.getItem('access_token') : ''}` 
-                                : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${result.downloadUrl}?token=${typeof window !== 'undefined' ? localStorage.getItem('access_token') : ''}`
+                                ? `${result.downloadUrl}?token=${apiClient.getToken() ?? ''}`
+                                : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${result.downloadUrl}?token=${apiClient.getToken() ?? ''}`
                         ) : '#'}
                         target="_blank"
                         rel="noopener noreferrer"

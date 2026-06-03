@@ -43,11 +43,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const router = useRouter();
 
     const checkAuth = async () => {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
-        if (!token) {
-            setUser(null);
-            setLoading(false);
-            return;
+        if (!apiClient.getToken()) {
+            // No token in memory — try to rehydrate from the httpOnly refresh cookie.
+            // This covers hard reloads and new tabs where the cookie survives but
+            // the in-memory token is gone.
+            try {
+                const newToken = await apiClient.refreshAccessToken();
+                if (!newToken) {
+                    setUser(null);
+                    setLoading(false);
+                    return;
+                }
+            } catch {
+                setUser(null);
+                setLoading(false);
+                return;
+            }
         }
 
         try {
