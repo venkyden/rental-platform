@@ -284,7 +284,11 @@ export const translations = {
                 success: "Guarantor successfully registered!",
                 verificationFailed: "Certificate could not be verified. Make sure the document is valid and the name matches your account.",
                 deleteConfirm: "Are you sure you want to remove this guarantor? Your trust score will be reduced.",
-                removed: "Guarantor removed successfully."
+                removed: "Guarantor removed successfully.",
+                physicalInstructions: "Please upload the required dossiers for your physical guarantor. Under French Alur law, the landlord can request these.",
+                physicalAlurNotice: "In compliance with French Alur law (Loi n° 2014-366), the landlord may verify the guarantor's documents.",
+                physicalGdprConsent: "I confirm that I have my guarantor's explicit consent to upload their personal details and documents to Roomivo, in compliance with GDPR guidelines and CNIL regulations.",
+                physicalSubmitCta: "Complete Registration",
             },
             capture: {
                 title: "Secure Capture",
@@ -294,6 +298,58 @@ export const translations = {
             somethingWentWrong: "Something went wrong",
             tryAgain: "Try Again",
             goToDashboard: "Go to Dashboard",
+        },
+        gate: {
+            modal: {
+                later: "Later",
+                footerNote: "Your data is encrypted and never shared without consent",
+                tenant: {
+                    identity: {
+                        title: "Verify Your Identity to Apply",
+                        description: "Landlords trust verified tenants. Complete ID verification to submit your application.",
+                        benefit1: "Stand out with a verified badge",
+                        benefit2: "Landlords respond 3x faster to verified applicants",
+                        benefit3: "Takes only 2 minutes with your ID",
+                        cta: "Verify Now",
+                    },
+                    income: {
+                        title: "Verify Your Income",
+                        description: "Show landlords you can afford this property.",
+                        benefit1: "Secure bank connection or pay stub upload",
+                        benefit2: "Your data is encrypted and private",
+                        benefit3: "Increases approval chances significantly",
+                        cta: "Verify Income",
+                    },
+                    default: {
+                        title: "Verification Required",
+                        description: "Complete verification to continue.",
+                        cta: "Verify Now",
+                    },
+                },
+                landlord: {
+                    identity: {
+                        title: "Verify Your Identity",
+                        description: "Tenants only share their verified profiles with verified landlords.",
+                        benefit1: "Access full tenant profiles and documents",
+                        benefit2: "Get a \"Verified Landlord\" badge on your listings",
+                        benefit3: "Build trust with prospective tenants",
+                        cta: "Verify Now",
+                    },
+                    property_docs: {
+                        title: "Verify Property Ownership",
+                        description: "Upload proof of ownership to accept applications.",
+                        benefit1: "Title deed or property certificate",
+                        benefit2: "Required before signing leases",
+                        benefit3: "Protects both you and tenants",
+                        cta: "Upload Documents",
+                    },
+                    default: {
+                        title: "Verification Required",
+                        description: "Complete verification to continue.",
+                        cta: "Verify Now",
+                    },
+                },
+            },
         },
         // Onboarding
         onboarding: {
@@ -2543,7 +2599,11 @@ export const translations = {
                 success: "Garant enregistré avec succès !",
                 verificationFailed: "Le certificat n'a pas pu être vérifié. Assurez-vous que le document est valide et que le nom correspond à votre compte.",
                 deleteConfirm: "Êtes-vous sûr de vouloir supprimer ce garant ? Votre score de confiance sera diminué.",
-                removed: "Garant supprimé avec succès."
+                removed: "Garant supprimé avec succès.",
+                physicalInstructions: "Veuillez télécharger les dossiers requis pour votre garant physique. Conformément à la loi Alur, le propriétaire peut les vérifier.",
+                physicalAlurNotice: "Conformément à la loi Alur française (Loi n° 2014-366), le bailleur peut vérifier les documents du garant.",
+                physicalGdprConsent: "Je confirme avoir obtenu le consentement explicite de mon garant pour télécharger ses données personnelles et documents sur Roomivo, en conformité avec le RGPD et les recommandations de la CNIL.",
+                physicalSubmitCta: "Finaliser l'inscription",
             },
             capture: {
                 title: "Capture Sécurisée",
@@ -2553,6 +2613,58 @@ export const translations = {
             somethingWentWrong: "Une erreur s'est produite",
             tryAgain: "Réessayer",
             goToDashboard: "Retour au tableau de bord",
+        },
+        gate: {
+            modal: {
+                later: "Plus tard",
+                footerNote: "Vos données sont chiffrées et jamais partagées sans consentement",
+                tenant: {
+                    identity: {
+                        title: "Vérifiez votre identité pour postuler",
+                        description: "Les propriétaires font confiance aux locataires vérifiés. Complétez la vérification d'identité pour soumettre votre candidature.",
+                        benefit1: "Démarquez-vous avec un badge vérifié",
+                        benefit2: "Les propriétaires répondent 3x plus vite aux candidats vérifiés",
+                        benefit3: "Seulement 2 minutes avec votre pièce d'identité",
+                        cta: "Vérifier maintenant",
+                    },
+                    income: {
+                        title: "Vérifiez vos revenus",
+                        description: "Montrez aux propriétaires que vous pouvez vous permettre ce logement.",
+                        benefit1: "Connexion bancaire sécurisée ou téléchargement de bulletins de paie",
+                        benefit2: "Vos données sont chiffrées et privées",
+                        benefit3: "Augmente considérablement vos chances d'approbation",
+                        cta: "Vérifier les revenus",
+                    },
+                    default: {
+                        title: "Vérification requise",
+                        description: "Complétez la vérification pour continuer.",
+                        cta: "Vérifier maintenant",
+                    },
+                },
+                landlord: {
+                    identity: {
+                        title: "Vérifiez votre identité",
+                        description: "Les locataires ne partagent leur profil vérifié qu'avec des propriétaires vérifiés.",
+                        benefit1: "Accédez aux profils complets et documents des locataires",
+                        benefit2: "Obtenez un badge \"Propriétaire Vérifié\" sur vos annonces",
+                        benefit3: "Établissez la confiance avec les futurs locataires",
+                        cta: "Vérifier maintenant",
+                    },
+                    property_docs: {
+                        title: "Vérifiez la propriété",
+                        description: "Téléchargez une preuve de propriété pour accepter des candidatures.",
+                        benefit1: "Titre de propriété ou certificat de propriété",
+                        benefit2: "Obligatoire avant la signature du bail",
+                        benefit3: "Protège à la fois vous et vos locataires",
+                        cta: "Télécharger les documents",
+                    },
+                    default: {
+                        title: "Vérification requise",
+                        description: "Complétez la vérification pour continuer.",
+                        cta: "Vérifier maintenant",
+                    },
+                },
+            },
         },
         // Onboarding
         onboarding: {

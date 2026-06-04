@@ -86,6 +86,26 @@ function IdSelfieIllustration() {
     );
 }
 
+// ─── Copy link button ─────────────────────────────────────────────────────────
+
+function CopyLinkButton({ url }: { url: string }) {
+    const [copied, setCopied] = useState(false);
+    const handleCopy = () => {
+        navigator.clipboard.writeText(url).then(() => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        });
+    };
+    return (
+        <button
+            onClick={handleCopy}
+            className="mt-4 text-xs text-zinc-500 hover:text-zinc-900 underline underline-offset-2 transition-colors"
+        >
+            {copied ? '✓ Copied!' : 'Copy link'}
+        </button>
+    );
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function VerificationUpload({ verificationType, propertyId, onSuccessAction, user }: VerificationUploadProps) {
@@ -143,7 +163,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
             if (recommended) setDocumentType(recommended.value);
         }
         return () => {
-            if (pollRef.current) clearInterval(pollRef.current);
+            if (pollRef.current) clearTimeout(pollRef.current);
             if (eventSourceRef.current) eventSourceRef.current.close();
         };
     }, [verificationType, isMobile, activeUser]);
@@ -170,7 +190,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
 
     const startSseConnection = (code: string) => {
         if (eventSourceRef.current) eventSourceRef.current.close();
-        if (pollRef.current) clearInterval(pollRef.current);
+        if (pollRef.current) clearTimeout(pollRef.current);
         const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/verification/identity/session/${code}/stream`;
         const es = new EventSource(url);
         eventSourceRef.current = es;
@@ -183,14 +203,20 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
         es.onerror = () => { es.close(); eventSourceRef.current = null; startPolling(code); };
     };
 
-    const startPolling = (code: string) => {
-        if (pollRef.current) clearInterval(pollRef.current);
-        pollRef.current = setInterval(async () => {
+    const startPolling = (code: string, delayMs = 2000) => {
+        if (pollRef.current) clearTimeout(pollRef.current);
+        pollRef.current = setTimeout(async () => {
             try {
                 const res = await apiClient.client.get(`/verification/identity/session/${code}/status`);
-                if (res.data.completed) { clearInterval(pollRef.current!); onSuccessAction(); }
-            } catch { clearInterval(pollRef.current!); setError('Verification session expired. Please refresh the QR code.'); }
-        }, 3000);
+                if (res.data.completed) {
+                    onSuccessAction();
+                } else {
+                    startPolling(code, Math.min(delayMs * 2, 30000));
+                }
+            } catch {
+                setError('Verification session expired. Please refresh the QR code.');
+            }
+        }, delayMs) as unknown as NodeJS.Timeout;
     };
 
     const copyToClipboard = (url: string) => {
@@ -416,6 +442,9 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                             <div className="absolute inset-0 bg-zinc-900/5 rounded-full blur-[100px] animate-pulse" />
                             <div className="p-10 bg-white rounded-[3rem] shadow-[0_64px_128px_-32px_rgba(0,0,0,0.2)] border border-white/40 relative z-10 group">
                                 <QRCodeSVG value={qrSession.captureUrl} size={240} level="H" includeMargin={false} />
+                                {qrSession && (
+                                    <CopyLinkButton url={qrSession.captureUrl} />
+                                )}
                                 <div className="mt-8 flex items-center justify-center gap-3">
                                     <div className="w-2 h-2 rounded-full bg-zinc-900 animate-ping" />
                                     <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-900">
