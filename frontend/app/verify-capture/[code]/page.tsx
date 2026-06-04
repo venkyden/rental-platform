@@ -153,7 +153,7 @@ export default function VerifyCapturePage() {
                     const canvas = document.createElement('canvas');
                     canvas.width = w; canvas.height = h;
                     canvas.getContext('2d', { willReadFrequently: true })?.drawImage(img, 0, 0, w, h);
-                    canvas.toBlob(b => b ? resolve(b) : reject(new Error('Compression failed')), 'image/jpeg', 0.88);
+                    canvas.toBlob(b => { if (!b) { resolve(f); return; } resolve(b); }, 'image/jpeg', 0.88);
                 };
             };
             reader.onerror = reject;
@@ -162,7 +162,7 @@ export default function VerifyCapturePage() {
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const raw = e.target.files?.[0];
         if (!raw) { setStep('guide'); return; }
-        const isHeic = /\.heic|\.heif$/i.test(raw.name);
+        const isHeic = /\.heic|\.heif$/i.test(raw.name) || raw.type === 'image/heic' || raw.type === 'image/heif';
         setStep('loading');
         try {
             const processed = isHeic ? raw : await compressImage(raw);
