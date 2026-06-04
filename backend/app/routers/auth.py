@@ -981,7 +981,7 @@ async def get_my_segment_config(current_user: User = Depends(get_current_user)):
             "id_verified": current_user.identity_verified,
             "email_verified": current_user.email_verified,
             "employment_verified": current_user.employment_verified,
-            "onboarding_completed": current_user.onboarding_completed,
+            "onboarding_completed": current_user.onboarding_status.get(role_value, False) if current_user.onboarding_status else False,
         },
     }
 

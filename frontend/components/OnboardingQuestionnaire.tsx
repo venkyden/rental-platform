@@ -52,6 +52,7 @@ export default function OnboardingQuestionnaire({ userType, initialResponses, on
     const [responses, setResponses] = useState<Record<string, any>>(initialResponses || {});
     const [multiSelectValues, setMultiSelectValues] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
     const allQuestions = useMemo(() => {
         if (userType === 'tenant') return getTenantQuestions();
@@ -149,10 +150,12 @@ export default function OnboardingQuestionnaire({ userType, initialResponses, on
 
     const handleComplete = async (finalResponses: Record<string, any>) => {
         setLoading(true);
+        setError('');
         try {
             await onCompleteAction({ ...finalResponses, user_type: userType });
-        } catch (error) {
+        } catch (err: any) {
             setLoading(false);
+            setError(err?.response?.data?.detail || err?.message || t('common.errors.unknown', undefined, 'An error occurred. Please try again.'));
         }
     };
 
@@ -283,6 +286,20 @@ export default function OnboardingQuestionnaire({ userType, initialResponses, on
                                     userType={userType}
                                 />
                             </div>
+
+                            {error && (
+                                <motion.div 
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    role="alert"
+                                    className="bg-zinc-900 text-white p-6 rounded-2xl flex items-center justify-center gap-4 mb-8 shadow-2xl text-center"
+                                >
+                                    <div className="w-2 h-2 bg-red-500 rounded-full animate-ping" />
+                                    <span className="text-[10px] font-black uppercase tracking-[0.3em]">
+                                        {error}
+                                    </span>
+                                </motion.div>
+                            )}
 
                             {/* Navigation Controls */}
                             <div className="flex items-center justify-between border-t border-zinc-50 pt-10 mt-10">

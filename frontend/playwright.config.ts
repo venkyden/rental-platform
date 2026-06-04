@@ -31,7 +31,7 @@ export default defineConfig({
         },
     ],
     webServer: {
-        command: 'npm run build && npm run start -- -p 3001 -H 127.0.0.1',
+        command: 'npm run build && PORT=3001 HOSTNAME=127.0.0.1 node .next/standalone/rental-platform/frontend/server.js',
         url: 'http://127.0.0.1:3001',
         reuseExistingServer: true,
         timeout: 120_000,

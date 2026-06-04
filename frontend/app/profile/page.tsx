@@ -53,37 +53,45 @@ export default function ProfilePage() {
                                  </Link>
                              </div>
 
-                            {user?.preferences && Object.keys(user.preferences).length > 0 ? (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    {user.role === 'tenant' ? (
-                                        <>
-                                            <div className="p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
-                                                <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest block mb-1">Location</span>
-                                                <span className="font-bold text-zinc-900">{user.preferences.location_preference?.address || (typeof user.preferences.location_preference === 'string' ? user.preferences.location_preference : 'Selected on map') || 'Any'}</span>
-                                            </div>
-                                             <div className="p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
-                                                 <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest block mb-1">Max Budget</span>
-                                                 <span className="font-black text-zinc-900 notranslate" translate="no">{user.preferences.budget ? `${user.preferences.budget}€` : 'Any'}</span>
-                                             </div>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <div className="p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
-                                                <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest block mb-1">Location</span>
-                                                <span className="font-bold text-zinc-900">{user.preferences.location?.name || (typeof user.preferences.location === 'string' ? user.preferences.location : 'Selected on map') || 'Any'}</span>
-                                            </div>
-                                             <div className="p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
-                                                 <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest block mb-1">Urgency</span>
-                                                 <span className="font-black text-zinc-900 capitalize">{user.preferences.urgency || 'Any'}</span>
-                                             </div>
-                                        </>
-                                    )}
-                                </div>
-                            ) : (
-                                 <p className="text-zinc-500 text-sm">
-                                     No preferences set yet. <Link href="/profile/preferences" className="text-zinc-900 font-black uppercase tracking-widest hover:underline">Set them now</Link>
-                                 </p>
-                            )}
+                            {(() => {
+                                const role = user?.role || 'tenant';
+                                const rolePrefs = user?.preferences?.[role] || user?.preferences || {};
+                                const hasPrefs = Object.keys(rolePrefs).length > 0;
+                                if (!hasPrefs) {
+                                    return (
+                                        <p className="text-zinc-500 text-sm">
+                                            No preferences set yet. <Link href="/profile/preferences" className="text-zinc-900 font-black uppercase tracking-widest hover:underline">Set them now</Link>
+                                        </p>
+                                    );
+                                }
+                                return (
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        {role === 'tenant' ? (
+                                            <>
+                                                <div className="p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
+                                                    <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest block mb-1">Location</span>
+                                                    <span className="font-bold text-zinc-900">{rolePrefs.location_preference?.address || (typeof rolePrefs.location_preference === 'string' ? rolePrefs.location_preference : 'Selected on map') || 'Any'}</span>
+                                                </div>
+                                                 <div className="p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
+                                                     <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest block mb-1">Max Budget</span>
+                                                     <span className="font-black text-zinc-900 notranslate" translate="no">{rolePrefs.budget ? `${rolePrefs.budget}€` : 'Any'}</span>
+                                                 </div>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <div className="p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
+                                                    <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest block mb-1">Location</span>
+                                                    <span className="font-bold text-zinc-900">{rolePrefs.location?.name || rolePrefs.location?.address || (typeof rolePrefs.location === 'string' ? rolePrefs.location : 'Selected on map') || 'Any'}</span>
+                                                </div>
+                                                 <div className="p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
+                                                     <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest block mb-1">Urgency</span>
+                                                     <span className="font-black text-zinc-900 capitalize">{rolePrefs.urgency || 'Any'}</span>
+                                                 </div>
+                                            </>
+                                        )}
+                                    </div>
+                                );
+                            })()}
                         </div>
 
                         <div className="mt-10 space-y-3">

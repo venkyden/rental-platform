@@ -28,6 +28,19 @@
 
 import { test, expect, Page } from '@playwright/test';
 
+test.beforeEach(async ({ page }) => {
+    const originalRoute = page.route.bind(page);
+    (page as any).route = (pattern: any, handler: any, options: any) => {
+        return originalRoute(pattern, (route) => {
+            if (route.request().url().includes(':3001')) {
+                route.continue();
+                return;
+            }
+            return handler(route);
+        }, options);
+    };
+});
+
 // ---------------------------------------------------------------------------
 // Shared helpers
 // ---------------------------------------------------------------------------
@@ -888,19 +901,139 @@ test.describe('8. Onboarding', () => {
         await expect(page.locator('.animate-spin')).toHaveCount(0, { timeout: 10_000 });
     });
 
-    // D — Submit failure shows inline error
-    test('D — onboarding submit failure shows inline error', async ({ page }) => {
-        await page.route('**/onboarding/resume', route => route.fulfill({ status: 200, body: JSON.stringify({ completed: false, responses: {} }) }));
+    // D — Submit failure shows inline error (Tenant)
+    test('D — tenant onboarding submit failure shows inline error', async ({ page }) => {
+        await page.route('**/onboarding/resume', route =>
+            route.fulfill({
+                status: 200,
+                body: JSON.stringify({
+                    completed: false,
+                    responses: {
+                        situation: "student",
+                        nationality: "france",
+                        languages: ["french"],
+                        gender: "female",
+                        contract_type: "student",
+                        income: 1200,
+                        university: "Université de Paris",
+                        location_preference: "Paris",
+                        budget: 800,
+                        furnished_preference: "furnished",
+                        min_surface_area: 15,
+                        guarantor_type: ["parents"],
+                        transport_needs: ["metro"],
+                        service_needs: ["grocery"],
+                        must_have_amenities: ["fiber"],
+                        living_arrangement: "solo",
+                        move_in_timeline: "asap",
+                        has_pets: "no",
+                        is_smoker: "no"
+                    }
+                })
+            })
+        );
         await page.route('**/team/my-invites', route => route.fulfill({ status: 200, body: JSON.stringify([]) }));
         await page.route('**/onboarding/complete', route =>
-            route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ detail: 'Server error' }) }),
+            route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ detail: 'Complete failed' }) })
         );
+
         await page.goto('/onboarding');
-        const submitBtn = page.locator('button[type="submit"], button:has-text("Continue"), button:has-text("Finish")').first();
-        if (await submitBtn.isVisible({ timeout: 10_000 })) {
-            await submitBtn.click();
-            await expect(page.locator('[role="alert"], text=/error|failed/i').first()).toBeVisible({ timeout: 8_000 });
-        }
+        
+        // Accept terms and begin
+        await page.locator('text=/agree|accept/i').first().click();
+        await page.locator('button:has-text("Get Started"), button:has-text("Begin"), button:has-text("Commencer")').first().click();
+        
+        // Select an option on the last question (caf_preference) to complete
+        const optionBtn = page.locator('button:has-text("Yes"), button:has-text("No"), button:has-text("Oui")').first();
+        await expect(optionBtn).toBeVisible({ timeout: 10_000 });
+        await optionBtn.click();
+        
+        // Assert inline error
+        await expect(page.locator('[role="alert"], text=/complete failed|error|failed/i').first()).toBeVisible({ timeout: 10_000 });
+    });
+
+    // D — Submit failure shows inline error (Landlord)
+    test('D — landlord onboarding submit failure shows inline error', async ({ page }) => {
+        await mockAuthSession(page, { role: 'landlord', onboarding_completed: false });
+        await page.route('**/onboarding/resume', route =>
+            route.fulfill({
+                status: 200,
+                body: JSON.stringify({
+                    completed: false,
+                    responses: {
+                        property_count: "1_4",
+                        challenge: "finding_tenants",
+                        location: "Paris",
+                        rooms: "1",
+                        surface: 25,
+                        furnished: "furnished",
+                        accepted_tenant_types: ["student"],
+                        accepted_guarantees: ["visale"],
+                        house_rules: ["no_smoking"],
+                        urgency: "soon"
+                    }
+                })
+            })
+        );
+        await page.route('**/team/my-invites', route => route.fulfill({ status: 200, body: JSON.stringify([]) }));
+        await page.route('**/onboarding/complete', route =>
+            route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ detail: 'Complete failed' }) })
+        );
+
+        await page.goto('/onboarding');
+        
+        // Select landlord role
+        await page.locator('button:has-text("Landlord")').first().click();
+        
+        // Accept terms and begin
+        await page.locator('text=/agree|accept/i').first().click();
+        await page.locator('button:has-text("Get Started"), button:has-text("Begin"), button:has-text("Commencer")').first().click();
+        
+        // Select an option on the last question (caf_eligibility) to complete
+        const optionBtn = page.locator('button:has-text("Yes"), button:has-text("No"), button:has-text("Oui")').first();
+        await expect(optionBtn).toBeVisible({ timeout: 10_000 });
+        await optionBtn.click();
+        
+        // Assert inline error
+        await expect(page.locator('[role="alert"], text=/complete failed|error|failed/i').first()).toBeVisible({ timeout: 10_000 });
+    });
+
+    // D — Submit failure shows inline error (Agency)
+    test('D — agency onboarding submit failure shows inline error', async ({ page }) => {
+        await mockAuthSession(page, { role: 'property_manager', onboarding_completed: false });
+        await page.route('**/onboarding/resume', route =>
+            route.fulfill({
+                status: 200,
+                body: JSON.stringify({
+                    completed: false,
+                    responses: {
+                        property_count: "5_100",
+                        challenge: "finding_tenants"
+                    }
+                })
+            })
+        );
+        await page.route('**/team/my-invites', route => route.fulfill({ status: 200, body: JSON.stringify([]) }));
+        await page.route('**/onboarding/complete', route =>
+            route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ detail: 'Complete failed' }) })
+        );
+
+        await page.goto('/onboarding');
+        
+        // Select agency (property manager) role
+        await page.locator('button:has-text("Agency")').first().click();
+        
+        // Accept terms and begin
+        await page.locator('text=/agree|accept/i').first().click();
+        await page.locator('button:has-text("Get Started"), button:has-text("Begin"), button:has-text("Commencer")').first().click();
+        
+        // Select an option on the last question (urgency) to complete
+        const optionBtn = page.locator('button:has-text("Urgent"), button:has-text("Soon"), button:has-text("Bientôt")').first();
+        await expect(optionBtn).toBeVisible({ timeout: 10_000 });
+        await optionBtn.click();
+        
+        // Assert inline error
+        await expect(page.locator('[role="alert"], text=/complete failed|error|failed/i').first()).toBeVisible({ timeout: 10_000 });
     });
 });
 

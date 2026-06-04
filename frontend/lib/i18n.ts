@@ -185,6 +185,27 @@ export const translations = {
                 mexican: "Mexican",
                 canadian: "Canadian",
                 australian: "Australian",
+                japanese: "Japanese",
+                korean: "Korean",
+                dutch: "Dutch",
+                belgian: "Belgian",
+                swiss: "Swiss",
+                swedish: "Swedish",
+                norwegian: "Norwegian",
+                danish: "Danish",
+                finnish: "Finnish",
+                polish: "Polish",
+                romanian: "Romanian",
+                turkish: "Turkish",
+                moroccan: "Moroccan",
+                tunisian: "Tunisian",
+                algerian: "Algerian",
+                senegalese: "Senegalese",
+                cameroonian: "Cameroonian",
+                ivorian: "Ivorian",
+                lebanese: "Lebanese",
+                egyptian: "Egyptian",
+                nigerian: "Nigerian",
                 other: "Other"
             },
             components: {
@@ -268,6 +289,11 @@ export const translations = {
         },
         // Onboarding
         onboarding: {
+            roleDescriptions: {
+                tenant: "Looking for a home",
+                landlord: "Renting out property",
+                property_manager: "Professional manager"
+            },
             welcome: "Welcome to Roomivo.",
             letsStart: "Let's start with your name",
             ready: "Ready to find your perfect home? We'll ask a few quick questions to personalize your experience.",
@@ -2307,6 +2333,27 @@ export const translations = {
                 mexican: "Mexicain",
                 canadian: "Canadien",
                 australian: "Australien",
+                japanese: "Japonais",
+                korean: "Coréen",
+                dutch: "Néerlandais",
+                belgian: "Belge",
+                swiss: "Suisse",
+                swedish: "Suédois",
+                norwegian: "Norvégien",
+                danish: "Danois",
+                finnish: "Finlandais",
+                polish: "Polonais",
+                romanian: "Roumain",
+                turkish: "Turc",
+                moroccan: "Marocain",
+                tunisian: "Tunisien",
+                algerian: "Algérien",
+                senegalese: "Sénégalais",
+                cameroonian: "Camerounais",
+                ivorian: "Ivoirien",
+                lebanese: "Libanais",
+                egyptian: "Égyptien",
+                nigerian: "Nigérian",
                 other: "Autre"
             },
             components: {
@@ -2493,6 +2540,11 @@ export const translations = {
         },
         // Onboarding
         onboarding: {
+            roleDescriptions: {
+                tenant: "Je recherche un logement",
+                landlord: "Je mets en location",
+                property_manager: "Gestionnaire professionnel"
+            },
             welcome: "Bienvenue sur Roomivo.",
             letsStart: "Commençons par votre nom",
             ready: "Prêt à trouver votre logement idéal ? Nous allons vous poser quelques questions rapides pour personnaliser votre expérience.",

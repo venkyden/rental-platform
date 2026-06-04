@@ -86,6 +86,7 @@ export default function OnboardingPage() {
             router.push('/dashboard');
         } catch (error) {
             console.error('Failed to complete onboarding:', error);
+            throw error;
         }
     };
 
@@ -169,9 +170,9 @@ export default function OnboardingPage() {
                         {/* Role Selection Grid */}
                         <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-3 gap-8 w-full mb-16">
                             {[
-                                { id: 'tenant', label: t('dashboard.roleSwitcher.roles.tenant', undefined, 'Tenant'), icon: <UserIcon />, desc: 'Looking for a home' },
-                                { id: 'landlord', label: t('dashboard.roleSwitcher.roles.landlord', undefined, 'Landlord'), icon: <Home />, desc: 'Renting out property' },
-                                { id: 'property_manager', label: t('dashboard.roleSwitcher.roles.property_manager', undefined, 'Agency'), icon: <Building />, desc: 'Professional manager' },
+                                { id: 'tenant', label: t('dashboard.roleSwitcher.roles.tenant', undefined, 'Tenant'), icon: <UserIcon />, desc: t('onboarding.roleDescriptions.tenant', undefined, 'Looking for a home') },
+                                { id: 'landlord', label: t('dashboard.roleSwitcher.roles.landlord', undefined, 'Landlord'), icon: <Home />, desc: t('onboarding.roleDescriptions.landlord', undefined, 'Renting out property') },
+                                { id: 'property_manager', label: t('dashboard.roleSwitcher.roles.property_manager', undefined, 'Agency'), icon: <Building />, desc: t('onboarding.roleDescriptions.property_manager', undefined, 'Professional manager') },
                             ].map((role) => (
                                 <motion.button
                                     key={role.id}

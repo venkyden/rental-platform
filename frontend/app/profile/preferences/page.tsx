@@ -65,11 +65,17 @@ export default function EditPreferencesPage() {
                     {/* The Questionnaire takes the full remaining height via its own min-h-screen, 
                         so we can just mount it here. We add a slight margin negative to pull it up if needed. */}
                     <div className="-mt-16 pt-16 h-full">
-                        <OnboardingQuestionnaire
-                            userType={user.role === 'tenant' ? 'tenant' : 'landlord'}
-                            initialResponses={user.preferences || {}}
-                            onCompleteAction={handleComplete}
-                        />
+                        {(() => {
+                            const userType = user.role === 'property_manager' ? 'agency' : (user.role === 'landlord' ? 'landlord' : 'tenant');
+                            const rolePrefs = user.preferences?.[user.role] || user.preferences || {};
+                            return (
+                                <OnboardingQuestionnaire
+                                    userType={userType}
+                                    initialResponses={rolePrefs}
+                                    onCompleteAction={handleComplete}
+                                />
+                            );
+                        })()}
                     </div>
                 </main>
 

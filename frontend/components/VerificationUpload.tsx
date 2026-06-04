@@ -7,6 +7,7 @@ import { apiClient } from '@/lib/api';
 import { QRCodeSVG } from 'qrcode.react';
 import { motion, Variants } from 'framer-motion';
 import { useLanguage } from '@/lib/LanguageContext';
+import { useAuth } from '@/lib/useAuth';
 
 const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -89,6 +90,8 @@ function IdSelfieIllustration() {
 
 export default function VerificationUpload({ verificationType, propertyId, onSuccessAction, user }: VerificationUploadProps) {
     const { t } = useLanguage();
+    const { user: authUser } = useAuth();
+    const activeUser = user || authUser;
 
     // Common state
     const [files, setFiles] = useState<File[]>([]);
@@ -143,7 +146,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
             if (pollRef.current) clearInterval(pollRef.current);
             if (eventSourceRef.current) eventSourceRef.current.close();
         };
-    }, [verificationType, isMobile, user]);
+    }, [verificationType, isMobile, activeUser]);
 
     useEffect(() => {
         return () => { if (idPreviewUrl) URL.revokeObjectURL(idPreviewUrl); };
@@ -260,8 +263,8 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
     // ── Document type lists ───────────────────────────────────────────────
 
     const getEmploymentDocumentTypes = () => {
-        const role = user?.role || 'tenant';
-        const rolePrefs = user?.preferences?.[role] || user?.preferences || {};
+        const role = activeUser?.role || 'tenant';
+        const rolePrefs = activeUser?.preferences?.[role] || activeUser?.preferences || {};
         const contractType = rolePrefs?.contract_type;
         const situation = rolePrefs?.situation;
 
@@ -317,7 +320,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
             return IDENTITY_DOC_TYPES;
         }
         if (verificationType === 'property') {
-            const landlordPrefs = user?.preferences?.landlord || {};
+            const landlordPrefs = activeUser?.preferences?.landlord || {};
             const isProfessional = landlordPrefs.property_count === '5_100' || landlordPrefs.property_count === '100_plus';
             return [
                 { value: 'property_deed', label: t('docs.property_deed', undefined, 'Property Deed (Titre de propriété)'), captures: 1, recommended: !isProfessional },
@@ -678,16 +681,13 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                             </label>
                             <p className="text-sm font-black text-zinc-900 uppercase tracking-widest">
                                 {(() => {
-                                    const role = user?.role || 'tenant';
-                                    const rolePrefs = user?.preferences?.[role] || user?.preferences || {};
+                                    const role = activeUser?.role || 'tenant';
+                                    const rolePrefs = activeUser?.preferences?.[role] || activeUser?.preferences || {};
                                     let questionId = 'contract_type';
                                     if (role === 'landlord' || role === 'property_manager') questionId = 'property_count';
                                     else if (rolePrefs.situation) questionId = 'situation';
                                     else if (rolePrefs.contract_type) questionId = 'contract_type';
                                     const value = rolePrefs[questionId] || 'Standard';
-                                    if (value === '1_4') return '1 - 4 Properties';
-                                    if (value === '5_100') return '5 - 100 Properties';
-                                    if (value === '100_plus') return '100+ Properties';
                                     const translationRole = (role === 'landlord' || role === 'property_manager') ? 'landlord' : 'tenant';
                                     const translated = t(`onboarding.questions.${translationRole}.${questionId}.options.${value}`, undefined, '');
                                     if (translated) return translated;

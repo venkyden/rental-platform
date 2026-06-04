@@ -3,11 +3,64 @@
 import { useState, useMemo } from 'react';
 import { useLanguage } from '@/lib/LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Search, GraduationCap, Building2, Check, ArrowRight, X } from 'lucide-react';
+import { MapPin, Search, GraduationCap, Building2, Check, ArrowRight, X, ChevronLeft } from 'lucide-react';
 import RadiusLocationPicker from '../RadiusLocationPicker';
 import AddressAutocomplete, { AddressResult } from '../AddressAutocomplete';
 import Combobox from '../Combobox';
 import { Question, FRENCH_UNIVERSITIES } from './onboardingQuestions';
+
+const REGIONS = [
+    { id: 'france', label: 'France 🇫🇷', isDirect: true, value: 'french' },
+    { id: 'europe', label: 'Europe 🇪🇺' },
+    { id: 'americas', label: 'Americas 🌎' },
+    { id: 'asia', label: 'Asia & Pacific 🌏' },
+    { id: 'africa_me', label: 'Africa & Middle East 🌍' },
+    { id: 'other', label: 'Other 🌐', isDirect: true, value: 'other' }
+];
+
+const NATIONALITIES_BY_REGION: Record<string, { value: string; labelKey: string; flag: string }[]> = {
+    europe: [
+        { value: 'british', labelKey: 'common.nationalities.british', flag: '🇬🇧' },
+        { value: 'german', labelKey: 'common.nationalities.german', flag: '🇩🇪' },
+        { value: 'italian', labelKey: 'common.nationalities.italian', flag: '🇮🇹' },
+        { value: 'spanish', labelKey: 'common.nationalities.spanish', flag: '🇪🇸' },
+        { value: 'portuguese', labelKey: 'common.nationalities.portuguese', flag: '🇵🇹' },
+        { value: 'dutch', labelKey: 'common.nationalities.dutch', flag: '🇳🇱' },
+        { value: 'belgian', labelKey: 'common.nationalities.belgian', flag: '🇧🇪' },
+        { value: 'swiss', labelKey: 'common.nationalities.swiss', flag: '🇨🇭' },
+        { value: 'swedish', labelKey: 'common.nationalities.swedish', flag: '🇸🇪' },
+        { value: 'norwegian', labelKey: 'common.nationalities.norwegian', flag: '🇳🇴' },
+        { value: 'danish', labelKey: 'common.nationalities.danish', flag: '🇩🇰' },
+        { value: 'finnish', labelKey: 'common.nationalities.finnish', flag: '🇫🇮' },
+        { value: 'polish', labelKey: 'common.nationalities.polish', flag: '🇵🇱' },
+        { value: 'romanian', labelKey: 'common.nationalities.romanian', flag: '🇷🇴' },
+        { value: 'turkish', labelKey: 'common.nationalities.turkish', flag: '🇹🇷' }
+    ],
+    americas: [
+        { value: 'american', labelKey: 'common.nationalities.american', flag: '🇺🇸' },
+        { value: 'canadian', labelKey: 'common.nationalities.canadian', flag: '🇨🇦' },
+        { value: 'brazilian', labelKey: 'common.nationalities.brazilian', flag: '🇧🇷' },
+        { value: 'mexican', labelKey: 'common.nationalities.mexican', flag: '🇲🇽' }
+    ],
+    asia: [
+        { value: 'chinese', labelKey: 'common.nationalities.chinese', flag: '🇨🇳' },
+        { value: 'indian', labelKey: 'common.nationalities.indian', flag: '🇮🇳' },
+        { value: 'japanese', labelKey: 'common.nationalities.japanese', flag: '🇯🇵' },
+        { value: 'korean', labelKey: 'common.nationalities.korean', flag: '🇰🇷' },
+        { value: 'australian', labelKey: 'common.nationalities.australian', flag: '🇦🇺' }
+    ],
+    africa_me: [
+        { value: 'moroccan', labelKey: 'common.nationalities.moroccan', flag: '🇲🇦' },
+        { value: 'algerian', labelKey: 'common.nationalities.algerian', flag: '🇩🇿' },
+        { value: 'tunisian', labelKey: 'common.nationalities.tunisian', flag: '🇹🇳' },
+        { value: 'senegalese', labelKey: 'common.nationalities.senegalese', flag: '🇸🇳' },
+        { value: 'cameroonian', labelKey: 'common.nationalities.cameroonian', flag: '🇨🇲' },
+        { value: 'ivorian', labelKey: 'common.nationalities.ivorian', flag: '🇨🇮' },
+        { value: 'lebanese', labelKey: 'common.nationalities.lebanese', flag: '🇱🇧' },
+        { value: 'egyptian', labelKey: 'common.nationalities.egyptian', flag: '🇪🇬' },
+        { value: 'nigerian', labelKey: 'common.nationalities.nigerian', flag: '🇳🇬' }
+    ]
+};
 
 interface QuestionRendererProps {
     question: Question;
@@ -37,6 +90,7 @@ export default function QuestionRenderer({
     const [selectedAddress, setSelectedAddress] = useState<AddressResult | null>(null);
     const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number } | null>(null);
     const [mapRadius, setMapRadius] = useState<number>(2000);
+    const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
 
     const universityOptions = useMemo(() => {
         const options = FRENCH_UNIVERSITIES.flatMap(cityGroup => 
@@ -53,6 +107,14 @@ export default function QuestionRenderer({
         });
         return options;
     }, [t]);
+
+    const currentUniversityValue = useMemo(() => {
+        const uni = responses?.university;
+        if (uni && typeof uni === 'object') {
+            return `${uni.university_id}|${uni.city}|${uni.university_name}`;
+        }
+        return '';
+    }, [responses]);
 
     const containerVariants = {
         hidden: { opacity: 0 },
@@ -142,7 +204,7 @@ export default function QuestionRenderer({
                 </div>
                 <Combobox
                     options={universityOptions}
-                    value=""
+                    value={currentUniversityValue}
                     onChangeAction={(val) => {
                         if (val === 'other|other|other') {
                             setShowManualUniversityInput(true);
@@ -446,9 +508,102 @@ export default function QuestionRenderer({
         </div>
     );
 
+    const renderNationalitySelector = () => {
+        return (
+            <div className="space-y-6">
+                <AnimatePresence mode="wait">
+                    {!selectedRegion ? (
+                        <motion.div
+                            key="regions"
+                            initial={{ opacity: 0, y: 15 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -15 }}
+                            transition={{ duration: 0.2 }}
+                            className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+                        >
+                            {REGIONS.map((region) => (
+                                <motion.button
+                                    key={region.id}
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={() => {
+                                        if (region.isDirect && region.value) {
+                                            onAnswerAction(region.value);
+                                        } else {
+                                            setSelectedRegion(region.id);
+                                        }
+                                    }}
+                                    className="px-8 py-8 text-left rounded-[2.5rem] bg-white border border-zinc-100 text-zinc-900 hover:border-zinc-300 transition-all duration-300 relative overflow-hidden flex items-center justify-between group shadow-sm hover:shadow-md cursor-pointer"
+                                >
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] relative z-10 transition-colors group-hover:text-zinc-900">
+                                        {region.label}
+                                    </span>
+                                    <div className="w-8 h-8 rounded-full border border-zinc-100 flex items-center justify-center group-hover:border-zinc-700 transition-colors">
+                                        <ArrowRight className="w-4 h-4 text-transparent group-hover:text-zinc-900 group-hover:translate-x-1 transition-all" />
+                                    </div>
+                                </motion.button>
+                            ))}
+                        </motion.div>
+                    ) : (
+                        <motion.div
+                            key="countries"
+                            initial={{ opacity: 0, y: 15 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -15 }}
+                            transition={{ duration: 0.2 }}
+                            className="space-y-6"
+                        >
+                            {/* Header with back button */}
+                            <div className="flex items-center justify-between px-2">
+                                <button
+                                    onClick={() => setSelectedRegion(null)}
+                                    className="flex items-center gap-2 text-[10px] font-black text-zinc-400 hover:text-zinc-900 uppercase tracking-widest transition-colors group cursor-pointer"
+                                >
+                                    <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                                    Back to Regions
+                                </button>
+                                <span className="text-[10px] font-black text-zinc-900 uppercase tracking-widest">
+                                    {REGIONS.find(r => r.id === selectedRegion)?.label}
+                                </span>
+                            </div>
+
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                {(NATIONALITIES_BY_REGION[selectedRegion] || []).map((country) => (
+                                    <motion.button
+                                        key={country.value}
+                                        whileHover={{ scale: 1.03 }}
+                                        whileTap={{ scale: 0.97 }}
+                                        onClick={() => onAnswerAction(country.value)}
+                                        className="px-6 py-5 text-left rounded-[2rem] bg-white border border-zinc-100 hover:border-zinc-300 transition-all duration-300 flex items-center gap-3 group cursor-pointer shadow-sm hover:shadow-md"
+                                    >
+                                        <span className="text-2xl select-none">{country.flag}</span>
+                                        <span className="text-[10px] font-black uppercase tracking-wider text-zinc-500 group-hover:text-zinc-900 transition-colors truncate">
+                                            {t(country.labelKey)}
+                                        </span>
+                                    </motion.button>
+                                ))}
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* Privacy/Compliance Note */}
+                <div className="mt-8 p-6 bg-zinc-50 border border-zinc-100 rounded-[1.5rem] text-center">
+                    <p className="text-[9px] font-medium text-zinc-400 uppercase tracking-wider leading-relaxed">
+                        {t('onboarding.university.nationalityNote')}
+                    </p>
+                </div>
+            </div>
+        );
+    };
+
     /* ----------------------------------------------------------------
        Main Dispatcher
        ---------------------------------------------------------------- */
+
+    if (question.id === 'nationality') {
+        return renderNationalitySelector();
+    }
 
     switch (question.type) {
         case 'address_autocomplete': return renderAddressAutocomplete();

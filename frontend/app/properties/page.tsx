@@ -307,6 +307,7 @@ export default function PropertiesPage() {
                                                 setVerifyingProperty(null);
                                                 loadProperties();
                                             }}
+                                            user={user}
                                         />
                                     </div>
                                 </div>
