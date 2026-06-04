@@ -17,26 +17,18 @@ interface EmailVerificationRequiredProps {
  */
 const isSensitiveRoute = (pathname: string | null): boolean => {
     if (!pathname) return false;
-    
-    // Strip language prefix if present (e.g., /fr/dashboard -> /dashboard)
     const cleanPath = pathname.replace(/^\/[a-z]{2}(\/|$)/, '/');
-
-    const sensitivePrefixes = [
-        '/properties/new',
-        '/applications/',
-        '/leases/',
-        '/inventory/',
-        '/disputes/',
-        '/verification',
-        '/gli',
+    const sensitiveRoutes = [
+        /^\/properties\/new$/,
+        /^\/properties\/[^/]+\/edit/,
+        /^\/applications/,
+        /^\/leases/,
+        /^\/inventory/,
+        /^\/disputes/,
+        /^\/verify/,
+        /^\/gli/,
     ];
-
-    // Check if it's dynamic property edit (e.g. /properties/123/edit)
-    if (cleanPath.startsWith('/properties/') && cleanPath.includes('/edit')) {
-        return true;
-    }
-
-    return sensitivePrefixes.some(prefix => cleanPath.startsWith(prefix));
+    return sensitiveRoutes.some(r => r.test(cleanPath));
 };
 
 export default function EmailVerificationRequired({ children }: EmailVerificationRequiredProps) {

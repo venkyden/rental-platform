@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { Shield, RefreshCw, AlertCircle } from 'lucide-react';
+import { useLanguage } from '@/lib/LanguageContext';
 
 export default function VerifyCaptureError({
     error,
@@ -14,6 +15,8 @@ export default function VerifyCaptureError({
         console.error('Verify-capture route error:', error);
     }, [error]);
 
+    const { t } = useLanguage();
+
     return (
         <div className="min-h-[100dvh] bg-white flex flex-col font-sans">
             <header className="px-6 py-6 flex items-center gap-3">
@@ -21,7 +24,7 @@ export default function VerifyCaptureError({
                     <Shield className="w-5 h-5 text-white" />
                 </div>
                 <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-900">
-                    Secure Capture
+                    {t('verify.capture.title', undefined, 'Secure Capture')}
                 </span>
             </header>
 
@@ -40,7 +43,7 @@ export default function VerifyCaptureError({
                     className="w-full py-5 bg-zinc-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-2 shadow-xl active:scale-95 transition-transform"
                 >
                     <RefreshCw className="w-4 h-4" />
-                    Try Again
+                    {t('errors.tryAgain', undefined, 'Try Again')}
                 </button>
 
                 {process.env.NODE_ENV === 'development' && (

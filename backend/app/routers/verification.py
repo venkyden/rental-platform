@@ -179,7 +179,7 @@ async def upload_identity_document(
         return {
             "message": "Back side uploaded",
             "verified": False,
-            "status": current_user.identity_data.get("status", "document_verified"),
+            "status": current_user.identity_data.get("status", "document_uploaded"),
             "trust_score": current_user.trust_score,
             "details": "Upload a selfie to complete identity verification",
         }
@@ -199,14 +199,14 @@ async def upload_identity_document(
         )
 
     current_user.identity_verified = False
-    current_user.identity_status = "document_verified"
+    current_user.identity_status = "document_uploaded"
     current_user.identity_data = {
         "verified": False,
         "upload_date": naive_utcnow().isoformat(),
         "filename": file.filename,
         "file_url": storage_result["url"],
         "storage_key": storage_result.get("key"),
-        "status": "document_verified",
+        "status": "document_uploaded",
         "extracted_data": result["data"],
         "checks": result["validation_checks"],
     }
@@ -217,7 +217,7 @@ async def upload_identity_document(
     return {
         "message": "Document verified — please complete liveness check",
         "verified": False,
-        "status": "document_verified",
+        "status": "document_uploaded",
         "trust_score": current_user.trust_score,
         "details": "Upload a selfie to complete identity verification",
     }
@@ -402,7 +402,7 @@ async def upload_identity_mobile(
 
     # ── Selfie path: face-match against stored identity document ──────────
     if side == "selfie":
-        if not user.identity_data or user.identity_data.get("status") != "document_verified":
+        if not user.identity_data or user.identity_data.get("status") != "document_uploaded":
             raise HTTPException(
                 status_code=400,
                 detail="Upload and verify your identity document before submitting a selfie.",
@@ -487,7 +487,7 @@ async def upload_identity_mobile(
         return {
             "message": "Back side uploaded — please complete liveness check",
             "verified": False,
-            "status": user.identity_data.get("status", "document_verified"),
+            "status": user.identity_data.get("status", "document_uploaded"),
             "trust_score": user.trust_score,
             "details": "Capture a selfie to complete identity verification",
         }
@@ -509,7 +509,7 @@ async def upload_identity_mobile(
 
     # Document validated — selfie required to complete identity verification
     user.identity_verified = False
-    user.identity_status = "document_verified"
+    user.identity_status = "document_uploaded"
     user.identity_data = {
         "verified": False,
         "upload_date": naive_utcnow().isoformat(),
@@ -517,7 +517,7 @@ async def upload_identity_mobile(
         "file_url": storage_result["url"],
         "source": "mobile_capture",
         "storage_key": storage_result.get("key"),
-        "status": "document_verified",
+        "status": "document_uploaded",
         "extracted_data": doc_result["data"],
         "checks": doc_result["validation_checks"],
     }
@@ -529,7 +529,7 @@ async def upload_identity_mobile(
     return {
         "message": "Document verified — please complete liveness check",
         "verified": False,
-        "status": "document_verified",
+        "status": "document_uploaded",
         "trust_score": user.trust_score,
         "details": "Capture a selfie to complete identity verification",
     }
@@ -541,7 +541,7 @@ async def upload_identity_selfie(
     db: AsyncSession = Depends(get_db),
 ):
     """Upload selfie for face-match against the stored identity document."""
-    if not current_user.identity_data or current_user.identity_data.get("status") != "document_verified":
+    if not current_user.identity_data or current_user.identity_data.get("status") != "document_uploaded":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Upload and verify your identity document before submitting a selfie.",
@@ -765,6 +765,10 @@ async def upload_employment_document(
 @router.get("/status", response_model=VerificationStatusResponse)
 async def get_verification_status(current_user: User = Depends(get_current_user)):
     """Get current verification status for user"""
+    guarantor_data_raw = current_user.guarantor_data or {}
+    safe_guarantor = {k: v for k, v in guarantor_data_raw.items() if k != "files"}
+    safe_guarantor["file_count"] = len(guarantor_data_raw.get("files", []))
+
     return {
         "identity_verified": current_user.identity_verified,
         "employment_verified": current_user.employment_verified,
@@ -779,7 +783,7 @@ async def get_verification_status(current_user: User = Depends(get_current_user)
         "income_data": current_user.income_data,
         "guarantor_type": current_user.guarantor_type,
         "guarantor_status": current_user.guarantor_status,
-        "guarantor_data": current_user.guarantor_data,
+        "guarantor_data": safe_guarantor,
         "visale_id": current_user.visale_id,
         "garantme_ref": current_user.garantme_ref,
         "trust_score": current_user.trust_score,
@@ -809,7 +813,7 @@ async def init_guarantor(
     current_user.garantme_ref = None
     
     if request.guarantor_type == "none":
-        current_user.guarantor_status = "verified"
+        current_user.guarantor_status = "unverified"
         
     await db.commit()
     await db.refresh(current_user)

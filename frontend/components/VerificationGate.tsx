@@ -57,17 +57,17 @@ export default function VerificationGate({
     const getVerificationPath = (): string => {
         switch (requires) {
             case 'identity':
-                return '/verification/identity';
+                return '/verify/identity';
             case 'email':
-                return '/verification/email';
+                return '/verify/email';
             case 'income':
-                return '/verification/income';
+                return '/verify/income';
             case 'employment':
-                return '/verification/employment';
+                return '/verify/identity';
             case 'property_docs':
-                return '/verification/documents';
+                return '/verify/identity';
             default:
-                return '/verification';
+                return '/verify/identity';
         }
     };
 

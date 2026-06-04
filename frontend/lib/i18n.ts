@@ -285,7 +285,15 @@ export const translations = {
                 verificationFailed: "Certificate could not be verified. Make sure the document is valid and the name matches your account.",
                 deleteConfirm: "Are you sure you want to remove this guarantor? Your trust score will be reduced.",
                 removed: "Guarantor removed successfully."
-            }
+            },
+            capture: {
+                title: "Secure Capture",
+            },
+        },
+        errors: {
+            somethingWentWrong: "Something went wrong",
+            tryAgain: "Try Again",
+            goToDashboard: "Go to Dashboard",
         },
         // Onboarding
         onboarding: {
@@ -2536,7 +2544,15 @@ export const translations = {
                 verificationFailed: "Le certificat n'a pas pu être vérifié. Assurez-vous que le document est valide et que le nom correspond à votre compte.",
                 deleteConfirm: "Êtes-vous sûr de vouloir supprimer ce garant ? Votre score de confiance sera diminué.",
                 removed: "Garant supprimé avec succès."
-            }
+            },
+            capture: {
+                title: "Capture Sécurisée",
+            },
+        },
+        errors: {
+            somethingWentWrong: "Une erreur s'est produite",
+            tryAgain: "Réessayer",
+            goToDashboard: "Retour au tableau de bord",
         },
         // Onboarding
         onboarding: {
