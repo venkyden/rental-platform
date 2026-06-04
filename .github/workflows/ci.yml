@@ -50,7 +50,7 @@ jobs:
           --health-retries 10
 
     env:
-      DATABASE_URL: postgresql+asyncpg://test:test@localhost:5432/roomivo_test
+      DATABASE_URL: postgresql+asyncpg://test:test@127.0.0.1:5432/roomivo_test
       SECRET_KEY: test-secret-key-that-is-at-least-32-characters-long-for-ci
       ENVIRONMENT: test
 
@@ -100,7 +100,7 @@ jobs:
           --health-retries 5
 
     env:
-      DATABASE_URL: postgresql+asyncpg://test:test@localhost:5432/test_db
+      DATABASE_URL: postgresql+asyncpg://test:test@127.0.0.1:5432/test_db
       SECRET_KEY: test-secret-key-that-is-at-least-32-characters-long-for-ci
       ENVIRONMENT: test
 
