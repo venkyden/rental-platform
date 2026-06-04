@@ -228,6 +228,9 @@ class EmploymentVerificationService:
             # No AI client available — cannot extract data
             return None
 
+        from app.core.gemini_quota import check_quota
+        await check_quota()
+
         models_to_try = ["gemini-2.5-flash", "gemini-2.0-flash"]
         max_retries = 2
 

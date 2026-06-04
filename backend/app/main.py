@@ -359,6 +359,14 @@ async def health_check():
 
     # 3. Circuits
     status["checks"]["circuits"] = get_circuit_health()
+
+    # 4. Gemini quota
+    try:
+        from app.core.gemini_quota import get_usage
+        status["checks"]["gemini_quota"] = await get_usage()
+    except Exception:
+        pass
+
     status["total_latency"] = time.time() - start_total
 
     return status

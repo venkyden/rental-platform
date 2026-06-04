@@ -190,16 +190,12 @@ export default function TenantFeatures() {
                             <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 flex items-center gap-3">
                                 <Zap className="w-4 h-4 text-zinc-900" /> {t('tenant.features.activity.title', undefined, 'Activity Hub')}
                             </h3>
-                            <div className="flex gap-2">
-                                <div className="w-2 h-2 rounded-full bg-zinc-900 animate-ping" />
-                                <span className="text-[9px] font-black uppercase tracking-widest text-zinc-900">{t('tenant.features.activity.live', undefined, 'Live Updates')}</span>
-                            </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-8 relative z-10">
                             {[
-                                { label: t('tenant.features.activity.tours', undefined, 'Tours'), value: '02', icon: <Calendar className="w-5 h-5 text-zinc-900" />, sub: t('tenant.features.activity.upcoming', undefined, 'Upcoming') },
-                                { label: t('tenant.features.activity.apps', undefined, 'Applications'), value: '01', icon: <FileText className="w-5 h-5 text-zinc-900" />, sub: t('tenant.features.activity.review', undefined, 'In Review') },
+                                { label: t('tenant.features.activity.tours', undefined, 'Tours'), value: stats.visits, icon: <Calendar className="w-5 h-5 text-zinc-900" />, sub: t('tenant.features.activity.upcoming', undefined, 'Upcoming') },
+                                { label: t('tenant.features.activity.apps', undefined, 'Applications'), value: stats.applications, icon: <FileText className="w-5 h-5 text-zinc-900" />, sub: t('tenant.features.activity.review', undefined, 'In Review') },
                             ].map((stat, i) => (
                                 <div key={i} className="p-8 rounded-[2.5rem] bg-zinc-50 border border-zinc-100 hover:border-zinc-900 transition-all duration-500 group/item">
                                     <div className="p-4 rounded-2xl bg-white w-fit mb-6 shadow-md group-hover/item:bg-zinc-900 group-hover/item:text-white transition-all duration-500">
@@ -241,30 +237,6 @@ export default function TenantFeatures() {
                 </section>
             </FeatureGate>
 
-            <section className="space-y-10">
-                <div className="flex items-center gap-4 px-6">
-                    <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-zinc-200 to-transparent" />
-                    <h2 className="text-[10px] font-black tracking-[0.4em] uppercase text-zinc-400">
-                        {t('dashboard.tenant.recentSearches', undefined, 'Search History')}
-                    </h2>
-                    <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-zinc-200 to-transparent" />
-                </div>
-                <div className="glass-card !p-20 text-center border-none rounded-[3rem] shadow-xl flex flex-col items-center justify-center relative overflow-hidden">
-                    <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-[0.03] pointer-events-none"></div>
-                    <div className="w-24 h-24 bg-zinc-50 rounded-full flex items-center justify-center mb-10 shadow-inner">
-                        <span className="text-4xl opacity-50 grayscale">🔍</span>
-                    </div>
-                    <p className="text-xl font-medium text-zinc-500 mb-10 max-sm mx-auto leading-relaxed">
-                        {t('dashboard.tenant.noSearches', undefined, "Your recent property searches will appear here for quick access.")}
-                    </p>
-                    <button
-                        onClick={() => router.push('/search')}
-                        className="px-12 py-5 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-full hover:scale-105 active:scale-95 transition-all shadow-xl"
-                    >
-                        {t('dashboard.tenant.searchButton', undefined, 'Start New Search')}
-                    </button>
-                </div>
-            </section>
         </div>
     );
 }

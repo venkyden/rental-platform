@@ -84,10 +84,6 @@ export default function LandingFooter() {
         </div>
         
         <div className="border-t border-zinc-100 pt-12 flex flex-col md:flex-row items-center justify-between gap-8 text-zinc-400 text-[10px] font-black tracking-[0.2em] uppercase">
-          <div className="flex items-center gap-4">
-             <span className="w-2 h-2 bg-zinc-900 rounded-full animate-pulse" />
-             <span>{t('landing.footer.systemsOperational', undefined, 'All Systems Operational')}</span>
-          </div>
           <span>© {new Date().getFullYear()} Roomivo Platform. {t('globalFooter.rights', undefined, 'All rights reserved.')}</span>
           <div className="flex gap-8">
             <Link href="/legal/terms" className="hover:text-zinc-900 transition-colors">{t('landing.footer.termsLink', undefined, 'Terms')}</Link>

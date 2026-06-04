@@ -199,24 +199,21 @@ export default function AgencyDashboard() {
 
             {/* Mandate Management / GLI Summary & Compliance Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                {/* Mandate Management Proxy */}
+                {/* Mandate Management */}
                 <div className="lg:col-span-2 space-y-12">
                     <div className="glass-card !p-10 rounded-[2.5rem] border-zinc-100 shadow-xl relative overflow-hidden text-left">
                         <div className="flex justify-between items-center mb-8 px-2">
                             <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
-                                Mandate Management Portfolio (Proxy)
+                                {t('dashboard.agency.mandateManagement', undefined, 'Mandate Management')}
                             </h2>
                             <Link href="/properties" className="text-xs font-black uppercase tracking-widest text-zinc-900 hover:text-zinc-500">
-                                View All Properties →
+                                {t('dashboard.agency.viewAllProperties', undefined, 'View All Properties')} →
                             </Link>
                         </div>
                         <div className="p-8 rounded-[2rem] bg-zinc-50 border border-zinc-200 text-center flex flex-col items-center justify-center">
                             <Building className="w-12 h-12 text-zinc-400 mb-4" />
                             <p className="text-sm font-semibold text-zinc-800">
-                                Managing {stats?.active_mandates ?? 0} active mandates on behalf of your landlords.
-                            </p>
-                            <p className="text-xs text-zinc-400 font-bold uppercase tracking-wider mt-2">
-                                Mandates are auto-derived from active property management access agreements.
+                                {t('dashboard.agency.activeMandatesCount', { count: stats?.active_mandates ?? 0 }, `Managing ${stats?.active_mandates ?? 0} active mandates`)}
                             </p>
                         </div>
                     </div>
@@ -228,16 +225,13 @@ export default function AgencyDashboard() {
                                 {t('dashboard.agency.rentGuarantee', undefined, 'Rent Guarantee Insurance (GLI)')}
                             </h2>
                             <Link href="/gli" className="text-xs font-black uppercase tracking-widest text-zinc-900 hover:text-zinc-500">
-                                Request Quote →
+                                {t('dashboard.agency.requestQuote', undefined, 'Request Quote')} →
                             </Link>
                         </div>
                         <div className="p-8 rounded-[2rem] bg-zinc-50 border border-zinc-200 text-center flex flex-col items-center justify-center">
                             <CheckCircle2 className="w-12 h-12 text-zinc-900 mb-4" />
                             <p className="text-sm font-semibold text-zinc-800">
-                                {stats ? `${stats.leased} properties active with GLI coverage` : '0 properties covered'}
-                            </p>
-                            <p className="text-xs text-zinc-400 font-bold uppercase tracking-wider mt-2">
-                                100% of active leases are backed by Roomivo's integrated rent protection guarantee.
+                                {stats ? `${stats.leased} ${t('dashboard.agency.propertiesWithGli', undefined, 'properties active with GLI coverage')}` : t('dashboard.agency.noPropertiesCovered', undefined, '0 properties covered')}
                             </p>
                         </div>
                     </div>

@@ -353,3 +353,316 @@ async def test_garantme_upload_rate_limited(client, sessionmaker_):
     )
     assert r.status_code == 429
     _upload_rate_limits.pop(key, None)
+
+
+# ── 8. selfie_with_id — authenticated upload endpoint ─────────────────────
+
+@pytest.mark.asyncio
+async def test_selfie_with_id_auth_success(client, sessionmaker_):
+    """Happy path: AI passes → identity_verified=True in one shot."""
+    user = await make_user(sessionmaker_, role="tenant")
+    key = f"{user.id}:identity"
+    _upload_rate_limits.pop(key, None)
+
+    with patch("app.services.identity.identity_service") as mock_svc, \
+         patch("app.services.storage.storage", _fake_storage()), \
+         patch("app.routers.verification.apply_watermark", return_value=b"wm"):
+        mock_svc.verify_selfie_with_id = AsyncMock(return_value={
+            "verified": True, "status": "verified",
+            "data": {"full_name": "Tenant User", "document_number": "AB123456",
+                     "document_type": "passport", "confidence_score": 0.92,
+                     "is_same_person": True, "verification_method": "selfie_with_id"},
+            "validation_checks": [], "rejection_reason": None,
+        })
+        r = await client.post(
+            "/verification/identity/upload?document_type=passport",
+            files={"file": ("selfie_id.jpg", b"\xff\xd8\xff photo", "image/jpeg")},
+            data={"side": "selfie_with_id"},
+            headers=auth(user),
+        )
+
+    assert r.status_code == 200
+    body = r.json()
+    assert body["verified"] is True
+    assert body["status"] == "verified"
+    assert body["trust_score"] >= 80   # started at 50, gained +30
+
+
+@pytest.mark.asyncio
+async def test_selfie_with_id_auth_ai_rejected(client, sessionmaker_):
+    """AI rejects (face mismatch) → 400, user not verified."""
+    user = await make_user(sessionmaker_, role="tenant")
+    key = f"{user.id}:identity"
+    _upload_rate_limits.pop(key, None)
+
+    with patch("app.services.identity.identity_service") as mock_svc:
+        mock_svc.verify_selfie_with_id = AsyncMock(return_value={
+            "verified": False, "status": "rejected",
+            "data": None, "validation_checks": [],
+            "rejection_reason": "Live face does not match face on ID",
+        })
+        r = await client.post(
+            "/verification/identity/upload?document_type=id_card",
+            files={"file": ("bad.jpg", b"garbage", "image/jpeg")},
+            data={"side": "selfie_with_id"},
+            headers=auth(user),
+        )
+
+    assert r.status_code == 400
+    assert "Live face does not match" in r.json()["detail"]
+
+
+@pytest.mark.asyncio
+async def test_selfie_with_id_auth_ai_unavailable_accepts(client, sessionmaker_):
+    """AI down → pending_review → upload succeeds (no hard block on user)."""
+    user = await make_user(sessionmaker_, role="tenant")
+    key = f"{user.id}:identity"
+    _upload_rate_limits.pop(key, None)
+
+    with patch("app.services.identity.identity_service") as mock_svc, \
+         patch("app.services.storage.storage", _fake_storage()), \
+         patch("app.routers.verification.apply_watermark", return_value=b"wm"):
+        mock_svc.verify_selfie_with_id = AsyncMock(return_value={
+            "verified": True, "status": "pending_review",
+            "data": None, "validation_checks": [], "rejection_reason": None,
+        })
+        r = await client.post(
+            "/verification/identity/upload?document_type=passport",
+            files={"file": ("selfie_id.jpg", b"\xff\xd8\xff photo", "image/jpeg")},
+            data={"side": "selfie_with_id"},
+            headers=auth(user),
+        )
+
+    assert r.status_code == 200
+    assert r.json()["verified"] is True
+
+
+@pytest.mark.asyncio
+async def test_selfie_with_id_invalid_file_type(client, sessionmaker_):
+    """Non-image MIME type must be rejected before reaching AI."""
+    user = await make_user(sessionmaker_, role="tenant")
+    key = f"{user.id}:identity"
+    _upload_rate_limits.pop(key, None)
+
+    r = await client.post(
+        "/verification/identity/upload?document_type=passport",
+        files={"file": ("selfie.html", b"<html>", "text/html")},
+        data={"side": "selfie_with_id"},
+        headers=auth(user),
+    )
+    assert r.status_code == 400
+    assert "Invalid file type" in r.json()["detail"]
+
+
+@pytest.mark.asyncio
+async def test_selfie_with_id_rate_limited(client, sessionmaker_):
+    """selfie_with_id uploads count against the identity rate limit."""
+    user = await make_user(sessionmaker_, role="tenant")
+    key = f"{user.id}:identity"
+    now = naive_utcnow()
+    _upload_rate_limits[key] = [now - timedelta(minutes=i) for i in range(5)]
+
+    r = await client.post(
+        "/verification/identity/upload?document_type=passport",
+        files={"file": ("selfie_id.jpg", b"\xff\xd8\xff", "image/jpeg")},
+        data={"side": "selfie_with_id"},
+        headers=auth(user),
+    )
+    assert r.status_code == 429
+    _upload_rate_limits.pop(key, None)
+
+
+@pytest.mark.asyncio
+async def test_selfie_with_id_trust_score_capped_at_100(client, sessionmaker_):
+    """Re-verifying when already verified must not push trust_score past 100."""
+    user = await make_user(sessionmaker_, role="tenant")
+    user.trust_score = 95
+    user.identity_verified = True
+    async with sessionmaker_() as session:
+        session.add(user)
+        await session.commit()
+        await session.refresh(user)
+
+    key = f"{user.id}:identity"
+    _upload_rate_limits.pop(key, None)
+
+    with patch("app.services.identity.identity_service") as mock_svc, \
+         patch("app.services.storage.storage", _fake_storage()), \
+         patch("app.routers.verification.apply_watermark", return_value=b"wm"):
+        mock_svc.verify_selfie_with_id = AsyncMock(return_value={
+            "verified": True, "status": "verified",
+            "data": {}, "validation_checks": [], "rejection_reason": None,
+        })
+        r = await client.post(
+            "/verification/identity/upload?document_type=passport",
+            files={"file": ("selfie_id.jpg", b"\xff\xd8\xff", "image/jpeg")},
+            data={"side": "selfie_with_id"},
+            headers=auth(user),
+        )
+
+    assert r.status_code == 200
+    assert r.json()["trust_score"] <= 100
+
+
+# ── 9. selfie_with_id — mobile session endpoint ───────────────────────────
+
+@pytest.mark.asyncio
+async def test_selfie_with_id_mobile_session_success(client, sessionmaker_):
+    """Mobile QR flow: upload marks session completed and user verified."""
+    user = await make_user(sessionmaker_, role="tenant")
+
+    r = await client.post("/verification/identity/session", headers=auth(user))
+    assert r.status_code == 200
+    code = r.json()["verification_code"]
+
+    with patch("app.services.identity.identity_service") as mock_svc, \
+         patch("app.services.storage.storage", _fake_storage()), \
+         patch("app.routers.verification.apply_watermark", return_value=b"wm"):
+        mock_svc.verify_selfie_with_id = AsyncMock(return_value={
+            "verified": True, "status": "verified",
+            "data": {"full_name": "Tenant User", "document_type": "passport",
+                     "confidence_score": 0.88, "is_same_person": True},
+            "validation_checks": [], "rejection_reason": None,
+        })
+        r = await client.post(
+            f"/verification/identity/upload-mobile?verification_code={code}&document_type=passport&side=selfie_with_id",
+            files={"file": ("selfie_id.jpg", b"\xff\xd8\xff photo data", "image/jpeg")},
+        )
+
+    assert r.status_code == 200
+    assert r.json()["verified"] is True
+    assert r.json()["status"] == "verified"
+
+    status_r = await client.get(f"/verification/identity/session/{code}/status")
+    assert status_r.json()["completed"] is True
+
+
+@pytest.mark.asyncio
+async def test_selfie_with_id_mobile_session_rejected(client, sessionmaker_):
+    """Mobile QR flow: AI rejection returns 400 and session stays open for retry."""
+    user = await make_user(sessionmaker_, role="tenant")
+
+    r = await client.post("/verification/identity/session", headers=auth(user))
+    code = r.json()["verification_code"]
+
+    with patch("app.services.identity.identity_service") as mock_svc:
+        mock_svc.verify_selfie_with_id = AsyncMock(return_value={
+            "verified": False, "status": "rejected",
+            "data": None, "validation_checks": [],
+            "rejection_reason": "No live face detected — ensure your face is fully in frame",
+        })
+        r = await client.post(
+            f"/verification/identity/upload-mobile?verification_code={code}&document_type=id_card&side=selfie_with_id",
+            files={"file": ("bad.jpg", b"garbage", "image/jpeg")},
+        )
+
+    assert r.status_code == 400
+    assert "No live face detected" in r.json()["detail"]
+
+    status_r = await client.get(f"/verification/identity/session/{code}/status")
+    assert status_r.json()["completed"] is False
+
+
+@pytest.mark.asyncio
+async def test_selfie_with_id_mobile_expired_session(client, sessionmaker_):
+    """Uploading to an unknown session code returns 404."""
+    r = await client.post(
+        "/verification/identity/upload-mobile?verification_code=nonexistent&document_type=passport&side=selfie_with_id",
+        files={"file": ("selfie_id.jpg", b"\xff\xd8\xff", "image/jpeg")},
+    )
+    assert r.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_selfie_with_id_mobile_already_completed(client, sessionmaker_):
+    """Re-uploading to a completed session is rejected with 400."""
+    user = await make_user(sessionmaker_, role="tenant")
+
+    r = await client.post("/verification/identity/session", headers=auth(user))
+    code = r.json()["verification_code"]
+
+    with patch("app.services.identity.identity_service") as mock_svc, \
+         patch("app.services.storage.storage", _fake_storage()), \
+         patch("app.routers.verification.apply_watermark", return_value=b"wm"):
+        mock_svc.verify_selfie_with_id = AsyncMock(return_value={
+            "verified": True, "status": "verified",
+            "data": {}, "validation_checks": [], "rejection_reason": None,
+        })
+        await client.post(
+            f"/verification/identity/upload-mobile?verification_code={code}&document_type=passport&side=selfie_with_id",
+            files={"file": ("selfie_id.jpg", b"\xff\xd8\xff", "image/jpeg")},
+        )
+
+    r = await client.post(
+        f"/verification/identity/upload-mobile?verification_code={code}&document_type=passport&side=selfie_with_id",
+        files={"file": ("selfie_id.jpg", b"\xff\xd8\xff", "image/jpeg")},
+    )
+    assert r.status_code == 400
+    assert "already completed" in r.json()["detail"]
+
+
+# ── 10. back-side upload — stores file, never approves ────────────────────
+
+@pytest.mark.asyncio
+async def test_back_side_stores_without_marking_verified(client, sessionmaker_):
+    """side=back stores supplementary file, preserves front file_url, user stays unverified."""
+    user = await make_user(sessionmaker_, role="tenant")
+    key = f"{user.id}:identity"
+    _upload_rate_limits.pop(key, None)
+
+    user.identity_data = {
+        "verified": False,
+        "file_url": "https://r2.test/front.jpg",
+        "status": "document_verified",
+    }
+    async with sessionmaker_() as session:
+        session.add(user)
+        await session.commit()
+
+    with patch("app.services.storage.storage", _fake_storage()), \
+         patch("app.routers.verification.apply_watermark", return_value=b"wm"):
+        r = await client.post(
+            "/verification/identity/upload?document_type=id_card",
+            files={"file": ("back.jpg", b"\xff\xd8\xff", "image/jpeg")},
+            data={"side": "back"},
+            headers=auth(user),
+        )
+
+    assert r.status_code == 200
+
+    async with sessionmaker_() as session:
+        from sqlalchemy import select
+        from app.models.user import User as UserModel
+        result = await session.execute(select(UserModel).where(UserModel.id == user.id))
+        refreshed = result.scalar_one()
+
+    assert refreshed.identity_verified is False
+    assert refreshed.identity_data["file_url"] == "https://r2.test/front.jpg"
+    assert "back_file_url" in refreshed.identity_data
+
+
+# ── 11. AI extraction failure on front → pending_review (not hard reject) ──
+
+@pytest.mark.asyncio
+async def test_front_upload_ai_unavailable_returns_pending_review(client, sessionmaker_):
+    """Blurry/unreadable image: AI returns pending_review, upload succeeds for manual review."""
+    user = await make_user(sessionmaker_, role="tenant")
+    key = f"{user.id}:identity"
+    _upload_rate_limits.pop(key, None)
+
+    with patch("app.services.identity.identity_service") as mock_svc, \
+         patch("app.services.storage.storage", _fake_storage()), \
+         patch("app.routers.verification.apply_watermark", return_value=b"wm"):
+        mock_svc.verify_document = AsyncMock(return_value={
+            "verified": True, "status": "pending_review",
+            "data": None, "validation_checks": [], "rejection_reason": None,
+        })
+        r = await client.post(
+            "/verification/identity/upload?document_type=passport",
+            files={"file": ("blurry.jpg", b"\xff\xd8\xff blurry", "image/jpeg")},
+            data={"side": "front"},
+            headers=auth(user),
+        )
+
+    assert r.status_code == 200
+    assert r.json()["status"] == "document_verified"

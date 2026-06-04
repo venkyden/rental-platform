@@ -59,6 +59,7 @@ app.db
 
 # Agent Specific
 artifacts/
+.superpowers/
 backend/scratch/
 backend/app/scratch/
 frontend/scratch/

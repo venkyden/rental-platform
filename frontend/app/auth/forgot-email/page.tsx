@@ -60,10 +60,10 @@ export default function ForgotEmailPage() {
                         <UserSearch className="w-6 h-6 text-zinc-900" />
                     )}
                 </div>
-                <h2 className="text-3xl font-extrabold text-zinc-900 mb-3 tracking-tight">
+                <h2 className="text-4xl font-black text-zinc-900 tracking-tighter mb-2">
                     {status === 'success' ? t('auth.forgotEmail.successTitle', undefined, 'Check your inbox') : t('auth.forgotEmail.title', undefined, 'Find your email')}
                 </h2>
-                <p className="text-zinc-500 text-sm max-w-sm mx-auto leading-relaxed">
+                <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] max-w-sm mx-auto">
                     {status === 'success'
                         ? t('auth.forgotEmail.successDesc', undefined, "If an account matches the details you provided, we've sent a reminder to its email address.")
                         : t('auth.forgotEmail.desc', undefined, "Enter your registered full name and phone number and we'll send a reminder to the matching email address.")}
@@ -74,7 +74,7 @@ export default function ForgotEmailPage() {
                 <motion.div variants={itemVariants} className="space-y-6">
                     <Link
                         href="/auth/login"
-                        className="flex w-full justify-center px-4 py-3 rounded-xl border border-transparent text-sm font-semibold text-white bg-zinc-900 hover:bg-zinc-800 focus:outline-none focus:ring-4 focus:ring-zinc-500/20 transition-all shadow-sm"
+                        className="w-full py-5 rounded-full bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-3 hover:shadow-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-zinc-900/10"
                     >
                         {t('common.back', undefined, 'Return to login')}
                     </Link>
@@ -91,7 +91,7 @@ export default function ForgotEmailPage() {
                     <div>
                         <label
                             htmlFor="fullName"
-                            className="block text-sm font-medium text-zinc-800 mb-1.5"
+                            className="text-xs font-bold text-zinc-500 tracking-wide ml-1 mb-2 block"
                         >
                             {t('auth.forgotEmail.fullName', undefined, 'Full Name')}
                         </label>
@@ -99,8 +99,8 @@ export default function ForgotEmailPage() {
                             id="fullName"
                             type="text"
                             required
-                            className="block w-full px-4 py-3 rounded-xl border border-zinc-200 bg-white text-zinc-900 placeholder-zinc-500 focus:border-zinc-900 focus:ring-4 focus:ring-zinc-900/5 transition-all shadow-sm"
-                            placeholder={t('common.placeholders.fullName')}
+                            className="w-full px-6 py-5 rounded-2xl bg-zinc-50 border-none focus:ring-2 focus:ring-zinc-900/10 transition-all font-bold text-zinc-900 placeholder:text-zinc-300"
+                            placeholder={t('common.placeholders.fullName', undefined, 'John Doe')}
                             value={fullName}
                             onChange={(e) => setFullName(e.target.value)}
                         />
@@ -109,7 +109,7 @@ export default function ForgotEmailPage() {
                     <div>
                         <label
                             htmlFor="phone"
-                            className="block text-sm font-medium text-zinc-800 mb-1.5"
+                            className="text-xs font-bold text-zinc-500 tracking-wide ml-1 mb-2 block"
                         >
                             {t('auth.forgotEmail.phone', undefined, 'Phone Number')}
                         </label>
@@ -117,8 +117,8 @@ export default function ForgotEmailPage() {
                             id="phone"
                             type="tel"
                             required
-                            className="block w-full px-4 py-3 rounded-xl border border-zinc-200 bg-white text-zinc-900 placeholder-zinc-500 focus:border-zinc-900 focus:ring-4 focus:ring-zinc-900/5 transition-all shadow-sm"
-                            placeholder={t('common.placeholders.phone')}
+                            className="w-full px-6 py-5 rounded-2xl bg-zinc-50 border-none focus:ring-2 focus:ring-zinc-900/10 transition-all font-bold text-zinc-900 placeholder:text-zinc-300"
+                            placeholder={t('common.placeholders.phone', undefined, '+33 6 12 34 56 78')}
                             value={phone}
                             onChange={(e) => setPhone(e.target.value)}
                         />
@@ -127,17 +127,22 @@ export default function ForgotEmailPage() {
                     <button
                         type="submit"
                         disabled={status === 'loading' || !fullName || !phone}
-                        className="flex w-full justify-center px-4 py-3 rounded-xl border border-transparent text-sm font-semibold text-white bg-zinc-900 hover:bg-zinc-800 focus:outline-none focus:ring-4 focus:ring-zinc-900/20 transition-all shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
+                        className="w-full py-5 rounded-full bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-3 hover:shadow-2xl hover:scale-[1.02] active:scale-95 disabled:opacity-50 transition-all shadow-xl shadow-zinc-900/10"
                     >
-                        {status === 'loading' ? t('common.loading') : t('auth.forgotEmail.submit', undefined, 'Find Email')}
+                        {status === 'loading' ? (
+                            <div className="flex items-center gap-3">
+                                <div className="w-3 h-3 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                                {t('common.loading', undefined, 'Loading...')}
+                            </div>
+                        ) : t('auth.forgotEmail.submit', undefined, 'Find Email')}
                     </button>
-                    
+
                     <div className="flex justify-center mt-6">
                         <Link
                             href="/auth/login"
-                            className="inline-flex items-center text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors"
+                            className="inline-flex items-center gap-2 text-[10px] font-black text-zinc-400 uppercase tracking-widest hover:text-zinc-900 transition-colors"
                         >
-                            <ArrowLeft className="w-4 h-4 mr-2" />
+                            <ArrowLeft className="w-3 h-3" strokeWidth={3} />
                             {t('common.back', undefined, 'Back to login')}
                         </Link>
                     </div>

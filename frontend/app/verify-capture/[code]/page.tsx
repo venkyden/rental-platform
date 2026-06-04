@@ -3,67 +3,135 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Camera, CheckCircle2, AlertCircle, Shield, RefreshCcw, ArrowRight, Loader2, UserCircle2 } from 'lucide-react';
-import { toast } from 'react-hot-toast';
+import { Camera, CheckCircle2, AlertCircle, Shield, RefreshCcw, ArrowRight, Loader2 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { useLanguage } from '@/lib/LanguageContext';
-import LivenessCapture from '@/components/LivenessCapture';
 
-type Step =
-    | 'loading'
-    | 'select'
-    | 'capture'
-    | 'preview'
-    | 'uploading'
-    | 'liveness'
-    | 'selfie_preview'
-    | 'selfie_uploading'
-    | 'success'
-    | 'error';
+type Step = 'loading' | 'select_doc' | 'guide' | 'capture' | 'preview' | 'uploading' | 'success' | 'error';
+
+const DOCUMENT_TYPES = [
+    {
+        value: 'passport',
+        labelEn: 'Passport',
+        labelFr: 'Passeport',
+        descEn: 'Bio page with photo',
+        descFr: 'Page biométrique avec photo',
+        icon: '🌍',
+    },
+    {
+        value: 'id_card',
+        labelEn: 'National ID Card',
+        labelFr: "Carte Nationale d'Identité",
+        descEn: 'Front side with photo',
+        descFr: 'Recto avec photo',
+        icon: '🆔',
+    },
+    {
+        value: 'drivers_license',
+        labelEn: "Driver's License",
+        labelFr: 'Permis de conduire',
+        descEn: 'Front side with photo',
+        descFr: 'Recto avec photo',
+        icon: '🚗',
+    },
+    {
+        value: 'residence_permit',
+        labelEn: 'Residence Permit',
+        labelFr: 'Titre de séjour',
+        descEn: 'Front side with photo',
+        descFr: 'Recto avec photo',
+        icon: '🏠',
+    },
+];
+
+function IdSelfieIllustration() {
+    return (
+        <div className="relative w-full aspect-video bg-zinc-900 rounded-3xl overflow-hidden flex items-center justify-center">
+            {/* Corner guides */}
+            <div className="absolute top-4 left-4 w-7 h-7 border-t-2 border-l-2 border-white/40 rounded-tl-md" />
+            <div className="absolute top-4 right-4 w-7 h-7 border-t-2 border-r-2 border-white/40 rounded-tr-md" />
+            <div className="absolute bottom-4 left-4 w-7 h-7 border-b-2 border-l-2 border-white/40 rounded-bl-md" />
+            <div className="absolute bottom-4 right-4 w-7 h-7 border-b-2 border-r-2 border-white/40 rounded-br-md" />
+
+            {/* Person + ID card illustration */}
+            <div className="flex items-center gap-5">
+                {/* Face silhouette */}
+                <div className="flex flex-col items-center gap-1">
+                    <div className="w-16 h-16 rounded-full bg-zinc-700 border-2 border-white/20 flex items-center justify-center overflow-hidden relative">
+                        {/* simple face */}
+                        <div className="absolute top-3 w-12 h-8 rounded-full bg-zinc-600" />
+                        <div className="absolute bottom-0 w-full h-7 rounded-t-[50%] bg-zinc-600" />
+                        <div className="absolute top-5 flex gap-3">
+                            <div className="w-2 h-2 rounded-full bg-white/50" />
+                            <div className="w-2 h-2 rounded-full bg-white/50" />
+                        </div>
+                    </div>
+                    <div className="w-20 h-4 rounded-t-full bg-zinc-700 border-t-2 border-x-2 border-white/20" />
+                </div>
+
+                {/* Plus / next-to indicator */}
+                <div className="text-white/30 text-xl font-black">+</div>
+
+                {/* ID card mockup */}
+                <div className="w-28 h-[4.5rem] bg-zinc-700 rounded-xl border-2 border-white/40 p-2 flex gap-2">
+                    {/* ID photo area */}
+                    <div className="w-10 h-full rounded-lg bg-zinc-600 border border-white/20 flex items-center justify-center shrink-0">
+                        <div className="w-5 h-5 rounded-full bg-white/20" />
+                    </div>
+                    {/* ID text lines */}
+                    <div className="flex-1 flex flex-col justify-center gap-1.5">
+                        <div className="h-1.5 bg-white/40 rounded-full w-full" />
+                        <div className="h-1.5 bg-white/25 rounded-full w-3/4" />
+                        <div className="h-1.5 bg-white/25 rounded-full w-full" />
+                        <div className="h-1 bg-white/15 rounded-full w-full mt-1" />
+                        <div className="h-1 bg-white/15 rounded-full w-full" />
+                    </div>
+                </div>
+            </div>
+
+            {/* Example label */}
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full">
+                <span className="text-[8px] font-black text-white uppercase tracking-[0.25em]">Example</span>
+            </div>
+        </div>
+    );
+}
 
 export default function VerifyCapturePage() {
     const params = useParams();
-    const { t, language, setLanguage } = useLanguage();
+    const { language, setLanguage } = useLanguage();
     const code = params?.code as string;
+    const fr = language === 'fr';
 
     const [step, setStep] = useState<Step>('loading');
-    const [documentType, setDocumentType] = useState('passport');
-    const [side, setSide] = useState<'front' | 'back' | 'bio'>('bio');
+    const [documentType, setDocumentType] = useState('id_card');
     const [file, setFile] = useState<File | Blob | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-    const [selfieBlob, setSelfieBlob] = useState<Blob | null>(null);
-    const [selfiePreviewUrl, setSelfiePreviewUrl] = useState<string | null>(null);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [errorMessage, setErrorMessage] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const fr = language === 'fr';
-
-    const documentTypes = [
-        { value: 'passport',          label: t('verify.identity.passport',      undefined, 'Passport'),         description: fr ? 'Page biométrique avec photo' : 'Bio page with photo',      icon: '🌍' },
-        { value: 'id_card',            label: t('verify.identity.idCard',        undefined, 'ID Card'),           description: fr ? 'Recto & Verso'                : 'Front & Back photo',       icon: '🆔' },
-        { value: 'drivers_license',    label: t('verify.identity.driversLicense',undefined, "Driver's License"),  description: fr ? 'Recto & Verso'                : 'Front & Back photo',       icon: '🚗' },
-        { value: 'residence_permit',   label: t('verify.identity.residencePermit',undefined, 'Residence Permit'), description: fr ? 'Recto & Verso'                : 'Front & Back photo',       icon: '🏠' },
-    ];
-
     useEffect(() => {
-        if (!code) return;
+        if (!code) {
+            setErrorMessage(fr ? 'Lien invalide. Utilisez le lien envoyé sur votre appareil.' : 'No verification code provided. Please use the link sent to your device.');
+            setStep('error');
+            return;
+        }
         validateSession();
     }, [code]);
 
     useEffect(() => {
-        return () => {
-            if (previewUrl) URL.revokeObjectURL(previewUrl);
-            if (selfiePreviewUrl) URL.revokeObjectURL(selfiePreviewUrl);
-        };
-    }, [previewUrl, selfiePreviewUrl]);
+        return () => { if (previewUrl) URL.revokeObjectURL(previewUrl); };
+    }, [previewUrl]);
 
     const validateSession = async () => {
+        setStep('loading');
+        setErrorMessage('');
         try {
             const res = await apiClient.client.get(`/verification/identity/session/${code}`);
-            setStep(res.data.completed ? 'success' : 'select');
+            setStep(res.data.completed ? 'success' : 'select_doc');
         } catch {
-            setErrorMessage('Invalid or expired verification link. Please generate a new one.');
+            setErrorMessage(fr ? 'Lien invalide ou expiré. Générez-en un nouveau.' : 'Invalid or expired verification link. Please generate a new one.');
             setStep('error');
         }
     };
@@ -76,30 +144,24 @@ export default function VerifyCapturePage() {
                 const img = new Image();
                 img.src = ev.target?.result as string;
                 img.onload = () => {
-                    const MAX = 1600;
+                    const MAX = 1800;
                     let w = img.width, h = img.height;
-                    if (w > h ? w > MAX : h > MAX) {
+                    if (w > MAX || h > MAX) {
                         if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
                         else       { w = Math.round(w * MAX / h); h = MAX; }
                     }
                     const canvas = document.createElement('canvas');
                     canvas.width = w; canvas.height = h;
                     canvas.getContext('2d', { willReadFrequently: true })?.drawImage(img, 0, 0, w, h);
-                    canvas.toBlob(b => b ? resolve(b) : reject(new Error('Compression failed')), 'image/jpeg', 0.85);
+                    canvas.toBlob(b => b ? resolve(b) : reject(new Error('Compression failed')), 'image/jpeg', 0.88);
                 };
             };
             reader.onerror = reject;
         });
 
-    const startCapture = (s: 'front' | 'back' | 'bio') => {
-        setSide(s);
-        setStep('capture');
-        setTimeout(() => fileInputRef.current?.click(), 150);
-    };
-
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const raw = e.target.files?.[0];
-        if (!raw) { setStep('select'); return; }
+        if (!raw) { setStep('guide'); return; }
         const isHeic = /\.heic|\.heif$/i.test(raw.name);
         setStep('loading');
         try {
@@ -108,9 +170,10 @@ export default function VerifyCapturePage() {
             setPreviewUrl(URL.createObjectURL(processed));
             setStep('preview');
         } catch {
-            setErrorMessage('Failed to process image. Please try again.');
-            setStep('select');
+            setErrorMessage(fr ? 'Impossible de traiter l\'image. Réessayez.' : 'Failed to process image. Please try again.');
+            setStep('guide');
         }
+        if (e.target) e.target.value = '';
     };
 
     const handleUpload = async () => {
@@ -119,61 +182,22 @@ export default function VerifyCapturePage() {
         setUploadProgress(0);
         try {
             const formData = new FormData();
-            formData.append('file', file, 'capture.jpg');
+            formData.append('file', file, 'selfie_with_id.jpg');
             await apiClient.client.post('/verification/identity/upload-mobile', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
-                params: { verification_code: code, document_type: documentType, side },
+                params: { verification_code: code, document_type: documentType, side: 'selfie_with_id' },
                 onUploadProgress: ev => setUploadProgress(Math.round((ev.loaded * 100) / (ev.total || 1))),
-            });
-
-            if (documentType !== 'passport' && side === 'front') {
-                // Need back side next
-                setFile(null);
-                setPreviewUrl(null);
-                setSide('back');
-                setStep('select');
-            } else {
-                // All doc sides done — proceed to liveness
-                setFile(null);
-                setPreviewUrl(null);
-                setStep('liveness');
-            }
-        } catch (err: any) {
-            setErrorMessage(err.response?.data?.detail || 'Upload failed. Check your connection.');
-            setStep('preview');
-        }
-    };
-
-    const handleLivenessCapture = useCallback((blob: Blob) => {
-        setSelfieBlob(blob);
-        setSelfiePreviewUrl(URL.createObjectURL(blob));
-        setStep('selfie_preview');
-    }, []);
-
-    const handleLivenessError = useCallback((msg: string) => {
-        setErrorMessage(msg || 'Camera access failed. Please allow camera permissions and try again.');
-        setStep('error');
-    }, []);
-
-    const handleSelfieUpload = async () => {
-        if (!selfieBlob) return;
-        setStep('selfie_uploading');
-        try {
-            const formData = new FormData();
-            formData.append('file', selfieBlob, 'selfie.jpg');
-            await apiClient.client.post('/verification/identity/upload-mobile', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-                params: { verification_code: code, document_type: documentType, side: 'selfie' },
             });
             setStep('success');
         } catch (err: any) {
-            setErrorMessage(err.response?.data?.detail || 'Selfie upload failed. Please retake.');
-            setStep('selfie_preview');
+            setErrorMessage(err.response?.data?.detail || (fr ? 'Envoi échoué. Vérifiez votre connexion.' : 'Upload failed. Check your connection.'));
+            setStep('preview');
         }
     };
 
     return (
         <div className="min-h-[100dvh] bg-white flex flex-col font-sans selection:bg-zinc-900/20 overflow-x-hidden">
+            {/* Background blobs */}
             <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
                 <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-zinc-900/5 rounded-full blur-[80px] animate-pulse" />
                 <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-zinc-900/5 rounded-full blur-[80px]" />
@@ -198,13 +222,14 @@ export default function VerifyCapturePage() {
 
             <main className="flex-1 flex flex-col p-6 max-w-md mx-auto w-full relative z-10">
                 <AnimatePresence mode="wait">
+
                     {/* Loading */}
                     {step === 'loading' && (
                         <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                             className="flex-1 flex flex-col items-center justify-center">
                             <Loader2 className="w-12 h-12 text-zinc-900 animate-spin mb-6" />
                             <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 animate-pulse">
-                                {fr ? 'Traitement en cours...' : 'Processing...'}
+                                {fr ? 'Traitement...' : 'Processing...'}
                             </p>
                         </motion.div>
                     )}
@@ -239,102 +264,150 @@ export default function VerifyCapturePage() {
                             </h1>
                             <p className="text-zinc-500 font-bold text-lg leading-relaxed mb-12">
                                 {fr
-                                    ? 'Votre identité a été confirmée. Vous pouvez fermer cette page et retourner sur votre ordinateur.'
+                                    ? 'Votre identité a été confirmée. Vous pouvez fermer cette page.'
                                     : 'Your identity has been confirmed. You can close this page and return to your desktop.'}
                             </p>
                             <div className="w-full p-6 rounded-3xl bg-zinc-900 text-white shadow-xl">
                                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
-                                    {fr ? 'Synchronisation active' : 'Desktop sync active'}
+                                    {fr ? 'Synchronisation bureau active' : 'Desktop sync active'}
                                 </p>
                             </div>
                         </motion.div>
                     )}
 
-                    {/* Doc type selection / side prompt */}
-                    {step === 'select' && (
-                        <motion.div key="select" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
-                            className="w-full space-y-8">
+                    {/* Step 1 — Select document type */}
+                    {step === 'select_doc' && (
+                        <motion.div key="select_doc" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+                            className="w-full space-y-6">
                             <div>
                                 <h2 className="text-4xl font-black uppercase tracking-tighter mb-2 text-zinc-900 leading-none">
-                                    {side === 'bio'   ? (fr ? 'Identité'     : 'Identity')
-                                   : side === 'front' ? (fr ? 'Face Avant'   : 'Front Side')
-                                   :                    (fr ? 'Face Arrière' : 'Back Side')}
+                                    {fr ? 'Votre document' : 'Your document'}
                                 </h2>
                                 <p className="text-zinc-500 font-medium">
-                                    {side === 'bio'
-                                        ? (fr ? 'Sélectionnez un document pour commencer' : 'Select document to begin')
-                                        : (fr ? `Photographiez le côté : ${side}` : `Capture the ${side} of your document`)}
+                                    {fr ? 'Quel document allez-vous utiliser ?' : 'Which document will you use?'}
                                 </p>
                             </div>
 
                             <div className="grid gap-3">
-                                {side === 'bio' ? documentTypes.map(doc => (
+                                {DOCUMENT_TYPES.map(doc => (
                                     <button key={doc.value} onClick={() => setDocumentType(doc.value)}
-                                        className={`p-5 rounded-[2rem] border-2 text-left transition-all flex items-center justify-between group ${
-                                            documentType === doc.value ? 'border-zinc-900 bg-zinc-900 text-white' : 'border-zinc-100 bg-white'}`}>
+                                        className={`p-5 rounded-[2rem] border-2 text-left transition-all flex items-center justify-between ${
+                                            documentType === doc.value
+                                                ? 'border-zinc-900 bg-zinc-900 text-white'
+                                                : 'border-zinc-100 bg-white hover:border-zinc-300'
+                                        }`}>
                                         <div className="flex items-center gap-4">
                                             <span className="text-2xl">{doc.icon}</span>
                                             <div>
-                                                <div className={`font-black text-[10px] uppercase tracking-widest mb-0.5 ${documentType === doc.value ? 'text-white' : 'text-zinc-900'}`}>{doc.label}</div>
-                                                <div className={`text-xs font-medium ${documentType === doc.value ? 'text-zinc-400' : 'text-zinc-500'}`}>{doc.description}</div>
+                                                <div className={`font-black text-[10px] uppercase tracking-widest mb-0.5 ${documentType === doc.value ? 'text-white' : 'text-zinc-900'}`}>
+                                                    {fr ? doc.labelFr : doc.labelEn}
+                                                </div>
+                                                <div className={`text-xs font-medium ${documentType === doc.value ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                                                    {fr ? doc.descFr : doc.descEn}
+                                                </div>
                                             </div>
                                         </div>
-                                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${documentType === doc.value ? 'border-white bg-white' : 'border-zinc-200'}`}>
+                                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${documentType === doc.value ? 'border-white bg-white' : 'border-zinc-200'}`}>
                                             {documentType === doc.value && <div className="w-1.5 h-1.5 rounded-full bg-zinc-900" />}
                                         </div>
                                     </button>
-                                )) : (
-                                    <div className="p-8 rounded-[2rem] border-2 border-dashed border-zinc-900/30 bg-zinc-900/5 flex flex-col items-center justify-center text-center">
-                                        <div className="w-16 h-16 bg-zinc-900 text-white rounded-2xl flex items-center justify-center shadow-lg mb-6">
-                                            {side === 'front' ? <Shield className="w-8 h-8" /> : <RefreshCcw className="w-8 h-8" />}
-                                        </div>
-                                        <p className="text-sm font-black text-zinc-900 mb-2 uppercase tracking-tighter">
-                                            {fr ? `Prêt pour : ${side}` : `Ready for ${side} side`}
-                                        </p>
-                                        <p className="text-xs text-zinc-500 font-bold">
-                                            {fr ? 'Évitez les reflets et ombres' : 'Ensure clear lighting, no glare'}
-                                        </p>
-                                    </div>
-                                )}
+                                ))}
                             </div>
 
-                            <button onClick={() => startCapture(documentType === 'passport' ? 'bio' : side === 'bio' ? 'front' : side)}
-                                className="w-full bg-zinc-900 text-white font-black py-6 rounded-[2rem] shadow-2xl transition transform active:scale-95 flex items-center justify-center gap-4 text-xs uppercase tracking-[0.4em]">
-                                <Camera className="w-5 h-5" />
-                                {fr ? 'Lancer l\'Appareil' : 'Launch Camera'}
+                            <button onClick={() => setStep('guide')}
+                                className="w-full bg-zinc-900 text-white font-black py-6 rounded-[2rem] shadow-2xl active:scale-95 transition-transform flex items-center justify-center gap-4 text-xs uppercase tracking-[0.4em]">
+                                {fr ? 'Continuer' : 'Continue'} <ArrowRight className="w-5 h-5" />
                             </button>
                         </motion.div>
                     )}
 
-                    {/* Preview (doc) */}
+                    {/* Step 2 — Guide: show example */}
+                    {step === 'guide' && (
+                        <motion.div key="guide" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+                            className="w-full space-y-6">
+                            <div>
+                                <h2 className="text-4xl font-black uppercase tracking-tighter mb-2 text-zinc-900 leading-none">
+                                    {fr ? 'Prêt ?' : 'Ready?'}
+                                </h2>
+                                <p className="text-zinc-500 font-medium">
+                                    {fr
+                                        ? `Tenez votre ${DOCUMENT_TYPES.find(d => d.value === documentType)?.labelFr ?? 'document'} à côté de votre visage`
+                                        : `Hold your ${DOCUMENT_TYPES.find(d => d.value === documentType)?.labelEn ?? 'document'} next to your face`}
+                                </p>
+                            </div>
+
+                            <IdSelfieIllustration />
+
+                            <div className="p-5 rounded-2xl bg-zinc-50 border border-zinc-100 space-y-3">
+                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">
+                                    {fr ? 'Conseils' : 'Tips'}
+                                </p>
+                                {(fr ? [
+                                    'Tenez le document bien visible à côté de votre visage',
+                                    'Bonne lumière — évitez les reflets sur le document',
+                                    'Les deux visages (le vôtre et celui du document) doivent être nets',
+                                    'Ne couvrez pas de texte ou de photo avec vos doigts',
+                                ] : [
+                                    'Hold the document clearly visible beside your face',
+                                    'Good lighting — avoid glare on the document',
+                                    'Both faces (yours and the one on the document) must be clear',
+                                    'Don\'t cover any text or photo with your fingers',
+                                ]).map((tip, i) => (
+                                    <div key={i} className="flex items-start gap-3">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-zinc-400 mt-1.5 shrink-0" />
+                                        <p className="text-sm font-medium text-zinc-600">{tip}</p>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="flex gap-3">
+                                <button onClick={() => setStep('select_doc')}
+                                    className="flex-1 py-5 bg-zinc-100 text-zinc-900 font-black rounded-2xl text-[10px] uppercase tracking-[0.3em] active:scale-95 transition-transform">
+                                    {fr ? 'Retour' : 'Back'}
+                                </button>
+                                <button onClick={() => { setStep('capture'); setTimeout(() => fileInputRef.current?.click(), 100); }}
+                                    className="flex-[2] bg-zinc-900 text-white font-black py-5 rounded-2xl shadow-2xl active:scale-95 transition-transform flex items-center justify-center gap-3 text-xs uppercase tracking-[0.4em]">
+                                    <Camera className="w-5 h-5" />
+                                    {fr ? 'Prendre la photo' : 'Take Photo'}
+                                </button>
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {/* Preview */}
                     {step === 'preview' && previewUrl && (
                         <motion.div key="preview" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex-1 flex flex-col">
+                            <div className="mb-4">
+                                <h2 className="text-3xl font-black uppercase tracking-tighter text-zinc-900 leading-none">
+                                    {fr ? 'Vérifiez la photo' : 'Check the photo'}
+                                </h2>
+                                <p className="text-zinc-500 font-medium text-sm mt-1">
+                                    {fr ? 'Votre visage et votre document sont-ils nets ?' : 'Are both your face and document clear?'}
+                                </p>
+                            </div>
                             <div className="relative flex-1 bg-zinc-100 rounded-[2.5rem] overflow-hidden shadow-inner mb-6 border border-zinc-200">
                                 <img src={previewUrl} alt="Preview" className="w-full h-full object-contain" />
-                                <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-md px-3 py-1 rounded-full">
-                                    <span className="text-[8px] font-bold text-white uppercase tracking-widest">{side} preview</span>
-                                </div>
                             </div>
                             {errorMessage && (
-                                <div className="bg-zinc-900 text-white p-4 rounded-2xl mb-6 text-[10px] font-black uppercase tracking-[0.2em] shadow-xl text-center">
+                                <div className="bg-zinc-900 text-white p-4 rounded-2xl mb-4 text-[10px] font-black uppercase tracking-[0.2em] shadow-xl text-center">
                                     {errorMessage}
                                 </div>
                             )}
                             <div className="grid grid-cols-2 gap-4">
-                                <button onClick={() => { setFile(null); setPreviewUrl(null); setStep('select'); }}
+                                <button onClick={() => { setFile(null); setPreviewUrl(null); setErrorMessage(''); setStep('guide'); setTimeout(() => fileInputRef.current?.click(), 100); }}
                                     className="flex items-center justify-center gap-3 bg-zinc-100 text-zinc-900 font-black py-5 rounded-2xl text-[10px] uppercase tracking-[0.3em] active:scale-95 transition-transform">
                                     <RefreshCcw className="w-4 h-4" />
                                     {fr ? 'Reprendre' : 'Retake'}
                                 </button>
                                 <button onClick={handleUpload}
                                     className="flex items-center justify-center gap-3 bg-zinc-900 text-white font-black py-5 rounded-2xl shadow-2xl text-[10px] uppercase tracking-[0.3em] active:scale-95 transition-transform">
-                                    {fr ? 'Valider' : 'Confirm'} <ArrowRight className="w-4 h-4" />
+                                    {fr ? 'Envoyer' : 'Submit'} <ArrowRight className="w-4 h-4" />
                                 </button>
                             </div>
                         </motion.div>
                     )}
 
-                    {/* Uploading doc */}
+                    {/* Uploading */}
                     {step === 'uploading' && (
                         <motion.div key="uploading" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                             className="flex-1 flex flex-col items-center justify-center text-center">
@@ -350,80 +423,14 @@ export default function VerifyCapturePage() {
                                 </div>
                             </div>
                             <h3 className="text-3xl font-black uppercase tracking-tighter mb-2 text-zinc-900">
-                                {fr ? 'Envoi...' : 'Transmitting'}
-                            </h3>
-                            <p className="text-zinc-500 font-medium">
-                                {fr ? 'Sécurisation de vos données...' : 'Securing your identity data...'}
-                            </p>
-                        </motion.div>
-                    )}
-
-                    {/* Liveness check */}
-                    {step === 'liveness' && (
-                        <motion.div key="liveness" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
-                            className="w-full space-y-6">
-                            <div className="text-center space-y-2">
-                                <div className="w-14 h-14 bg-zinc-900 text-white rounded-2xl flex items-center justify-center mx-auto shadow-lg">
-                                    <UserCircle2 className="w-7 h-7" />
-                                </div>
-                                <h2 className="text-3xl font-black uppercase tracking-tighter text-zinc-900">
-                                    {fr ? 'Vérification de Présence' : 'Liveness Check'}
-                                </h2>
-                                <p className="text-zinc-500 font-medium text-sm">
-                                    {fr
-                                        ? 'Placez votre visage dans le cadre, puis clignez des yeux.'
-                                        : 'Position your face in the frame, then blink once.'}
-                                </p>
-                            </div>
-                            <LivenessCapture
-                                onCapture={handleLivenessCapture}
-                                onError={handleLivenessError}
-                                language={language}
-                            />
-                        </motion.div>
-                    )}
-
-                    {/* Selfie preview */}
-                    {step === 'selfie_preview' && selfiePreviewUrl && (
-                        <motion.div key="selfie_preview" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex-1 flex flex-col">
-                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 mb-4 text-center">
-                                {fr ? 'Votre selfie' : 'Your selfie'}
-                            </p>
-                            <div className="relative flex-1 bg-zinc-100 rounded-[2.5rem] overflow-hidden shadow-inner mb-6 border border-zinc-200">
-                                <img src={selfiePreviewUrl} alt="Selfie preview" className="w-full h-full object-contain" />
-                            </div>
-                            {errorMessage && (
-                                <div className="bg-zinc-900 text-white p-4 rounded-2xl mb-6 text-[10px] font-black uppercase tracking-[0.2em] shadow-xl text-center">
-                                    {errorMessage}
-                                </div>
-                            )}
-                            <div className="grid grid-cols-2 gap-4">
-                                <button onClick={() => { setSelfieBlob(null); setSelfiePreviewUrl(null); setErrorMessage(''); setStep('liveness'); }}
-                                    className="flex items-center justify-center gap-3 bg-zinc-100 text-zinc-900 font-black py-5 rounded-2xl text-[10px] uppercase tracking-[0.3em] active:scale-95 transition-transform">
-                                    <RefreshCcw className="w-4 h-4" />
-                                    {fr ? 'Reprendre' : 'Retake'}
-                                </button>
-                                <button onClick={handleSelfieUpload}
-                                    className="flex items-center justify-center gap-3 bg-zinc-900 text-white font-black py-5 rounded-2xl shadow-2xl text-[10px] uppercase tracking-[0.3em] active:scale-95 transition-transform">
-                                    {fr ? 'Confirmer' : 'Confirm'} <ArrowRight className="w-4 h-4" />
-                                </button>
-                            </div>
-                        </motion.div>
-                    )}
-
-                    {/* Selfie uploading */}
-                    {step === 'selfie_uploading' && (
-                        <motion.div key="selfie_uploading" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                            className="flex-1 flex flex-col items-center justify-center text-center">
-                            <Loader2 className="w-14 h-14 text-zinc-900 animate-spin mb-8" />
-                            <h3 className="text-3xl font-black uppercase tracking-tighter mb-2 text-zinc-900">
                                 {fr ? 'Vérification...' : 'Verifying...'}
                             </h3>
                             <p className="text-zinc-500 font-medium">
-                                {fr ? 'Comparaison des visages en cours...' : 'Comparing faces...'}
+                                {fr ? 'Analyse en cours...' : 'Analysing your photo...'}
                             </p>
                         </motion.div>
                     )}
+
                 </AnimatePresence>
 
                 <input

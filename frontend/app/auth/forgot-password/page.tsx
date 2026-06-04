@@ -1,25 +1,28 @@
 'use client';
 
-import React, { useState, ChangeEvent } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
+import { ArrowLeft, Mail, ChevronRight } from 'lucide-react';
 import { useLanguage } from '@/lib/LanguageContext';
 import { apiClient } from '@/lib/api';
-import { motion, Variants } from 'framer-motion';
+import { motion, AnimatePresence, Variants, useReducedMotion } from 'framer-motion';
+import { isValidEmail } from '@/app/lib/utils/validation';
 
-const containerVariants: Variants = {
+const makeContainerVariants = (reduce: boolean): Variants => ({
     hidden: { opacity: 0 },
     show: {
         opacity: 1,
-        transition: {
-            staggerChildren: 0.1
-        }
-    }
-};
+        transition: reduce ? { duration: 0 } : { staggerChildren: 0.1 },
+    },
+});
 
-const itemVariants: Variants = {
-    hidden: { opacity: 0, y: 15 },
-    show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } }
-};
+const makeItemVariants = (reduce: boolean): Variants => ({
+    hidden: reduce ? { opacity: 0 } : { opacity: 0, y: 15 },
+    show: {
+        opacity: 1, y: 0,
+        transition: reduce ? { duration: 0 } : { type: 'spring', stiffness: 300, damping: 24 },
+    },
+});
 
 export default function ForgotPasswordPage() {
     const { t } = useLanguage();
@@ -28,11 +31,20 @@ export default function ForgotPasswordPage() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
+    const reduceMotion = useReducedMotion() ?? false;
+    const containerVariants = makeContainerVariants(reduceMotion);
+    const itemVariants = makeItemVariants(reduceMotion);
+
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         setError('');
-        setLoading(true);
 
+        if (!isValidEmail(email)) {
+            setError(t('auth.register.error.emailInvalid', undefined, 'Please enter a valid email'));
+            return;
+        }
+
+        setLoading(true);
         try {
             await apiClient.forgotPassword(email);
             setSubmitted(true);
@@ -45,109 +57,111 @@ export default function ForgotPasswordPage() {
 
     if (submitted) {
         return (
-            <motion.div
-                variants={containerVariants}
-                initial="hidden"
-                animate="show"
-                className="w-full"
-            >
-                <div className="text-center sm:text-left">
-                    <motion.div variants={itemVariants} className="w-16 h-16 bg-zinc-100 text-zinc-900 rounded-full flex items-center justify-center mx-auto sm:mx-0 mb-6">
-                        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                        </svg>
-                    </motion.div>
-                    <motion.h2 variants={itemVariants} className="text-3xl font-extrabold text-zinc-900 tracking-tight">
+            <motion.div variants={containerVariants} initial="hidden" animate="show" className="w-full">
+                <motion.div variants={itemVariants} className="text-center mb-10">
+                    <div className="w-16 h-16 bg-zinc-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <Mail className="w-7 h-7 text-zinc-900" strokeWidth={2} />
+                    </div>
+                    <h2 className="text-4xl font-black text-zinc-900 tracking-tighter mb-2">
                         {t('auth.forgotPassword.successTitle', undefined, 'Check your email')}
-                    </motion.h2>
-                    <motion.p variants={itemVariants} className="mt-3 text-zinc-600">
-                        {t('auth.forgotPassword.successDesc', { email }, `If an account exists for ${email}, we've sent password reset instructions.`)}
-                    </motion.p>
-                    <motion.div variants={itemVariants} className="mt-8">
-                        <Link
-                            href="/auth/login"
-                            className="inline-flex items-center text-sm font-semibold text-zinc-900 hover:text-zinc-700 transition-colors"
-                        >
-                            <svg className="mr-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                            </svg>
-                            {t('auth.forgotPassword.backToSignIn', undefined, 'Back to sign in')}
-                        </Link>
-                    </motion.div>
-                </div>
+                    </h2>
+                    <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">
+                        {t('auth.forgotPassword.successDesc', { email }, `We've sent reset instructions to ${email}`)}
+                    </p>
+                </motion.div>
+
+                <motion.div variants={itemVariants}>
+                    <Link
+                        href="/auth/login"
+                        className="w-full py-5 rounded-full bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-3 hover:shadow-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-zinc-900/10"
+                    >
+                        <ArrowLeft size={14} strokeWidth={3} />
+                        {t('auth.forgotPassword.backToSignIn', undefined, 'Back to sign in')}
+                    </Link>
+                </motion.div>
             </motion.div>
         );
     }
 
     return (
-        <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="show"
-            className="w-full"
-        >
-            <motion.div variants={itemVariants} className="text-center sm:text-left mb-8">
-                <h2 className="text-3xl font-extrabold text-zinc-900 tracking-tight">
-                    {t('auth.forgotPassword.title', undefined, 'Reset your password')}
+        <motion.div variants={containerVariants} initial="hidden" animate="show" className="w-full">
+            <motion.div variants={itemVariants} className="text-center mb-10">
+                <h2 className="text-4xl font-black text-zinc-900 tracking-tighter mb-2">
+                    {t('auth.forgotPassword.title', undefined, 'Reset password')}
                 </h2>
-                <p className="mt-2 text-sm text-zinc-500">
-                    {t('auth.forgotPassword.subtitle', undefined, "Enter your email address and we'll send you a link to reset your password.")}
+                <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">
+                    {t('auth.forgotPassword.subtitle', undefined, "Enter your email — we'll send a reset link")}
                 </p>
             </motion.div>
 
-            <motion.form variants={containerVariants} className="space-y-5" onSubmit={handleSubmit}>
+            <AnimatePresence>
                 {error && (
-                    <motion.div variants={itemVariants} role="alert" aria-live="assertive" className="rounded-xl bg-zinc-900 p-4 shadow-xl shadow-zinc-900/10">
-                        <p className="text-sm font-medium text-white">{error}</p>
+                    <motion.div
+                        role="alert"
+                        aria-live="assertive"
+                        initial={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.9, y: -10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.9, y: -10 }}
+                        className="mb-8 rounded-3xl bg-zinc-900 p-5 flex items-center gap-4 shadow-xl shadow-zinc-900/20"
+                    >
+                        <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                        <p className="text-xs font-bold tracking-wide text-white">{error}</p>
                     </motion.div>
                 )}
+            </AnimatePresence>
 
+            <form onSubmit={handleSubmit} className="space-y-6">
                 <motion.div variants={itemVariants}>
-                    <label htmlFor="email" className="block text-sm font-medium text-zinc-700 mb-1.5">
+                    <label htmlFor="email" className="text-xs font-bold text-zinc-500 tracking-wide ml-1 mb-2 block">
                         {t('auth.forgotPassword.emailLabel', undefined, 'Email address')}
                     </label>
-                    <input
-                        id="email"
-                        name="email"
-                        type="email"
-                        autoComplete="email"
-                        required
-                        className="block w-full px-4 py-3 rounded-xl border border-zinc-200 bg-zinc-50 text-zinc-900 placeholder-zinc-400 focus:border-zinc-900 focus:ring-4 focus:ring-zinc-900/5 transition-all shadow-sm"
-                        placeholder={t('common.placeholders.email')}
-                        value={email}
-                        onChange={(e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
-                    />
+                    <div className="relative group">
+                        <Mail className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-300 group-focus-within:text-zinc-900 transition-colors" strokeWidth={2.5} />
+                        <input
+                            id="email"
+                            name="email"
+                            type="email"
+                            inputMode="email"
+                            autoComplete="email"
+                            required
+                            className="w-full pl-16 pr-6 py-5 rounded-2xl bg-zinc-50 border-none focus:ring-2 focus:ring-zinc-900/10 transition-all font-bold text-zinc-900 placeholder:text-zinc-300"
+                            placeholder={t('common.placeholders.email', undefined, 'name@example.com')}
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                        />
+                    </div>
                 </motion.div>
 
                 <motion.div variants={itemVariants} className="pt-2">
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-zinc-900 hover:bg-zinc-800 focus:outline-none focus:ring-4 focus:ring-zinc-900/10 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
+                        className="w-full py-5 rounded-full bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-3 hover:shadow-2xl hover:scale-[1.02] active:scale-95 disabled:opacity-50 transition-all shadow-xl shadow-zinc-900/10 group"
                     >
                         {loading ? (
-                            <span className="flex items-center gap-2">
-                                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            <div className="flex items-center gap-3">
+                                <div className="w-3 h-3 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                                 {t('auth.forgotPassword.sending', undefined, 'Sending...')}
-                            </span>
+                            </div>
                         ) : (
-                            t('auth.forgotPassword.submit', undefined, 'Send reset link')
+                            <>
+                                {t('auth.forgotPassword.submit', undefined, 'Send reset link')}
+                                <ChevronRight size={16} strokeWidth={4} className="group-hover:translate-x-1 transition-transform" />
+                            </>
                         )}
                     </button>
                 </motion.div>
+            </form>
 
-                <motion.div variants={itemVariants} className="text-center sm:text-left mt-6">
-                    <Link
-                        href="/auth/login"
-                        className="inline-flex items-center text-sm font-semibold text-zinc-600 hover:text-zinc-900 transition-colors"
-                    >
-                        <svg className="mr-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                        </svg>
-                        {t('auth.forgotPassword.backToSignIn', undefined, 'Back to sign in')}
-                    </Link>
-                </motion.div>
-            </motion.form>
+            <motion.div variants={itemVariants} className="mt-10 text-center">
+                <Link
+                    href="/auth/login"
+                    className="inline-flex items-center gap-2 text-[10px] font-black text-zinc-400 uppercase tracking-widest hover:text-zinc-900 transition-colors"
+                >
+                    <ArrowLeft size={12} strokeWidth={3} />
+                    {t('auth.forgotPassword.backToSignIn', undefined, 'Back to sign in')}
+                </Link>
+            </motion.div>
         </motion.div>
     );
 }

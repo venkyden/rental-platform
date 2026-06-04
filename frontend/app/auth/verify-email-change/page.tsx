@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
-import PremiumLayout from '@/components/PremiumLayout';
 import { useLanguage } from '@/lib/LanguageContext';
 
 function VerifyEmailChangeContent() {
@@ -24,92 +23,103 @@ function VerifyEmailChangeContent() {
             return;
         }
 
-        const verifyEmail = async () => {
-            try {
-                await apiClient.client.post('/auth/confirm-email-change', { token });
+        let cancelled = false;
+
+        apiClient.client.post('/auth/confirm-email-change', { token })
+            .then(() => {
+                if (cancelled) return;
                 setStatus('success');
                 setMessage(t('auth.verifyEmailChange.successDesc', undefined, 'Your email address has been successfully updated!'));
-
-                // Redirect to profile after 3 seconds
                 setTimeout(() => {
-                    router.push('/profile');
+                    if (!cancelled) router.push('/profile');
                 }, 3000);
-
-            } catch (error: any) {
+            })
+            .catch((error: any) => {
+                if (cancelled) return;
                 setStatus('error');
                 setMessage(error.response?.data?.detail || t('auth.verifyEmailChange.failedDesc', undefined, 'Failed to verify email change. The link may have expired.'));
-            }
-        };
+            });
 
-        verifyEmail();
+        return () => { cancelled = true; };
     }, [token, router, t]);
 
     return (
-        <div className="max-w-md mx-auto py-20 px-4">
-            <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                role={status === 'error' ? 'alert' : 'status'}
-                aria-live={status === 'error' ? 'assertive' : 'polite'}
-                className="bg-white/80 backdrop-blur-xl p-8 rounded-2xl shadow-sm text-center border border-gray-100"
-            >
+        <div
+            className="w-full text-center space-y-6"
+            role={status === 'error' ? 'alert' : 'status'}
+            aria-live={status === 'error' ? 'assertive' : 'polite'}
+        >
+            <div>
+                <h2 className="text-2xl font-black tracking-tighter text-zinc-900 uppercase">
+                    {status === 'loading'
+                        ? t('auth.verifyEmailChange.verifying', undefined, 'Verifying...')
+                        : status === 'success'
+                            ? t('auth.verifyEmailChange.successTitle', undefined, 'Email Updated')
+                            : t('auth.verifyEmailChange.failedTitle', undefined, 'Verification Failed')}
+                </h2>
+                <p className="mt-2 text-[10px] font-bold text-zinc-400 uppercase tracking-widest max-w-sm mx-auto">
+                    {message}
+                </p>
+            </div>
+
+            <div className="py-4 flex flex-col items-center space-y-4">
                 {status === 'loading' && (
-                    <div className="flex flex-col items-center">
-                        <Loader2 className="w-16 h-16 text-zinc-900 animate-spin mb-6" />
-                        <h2 className="text-xl font-black tracking-tight text-zinc-900 mb-2 uppercase">{t('auth.verifyEmailChange.verifying', undefined, 'Verifying...')}</h2>
-                        <p className="text-zinc-500 font-medium">{message}</p>
-                    </div>
+                    <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
+                        <Loader2 className="w-12 h-12 text-zinc-900 animate-spin" strokeWidth={2.5} />
+                    </motion.div>
                 )}
 
                 {status === 'success' && (
-                    <div className="flex flex-col items-center">
-                        <motion.div
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{ type: "spring", stiffness: 200, damping: 10 }}
-                        >
-                            <CheckCircle2 className="w-16 h-16 text-zinc-900 mb-6" />
-                        </motion.div>
-                        <h2 className="text-xl font-black tracking-tight text-zinc-900 mb-2 uppercase">{t('auth.verifyEmailChange.successTitle', undefined, 'Email Updated')}</h2>
-                        <p className="text-zinc-600 mb-6 font-medium">{message}</p>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{t('auth.verifyEmailChange.redirecting', undefined, 'Redirecting you to your profile...')}</p>
-                    </div>
+                    <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: 'spring', stiffness: 200, damping: 10 }}
+                    >
+                        <div className="w-16 h-16 rounded-full bg-zinc-950 flex items-center justify-center shadow-xl shadow-zinc-950/10">
+                            <CheckCircle2 className="w-8 h-8 text-white" strokeWidth={2} />
+                        </div>
+                    </motion.div>
                 )}
 
                 {status === 'error' && (
-                    <div className="flex flex-col items-center">
-                        <motion.div
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{ type: "spring", stiffness: 200, damping: 10 }}
-                        >
-                            <XCircle className="w-16 h-16 text-zinc-900 mb-6" />
-                        </motion.div>
-                        <h2 className="text-xl font-black tracking-tight text-zinc-900 mb-2 uppercase">{t('auth.verifyEmailChange.failedTitle', undefined, 'Verification Failed')}</h2>
-                        <p className="text-zinc-600 mb-6 font-medium">{message}</p>
-                        <button
-                            onClick={() => router.push('/settings/account')}
-                            className="px-8 py-3 bg-zinc-900 text-white rounded-xl font-bold hover:shadow-sm transition-all"
-                        >
-                            {t('auth.verifyEmailChange.returnToSettings', undefined, 'Return to Settings')}
-                        </button>
-                    </div>
+                    <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: 'spring', stiffness: 200, damping: 10 }}
+                    >
+                        <div className="w-16 h-16 rounded-full bg-zinc-100 flex items-center justify-center">
+                            <XCircle className="w-8 h-8 text-zinc-900" strokeWidth={2} />
+                        </div>
+                    </motion.div>
                 )}
-            </motion.div>
+
+                {status === 'success' && (
+                    <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 animate-pulse pt-2">
+                        {t('auth.verifyEmailChange.redirecting', undefined, 'Redirecting you to your profile...')}
+                    </p>
+                )}
+
+                {status === 'error' && (
+                    <button
+                        onClick={() => router.push('/settings/account')}
+                        className="w-full py-5 bg-zinc-900 text-white font-black uppercase text-[10px] tracking-widest rounded-2xl hover:bg-zinc-800 hover:shadow-xl hover:shadow-zinc-900/10 active:scale-[0.98] transition-all mt-4"
+                    >
+                        {t('auth.verifyEmailChange.returnToSettings', undefined, 'Return to Settings')}
+                    </button>
+                )}
+            </div>
         </div>
     );
 }
 
 export default function VerifyEmailChangePage() {
     return (
-        <PremiumLayout>
-            <Suspense fallback={
-                <div className="flex justify-center items-center py-20">
-                    <Loader2 className="w-8 h-8 animate-spin text-zinc-900" />
-                </div>
-            }>
-                <VerifyEmailChangeContent />
-            </Suspense>
-        </PremiumLayout>
+        <Suspense fallback={
+            <div className="flex flex-col items-center justify-center py-12 space-y-4" role="status" aria-live="polite">
+                <Loader2 className="w-12 h-12 animate-spin text-zinc-900" strokeWidth={2.5} />
+            </div>
+        }>
+            <VerifyEmailChangeContent />
+        </Suspense>
     );
 }

@@ -26,6 +26,7 @@ class Settings(BaseSettings):
 
     # External APIs
     GEMINI_API_KEY: Optional[str] = None
+    GEMINI_DAILY_LIMIT: int = 1500  # free tier cap; raise once on paid plan
     FOURTHLINE_API_KEY: Optional[str] = None
     SENDGRID_API_KEY: Optional[str] = None
     RESEND_API_KEY: Optional[str] = None

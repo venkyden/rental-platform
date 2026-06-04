@@ -3353,6 +3353,13 @@ export const translations = {
                 failedDesc: "Échec de la vérification du changement d'e-mail. Le lien a peut-être expiré.",
                 returnToSettings: "Retour aux paramètres"
             },
+            error: {
+                title: "Une erreur s'est produite",
+                description: "Une erreur inattendue s'est produite. Veuillez réessayer ou revenir à la page de connexion.",
+                retry: "Réessayer",
+                backToLogin: "Retour à la connexion",
+                details: "Détails de l'erreur"
+            },
             resetPassword: {
                 title: "Nouveau mot de passe",
                 subtitle: "Entrez votre nouveau mot de passe ci-dessous",
