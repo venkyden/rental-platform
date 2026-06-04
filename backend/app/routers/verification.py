@@ -13,7 +13,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-from sqlalchemy import select
+from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -30,6 +30,7 @@ from app.services.feature_flag_service import feature_flag_service
 # Fallback in-memory verification sessions (if Redis is not available)
 # Format: { code: { user_id, document_type, expires_at, completed } }
 _verification_sessions: dict[str, dict] = {}
+_last_cleanup: datetime = naive_utcnow()
 
 async def _save_session(code: str, session_data: dict):
     if cache.redis_client:
@@ -38,10 +39,14 @@ async def _save_session(code: str, session_data: dict):
         _verification_sessions[code] = session_data
 
 async def _get_session(code: str):
+    global _last_cleanup
     if cache.redis_client:
         return await cache.get(f"verification_session:{code}")
     else:
-        _cleanup_expired_sessions()
+        # Only run cleanup at most once per 60 seconds to keep hot path fast
+        if (naive_utcnow() - _last_cleanup).total_seconds() > 60:
+            _cleanup_expired_sessions()
+            _last_cleanup = naive_utcnow()
         return _verification_sessions.get(code)
 
 async def _update_session(code: str, session_data: dict):
@@ -135,7 +140,11 @@ async def upload_identity_document(
             folder=f"verification/identity/{current_user.id}",
         )
         if not current_user.identity_verified:
-            current_user.trust_score = min(100, current_user.trust_score + 30)
+            await db.execute(
+                update(User).where(User.id == current_user.id)
+                .values(trust_score=func.least(100, User.trust_score + 30))
+            )
+            await db.refresh(current_user)
         current_user.identity_verified = True
         current_user.identity_status = "verified"
         current_user.identity_data = {
@@ -158,21 +167,19 @@ async def upload_identity_document(
             "trust_score": current_user.trust_score,
         }
 
-    # Apply watermark before upload
-    watermarked_content = apply_watermark(content)
-    storage_result = await storage.upload_file(
-        file_data=BytesIO(watermarked_content),
-        filename=file.filename,
-        content_type=file.content_type,
-        folder=f"verification/identity/{current_user.id}"
-    )
-
-    # Back side: store supplementary file, keep existing front file_url intact
+    # Back side: store without AI check (supplementary document)
     if side == "back":
+        watermarked_back = apply_watermark(content)
+        back_storage = await storage.upload_file(
+            file_data=BytesIO(watermarked_back),
+            filename=file.filename,
+            content_type=file.content_type,
+            folder=f"verification/identity/{current_user.id}"
+        )
         current_user.identity_data = {
             **(current_user.identity_data or {}),
-            "back_file_url": storage_result["url"],
-            "back_storage_key": storage_result.get("key"),
+            "back_file_url": back_storage["url"],
+            "back_storage_key": back_storage.get("key"),
         }
         await db.commit()
         await db.refresh(current_user)
@@ -184,19 +191,28 @@ async def upload_identity_document(
             "details": "Upload a selfie to complete identity verification",
         }
 
+    # Front side: AI verification BEFORE storing (GDPR - rejected docs not stored)
     result = await identity_service.verify_document(
         file_content=content,
         file_type=file.content_type,
         expected_name=current_user.full_name,
         document_type=document_type,
     )
-
     if not result["verified"] and result["status"] == "rejected":
         logger.warning(f"Identity verification rejected for user {current_user.id}: {result.get('rejection_reason')}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Verification failed: {result.get('rejection_reason')}",
         )
+
+    # Only store if verification passed
+    watermarked_content = apply_watermark(content)
+    storage_result = await storage.upload_file(
+        file_data=BytesIO(watermarked_content),
+        filename=file.filename,
+        content_type=file.content_type,
+        folder=f"verification/identity/{current_user.id}"
+    )
 
     current_user.identity_verified = False
     current_user.identity_status = "document_uploaded"
@@ -375,7 +391,11 @@ async def upload_identity_mobile(
             folder=f"verification/identity/{user.id}",
         )
         if not user.identity_verified:
-            user.trust_score = min(100, user.trust_score + 30)
+            await db.execute(
+                update(User).where(User.id == user.id)
+                .values(trust_score=func.least(100, User.trust_score + 30))
+            )
+            await db.refresh(user)
         user.identity_verified = True
         user.identity_status = "verified"
         user.identity_data = {
@@ -441,7 +461,11 @@ async def upload_identity_mobile(
         )
 
         if not user.identity_verified:
-            user.trust_score = min(100, user.trust_score + 30)
+            await db.execute(
+                update(User).where(User.id == user.id)
+                .values(trust_score=func.least(100, User.trust_score + 30))
+            )
+            await db.refresh(user)
         user.identity_verified = True
         user.identity_status = "verified"
         user.identity_data = {
@@ -593,7 +617,11 @@ async def upload_identity_selfie(
     )
 
     if not current_user.identity_verified:
-        current_user.trust_score = min(100, current_user.trust_score + 30)
+        await db.execute(
+            update(User).where(User.id == current_user.id)
+            .values(trust_score=func.least(100, User.trust_score + 30))
+        )
+        await db.refresh(current_user)
     current_user.identity_verified = True
     current_user.identity_status = "verified"
     current_user.identity_data = {
@@ -696,7 +724,11 @@ async def upload_income_document(
     current_user.income_status = result["status"]
     if result["verified"]:
         # Add trust score points (+20 for verified income)
-        current_user.trust_score = min(100, current_user.trust_score + 20)
+        await db.execute(
+            update(User).where(User.id == current_user.id)
+            .values(trust_score=func.least(100, User.trust_score + 20))
+        )
+        await db.refresh(current_user)
 
     # Apply watermark before upload
     watermarked_content = apply_watermark(content)
@@ -754,9 +786,9 @@ async def upload_employment_document(
     Backward compatibility endpoint.
     """
     res = await upload_income_document(document_type, file, current_user, db)
-    # Also update employment fields for safety
-    current_user.employment_verified = current_user.income_verified
-    current_user.employment_status = current_user.income_status
+    # Mirror employment fields from the result (income and employment use same flow here)
+    current_user.employment_verified = res.get("verified", False)
+    current_user.employment_status = res.get("status", "unverified")
     current_user.employment_data = current_user.income_data
     await db.commit()
     return res
@@ -772,6 +804,7 @@ async def get_verification_status(current_user: User = Depends(get_current_user)
     return {
         "identity_verified": current_user.identity_verified,
         "employment_verified": current_user.employment_verified,
+        "employment_status": current_user.employment_status if hasattr(current_user, 'employment_status') else "unverified",
         "income_verified": current_user.income_verified,
         "income_status": current_user.income_status,
         "ownership_verified": current_user.ownership_verified,
@@ -804,8 +837,12 @@ async def init_guarantor(
     """Initialize or change guarantor type"""
     # If switching away from verified, decrement trust score
     if current_user.guarantor_status == "verified":
-        current_user.trust_score = max(0, current_user.trust_score - 15)
-        
+        await db.execute(
+            update(User).where(User.id == current_user.id)
+            .values(trust_score=func.greatest(0, User.trust_score - 15))
+        )
+        await db.refresh(current_user)
+
     current_user.guarantor_type = request.guarantor_type
     current_user.guarantor_status = "unverified"
     current_user.guarantor_data = None
@@ -869,7 +906,11 @@ async def verify_visale(
 
     current_user.guarantor_type = "visale"
     if current_user.guarantor_status != "verified":
-        current_user.trust_score = min(100, current_user.trust_score + 15)
+        await db.execute(
+            update(User).where(User.id == current_user.id)
+            .values(trust_score=func.least(100, User.trust_score + 15))
+        )
+        await db.refresh(current_user)
     current_user.guarantor_status = "verified"
     current_user.guarantor_data = {
         "file_url": storage_result["url"],
@@ -932,7 +973,11 @@ async def verify_garantme(
 
     current_user.guarantor_type = "garantme"
     if current_user.guarantor_status != "verified":
-        current_user.trust_score = min(100, current_user.trust_score + 15)
+        await db.execute(
+            update(User).where(User.id == current_user.id)
+            .values(trust_score=func.least(100, User.trust_score + 15))
+        )
+        await db.refresh(current_user)
     current_user.guarantor_status = "verified"
     current_user.guarantor_data = {
         "file_url": storage_result["url"],
@@ -990,14 +1035,16 @@ async def upload_guarantor_document(
     current_user.guarantor_status = "pending"
     
     files_list = current_user.guarantor_data.get("files", [])
-    files_list.append({
+    new_entry = {
         "document_type": document_type,
         "filename": file.filename,
         "file_url": file_url,
         "storage_key": storage_result.get("key"),
         "uploaded_at": naive_utcnow().isoformat()
-    })
-    
+    }
+    # Replace existing entry for same doc_type (last-write-wins)
+    files_list = [f for f in files_list if f.get("document_type") != document_type]
+    files_list.append(new_entry)
     current_user.guarantor_data = {"files": files_list}
     
     await db.commit()
@@ -1018,8 +1065,12 @@ async def delete_guarantor(
 ):
     """Remove guarantor and reset credentials"""
     if current_user.guarantor_status == "verified":
-        current_user.trust_score = max(0, current_user.trust_score - 15)
-        
+        await db.execute(
+            update(User).where(User.id == current_user.id)
+            .values(trust_score=func.greatest(0, User.trust_score - 15))
+        )
+        await db.refresh(current_user)
+
     current_user.guarantor_type = None
     current_user.guarantor_status = "unverified"
     current_user.guarantor_data = None
@@ -1127,9 +1178,16 @@ async def upload_property_document(
     
     # Update landlord trust score if verified
     if verification_result["verified"]:
-        current_user.trust_score = min(100, current_user.trust_score + 20)
+        await db.execute(
+            update(User).where(User.id == current_user.id)
+            .values(trust_score=func.least(100, User.trust_score + 20))
+        )
+        await db.refresh(current_user)
         current_user.ownership_verified = True
+        current_user.ownership_status = "verified"
         current_user.ownership_data = property_obj.ownership_data
+    else:
+        current_user.ownership_status = "rejected"
 
     await db.commit()
     await db.refresh(property_obj)
@@ -1158,16 +1216,31 @@ class GLIQuoteRequest(BaseModel):
     tenant_identity_verified: bool = False
 
 
+GLI_QUOTE_DAILY_LIMIT = 10
+GLI_QUOTE_TTL = 86400  # 24 hours
+
+
 @router.post("/gli/quote")
 async def get_gli_quote(
     request: GLIQuoteRequest,
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
     Get a GLI (Garantie Loyers Impayés) quote.
     One-click insurance quote for landlords.
     """
+    if cache.redis_client:
+        rate_key = f"gli:quote:{current_user.id}"
+        count = await cache.redis_client.incr(rate_key)
+        if count == 1:
+            await cache.redis_client.expire(rate_key, GLI_QUOTE_TTL)
+        if count > GLI_QUOTE_DAILY_LIMIT:
+            raise HTTPException(
+                status_code=429,
+                detail=f"GLI quote limit reached. Maximum {GLI_QUOTE_DAILY_LIMIT} quotes per day.",
+            )
+
     if not await feature_flag_service.get_flag_state(db, "gli_quote", default=True):
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,

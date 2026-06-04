@@ -103,6 +103,7 @@ export default function VerifyCapturePage() {
     const code = params?.code as string;
     const fr = language === 'fr';
 
+    const [isMobile, setIsMobile] = useState(false);
     const [step, setStep] = useState<Step>('loading');
     const [documentType, setDocumentType] = useState('id_card');
     const [file, setFile] = useState<File | Blob | null>(null);
@@ -110,6 +111,13 @@ export default function VerifyCapturePage() {
     const [uploadProgress, setUploadProgress] = useState(0);
     const [errorMessage, setErrorMessage] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        setIsMobile(
+            /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+            || (navigator.maxTouchPoints > 0 && window.innerWidth < 1024)
+        );
+    }, []);
 
     useEffect(() => {
         if (!code) {
@@ -236,7 +244,7 @@ export default function VerifyCapturePage() {
 
                     {/* Error */}
                     {step === 'error' && (
-                        <motion.div key="error" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+                        <motion.div key="error" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, ease: 'easeOut' }}
                             className="flex-1 flex flex-col items-center justify-center text-center">
                             <div className="w-20 h-20 bg-zinc-900 text-white rounded-3xl flex items-center justify-center mb-8">
                                 <AlertCircle className="w-10 h-10" />
@@ -254,7 +262,7 @@ export default function VerifyCapturePage() {
 
                     {/* Success */}
                     {step === 'success' && (
-                        <motion.div key="success" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+                        <motion.div key="success" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, ease: 'easeOut' }}
                             className="flex-1 flex flex-col items-center justify-center text-center">
                             <div className="w-24 h-24 bg-zinc-900 text-white rounded-[2.5rem] flex items-center justify-center mb-10 shadow-2xl">
                                 <CheckCircle2 className="w-12 h-12" />
@@ -376,7 +384,7 @@ export default function VerifyCapturePage() {
 
                     {/* Preview */}
                     {step === 'preview' && previewUrl && (
-                        <motion.div key="preview" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex-1 flex flex-col">
+                        <motion.div key="preview" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, ease: 'easeOut' }} className="flex-1 flex flex-col">
                             <div className="mb-4">
                                 <h2 className="text-3xl font-black uppercase tracking-tighter text-zinc-900 leading-none">
                                     {fr ? 'Vérifiez la photo' : 'Check the photo'}
@@ -438,7 +446,7 @@ export default function VerifyCapturePage() {
                     ref={fileInputRef}
                     onChange={handleFileChange}
                     accept="image/jpeg,image/png,image/heic,image/heif"
-                    capture="environment"
+                    {...(isMobile ? { capture: "environment" } : {})}
                     className="hidden"
                 />
             </main>

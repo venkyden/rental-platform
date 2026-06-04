@@ -356,6 +356,24 @@ export default function GuarantorVerifyPage() {
                                     </div>
                                 </div>
                             ) : (
+                                <>
+                                {/* Step progress indicator */}
+                                {currentStep !== 'selection' && (
+                                    <div className="flex items-center justify-center gap-2 mb-8">
+                                        {(['selection', 'type', 'upload', 'confirm'] as const).map((label, idx) => {
+                                            const stepIndex = ['selection', 'visale', 'garantme', 'physical', 'none'].indexOf(currentStep);
+                                            const isActive = idx <= (stepIndex >= 0 ? Math.min(stepIndex, 3) : 0);
+                                            return (
+                                                <div
+                                                    key={label}
+                                                    className={`h-2 rounded-full transition-all duration-300 ${
+                                                        isActive ? 'bg-zinc-900 w-8' : 'bg-zinc-200 w-4'
+                                                    }`}
+                                                />
+                                            );
+                                        })}
+                                    </div>
+                                )}
                                 <AnimatePresence mode="wait">
                                     {/* Selection Stage */}
                                     {currentStep === 'selection' && (
@@ -610,7 +628,7 @@ export default function GuarantorVerifyPage() {
                                                     {t('verify.guarantor.physical', undefined, 'Physical Guarantor')}
                                                 </h2>
                                                 <p className="text-zinc-500 max-w-sm mx-auto font-medium">
-                                                    Please upload the required dossiers for your physical guarantor. Under French Alur law, the landlord can check these.
+                                                    {t('verify.guarantor.physicalInstructions', undefined, 'Please upload the required dossiers for your physical guarantor. Under French Alur law, the landlord can request these.')}
                                                 </p>
                                             </div>
 
@@ -688,7 +706,7 @@ export default function GuarantorVerifyPage() {
                                                         className="mt-1 h-4.5 w-4.5 rounded-lg border-zinc-300 focus:ring-zinc-950 text-zinc-950" 
                                                     />
                                                     <span className="text-xs text-zinc-500 font-medium leading-relaxed">
-                                                        I confirm that I have my guarantor's explicit consent to upload their personal details and documents to Roomivo, in compliance with GDPR guidelines and CNIL regulations.
+                                                        {t('verify.guarantor.physicalGdprConsent', undefined, "I confirm that I have my guarantor's explicit consent to upload their personal details and documents to Roomivo, in compliance with GDPR guidelines and CNIL regulations.")}
                                                     </span>
                                                 </label>
                                             </div>
@@ -708,11 +726,12 @@ export default function GuarantorVerifyPage() {
                                                 className="w-full py-5 bg-zinc-950 hover:bg-zinc-900 text-white font-black text-xs uppercase tracking-widest transition-all rounded-3xl flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-50"
                                             >
                                                 {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                                                Complete Registration
+                                                {t('verify.guarantor.physicalSubmitCta', undefined, 'Complete Registration')}
                                             </button>
                                         </motion.div>
                                     )}
                                 </AnimatePresence>
+                                </>
                             )}
                         </div>
                     </motion.div>
