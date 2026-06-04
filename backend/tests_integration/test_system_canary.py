@@ -157,7 +157,7 @@ async def test_identity_upload_pipeline_reachable(client, sessionmaker_):
         )
 
     assert r.status_code == 200, f"Identity upload failed: {r.text}"
-    assert r.json()["identity_status"] == "verified"
+    assert r.json()["status"] == "document_verified"
 
     _upload_rate_limits.pop(key, None)
 
