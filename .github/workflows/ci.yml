@@ -24,8 +24,61 @@ jobs:
           path: ./
           extra_args: --only-verified
 
+  # ── Canary ─────────────────────────────────────────────────────────────
+  # Runs first on every push/PR. If any canary fails the system is broken
+  # in a user-visible way — the full backend suite won't even start.
+  canary:
+    name: System Canary
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: roomivo_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U test -d roomivo_test"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql+asyncpg://test:test@localhost:5432/roomivo_test
+      SECRET_KEY: test-secret-key-that-is-at-least-32-characters-long-for-ci
+      ENVIRONMENT: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Apply migrations
+        run: python -m alembic upgrade head
+
+      - name: Run canary tests
+        run: python -m pytest tests_integration/test_system_canary.py -v --tb=short -m canary
+
+  # ── Backend ────────────────────────────────────────────────────────────
   backend:
     name: Backend Tests
+    needs: [canary, secret-scan]
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -80,8 +133,10 @@ jobs:
       - name: Run real-DB integration tests (IDOR / concurrency / cascade)
         run: python -m pytest tests_integration/ -v --tb=short
 
+  # ── Frontend ───────────────────────────────────────────────────────────
   frontend:
     name: Frontend Build
+    needs: [canary]
     runs-on: ubuntu-latest
     defaults:
       run:

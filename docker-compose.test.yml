@@ -1,0 +1,52 @@
+# Test stage infrastructure.
+#
+# Spins up an isolated Postgres, runs migrations, then executes the
+# system canary tests. Exit code mirrors pytest's exit code.
+#
+# Usage:
+#   docker compose -f docker-compose.test.yml run --rm test-runner
+#   docker compose -f docker-compose.test.yml run --rm test-runner \
+#       python -m pytest tests_integration/ -v          # full integration suite
+#
+# The `db-test` service uses tmpfs so all data is wiped on container stop —
+# no leftover state between runs.
+
+services:
+  db-test:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: roomivo_test
+    tmpfs:
+      - /var/lib/postgresql/data   # in-memory: fast, no leftovers
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test -d roomivo_test"]
+      interval: 3s
+      timeout: 3s
+      retries: 15
+
+  test-runner:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: builder
+    environment:
+      DATABASE_URL: postgresql+asyncpg://test:test@db-test:5432/roomivo_test
+      SECRET_KEY: test-secret-at-least-32-characters-long-canary-ci
+      ENVIRONMENT: test
+      PYTHONPATH: /app
+    depends_on:
+      db-test:
+        condition: service_healthy
+    working_dir: /app
+    # Mount source so you don't need to rebuild the image on every edit
+    volumes:
+      - ./backend:/app
+    command: >
+      sh -c "
+        echo '--- migrations ---' &&
+        python -m alembic upgrade head &&
+        echo '--- canary tests ---' &&
+        python -m pytest tests_integration/test_system_canary.py -v --tb=short
+      "

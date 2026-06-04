@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
 import { Camera, Upload } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import DocumentCapture from './DocumentCapture';
+import LivenessCapture from './LivenessCapture';
 import { QRCodeSVG } from 'qrcode.react';
 import { motion, Variants } from 'framer-motion';
 import { useLanguage } from '@/lib/LanguageContext';
@@ -45,7 +46,11 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
     const [error, setError] = useState('');
     const [showCamera, setShowCamera] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
-    
+
+    // Selfie step (mobile direct identity upload only)
+    const [selfieStep, setSelfieStep] = useState(false);
+    const [selfieUploading, setSelfieUploading] = useState(false);
+
     // Support for "No Guarantor" flow
     const [hasGuarantor, setHasGuarantor] = useState<boolean | null>(null);
 
@@ -308,7 +313,11 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                     params: { document_type: documentType, ...(verificationType === 'property' && { property_id: selectedPropertyId }) }
                 });
             }
-            onSuccessAction();
+            if (verificationType === 'identity') {
+                setSelfieStep(true);
+            } else {
+                onSuccessAction();
+            }
         } catch (err: any) {
             const detail = err.response?.data?.detail;
             const errorMessage = typeof detail === 'string' 
@@ -323,6 +332,58 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
             setUploading(false);
         }
     };
+
+    const handleSelfieCapture = useCallback(async (blob: Blob) => {
+        setSelfieUploading(true);
+        try {
+            const formData = new FormData();
+            formData.append('file', blob, 'selfie.jpg');
+            await apiClient.client.post('/verification/identity/upload-selfie', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+            setSelfieStep(false);
+            onSuccessAction();
+        } catch (err: any) {
+            const detail = err.response?.data?.detail;
+            toast.error(typeof detail === 'string' ? detail : t('dashboard.verification.verification.errors.uploadFailed', undefined, 'Selfie upload failed. Please try again.'));
+        } finally {
+            setSelfieUploading(false);
+        }
+    }, [onSuccessAction, t]);
+
+    const handleSelfieError = useCallback((msg: string) => {
+        setSelfieStep(false);
+        setError(msg || t('dashboard.verification.verification.errors.uploadFailed', undefined, 'Camera access failed.'));
+    }, [t]);
+
+    if (selfieStep) {
+        return (
+            <div className="w-full space-y-6">
+                <div className="text-center space-y-2">
+                    <h3 className="text-2xl font-black tracking-tighter uppercase leading-none">
+                        {t('dashboard.verification.verification.livenessTitle', undefined, 'Liveness Check')}
+                    </h3>
+                    <p className="text-zinc-500 font-medium text-sm max-w-sm mx-auto">
+                        {t('dashboard.verification.verification.livenessDesc', undefined, 'Position your face in the frame and blink once to confirm your presence.')}
+                    </p>
+                </div>
+                {selfieUploading ? (
+                    <div className="flex flex-col items-center py-12 gap-4">
+                        <div className="w-12 h-12 border-4 border-zinc-900/20 border-t-zinc-900 rounded-full animate-spin" />
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">
+                            {t('dashboard.verification.verification.actions.securing', undefined, 'Verifying...')}
+                        </p>
+                    </div>
+                ) : (
+                    <LivenessCapture
+                        onCapture={handleSelfieCapture}
+                        onError={handleSelfieError}
+                        language={t('common.language', undefined, 'en')}
+                    />
+                )}
+            </div>
+        );
+    }
 
     if (verificationType === 'identity' && !isMobile) {
         return (

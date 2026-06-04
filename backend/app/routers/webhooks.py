@@ -6,8 +6,10 @@ Supports verification services, payment providers, etc.
 import hashlib
 import hmac
 import json
+import logging
 import os
-from datetime import datetime
+
+logger = logging.getLogger(__name__)
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException, Request
 from sqlalchemy import select
@@ -16,7 +18,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.models.user import User
 from app.services.email import email_service
-from app.core.config import settings
 
 router = APIRouter(prefix="/webhooks", tags=["Webhooks"])
 
@@ -56,11 +57,14 @@ async def verification_webhook(
     # Get raw body for signature verification
     body = await request.body()
 
-    # Verify signature (if configured)
     webhook_secret = os.getenv("VERIFICATION_WEBHOOK_SECRET")
-    if webhook_secret and x_signature:
+    if webhook_secret:
+        if not x_signature:
+            raise HTTPException(status_code=401, detail="Missing webhook signature")
         if not verify_signature(body, x_signature, webhook_secret):
             raise HTTPException(status_code=401, detail="Invalid webhook signature")
+    else:
+        logger.warning("VERIFICATION_WEBHOOK_SECRET not configured — accepting unsigned webhook")
 
     # Parse payload
     try:
@@ -133,69 +137,6 @@ async def verification_webhook(
 
     return {"status": "acknowledged", "event": event}
 
-
-import stripe
-
-@router.post("/stripe")
-async def stripe_webhook(
-    request: Request,
-    background_tasks: BackgroundTasks,
-    stripe_signature: str = Header(None, alias="Stripe-Signature"),
-    db: AsyncSession = Depends(get_db),
-):
-    """
-    Webhook endpoint for Stripe callbacks.
-    Handles Identity Verification and Payment events.
-    """
-    payload = await request.body()
-    endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
-
-    try:
-        if endpoint_secret and stripe_signature:
-            event = stripe.Webhook.construct_event(
-                payload, stripe_signature, endpoint_secret
-            )
-        else:
-            # Fallback for dev if secret not configured (CAUTION: non-secure)
-            data = json.loads(payload)
-            event = stripe.Event.construct_from(data, stripe.api_key)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Webhook Error: {str(e)}")
-
-    event_type = event["type"]
-    event_data = event["data"]["object"]
-
-    # 1. Handle Identity Verification
-    if event_type == "identity.verification_session.verified":
-        session_id = event_data["id"]
-        # In a real app, you'd map session_id to user_id in your DB
-        # For now, we'll assume the client_reference_id or metadata contains user_id
-        user_id = event_data.get("metadata", {}).get("user_id")
-        if user_id:
-            result = await db.execute(select(User).where(User.id == user_id))
-            user = result.scalar_one_or_none()
-            if user:
-                user.identity_verified = True
-                user.trust_score = min(100, user.trust_score + 40) # Verified ID is high value
-                await db.commit()
-                
-                background_tasks.add_task(
-                    email_service.send_verification_success_email,
-                    to_email=user.email,
-                    full_name=user.full_name or "User",
-                    verification_type="identity",
-                )
-
-    # 2. Handle Payments
-    elif event_type == "checkout.session.completed":
-        # Handle successful payment
-        return {"status": "processed", "action": "payment_recorded"}
-
-    elif event_type == "invoice.payment_failed":
-        # Handle failed payment
-        return {"status": "processed", "action": "failure_logged"}
-
-    return {"status": "acknowledged", "event": event_type}
 
 
 @router.get("/health")

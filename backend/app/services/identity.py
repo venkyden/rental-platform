@@ -136,9 +136,7 @@ class IdentityVerificationService:
                 "rejection_reason": "Could not extract data from document. Please upload a clearer image.",
             }
 
-        validation_results = self._validate_identity_data(
-            extracted_data, expected_name, document_type
-        )
+        validation_results = self._validate_identity_data(extracted_data, expected_name)
 
         critical_failed = any(
             not check["passed"] and check["critical"] for check in validation_results
@@ -278,7 +276,7 @@ Return ONLY the JSON."""
         return None
 
     def _validate_identity_data(
-        self, data: IdentityData, expected_name: str, claimed_type: str
+        self, data: IdentityData, expected_name: str
     ) -> list:
         checks = []
 
@@ -399,6 +397,76 @@ Return ONLY the JSON."""
             return "Manual review required: " + ", ".join(c["name"] for c in failed)
 
         return "Unknown error"
+
+    async def compare_faces(
+        self,
+        id_image: bytes,
+        id_file_type: str,
+        selfie: bytes,
+        selfie_file_type: str,
+    ) -> dict:
+        """
+        Compare the face on an identity document against a live selfie.
+
+        Returns:
+            {"match": bool, "confidence": float, "reason": str}
+        """
+        if not self.ai_client:
+            logger.warning("AI client not initialised — face comparison unavailable")
+            return {"match": False, "confidence": 0.0, "reason": "AI service unavailable"}
+
+        id_part = types.Part.from_bytes(data=id_image, mime_type=id_file_type)
+        selfie_part = types.Part.from_bytes(data=selfie, mime_type=selfie_file_type)
+
+        prompt = """You are a strict face-verification assistant.
+
+Image 1 is a government-issued identity document (passport, ID card, etc.).
+Image 2 is a live selfie photo.
+
+Compare the faces in both images and determine whether they belong to the same person.
+
+Rules:
+- Compare face shape, eyes, nose, mouth, and overall appearance.
+- The ID photo may be older or lower quality — allow for reasonable aging.
+- If you cannot clearly see a face in either image, set match=false.
+- Be strict: a confidence below 0.6 should produce match=false.
+
+Return ONLY this JSON:
+{
+    "match": true or false,
+    "confidence": 0.0 to 1.0,
+    "reason": "one-sentence explanation"
+}"""
+
+        models_to_try = ["gemini-2.0-flash", "gemini-1.5-flash"]
+        for model_name in models_to_try:
+            for attempt in range(3):
+                try:
+                    response = self.ai_client.models.generate_content(
+                        model=model_name,
+                        contents=[id_part, selfie_part, prompt],
+                        config=types.GenerateContentConfig(
+                            response_mime_type="application/json",
+                        ),
+                    )
+                    data = json.loads(response.text)
+                    return {
+                        "match": bool(data.get("match", False)),
+                        "confidence": float(data.get("confidence", 0.0)),
+                        "reason": data.get("reason", ""),
+                    }
+                except Exception as e:
+                    err = str(e)
+                    if "503" in err or "UNAVAILABLE" in err or "429" in err:
+                        await asyncio.sleep((attempt + 1) * 2)
+                        continue
+                    elif "404" in err or "NOT_FOUND" in err:
+                        break
+                    logger.error(f"Face comparison failed: {e}", exc_info=True)
+                    return {"match": False, "confidence": 0.0, "reason": "Comparison failed"}
+
+        return {"match": False, "confidence": 0.0, "reason": "AI models unavailable"}
+
 
 # Global instance
 identity_service = IdentityVerificationService()

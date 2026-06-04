@@ -11,13 +11,6 @@ from app.core.config import settings
 logger = logging.getLogger(__name__)
 import app.models
 
-# ------------------------------------------------------------------
-# Stripe initialization
-# ------------------------------------------------------------------
-import stripe
-if settings.STRIPE_SECRET_KEY:
-    stripe.api_key = settings.STRIPE_SECRET_KEY
-    logger.info("Stripe initialized")
 
 # ------------------------------------------------------------------
 # Sentry (optional)
@@ -309,8 +302,6 @@ fastapi_app.include_router(media.router)
 from app.routers import feedback
 fastapi_app.include_router(feedback.router)
 
-from app.routers import identity
-fastapi_app.include_router(identity.router)
 
 from app.routers import gdpr
 fastapi_app.include_router(gdpr.router)

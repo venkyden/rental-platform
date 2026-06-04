@@ -49,12 +49,8 @@ export default function GuarantorVerifyPage() {
     const [existingStatus, setExistingStatus] = useState<string | null>(null);
     const [existingData, setExistingData] = useState<any | null>(null);
     
-    // Visale fields
-    const [visaleId, setVisaleId] = useState('');
+    // Visale / Garantme certificate upload
     const [visaleFile, setVisaleFile] = useState<File | null>(null);
-    
-    // Garantme fields
-    const [garantmeRef, setGarantmeRef] = useState('');
     const [garantmeFile, setGarantmeFile] = useState<File | null>(null);
     
     // Physical guarantor upload progress
@@ -82,18 +78,12 @@ export default function GuarantorVerifyPage() {
             setExistingStatus(data.guarantor_status);
             setExistingData(data.guarantor_data);
             
-            if (data.guarantor_type && data.guarantor_type !== 'none') {
-                if (data.guarantor_type === 'physical' && data.guarantor_data?.files) {
-                    const docMap: Record<string, GuarantorFile> = {};
-                    data.guarantor_data.files.forEach((f: GuarantorFile) => {
-                        docMap[f.document_type] = f;
-                    });
-                    setUploadedDocs(docMap);
-                } else if (data.guarantor_type === 'visale') {
-                    setVisaleId(data.visale_id || '');
-                } else if (data.guarantor_type === 'garantme') {
-                    setGarantmeRef(data.garantme_ref || '');
-                }
+            if (data.guarantor_type === 'physical' && data.guarantor_data?.files) {
+                const docMap: Record<string, GuarantorFile> = {};
+                data.guarantor_data.files.forEach((f: GuarantorFile) => {
+                    docMap[f.document_type] = f;
+                });
+                setUploadedDocs(docMap);
             }
         } catch (error) {
             console.error('Error fetching guarantor status:', error);
@@ -128,65 +118,47 @@ export default function GuarantorVerifyPage() {
         }
     };
 
-    // Visale submit
     const handleSubmitVisale = async (e: React.FormEvent) => {
         e.preventDefault();
-        const cleanId = visaleId.trim().toUpperCase();
-        if (!/^VS-\d{8}$/.test(cleanId)) {
-            toast.error(t('verify.guarantor.invalidFormat', undefined, 'Invalid format. Please check the entered code.'));
+        if (!visaleFile) {
+            toast.error(t('verify.guarantor.uploadCertificate', undefined, 'Upload Guarantee Certificate'));
             return;
         }
-
         try {
             setSubmitting(true);
             const formData = new FormData();
-            formData.append('visale_id', cleanId);
-            if (visaleFile) {
-                formData.append('file', visaleFile);
-            }
-
+            formData.append('file', visaleFile);
             await apiClient.client.post('/verification/guarantor/visale', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-
             toast.success(t('verify.guarantor.success', undefined, 'Guarantor successfully registered!'));
             await checkAuth();
             router.push('/dashboard');
         } catch (error: any) {
-            console.error('Error verifying Visale ID:', error);
-            toast.error(error.response?.data?.detail || 'Failed to save Visale details');
+            toast.error(error.response?.data?.detail || t('verify.guarantor.verificationFailed', undefined, 'Certificate could not be verified.'));
         } finally {
             setSubmitting(false);
         }
     };
 
-    // Garantme submit
     const handleSubmitGarantme = async (e: React.FormEvent) => {
         e.preventDefault();
-        const cleanRef = garantmeRef.trim().toUpperCase();
-        if (!/^(GM-)?[A-Z0-9]{6,10}$/.test(cleanRef)) {
-            toast.error(t('verify.guarantor.invalidFormat', undefined, 'Invalid format. Please check the entered code.'));
+        if (!garantmeFile) {
+            toast.error(t('verify.guarantor.uploadCertificate', undefined, 'Upload Guarantee Certificate'));
             return;
         }
-
         try {
             setSubmitting(true);
             const formData = new FormData();
-            formData.append('garantme_ref', cleanRef);
-            if (garantmeFile) {
-                formData.append('file', garantmeFile);
-            }
-
+            formData.append('file', garantmeFile);
             await apiClient.client.post('/verification/guarantor/garantme', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-
             toast.success(t('verify.guarantor.success', undefined, 'Guarantor successfully registered!'));
             await checkAuth();
             router.push('/dashboard');
         } catch (error: any) {
-            console.error('Error verifying Garantme Reference:', error);
-            toast.error(error.response?.data?.detail || 'Failed to save Garantme details');
+            toast.error(error.response?.data?.detail || t('verify.guarantor.verificationFailed', undefined, 'Certificate could not be verified.'));
         } finally {
             setSubmitting(false);
         }
@@ -343,16 +315,12 @@ export default function GuarantorVerifyPage() {
                                                 {existingStatus}
                                             </span>
                                         </div>
-                                        {existingType === 'visale' && existingData?.visale_id && (
+                                        {(existingType === 'visale' || existingType === 'garantme') && existingData?.file_url && (
                                             <div className="flex justify-between items-center">
-                                                <span className="text-xs uppercase font-bold text-zinc-400 tracking-wider">Visa ID</span>
-                                                <span className="font-mono font-bold text-zinc-900">{existingData.visale_id}</span>
-                                            </div>
-                                        )}
-                                        {existingType === 'garantme' && existingData?.garantme_ref && (
-                                            <div className="flex justify-between items-center">
-                                                <span className="text-xs uppercase font-bold text-zinc-400 tracking-wider">Reference</span>
-                                                <span className="font-mono font-bold text-zinc-900">{existingData.garantme_ref}</span>
+                                                <span className="text-xs uppercase font-bold text-zinc-400 tracking-wider">Certificate</span>
+                                                <a href={existingData.file_url} target="_blank" rel="noopener noreferrer" className="text-zinc-400 hover:text-zinc-950 flex items-center gap-1 text-xs font-bold transition-all">
+                                                    <Eye className="w-3.5 h-3.5" /> View
+                                                </a>
                                             </div>
                                         )}
                                         {existingType === 'physical' && existingData?.files && (
@@ -496,34 +464,26 @@ export default function GuarantorVerifyPage() {
                                                     {t('verify.guarantor.visale', undefined, 'Visale (Action Logement)')}
                                                 </h2>
                                                 <p className="text-zinc-500 max-w-sm mx-auto font-medium">
-                                                    Enter your Visale ID code. You can also upload your certificate.
+                                                    {t('verify.guarantor.uploadCertificateInstruction', undefined, 'Upload the certificate issued by Visale. The name on the document must match your account.')}
                                                 </p>
                                             </div>
 
                                             <form onSubmit={handleSubmitVisale} className="space-y-6">
                                                 <div className="space-y-2">
-                                                    <label className="text-xs uppercase font-black text-zinc-400 tracking-wider">
-                                                        {t('verify.guarantor.visaleDossierId', undefined, 'Visale Dossier ID')}
-                                                    </label>
-                                                    <input
-                                                        type="text"
-                                                        placeholder={t('verify.guarantor.visaleDossierIdPlaceholder', undefined, 'VS-12345678')}
-                                                        value={visaleId}
-                                                        onChange={(e) => setVisaleId(e.target.value)}
-                                                        className="w-full px-6 py-5 bg-zinc-50 border border-zinc-200/80 rounded-3xl focus:outline-none focus:border-zinc-900 transition-all font-mono font-bold placeholder:font-sans placeholder:font-medium text-lg"
-                                                        required
-                                                    />
-                                                </div>
-
-                                                <div className="space-y-2">
                                                     <label className="text-xs uppercase font-black text-zinc-400 tracking-wider block">
-                                                        {t('verify.guarantor.uploadCertificate', undefined, 'Upload Guarantee Certificate (optional)')}
+                                                        {t('verify.guarantor.uploadCertificate', undefined, 'Upload Guarantee Certificate')}
                                                     </label>
-                                                    <div 
+                                                    <div
                                                         onClick={() => visaleFileRef.current?.click()}
-                                                        className="w-full p-6 border-2 border-dashed border-zinc-200 rounded-3xl hover:border-zinc-900 hover:bg-zinc-50/50 cursor-pointer flex flex-col items-center justify-center gap-2 transition-all"
+                                                        className={`w-full p-6 border-2 border-dashed rounded-3xl cursor-pointer flex flex-col items-center justify-center gap-2 transition-all ${
+                                                            visaleFile ? 'border-emerald-300 bg-emerald-50/30' : 'border-zinc-200 hover:border-zinc-900 hover:bg-zinc-50/50'
+                                                        }`}
                                                     >
-                                                        <Upload className="w-6 h-6 text-zinc-400" />
+                                                        {visaleFile ? (
+                                                            <CheckCircle className="w-6 h-6 text-emerald-600" />
+                                                        ) : (
+                                                            <Upload className="w-6 h-6 text-zinc-400" />
+                                                        )}
                                                         <span className="text-sm font-bold text-zinc-800">
                                                             {visaleFile ? visaleFile.name : 'Select PDF, JPG, or PNG'}
                                                         </span>
@@ -539,11 +499,11 @@ export default function GuarantorVerifyPage() {
                                                 </div>
 
                                                 <div className="p-4 rounded-2xl bg-zinc-100 border border-zinc-200/60 flex items-center justify-between">
-                                                    <span className="text-xs text-zinc-500 font-bold">Don't have a Visale ID yet?</span>
-                                                    <a 
-                                                        href="https://www.visale.fr" 
-                                                        target="_blank" 
-                                                        rel="noopener noreferrer" 
+                                                    <span className="text-xs text-zinc-500 font-bold">Don't have a Visale certificate yet?</span>
+                                                    <a
+                                                        href="https://www.visale.fr"
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
                                                         className="text-xs text-zinc-950 font-black hover:underline inline-flex items-center gap-1 uppercase tracking-wider"
                                                     >
                                                         {t('verify.guarantor.visaleLinkText', undefined, 'visale.fr')}
@@ -553,7 +513,7 @@ export default function GuarantorVerifyPage() {
 
                                                 <button
                                                     type="submit"
-                                                    disabled={submitting}
+                                                    disabled={submitting || !visaleFile}
                                                     className="w-full py-5 bg-zinc-950 hover:bg-zinc-900 text-white font-black text-xs uppercase tracking-widest transition-all rounded-3xl flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-50"
                                                 >
                                                     {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
@@ -577,34 +537,26 @@ export default function GuarantorVerifyPage() {
                                                     {t('verify.guarantor.garantme', undefined, 'Garantme Guarantee')}
                                                 </h2>
                                                 <p className="text-zinc-500 max-w-sm mx-auto font-medium">
-                                                    Enter your Garantme Reference Code. You can also upload your certificate.
+                                                    {t('verify.guarantor.uploadCertificateInstruction', undefined, 'Upload the certificate issued by Garantme. The name on the document must match your account.')}
                                                 </p>
                                             </div>
 
                                             <form onSubmit={handleSubmitGarantme} className="space-y-6">
                                                 <div className="space-y-2">
-                                                    <label className="text-xs uppercase font-black text-zinc-400 tracking-wider">
-                                                        {t('verify.guarantor.garantmeRef', undefined, 'Garantme Reference Code')}
-                                                    </label>
-                                                    <input
-                                                        type="text"
-                                                        placeholder={t('verify.guarantor.garantmeRefPlaceholder', undefined, 'GM-123456')}
-                                                        value={garantmeRef}
-                                                        onChange={(e) => setGarantmeRef(e.target.value)}
-                                                        className="w-full px-6 py-5 bg-zinc-50 border border-zinc-200/80 rounded-3xl focus:outline-none focus:border-zinc-900 transition-all font-mono font-bold placeholder:font-sans placeholder:font-medium text-lg"
-                                                        required
-                                                    />
-                                                </div>
-
-                                                <div className="space-y-2">
                                                     <label className="text-xs uppercase font-black text-zinc-400 tracking-wider block">
-                                                        {t('verify.guarantor.uploadCertificate', undefined, 'Upload Guarantee Certificate (optional)')}
+                                                        {t('verify.guarantor.uploadCertificate', undefined, 'Upload Guarantee Certificate')}
                                                     </label>
-                                                    <div 
+                                                    <div
                                                         onClick={() => garantmeFileRef.current?.click()}
-                                                        className="w-full p-6 border-2 border-dashed border-zinc-200 rounded-3xl hover:border-zinc-900 hover:bg-zinc-50/50 cursor-pointer flex flex-col items-center justify-center gap-2 transition-all"
+                                                        className={`w-full p-6 border-2 border-dashed rounded-3xl cursor-pointer flex flex-col items-center justify-center gap-2 transition-all ${
+                                                            garantmeFile ? 'border-emerald-300 bg-emerald-50/30' : 'border-zinc-200 hover:border-zinc-900 hover:bg-zinc-50/50'
+                                                        }`}
                                                     >
-                                                        <Upload className="w-6 h-6 text-zinc-400" />
+                                                        {garantmeFile ? (
+                                                            <CheckCircle className="w-6 h-6 text-emerald-600" />
+                                                        ) : (
+                                                            <Upload className="w-6 h-6 text-zinc-400" />
+                                                        )}
                                                         <span className="text-sm font-bold text-zinc-800">
                                                             {garantmeFile ? garantmeFile.name : 'Select PDF, JPG, or PNG'}
                                                         </span>
@@ -620,11 +572,11 @@ export default function GuarantorVerifyPage() {
                                                 </div>
 
                                                 <div className="p-4 rounded-2xl bg-zinc-100 border border-zinc-200/60 flex items-center justify-between">
-                                                    <span className="text-xs text-zinc-500 font-bold">Don't have Garantme yet?</span>
-                                                    <a 
-                                                        href="https://garantme.fr" 
-                                                        target="_blank" 
-                                                        rel="noopener noreferrer" 
+                                                    <span className="text-xs text-zinc-500 font-bold">Don't have a Garantme certificate yet?</span>
+                                                    <a
+                                                        href="https://garantme.fr"
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
                                                         className="text-xs text-zinc-950 font-black hover:underline inline-flex items-center gap-1 uppercase tracking-wider"
                                                     >
                                                         {t('verify.guarantor.garantmeLinkText', undefined, 'garantme.fr')}
@@ -634,7 +586,7 @@ export default function GuarantorVerifyPage() {
 
                                                 <button
                                                     type="submit"
-                                                    disabled={submitting}
+                                                    disabled={submitting || !garantmeFile}
                                                     className="w-full py-5 bg-zinc-950 hover:bg-zinc-900 text-white font-black text-xs uppercase tracking-widest transition-all rounded-3xl flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-50"
                                                 >
                                                     {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}

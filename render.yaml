@@ -9,12 +9,16 @@ databases:
 services:
   - type: web
     name: roomivo-backend-0jyi
-    env: python
+    runtime: python
     region: frankfurt
     plan: starter
     branch: master
     rootDir: backend
     buildCommand: "pip install -r requirements.txt"
+    # Runs inside the container before traffic is cut over.
+    # Uses the production DB — only lightweight import/startup checks here.
+    # Full canary tests run in CI (GitHub Actions) before this deploy is triggered.
+    preDeployCommand: "python -c 'from app.main import app; print(\"import ok\")'"
     startCommand: "./start.sh"
     envVars:
       - key: REDIS_URL

@@ -4,8 +4,8 @@ Verification API endpoints for identity and employment verification.
 
 import json
 import secrets
-import re
 import asyncio
+import httpx
 from datetime import datetime, timedelta
 from app.core.timeutils import naive_utcnow
 from typing import Optional
@@ -85,7 +85,6 @@ class VerificationStatusResponse(BaseModel):
 async def upload_identity_document(
     document_type: str,
     file: UploadFile = File(...),
-    side: Optional[str] = Form(None),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -108,20 +107,15 @@ async def upload_identity_document(
     # Read file content
     content = await file.read()
 
-    # Process document with AI — non-blocking (accept upload, store result for review)
+    _check_upload_rate_limit(str(current_user.id), "identity")
+
     from app.services.identity import identity_service
-    if side == "back":
-        result = {
-            "verified": True, "status": "verified", "data": {},
-            "validation_checks": [], "rejection_reason": None
-        }
-    else:
-        result = await identity_service.verify_document(
-            file_content=content,
-            file_type=file.content_type,
-            expected_name=current_user.full_name,
-            document_type=document_type,
-        )
+    result = await identity_service.verify_document(
+        file_content=content,
+        file_type=file.content_type,
+        expected_name=current_user.full_name,
+        document_type=document_type,
+    )
 
     if not result["verified"] and result["status"] == "rejected":
         logger.warning(f"Identity verification rejected for user {current_user.id}: {result.get('rejection_reason')}")
@@ -144,21 +138,16 @@ async def upload_identity_document(
     
     file_url = storage_result["url"]
 
-    # Update user verification status
-    current_user.identity_verified = result["verified"]
-    current_user.identity_status = result["status"]
-    
-    if result["verified"]:
-        current_user.trust_score = min(100, current_user.trust_score + 30)
-
-    # Store verification data
+    # Document passed AI validation — awaiting selfie to complete verification
+    current_user.identity_verified = False
+    current_user.identity_status = "document_verified"
     current_user.identity_data = {
-        "verified": result["verified"],
+        "verified": False,
         "upload_date": naive_utcnow().isoformat(),
         "filename": file.filename,
         "file_url": file_url,
         "storage_key": storage_result.get("key"),
-        "status": result["status"],
+        "status": "document_verified",
         "extracted_data": result["data"],
         "checks": result["validation_checks"],
     }
@@ -167,11 +156,11 @@ async def upload_identity_document(
     await db.refresh(current_user)
 
     return {
-        "message": "Identity document processed",
-        "verified": result["verified"],
-        "status": result["status"],
+        "message": "Document verified — please complete liveness check",
+        "verified": False,
+        "status": "document_verified",
         "trust_score": current_user.trust_score,
-        "details": result.get("rejection_reason") or "Identity document verified successfully",
+        "details": "Upload a selfie to complete identity verification",
     }
 
 
@@ -304,82 +293,205 @@ async def upload_identity_mobile(
     # Read file content
     content = await file.read()
 
-    # Process document with AI — non-blocking (accept upload, store result for review)
     from app.services.identity import identity_service
-    
-    if side == "back":
-        result = {
-            "verified": True, "status": "verified", "data": {}, 
-            "validation_checks": [], "rejection_reason": None
-        }
-    else:
-        result = await identity_service.verify_document(
-            file_content=content,
-            file_type=file.content_type,
-            expected_name=user.full_name,
-            document_type=document_type,
+    from io import BytesIO
+
+    # ── Selfie path: face-match against stored identity document ──────────
+    if side == "selfie":
+        if not user.identity_data or user.identity_data.get("status") != "document_verified":
+            raise HTTPException(
+                status_code=400,
+                detail="Upload and verify your identity document before submitting a selfie.",
+            )
+
+        id_url = user.identity_data["file_url"]
+        async with httpx.AsyncClient(timeout=15.0) as http_client:
+            try:
+                id_resp = await http_client.get(id_url)
+                id_resp.raise_for_status()
+                id_bytes = id_resp.content
+                id_content_type = id_resp.headers.get("content-type", "image/jpeg").split(";")[0]
+            except Exception as e:
+                logger.error(f"Failed to fetch identity doc for face compare: {e}")
+                raise HTTPException(status_code=500, detail="Could not retrieve identity document for comparison.")
+
+        face_result = await identity_service.compare_faces(
+            id_image=id_bytes,
+            id_file_type=id_content_type,
+            selfie=content,
+            selfie_file_type=file.content_type,
         )
 
-    if not result["verified"] and result["status"] == "rejected":
-        logger.warning(f"Identity verification rejected for mobile session {verification_code}: {result.get('rejection_reason')}")
+        if not face_result["match"] or face_result["confidence"] < 0.6:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Face does not match identity document. {face_result['reason']}",
+            )
+
+        watermarked = apply_watermark(content)
+        selfie_storage = await storage.upload_file(
+            file_data=BytesIO(watermarked),
+            filename=file.filename or "selfie.jpg",
+            content_type=file.content_type,
+            folder=f"verification/selfie/{user.id}",
+        )
+
+        if not user.identity_verified:
+            user.trust_score = min(100, user.trust_score + 30)
+        user.identity_verified = True
+        user.identity_status = "verified"
+        user.identity_data = {
+            **user.identity_data,
+            "selfie_url": selfie_storage["url"],
+            "selfie_storage_key": selfie_storage.get("key"),
+            "face_match_confidence": face_result["confidence"],
+            "verified_at": naive_utcnow().isoformat(),
+            "status": "verified",
+        }
+
+        session["completed"] = True
+        await _update_session(verification_code, session)
+        await db.commit()
+        await db.refresh(user)
+
+        return {
+            "message": "Identity fully verified",
+            "verified": True,
+            "status": "verified",
+            "trust_score": user.trust_score,
+            "details": "Liveness check passed — identity confirmed",
+        }
+
+    # ── Document path: OCR + AI validation ────────────────────────────────
+    doc_result = await identity_service.verify_document(
+        file_content=content,
+        file_type=file.content_type,
+        expected_name=user.full_name,
+        document_type=document_type,
+    )
+
+    if not doc_result["verified"] and doc_result["status"] == "rejected":
+        logger.warning(f"Identity doc rejected for mobile session {verification_code}: {doc_result.get('rejection_reason')}")
         raise HTTPException(
             status_code=400,
-            detail=f"Verification failed: {result.get('rejection_reason')}",
+            detail=f"Verification failed: {doc_result.get('rejection_reason')}",
         )
 
-    # Apply watermark before upload
     watermarked_content = apply_watermark(content)
-    
-    # Save file to Cloud Storage
-    from io import BytesIO
     storage_result = await storage.upload_file(
         file_data=BytesIO(watermarked_content),
         filename=file.filename,
         content_type=file.content_type,
-        folder=f"verification/identity/{user.id}"
+        folder=f"verification/identity/{user.id}",
     )
-    
-    file_url = storage_result["url"]
 
-    user.identity_verified = result["verified"]
-    user.identity_status = result["status"]
-    if result["verified"]:
-        user.trust_score = min(100, user.trust_score + 30)
-
+    # Document validated — selfie required to complete identity verification
+    user.identity_verified = False
+    user.identity_status = "document_verified"
     user.identity_data = {
-        "verified": result["verified"],
+        "verified": False,
         "upload_date": naive_utcnow().isoformat(),
         "filename": file.filename,
-        "file_url": file_url,
+        "file_url": storage_result["url"],
         "source": "mobile_capture",
         "storage_key": storage_result.get("key"),
-        "status": result["status"],
-        "extracted_data": result["data"],
-        "checks": result["validation_checks"],
+        "status": "document_verified",
+        "extracted_data": doc_result["data"],
+        "checks": doc_result["validation_checks"],
     }
 
-    # Determine if this is the final upload for this document type
-    # For passports it's 1 capture. For others it's usually front + back.
-    # If it's front and not a passport, we don't finish yet. 
-    is_final = True
-    if side == "front" and document_type in ("id_card", "drivers_license", "residence_permit"):
-        is_final = False
-
-    if is_final:
-        # Mark session as completed only when all parts are done
-        session["completed"] = True
-        await _update_session(verification_code, session)
-
+    # Session stays open until selfie completes it (never mark complete on doc upload)
     await db.commit()
     await db.refresh(user)
 
     return {
-        "message": "Identity document processed",
-        "verified": result["verified"],
-        "status": result["status"],
+        "message": "Document verified — please complete liveness check",
+        "verified": False,
+        "status": "document_verified",
         "trust_score": user.trust_score,
-        "details": result.get("rejection_reason") or "Identity document verified successfully",
+        "details": "Capture a selfie to complete identity verification",
     }
+
+@router.post("/identity/upload-selfie")
+async def upload_identity_selfie(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Upload selfie for face-match against the stored identity document."""
+    if not current_user.identity_data or current_user.identity_data.get("status") != "document_verified":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Upload and verify your identity document before submitting a selfie.",
+        )
+
+    _check_upload_rate_limit(str(current_user.id), "selfie")
+
+    allowed_types = ["image/jpeg", "image/png", "image/jpg", "image/heic", "image/heif"]
+    if file.content_type not in allowed_types:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid file type. Please upload JPEG, PNG, or HEIC.",
+        )
+
+    selfie_bytes = await file.read()
+
+    id_url = current_user.identity_data["file_url"]
+    async with httpx.AsyncClient(timeout=15.0) as http_client:
+        try:
+            id_resp = await http_client.get(id_url)
+            id_resp.raise_for_status()
+            id_bytes = id_resp.content
+            id_content_type = id_resp.headers.get("content-type", "image/jpeg").split(";")[0]
+        except Exception as e:
+            logger.error(f"Failed to fetch identity doc for face compare: {e}")
+            raise HTTPException(status_code=500, detail="Could not retrieve identity document for comparison.")
+
+    from app.services.identity import identity_service
+    face_result = await identity_service.compare_faces(
+        id_image=id_bytes,
+        id_file_type=id_content_type,
+        selfie=selfie_bytes,
+        selfie_file_type=file.content_type,
+    )
+
+    if not face_result["match"] or face_result["confidence"] < 0.6:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Face does not match identity document. {face_result['reason']}",
+        )
+
+    watermarked = apply_watermark(selfie_bytes)
+    from io import BytesIO
+    selfie_storage = await storage.upload_file(
+        file_data=BytesIO(watermarked),
+        filename=file.filename or "selfie.jpg",
+        content_type=file.content_type,
+        folder=f"verification/selfie/{current_user.id}",
+    )
+
+    if not current_user.identity_verified:
+        current_user.trust_score = min(100, current_user.trust_score + 30)
+    current_user.identity_verified = True
+    current_user.identity_status = "verified"
+    current_user.identity_data = {
+        **current_user.identity_data,
+        "selfie_url": selfie_storage["url"],
+        "selfie_storage_key": selfie_storage.get("key"),
+        "face_match_confidence": face_result["confidence"],
+        "verified_at": naive_utcnow().isoformat(),
+        "status": "verified",
+    }
+
+    await db.commit()
+    await db.refresh(current_user)
+
+    return {
+        "message": "Identity fully verified",
+        "identity_verified": True,
+        "trust_score": current_user.trust_score,
+    }
+
 
 _upload_rate_limits: dict[str, list[datetime]] = {}
 
@@ -590,59 +702,61 @@ async def init_guarantor(
 
 @router.post("/guarantor/visale")
 async def verify_visale(
-    visale_id: str = Form(...),
-    file: Optional[UploadFile] = File(None),
+    file: UploadFile = File(...),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Register Visale dossier ID and optional certificate"""
-    clean_id = visale_id.strip().upper()
-    if not re.match(r"^VS-[A-Z0-9]{6,12}$", clean_id):
+    """Upload and AI-verify a Visale guarantee certificate"""
+    _check_upload_rate_limit(str(current_user.id), "visale")
+
+    allowed_types = ["image/jpeg", "image/png", "image/jpg", "application/pdf"]
+    if file.content_type not in allowed_types:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid Visale Dossier ID format. Expected format: VS-XXXXXXXX (e.g. VS-12345678)"
+            detail=f"Invalid file type: {file.content_type}. Please upload JPEG, PNG, or PDF",
         )
-        
-    file_url = None
-    storage_key = None
-    if file:
-        allowed_types = ["image/jpeg", "image/png", "image/jpg", "application/pdf"]
-        if file.content_type not in allowed_types:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Invalid file type: {file.content_type}. Please upload JPEG, PNG, or PDF",
-            )
-        content = await file.read()
-        watermarked_content = apply_watermark(content)
-        from io import BytesIO
-        storage_result = await storage.upload_file(
-            file_data=BytesIO(watermarked_content),
-            filename=file.filename,
-            content_type=file.content_type,
-            folder=f"verification/guarantor/{current_user.id}"
+
+    content = await file.read()
+
+    from app.services.employment import employment_service
+    result = await employment_service.verify_document(
+        file_content=content,
+        file_type=file.content_type,
+        expected_name=current_user.full_name,
+        document_type="visale_certificate",
+    )
+
+    if not result["verified"]:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=result.get("rejection_reason") or "Visale certificate could not be verified. Please upload a valid certificate.",
         )
-        file_url = storage_result["url"]
-        storage_key = storage_result.get("key")
-        
+
+    watermarked_content = apply_watermark(content)
+    from io import BytesIO
+    storage_result = await storage.upload_file(
+        file_data=BytesIO(watermarked_content),
+        filename=file.filename,
+        content_type=file.content_type,
+        folder=f"verification/guarantor/{current_user.id}",
+    )
+
     current_user.guarantor_type = "visale"
-    current_user.visale_id = clean_id
-    
     if current_user.guarantor_status != "verified":
         current_user.trust_score = min(100, current_user.trust_score + 15)
-        
     current_user.guarantor_status = "verified"
     current_user.guarantor_data = {
-        "visale_id": clean_id,
-        "file_url": file_url,
-        "storage_key": storage_key,
-        "verified_at": naive_utcnow().isoformat()
+        "file_url": storage_result["url"],
+        "storage_key": storage_result.get("key"),
+        "verified_at": naive_utcnow().isoformat(),
+        "extracted_data": result.get("data", {}),
     }
-    
+
     await db.commit()
     await db.refresh(current_user)
-    
+
     return {
-        "message": "Visale dossier registered successfully",
+        "message": "Visale certificate verified successfully",
         "guarantor_type": current_user.guarantor_type,
         "guarantor_status": current_user.guarantor_status,
         "trust_score": current_user.trust_score,
@@ -651,59 +765,61 @@ async def verify_visale(
 
 @router.post("/guarantor/garantme")
 async def verify_garantme(
-    garantme_ref: str = Form(...),
-    file: Optional[UploadFile] = File(None),
+    file: UploadFile = File(...),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Register Garantme reference code and optional certificate"""
-    clean_ref = garantme_ref.strip().upper()
-    if not re.match(r"^(GM-)?[A-Z0-9]{6,10}$", clean_ref):
+    """Upload and AI-verify a Garantme guarantee certificate"""
+    _check_upload_rate_limit(str(current_user.id), "garantme")
+
+    allowed_types = ["image/jpeg", "image/png", "image/jpg", "application/pdf"]
+    if file.content_type not in allowed_types:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid Garantme reference code format. Expected format: GM-XXXXXX or XXXXXX"
+            detail=f"Invalid file type: {file.content_type}. Please upload JPEG, PNG, or PDF",
         )
-        
-    file_url = None
-    storage_key = None
-    if file:
-        allowed_types = ["image/jpeg", "image/png", "image/jpg", "application/pdf"]
-        if file.content_type not in allowed_types:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Invalid file type: {file.content_type}. Please upload JPEG, PNG, or PDF",
-            )
-        content = await file.read()
-        watermarked_content = apply_watermark(content)
-        from io import BytesIO
-        storage_result = await storage.upload_file(
-            file_data=BytesIO(watermarked_content),
-            filename=file.filename,
-            content_type=file.content_type,
-            folder=f"verification/guarantor/{current_user.id}"
+
+    content = await file.read()
+
+    from app.services.employment import employment_service
+    result = await employment_service.verify_document(
+        file_content=content,
+        file_type=file.content_type,
+        expected_name=current_user.full_name,
+        document_type="garantme_certificate",
+    )
+
+    if not result["verified"]:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=result.get("rejection_reason") or "Garantme certificate could not be verified. Please upload a valid certificate.",
         )
-        file_url = storage_result["url"]
-        storage_key = storage_result.get("key")
-        
+
+    watermarked_content = apply_watermark(content)
+    from io import BytesIO
+    storage_result = await storage.upload_file(
+        file_data=BytesIO(watermarked_content),
+        filename=file.filename,
+        content_type=file.content_type,
+        folder=f"verification/guarantor/{current_user.id}",
+    )
+
     current_user.guarantor_type = "garantme"
-    current_user.garantme_ref = clean_ref
-    
     if current_user.guarantor_status != "verified":
         current_user.trust_score = min(100, current_user.trust_score + 15)
-        
     current_user.guarantor_status = "verified"
     current_user.guarantor_data = {
-        "garantme_ref": clean_ref,
-        "file_url": file_url,
-        "storage_key": storage_key,
-        "verified_at": naive_utcnow().isoformat()
+        "file_url": storage_result["url"],
+        "storage_key": storage_result.get("key"),
+        "verified_at": naive_utcnow().isoformat(),
+        "extracted_data": result.get("data", {}),
     }
-    
+
     await db.commit()
     await db.refresh(current_user)
-    
+
     return {
-        "message": "Garantme reference registered successfully",
+        "message": "Garantme certificate verified successfully",
         "guarantor_type": current_user.guarantor_type,
         "guarantor_status": current_user.guarantor_status,
         "trust_score": current_user.trust_score,
@@ -901,36 +1017,6 @@ async def upload_property_document(
     }
 
 
-@router.post("/identity/reset")
-async def reset_identity_verification(
-    current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
-):
-    """Reset identity verification (for testing)"""
-    current_user.identity_verified = False
-    current_user.identity_data = None
-    current_user.trust_score = max(0, current_user.trust_score - 30)
-
-    await db.commit()
-    await db.refresh(current_user)
-
-    return {"message": "Identity verification reset"}
-
-
-@router.post("/employment/reset")
-async def reset_employment_verification(
-    current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
-):
-    """Reset employment verification (for testing)"""
-    current_user.employment_verified = False
-    current_user.employment_data = None
-    current_user.trust_score = max(0, current_user.trust_score - 30)
-
-    await db.commit()
-    await db.refresh(current_user)
-
-    return {"message": "Employment verification reset"}
-
-
 # ============================================================
 # GLI (Rent Guarantee Insurance) Endpoints
 # ============================================================
@@ -948,8 +1034,8 @@ class GLIQuoteRequest(BaseModel):
 
 @router.post("/gli/quote")
 async def get_gli_quote(
-    request: GLIQuoteRequest, 
-    current_user: User = Depends(get_current_user),
+    request: GLIQuoteRequest,
+    _: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -990,7 +1076,7 @@ async def get_gli_quote(
 async def apply_gli(
     request: GLIQuoteRequest,
     property_id: str,
-    current_user: User = Depends(get_current_user),
+    _: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """
