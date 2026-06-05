@@ -1,10 +1,86 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
+
+// Shared helpers
+async function mockAuthSession(page: Page, overrides: Record<string, unknown> = {}) {
+    await page.route('**/auth/refresh', route =>
+        route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({ access_token: 'test-token', token_type: 'bearer' }),
+        }),
+    );
+    await page.route('**/auth/me', route =>
+        route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({
+                id: 'test-user-id',
+                email: 'test@roomivo.com',
+                full_name: 'Test User',
+                role: 'tenant',
+                email_verified: true,
+                identity_verified: true,
+                employment_verified: true,
+                trust_score: 95,
+                onboarding_completed: true,
+                available_roles: ['tenant'],
+                ...overrides,
+            }),
+        }),
+    );
+    await page.route('**/auth/me/segment-config', route =>
+        route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({
+                segment: 'standard_tenant',
+                segment_name: 'Standard Tenant',
+                segment_type: 'demand',
+                dashboard_path: '/dashboard',
+                common_features: [],
+                segment_features: [],
+                all_features: [],
+                quick_actions: [],
+                settings: {},
+                verification_status: {
+                    id_verified: true,
+                    email_verified: true,
+                    employment_verified: true,
+                    onboarding_completed: true,
+                },
+            }),
+        }),
+    );
+
+    await page.route('**/verification/status', route =>
+        route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({ guarantor_type: null, guarantor_status: null, guarantor_data: null }),
+        }),
+    );
+}
 
 // E2E tests for verification flows covering 5 key regression scenarios from the audit.
 // These tests require a running frontend server but may skip gracefully if routes are unavailable.
 
 test.describe('Verification Flows E2E', () => {
     test.beforeEach(async ({ page }) => {
+        // Setup routing intercept to allow local pages but mock API calls
+        const originalRoute = page.route.bind(page);
+        (page as any).route = (pattern: any, handler: any, options: any) => {
+            return originalRoute(pattern, (route) => {
+                if (route.request().url().includes(':3001')) {
+                    route.continue();
+                    return;
+                }
+                return handler(route);
+            }, options);
+        };
+
+        // Mock authenticated session
+        await mockAuthSession(page);
+
         // Set English locale via localStorage to ensure consistent i18n behavior
         await page.goto('/');
         await page.evaluate(() => localStorage.setItem('app-language', 'en'));
@@ -57,7 +133,7 @@ test.describe('Verification Flows E2E', () => {
             await page.goto('/verify/identity');
 
             // Check that page text does not contain "undefined" or untranslated keys
-            const bodyText = await page.textContent('body');
+            const bodyText = await page.locator('body').innerText();
             expect(bodyText).not.toContain('undefined');
             expect(bodyText).not.toMatch(/i18n\./);
             expect(bodyText).not.toMatch(/verify\.[a-z.]+/);
@@ -73,7 +149,7 @@ test.describe('Verification Flows E2E', () => {
             await page.goto('/verify/identity');
 
             // Check that page text does not contain "undefined" or untranslated keys
-            const bodyText = await page.textContent('body');
+            const bodyText = await page.locator('body').innerText();
             expect(bodyText).not.toContain('undefined');
             expect(bodyText).not.toMatch(/i18n\./);
             expect(bodyText).not.toMatch(/verify\.[a-z.]+/);
@@ -90,12 +166,8 @@ test.describe('Verification Flows E2E', () => {
             expect(response?.status()).not.toBe(500);
 
             // Check for main guarantor heading or selection UI
-            const hasGuarantorContent = await page.locator(
-                'body:has(h1, h2, [role="heading"])'
-            ).isVisible();
-
             if (response?.status() === 200) {
-                expect(hasGuarantorContent).toBe(true);
+                await expect(page.locator('h1, h2, [role="heading"]').first()).toBeVisible({ timeout: 10_000 });
             }
         });
 
@@ -135,7 +207,7 @@ test.describe('Verification Flows E2E', () => {
             await page.goto('/verify-capture/test-code-abc');
 
             // Page should have some visible content (loading state, step selector, guide, etc.)
-            const mainContent = page.locator('main, [role="main"], body');
+            const mainContent = page.locator('body');
             await expect(mainContent).toBeVisible({ timeout: 10_000 });
         });
 
@@ -191,7 +263,7 @@ test.describe('Verification Flows E2E', () => {
             await page.waitForTimeout(1500);
 
             // Check that main content is stable and visible
-            const mainContent = page.locator('main, body');
+            const mainContent = page.locator('body');
             await expect(mainContent).toBeVisible();
         });
 

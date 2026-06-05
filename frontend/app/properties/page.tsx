@@ -11,7 +11,7 @@ import { motion, Variants, AnimatePresence } from 'framer-motion';
 import { resolveMediaUrl } from '@/lib/mediaUrl';
 import VerificationUpload from '@/components/VerificationUpload';
 import { useLanguage } from '@/lib/LanguageContext';
-import { toast } from 'react-hot-toast';
+import { useToast } from '@/lib/ToastContext';
 import { PropertyCardSkeleton } from '@/components/SkeletonLoaders';
 import { Building } from 'lucide-react';
 import Image from 'next/image';
@@ -47,6 +47,7 @@ export default function PropertiesPage() {
     const { user, isAuthenticated } = useAuth();
     const router = useRouter();
     const { t } = useLanguage();
+    const toast = useToast();
     const [properties, setProperties] = useState<Property[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState<'all' | 'draft' | 'active'>('all');
@@ -88,6 +89,7 @@ export default function PropertiesPage() {
             setHasMore(data.length === ITEMS_PER_PAGE);
         } catch (error) {
             console.error('Error loading properties:', error);
+            toast.error(t('properties.errorLoading', undefined, 'Error loading properties'));
         } finally {
             setLoading(false);
         }

@@ -22,18 +22,16 @@ test.describe('Page 2: Search Marketplace', () => {
     });
 
     test('should show property results grid', async ({ page }) => {
-        // Wait for properties to load (loading skeletons should disappear)
-        await page.waitForSelector('.grid-cols-1, .grid-cols-2, .grid-cols-3', { timeout: 15000 });
+        // Wait for properties to load (either property card or empty state to be visible)
+        const propertyCard = page.locator('.glass-card').filter({ hasText: /€/ }).first();
+        const emptyState = page.locator('text=Market Vacant');
         
-        // Check for at least one property card
-        const propertyCards = page.locator('.glass-card').filter({ hasText: /€/ });
-        // Since backend is mocked or seeded, we expect some results
-        // If 0, we check for empty state
-        const count = await propertyCards.count();
-        if (count === 0) {
-            await expect(page.locator('text=Market Vacant')).toBeVisible();
+        await expect(propertyCard.or(emptyState)).toBeVisible({ timeout: 15_000 });
+        
+        if (await propertyCard.isVisible()) {
+            await expect(propertyCard).toBeVisible();
         } else {
-            await expect(propertyCards.first()).toBeVisible();
+            await expect(emptyState).toBeVisible();
         }
     });
 

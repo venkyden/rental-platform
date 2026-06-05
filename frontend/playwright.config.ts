@@ -31,7 +31,7 @@ export default defineConfig({
         },
     ],
     webServer: {
-        command: 'PORT=3001 HOSTNAME=127.0.0.1 npm run start',
+        command: 'npx next start -p 3001 -H 127.0.0.1',
         url: 'http://127.0.0.1:3001',
         reuseExistingServer: true,
         timeout: 120_000,

@@ -613,7 +613,7 @@ async def test_back_side_stores_without_marking_verified(client, sessionmaker_):
     user.identity_data = {
         "verified": False,
         "file_url": "https://r2.test/front.jpg",
-        "status": "document_verified",
+        "status": "document_uploaded",
     }
     async with sessionmaker_() as session:
         session.add(user)
@@ -665,4 +665,4 @@ async def test_front_upload_ai_unavailable_returns_pending_review(client, sessio
         )
 
     assert r.status_code == 200
-    assert r.json()["status"] == "document_verified"
+    assert r.json()["status"] == "document_uploaded"

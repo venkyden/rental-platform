@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/useAuth';
 import { apiClient } from '@/lib/api';
 import { useLanguage } from '@/lib/LanguageContext';
 import { Check, Mail, ShieldAlert, ArrowLeft } from 'lucide-react';
+import { useToast } from '@/lib/ToastContext';
 
 interface EmailVerificationRequiredProps {
     children: React.ReactNode;
@@ -35,6 +36,7 @@ export default function EmailVerificationRequired({ children }: EmailVerificatio
     const { user, loading } = useAuth();
     const router = useRouter();
     const pathname = usePathname();
+    const toast = useToast();
     const [resending, setResending] = useState(false);
     const [resendSuccess, setResendSuccess] = useState(false);
 
@@ -44,8 +46,10 @@ export default function EmailVerificationRequired({ children }: EmailVerificatio
             await apiClient.client.post('/auth/resend-verification');
             setResendSuccess(true);
             setTimeout(() => setResendSuccess(false), 5000);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to resend verification:', error);
+            const errorMsg = error.response?.data?.detail || t('common.errors.failed', undefined, 'Failed to resend verification email');
+            toast.error(Array.isArray(errorMsg) ? errorMsg[0].msg : errorMsg);
         } finally {
             setResending(false);
         }

@@ -37,32 +37,37 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
     const [sessionDetails, setSessionDetails] = useState<any>(null);
     const [rooms, setRooms] = useState<Room[]>([]);
     const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
+        if (!code) return;
         const handleOnline = () => { setIsOffline(false); checkQueue(); };
         const handleOffline = () => setIsOffline(true);
         window.addEventListener('online', handleOnline);
         window.addEventListener('offline', handleOffline);
         setIsOffline(!navigator.onLine);
+
+        const loadSessionDetails = async () => {
+            try {
+                const res = await apiClient.client.get(`/properties/media-sessions/${code}`);
+                setSessionDetails(res.data);
+                if (res.data.location_verified) setIsSessionVerified(true);
+                if (res.data.rooms) setRooms(res.data.rooms);
+            } catch (e) {
+                console.error(e);
+                setError('Invalid or expired capture session code.');
+                showToast('Invalid or expired capture session code.', 'error');
+            }
+        };
+
         loadSessionDetails();
         return () => {
             window.removeEventListener('online', handleOnline);
             window.removeEventListener('offline', handleOffline);
         };
-    }, []);
-
-    const loadSessionDetails = async () => {
-        try {
-            const res = await apiClient.client.get(`/properties/media-sessions/${code}`);
-            setSessionDetails(res.data);
-            if (res.data.location_verified) setIsSessionVerified(true);
-            if (res.data.rooms) setRooms(res.data.rooms);
-        } catch (e) {
-            console.error(e);
-        }
-    };
+    }, [code]);
 
     const checkQueue = async () => {
         const { offlineQueue } = await import('@/lib/offlineQueue');
@@ -126,7 +131,22 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                 </header>
 
                 <AnimatePresence mode="wait">
-                    {step === 'intro' && (
+                    {error && (
+                        <motion.div
+                            key="error"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className="flex-1 flex flex-col items-center justify-center text-center space-y-6"
+                        >
+                            <div className="w-20 h-20 bg-zinc-900 text-white rounded-3xl flex items-center justify-center mx-auto mb-4">
+                                <WifiOff className="w-10 h-10" />
+                            </div>
+                            <h2 className="text-3xl font-black uppercase tracking-tighter text-zinc-900">Session Error</h2>
+                            <p className="text-zinc-500 font-bold px-4">{error}</p>
+                        </motion.div>
+                    )}
+                    {!error && step === 'intro' && (
                         <motion.div
                             key="intro"
                             initial={{ opacity: 0, y: 20 }}

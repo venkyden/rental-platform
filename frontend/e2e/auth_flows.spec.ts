@@ -177,10 +177,14 @@ test.describe('Google Sign-In', () => {
         );
 
         // Simulate a POST to /auth/google and assert the response body does NOT leak schema details
-        const response = await page.request.post('/auth/google', {
-            data: { credential: 'fake-token', role: 'tenant' },
+        const body = await page.evaluate(async () => {
+            const res = await fetch('/auth/google', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ credential: 'fake-token', role: 'tenant' }),
+            });
+            return res.json().catch(() => ({}));
         });
-        const body = await response.json().catch(() => ({}));
         const detail: string = body?.detail ?? '';
 
         expect(detail).not.toMatch(/alembic|migration|schema|column|relation/i);
@@ -201,10 +205,14 @@ test.describe('Google Sign-In', () => {
             }),
         );
 
-        const response = await page.request.post('/auth/google', {
-            data: { credential: 'fake-token', role: 'tenant' },
+        const body = await page.evaluate(async () => {
+            const res = await fetch('/auth/google', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ credential: 'fake-token', role: 'tenant' }),
+            });
+            return res.json().catch(() => ({}));
         });
-        const body = await response.json().catch(() => ({}));
         const detail: string = body?.detail ?? '';
 
         expect(detail).not.toMatch(/alembic|migration|schema|column|relation/i);
@@ -272,37 +280,53 @@ test.describe('Registration error states', () => {
         await clearSession(page);
         await stubRefreshFail(page);
 
-        await page.route('**/auth/register', route =>
-            route.fulfill({
-                status: 400,
-                contentType: 'application/json',
-                body: JSON.stringify({ detail: 'Email already registered' }),
-            }),
-        );
+        await page.route('**/auth/register', route => {
+            if (route.request().method() === 'POST') {
+                route.fulfill({
+                    status: 400,
+                    contentType: 'application/json',
+                    body: JSON.stringify({ detail: 'Email already registered' }),
+                });
+            } else {
+                route.continue();
+            }
+        });
 
-        await page.goto('/dashboard');
-        const signUpTab = page.getByTestId('switch-to-signup');
-        const signUpVisible = await signUpTab.isVisible({ timeout: 15_000 }).catch(() => false);
-        if (!signUpVisible) return; // auth modal not present, skip
+        await page.goto('/auth/register');
 
-        await signUpTab.click();
+        // Step 1: Role Selection
+        const tenantBtn = page.locator('button:has-text("Tenant"), button:has-text("Locataire")').first();
+        await expect(tenantBtn).toBeVisible({ timeout: 15_000 });
+        await tenantBtn.click();
 
-        // Fill in a minimal registration form if it becomes visible
-        const emailInput = page.locator('input[type="email"]').first();
-        await expect(emailInput).toBeVisible({ timeout: 5_000 });
+        // Step 2: Basic Info
+        const nameInput = page.locator('input[name="full_name"]');
+        await expect(nameInput).toBeVisible({ timeout: 5_000 });
+        await nameInput.fill('Test User');
+
+        const emailInput = page.locator('input[name="email"]');
         await emailInput.fill('existing@roomivo.com');
 
-        const pwInput = page.locator('input[type="password"]').first();
-        if (await pwInput.isVisible()) {
-            await pwInput.fill('Password123!');
-        }
+        const continueBtn = page.locator('button:has-text("Continue"), button:has-text("Continuer")').first();
+        await continueBtn.click();
 
+        // Step 3: Security
+        const pwInput = page.locator('input[name="password"]');
+        await expect(pwInput).toBeVisible({ timeout: 5_000 });
+        await pwInput.fill('Password123!');
+
+        const confirmPwInput = page.locator('input[name="confirmPassword"]');
+        await confirmPwInput.fill('Password123!');
+
+        // Check GDPR Consent
+        await page.locator('input[name="gdprConsent"]').check({ force: true });
+
+        // Submit
         const submit = page.locator('button[type="submit"]').first();
-        if (await submit.isVisible()) {
-            await submit.click();
-            const error = page.locator('[role="alert"]').or(page.locator('text=/already|registered|exists/i')).first();
-            await expect(error).toBeVisible({ timeout: 10_000 });
-        }
+        await submit.click();
+
+        const error = page.locator('[role="alert"]').or(page.locator('text=/already|registered|exists|déjà|existe/i')).first();
+        await expect(error).toBeVisible({ timeout: 10_000 });
     });
 });
 
@@ -315,13 +339,17 @@ test.describe('Forgot password', () => {
         await clearSession(page);
         await stubRefreshFail(page);
 
-        await page.route('**/auth/forgot-password', route =>
-            route.fulfill({
-                status: 200,
-                contentType: 'application/json',
-                body: JSON.stringify({ message: 'If this email is registered, a reset link has been sent.' }),
-            }),
-        );
+        await page.route('**/auth/forgot-password', route => {
+            if (route.request().method() === 'POST') {
+                route.fulfill({
+                    status: 200,
+                    contentType: 'application/json',
+                    body: JSON.stringify({ message: 'If this email is registered, a reset link has been sent.' }),
+                });
+            } else {
+                route.continue();
+            }
+        });
 
         await page.goto('/auth/forgot-password');
         const emailInput = page.locator('input[type="email"]');
@@ -342,13 +370,17 @@ test.describe('Forgot password', () => {
         await clearSession(page);
         await stubRefreshFail(page);
 
-        await page.route('**/auth/forgot-password', route =>
-            route.fulfill({
-                status: 500,
-                contentType: 'application/json',
-                body: JSON.stringify({ detail: 'Internal server error' }),
-            }),
-        );
+        await page.route('**/auth/forgot-password', route => {
+            if (route.request().method() === 'POST') {
+                route.fulfill({
+                    status: 500,
+                    contentType: 'application/json',
+                    body: JSON.stringify({ detail: 'Internal server error' }),
+                });
+            } else {
+                route.continue();
+            }
+        });
 
         await page.goto('/auth/forgot-password');
         await expect(page.locator('input[type="email"]')).toBeVisible({ timeout: 15_000 });
@@ -369,20 +401,24 @@ test.describe('Post-login redirect', () => {
         await clearSession(page);
         await stubRefreshFail(page);
 
-        await page.route('**/auth/login', route =>
-            route.fulfill({
-                status: 200,
-                contentType: 'application/json',
-                body: JSON.stringify({
-                    access_token: 'dummy-token',
-                    token_type: 'bearer',
-                    redirect_path: '/dashboard',
-                    segment: 'standard_tenant',
-                    segment_name: 'Standard Tenant',
-                    available_roles: ['tenant'],
-                }),
-            }),
-        );
+        await page.route('**/auth/login', route => {
+            if (route.request().method() === 'POST') {
+                route.fulfill({
+                    status: 200,
+                    contentType: 'application/json',
+                    body: JSON.stringify({
+                        access_token: 'dummy-token',
+                        token_type: 'bearer',
+                        redirect_path: '/dashboard',
+                        segment: 'standard_tenant',
+                        segment_name: 'Standard Tenant',
+                        available_roles: ['tenant'],
+                    }),
+                });
+            } else {
+                route.continue();
+            }
+        });
         await page.route('**/auth/me', route =>
             route.fulfill({
                 status: 200,

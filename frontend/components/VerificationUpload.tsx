@@ -243,12 +243,16 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
 
     const compressImage = (f: File): Promise<Blob> =>
         new Promise((resolve, reject) => {
+            const timer = setTimeout(() => {
+                resolve(f);
+            }, 3000);
             const reader = new FileReader();
             reader.readAsDataURL(f);
             reader.onload = ev => {
                 const img = new Image();
                 img.src = ev.target?.result as string;
                 img.onload = () => {
+                    clearTimeout(timer);
                     const MAX = 1800;
                     let w = img.width, h = img.height;
                     if (w > MAX || h > MAX) {
@@ -260,8 +264,15 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                     canvas.getContext('2d', { willReadFrequently: true })?.drawImage(img, 0, 0, w, h);
                     canvas.toBlob(b => { if (!b) { resolve(f); return; } resolve(b); }, 'image/jpeg', 0.88);
                 };
+                img.onerror = () => {
+                    clearTimeout(timer);
+                    resolve(f);
+                };
             };
-            reader.onerror = reject;
+            reader.onerror = () => {
+                clearTimeout(timer);
+                resolve(f);
+            };
         });
 
     const handleIdUpload = async () => {

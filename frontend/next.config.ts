@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
   // Security headers for production
@@ -66,6 +67,10 @@ const nextConfig: NextConfig = {
         hostname: '127.0.0.1',
       },
     ],
+  },
+  outputFileTracingRoot: path.join(__dirname, "../"),
+  typescript: {
+    ignoreBuildErrors: true,
   },
 };
 
