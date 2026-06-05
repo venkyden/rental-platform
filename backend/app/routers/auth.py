@@ -697,14 +697,9 @@ async def google_auth(
         except Exception:
             pass
             
-        # Distinguish between schema issues and other errors
-        error_msg = "Account setup failed. Please try again."
-        if "column" in str(e).lower() or "relation" in str(e).lower():
-            error_msg = "Database schema mismatch. Please run migrations (alembic upgrade head)."
-            
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=error_msg,
+            detail="Account setup failed. Please try again.",
         )
 
     # ---- Step 3: Create tokens and return ----

@@ -38,7 +38,8 @@ export default function GuarantorVerifyPage() {
     const router = useRouter();
     const toast = useToast();
     const { t } = useLanguage();
-    const { checkAuth } = useAuth();
+    const { checkAuth, user } = useAuth();
+    const isFrenchResident = !user?.preferences?.nationality || user.preferences.nationality === 'france' || user.preferences.nationality === 'fr';
     
     const [currentStep, setCurrentStep] = useState<GuarantorType>('selection');
     const [loading, setLoading] = useState(true);
@@ -389,7 +390,12 @@ export default function GuarantorVerifyPage() {
                                                             <LinkIcon className="w-5 h-5" />
                                                         </div>
                                                         <div>
-                                                            <h3 className="font-bold text-zinc-900 text-base">{t('verify.guarantor.visale', undefined, 'Visale (Action Logement)')}</h3>
+                                                            <div className="flex items-center gap-2">
+                                                                <h3 className="font-bold text-zinc-900 text-base">{t('verify.guarantor.visale', undefined, 'Visale (Action Logement)')}</h3>
+                                                                {!isFrenchResident && (
+                                                                    <span className="text-[10px] font-black uppercase tracking-widest bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">{t('verify.guarantor.visaleFranceOnly', undefined, 'France only')}</span>
+                                                                )}
+                                                            </div>
                                                             <p className="text-sm text-zinc-500 font-medium leading-normal mt-1">{t('verify.guarantor.visaleDesc', undefined, 'Free government guarantee for students and CDI < 1500€/mo.')}</p>
                                                         </div>
                                                     </div>
@@ -467,6 +473,15 @@ export default function GuarantorVerifyPage() {
                                                     {t('verify.guarantor.uploadCertificateInstruction', undefined, 'Upload the certificate issued by Visale. The name on the document must match your account.')}
                                                 </p>
                                             </div>
+
+                                            {!isFrenchResident && (
+                                                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex gap-3 items-start">
+                                                    <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                                                    <p className="text-sm font-medium text-amber-800">
+                                                        {t('verify.guarantor.visaleNotEligibleInternational', undefined, 'Visale is only available to residents working or studying in France. Consider Garantme as an alternative — it accepts international profiles.')}
+                                                    </p>
+                                                </div>
+                                            )}
 
                                             <form onSubmit={handleSubmitVisale} className="space-y-6">
                                                 <div className="space-y-2">
