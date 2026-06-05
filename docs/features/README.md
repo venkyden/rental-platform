@@ -13,7 +13,7 @@ detailed journals. Audit status from the 2026-05-30 full audit.
 | Visits & leases | `visits.py`, `leases.py`, `lease_generator` | `/leases/*`, `VisitScheduler` | [leases-visits](leases-visits/journal.md) | 🟡 reviewed |
 | Verification / KYC | `verification.py`, `identity.py`, `webhooks.py` | `/verify/*`, `/verification` | [verification-kyc](verification-kyc/journal.md) | 🟡 reviewed |
 | Trust Layer (verify→sign→proof) | `verification.py`, `identity.py`, `lease_generator.py`, planned `credential.py` | `/verify/*`, `/verification` | [trust-layer](trust-layer/DOSSIER.md) | 📝 planning (PRD v2) |
-| Guarantor / Visale | `verification.py` (visale), guarantor flows | `/verify/guarantor` | [verification-kyc](verification-kyc/journal.md) | 🟡 reviewed (GLI to be removed — see [trust-layer](trust-layer/DOSSIER.md) §8) |
+| Guarantor / Visale | `verification.py` (visale), guarantor flows | `/verify/guarantor` | [verification-kyc](verification-kyc/journal.md) | 🟡 reviewed (GLI removed in 888d960) |
 | Messaging | `messages.py` | `/inbox`, `UnifiedInbox` | [messaging-disputes](messaging-disputes/journal.md) | 🟡 reviewed |
 | Disputes & inventory | `dispute.py`, `inventory.py` | `/disputes/*`, `/admin/disputes` | [messaging-disputes](messaging-disputes/journal.md) | 🟡 reviewed |
 | Documents vault | `documents.py` | `/documents` | [verification-kyc](verification-kyc/journal.md) | 🟡 reviewed |
