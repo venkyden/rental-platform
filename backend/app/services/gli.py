@@ -46,6 +46,21 @@ class GLIService:
         "student": 3.0,  # Students (often with guarantor)
     }
 
+    # Map aliases and uppercase variants to canonical keys
+    EMPLOYMENT_ALIASES = {
+        "self_employed": "freelance",
+        "freelancer": "freelance",
+        "auto_entrepreneur": "freelance",
+        "fonctionnaire": "cdi",
+        "interim": "cdd",
+        "internship": "cdd",
+        "other": "freelance",
+    }
+
+    def _normalize_employment(self, employment_type: str) -> str:
+        normalized = employment_type.lower().strip()
+        return self.EMPLOYMENT_ALIASES.get(normalized, normalized)
+
     # Minimum income-to-rent ratio required
     MIN_INCOME_RATIO = 3.0  # Tenant must earn 3x the rent
 
@@ -78,11 +93,12 @@ class GLIService:
             )
 
         # Employment type restrictions
-        if tenant.employment_type not in self.PREMIUM_RATES:
+        emp = self._normalize_employment(tenant.employment_type)
+        if emp not in self.PREMIUM_RATES:
             return False, f"Type d'emploi non éligible: {tenant.employment_type}"
 
         # Verification bonus (not required but affects quote)
-        if not tenant.employment_verified and tenant.employment_type in ["cdi", "cdd"]:
+        if not tenant.employment_verified and emp in ["cdi", "cdd"]:
             return True, "Éligible sous réserve de vérification d'emploi"
 
         return True, "Éligible"
@@ -99,7 +115,7 @@ class GLIService:
             return {"eligible": False, "eligibility_reason": reason}
 
         # Get base rate for employment type
-        base_rate = self.PREMIUM_RATES.get(tenant.employment_type, 4.0)
+        base_rate = self.PREMIUM_RATES.get(self._normalize_employment(tenant.employment_type), 4.0)
 
         # Adjust rate based on verification status
         if tenant.employment_verified:
