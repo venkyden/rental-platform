@@ -8,9 +8,16 @@ from app.core.database import get_db
 from app.services.feature_flag_service import feature_flag_service
 from app.models.user import User, UserRole
 from app.models.property import Property
+from app.routers.auth import get_current_user
 from sqlalchemy import select, or_
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
+
+
+def require_admin(current_user: User = Depends(get_current_user)) -> User:
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+    return current_user
 
 class VerificationReview(BaseModel):
     id: str
@@ -38,7 +45,8 @@ class ToggleRequest(BaseModel):
 
 @router.post("/features/{name}/toggle", response_model=bool)
 async def toggle_feature(
-    name: str, request: ToggleRequest, db: AsyncSession = Depends(get_db)
+    name: str, request: ToggleRequest, db: AsyncSession = Depends(get_db),
+    _: User = Depends(require_admin),
 ):
     """
     Kill Switch: Enable/Disable a feature instantly.
@@ -52,7 +60,8 @@ async def toggle_feature(
 
 @router.post("/features", response_model=FeatureFlagResponse)
 async def create_feature(
-    response: FeatureFlagResponse, db: AsyncSession = Depends(get_db)
+    response: FeatureFlagResponse, db: AsyncSession = Depends(get_db),
+    _: User = Depends(require_admin),
 ):
     """Create a new feature flag"""
     flag = await feature_flag_service.create_flag(
@@ -68,6 +77,7 @@ async def create_feature(
 async def cleanup_stale_photos(
     property_id: str | None = None,
     db: AsyncSession = Depends(get_db),
+    _: User = Depends(require_admin),
 ):
     """
     Remove broken photo references that point to local /uploads/ paths
@@ -132,7 +142,7 @@ async def cleanup_stale_photos(
 
 
 @router.get("/storage-health")
-async def storage_health():
+async def storage_health(_: User = Depends(require_admin)):
     """
     Diagnostic endpoint: check cloud storage configuration and connectivity.
     Use this to verify R2 is working after deploy.
@@ -146,6 +156,7 @@ async def get_pending_verifications(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=500),
     db: AsyncSession = Depends(get_db),
+    _: User = Depends(require_admin),
 ):
     """
     List all verifications that require manual review.
@@ -222,9 +233,10 @@ async def get_pending_verifications(
 
 @router.post("/verifications/{id}/approve")
 async def approve_verification(
-    id: str, 
-    type: str, # identity, employment, property
-    db: AsyncSession = Depends(get_db)
+    id: str,
+    type: str,  # identity, employment, property
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(require_admin),
 ):
     """Manually approve a verification"""
     from uuid import UUID

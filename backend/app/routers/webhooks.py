@@ -58,13 +58,12 @@ async def verification_webhook(
     body = await request.body()
 
     webhook_secret = os.getenv("VERIFICATION_WEBHOOK_SECRET")
-    if webhook_secret:
-        if not x_signature:
-            raise HTTPException(status_code=401, detail="Missing webhook signature")
-        if not verify_signature(body, x_signature, webhook_secret):
-            raise HTTPException(status_code=401, detail="Invalid webhook signature")
-    else:
-        logger.warning("VERIFICATION_WEBHOOK_SECRET not configured — accepting unsigned webhook")
+    if not webhook_secret:
+        raise HTTPException(status_code=503, detail="Webhook endpoint not configured")
+    if not x_signature:
+        raise HTTPException(status_code=401, detail="Missing webhook signature")
+    if not verify_signature(body, x_signature, webhook_secret):
+        raise HTTPException(status_code=401, detail="Invalid webhook signature")
 
     # Parse payload
     try:
