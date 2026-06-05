@@ -461,7 +461,7 @@ test.describe('3. KYC — Guarantor', () => {
             route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ detail: 'Server error' }) }),
         );
         await page.goto('/verify/guarantor');
-        await expect(page.locator('[role="alert"], text=/error|wrong|failed/i').first()).toBeVisible({ timeout: 15_000 });
+        await expect(page.locator('[role="alert"]').or(page.locator('text=/error|wrong|failed/i')).first()).toBeVisible({ timeout: 15_000 });
     });
 
     // B — Loading resolves
@@ -790,7 +790,7 @@ test.describe('6. Applications', () => {
         if (await withdrawBtn.isVisible({ timeout: 10_000 })) {
             await withdrawBtn.click();
             // Confirmation UI (modal dialog) must appear before DELETE fires
-            const confirmUI = page.locator('[role="dialog"], text=/confirm|sure|withdraw/i').first();
+            const confirmUI = page.locator('[role="dialog"]').or(page.locator('text=/confirm|sure|withdraw/i')).first();
             if (await confirmUI.isVisible({ timeout: 3_000 })) {
                 // Do NOT confirm — just dismiss
                 await page.keyboard.press('Escape');
@@ -949,7 +949,7 @@ test.describe('8. Onboarding', () => {
         await optionBtn.click();
         
         // Assert inline error
-        await expect(page.locator('[role="alert"], text=/complete failed|error|failed/i').first()).toBeVisible({ timeout: 10_000 });
+        await expect(page.locator('[role="alert"]').or(page.locator('text=/complete failed|error|failed/i')).first()).toBeVisible({ timeout: 10_000 });
     });
 
     // D — Submit failure shows inline error (Landlord)
@@ -995,7 +995,7 @@ test.describe('8. Onboarding', () => {
         await optionBtn.click();
         
         // Assert inline error
-        await expect(page.locator('[role="alert"], text=/complete failed|error|failed/i').first()).toBeVisible({ timeout: 10_000 });
+        await expect(page.locator('[role="alert"]').or(page.locator('text=/complete failed|error|failed/i')).first()).toBeVisible({ timeout: 10_000 });
     });
 
     // D — Submit failure shows inline error (Agency)
@@ -1033,7 +1033,7 @@ test.describe('8. Onboarding', () => {
         await optionBtn.click();
         
         // Assert inline error
-        await expect(page.locator('[role="alert"], text=/complete failed|error|failed/i').first()).toBeVisible({ timeout: 10_000 });
+        await expect(page.locator('[role="alert"]').or(page.locator('text=/complete failed|error|failed/i')).first()).toBeVisible({ timeout: 10_000 });
     });
 });
 
