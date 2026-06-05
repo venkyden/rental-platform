@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 import path from "path";
 
+const isProd = process.env.NODE_ENV === 'production';
+
 const nextConfig: NextConfig = {
   // Security headers for production
   async headers() {
@@ -45,12 +47,12 @@ const nextConfig: NextConfig = {
             key: 'Cross-Origin-Resource-Policy',
             value: 'cross-origin',
           },
-          {
-            // Browsers ignore HSTS over plain HTTP, so this is a no-op in local
-            // dev and enforces HTTPS only once served over TLS in production.
+          ...(isProd ? [{
+            // HSTS only in production — browsers ignore it over plain HTTP
+            // but we avoid accidentally pinning HTTPS on dev tunnels.
             key: 'Strict-Transport-Security',
             value: 'max-age=31536000; includeSubDomains; preload',
-          },
+          }] : []),
         ],
       },
     ];
@@ -69,9 +71,6 @@ const nextConfig: NextConfig = {
     ],
   },
   outputFileTracingRoot: path.join(__dirname, "../"),
-  typescript: {
-    ignoreBuildErrors: true,
-  },
 };
 
 export default nextConfig;

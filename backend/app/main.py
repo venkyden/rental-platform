@@ -239,6 +239,13 @@ async def global_exception_handler(request: Request, exc: Exception):
     )
 
 
+@fastapi_app.on_event("startup")
+async def startup_event():
+    """Connect to Redis asynchronously on startup."""
+    from app.core.cache import cache
+    await cache.connect()
+
+
 @fastapi_app.get("/diagnostic-check")
 async def diagnostic_check():
     return {"status": "ok"}
@@ -349,7 +356,7 @@ async def health_check():
         t0 = time.time()
         redis_ok = False
         if cache.redis_client:
-            redis_ok = cache.redis_client.ping()
+            redis_ok = await cache.redis_client.ping()
         status["checks"]["cache"] = {
             "status": "up" if redis_ok else "down",
             "latency": time.time() - t0,

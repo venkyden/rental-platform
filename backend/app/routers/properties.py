@@ -402,11 +402,10 @@ async def list_properties(
         default_sort_col=Property.created_at.desc(),
     )
 
-    # Pagination
-    # Pagination
+    # Pagination — enforce a hard server-side maximum to prevent abuse
     try:
         skip_val = int(skip) if skip else 0
-        limit_val = int(limit) if limit else 20
+        limit_val = min(int(limit) if limit else 20, 200)
     except (ValueError, TypeError):
         skip_val = 0
         limit_val = 20

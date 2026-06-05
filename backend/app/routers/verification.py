@@ -112,7 +112,7 @@ async def upload_identity_document(
     # Read file content
     content = await file.read()
 
-    _check_upload_rate_limit(str(current_user.id), "identity")
+    await _check_upload_rate_limit(str(current_user.id), "identity")
 
     from app.services.identity import identity_service
     from io import BytesIO
@@ -570,7 +570,7 @@ async def upload_identity_selfie(
             detail="Upload and verify your identity document before submitting a selfie.",
         )
 
-    _check_upload_rate_limit(str(current_user.id), "selfie")
+    await _check_upload_rate_limit(str(current_user.id), "selfie")
 
     allowed_types = ["image/jpeg", "image/png", "image/jpg", "image/heic", "image/heif"]
     if file.content_type not in allowed_types:
@@ -642,25 +642,18 @@ async def upload_identity_selfie(
     }
 
 
-_upload_rate_limits: dict[str, list[datetime]] = {}
-
-def _check_upload_rate_limit(user_id: str, doc_type: str):
-    now = naive_utcnow()
-    key = f"{user_id}:{doc_type}"
-    
-    # Clean up old timestamps
-    if key in _upload_rate_limits:
-        _upload_rate_limits[key] = [t for t in _upload_rate_limits[key] if now - t < timedelta(hours=1)]
-    else:
-        _upload_rate_limits[key] = []
-        
-    if len(_upload_rate_limits[key]) >= 5:
+# NOTE: Upload rate limits are backed by Redis (distributed, survives restarts).
+# Falls back to fail-open if Redis is unavailable — the per-IP slowapi limits
+# still apply as a second layer of defence.
+async def _check_upload_rate_limit(user_id: str, doc_type: str):
+    key = f"upload_rl:{user_id}:{doc_type}"
+    count = await cache.incr_with_expire(key, ttl=3600)
+    # incr_with_expire returns 0 when Redis is unavailable (fail-open)
+    if count and count > 5:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail="Rate limit exceeded. Maximum 5 uploads per hour per document type.",
         )
-        
-    _upload_rate_limits[key].append(now)
 
 
 @router.post("/income/upload")
@@ -674,7 +667,7 @@ async def upload_income_document(
     Upload income/resource document for verification.
     """
     # Rate limiting
-    _check_upload_rate_limit(str(current_user.id), document_type)
+    await _check_upload_rate_limit(str(current_user.id), document_type)
 
     # File size validation: max 10MB per file
     MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
@@ -869,7 +862,7 @@ async def verify_visale(
     db: AsyncSession = Depends(get_db),
 ):
     """Upload and AI-verify a Visale guarantee certificate"""
-    _check_upload_rate_limit(str(current_user.id), "visale")
+    await _check_upload_rate_limit(str(current_user.id), "visale")
 
     allowed_types = ["image/jpeg", "image/png", "image/jpg", "application/pdf"]
     if file.content_type not in allowed_types:
@@ -936,7 +929,7 @@ async def verify_garantme(
     db: AsyncSession = Depends(get_db),
 ):
     """Upload and AI-verify a Garantme guarantee certificate"""
-    _check_upload_rate_limit(str(current_user.id), "garantme")
+    await _check_upload_rate_limit(str(current_user.id), "garantme")
 
     allowed_types = ["image/jpeg", "image/png", "image/jpg", "application/pdf"]
     if file.content_type not in allowed_types:
@@ -1005,7 +998,7 @@ async def upload_guarantor_document(
 ):
     """Upload documents for physical guarantor flow"""
     # Rate limit check
-    _check_upload_rate_limit(str(current_user.id), document_type)
+    await _check_upload_rate_limit(str(current_user.id), document_type)
 
     allowed_types = ["image/jpeg", "image/png", "image/jpg", "application/pdf", "image/heic", "image/heif"]
     if file.content_type not in allowed_types:

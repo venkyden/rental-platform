@@ -5,18 +5,27 @@ Provides distributed caching with automatic invalidation and TTL management.
 
 import hashlib
 import json
+import logging
 import os
 from functools import wraps
 from typing import Any, Callable, Optional
 
+logger = logging.getLogger(__name__)
+
 # Optional Redis import - graceful fallback if not installed
 try:
-    import redis
+    from redis.asyncio import Redis as AsyncRedis
 
     REDIS_AVAILABLE = True
 except ImportError:
-    redis = None
-    REDIS_AVAILABLE = False
+    try:
+        # Older redis package: redis < 4.2 ships asyncio under redis.asyncio too,
+        # but if completely absent fall back gracefully.
+        AsyncRedis = None  # type: ignore
+        REDIS_AVAILABLE = False
+    except Exception:
+        AsyncRedis = None  # type: ignore
+        REDIS_AVAILABLE = False
 
 
 class CacheLayer:
@@ -27,67 +36,80 @@ class CacheLayer:
     - TTL management
     - Cache invalidation
     - Graceful degradation
+
+    Uses redis.asyncio so all I/O is non-blocking and safe inside an async
+    event loop (the previous sync redis.Redis client would block the loop).
     """
 
     def __init__(self):
-        self.redis_client = None
-        self._connect()
+        self.redis_client: Optional[AsyncRedis] = None  # type: ignore
+        # Connection is deferred to first use (or explicit connect call)
+        # because __init__ cannot be async. Call await cache.connect() on
+        # startup, or let the first operation lazily connect.
+        self._connected = False
 
-    def _connect(self):
+    async def connect(self):
+        """Async connect to Redis. Call once from app startup."""
+        if self._connected:
+            return
+        await self._connect()
+
+    async def _connect(self):
         """Connect to Redis if available"""
-        if not REDIS_AVAILABLE:
-            print("⚠️ Redis not installed. Running without cache (pip install redis)")
+        if not REDIS_AVAILABLE or AsyncRedis is None:
+            logger.warning("Redis not installed. Running without cache (pip install redis>=4.2)")
             return
 
-        # Use centralized settings
         from app.core.config import settings
         redis_url = settings.REDIS_URL
-        if redis_url:
-            import time
+        if not redis_url:
+            logger.warning("REDIS_URL not set. Running without cache.")
+            return
 
-            # Retry once for transient DNS issues (common on cold starts)
-            for attempt in range(2):
-                try:
-                    # Handle SSL certificate verification (common issue in local dev environments)
-                    ssl_kwargs = {}
-                    if redis_url.startswith("rediss://"):
-                        ssl_kwargs["ssl_cert_reqs"] = None
-                        
-                    self.redis_client = redis.Redis.from_url(
-                        redis_url,
-                        decode_responses=True,
-                        socket_timeout=5,
-                        socket_connect_timeout=5,
-                        **ssl_kwargs
+        ssl_kwargs = {}
+        if redis_url.startswith("rediss://"):
+            ssl_kwargs["ssl_cert_reqs"] = None
+
+        for attempt in range(2):
+            try:
+                import asyncio
+                client = AsyncRedis.from_url(
+                    redis_url,
+                    decode_responses=True,
+                    socket_timeout=5,
+                    socket_connect_timeout=5,
+                    **ssl_kwargs,
+                )
+                await client.ping()
+                self.redis_client = client
+                self._connected = True
+                logger.info("✅ Redis cache connected (async)")
+                return
+            except Exception as e:
+                error_msg = str(e)
+                dns_error = any(s in error_msg for s in (
+                    "Name or service not known",
+                    "nodename nor servname",
+                    "Name does not resolve",
+                ))
+                if attempt == 0 and dns_error:
+                    logger.warning("⚠️ Redis DNS resolution failed (attempt 1/2), retrying in 2s...")
+                    import asyncio as _asyncio
+                    await _asyncio.sleep(2)
+                    continue
+
+                # Final failure
+                self.redis_client = None
+                if dns_error:
+                    logger.error(
+                        "⚠️ Redis connection failed: DNS cannot resolve the host. "
+                        "The Redis instance may have been deleted or the URL is stale. "
+                        "Check your Upstash/Redis dashboard and update REDIS_URL. "
+                        "Running without cache."
                     )
-                    # Test connection
-                    self.redis_client.ping()
-                    print("✅ Redis cache connected")
-                    return
-                except Exception as e:
-                    error_msg = str(e)
-                    if attempt == 0 and ("Name or service not known" in error_msg
-                                          or "nodename nor servname" in error_msg
-                                          or "Name does not resolve" in error_msg):
-                        # DNS failure — retry once after a brief pause
-                        print(f"⚠️ Redis DNS resolution failed (attempt 1/2), retrying in 2s...")
-                        time.sleep(2)
-                        continue
-
-                    # Final failure
-                    self.redis_client = None
-                    if "Name or service not known" in error_msg or "nodename nor servname" in error_msg:
-                        print(
-                            f"⚠️ Redis connection failed: DNS cannot resolve the host. "
-                            f"The Redis instance may have been deleted or the URL is stale. "
-                            f"Check your Upstash/Redis dashboard and update REDIS_URL in Render. "
-                            f"Running without cache."
-                        )
-                    else:
-                        print(f"⚠️ Redis connection failed: {e}. Running without cache.")
-                    return
-        else:
-            print("⚠️ REDIS_URL not set. Running without cache.")
+                else:
+                    logger.error(f"⚠️ Redis connection failed: {e}. Running without cache.")
+                return
 
     def _make_key(self, prefix: str, *args, **kwargs) -> str:
         """Generate cache key from function arguments"""
@@ -100,11 +122,11 @@ class CacheLayer:
         if not self.redis_client:
             return None
         try:
-            value = self.redis_client.get(key)
+            value = await self.redis_client.get(key)
             if value:
                 return json.loads(value)
         except Exception as e:
-            print(f"Cache get error: {e}")
+            logger.error(f"Cache get error: {e}")
         return None
 
     async def set(self, key: str, value: Any, ttl: int = 300) -> bool:
@@ -112,10 +134,10 @@ class CacheLayer:
         if not self.redis_client:
             return False
         try:
-            self.redis_client.setex(key, ttl, json.dumps(value, default=str))
+            await self.redis_client.setex(key, ttl, json.dumps(value, default=str))
             return True
         except Exception as e:
-            print(f"Cache set error: {e}")
+            logger.error(f"Cache set error: {e}")
             return False
 
     async def delete(self, key: str) -> bool:
@@ -123,10 +145,10 @@ class CacheLayer:
         if not self.redis_client:
             return False
         try:
-            self.redis_client.delete(key)
+            await self.redis_client.delete(key)
             return True
         except Exception as e:
-            print(f"Cache delete error: {e}")
+            logger.error(f"Cache delete error: {e}")
             return False
 
     async def invalidate_pattern(self, pattern: str) -> int:
@@ -134,12 +156,26 @@ class CacheLayer:
         if not self.redis_client:
             return 0
         try:
-            keys = self.redis_client.keys(pattern)
+            keys = await self.redis_client.keys(pattern)
             if keys:
-                return self.redis_client.delete(*keys)
+                return await self.redis_client.delete(*keys)
         except Exception as e:
-            print(f"Cache invalidate error: {e}")
+            logger.error(f"Cache invalidate error: {e}")
         return 0
+
+    async def incr_with_expire(self, key: str, ttl: int) -> int:
+        """Atomically increment a counter and set TTL on first write. Returns new count."""
+        if not self.redis_client:
+            return 0
+        try:
+            pipe = self.redis_client.pipeline()
+            await pipe.incr(key)
+            await pipe.expire(key, ttl)
+            results = await pipe.execute()
+            return int(results[0])
+        except Exception as e:
+            logger.error(f"Cache incr error: {e}")
+            return 0
 
     def cached(self, prefix: str, ttl: int = 300):
         """

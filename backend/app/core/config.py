@@ -51,16 +51,22 @@ class Settings(BaseSettings):
     def ALLOWED_ORIGINS(self) -> list[str]:
         import os
         _env_origins = os.getenv("ALLOWED_ORIGINS", "").split(",") if os.getenv("ALLOWED_ORIGINS") else []
-        return [
+        origins: list[str] = [
             *[o.strip() for o in _env_origins if o.strip()],
-            "http://localhost:3000",
-            "http://localhost:3001",
-            "http://127.0.0.1:3000",
-            "http://127.0.0.1:3001",
             "https://roomivo-frontend-0jyi.onrender.com",
             "https://roomivo.eu",
             "https://www.roomivo.eu",
         ]
+        # Only allow localhost in non-production environments.
+        # Including localhost in production allows CORS from any victim's browser.
+        if self.ENVIRONMENT != "production":
+            origins += [
+                "http://localhost:3000",
+                "http://localhost:3001",
+                "http://127.0.0.1:3000",
+                "http://127.0.0.1:3001",
+            ]
+        return origins
 
     @model_validator(mode="after")
     def _validate_production_secrets(self) -> "Settings":

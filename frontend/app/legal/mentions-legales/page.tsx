@@ -1,13 +1,13 @@
 "use client";
 
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 import { useLanguage } from '@/lib/LanguageContext';
 import PremiumLayout from '@/components/PremiumLayout';
 
 export default function MentionsLegalesPage() {
     const { t } = useLanguage();
 
-    const containerVariants = {
+    const containerVariants: Variants = {
         hidden: { opacity: 0 },
         visible: {
             opacity: 1,
@@ -15,12 +15,12 @@ export default function MentionsLegalesPage() {
         }
     };
 
-    const sectionVariants = {
+    const sectionVariants: Variants = {
         hidden: { y: 20, opacity: 0 },
         visible: {
             y: 0,
             opacity: 1,
-            transition: { type: "spring" as any, damping: 25, stiffness: 100 }
+            transition: { type: 'spring', damping: 25, stiffness: 100 }
         }
     };
 

@@ -4,11 +4,14 @@ Prevents cascade failures by failing fast when external services are down.
 """
 
 import asyncio
+import logging
 import time
 from dataclasses import dataclass, field
 from enum import Enum
 from functools import wraps
 from typing import Any, Callable, Optional
+
+logger = logging.getLogger(__name__)
 
 
 class CircuitState(Enum):
@@ -69,7 +72,7 @@ class CircuitBreaker:
         """Transition to half-open state"""
         self.state = CircuitState.HALF_OPEN
         self.half_open_calls = 0
-        print(f"🔄 Circuit '{self.name}' transitioning to HALF_OPEN")
+        logger.warning("Circuit '%s' transitioning to HALF_OPEN", self.name)
 
     def _record_success(self):
         """Record successful call"""
@@ -82,7 +85,7 @@ class CircuitBreaker:
                 self.state = CircuitState.CLOSED
                 self.failure_count = 0
                 self.success_count = 0
-                print(f"✅ Circuit '{self.name}' CLOSED (recovered)")
+                logger.info("Circuit '%s' CLOSED (recovered)", self.name)
         else:
             # Reset failure count on success in closed state
             self.failure_count = 0
@@ -96,12 +99,12 @@ class CircuitBreaker:
             # Failed during recovery test, reopen
             self.state = CircuitState.OPEN
             self.success_count = 0
-            print(f"🔴 Circuit '{self.name}' reopened (recovery failed)")
+            logger.error("Circuit '%s' reopened (recovery failed)", self.name)
 
         elif self.state == CircuitState.CLOSED:
             if self.failure_count >= self.failure_threshold:
                 self.state = CircuitState.OPEN
-                print(f"🔴 Circuit '{self.name}' OPEN (threshold reached)")
+                logger.error("Circuit '%s' OPEN (threshold reached)", self.name)
 
 
 class CircuitBreakerError(Exception):
