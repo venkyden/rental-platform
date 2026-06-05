@@ -44,6 +44,10 @@ class Settings(BaseSettings):
     # GDPR & Privacy
     MASTER_ENCRYPTION_KEY: Optional[str] = None
 
+    # Trust Layer — Ed25519 credential signing key (hex-encoded 32-byte seed).
+    # If absent (dev), an ephemeral key is generated. MUST be set in production.
+    CREDENTIAL_SIGNING_KEY: Optional[str] = None
+
     # CORS
     FRONTEND_URL: str = "http://localhost:3000"
     
@@ -79,6 +83,11 @@ class Settings(BaseSettings):
             if not self.MASTER_ENCRYPTION_KEY:
                 raise ValueError(
                     "MASTER_ENCRYPTION_KEY must be set in production (GDPR PII encryption)."
+                )
+            if not self.CREDENTIAL_SIGNING_KEY:
+                raise ValueError(
+                    "CREDENTIAL_SIGNING_KEY must be set in production (Trust Layer Ed25519 key). "
+                    "Generate with: python -c \"import os; print(os.urandom(32).hex())\""
                 )
         return self
 

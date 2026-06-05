@@ -253,7 +253,7 @@ async def diagnostic_check():
 # ------------------------------------------------------------------
 # Include all routers
 # ------------------------------------------------------------------
-from app.routers import (auth, location, onboarding, properties,
+from app.routers import (auth, credentials, location, onboarding, properties,
                          property_manager, verification)
 
 fastapi_app.include_router(properties.router)
@@ -262,6 +262,7 @@ fastapi_app.include_router(property_manager.router)
 fastapi_app.include_router(onboarding.router)
 fastapi_app.include_router(verification.router)
 fastapi_app.include_router(location.router)
+fastapi_app.include_router(credentials.router)
 
 from app.routers import webhooks
 fastapi_app.include_router(webhooks.router)

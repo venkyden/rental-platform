@@ -25,6 +25,7 @@ from app.models.property_manager import PropertyManagerAccess
 from app.models.team import TeamMember, TeamMemberProperty
 from app.models.visits_and_leases import VisitSlot, Lease
 from app.models.webhook_subscriptions import WebhookSubscription, WebhookDelivery
+from app.models.credential import Credential
 
 # this is the Alembic Config object
 config = context.config

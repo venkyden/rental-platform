@@ -37,7 +37,7 @@ from app.models.visits_and_leases import VisitSlot
 TEST_URL = os.environ["DATABASE_URL"]
 
 _TABLES = (
-    "applications, properties, visit_slots, leases, conversations, messages, "
+    "credentials, applications, properties, visit_slots, leases, conversations, messages, "
     "disputes, inventories, inventory_items, notifications, team_members, "
     "team_member_properties, documents, saved_properties, property_media, "
     "property_media_sessions, users"
