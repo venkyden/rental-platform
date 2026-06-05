@@ -244,7 +244,7 @@ export default function ApplicationsPage() {
                                                         )}
                                                         {app.property?.monthly_rent && (
                                                             <span className="flex items-center gap-1.5">
-                                                                <strong>{app.property.monthly_rent} €</strong> / {t('dashboard.landlord.widgets.gli.rent').toLowerCase()}
+                                                                <strong>{app.property.monthly_rent} €</strong> / {t('applications.perMonth')}
                                                             </span>
                                                         )}
                                                         {app.property?.surface_area && (
@@ -347,7 +347,7 @@ export default function ApplicationsPage() {
                                             onClick={() => handleWithdraw(confirmWithdrawId)}
                                             className="flex-1 px-5 py-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold uppercase tracking-wider hover:shadow-lg disabled:opacity-50 transition-all"
                                         >
-                                            {withdrawing ? t('dashboard.landlord.widgets.gli.calculating') : t('applications.withdraw')}
+                                            {withdrawing ? t('applications.processing') : t('applications.withdraw')}
                                         </button>
                                     </div>
                                 </motion.div>

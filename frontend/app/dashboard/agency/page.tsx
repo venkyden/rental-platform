@@ -132,21 +132,6 @@ export default function AgencyDashboard() {
                     </Link>
 
                     <Link
-                        href="/gli"
-                        className="glass-card !p-8 flex flex-col items-start text-left hover:translate-y-[-8px] transition-all duration-300 group border-zinc-100 shadow-xl relative overflow-hidden"
-                    >
-                        <div className="mb-6 p-4 rounded-2xl bg-zinc-50 group-hover:bg-zinc-950 text-zinc-900 group-hover:text-white transition-all duration-300">
-                            <ShieldCheck className="w-6 h-6" />
-                        </div>
-                        <span className="text-xl font-black text-zinc-950 tracking-tight uppercase group-hover:text-zinc-950 transition-colors">
-                            {t('dashboard.agency.gliQuote', undefined, 'GLI Quote')}
-                        </span>
-                        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mt-2">
-                            {t('dashboard.agency.rentGuarantee', undefined, 'Rent Guarantee Insurance')}
-                        </span>
-                    </Link>
-
-                    <Link
                         href="/webhooks"
                         className="glass-card !p-8 flex flex-col items-start text-left hover:translate-y-[-8px] transition-all duration-300 group border-zinc-100 shadow-xl relative overflow-hidden"
                     >
@@ -197,7 +182,7 @@ export default function AgencyDashboard() {
                 <AgencyKpiRow stats={stats ?? null} loading={statsLoading} />
             </section>
 
-            {/* Mandate Management / GLI Summary & Compliance Grid */}
+            {/* Mandate Management & Compliance Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                 {/* Mandate Management */}
                 <div className="lg:col-span-2 space-y-12">
@@ -218,23 +203,6 @@ export default function AgencyDashboard() {
                         </div>
                     </div>
 
-                    {/* GLI Portfolio summary */}
-                    <div className="glass-card !p-10 rounded-[2.5rem] border-zinc-100 shadow-xl relative overflow-hidden text-left">
-                        <div className="flex justify-between items-center mb-8 px-2">
-                            <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
-                                {t('dashboard.agency.rentGuarantee', undefined, 'Rent Guarantee Insurance (GLI)')}
-                            </h2>
-                            <Link href="/gli" className="text-xs font-black uppercase tracking-widest text-zinc-900 hover:text-zinc-500">
-                                {t('dashboard.agency.requestQuote', undefined, 'Request Quote')} →
-                            </Link>
-                        </div>
-                        <div className="p-8 rounded-[2rem] bg-zinc-50 border border-zinc-200 text-center flex flex-col items-center justify-center">
-                            <CheckCircle2 className="w-12 h-12 text-zinc-900 mb-4" />
-                            <p className="text-sm font-semibold text-zinc-800">
-                                {stats ? `${stats.leased} ${t('dashboard.agency.propertiesWithGli', undefined, 'properties active with GLI coverage')}` : t('dashboard.agency.noPropertiesCovered', undefined, '0 properties covered')}
-                            </p>
-                        </div>
-                    </div>
                 </div>
 
                 {/* Compliance & Verification panel */}

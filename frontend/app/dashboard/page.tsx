@@ -10,7 +10,7 @@ import { apiClient } from '@/lib/api';
 import { DashboardCardSkeleton } from '@/components/SkeletonLoaders';
 import { useToast } from '@/lib/ToastContext';
 import { motion, Variants } from 'framer-motion';
-import { Home, Search, ShieldCheck, Mail, UserCircle, LogOut, CheckCircle2, Clock, Building, Users, BarChart3, FileCheck } from 'lucide-react';
+import { Home, Search, ShieldCheck, Mail, UserCircle, LogOut, CheckCircle2, Clock, Building, Users, BarChart3 } from 'lucide-react';
 import TenantFeatures from '@/components/dashboard/TenantFeatures';
 
 const containerVariants: Variants = {
@@ -166,13 +166,6 @@ export default function DashboardPage() {
             title: t('dashboard.quickActions.analytics.title', undefined, undefined),
             description: t('dashboard.quickActions.analytics.desc', undefined, undefined),
             action: () => router.push('/analytics'),
-            show: user.role === 'landlord' || user.role === 'property_manager',
-        },
-        {
-            icon: <FileCheck className="w-8 h-8 text-zinc-900" />,
-            title: t('dashboard.quickActions.gli.title', undefined, undefined),
-            description: t('dashboard.quickActions.gli.desc', undefined, undefined),
-            action: () => router.push('/gli'),
             show: user.role === 'landlord' || user.role === 'property_manager',
         },
         {

@@ -653,8 +653,7 @@ export const translations = {
                 messages: { title: "Messages", desc: "View inbox" },
                 onboarding: { title: "Onboarding", desc: "Complete your profile" },
                 team: { title: "Team Management", desc: "Manage collaborators" },
-                analytics: { title: "Analytics", desc: "Portfolio performance" },
-                gli: { title: "Rent Guarantee", desc: "Protect your income" }
+                analytics: { title: "Analytics", desc: "Portfolio performance" }
             },
             verification: {
                 email: "Email Verification",
@@ -841,8 +840,6 @@ export const translations = {
                     enterpriseActions: "Enterprise Actions",
                     bulkImport: "Bulk Import",
                     csvXml: "CSV / XML",
-                    gliQuote: "GLI Quote",
-                    rentGuarantee: "Rent Guarantee Insurance",
                     erpIntegration: "ERP Integration",
                     webhooksApi: "Webhooks API",
                     team: "Team",
@@ -894,7 +891,6 @@ export const translations = {
                     quickActions: "Quick Actions",
                     portfolio: "My Portfolio",
                     visits: "Visit Management",
-                    gli: "Unpaid Rent Guarantee (GLI)",
                     analytics: "Analytics",
                     team: "My Team",
                     inbox: "Recent Messages"
@@ -909,26 +905,6 @@ export const translations = {
                         available: "Available Slots",
                         noSlots: "No slots defined yet.",
                         booked: "Booked"
-                    },
-                    gli: {
-                        button: "️ Get GLI Quote",
-                        title: "Unpaid Rent Guarantee",
-                        subtitle: "Protection against unpaid rent",
-                        rent: "Monthly Rent",
-                        income: "Tenant Monthly Income",
-                        ratio: "Ratio: {{ratio}}x rent",
-                        min_ratio: "(min 3x)",
-                        contract: "Contract Type",
-                        verified_job: "Employment Verified",
-                        verified_id: "Identity Verified",
-                        calculate: "Calculate Quote",
-                        calculating: "Calculating...",
-                        eligible: "Eligible for GLI",
-                        ineligible: "Not Eligible",
-                        premium_monthly: "Monthly Premium",
-                        premium_annual: "Annual Premium",
-                        subscribe: "Subscribe Now",
-                        success: "Application submitted! A counselor will contact you within 24h."
                     }
                 }
             }
@@ -949,10 +925,6 @@ export const translations = {
                 d90: "90D",
                 y1: "1Y"
             }
-        },
-        gli: {
-            subtitle: "Protect your rental income against unpaid rent and property damage.",
-            selectProperty: "Select a Property"
         },
         facilitation: {
             title: "Facilitation Panel",
@@ -2054,6 +2026,8 @@ export const translations = {
             }
         },
         applications: {
+            perMonth: "month",
+            processing: "Processing...",
             myApplications: "My Applications",
             receivedApplications: "Received Applications",
             noApplications: "No Applications",
@@ -2966,8 +2940,7 @@ export const translations = {
                 messages: { title: "Messages", desc: "Voir la boîte de réception" },
                 onboarding: { title: "Onboarding", desc: "Complétez votre profil" },
                 team: { title: "Gestion d'Équipe", desc: "Gérer les collaborateurs" },
-                analytics: { title: "Analyses", desc: "Performance du portefeuille" },
-                gli: { title: "Garantie Loyers", desc: "Protégez vos revenus" }
+                analytics: { title: "Analyses", desc: "Performance du portefeuille" }
             },
             verification: {
                 email: "Vérification E-mail",
@@ -3172,8 +3145,6 @@ export const translations = {
                     enterpriseActions: "Actions Entreprise",
                     bulkImport: "Import en masse",
                     csvXml: "CSV / XML",
-                    gliQuote: "Devis GLI",
-                    rentGuarantee: "Assurance Loyers Impayés",
                     erpIntegration: "Intégration ERP",
                     webhooksApi: "API Webhooks",
                     team: "Équipe",
@@ -3224,7 +3195,6 @@ export const translations = {
                     quickActions: "Actions Rapides",
                     portfolio: "Mon Patrimoine",
                     visits: "Gestion des Visites",
-                    gli: "Garantie Loyers Impayés (GLI)",
                     analytics: "Analyses",
                     team: "Mon Équipe",
                     inbox: "Messages Récents"
@@ -3239,26 +3209,6 @@ export const translations = {
                         available: "Créneaux Disponibles",
                         noSlots: "Aucun créneau défini.",
                         booked: "Réservé"
-                    },
-                    gli: {
-                        button: "️ Devis GLI",
-                        title: "Garantie Loyers Impayés",
-                        subtitle: "Protection contre les impayés",
-                        rent: "Loyer Mensuel",
-                        income: "Revenus Mensuels Locataire",
-                        ratio: "Ratio : {{ratio}}x le loyer",
-                        min_ratio: "(min 3x)",
-                        contract: "Type de Contrat",
-                        verified_job: "Emploi Vérifié",
-                        verified_id: "Identité Vérifiée",
-                        calculate: "Calculer le Devis",
-                        calculating: "Calcul en cours...",
-                        eligible: "Éligible à la GLI",
-                        ineligible: "Non Éligible",
-                        premium_monthly: "Prime Mensuelle",
-                        premium_annual: "Prime Annuelle",
-                        subscribe: "Souscrire maintenant",
-                        success: "Demande soumise ! Un conseiller vous contactera sous 24h."
                     }
                 }
             }
@@ -3279,10 +3229,6 @@ export const translations = {
                 d90: "90J",
                 y1: "1A"
             }
-        },
-        gli: {
-            subtitle: "Protégez vos revenus locatifs contre les impayés et les dégradations.",
-            selectProperty: "Sélectionnez un Bien"
         },
         facilitation: {
             title: "Panneau de Facilitation",
@@ -4426,6 +4372,8 @@ export const translations = {
             }
         },
         applications: {
+            perMonth: "mois",
+            processing: "Traitement...",
             myApplications: "Mes Candidatures",
             receivedApplications: "Candidatures Reçues",
             noApplications: "Aucune candidature",

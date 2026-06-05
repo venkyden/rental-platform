@@ -439,7 +439,7 @@ export default function ReceivedApplicationsPage() {
                                                 confirmAction.status === 'approved' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-rose-600 hover:bg-rose-700'
                                             }`}
                                         >
-                                            {actioning ? t('dashboard.landlord.widgets.gli.calculating') : t('onboarding.continue')}
+                                            {actioning ? t('applications.processing') : t('onboarding.continue')}
                                         </button>
                                     </div>
                                 </motion.div>

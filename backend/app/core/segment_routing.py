@@ -270,14 +270,12 @@ SEGMENT_CONFIGS: Dict[str, SegmentConfig] = {
             "analytics",
             "inbox",
             "bulk_import",
-            "gli",
             "webhooks",
             "api_access",
             "white_label",
         ],
         quick_actions=[
             {"id": "bulk", "label": "Bulk Import", "icon": "📤", "path": "/bulk"},
-            {"id": "gli", "label": "GLI Quote", "icon": "🛡️", "path": "/gli"},
             {
                 "id": "webhooks",
                 "label": "ERP Integration",

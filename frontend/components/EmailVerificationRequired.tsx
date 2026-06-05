@@ -26,7 +26,6 @@ const isSensitiveRoute = (pathname: string | null): boolean => {
         /^\/inventory/,
         /^\/disputes/,
         /^\/verify/,
-        /^\/gli/,
     ];
     return sensitiveRoutes.some(r => r.test(cleanPath));
 };

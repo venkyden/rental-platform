@@ -235,54 +235,23 @@ async def integration_tests(session: aiohttp.ClientSession):
             log("integration", "Landlord Account Creation", False)
             return
 
-    # Login as Landlord to get token
-    landlord_token = None
+    # Login as Landlord
     async with session.post(
         f"{BASE_URL}/auth/login",
         data={"username": landlord_email, "password": "LandlordPass123!"},
     ) as resp:
         if resp.status == 200:
-            data = await resp.json()
-            landlord_token = data.get("access_token")
             log("integration", "Landlord Login", True)
         else:
             error = await resp.text()
             log("integration", "Landlord Login", False, f"HTTP {resp.status}: {error[:50]}")
             return
 
-    headers = {"Authorization": f"Bearer {landlord_token}"}
-
     # E2E: Property Creation -> Verification -> Application
     # (Skipping actual property creation as it requires identity verification)
     log(
         "integration", "E2E Property Flow", True, "Skipped - requires verified identity"
     )
-
-    # GLI Quote
-    try:
-        async with session.post(
-            f"{BASE_URL}/verification/gli/quote",
-            headers=headers,
-            json={
-                "monthly_rent": 1200,
-                "tenant_monthly_income": 3600,
-                "tenant_employment_type": "cdi",
-                "tenant_employment_verified": True,
-                "tenant_identity_verified": True,
-            },
-        ) as resp:
-            if resp.status == 200:
-                data = await resp.json()
-                log(
-                    "integration",
-                    "GLI Quote Generation",
-                    True,
-                    f"Premium: €{data.get('monthly_premium', 'N/A')}/mo",
-                )
-            else:
-                log("integration", "GLI Quote Generation", False, f"HTTP {resp.status}")
-    except Exception as e:
-        log("integration", "GLI Quote Generation", False, str(e))
 
 
 # ============================================================
@@ -612,7 +581,7 @@ async def feature_flag_tests(session: aiohttp.ClientSession):
             
     headers = {"Authorization": f"Bearer {token}"} if token else {}
 
-    gli_flag = "gli_quote"
+    test_flag = "test_canary_flag"
 
     # 7.1 Ensure Flag Exists/Create
     try:
@@ -620,58 +589,25 @@ async def feature_flag_tests(session: aiohttp.ClientSession):
             f"{BASE_URL}/admin/features",
             headers=headers,
             json={
-                "name": gli_flag,
-                "description": "GLI Quote Service",
+                "name": test_flag,
+                "description": "Canary test flag",
                 "is_enabled": True,
             },
         ) as resp:
-            pass
-    except:
-        pass
-
-    # 7.2 Feature ENABLED Check
-    try:
-        # Enable it first
-        await session.post(f"{BASE_URL}/admin/features/{gli_flag}/toggle", headers=headers, json={"is_enabled": True})
-        
-        async with session.post(
-            f"{BASE_URL}/verification/gli/quote",
-            headers=headers,
-            json={
-                "monthly_rent": 1000,
-                "tenant_monthly_income": 4000,
-                "tenant_employment_type": "cdi",
-            },
-        ) as resp:
-            log("features", "Feature ENABLED Check", resp.status == 200, f"Got {resp.status}")
+            log("features", "Feature Flag Create", resp.status in (200, 201, 409), f"Got {resp.status}")
     except Exception as e:
-        log("features", "Feature ENABLED Check", False, str(e))
+        log("features", "Feature Flag Create", False, str(e))
 
-    # 7.3 Feature DISABLED Check (Kill Switch)
+    # 7.2 Toggle Flag (Kill Switch mechanism)
     try:
-        # Disable it
-        await session.post(f"{BASE_URL}/admin/features/{gli_flag}/toggle", headers=headers, json={"is_enabled": False})
-
         async with session.post(
-            f"{BASE_URL}/verification/gli/quote",
+            f"{BASE_URL}/admin/features/{test_flag}/toggle",
             headers=headers,
-            json={
-                "monthly_rent": 1000,
-                "tenant_monthly_income": 4000,
-                "tenant_employment_type": "cdi",
-            },
+            json={"is_enabled": False},
         ) as resp:
-            log(
-                "features",
-                "Feature DISABLED Check (503)",
-                resp.status == 503,
-                f"Got {resp.status}",
-            )
-        
-        # Re-enable for other tests
-        await session.post(f"{BASE_URL}/admin/features/{gli_flag}/toggle", headers=headers, json={"is_enabled": True})
+            log("features", "Feature Flag Toggle", resp.status == 200, f"Got {resp.status}")
     except Exception as e:
-        log("features", "Feature DISABLED Check (503)", False, str(e))
+        log("features", "Feature Flag Toggle", False, str(e))
 
 
 # ============================================================
@@ -688,7 +624,7 @@ async def feedback_tests(session: aiohttp.ClientSession):
             f"{BASE_URL}/feedback/",
             json={
                 "category": "feature",
-                "message": "I love the new GLI Quote feature!",
+                "message": "I love the new verification feature!",
                 "rating": 5,
             },
         ) as resp:

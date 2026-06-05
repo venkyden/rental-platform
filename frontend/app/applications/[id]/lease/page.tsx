@@ -3,127 +3,13 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { FileText, Calendar, Shield, Info, ArrowLeft, Eye, Check } from 'lucide-react';
+import { FileText, Calendar, Info, ArrowLeft, Eye } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import PremiumLayout from '@/components/PremiumLayout';
 import { useAuth } from '@/lib/useAuth';
 import { apiClient } from '@/lib/api';
 import { useToast } from '@/lib/ToastContext';
 import { useLanguage } from '@/lib/LanguageContext';
-
-// Compact GLI Widget for Lease Generation
-function GLILeaseWidget({ monthlyRent, propertyId }: { monthlyRent: number; propertyId: string }) {
-    const { t } = useLanguage();
-    const toast = useToast();
-    const [loading, setLoading] = useState(false);
-    const [quote, setQuote] = useState<any>(null);
-    const [applied, setApplied] = useState(false);
-    const [tenantIncome, setTenantIncome] = useState<number>(monthlyRent * 3);
-
-    const getQuote = async () => {
-        if (tenantIncome <= 0) {
-            toast.error('Please enter a valid income');
-            return;
-        }
-        setLoading(true);
-        try {
-            const response = await apiClient.client.post('/verification/gli/quote', {
-                monthly_rent: monthlyRent,
-                tenant_monthly_income: tenantIncome,
-                tenant_employment_type: 'cdi',
-                tenant_employment_verified: true,
-                tenant_identity_verified: true
-            });
-            setQuote(response.data);
-        } catch (error) {
-            console.error('GLI quote error:', error);
-            toast.error('Failed to calculate GLI quote');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleApply = async () => {
-        setLoading(true);
-        try {
-            await apiClient.client.post(`/verification/gli/apply?property_id=${propertyId}`, {
-                monthly_rent: monthlyRent,
-                tenant_monthly_income: tenantIncome,
-                tenant_employment_type: 'cdi',
-                tenant_employment_verified: true,
-                tenant_identity_verified: true
-            });
-            setApplied(true);
-            toast.success(t('dashboard.landlord.widgets.gli.success') || 'GLI Underwriting request submitted!');
-        } catch (error) {
-            console.error('GLI apply error:', error);
-            toast.error('Failed to submit GLI application');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    if (applied) {
-        return (
-            <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-xs uppercase tracking-wider mt-2">
-                <Check className="w-4 h-4" />
-                GLI souscrite! Vous serez contacté sous 24h.
-            </div>
-        );
-    }
-
-    return (
-        <div className="space-y-4 mt-4">
-            <div className="flex flex-col sm:flex-row gap-3 items-end">
-                <div className="flex-1">
-                    <label className="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-1.5">
-                        {t('dashboard.landlord.widgets.gli.income')} (€/mo)
-                    </label>
-                    <input
-                        type="number"
-                        value={tenantIncome}
-                        onChange={(e) => setTenantIncome(Number(e.target.value))}
-                        className="w-full px-4 py-2.5 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-zinc-950 text-sm font-semibold"
-                    />
-                </div>
-                {!quote ? (
-                    <button
-                        onClick={getQuote}
-                        disabled={loading}
-                        className="px-5 py-3 bg-zinc-950 hover:bg-zinc-900 dark:bg-white dark:hover:bg-zinc-100 text-white dark:text-zinc-950 rounded-xl text-xs font-bold uppercase tracking-wider disabled:opacity-50 transition-all shrink-0"
-                    >
-                        {loading ? '...' : t('dashboard.landlord.widgets.gli.calculate')}
-                    </button>
-                ) : null}
-            </div>
-
-            {quote && (
-                <div className="pt-3 border-t border-zinc-100 dark:border-zinc-850 flex items-center justify-between gap-4 flex-wrap">
-                    {!quote.eligible ? (
-                        <div className="text-rose-500 font-bold text-xs uppercase tracking-wider flex items-center gap-1">
-                            <Info className="w-4 h-4" />
-                            {t('dashboard.landlord.widgets.gli.ineligible')}: {quote.eligibility_reason}
-                        </div>
-                    ) : (
-                        <>
-                            <div className="text-sm font-medium">
-                                <span className="font-bold text-emerald-600">{quote.monthly_premium}€/mois</span>
-                                <span className="text-zinc-400"> ({quote.premium_rate}% {t('dashboard.landlord.widgets.gli.rent').toLowerCase()})</span>
-                            </div>
-                            <button
-                                onClick={handleApply}
-                                disabled={loading}
-                                className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider disabled:opacity-50 transition-all"
-                            >
-                                {loading ? '...' : t('dashboard.landlord.widgets.gli.subscribe')}
-                            </button>
-                        </>
-                    )}
-                </div>
-            )}
-        </div>
-    );
-}
 
 interface Application {
     id: string;
@@ -507,27 +393,6 @@ export default function LeaseGeneratorPage() {
                                 <p><strong className="text-zinc-400">{t('dashboard.landlord.widgets.visits.date')}:</strong> {application.property?.title}</p>
                                 <p><strong className="text-zinc-400">{t('lease.address')}:</strong> {application.property?.address_line1}, {application.property?.city}</p>
                                 <p><strong className="text-zinc-400">{t('lease.alurCompliance')}</strong></p>
-                            </div>
-
-                            {/* GLI Section */}
-                            <div className="p-5 bg-zinc-50 dark:bg-zinc-950/40 border border-emerald-100 dark:border-emerald-950/40 rounded-2xl">
-                                <div className="flex items-start gap-3.5">
-                                    <div className="w-10 h-10 rounded-xl bg-zinc-950 dark:bg-white flex items-center justify-center text-white dark:text-zinc-950 text-lg shrink-0">
-                                        <Shield className="w-5 h-5" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <h3 className="font-black text-sm text-zinc-950 dark:text-white uppercase tracking-tight">
-                                            {t('dashboard.quickActions.gli.title')} (GLI)
-                                        </h3>
-                                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 leading-relaxed">
-                                            {t('dashboard.landlord.widgets.gli.subtitle')}
-                                        </p>
-                                        <GLILeaseWidget
-                                            monthlyRent={rentAmount}
-                                            propertyId={application.property_id}
-                                        />
-                                    </div>
-                                </div>
                             </div>
 
                             {/* Action Buttons */}

@@ -87,30 +87,6 @@ except Exception as e:
     print(f"   ❌ Failed: {e}")
     results.append(("Properties", False))
 
-# 5. GLI Quote
-print("\n5. GLI QUOTE")
-gli_data = {
-    "monthly_rent": 1500,
-    "tenant_monthly_income": 5000,
-    "tenant_employment_type": "cdi",
-    "tenant_employment_verified": True,
-    "tenant_identity_verified": True,
-}
-try:
-    r = requests.post(f"{BASE}/verification/gli/quote", headers=headers, json=gli_data)
-    if r.status_code == 200:
-        quote = r.json()
-        print(f"   Eligible: {quote.get('eligible')}")
-        print(f"   Premium: {quote.get('monthly_premium')}€/month")
-        print(f"   Coverage: {quote.get('coverage_amount')}€")
-        results.append(("GLI", True))
-    else:
-        print(f"   ❌ Status: {r.status_code}")
-        results.append(("GLI", False))
-except Exception as e:
-    print(f"   ❌ Failed: {e}")
-    results.append(("GLI", False))
-
 # 6. Bulk Export
 print("\n6. BULK EXPORT")
 try:
