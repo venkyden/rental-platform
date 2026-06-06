@@ -4,6 +4,7 @@ import path from "path";
 const isProd = process.env.NODE_ENV === 'production';
 
 const nextConfig: NextConfig = {
+  output: 'standalone',
   // Security headers for production
   async headers() {
     return [

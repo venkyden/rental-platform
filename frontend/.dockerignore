@@ -1,0 +1,39 @@
+# Dependencies (reinstalled inside Docker)
+node_modules/
+node_modules_old/
+
+# Build output (regenerated inside Docker)
+.next/
+out/
+
+# E2E tests and test artifacts
+e2e/
+playwright-report/
+test-results/
+playwright.config.ts
+
+# Debug / scratch files
+errors.txt
+errors2.txt
+ts_errors.log
+build.log
+dev.log
+start.log
+fix_t.js
+fix_t.py
+
+# Documentation
+env.production.template
+README.md
+
+# Git
+.git/
+.gitignore
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/

@@ -1,4 +1,4 @@
-FROM python:3.11.9-slim AS builder
+FROM python:3.12-slim AS builder
 
 WORKDIR /app
 
@@ -15,7 +15,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Production image
-FROM python:3.11.9-slim AS runner
+FROM python:3.12-slim AS runner
 
 WORKDIR /app
 
@@ -44,4 +44,5 @@ HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
 
 # Start server without running migrations to prevent race conditions with multiple replicas
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Use shell form so $PORT is expanded at runtime (Render injects PORT dynamically)
+CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}

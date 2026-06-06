@@ -1102,7 +1102,7 @@ async def upload_media(
         logger.exception("Unexpected error during media upload")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Internal server error during upload: {type(e).__name__}: {e}",
+            detail="Internal server error during upload",
         )
 
     # Create media record

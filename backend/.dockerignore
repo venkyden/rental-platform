@@ -1,8 +1,20 @@
-# Development/Testing Scripts (contain test credentials)
+# Test suites (no business logic, never needed at runtime)
+tests/
+tests_integration/
+
+# Development/debug scripts
 create_segment_users.py
 verify_v3_config.py
 e2e_test.py
 create_tables.sql
+seed_test_data.py
+repro.py
+dry_run_encryption.py
+scratch/
+check_db.py
+check_imports.py
+check_leases_db.py
+check_users.py
 
 # Python cache
 __pycache__/
