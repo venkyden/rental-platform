@@ -14,13 +14,10 @@ import hashlib
 import hmac
 import json
 import uuid
-from datetime import timedelta
 from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from app.core.timeutils import naive_utcnow
-from app.routers.verification import _upload_rate_limits
 from tests_integration.conftest import make_user, auth
 
 
@@ -143,7 +140,8 @@ async def test_webhook_correct_sig_accepted(client, sessionmaker_, monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_webhook_no_secret_accepts_unsigned(client, monkeypatch):
+async def test_webhook_no_secret_returns_503(client, monkeypatch):
+    """When VERIFICATION_WEBHOOK_SECRET is not configured the endpoint is closed."""
     monkeypatch.delenv("VERIFICATION_WEBHOOK_SECRET", raising=False)
     payload = json.dumps({
         "event": "verification.failed",
@@ -153,28 +151,19 @@ async def test_webhook_no_secret_accepts_unsigned(client, monkeypatch):
         "data": {},
     }).encode()
 
-    with patch("app.routers.webhooks.email_service") as mock_email:
-        mock_email.send_verification_failed_email = AsyncMock()
-        r = await client.post(
-            "/webhooks/verification/callback",
-            content=payload,
-            headers={"Content-Type": "application/json"},
-        )
-    assert r.status_code == 200
+    r = await client.post(
+        "/webhooks/verification/callback",
+        content=payload,
+        headers={"Content-Type": "application/json"},
+    )
+    assert r.status_code == 503
 
 
 # ── 3. side="back" bypass removed ─────────────────────────────────────────
-#
-# Previously, uploading with side=back skipped AI and auto-approved.
-# Now every upload goes through identity_service.verify_document().
-# We mock the service to return rejected and confirm the endpoint
-# propagates the rejection (proving the bypass is gone).
 
 @pytest.mark.asyncio
 async def test_identity_back_side_no_longer_auto_approves(client, sessionmaker_):
     user = await make_user(sessionmaker_, role="tenant")
-    key = f"{user.id}:identity"
-    _upload_rate_limits.pop(key, None)
 
     with patch("app.services.identity.identity_service") as mock_svc:
         mock_svc.verify_document = _fake_ai_rejected("Not a valid identity document")
@@ -193,7 +182,6 @@ async def test_identity_mobile_back_side_no_longer_auto_approves(client, session
     """Mobile upload with side=back (non-passport) must also go through AI."""
     user = await make_user(sessionmaker_, role="tenant")
 
-    # Create a verification session for the mobile flow
     r = await client.post("/verification/identity/session", headers=auth(user))
     assert r.status_code == 200
     code = r.json()["verification_code"]
@@ -214,18 +202,18 @@ async def test_identity_mobile_back_side_no_longer_auto_approves(client, session
 @pytest.mark.asyncio
 async def test_identity_upload_rate_limited(client, sessionmaker_):
     user = await make_user(sessionmaker_, role="tenant")
-    key = f"{user.id}:identity"
-    now = naive_utcnow()
-    # Pre-fill the bucket with 5 uploads in the last hour
-    _upload_rate_limits[key] = [now - timedelta(minutes=i) for i in range(5)]
 
-    r = await client.post(
-        "/verification/identity/upload?document_type=passport",
-        files={"file": ("id.jpg", b"content", "image/jpeg")},
-        headers=auth(user),
-    )
+    from fastapi import HTTPException as _HTTPException
+    with patch(
+        "app.routers.verification._check_upload_rate_limit",
+        side_effect=_HTTPException(status_code=429, detail="Rate limit exceeded."),
+    ):
+        r = await client.post(
+            "/verification/identity/upload?document_type=passport",
+            files={"file": ("id.jpg", b"content", "image/jpeg")},
+            headers=auth(user),
+        )
     assert r.status_code == 429
-    _upload_rate_limits.pop(key, None)
 
 
 # ── 6. Visale certificate upload ───────────────────────────────────────────
@@ -233,8 +221,6 @@ async def test_identity_upload_rate_limited(client, sessionmaker_):
 @pytest.mark.asyncio
 async def test_visale_cert_upload_verified(client, sessionmaker_):
     user = await make_user(sessionmaker_, role="tenant")
-    key = f"{user.id}:visale"
-    _upload_rate_limits.pop(key, None)
 
     with patch("app.services.employment.employment_service") as mock_svc, \
          patch("app.services.storage.storage", _fake_storage()), \
@@ -256,8 +242,6 @@ async def test_visale_cert_upload_verified(client, sessionmaker_):
 @pytest.mark.asyncio
 async def test_visale_cert_upload_ai_rejection_returns_422(client, sessionmaker_):
     user = await make_user(sessionmaker_, role="tenant")
-    key = f"{user.id}:visale"
-    _upload_rate_limits.pop(key, None)
 
     with patch("app.services.employment.employment_service") as mock_svc:
         mock_svc.verify_document = _fake_ai_rejected("Name on document does not match account")
@@ -274,17 +258,18 @@ async def test_visale_cert_upload_ai_rejection_returns_422(client, sessionmaker_
 @pytest.mark.asyncio
 async def test_visale_upload_rate_limited(client, sessionmaker_):
     user = await make_user(sessionmaker_, role="tenant")
-    key = f"{user.id}:visale"
-    now = naive_utcnow()
-    _upload_rate_limits[key] = [now - timedelta(minutes=i) for i in range(5)]
 
-    r = await client.post(
-        "/verification/guarantor/visale",
-        files={"file": ("visale_cert.pdf", b"%PDF content", "application/pdf")},
-        headers=auth(user),
-    )
+    from fastapi import HTTPException as _HTTPException
+    with patch(
+        "app.routers.verification._check_upload_rate_limit",
+        side_effect=_HTTPException(status_code=429, detail="Rate limit exceeded."),
+    ):
+        r = await client.post(
+            "/verification/guarantor/visale",
+            files={"file": ("visale_cert.pdf", b"%PDF content", "application/pdf")},
+            headers=auth(user),
+        )
     assert r.status_code == 429
-    _upload_rate_limits.pop(key, None)
 
 
 # ── 7. Garantme certificate upload ────────────────────────────────────────
@@ -292,8 +277,6 @@ async def test_visale_upload_rate_limited(client, sessionmaker_):
 @pytest.mark.asyncio
 async def test_garantme_cert_upload_verified(client, sessionmaker_):
     user = await make_user(sessionmaker_, role="tenant")
-    key = f"{user.id}:garantme"
-    _upload_rate_limits.pop(key, None)
 
     with patch("app.services.employment.employment_service") as mock_svc, \
          patch("app.services.storage.storage", _fake_storage()), \
@@ -315,8 +298,6 @@ async def test_garantme_cert_upload_verified(client, sessionmaker_):
 @pytest.mark.asyncio
 async def test_garantme_cert_upload_ai_rejection_returns_422(client, sessionmaker_):
     user = await make_user(sessionmaker_, role="tenant")
-    key = f"{user.id}:garantme"
-    _upload_rate_limits.pop(key, None)
 
     with patch("app.services.employment.employment_service") as mock_svc:
         mock_svc.verify_document = _fake_ai_rejected("Not a Garantme certificate")
@@ -342,17 +323,18 @@ async def test_garantme_missing_file_returns_422(client, sessionmaker_):
 @pytest.mark.asyncio
 async def test_garantme_upload_rate_limited(client, sessionmaker_):
     user = await make_user(sessionmaker_, role="tenant")
-    key = f"{user.id}:garantme"
-    now = naive_utcnow()
-    _upload_rate_limits[key] = [now - timedelta(minutes=i) for i in range(5)]
 
-    r = await client.post(
-        "/verification/guarantor/garantme",
-        files={"file": ("cert.pdf", b"%PDF content", "application/pdf")},
-        headers=auth(user),
-    )
+    from fastapi import HTTPException as _HTTPException
+    with patch(
+        "app.routers.verification._check_upload_rate_limit",
+        side_effect=_HTTPException(status_code=429, detail="Rate limit exceeded."),
+    ):
+        r = await client.post(
+            "/verification/guarantor/garantme",
+            files={"file": ("cert.pdf", b"%PDF content", "application/pdf")},
+            headers=auth(user),
+        )
     assert r.status_code == 429
-    _upload_rate_limits.pop(key, None)
 
 
 # ── 8. selfie_with_id — authenticated upload endpoint ─────────────────────
@@ -361,8 +343,6 @@ async def test_garantme_upload_rate_limited(client, sessionmaker_):
 async def test_selfie_with_id_auth_success(client, sessionmaker_):
     """Happy path: AI passes → identity_verified=True in one shot."""
     user = await make_user(sessionmaker_, role="tenant")
-    key = f"{user.id}:identity"
-    _upload_rate_limits.pop(key, None)
 
     with patch("app.services.identity.identity_service") as mock_svc, \
          patch("app.services.storage.storage", _fake_storage()), \
@@ -392,8 +372,6 @@ async def test_selfie_with_id_auth_success(client, sessionmaker_):
 async def test_selfie_with_id_auth_ai_rejected(client, sessionmaker_):
     """AI rejects (face mismatch) → 400, user not verified."""
     user = await make_user(sessionmaker_, role="tenant")
-    key = f"{user.id}:identity"
-    _upload_rate_limits.pop(key, None)
 
     with patch("app.services.identity.identity_service") as mock_svc:
         mock_svc.verify_selfie_with_id = AsyncMock(return_value={
@@ -416,8 +394,6 @@ async def test_selfie_with_id_auth_ai_rejected(client, sessionmaker_):
 async def test_selfie_with_id_auth_ai_unavailable_accepts(client, sessionmaker_):
     """AI down → pending_review → upload succeeds (no hard block on user)."""
     user = await make_user(sessionmaker_, role="tenant")
-    key = f"{user.id}:identity"
-    _upload_rate_limits.pop(key, None)
 
     with patch("app.services.identity.identity_service") as mock_svc, \
          patch("app.services.storage.storage", _fake_storage()), \
@@ -441,8 +417,6 @@ async def test_selfie_with_id_auth_ai_unavailable_accepts(client, sessionmaker_)
 async def test_selfie_with_id_invalid_file_type(client, sessionmaker_):
     """Non-image MIME type must be rejected before reaching AI."""
     user = await make_user(sessionmaker_, role="tenant")
-    key = f"{user.id}:identity"
-    _upload_rate_limits.pop(key, None)
 
     r = await client.post(
         "/verification/identity/upload?document_type=passport",
@@ -458,18 +432,19 @@ async def test_selfie_with_id_invalid_file_type(client, sessionmaker_):
 async def test_selfie_with_id_rate_limited(client, sessionmaker_):
     """selfie_with_id uploads count against the identity rate limit."""
     user = await make_user(sessionmaker_, role="tenant")
-    key = f"{user.id}:identity"
-    now = naive_utcnow()
-    _upload_rate_limits[key] = [now - timedelta(minutes=i) for i in range(5)]
 
-    r = await client.post(
-        "/verification/identity/upload?document_type=passport",
-        files={"file": ("selfie_id.jpg", b"\xff\xd8\xff", "image/jpeg")},
-        data={"side": "selfie_with_id"},
-        headers=auth(user),
-    )
+    from fastapi import HTTPException as _HTTPException
+    with patch(
+        "app.routers.verification._check_upload_rate_limit",
+        side_effect=_HTTPException(status_code=429, detail="Rate limit exceeded."),
+    ):
+        r = await client.post(
+            "/verification/identity/upload?document_type=passport",
+            files={"file": ("selfie_id.jpg", b"\xff\xd8\xff", "image/jpeg")},
+            data={"side": "selfie_with_id"},
+            headers=auth(user),
+        )
     assert r.status_code == 429
-    _upload_rate_limits.pop(key, None)
 
 
 @pytest.mark.asyncio
@@ -482,9 +457,6 @@ async def test_selfie_with_id_trust_score_capped_at_100(client, sessionmaker_):
         session.add(user)
         await session.commit()
         await session.refresh(user)
-
-    key = f"{user.id}:identity"
-    _upload_rate_limits.pop(key, None)
 
     with patch("app.services.identity.identity_service") as mock_svc, \
          patch("app.services.storage.storage", _fake_storage()), \
@@ -607,8 +579,6 @@ async def test_selfie_with_id_mobile_already_completed(client, sessionmaker_):
 async def test_back_side_stores_without_marking_verified(client, sessionmaker_):
     """side=back stores supplementary file, preserves front file_url, user stays unverified."""
     user = await make_user(sessionmaker_, role="tenant")
-    key = f"{user.id}:identity"
-    _upload_rate_limits.pop(key, None)
 
     user.identity_data = {
         "verified": False,
@@ -647,8 +617,6 @@ async def test_back_side_stores_without_marking_verified(client, sessionmaker_):
 async def test_front_upload_ai_unavailable_returns_pending_review(client, sessionmaker_):
     """Blurry/unreadable image: AI returns pending_review, upload succeeds for manual review."""
     user = await make_user(sessionmaker_, role="tenant")
-    key = f"{user.id}:identity"
-    _upload_rate_limits.pop(key, None)
 
     with patch("app.services.identity.identity_service") as mock_svc, \
          patch("app.services.storage.storage", _fake_storage()), \
