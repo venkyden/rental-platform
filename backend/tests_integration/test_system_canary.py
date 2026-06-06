@@ -16,7 +16,6 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from app.routers.verification import _upload_rate_limits
 from tests_integration.conftest import auth, make_user
 
 pytestmark = pytest.mark.canary
@@ -139,8 +138,6 @@ async def test_identity_upload_pipeline_reachable(client, sessionmaker_):
     storage dependency is broken. Tenants cannot get verified.
     """
     user = await make_user(sessionmaker_, role="tenant")
-    key = f"{user.id}:identity"
-    _upload_rate_limits.pop(key, None)
 
     with patch("app.services.identity.identity_service") as mock_svc:
         mock_svc.verify_document = AsyncMock(return_value={
@@ -158,8 +155,6 @@ async def test_identity_upload_pipeline_reachable(client, sessionmaker_):
 
     assert r.status_code == 200, f"Identity upload failed: {r.text}"
     assert r.json()["status"] == "document_uploaded"
-
-    _upload_rate_limits.pop(key, None)
 
 
 # ── 6. Webhook signature verification ────────────────────────────────────
