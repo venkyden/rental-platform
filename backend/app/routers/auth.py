@@ -268,6 +268,7 @@ async def login(
         key="refresh_token",
         value=refresh_token,
         httponly=True,
+        path="/",
         max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
         expires=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
         samesite="lax",
@@ -353,6 +354,7 @@ async def refresh_token(
         key="refresh_token",
         value=new_refresh_token,
         httponly=True,
+        path="/",
         max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
         expires=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
         samesite="lax",
@@ -377,21 +379,54 @@ async def refresh_token(
 
 @router.post("/logout")
 async def logout(
+    request: Request,
     response: Response,
-    current_user: User = Depends(get_current_user_optional),
     db: AsyncSession = Depends(get_db)
 ):
-    """Logout user and revoke sessions"""
-    if current_user:
+    """Logout user and revoke sessions.
+    
+    Tries to identify the user from:
+    1. The Bearer access token (if present)
+    2. The refresh_token cookie (fallback — covers the case where
+       the frontend cleared the access token before calling logout)
+    """
+    user = None
+    
+    # Try #1: Bearer token
+    auth_header = request.headers.get("authorization", "")
+    if auth_header.startswith("Bearer "):
+        token = auth_header[7:]
+        payload = verify_token(token)
+        if payload and payload.get("type") == "access":
+            email = payload.get("sub")
+            if email:
+                result = await db.execute(select(User).where(User.email == email))
+                user = result.scalar_one_or_none()
+
+    # Try #2: Refresh token cookie (fallback)
+    if not user:
+        refresh_cookie = request.cookies.get("refresh_token")
+        if refresh_cookie:
+            payload = verify_token(refresh_cookie)
+            if payload and payload.get("type") == "refresh":
+                email = payload.get("sub")
+                if email:
+                    result = await db.execute(select(User).where(User.email == email))
+                    user = result.scalar_one_or_none()
+
+    if user and user.is_active:
         # Increment version to invalidate all current refresh tokens
-        current_user.refresh_token_version += 1
+        user.refresh_token_version += 1
         await db.commit()
-        audit_logger.info(f"LOGOUT_SUCCESS email={current_user.email}")
+        audit_logger.info(f"LOGOUT_SUCCESS email={user.email}")
+    else:
+        audit_logger.info("LOGOUT_ANONYMOUS (no identifiable user)")
     
     response.delete_cookie(
         key="refresh_token",
         httponly=True,
         samesite="lax",
+        path="/",
         secure=settings.ENVIRONMENT == "production",
         domain=settings.COOKIE_DOMAIN if settings.ENVIRONMENT == "production" else None,
     )
@@ -723,6 +758,7 @@ async def google_auth(
             key="refresh_token",
             value=refresh_token,
             httponly=True,
+            path="/",
             max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
             expires=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
             samesite="lax",

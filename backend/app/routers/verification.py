@@ -27,6 +27,23 @@ logger = logging.getLogger(__name__)
 from app.utils.watermark import apply_watermark
 from app.services.identity_assurance import OCR_LIVENESS_LABEL, derive_identity_assurance
 
+async def _validate_file_size(file: UploadFile, max_size_mb: int = 10):
+    """Validate file size securely before calling await file.read() to prevent memory exhaustion DoS."""
+    # Use FastAPI 0.100+ native size property, which is populated securely by python-multipart
+    file_size = getattr(file, "size", None)
+    
+    if file_size is None:
+        # Fallback for mocked UploadFiles in test suites
+        file.file.seek(0, 2)
+        file_size = file.file.tell()
+        file.file.seek(0)
+        
+    if file_size > max_size_mb * 1024 * 1024:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"File size exceeds the {max_size_mb}MB limit."
+        )
+
 # Fallback in-memory verification sessions (if Redis is not available)
 # Format: { code: { user_id, document_type, expires_at, completed } }
 _verification_sessions: dict[str, dict] = {}
@@ -111,7 +128,8 @@ async def upload_identity_document(
             detail=f"Invalid file type: {file.content_type}. Please upload JPEG, PNG, HEIC, or PDF",
         )
 
-    # Read file content
+    # Read file content safely
+    await _validate_file_size(file)
     content = await file.read()
 
     await _check_upload_rate_limit(str(current_user.id), "identity")
@@ -367,7 +385,11 @@ async def upload_identity_mobile(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    # Read file content
+    # Apply rate limit
+    await _check_upload_rate_limit(str(user.id), "identity")
+
+    # Read file content safely
+    await _validate_file_size(file)
     content = await file.read()
 
     from app.services.identity import identity_service
@@ -584,6 +606,7 @@ async def upload_identity_selfie(
             detail=f"Invalid file type. Please upload JPEG, PNG, or HEIC.",
         )
 
+    await _validate_file_size(file)
     selfie_bytes = await file.read()
 
     id_url = current_user.identity_data["file_url"]
@@ -670,6 +693,7 @@ async def avis_cross_check(
         raise HTTPException(status_code=400, detail=f"Invalid file type: {file.content_type}.")
 
     await _check_upload_rate_limit(str(current_user.id), "avis")
+    await _validate_file_size(file)
     content = await file.read()  # processed transiently, never stored
 
     from app.services import fr_2ddoc
@@ -721,9 +745,6 @@ async def upload_income_document(
     # Rate limiting
     await _check_upload_rate_limit(str(current_user.id), document_type)
 
-    # File size validation: max 10MB per file
-    MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
-    
     allowed_types = ["image/jpeg", "image/png", "image/jpg", "application/pdf", "image/heic", "image/heif"]
     if file.content_type not in allowed_types:
         raise HTTPException(
@@ -731,13 +752,8 @@ async def upload_income_document(
             detail=f"Invalid file type: {file.content_type}. Please upload JPEG, PNG, HEIC, or PDF",
         )
 
-    # Read content to check file size
+    await _validate_file_size(file, max_size_mb=10)
     content = await file.read()
-    if len(content) > MAX_FILE_SIZE:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="File size exceeds the 10MB limit.",
-        )
 
     # Import service
     from app.services.employment import employment_service
@@ -926,6 +942,7 @@ async def verify_visale(
             detail=f"Invalid file type: {file.content_type}. Please upload JPEG, PNG, or PDF",
         )
 
+    await _validate_file_size(file)
     content = await file.read()
 
     from app.services.employment import employment_service
@@ -993,6 +1010,7 @@ async def verify_garantme(
             detail=f"Invalid file type: {file.content_type}. Please upload JPEG, PNG, or PDF",
         )
 
+    await _validate_file_size(file)
     content = await file.read()
 
     from app.services.employment import employment_service
@@ -1062,6 +1080,7 @@ async def upload_guarantor_document(
             detail=f"Invalid file type: {file.content_type}. Please upload JPEG, PNG, HEIC, or PDF",
         )
 
+    await _validate_file_size(file)
     content = await file.read()
     watermarked_content = apply_watermark(content)
     
@@ -1170,7 +1189,8 @@ async def upload_property_document(
             detail=f"Invalid file type: {file.content_type}. Please upload JPEG, PNG, or PDF",
         )
 
-    # 3. Read content
+    # 3. Read content securely
+    await _validate_file_size(file)
     content = await file.read()
 
     # 4. Verify Document via AI

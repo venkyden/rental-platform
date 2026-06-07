@@ -207,6 +207,7 @@ def _apply_property_filters(
     params: dict,
     amenities: List[str],
     default_sort_col,
+    current_user: Optional[User] = None,
 ):
     city = params.get("city")
     min_rent = params.get("min_rent")
@@ -215,11 +216,24 @@ def _apply_property_filters(
     property_type = params.get("property_type")
     furnished = params.get("furnished")
     caf_eligible = params.get("caf_eligible")
+    caf_eligible = params.get("caf_eligible")
     landlord_id = params.get("landlord_id")
-    status = params.get("status", "active")
     sort_by = params.get("sort_by", "created_at")
     order_direction = params.get("order_direction", "desc")
     verified_only = params.get("verified_only")
+    
+    # Secure Status Filtering
+    requested_status = params.get("status", "active")
+    if not current_user or current_user.role not in ["landlord", "property_manager", "admin"]:
+        query = query.where(Property.status == "active")
+    else:
+        # Landlords/PMs can only view non-active properties if they are explicitly querying their own
+        if landlord_id and str(current_user.id) == str(landlord_id):
+            if requested_status != "all":
+                query = query.where(Property.status == requested_status)
+            # If "all", no status filter is applied
+        else:
+            query = query.where(Property.status == "active")
 
     if city:
         query = query.where(Property.city.ilike(f"%{city}%"))
@@ -271,9 +285,6 @@ def _apply_property_filters(
     if verified_only:
         query = query.where(Property.ownership_verified == True)
 
-    if status:
-        query = query.where(Property.status == status)
-
     if landlord_id:
         try:
             query = query.where(Property.landlord_id == UUID(landlord_id))
@@ -322,6 +333,7 @@ async def list_saved_properties(
         params=params,
         amenities=amenities,
         default_sort_col=SavedProperty.created_at.desc(),
+        current_user=current_user,
     )
 
     # Pagination
@@ -400,6 +412,7 @@ async def list_properties(
         params=params,
         amenities=amenities,
         default_sort_col=Property.created_at.desc(),
+        current_user=current_user,
     )
 
     # Pagination — enforce a hard server-side maximum to prevent abuse
@@ -520,6 +533,30 @@ async def get_property(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Property not found"
         )
+
+    # Secure visibility check for non-active properties
+    if property_obj.status != "active":
+        if not current_user:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to view this property")
+        
+        has_permission = property_obj.landlord_id == current_user.id
+        if not has_permission and current_user.role != "admin":
+            # Check team access
+            from app.models.team import TeamMember, TeamMemberProperty
+            team_access = (await db.execute(
+                select(TeamMemberProperty).join(
+                    TeamMember, TeamMember.id == TeamMemberProperty.team_member_id
+                ).where(
+                    and_(
+                        TeamMember.member_user_id == current_user.id,
+                        TeamMemberProperty.property_id == prop_uuid,
+                        TeamMember.status == "active"
+                    )
+                )
+            )).scalar_one_or_none()
+            
+            if not team_access:
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to view this property")
 
     # SECURE CHECK: Ensure photos JSONB is in sync with PropertyMedia table
     # This is necessary because the JSONB field might be out of sync if uploads happened concurrently

@@ -229,14 +229,19 @@ class ApiClient {
         return response.data;
     }
 
-    async logout(): Promise<void> {
-        this.clearToken();
+    async logout(redirect: boolean = true): Promise<void> {
+        // Send the logout request FIRST with the current token so the backend
+        // can identify the user and invalidate their refresh tokens.
         try {
             await this.client.post('/auth/logout');
         } catch (e) {
             console.error('Logout error', e);
         }
-        if (typeof window !== 'undefined') {
+        
+        // Clear the in-memory access token AFTER the backend call
+        this.clearToken();
+        
+        if (redirect && typeof window !== 'undefined') {
             window.location.href = '/auth/login';
         }
     }

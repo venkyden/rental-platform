@@ -67,7 +67,7 @@ export default function DashboardPage() {
             }
 
             try {
-                const response = await apiClient.client.get('/properties');
+                const response = await apiClient.client.get(`/properties?landlord_id=${user.id}&status=all&limit=200`);
                 const properties = response.data;
 
                 const statsData: PropertyStats = {

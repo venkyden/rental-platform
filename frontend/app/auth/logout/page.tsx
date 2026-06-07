@@ -24,10 +24,10 @@ export default function LogoutPage() {
             });
         }, 50);
 
-        // Perform actual logout logic
+        // Perform actual logout logic without immediate redirect
         const performLogout = async () => {
             try {
-                await apiClient.logout();
+                await apiClient.logout(false);
                 // Clear any local storage/state overrides here if needed
             } catch {
                 // Best-effort: even if the network call fails, the local token is

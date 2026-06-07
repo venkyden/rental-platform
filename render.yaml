@@ -59,4 +59,4 @@ services:
       - key: ALGORITHM
         value: "HS256"
       - key: ACCESS_TOKEN_EXPIRE_MINUTES
-        value: "10080"
+        value: "15"
