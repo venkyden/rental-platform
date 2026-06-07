@@ -708,6 +708,92 @@ async def _check_upload_rate_limit(user_id: str, doc_type: str):
         )
 
 
+@router.post("/fr/solvency")
+async def fr_solvency_check(
+    file: UploadFile = File(...),
+    monthly_rent: int = Form(...),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    FR HIGH solvency rail (DOSSIER §5.3, sub-feature #4).
+
+    Accepts the avis d'imposition upload + the gross monthly rent for the property.
+    Decodes the DataMatrix 2D-Doc barcode, verifies the ANTS ECDSA signature, and
+    reads the RFR (revenu fiscal de référence) from the SIGNED payload — tampered
+    printed text is irrelevant (SV-1). Emits a banded solvency ratio and stores only
+    the banded claim on the user profile; the raw RFR is NEVER persisted.
+
+    Assurance: HIGH — the RFR comes from a DGFiP-signed payload (state-cryptographic).
+    Recency: flagged (not blocked) if the avis income year is more than 2 years old
+    (SV-2: full SVAIR recency verification is deferred).
+
+    DOSSIER SV-8: the response uses "fiscal_capacity" terminology, never "monthly income".
+    """
+    if not current_user.identity_verified:
+        raise HTTPException(status_code=400, detail="Verify your identity before submitting a solvency check.")
+
+    if monthly_rent <= 0:
+        raise HTTPException(status_code=422, detail="monthly_rent must be a positive integer (euros).")
+
+    allowed_types = ["image/jpeg", "image/png", "image/jpg", "application/pdf", "image/heic", "image/heif"]
+    if file.content_type not in allowed_types:
+        raise HTTPException(status_code=400, detail=f"Invalid file type: {file.content_type}.")
+
+    await _check_upload_rate_limit(str(current_user.id), "solvency")
+    content = await file.read()  # processed transiently, never stored
+
+    from app.services import fr_2ddoc
+    try:
+        raw = fr_2ddoc.decode_2ddoc(content, file.content_type)
+        avis = fr_2ddoc.parse_and_verify_avis(raw)
+    except fr_2ddoc.BarcodeUnreadable:
+        raise HTTPException(status_code=422, detail="Could not read the 2D-Doc barcode — please rescan the avis.")
+    except fr_2ddoc.WrongDocumentType:
+        raise HTTPException(status_code=422, detail="This document is not an avis d'imposition (2D-Doc type 28 or 04).")
+    except fr_2ddoc.SignatureInvalid:
+        raise HTTPException(status_code=422, detail="2D-Doc signature verification failed — document may be forged or use an unknown certificate.")
+
+    rfr = avis.revenu_fiscal_de_reference
+    if rfr is None:
+        # Signed payload present but RFR field absent (rare legacy format gap).
+        solvency_assurance = "UNVERIFIED"
+        solvency_ratio = None
+    else:
+        solvency_assurance = "HIGH"
+        solvency_ratio = fr_2ddoc.band_solvency_ratio(rfr, monthly_rent)
+
+    recency_flag = fr_2ddoc.is_avis_stale(avis.annee_des_revenus) if avis.annee_des_revenus else False
+
+    # Name corroboration against the verified identity (anti-fraud flag, no assurance change).
+    id_name = (current_user.identity_data or {}).get("extracted_data", {}).get("full_name")
+    name_corroborated = (
+        fr_2ddoc.name_matches_any(id_name, avis.declarant_names) if id_name and id_name != "Unknown" else False
+    )
+
+    # Persist only the banded claims — raw RFR is discarded here.
+    current_user.identity_data = {
+        **(current_user.identity_data or {}),
+        "solvency_assurance": solvency_assurance,
+        "solvency_ratio": solvency_ratio,
+        "solvency_source": "fr_2ddoc_avis",
+        "solvency_annee_des_revenus": avis.annee_des_revenus,
+        "solvency_recency_flag": recency_flag,
+        "solvency_name_corroborated": name_corroborated,
+    }
+    await db.commit()
+    await db.refresh(current_user)
+
+    return {
+        "solvency_assurance": solvency_assurance,
+        "solvency_ratio": solvency_ratio,
+        "fiscal_capacity_label": "Capacité fiscale (RFR — revenu fiscal de référence)",
+        "annee_des_revenus": avis.annee_des_revenus,
+        "recency_flag": recency_flag,
+        "avis_corroborated_name": name_corroborated,
+    }
+
+
 @router.post("/income/upload")
 async def upload_income_document(
     document_type: str = Form(...),
