@@ -71,9 +71,9 @@ Last updated: 2026-06-05. Status: **planning — no code written yet.**
     link — type the code on roomivo.app yourself"), published public key, and
     landing-page institutional endorsement: **PÉPITE Pays de la Loire / SNEE /
     Ministère de l'Enseignement supérieur et de la Recherche** with logos.
-    ⚠ **Caveat:** statuses ("Lauréat PÉPITE", "Étudiant-Entrepreneur / SNEE") may be
-    stated; the **ministry/PÉPITE logos require usage authorization** — confirm
-    rights before display, or misuse backfires. See [[roomivo-legal-status-snee]].
+    ✅ **Logo rights secured (2026-06-07):** statuses ("Lauréat PÉPITE",
+    "Étudiant-Entrepreneur / SNEE") **and** the ministry/PÉPITE logos are **authorized
+    for display**. See [[roomivo-legal-status-snee]].
 11. **Scoping (assumption — confirm):** Phase 1 / Direction A = **(a) Roomivo-scoped
     broadcastable** credential. Direction B (Phase 2) = **(b) recipient-scoped**.
 
@@ -521,9 +521,9 @@ wary user — defeating that fear is a Phase-1 requirement, not polish.
   Ministère de l'Enseignement supérieur et de la Recherche** — with logos, to convert
   "is this a scam?" into "this is state-backed." Consistent with
   [[roomivo-legal-status-snee]] and the existing Mentions Légales.
-  - ⚠ **Logo rights:** the affiliation *statuses* may be stated; **official logos
-    (ministry / PÉPITE) typically need usage authorization.** Confirm rights before
-    display — unauthorised state-logo use is itself a misrepresentation risk.
+  - ✅ **Logo rights:** affiliation *statuses* **and** the official logos (ministry /
+    PÉPITE) are **authorized for display** (confirmed by founder 2026-06-07). Display them
+    on the landing + verify pages to maximise the "state-backed" trust signal.
 - A short **"How to know this link is real"** explainer page reinforcing the above.
 
 ---
