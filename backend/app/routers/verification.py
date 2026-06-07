@@ -25,6 +25,7 @@ from app.services.storage import storage
 
 logger = logging.getLogger(__name__)
 from app.utils.watermark import apply_watermark
+from app.services.identity_assurance import OCR_LIVENESS_LABEL, derive_identity_assurance
 
 # Fallback in-memory verification sessions (if Redis is not available)
 # Format: { code: { user_id, document_type, expires_at, completed } }
@@ -156,6 +157,7 @@ async def upload_identity_document(
             "verification_method": "selfie_with_id",
             "extracted_data": result["data"],
             "checks": result["validation_checks"],
+            **OCR_LIVENESS_LABEL,
         }
         await db.commit()
         await db.refresh(current_user)
@@ -407,6 +409,7 @@ async def upload_identity_mobile(
             "extracted_data": doc_result["data"],
             "checks": doc_result["validation_checks"],
             "verified_at": naive_utcnow().isoformat(),
+            **OCR_LIVENESS_LABEL,
         }
         session["completed"] = True
         await _update_session(verification_code, session)
@@ -474,6 +477,7 @@ async def upload_identity_mobile(
             "face_match_confidence": face_result["confidence"],
             "verified_at": naive_utcnow().isoformat(),
             "status": "verified",
+            **OCR_LIVENESS_LABEL,
         }
 
         session["completed"] = True
@@ -630,6 +634,7 @@ async def upload_identity_selfie(
         "face_match_confidence": face_result["confidence"],
         "verified_at": naive_utcnow().isoformat(),
         "status": "verified",
+        **OCR_LIVENESS_LABEL,
     }
 
     await db.commit()
