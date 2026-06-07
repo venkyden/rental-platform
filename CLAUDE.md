@@ -47,9 +47,13 @@ Assurance levels: HIGH (state-cryptographic) / MEDIUM (OCR+liveness) / UNVERIFIE
 
 ## Two rails — selected by documents held, not nationality
 
-**FR rail:** France Identité justificatif (MoI-signed, recipient-named, verified at
-`idp.france-identite.gouv.fr/valider-attest`) + avis d'imposition 2D-Doc (DGFiP-signed,
-parse via betagouv/2ddoc-parser) → HIGH assurance, no selfie, no liveness, no CSCA.
+**FR rail:** identity today is OCR+liveness → **MEDIUM** (France Identité *justificatif*
+was rejected for friction; `valider-attest` is a human portal, not an API). HIGH identity
+is deferred to **FranceConnect** (OIDC), gated behind incorporation (SIRET + DataPass + 4
+governance roles, décret du 8 nov. 2018). Solvency: avis d'imposition 2D-Doc (DGFiP-signed,
+parse via betagouv/2ddoc-parser, `fr_2ddoc_parser` package) → offline ECDSA verify, banded
+claim. The *avis* 2D-Doc name cross-check adds an anti-fraud flag but does NOT upgrade
+identity to HIGH (no presenter binding).
 
 **INTL rail:** Native-app passport NFC chip read (JMRTD / AndyQ NFCPassportReader,
 BAC/PACE/Passive Auth) → HIGH. Web MRZ-OCR + liveness → MEDIUM. OSS liveness has
@@ -90,11 +94,11 @@ The FR/INTL split is self-selected by which documents the user holds. Same tiers
 Directly targets the deposit-theft scam (fake landlord takes deposit, disappears).
 
 Tenant side:
-1. France Identité justificatif → verify signature → emit identity credential (HIGH).
+1. Identity via OCR+selfie → **MEDIUM** assurance; avis d'imposition 2D-Doc name cross-check adds anti-fraud flag. HIGH deferred to FranceConnect (post-incorporation).
 2. Avis d'imposition 2D-Doc → betagouv/2ddoc-parser → verify ECDSA → banded solvency.
 
 Landlord + property side:
-3. France Identité justificatif → verify signature (same rail) → landlord identity (HIGH).
+3. Identity via OCR+selfie → **MEDIUM** (same rail as tenant). HIGH deferred to FranceConnect.
 4. ADEME DPE class lookup + taxe foncière document check → "control, not
    ownership-attested" (no free ownership oracle at €0; disclose the limit).
 

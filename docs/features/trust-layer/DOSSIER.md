@@ -196,7 +196,7 @@ Immigration status is **never** a gate.
 
 | Step | FR rail | INTL rail |
 |---|---|---|
-| Identity | France Identité *justificatif* (HIGH) → OCR+liveness (MEDIUM) | NFC passport chip / BAC-PACE (HIGH) → web MRZ-OCR+liveness (MEDIUM) |
+| Identity | OCR+liveness (**MEDIUM**); *avis* 2D-Doc name corroboration (flag only, stays MEDIUM); HIGH deferred to FranceConnect | NFC passport chip / BAC-PACE (HIGH) → web MRZ-OCR+liveness (MEDIUM) |
 | Solvency | *Avis* 2D-Doc + optional SVAIR (HIGH) | Foreign tax/payslips (MEDIUM) + currency normalisation |
 | Property | ADEME DPE + document-verified control | same |
 | Lease | Generated (Décret 2015-587) or uploaded-and-checked | same; foreign-law uploads "not legality-verified" |
@@ -213,12 +213,18 @@ Tests follow the existing convention in `backend/tests_integration/` (real DB,
 `make_user`/`auth` helpers, mocked AI/storage). Each row = at least one test.
 
 ### 5.1 Identity (PRD §6.1) — service: `identity.py`, `identity_service.py`
+
+> **Update 2026-06-06:** ID-1/ID-2/ID-3 assumed a `valider-attest` API that does not exist
+> (human portal only). FR HIGH identity is deferred to FranceConnect (post-incorporation).
+> The shipped FR rail is MEDIUM (OCR+selfie) + *avis* 2D-Doc name corroboration. See
+> `docs/superpowers/specs/2026-06-06-fr-identity-medium-rail-design.md`.
+
 | # | Edge case | Expected | Now |
 |---|---|---|---|
-| ID-1 | Altered/screenshotted *justificatif* | endpoint/sig fails → **block**, regenerate | ❌ |
-| ID-2 | *Justificatif* for a different recipient | recipient mismatch → **block** | ❌ |
-| ID-3 | Expired single-use *justificatif* (TTL) | **block**, regenerate | ❌ |
-| ID-4 | No new-CNI / no NFC phone | **fallback → MEDIUM**, labelled | 🟡 path exists, not labelled |
+| ID-1 | Altered/screenshotted *justificatif* | endpoint/sig fails → **block**, regenerate | ❌ deferred (FranceConnect path) |
+| ID-2 | *Justificatif* for a different recipient | recipient mismatch → **block** | ❌ deferred |
+| ID-3 | Expired single-use *justificatif* (TTL) | **block**, regenerate | ❌ deferred |
+| ID-4 | No new-CNI / no NFC phone | **fallback → MEDIUM**, labelled | ✅ labelled (AS-1 fix) |
 | ID-5 | Web NFC cannot read passport (impossible) | auto web-MEDIUM, never claim HIGH | ❌ |
 | ID-6 | MRZ checksum (mod-10) fails | transcription error → **re-scan** | ❌ |
 | ID-7 | Passport without chip (older book) | MEDIUM only, labelled | ❌ |
@@ -362,10 +368,14 @@ insurance posture. **Delete, don't flag-off.**
    (Ed25519 sign), `app/routers/credentials.py` (`POST /issue`, `GET /verify`),
    public-key endpoint, watermarked evidence-document export (§12.1), Alembic
    migration. Thin banded store (§0.8); no source docs at rest.
-3. **FR HIGH identity rail** (§5.1) — France Identité *justificatif* validation
-   (`idp.france-identite.gouv.fr/valider-attest`). Serves **both** tenant and
-   landlord. Emits `identity_assurance: HIGH`; existing OCR+selfie path becomes
-   labelled MEDIUM (folds in the §5.2 assurance-labelling fix).
+3. **FR identity — MEDIUM rail now, HIGH deferred** (§5.1, §5.2) — `valider-attest` is a
+   human web portal, not an API, and the *justificatif* route (new-CNI + NFC + app) was
+   rejected for friction. No zero-OPEX method binds a document to its presenter today, so
+   there is no honest FR HIGH identity rail yet. This sub-feature labels OCR+selfie as
+   **MEDIUM** (AS-1 fix), adds a **state-signed name cross-check** from the *avis* 2D-Doc
+   (still MEDIUM — no presenter binding), and records **FranceConnect** as the deferred
+   HIGH path, gated behind incorporation (SIRET + DataPass + 4 governance roles, décret
+   du 8 nov. 2018). Serves both tenant and landlord.
 4. **FR HIGH solvency rail** (§5.3, tenant) — *avis* 2D-Doc via
    **betagouv/2ddoc-parser**, verify ANTS ECDSA, read income from the **signed
    payload**, emit banded ratio (`>=3.0`) + optional SVAIR recency.
