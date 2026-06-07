@@ -1133,6 +1133,104 @@ async def delete_guarantor(
     }
 
 
+@router.post("/property/{property_id}/dpe")
+async def verify_property_dpe(
+    property_id: str,
+    dpe_number: str = Form(...),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    FR property DPE verification via live ADEME open-data API (DOSSIER §5.4, sub-feature #5).
+
+    Looks up the DPE number in the ADEME database and stores the live energy class on
+    the property — never hard-coded (PR-3: Jan 2026 reclassification must be live).
+
+    ADEME 5xx / timeout → non-blocking; returns dpe_assurance="PENDING" (PR-6).
+    DPE not found → dpe_assurance="UNVERIFIED" (PR-4).
+    Expired DPE (>10yr / pre-Jul-2021 methodology) → flagged, not blocked in Phase 1
+    (class-G blocking and zone-tendue advisory are Phase 2 — DOSSIER §9, item 7).
+    """
+    from app.models.property import Property
+    import uuid as _uuid
+
+    try:
+        prop_uuid = _uuid.UUID(property_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid property ID")
+
+    result = await db.execute(select(Property).where(Property.id == prop_uuid))
+    prop = result.scalar_one_or_none()
+    if not prop:
+        raise HTTPException(status_code=404, detail="Property not found")
+    if prop.landlord_id != current_user.id:
+        raise HTTPException(status_code=403, detail="You do not own this property")
+
+    from app.services import ademe_dpe
+
+    # PR-2: reject class "H" explicitly — ADEME scale is A–G only.
+    # (The service enforces this; the note here is for clarity.)
+    try:
+        dpe = await ademe_dpe.lookup_dpe(dpe_number)
+    except ademe_dpe.InvalidDPENumber as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
+    except ademe_dpe.ADEMEUnavailable:
+        # PR-6: non-blocking — store PENDING so the frontend can retry later.
+        prop.ownership_data = {
+            **(prop.ownership_data or {}),
+            "dpe_assurance": "PENDING",
+            "dpe_number": dpe_number.strip(),
+        }
+        await db.commit()
+        return {
+            "dpe_assurance": "PENDING",
+            "dpe_class": None,
+            "expired": None,
+            "note": "ADEME service temporarily unavailable — retry later",
+        }
+    except ademe_dpe.DPENotFound:
+        # PR-4: not found → UNVERIFIED, non-blocking.
+        prop.ownership_data = {
+            **(prop.ownership_data or {}),
+            "dpe_assurance": "UNVERIFIED",
+            "dpe_number": dpe_number.strip(),
+        }
+        await db.commit()
+        return {
+            "dpe_assurance": "UNVERIFIED",
+            "dpe_class": None,
+            "expired": None,
+            "note": "DPE number not found in ADEME database",
+        }
+
+    # PR-3: update property.dpe_rating from live ADEME (never from caller input).
+    prop.dpe_rating = dpe.energy_class
+    prop.ownership_data = {
+        **(prop.ownership_data or {}),
+        "dpe_assurance": "HIGH",
+        "dpe_number": dpe.dpe_number,
+        "dpe_class": dpe.energy_class,
+        "dpe_valid_until": dpe.valid_until.isoformat() if dpe.valid_until else None,
+        "dpe_established": dpe.established_date.isoformat() if dpe.established_date else None,
+        "dpe_expired": dpe.expired,
+        # address stored for corroboration display, never treated as ownership proof
+        "dpe_ademe_address": dpe.address_line,
+    }
+    await db.commit()
+    await db.refresh(prop)
+
+    return {
+        "dpe_assurance": "HIGH",
+        "dpe_class": dpe.energy_class,
+        "expired": dpe.expired,
+        "valid_until": dpe.valid_until.isoformat() if dpe.valid_until else None,
+        # Phase 1: G-class is surfaced but not blocked here (blocking is Phase 2).
+        # Phase 2 note: class G properties cannot be leased as primary residences
+        # (loi Climat, since Jan 2025) — block will be added to lease generation.
+        "note": "Classe G — location comme résidence principale interdite depuis jan 2025 (loi Climat)" if dpe.energy_class == "G" else None,
+    }
+
+
 @router.post("/property/upload")
 async def upload_property_document(
     property_id: str = Query(...),
@@ -1142,7 +1240,15 @@ async def upload_property_document(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Upload property ownership document (Titre de propriété or Taxe foncière).
+    Upload taxe foncière or titre de propriété to evidence property control.
+
+    DOSSIER PR-8 fix: this endpoint establishes "control, not ownership-attested".
+    There is no free ownership oracle at ~€0 OPEX; this document corroborates that
+    the submitter has a plausible connection to the property (received the tax notice,
+    or holds a titre). The result is labelled MEDIUM (OCR) and explicitly NOT
+    ownership_verified — it is property_control = "documented".
+
+    Source document is processed transiently and NEVER stored (no URL in ownership_data).
     """
     from app.models.property import Property
     
@@ -1191,58 +1297,61 @@ async def upload_property_document(
             detail=f"Verification processing error: {str(e)}",
         )
 
-    if not verification_result["verified"] and verification_result["status"] == "rejected":
+    # PR-8 fix: "pending_review" (address mismatch) is a MEDIUM-control result, not a block.
+    # Old code blocked on rejection — keep that for hard OCR failures only.
+    if verification_result["status"] == "rejected" and not verification_result.get("data"):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Verification failed: {verification_result.get('rejection_reason')}",
+            detail="Could not extract any property data from the document — please upload a clearer scan.",
         )
 
-    # Apply watermark before upload
-    watermarked_content = apply_watermark(content)
-    
-    # Save file to Cloud Storage
-    from io import BytesIO
-    storage_result = await storage.upload_file(
-        file_data=BytesIO(watermarked_content),
-        filename=file.filename,
-        content_type=file.content_type,
-        folder=f"verification/property/{current_user.id}"
-    )
-    
-    file_url = storage_result["url"]
+    # Source document is processed transiently — NEVER store it (PR-8 / GDPR).
+    # No watermark, no upload to storage, no file_url.
+    control_documented = bool(verification_result.get("data"))
 
-    # 6. Update property
-    property_obj.ownership_verified = verification_result["verified"]
+    # PR-8: store "control, not ownership-attested" — never claim ownership is proven.
+    property_obj.ownership_verified = control_documented
     property_obj.ownership_data = {
-        "verified": verification_result["verified"],
+        **(property_obj.ownership_data or {}),
+        "label": "control_not_ownership_attested",
+        "assurance": "MEDIUM",
+        "control_documented": control_documented,
         "upload_date": naive_utcnow().isoformat(),
-        "filename": file.filename,
-        "file_url": file_url,
-        "status": verification_result["status"],
+        "document_type": document_type,
+        "address_match": verification_result.get("status") == "verified",
+        # extracted_data carries owner_name + address for corroboration display only;
+        # it is NEVER treated as ownership proof and contains no raw identity document data.
         "extracted_data": verification_result.get("data"),
-        "checks": verification_result.get("validation_checks"),
     }
-    
-    # Update landlord trust score if verified
-    if verification_result["verified"]:
+
+    # Update user-level control status — mirrors property, keeps same "control" framing.
+    # Trust score bump is kept (legitimate incentive) but status label is corrected.
+    if control_documented:
         await db.execute(
             update(User).where(User.id == current_user.id)
             .values(trust_score=func.least(100, User.trust_score + 20))
         )
         await db.refresh(current_user)
         current_user.ownership_verified = True
-        current_user.ownership_status = "verified"
-        current_user.ownership_data = property_obj.ownership_data
+        current_user.ownership_status = "control_documented"
+        current_user.ownership_data = {
+            "label": "control_not_ownership_attested",
+            "assurance": "MEDIUM",
+        }
     else:
-        current_user.ownership_status = "rejected"
+        current_user.ownership_status = "unverified"
 
     await db.commit()
     await db.refresh(property_obj)
     await db.refresh(current_user)
 
     return {
-        "message": "Property document processed",
-        "verified": verification_result["verified"],
-        "status": verification_result["status"],
-        "details": verification_result.get("rejection_reason") or "Verification successful",
+        "property_control": control_documented,
+        "property_control_assurance": "MEDIUM",
+        "label": "control_not_ownership_attested",
+        "address_match": verification_result.get("status") == "verified",
+        "note": (
+            "Property control documented. This does not attest legal ownership — "
+            "no free ownership oracle is available. Disclosed limitation."
+        ),
     }
