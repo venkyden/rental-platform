@@ -81,3 +81,30 @@ async def test_AS1_selfie_with_id_is_labelled_medium(client, monkeypatch):
         assert refreshed.identity_verified is True
         assert refreshed.identity_data["identity_assurance"] == "MEDIUM"
         assert refreshed.identity_data["identity_source"] == "ocr_liveness"
+
+
+@pytest.mark.asyncio
+async def test_AS4_status_reports_unverified_when_not_verified(client):
+    sm = client._sessionmaker
+    tenant = await make_user(sm, role="tenant")
+    r = await client.get("/verification/status", headers=auth(tenant))
+    assert r.status_code == 200
+    assert r.json()["identity_assurance"] == "UNVERIFIED"
+
+
+@pytest.mark.asyncio
+async def test_status_infers_medium_for_legacy_verified_user(client):
+    """Back-compat: a user verified before labelling existed reads as MEDIUM."""
+    sm = client._sessionmaker
+    tenant = await make_user(sm, role="tenant")
+    async with sm() as s:
+        from app.models.user import User as U
+        u = await s.get(U, tenant.id)
+        u.identity_verified = True
+        u.identity_status = "verified"
+        u.identity_data = {"verified": True, "status": "verified"}  # no label
+        await s.commit()
+
+    r = await client.get("/verification/status", headers=auth(tenant))
+    assert r.status_code == 200
+    assert r.json()["identity_assurance"] == "MEDIUM"

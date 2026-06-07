@@ -68,6 +68,7 @@ class VerificationStatusResponse(BaseModel):
     """Verification status response"""
 
     identity_verified: bool
+    identity_assurance: str = "UNVERIFIED"
     employment_verified: bool
     income_verified: bool = False
     income_status: str = "unverified"
@@ -800,6 +801,9 @@ async def get_verification_status(current_user: User = Depends(get_current_user)
 
     return {
         "identity_verified": current_user.identity_verified,
+        "identity_assurance": derive_identity_assurance(
+            current_user.identity_verified, current_user.identity_data
+        ),
         "employment_verified": current_user.employment_verified,
         "employment_status": current_user.employment_status if hasattr(current_user, 'employment_status') else "unverified",
         "income_verified": current_user.income_verified,
