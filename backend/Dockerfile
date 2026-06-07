@@ -1,10 +1,13 @@
-FROM python:3.12-slim AS builder
+FROM python:3.13-slim AS builder
+RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
 # Install build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
+    git \
+    libdmtx-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Create a virtual environment and install dependencies
@@ -15,7 +18,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Production image
-FROM python:3.12-slim AS runner
+FROM python:3.13-slim AS runner
+RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -27,6 +31,9 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PATH="/opt/venv/bin:$PATH" \
     PYTHONPATH=/app
+
+RUN apt-get update && apt-get install -y --no-install-recommends libdmtx0b \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy dependencies from builder
 COPY --from=builder --chown=appuser:appgroup /opt/venv /opt/venv
@@ -41,8 +48,8 @@ EXPOSE 8000
 
 # Healthcheck using python instead of installing curl
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
+    CMD ["sh", "-c", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\" || exit 1"]
 
 # Start server without running migrations to prevent race conditions with multiple replicas
 # Use shell form so $PORT is expanded at runtime (Render injects PORT dynamically)
-CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]

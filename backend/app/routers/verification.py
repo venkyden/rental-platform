@@ -25,6 +25,7 @@ from app.services.storage import storage
 
 logger = logging.getLogger(__name__)
 from app.utils.watermark import apply_watermark
+from app.services.identity_assurance import OCR_LIVENESS_LABEL, derive_identity_assurance
 
 # Fallback in-memory verification sessions (if Redis is not available)
 # Format: { code: { user_id, document_type, expires_at, completed } }
@@ -67,6 +68,7 @@ class VerificationStatusResponse(BaseModel):
     """Verification status response"""
 
     identity_verified: bool
+    identity_assurance: str = "UNVERIFIED"
     employment_verified: bool
     income_verified: bool = False
     income_status: str = "unverified"
@@ -156,6 +158,7 @@ async def upload_identity_document(
             "verification_method": "selfie_with_id",
             "extracted_data": result["data"],
             "checks": result["validation_checks"],
+            **OCR_LIVENESS_LABEL,
         }
         await db.commit()
         await db.refresh(current_user)
@@ -407,6 +410,7 @@ async def upload_identity_mobile(
             "extracted_data": doc_result["data"],
             "checks": doc_result["validation_checks"],
             "verified_at": naive_utcnow().isoformat(),
+            **OCR_LIVENESS_LABEL,
         }
         session["completed"] = True
         await _update_session(verification_code, session)
@@ -474,6 +478,7 @@ async def upload_identity_mobile(
             "face_match_confidence": face_result["confidence"],
             "verified_at": naive_utcnow().isoformat(),
             "status": "verified",
+            **OCR_LIVENESS_LABEL,
         }
 
         session["completed"] = True
@@ -630,6 +635,7 @@ async def upload_identity_selfie(
         "face_match_confidence": face_result["confidence"],
         "verified_at": naive_utcnow().isoformat(),
         "status": "verified",
+        **OCR_LIVENESS_LABEL,
     }
 
     await db.commit()
@@ -640,6 +646,52 @@ async def upload_identity_selfie(
         "identity_verified": True,
         "trust_score": current_user.trust_score,
     }
+
+
+@router.post("/identity/avis-cross-check")
+async def avis_cross_check(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Corroborate the OCR'd identity name against the DGFiP-signed avis d'imposition
+    2D-Doc. Assurance stays MEDIUM (the avis has no presenter binding) — a match only
+    sets an anti-fraud flag. The avis is processed transiently and never stored.
+    """
+    if not current_user.identity_verified:
+        raise HTTPException(status_code=400, detail="Verify your identity before cross-checking an avis.")
+    id_name = (current_user.identity_data or {}).get("extracted_data", {}).get("full_name")
+    if not id_name or id_name == "Unknown":
+        raise HTTPException(status_code=400, detail="No identity name on file to corroborate.")
+
+    allowed_types = ["image/jpeg", "image/png", "image/jpg", "application/pdf", "image/heic", "image/heif"]
+    if file.content_type not in allowed_types:
+        raise HTTPException(status_code=400, detail=f"Invalid file type: {file.content_type}.")
+
+    await _check_upload_rate_limit(str(current_user.id), "avis")
+    content = await file.read()  # processed transiently, never stored
+
+    from app.services import fr_2ddoc
+    try:
+        raw = fr_2ddoc.decode_2ddoc(content, file.content_type)
+        avis = fr_2ddoc.parse_and_verify_avis(raw)
+    except fr_2ddoc.BarcodeUnreadable:
+        raise HTTPException(status_code=422, detail="Could not read the 2D-Doc barcode — please rescan the avis.")
+    except fr_2ddoc.WrongDocumentType:
+        raise HTTPException(status_code=422, detail="This document is not an avis d'imposition (2D-Doc type 28).")
+    except fr_2ddoc.SignatureInvalid:
+        return {"corroborated": False, "reason": "signature_invalid"}
+
+    matched = fr_2ddoc.name_matches_any(id_name, avis.declarant_names)
+    if matched:
+        current_user.identity_data = {
+            **(current_user.identity_data or {}),
+            "identity_name_corroborated_by": "avis_2ddoc",
+        }
+        await db.commit()
+        await db.refresh(current_user)
+    return {"corroborated": matched, "reason": "name_match" if matched else "name_mismatch"}
 
 
 # NOTE: Upload rate limits are backed by Redis (distributed, survives restarts).
@@ -795,6 +847,9 @@ async def get_verification_status(current_user: User = Depends(get_current_user)
 
     return {
         "identity_verified": current_user.identity_verified,
+        "identity_assurance": derive_identity_assurance(
+            current_user.identity_verified, current_user.identity_data
+        ),
         "employment_verified": current_user.employment_verified,
         "employment_status": current_user.employment_status if hasattr(current_user, 'employment_status') else "unverified",
         "income_verified": current_user.income_verified,
