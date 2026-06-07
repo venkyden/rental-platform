@@ -41,4 +41,4 @@ fastmcp>=0.1.0
 pylibdmtx>=0.1.10
 PyMuPDF>=1.24.0
 setuptools>=65.0.0
-2ddoc-parser @ git+https://github.com/betagouv/2ddoc-parser.git
+2ddoc-parser @ git+https://github.com/betagouv/2ddoc-parser.git@6d521fe82bf9f0ee3e0c543013b808ee554a476a

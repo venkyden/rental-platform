@@ -116,7 +116,7 @@ def parse_and_verify_avis(raw: str) -> AvisIdentity:
 
     try:
         with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
+            warnings.filterwarnings("ignore", category=UserWarning, module="fr_2ddoc_parser")
             doc = decode_2d_doc(raw)
     except LibTwoDDocError as exc:
         logger.info("2D-Doc parse/format error: %s", exc)
