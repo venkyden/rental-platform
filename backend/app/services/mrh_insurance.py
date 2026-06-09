@@ -70,8 +70,8 @@ def _text_contains_normalized(extracted: str, expected: str) -> bool:
 
 def check_mrh_extraction(
     extracted: dict,
-    expected_name: str,
-    expected_address: str,
+    expected_name: Optional[str],
+    expected_address: Optional[str],
 ) -> dict:
     """
     Pure-function check of Gemini-extracted MRH fields.

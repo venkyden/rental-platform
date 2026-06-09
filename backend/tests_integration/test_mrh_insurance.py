@@ -3,6 +3,7 @@ MRH Insurance verification — unit tests (DOSSIER §5.8 IN-1..IN-5).
 Pure check_mrh_extraction tests; no HTTP client, no DB, no AI needed.
 """
 
+import pytest
 from app.services.mrh_insurance import check_mrh_extraction
 
 
@@ -138,3 +139,20 @@ def test_assurance_always_medium():
     assert check_mrh_extraction(_cert({"insurer_country": "DE"}), "Jean Dupont", "x")["mrh_assurance"] == "MEDIUM"
     # flagged path
     assert check_mrh_extraction(_cert({"insured_name": "Other Person"}), "Jean Dupont", "x")["mrh_assurance"] == "MEDIUM"
+
+
+# ── input validation ──────────────────────────────────────────────────────────
+
+def test_non_dict_extracted_raises():
+    import pytest
+    with pytest.raises(TypeError):
+        check_mrh_extraction(None, expected_name=None, expected_address=None)
+
+
+def test_malformed_cover_date_flagged():
+    result = check_mrh_extraction(
+        _cert({"cover_start": "01-07-2026", "cover_end": "N/A"}),
+        expected_name="Jean Dupont",
+        expected_address=None,
+    )
+    assert "cover_dates_malformed" in result["flags"]
