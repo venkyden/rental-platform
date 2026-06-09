@@ -28,8 +28,9 @@ You are an assistant that extracts structured data from French MRH (Multirisques
 insurance documents. Extract the following fields from the document text or image and return
 a JSON object with EXACTLY these keys:
 
-- document_type: "certificate" if this is a final attestation/certificate, "quote" if it is
-  a devis or proposition, or "unknown" if you cannot determine.
+- document_type: "certificate" if this is a final attestation/certificate or a full policy
+  document (police d'assurance), "quote" if it is a devis or proposition,
+  or "unknown" if you cannot determine.
 - insurer_name: the name of the insurance company.
 - insurer_country: the ISO-3166-1 alpha-2 country code of the insurer (e.g. "FR" for France).
   Return null if you cannot determine.
