@@ -266,6 +266,101 @@ async def get_evidence_pdf(
     )
 
 
+class IssueMineResponse(BaseModel):
+    credential_id: str
+    subject_role: str
+    subject_display_name: Optional[str]
+    issued_at: str
+    expires_at: str
+    rail: str
+    claims: dict
+    disclaimer: str
+    signature: str
+    shareable_url: str
+
+
+@router.post("/issue-mine", response_model=IssueMineResponse, status_code=status.HTTP_201_CREATED)
+async def issue_mine(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Assemble a credential from the user's current verified state and sign it.
+
+    Reads identity_data, income_data, and ownership_data to build banded claims.
+    Never inflates assurance — MEDIUM stays MEDIUM, UNVERIFIED stays UNVERIFIED.
+    The returned credential_id is the shareable verify key: roomivo.app/c/<id>.
+    """
+    identity_data = current_user.identity_data or {}
+    income_data = current_user.income_data or {}
+    ownership_data = current_user.ownership_data or {}
+
+    identity_assurance = identity_data.get("identity_assurance", "UNVERIFIED")
+    solvency_assurance = income_data.get("solvency_assurance", "UNVERIFIED")
+    solvency_ratio = income_data.get("solvency_ratio")
+
+    claims: dict = {"identity_assurance": identity_assurance}
+
+    if solvency_ratio and solvency_assurance != "UNVERIFIED":
+        claims["solvency_ratio"] = solvency_ratio
+        claims["solvency_assurance"] = solvency_assurance
+
+    dpe_assurance = ownership_data.get("dpe_assurance") or ownership_data.get("assurance")
+    control_label = ownership_data.get("label")
+    if dpe_assurance and dpe_assurance not in ("UNVERIFIED", "PENDING"):
+        claims["property_control_assurance"] = dpe_assurance
+    if control_label:
+        claims["property_control_label"] = control_label
+
+    # Determine role and rail from what the user has verified
+    subject_role = "landlord" if current_user.ownership_verified else "tenant"
+    rail = "FR"
+
+    try:
+        payload = credential_service.issue(
+            subject_role=subject_role,
+            rail=rail,
+            claims=claims,
+            subject_display_name=current_user.full_name,
+            ttl_days=30,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
+
+    issued_at = datetime.fromisoformat(payload["issued_at"].rstrip("Z"))
+    expires_at = datetime.fromisoformat(payload["expires_at"].rstrip("Z"))
+
+    row = Credential(
+        id=payload["credential_id"],
+        subject_role=payload["subject_role"],
+        rail=payload["rail"],
+        subject_user_id=current_user.id,
+        subject_display_name=payload.get("subject_display_name"),
+        issued_at=issued_at,
+        expires_at=expires_at,
+        claims=payload["claims"],
+        disclaimer=payload["disclaimer"],
+        signature=payload["signature"],
+        revoked=False,
+    )
+    db.add(row)
+    await db.flush()
+
+    shareable_url = f"{VERIFY_BASE_URL}/c/{row.id}"
+    return IssueMineResponse(
+        credential_id=row.id,
+        subject_role=row.subject_role,
+        subject_display_name=row.subject_display_name,
+        issued_at=payload["issued_at"],
+        expires_at=payload["expires_at"],
+        rail=row.rail,
+        claims=row.claims,
+        disclaimer=row.disclaimer,
+        signature=row.signature,
+        shareable_url=shareable_url,
+    )
+
+
 @router.post("/{credential_id}/revoke", status_code=status.HTTP_200_OK)
 async def revoke_credential(
     credential_id: str,

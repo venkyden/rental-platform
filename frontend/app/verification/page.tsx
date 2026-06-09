@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { useToast } from '@/lib/ToastContext';
+import CredentialSharePanel from '@/components/CredentialSharePanel';
 
 const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -74,6 +75,8 @@ export default function VerificationPage() {
     const [loading, setLoading] = useState(true);
     const [statusData, setStatusData] = useState<VerificationStatusData | null>(null);
     const [animatedScore, setAnimatedScore] = useState(0);
+    const [credential, setCredential] = useState<{ credentialId: string; expiresAt: string; assuranceSummary?: string; subjectRole: string } | null>(null);
+    const [issuingCredential, setIssuingCredential] = useState(false);
 
     const fetchStatusData = async (silent = false) => {
         if (!silent) setLoading(true);
@@ -99,6 +102,22 @@ export default function VerificationPage() {
         setRefreshKey(prev => prev + 1);
         await checkAuth();
         await fetchStatusData(true);
+    };
+
+    const handleIssueMine = async () => {
+        setIssuingCredential(true);
+        try {
+            const res = await apiClient.client.post('/credentials/issue-mine');
+            setCredential({
+                credentialId: res.data.credential_id,
+                expiresAt: res.data.expires_at,
+                subjectRole: res.data.subject_role,
+            });
+        } catch {
+            toast.error('Impossible d\'émettre l\'attestation. Vérifiez vos étapes de vérification.');
+        } finally {
+            setIssuingCredential(false);
+        }
     };
 
     if (!user) return null;
@@ -477,6 +496,37 @@ export default function VerificationPage() {
                             </AnimatePresence>
                         </div>
                     </motion.div>
+
+                    {/* Credential issuance */}
+                    {statusData?.identity_verified && (
+                        <motion.div variants={itemVariants} className="max-w-lg mx-auto">
+                            {credential ? (
+                                <CredentialSharePanel
+                                    credentialId={credential.credentialId}
+                                    subjectRole={credential.subjectRole}
+                                    expiresAt={credential.expiresAt}
+                                />
+                            ) : (
+                                <div className="text-center space-y-4">
+                                    <p className="text-sm text-zinc-500">
+                                        Votre profil est suffisamment vérifié pour générer une attestation signée et partageable.
+                                    </p>
+                                    <button
+                                        onClick={handleIssueMine}
+                                        disabled={issuingCredential}
+                                        className="inline-flex items-center gap-2 px-8 py-4 bg-zinc-900 hover:bg-zinc-800 disabled:opacity-50 text-white text-xs font-black uppercase tracking-widest rounded-3xl transition-all active:scale-[0.98]"
+                                    >
+                                        {issuingCredential ? (
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                        ) : (
+                                            <ShieldCheck className="w-4 h-4" />
+                                        )}
+                                        Générer mon attestation vérifiée
+                                    </button>
+                                </div>
+                            )}
+                        </motion.div>
+                    )}
 
                     {/* CNIL Data notice and retention timeline */}
                     <motion.div variants={itemVariants} className="p-8 rounded-[2.5rem] bg-zinc-900 text-zinc-400 max-w-4xl mx-auto space-y-4 text-left border border-white/5 shadow-2xl relative overflow-hidden">
