@@ -224,8 +224,8 @@ class MrhInsuranceService:
         self,
         file_content: bytes,
         file_type: str,
-        expected_name: str,
-        expected_address: str,
+        expected_name: Optional[str],
+        expected_address: Optional[str],
     ) -> dict:
         """
         Full verification pipeline: extract → check → return result dict.

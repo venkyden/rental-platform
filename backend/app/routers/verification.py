@@ -1336,6 +1336,79 @@ async def verify_property_dpe(
     }
 
 
+@router.post("/insurance/upload")
+async def upload_insurance_document(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Verify a tenant's MRH insurance attestation certificate (loi 89 art. 7g).
+
+    Checks (DOSSIER §5.8):
+      IN-1  Quote → 400 rejected.
+      IN-2  Name/address mismatch → 200 flagged (landlord decides; we never gate).
+      IN-3  Foreign insurer → 400 rejected (French MRH required for FR property).
+      IN-4  Cover-start date stored in insurance_data for lease-start cross-check.
+      IN-5  No access gating — verified or flagged, caller sees all data.
+
+    Assurance is always MEDIUM (OCR — no insurer API).
+    The source document is processed transiently; only the banded result is stored.
+    """
+    from app.services.mrh_insurance import mrh_insurance_service
+
+    await _validate_file_size(file, max_size_mb=10)
+    content = await file.read()
+
+    # Derive expected name from identity_data (for IN-2 cross-check)
+    identity_data = current_user.identity_data or {}
+    expected_name = (
+        (identity_data.get("extracted_data") or {}).get("full_name")
+        or current_user.full_name
+    )
+
+    result = await mrh_insurance_service.verify(
+        file_content=content,
+        file_type=file.content_type or "application/pdf",
+        expected_name=expected_name,
+        expected_address=None,
+    )
+
+    # IN-1 / IN-3: hard rejects → 400
+    if result["status"] == "rejected":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=result["rejection_reason"],
+        )
+
+    # Store banded result (source document never persisted)
+    current_user.insurance_verified = result["verified"]
+    current_user.insurance_status = result["status"]
+    current_user.insurance_data = {
+        "status": result["status"],
+        "upload_date": naive_utcnow().isoformat(),
+        "filename": file.filename,
+        "mrh_assurance": result["mrh_assurance"],
+        "mrh_insurer_fr": result["mrh_insurer_fr"],
+        "mrh_cert_type": result["mrh_cert_type"],
+        "mrh_cover_start": result["mrh_cover_start"],
+        "mrh_cover_end": result["mrh_cover_end"],
+        "flags": result["flags"],
+    }
+
+    await db.commit()
+
+    return {
+        "verified": result["verified"],
+        "status": result["status"],
+        "mrh_assurance": result["mrh_assurance"],
+        "mrh_insurer_fr": result["mrh_insurer_fr"],
+        "mrh_cover_start": result["mrh_cover_start"],
+        "mrh_cover_end": result["mrh_cover_end"],
+        "flags": result["flags"],
+    }
+
+
 @router.post("/property/upload")
 async def upload_property_document(
     property_id: str = Query(...),

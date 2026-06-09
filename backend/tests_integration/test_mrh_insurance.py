@@ -156,3 +156,127 @@ def test_malformed_cover_date_flagged():
         expected_address=None,
     )
     assert "cover_dates_malformed" in result["flags"]
+
+
+# ── endpoint integration tests ────────────────────────────────────────────────
+
+import io
+from tests_integration.conftest import make_user, auth
+
+
+def _patch_mrh(monkeypatch, *, document_type="certificate", insurer_country="FR",
+               insured_name="Jean Dupont", cover_start="2026-07-01", cover_end="2027-07-01"):
+    import app.services.mrh_insurance as svc_mod
+
+    async def _mock_verify(file_content=None, file_type=None, expected_name=None, expected_address=None):  # noqa: ARG001
+        return svc_mod.check_mrh_extraction(
+            {
+                "document_type": document_type,
+                "insurer_country": insurer_country,
+                "insured_name": insured_name,
+                "property_address": "12 rue de la Paix, 75001 Paris",
+                "cover_start": cover_start,
+                "cover_end": cover_end,
+            },
+            expected_name=expected_name,
+            expected_address=expected_address,
+        )
+
+    monkeypatch.setattr(svc_mod.mrh_insurance_service, "verify", _mock_verify)
+
+
+def _pdf_upload(filename="attestation.pdf"):
+    return {"file": (filename, io.BytesIO(b"%PDF-1.4 fake"), "application/pdf")}
+
+
+@pytest.mark.asyncio
+async def test_insurance_upload_happy_path(client, monkeypatch):
+    sm = client._sessionmaker
+    user = await make_user(sm, role="tenant")
+    _patch_mrh(monkeypatch, insured_name=user.full_name)
+    resp = await client.post(
+        "/verification/insurance/upload",
+        files=_pdf_upload(),
+        headers=auth(user),
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["verified"] is True
+    assert data["mrh_assurance"] == "MEDIUM"
+    assert data["mrh_insurer_fr"] is True
+
+
+@pytest.mark.asyncio
+async def test_insurance_upload_quote_rejected(client, monkeypatch):
+    sm = client._sessionmaker
+    user = await make_user(sm, role="tenant")
+    _patch_mrh(monkeypatch, document_type="quote")
+    resp = await client.post(
+        "/verification/insurance/upload",
+        files=_pdf_upload(),
+        headers=auth(user),
+    )
+    assert resp.status_code == 400
+    assert "IN-1" in resp.json()["detail"]
+
+
+@pytest.mark.asyncio
+async def test_insurance_upload_foreign_insurer_rejected(client, monkeypatch):
+    sm = client._sessionmaker
+    user = await make_user(sm, role="tenant")
+    _patch_mrh(monkeypatch, insurer_country="UK")
+    resp = await client.post(
+        "/verification/insurance/upload",
+        files=_pdf_upload(),
+        headers=auth(user),
+    )
+    assert resp.status_code == 400
+    assert "IN-3" in resp.json()["detail"]
+
+
+@pytest.mark.asyncio
+async def test_insurance_upload_name_mismatch_flagged_not_blocked(client, monkeypatch):
+    sm = client._sessionmaker
+    user = await make_user(sm, role="tenant")
+    _patch_mrh(monkeypatch, insured_name="Paul Autre")
+    resp = await client.post(
+        "/verification/insurance/upload",
+        files=_pdf_upload(),
+        headers=auth(user),
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["status"] == "flagged"
+    assert "name_mismatch" in data["flags"]
+
+
+@pytest.mark.asyncio
+async def test_insurance_upload_requires_auth(client):
+    resp = await client.post(
+        "/verification/insurance/upload",
+        files=_pdf_upload(),
+    )
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_insurance_upload_stores_cover_dates(client, monkeypatch):
+    from sqlalchemy import select as sa_select
+    from app.models.user import User as UserModel
+
+    sm = client._sessionmaker
+    user = await make_user(sm, role="tenant")
+    _patch_mrh(monkeypatch, cover_start="2026-09-01", cover_end="2027-09-01")
+    resp = await client.post(
+        "/verification/insurance/upload",
+        files=_pdf_upload(),
+        headers=auth(user),
+    )
+    assert resp.status_code == 200
+    assert resp.json()["mrh_cover_start"] == "2026-09-01"
+
+    # Verify persistence in DB
+    async with sm() as session:
+        result = await session.execute(sa_select(UserModel).where(UserModel.id == user.id))
+        db_user = result.scalar_one()
+        assert db_user.insurance_data["mrh_cover_start"] == "2026-09-01"
