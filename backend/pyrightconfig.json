@@ -1,15 +1,13 @@
 {
-  "venvPath": "backend",
+  "venvPath": ".",
   "venv": ".venv313",
   "pythonVersion": "3.13",
   "pythonPlatform": "Darwin",
   "typeCheckingMode": "basic",
-  "include": ["backend"],
+  "include": ["."],
   "exclude": [
     "**/node_modules",
     "**/__pycache__",
-    "frontend",
-    ".next",
     ".venv"
   ],
   "reportMissingImports": true,

@@ -4,6 +4,7 @@ Prevents cascade failures by failing fast when external services are down.
 """
 
 import asyncio
+import inspect
 import logging
 import time
 from dataclasses import dataclass, field
@@ -158,7 +159,7 @@ def circuit_breaker(
                 if fallback:
                     return (
                         await fallback(*args, **kwargs)
-                        if asyncio.iscoroutinefunction(fallback)
+                        if inspect.iscoroutinefunction(fallback)
                         else fallback(*args, **kwargs)
                     )
                 raise CircuitBreakerError(
@@ -208,6 +209,8 @@ def with_retry(
                         await asyncio.sleep(min(delay, max_delay))
                         delay *= exponential_base
 
+            if last_exception is None:
+                raise ValueError("max_attempts must be >= 1")
             raise last_exception
 
         return wrapper
