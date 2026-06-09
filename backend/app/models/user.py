@@ -75,6 +75,9 @@ class User(Base):
     ownership_data = Column(EncryptedJSON, nullable=True)
     income_data = Column(EncryptedJSON, nullable=True)
     guarantor_data = Column(EncryptedJSON, nullable=True)
+    insurance_verified = Column(Boolean, default=False)
+    insurance_status = Column(String, default="unverified")
+    insurance_data = Column(EncryptedJSON, nullable=True)
 
     # Trust scoring
     trust_score = Column(Integer, default=0)  # 0-100
