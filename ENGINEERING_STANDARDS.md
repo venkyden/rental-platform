@@ -16,7 +16,7 @@ This document serves as the **Standard Operating Procedure (SOP)** for all engin
 ### Tech Stack
 | Component | Technology | Key Decision |
 | :--- | :--- | :--- |
-| **Backend** | Python 3.12 + FastAPI | Async performance, Pydantic validation. |
+| **Backend** | Python 3.13 + FastAPI | Async performance, Pydantic validation. |
 | **Database** | PostgreSQL + SQLAlchemy (Async) | Strict schema, Alembic migrations. |
 | **Frontend** | Next.js 16 + Tailwind v4 | App Router for architecture, Tailwind for speed & design system. |
 | **Monitoring** | Sentry | Mandatory. No silent failures. |
