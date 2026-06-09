@@ -140,6 +140,14 @@ async def test_lookup_dpe_5xx_raises_unavailable():
 
 
 @pytest.mark.asyncio
+async def test_lookup_dpe_4xx_raises_unavailable():
+    # 429 rate-limit (and any 4xx) must not propagate as a raw HTTPStatusError → 500.
+    client = _MockClient(429, {})
+    with pytest.raises(ademe_dpe.ADEMEUnavailable):
+        await ademe_dpe.lookup_dpe("1234567890123", http_client=client)
+
+
+@pytest.mark.asyncio
 async def test_lookup_dpe_expired_old_methodology():
     # PR-5: pre-Jul-2021 DPE → expired=True even if valid_until is future.
     future = (date.today() + timedelta(days=365)).isoformat()
@@ -396,3 +404,31 @@ async def test_property_upload_user_status_control_not_verified(client, monkeypa
         assert u.ownership_status == "control_documented"
         # The user_level ownership_data also must never claim ownership proven
         assert u.ownership_data.get("label") == "control_not_ownership_attested"
+
+
+@pytest.mark.asyncio
+async def test_property_upload_address_mismatch_not_verified(client, monkeypatch):
+    """PR-8 regression: pending_review (address mismatch) must NOT set ownership_verified."""
+    sm = client._sessionmaker
+    landlord = await make_user(sm, role="landlord")
+    prop = await make_property(sm, landlord)
+    # OCR extracted data but address didn't match → verified=False, status=pending_review
+    _patch_property_service(monkeypatch, control_documented=True, address_match=False)
+
+    r = await client.post(
+        f"/verification/property/upload?property_id={prop.id}&document_type=taxe_fonciere",
+        headers=auth(landlord),
+        files={"file": PDF},
+    )
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["property_control"] is False
+    assert body["address_match"] is False
+
+    async with sm() as s:
+        from app.models.property import Property as P
+        from app.models.user import User as U
+        p = await s.get(P, prop.id)
+        u = await s.get(U, landlord.id)
+        assert p.ownership_verified is False
+        assert u.ownership_status == "unverified"

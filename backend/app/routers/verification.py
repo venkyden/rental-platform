@@ -1307,7 +1307,7 @@ async def upload_property_document(
 
     # Source document is processed transiently — NEVER store it (PR-8 / GDPR).
     # No watermark, no upload to storage, no file_url.
-    control_documented = bool(verification_result.get("data"))
+    control_documented = verification_result.get("verified", False)
 
     # PR-8: store "control, not ownership-attested" — never claim ownership is proven.
     property_obj.ownership_verified = control_documented

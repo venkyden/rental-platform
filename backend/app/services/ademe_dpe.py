@@ -33,7 +33,7 @@ class ADEMEError(Exception):
 
 
 class ADEMEUnavailable(ADEMEError):
-    """5xx / timeout — non-blocking; caller marks the result as PENDING (PR-6)."""
+    """4xx/5xx / timeout — non-blocking; caller marks the result as PENDING (PR-6)."""
 
 
 class DPENotFound(ADEMEError):
@@ -94,7 +94,7 @@ async def lookup_dpe(
 
     Raises:
         InvalidDPENumber  — format obviously wrong (empty / non-alphanumeric)
-        ADEMEUnavailable  — 5xx or timeout; caller should treat as PENDING (PR-6)
+        ADEMEUnavailable  — 4xx/5xx or timeout; caller should treat as PENDING (PR-6)
         DPENotFound       — no matching record; caller should treat as UNVERIFIED (PR-4)
     """
     clean = (dpe_number or "").strip()
@@ -117,9 +117,8 @@ async def lookup_dpe(
         except httpx.RequestError as exc:
             raise ADEMEUnavailable(f"ADEME API request error: {exc}") from exc
 
-        if resp.status_code >= 500:
+        if resp.status_code >= 400:
             raise ADEMEUnavailable(f"ADEME API HTTP {resp.status_code}")
-        resp.raise_for_status()
         data = resp.json()
     finally:
         if own_client:
