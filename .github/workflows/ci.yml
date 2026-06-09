@@ -64,6 +64,11 @@ jobs:
           cache: pip
           cache-dependency-path: backend/requirements.txt
 
+      - name: Install system dependencies (libdmtx)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libdmtx-dev
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -113,6 +118,11 @@ jobs:
           python-version: "3.13"
           cache: pip
           cache-dependency-path: backend/requirements.txt
+
+      - name: Install system dependencies (libdmtx)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libdmtx-dev
 
       - name: Install dependencies
         run: |

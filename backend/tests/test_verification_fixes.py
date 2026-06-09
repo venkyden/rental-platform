@@ -230,6 +230,6 @@ def test_ownership_status_set_on_verification():
         )
 
     assert response.status_code == 200, f"Unexpected: {response.status_code} — {response.text}"
-    assert user.ownership_status in ("verified", "rejected"), (
+    assert user.ownership_status in ("control_documented", "rejected"), (
         f"Expected ownership_status to be set, got: {user.ownership_status!r}"
     )
