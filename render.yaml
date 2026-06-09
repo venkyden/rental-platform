@@ -21,6 +21,8 @@ services:
     preDeployCommand: "python -c 'from app.main import app; print(\"import ok\")'"
     startCommand: "./start.sh"
     envVars:
+      - key: PYTHON_VERSION
+        value: "3.13"
       - key: REDIS_URL
         sync: false
       - key: STORAGE_ENDPOINT
