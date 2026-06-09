@@ -336,6 +336,7 @@ def test_config_rejects_production_without_master_key(monkeypatch):
             SECRET_KEY="a" * 40,
             ENVIRONMENT="production",
             MASTER_ENCRYPTION_KEY=None,
+            CREDENTIAL_SIGNING_KEY="a" * 64,
         )
 
 
@@ -347,6 +348,7 @@ def test_config_rejects_production_with_weak_secret(monkeypatch):
             SECRET_KEY="short",
             ENVIRONMENT="production",
             MASTER_ENCRYPTION_KEY="k" * 44,
+            CREDENTIAL_SIGNING_KEY="a" * 64,
         )
 
 
@@ -358,6 +360,7 @@ def test_config_accepts_production_with_strong_secrets():
         SECRET_KEY="a" * 40,
         ENVIRONMENT="production",
         MASTER_ENCRYPTION_KEY=Fernet.generate_key().decode(),
+        CREDENTIAL_SIGNING_KEY="a" * 64,
     )
     assert s.ENVIRONMENT == "production"
 
