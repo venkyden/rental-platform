@@ -4,7 +4,9 @@ Checks French Multirisques Habitation (MRH) insurance certificates.
 Implements DOSSIER §5.8 checks IN-1 through IN-5.
 """
 
+import json
 import logging
+import re
 import unicodedata
 from typing import Optional
 
@@ -13,12 +15,12 @@ logger = logging.getLogger(__name__)
 # Optional AI imports
 try:
     from google import genai
-    from google.genai import types as genai_types
+    from google.genai import types
 
     GEMINI_AVAILABLE = True
 except ImportError:
     genai = None
-    genai_types = None
+    types = None
     GEMINI_AVAILABLE = False
 
 _EXTRACTION_PROMPT = """\
@@ -47,7 +49,14 @@ def _strip_accents(text: str) -> str:
     )
 
 
-def _names_match(extracted: str, expected: str) -> bool:
+_ISO_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+
+def _is_valid_date(value) -> bool:
+    return isinstance(value, str) and bool(_ISO_DATE.match(value))
+
+
+def _text_contains_normalized(extracted: str, expected: str) -> bool:
     """
     Return True when expected is contained in extracted (accent-insensitive,
     case-insensitive, substring match).
@@ -75,6 +84,9 @@ def check_mrh_extraction(
 
     Returns the result dict; never raises.
     """
+    if not isinstance(extracted, dict):
+        raise TypeError(f"extracted must be a dict, got {type(extracted).__name__}")
+
     flags: list[str] = []
     rejection_reason: Optional[str] = None
     status = "verified"
@@ -86,6 +98,9 @@ def check_mrh_extraction(
     cover_start: Optional[str] = extracted.get("cover_start")
     cover_end: Optional[str] = extracted.get("cover_end")
 
+    # Compute insurer_fr before any early return
+    insurer_fr = (insurer_country.upper() == "FR") if insurer_country is not None else None
+
     # IN-1: quote is a hard reject
     if document_type == "quote":
         status = "rejected"
@@ -94,7 +109,7 @@ def check_mrh_extraction(
             "verified": False,
             "status": status,
             "mrh_assurance": "MEDIUM",
-            "mrh_insurer_fr": None,
+            "mrh_insurer_fr": insurer_fr,
             "mrh_cert_type": document_type,
             "mrh_cover_start": cover_start,
             "mrh_cover_end": cover_end,
@@ -133,17 +148,21 @@ def check_mrh_extraction(
 
     # IN-2: name mismatch — no RegExp, accent-stripped substring only
     if insured_name and expected_name:
-        if not _names_match(insured_name, expected_name):
+        if not _text_contains_normalized(insured_name, expected_name):
             flags.append("name_mismatch")
 
     # IN-2: address mismatch
     if property_address and expected_address:
-        if not _names_match(property_address, expected_address):
+        if not _text_contains_normalized(property_address, expected_address):
             flags.append("address_mismatch")
 
-    # IN-4: cover dates missing → soft flag
-    if cover_start is None or cover_end is None:
+    # IN-4: cover dates missing or malformed → soft flag
+    dates_present = cover_start is not None and cover_end is not None
+    if not dates_present:
         flags.append("cover_dates_missing")
+    else:
+        if not _is_valid_date(cover_start) or not _is_valid_date(cover_end):
+            flags.append("cover_dates_malformed")
 
     if flags:
         status = "flagged"
@@ -183,14 +202,14 @@ class MrhInsuranceService:
             return None
 
         try:
-            document_part = genai_types.Part.from_bytes(
+            document_part = types.Part.from_bytes(
                 data=file_content,
                 mime_type=file_type,
             )
             response = self.ai_client.models.generate_content(
                 model="gemini-2.0-flash",
                 contents=[document_part, _EXTRACTION_PROMPT],
-                config=genai_types.GenerateContentConfig(
+                config=types.GenerateContentConfig(
                     temperature=0,
                     response_mime_type="application/json",
                 ),
