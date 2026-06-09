@@ -387,3 +387,78 @@ async def test_assurance_summary_on_verify(client):
     rv = await _verify(client, cid)
     assert "assurance_summary" in rv.json()
     assert rv.json()["assurance_summary"] != ""
+
+
+# ── issue-mine endpoint ───────────────────────────────────────────────────────
+
+@pytest.mark.asyncio
+async def test_issue_mine_identity_only(client):
+    """issue-mine with only identity_data set emits a credential with identity_assurance."""
+    from app.models.user import User
+    sm = client._sessionmaker
+    tenant = await make_user(sm, role="tenant")
+
+    # Seed identity_data as the verification router would after OCR+liveness
+    async with sm() as s:
+        u = await s.get(User, tenant.id)
+        u.identity_verified = True
+        u.identity_data = {"identity_assurance": "MEDIUM", "identity_source": "ocr_liveness"}
+        await s.commit()
+
+    r = await client.post("/credentials/issue-mine", headers=auth(tenant))
+    assert r.status_code == 201, r.text
+    body = r.json()
+    assert body["claims"]["identity_assurance"] == "MEDIUM"
+    assert body["subject_role"] == "tenant"
+    assert body["shareable_url"].startswith("https://roomivo.app/c/vc_")
+    assert body["credential_id"].startswith("vc_")
+
+
+@pytest.mark.asyncio
+async def test_issue_mine_with_solvency(client):
+    """issue-mine includes banded solvency claim when income_data is present."""
+    from app.models.user import User
+    sm = client._sessionmaker
+    tenant = await make_user(sm, role="tenant")
+
+    async with sm() as s:
+        u = await s.get(User, tenant.id)
+        u.identity_verified = True
+        u.identity_data = {"identity_assurance": "MEDIUM"}
+        u.income_data = {"solvency_assurance": "HIGH", "solvency_ratio": ">=3.0"}
+        await s.commit()
+
+    r = await client.post("/credentials/issue-mine", headers=auth(tenant))
+    assert r.status_code == 201, r.text
+    claims = r.json()["claims"]
+    assert claims["solvency_ratio"] == ">=3.0"
+    assert claims["solvency_assurance"] == "HIGH"
+
+
+@pytest.mark.asyncio
+async def test_issue_mine_requires_auth(client):
+    """issue-mine rejects unauthenticated requests."""
+    r = await client.post("/credentials/issue-mine")
+    assert r.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_issue_mine_shareable_url_is_verifiable(client):
+    """The credential_id from issue-mine resolves via the public verify endpoint."""
+    from app.models.user import User
+    sm = client._sessionmaker
+    tenant = await make_user(sm, role="tenant")
+
+    async with sm() as s:
+        u = await s.get(User, tenant.id)
+        u.identity_verified = True
+        u.identity_data = {"identity_assurance": "MEDIUM"}
+        await s.commit()
+
+    r = await client.post("/credentials/issue-mine", headers=auth(tenant))
+    cid = r.json()["credential_id"]
+
+    rv = await client.get(f"/credentials/{cid}")
+    assert rv.status_code == 200
+    assert rv.json()["credential_id"] == cid
+    assert rv.json()["signature_valid"] is True
