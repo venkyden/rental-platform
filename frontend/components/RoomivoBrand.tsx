@@ -35,12 +35,12 @@ export default function RoomivoBrand({
         xl: { h: 120, w: 120 },
     };
 
-    /* Logo (icon+text) aspect ratio ≈ 3.75:1  */
+    /* Logo (icon+text) aspect ratio ≈ 2.8:1  */
     const logoSizes = {
-        sm: { h: 40,  w: 150 },
-        md: { h: 56,  w: 210 },
-        lg: { h: 80,  w: 300 },
-        xl: { h: 120, w: 450 },
+        sm: { h: 44,  w: 123 },
+        md: { h: 56,  w: 157 },
+        lg: { h: 80,  w: 224 },
+        xl: { h: 120, w: 336 },
     };
 
     const taglineSizes = {
