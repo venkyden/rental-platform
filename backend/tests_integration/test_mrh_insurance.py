@@ -329,3 +329,39 @@ async def test_issue_mine_mrh_flagged_included_not_blocked(client):
     assert claims["mrh_insurance_verified"] is False
     assert claims["mrh_insurance_status"] == "flagged"
     assert "name_mismatch" in claims.get("mrh_insurance_flags", [])
+
+
+def test_evidence_pdf_includes_mrh_row():
+    from app.services.credential import credential_service
+    payload = credential_service.issue(
+        subject_role="tenant",
+        rail="FR",
+        claims={
+            "identity_assurance": "MEDIUM",
+            "mrh_insurance_assurance": "MEDIUM",
+            "mrh_insurance_verified": True,
+            "mrh_insurance_status": "verified",
+        },
+        subject_display_name="Jean Dupont",
+    )
+    pdf_bytes = credential_service.export_evidence_pdf(payload)
+    assert pdf_bytes[:4] == b"%PDF"
+    assert len(pdf_bytes) > 1000  # MRH row adds meaningful content
+
+
+def test_evidence_pdf_mrh_flagged_shows_flags():
+    from app.services.credential import credential_service
+    payload = credential_service.issue(
+        subject_role="tenant",
+        rail="FR",
+        claims={
+            "identity_assurance": "MEDIUM",
+            "mrh_insurance_assurance": "MEDIUM",
+            "mrh_insurance_verified": False,
+            "mrh_insurance_status": "flagged",
+            "mrh_insurance_flags": ["name_mismatch"],
+        },
+        subject_display_name="Jean Dupont",
+    )
+    pdf_bytes = credential_service.export_evidence_pdf(payload)
+    assert len(pdf_bytes) > 100

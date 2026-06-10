@@ -312,6 +312,16 @@ class CredentialService:
                 Paragraph("Oui" if claims["property_control"] else "Non", body),
                 Paragraph(assurance_fr.get(claims.get("property_assurance", "UNVERIFIED"), "—"), body),
             ])
+        if "mrh_insurance_assurance" in claims:
+            mrh_ok = claims.get("mrh_insurance_verified")
+            mrh_status_label = "Vérifié ✓" if mrh_ok else "Signalé ⚠"
+            flags = claims.get("mrh_insurance_flags") or []
+            flag_note = f" — signalements : {', '.join(flags)}" if flags else ""
+            claims_rows.append([
+                Paragraph("Assurance MRH (loi 89 art. 7g)", body),
+                Paragraph(f"{mrh_status_label}{flag_note}", body),
+                Paragraph(assurance_fr.get(claims.get("mrh_insurance_assurance", "UNVERIFIED"), "—"), body),
+            ])
 
         if len(claims_rows) > 1:
             claims_table = Table(claims_rows, colWidths=[5 * cm, 4 * cm, None])
