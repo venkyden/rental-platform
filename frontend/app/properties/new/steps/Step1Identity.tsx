@@ -1,4 +1,3 @@
-'use client';
 
 import { PROPERTY_TYPES, PropertyFormData, TFn } from './types';
 

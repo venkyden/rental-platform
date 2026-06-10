@@ -1,4 +1,3 @@
-'use client';
 
 import { Zap } from 'lucide-react';
 import { TFn } from './types';

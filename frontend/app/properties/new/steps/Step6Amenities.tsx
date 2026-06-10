@@ -1,4 +1,3 @@
-'use client';
 
 import { Info, MapPin, Plus } from 'lucide-react';
 import { PropertyFormData, STANDARD_AMENITIES, TFn } from './types';

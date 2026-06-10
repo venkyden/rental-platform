@@ -1,4 +1,3 @@
-'use client';
 
 import AddressAutocomplete from '@/components/AddressAutocomplete';
 import { PropertyFormData, TFn } from './types';

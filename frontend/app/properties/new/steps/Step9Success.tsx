@@ -1,4 +1,3 @@
-'use client';
 
 import { CheckCircle2, Shield } from 'lucide-react';
 import QRCodeDisplay from '@/components/QRCodeDisplay';
