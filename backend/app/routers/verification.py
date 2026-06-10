@@ -1357,6 +1357,12 @@ async def upload_insurance_document(
     """
     from app.services.mrh_insurance import mrh_insurance_service
 
+    _INSURANCE_ALLOWED_TYPES = {"application/pdf", "image/jpeg", "image/png"}
+    if file.content_type not in _INSURANCE_ALLOWED_TYPES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid file type: {file.content_type}. Please upload PDF, JPEG, or PNG",
+        )
     await _validate_file_size(file, max_size_mb=10)
     content = await file.read()
 

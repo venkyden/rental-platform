@@ -215,7 +215,6 @@ class MrhInsuranceService:
                     response_mime_type="application/json",
                 ),
             )
-            import json
             return json.loads(response.text)
         except Exception as exc:
             logger.error("MRH AI extraction failed: %s", exc, exc_info=True)
