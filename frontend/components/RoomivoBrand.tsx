@@ -24,31 +24,31 @@ export default function RoomivoBrand({
     /* ── Size presets ── */
     const sizes = {
         sm: {
-            iconSize: 38,
-            iconClass: 'w-[38px] h-[38px]',
-            textSize: 'text-xl sm:text-2xl',
-            taglineSize: 'text-[9px]',
+            iconSize: 48,
+            iconClass: 'w-[48px] h-[48px]',
+            textSize: 'text-2xl sm:text-3xl',
+            taglineSize: 'text-[10px]',
             gap: 'gap-3'
         },
         md: {
-            iconSize: 52,
-            iconClass: 'w-[52px] h-[52px]',
-            textSize: 'text-3xl',
-            taglineSize: 'text-xs',
+            iconSize: 72,
+            iconClass: 'w-[72px] h-[72px]',
+            textSize: 'text-4xl',
+            taglineSize: 'text-sm',
             gap: 'gap-4'
         },
         lg: {
-            iconSize: 76,
-            iconClass: 'w-[76px] h-[76px]',
-            textSize: 'text-4xl',
-            taglineSize: 'text-sm',
+            iconSize: 104,
+            iconClass: 'w-[104px] h-[104px]',
+            textSize: 'text-5xl',
+            taglineSize: 'text-base',
             gap: 'gap-5'
         },
         xl: {
-            iconSize: 112,
-            iconClass: 'w-[112px] h-[112px]',
-            textSize: 'text-6xl',
-            taglineSize: 'text-lg',
+            iconSize: 160,
+            iconClass: 'w-[160px] h-[160px]',
+            textSize: 'text-7xl',
+            taglineSize: 'text-xl',
             gap: 'gap-6'
         }
     };
