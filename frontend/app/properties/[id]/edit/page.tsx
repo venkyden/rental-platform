@@ -1865,7 +1865,7 @@ export default function EditPropertyPage() {
                                     <div className="glass-card !p-8 rounded-[3rem] inline-block shadow-lg mx-auto">
                                         <QRCodeDisplay 
                                             verificationCode={mediaSession?.verification_code || ''} 
-                                            captureUrl={`${window.location.origin}/capture/${mediaSession?.id}`}
+                                            captureUrl={`${window.location.origin}/capture/${mediaSession?.verification_code}`} 
                                             expiresAt={mediaSession?.expires_at || new Date().toISOString()}
                                         />
                                     </div>

@@ -182,12 +182,12 @@ async def export_properties(
                     prop.city,
                     prop.postal_code,
                     prop.country,
-                    prop.price,
-                    prop.surface_area,
-                    prop.rooms,
+                    prop.monthly_rent,
+                    prop.size_sqm,
+                    prop.rooms_count,
                     prop.bedrooms,
                     prop.bathrooms,
-                    prop.floor or "",
+                    prop.floor_number or "",
                     (
                         str(prop.has_elevator).lower()
                         if prop.has_elevator is not None
@@ -204,8 +204,8 @@ async def export_properties(
                         else ""
                     ),
                     str(prop.has_garden).lower() if prop.has_garden is not None else "",
-                    prop.energy_class or "",
-                    prop.ges_class or "",
+                    prop.dpe_rating or "",
+                    prop.ges_rating or "",
                     prop.status,
                 ]
             )
@@ -230,7 +230,16 @@ async def export_properties(
 
             for header in CSV_HEADERS:
                 child = ET.SubElement(elem, header)
-                value = getattr(prop, header, None)
+                attr_map = {
+                    "price": "monthly_rent",
+                    "surface_area": "size_sqm",
+                    "rooms": "rooms_count",
+                    "floor": "floor_number",
+                    "energy_class": "dpe_rating",
+                    "ges_class": "ges_rating",
+                }
+                attr_name = attr_map.get(header, header)
+                value = getattr(prop, attr_name, None)
                 if value is not None:
                     if isinstance(value, bool):
                         child.text = str(value).lower()
@@ -299,9 +308,15 @@ async def import_properties(
             existing = None
             if row.get("id"):
                 result = await db.execute(
-                    select(Property).where(Property.id == row["id"])
+                    select(Property)
+                    .where(Property.id == row["id"])
+                    .where(Property.landlord_id == current_user.id)
                 )
                 existing = result.scalar_one_or_none()
+                if not existing:
+                    results["failed"] += 1
+                    results["errors"].append(f"Row {idx}: Property not found or unauthorized")
+                    continue
 
             # Parse boolean fields
             def parse_bool(val):
@@ -333,11 +348,35 @@ async def import_properties(
                 )
                 existing.city = row.get("city") or existing.city
                 existing.postal_code = row.get("postal_code") or existing.postal_code
-                existing.price = parse_num(row.get("price"), existing.price)
-                existing.surface_area = parse_num(
-                    row.get("surface_area"), existing.surface_area
+                existing.monthly_rent = parse_num(row.get("price"), existing.monthly_rent)
+                existing.size_sqm = parse_num(
+                    row.get("surface_area"), existing.size_sqm
                 )
                 existing.status = row.get("status") or existing.status
+                existing.rooms_count = parse_num(row.get("rooms"), existing.rooms_count)
+                existing.bedrooms = parse_num(row.get("bedrooms"), existing.bedrooms)
+                existing.bathrooms = parse_num(row.get("bathrooms"), existing.bathrooms)
+                existing.floor_number = parse_num(row.get("floor"), existing.floor_number)
+                if row.get("has_elevator") is not None:
+                    existing.has_elevator = parse_bool(row.get("has_elevator"))
+                if row.get("has_parking") is not None:
+                    existing.has_parking = parse_bool(row.get("has_parking"))
+                if row.get("has_balcony") is not None:
+                    existing.has_balcony = parse_bool(row.get("has_balcony"))
+                if row.get("has_garden") is not None:
+                    existing.has_garden = parse_bool(row.get("has_garden"))
+                existing.dpe_rating = row.get("energy_class") or existing.dpe_rating
+                existing.ges_rating = row.get("ges_class") or existing.ges_rating
+
+                if existing.status == "active":
+                    from app.services.french_compliance import validate_property_compliance
+                    compliance_errors = validate_property_compliance(existing)
+                    if compliance_errors:
+                        existing.status = "draft"
+                        results["errors"].append(
+                            f"Row {idx}: Reverted to draft due to compliance errors: "
+                            + " ".join(compliance_errors)
+                        )
                 results["updated"] += 1
             else:
                 # Create new
@@ -351,20 +390,31 @@ async def import_properties(
                     city=row.get("city", ""),
                     postal_code=row.get("postal_code", ""),
                     country=row.get("country", "France"),
-                    price=parse_num(row.get("price"), 0),
-                    surface_area=parse_num(row.get("surface_area"), 0),
-                    rooms=parse_num(row.get("rooms"), 1),
+                    monthly_rent=parse_num(row.get("price"), 0),
+                    size_sqm=parse_num(row.get("surface_area"), 0),
+                    rooms_count=parse_num(row.get("rooms"), 1),
                     bedrooms=parse_num(row.get("bedrooms"), 1),
                     bathrooms=parse_num(row.get("bathrooms"), 1),
-                    floor=parse_num(row.get("floor")),
+                    floor_number=parse_num(row.get("floor")),
                     has_elevator=parse_bool(row.get("has_elevator")),
                     has_parking=parse_bool(row.get("has_parking")),
                     has_balcony=parse_bool(row.get("has_balcony")),
                     has_garden=parse_bool(row.get("has_garden")),
-                    energy_class=row.get("energy_class"),
-                    ges_class=row.get("ges_class"),
+                    dpe_rating=row.get("energy_class"),
+                    ges_rating=row.get("ges_class"),
                     status=row.get("status", "draft"),
                 )
+
+                if prop.status == "active":
+                    from app.services.french_compliance import validate_property_compliance
+                    compliance_errors = validate_property_compliance(prop)
+                    if compliance_errors:
+                        prop.status = "draft"
+                        results["errors"].append(
+                            f"Row {idx}: Reverted to draft due to compliance errors: "
+                            + " ".join(compliance_errors)
+                        )
+
                 db.add(prop)
                 results["created"] += 1
 

@@ -153,3 +153,8 @@ Reference: PRD §7.6.
 ## Reference
 
 Full PRD, user journeys, and per-process edge-case matrices: `PRD-TrustLayer-v2.md`
+
+<!-- SPECKIT START -->
+For additional context about technologies to be used, project structure,
+shell commands, and other important information, read the current plan
+<!-- SPECKIT END -->

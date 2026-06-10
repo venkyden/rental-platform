@@ -233,3 +233,185 @@ def test_ownership_status_set_on_verification():
     assert user.ownership_status in ("control_documented", "rejected"), (
         f"Expected ownership_status to be set, got: {user.ownership_status!r}"
     )
+
+
+# ── Security Audit Fixes ──────────────────────────────────────────────────────
+
+def test_gdpr_erasure_deactivates_properties():
+    """Verify GDPR right to erasure process marks properties as inactive."""
+    landlord = make_mock_user("landlord")
+    landlord.id = uuid.uuid4()
+
+    property_owned = MagicMock()
+    property_owned.id = uuid.uuid4()
+    property_owned.landlord_id = landlord.id
+    property_owned.status = "active"
+
+    mock_db = MagicMock()
+    mock_result = MagicMock()
+    mock_result.scalars = MagicMock(return_value=MagicMock(all=MagicMock(return_value=[property_owned])))
+    mock_db.execute = AsyncMock(return_value=mock_result)
+    mock_db.commit = AsyncMock()
+
+    client = make_client(landlord)
+    target_app = app.app if hasattr(app, "app") else app
+    def override_db():
+        yield mock_db
+    target_app.dependency_overrides[get_db] = override_db
+    
+    with patch("app.services.storage.storage") as mock_storage:
+        mock_storage.delete_files_by_prefix = AsyncMock()
+        response = client.delete("/gdpr/delete")
+
+    assert response.status_code == 200
+    assert property_owned.status == "inactive"
+
+
+def test_inventory_details_idor():
+    """Verify GET /inventory/{id} checks lease membership."""
+    attacker = make_mock_user("tenant")
+    attacker.id = uuid.uuid4()
+
+    lease = MagicMock()
+    lease.id = uuid.uuid4()
+    lease.landlord_id = uuid.uuid4() # someone else
+    lease.tenant_id = uuid.uuid4()   # someone else
+
+    inventory = MagicMock()
+    inventory.id = uuid.uuid4()
+    inventory.lease_id = lease.id
+    inventory.lease = lease
+
+    mock_db = MagicMock()
+    mock_result = MagicMock()
+    mock_result.scalar_one_or_none = MagicMock(return_value=inventory)
+    mock_db.execute = AsyncMock(return_value=mock_result)
+
+    client = make_client(attacker)
+    target_app = app.app if hasattr(app, "app") else app
+    def override_db():
+        yield mock_db
+    target_app.dependency_overrides[get_db] = override_db
+
+    response = client.get(f"/inventory/{inventory.id}")
+    assert response.status_code == 403
+
+
+def test_inventory_signature_forgery():
+    """Verify users cannot forge signatures on inventories."""
+    landlord = make_mock_user("landlord")
+    landlord.id = uuid.uuid4()
+
+    lease = MagicMock()
+    lease.id = uuid.uuid4()
+    lease.landlord_id = landlord.id
+    lease.tenant_id = uuid.uuid4() # different tenant
+
+    inventory = MagicMock()
+    inventory.id = uuid.uuid4()
+    inventory.lease_id = lease.id
+    inventory.lease = lease
+    inventory.signature_tenant = None
+
+    mock_db = MagicMock()
+    mock_result = MagicMock()
+    mock_result.scalar_one_or_none = MagicMock(return_value=inventory)
+    mock_db.execute = AsyncMock(return_value=mock_result)
+
+    client = make_client(landlord)
+    target_app = app.app if hasattr(app, "app") else app
+    def override_db():
+        yield mock_db
+    target_app.dependency_overrides[get_db] = override_db
+    
+    # Landlord attempts to forge tenant signature
+    response = client.post(
+        f"/inventory/{inventory.id}/sign",
+        json={"signature_tenant": {"signature": "forged_tenant_sig"}}
+    )
+    assert response.status_code == 403
+    assert "Only the tenant" in response.json()["detail"]
+
+
+def test_bulk_import_idor_prevention():
+    """Verify that updating a property via bulk import checks landlord ownership."""
+    landlord_a = make_mock_user("landlord")
+    landlord_a.id = uuid.uuid4()
+
+    # Mock DB execute returning None for unauthorized (ID belongs to other landlord)
+    mock_db = MagicMock()
+    mock_result = MagicMock()
+    mock_result.scalar_one_or_none = MagicMock(return_value=None)
+    mock_db.execute = AsyncMock(return_value=mock_result)
+    mock_db.commit = AsyncMock()
+
+    client = make_client(landlord_a)
+    # override db specifically for this mock session
+    target_app = app.app if hasattr(app, "app") else app
+    def override_db():
+        yield mock_db
+    target_app.dependency_overrides[get_db] = override_db
+
+    csv_content = "id,title,status\n00000000-0000-0000-0000-000000000001,Hacked Title,active\n"
+    import io
+    csv_bytes = io.BytesIO(csv_content.encode("utf-8"))
+    
+    with patch("app.routers.bulk.Property") as mock_property_class, \
+         patch("app.routers.bulk.select") as mock_select:
+        response = client.post(
+            "/bulk/properties/import",
+            files={"file": ("import.csv", csv_bytes, "text/csv")}
+        )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["failed"] == 1
+    assert "unauthorized" in data["errors"][0].lower()
+
+
+def test_bulk_import_compliance_degradation():
+    """Verify active property with compliance errors degrades to draft during import."""
+    landlord = make_mock_user("landlord")
+    landlord.id = uuid.uuid4()
+
+    # Mock DB execute returning None so it creates a new property
+    mock_db = MagicMock()
+    mock_result = MagicMock()
+    mock_result.scalar_one_or_none = MagicMock(return_value=None)
+    mock_db.execute = AsyncMock(return_value=mock_result)
+    mock_db.commit = AsyncMock()
+
+    client = make_client(landlord)
+    target_app = app.app if hasattr(app, "app") else app
+    def override_db():
+        yield mock_db
+    target_app.dependency_overrides[get_db] = override_db
+
+    # G rating is invalid for active properties under French law
+    csv_content = "title,status,energy_class,price,surface_area,rooms,bedrooms,bathrooms\nNice Appt,active,G,1000,50,2,1,1\n"
+    import io
+    csv_bytes = io.BytesIO(csv_content.encode("utf-8"))
+
+    # Mock the Property instance returned by Property constructor
+    mock_property_instance = MagicMock()
+    mock_property_instance.status = "active"
+    mock_property_instance.dpe_rating = "G"
+    mock_property_instance.deposit = None
+    mock_property_instance.monthly_rent = 1000
+    mock_property_instance.size_sqm = 50
+    mock_property_instance.loyer_reference_majore = None
+    mock_property_instance.complement_de_loyer = None
+    mock_property_instance.complement_de_loyer_justification = None
+
+    with patch("app.routers.bulk.Property", return_value=mock_property_instance), \
+         patch("app.routers.bulk.select") as mock_select:
+        response = client.post(
+            "/bulk/properties/import",
+            files={"file": ("import.csv", csv_bytes, "text/csv")}
+        )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["created"] == 1
+    assert len(data["errors"]) == 1
+    assert "reverted to draft" in data["errors"][0].lower()

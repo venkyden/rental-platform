@@ -53,13 +53,11 @@ export function useGoogleSignIn({
       if (typeof window !== 'undefined' && window.google?.accounts?.id) {
         window.google.accounts.id.revoke(email, (done) => {
           if (done.successful) {
-            console.log('Google session revoked for:', email);
-            // Also disable auto-select for future sessions
+            // Disable auto-select for future sessions
             window.google?.accounts.id.disableAutoSelect();
             resolve();
           } else {
-            console.warn('Google session revocation failed:', done.error);
-            // Still resolve because we want the UI to proceed
+            // Still resolve — UI should continue regardless
             resolve();
           }
         });

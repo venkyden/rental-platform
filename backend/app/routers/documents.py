@@ -34,6 +34,15 @@ async def upload_document(
     db: AsyncSession = Depends(get_db),
 ):
     """Generic document upload using Cloud Storage"""
+    # Loi ALUR restriction on document types requested from tenants
+    from app.services.french_compliance import validate_alur_document_type
+    alur_error = validate_alur_document_type(document_type)
+    if alur_error:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=alur_error
+        )
+
     from io import BytesIO
     from app.services.storage import storage
 

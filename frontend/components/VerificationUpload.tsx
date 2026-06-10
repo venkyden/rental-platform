@@ -229,6 +229,18 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
     const handleIdFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
         const raw = e.target.files?.[0];
         if (!raw) return;
+        // Validate MIME type — accept attribute can be bypassed
+        const ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/heic', 'image/heif']);
+        if (raw.type && !ALLOWED_MIME.has(raw.type)) {
+            toast.error('Only JPEG, PNG, or HEIC images are accepted.');
+            if (e.target) e.target.value = '';
+            return;
+        }
+        if (raw.size > 15 * 1024 * 1024) {
+            toast.error('Image must be smaller than 15 MB.');
+            if (e.target) e.target.value = '';
+            return;
+        }
         const isHeic = /\.heic|\.heif$/i.test(raw.name) || raw.type === 'image/heic' || raw.type === 'image/heif';
         try {
             const processed: Blob = isHeic ? raw : await compressImage(raw);
@@ -379,6 +391,23 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
             const selectedFiles = Array.from(e.target.files);
+            // Validate MIME type in addition to extension — the file input `accept`
+            // attribute is advisory only and can be bypassed by the user.
+            const ALLOWED_MIME = new Set([
+                'image/jpeg', 'image/png', 'image/heic', 'image/heif',
+                'application/pdf',
+            ]);
+            const invalid = selectedFiles.filter(f => f.type && !ALLOWED_MIME.has(f.type));
+            if (invalid.length > 0) {
+                setError('Only JPEG, PNG, HEIC, and PDF files are accepted.');
+                return;
+            }
+            // 10 MB per file
+            const tooBig = selectedFiles.filter(f => f.size > 10 * 1024 * 1024);
+            if (tooBig.length > 0) {
+                setError('Each file must be smaller than 10 MB.');
+                return;
+            }
             const hasHeic = selectedFiles.some(f => /\.heic|\.heif$/i.test(f.name));
             if (hasHeic) toast.success('HEIC image detected. Uploading directly.');
             setFiles(selectedFiles);

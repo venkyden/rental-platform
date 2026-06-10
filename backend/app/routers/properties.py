@@ -682,6 +682,16 @@ async def update_property(
     for field, value in update_data.items():
         setattr(property_obj, field, value)
 
+    # If the property is active, it must remain compliant with French law.
+    if property_obj.status == "active":
+        from app.services.french_compliance import validate_property_compliance
+        compliance_errors = validate_property_compliance(property_obj)
+        if compliance_errors:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=" ".join(compliance_errors),
+            )
+
     property_obj.updated_at = naive_utcnow()
 
     await db.commit()
@@ -815,55 +825,13 @@ async def publish_property(
             )
 
     # ── French Compliance Validations ──────────────────────────────────────
-
-    # DPE rating is mandatory for all rental listings (since Jan 2021)
-    if not property_obj.dpe_rating:
+    from app.services.french_compliance import validate_property_compliance
+    compliance_errors = validate_property_compliance(property_obj)
+    if compliance_errors:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="DPE (Diagnostic de Performance Énergétique) rating is required to publish a listing. This is mandatory under French law.",
+            detail=" ".join(compliance_errors),
         )
-
-    # DPE G ban: Properties with DPE G cannot be rented since January 2023
-    if property_obj.dpe_rating == "G":
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Properties with DPE rating G are prohibited from being rented since January 2023 (Loi Climat et Résilience). Please improve the energy performance before listing.",
-        )
-
-    # Deposit cap validation (Loi du 6 juillet 1989, Art. 22)
-    if property_obj.deposit is not None and property_obj.monthly_rent:
-        max_deposit_months = 2 if property_obj.furnished else 1
-        max_deposit = property_obj.monthly_rent * max_deposit_months
-        if property_obj.deposit > max_deposit:
-            label = "2 months" if property_obj.furnished else "1 month"
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Security deposit exceeds the legal maximum of {label} rent (€{max_deposit:.2f}) for {'furnished' if property_obj.furnished else 'unfurnished'} properties.",
-            )
-
-    # Minimum habitable surface (Décret n° 2002-120)
-    if property_obj.size_sqm and property_obj.size_sqm < 9:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Property surface area must be at least 9m² to be considered habitable under French law (Décret n° 2002-120).",
-        )
-
-    # Rent control (encadrement des loyers) — Loi ALUR/ELAN, zones tendues
-    from app.services.french_compliance import validate_rent_control
-
-    rent_control_error = validate_rent_control(
-        monthly_rent=property_obj.monthly_rent,
-        size_sqm=property_obj.size_sqm,
-        loyer_reference_majore=property_obj.loyer_reference_majore,
-        complement_de_loyer=property_obj.complement_de_loyer,
-        complement_de_loyer_justification=property_obj.complement_de_loyer_justification,
-    )
-    if rent_control_error:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=rent_control_error,
-        )
-
     # ── End French Compliance ────────────────────────────────────────────
 
     # Publish

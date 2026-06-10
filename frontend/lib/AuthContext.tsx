@@ -4,6 +4,22 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { useRouter } from 'next/navigation';
 import { apiClient } from './api';
 
+/**
+ * Sanitise a redirect path returned from the API.
+ * Only relative paths on the same origin are accepted.
+ * External URLs (e.g. https://evil.com), protocol-relative URLs
+ * (//evil.com), and anything that is not a simple /path are rejected
+ * and the fallback is used instead.
+ */
+function safeRedirectPath(path: unknown, fallback = '/dashboard'): string {
+    if (typeof path !== 'string' || !path) return fallback;
+    // Must start with a single / and not //
+    if (!path.startsWith('/') || path.startsWith('//')) return fallback;
+    // Must not contain a protocol (e.g. http:, javascript:)
+    if (/^[a-z][a-z\d+\-.]*:/i.test(path.slice(1))) return fallback;
+    return path;
+}
+
 interface User {
     id: string;
     email: string;
@@ -80,7 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
             const response = await apiClient.login(email, password);
             await checkAuth();
-            router.push(response.redirect_path || '/dashboard');
+            router.push(safeRedirectPath(response.redirect_path));
         } finally {
             setLoading(false);
         }
@@ -92,7 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             await apiClient.register(data);
             const response = await apiClient.login(data.email, data.password);
             await checkAuth();
-            router.push(response.redirect_path || '/dashboard');
+            router.push(safeRedirectPath(response.redirect_path));
         } finally {
             setLoading(false);
         }
@@ -116,7 +132,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             await checkAuth();
 
             if (data.redirect_path) {
-                router.push(data.redirect_path);
+                router.push(safeRedirectPath(data.redirect_path));
             }
             return data;
         } finally {

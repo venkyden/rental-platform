@@ -12,7 +12,7 @@ services:
       - SECRET_KEY=${SECRET_KEY:-development-secret-key-min-32-chars-long-change-in-production}
       - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
-      - FRONTEND_URL=http://localhost:3000
+      - FRONTEND_URL=http://localhost:3001
       - ENVIRONMENT=development
       - PYTHONPATH=/app
     depends_on:
@@ -86,7 +86,7 @@ services:
       - NEXT_PUBLIC_API_URL=http://localhost:8000 # Map to localhost when accessing from browser
       - NODE_ENV=development
     ports:
-      - "3000:3000"
+      - "3001:3000"
     command: npm run dev
     depends_on:
       - api

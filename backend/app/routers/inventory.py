@@ -92,6 +92,10 @@ async def get_inventory(
     if not inventory:
         raise HTTPException(status_code=404, detail="Inventory not found")
 
+    lease = inventory.lease
+    if not lease or current_user.id not in [lease.landlord_id, lease.tenant_id]:
+        raise HTTPException(status_code=403, detail="Not authorized to access this inventory")
+
     # Map to schema manually or let Pydantic handle if structure matches?
     # Schema expects 'property_location' at top level. Inventory model doesn't have it.
     # We cheat by attaching it dynamically before returning.
@@ -120,10 +124,16 @@ async def add_inventory_items(
     ),  # Authorization skipped for brevity in this snippet
 ):
     """Add items to an existing draft inventory"""
-    result = await db.execute(select(Inventory).where(Inventory.id == id))
+    result = await db.execute(
+        select(Inventory).options(selectinload(Inventory.lease)).where(Inventory.id == id)
+    )
     inventory = result.scalar_one_or_none()
     if not inventory:
         raise HTTPException(status_code=404, detail="Inventory not found")
+
+    lease = inventory.lease
+    if not lease or current_user.id not in [lease.landlord_id, lease.tenant_id]:
+        raise HTTPException(status_code=403, detail="Not authorized to access this inventory")
 
     if inventory.status != InventoryStatus.DRAFT:
         raise HTTPException(status_code=400, detail="Cannot edit signed inventory")
@@ -160,16 +170,26 @@ async def sign_inventory(
     """
     Sign the inventory. Supports single or dual (in-person) signing.
     """
-    result = await db.execute(select(Inventory).where(Inventory.id == id))
+    result = await db.execute(
+        select(Inventory).options(selectinload(Inventory.lease)).where(Inventory.id == id)
+    )
     inventory = result.scalar_one_or_none()
     if not inventory:
         raise HTTPException(status_code=404, detail="Inventory not found")
 
+    lease = inventory.lease
+    if not lease or current_user.id not in [lease.landlord_id, lease.tenant_id]:
+        raise HTTPException(status_code=403, detail="Not authorized to access this inventory")
+
     # Update Signatures if provided
     if sign_req.signature_tenant:
+        if current_user.id != lease.tenant_id:
+            raise HTTPException(status_code=403, detail="Only the tenant can sign as tenant")
         inventory.signature_tenant = sign_req.signature_tenant
 
     if sign_req.signature_landlord:
+        if current_user.id != lease.landlord_id:
+            raise HTTPException(status_code=403, detail="Only the landlord can sign as landlord")
         inventory.signature_landlord = sign_req.signature_landlord
 
     # Update Status Logic

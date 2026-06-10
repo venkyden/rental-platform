@@ -2,6 +2,34 @@ import type { NextConfig } from "next";
 import path from "path";
 
 const isProd = process.env.NODE_ENV === 'production';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+
+// Extract hostname from API_URL safely (for CSP connect-src)
+function getApiHostname(url: string): string {
+  try { return new URL(url).hostname; } catch { return '127.0.0.1'; }
+}
+const apiHostname = getApiHostname(API_URL);
+
+// Content Security Policy
+// - script-src: allow Next.js inline scripts (nonce not yet wired), Google GSI script, and self
+// - connect-src: allow API and Google token endpoints
+// - frame-src: allow Google Sign-In and accounts popup
+// - style-src: allow inline styles required by Tailwind/framer-motion
+// - img-src: allow blob/data URIs for image previews
+const csp = [
+  `default-src 'self'`,
+  `script-src 'self' 'unsafe-inline' https://accounts.google.com`,
+  `style-src 'self' 'unsafe-inline'`,
+  `img-src 'self' data: blob: https://*.googleapis.com https://*.gstatic.com http://localhost:* http://127.0.0.1:*${isProd ? ' https:' : ''}`,
+  `font-src 'self' data:`,
+  `connect-src 'self' https://accounts.google.com https://oauth2.googleapis.com https://*.googleapis.com${isProd ? ` https://${apiHostname}` : ` http://localhost:* http://127.0.0.1:*`}`,
+  `frame-src https://accounts.google.com`,
+  `frame-ancestors 'none'`,
+  `object-src 'none'`,
+  `base-uri 'self'`,
+  `form-action 'self'`,
+  `upgrade-insecure-requests`,
+].join('; ');
 
 const nextConfig: NextConfig = {
   output: 'standalone',
@@ -30,6 +58,10 @@ const nextConfig: NextConfig = {
           {
             key: 'Permissions-Policy',
             value: 'camera=(self), microphone=(self), geolocation=(self)',
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: csp,
           },
           {
             /* 
@@ -61,6 +93,7 @@ const nextConfig: NextConfig = {
   // Image optimization
   images: {
     remotePatterns: [
+      // Dev-only: allow loading images over http from localhost
       {
         protocol: 'http',
         hostname: 'localhost',
@@ -69,6 +102,11 @@ const nextConfig: NextConfig = {
         protocol: 'http',
         hostname: '127.0.0.1',
       },
+      // Production: allow https from the configured API hostname
+      ...(isProd ? [{
+        protocol: 'https' as const,
+        hostname: apiHostname,
+      }] : []),
     ],
   },
   outputFileTracingRoot: path.join(__dirname, "../"),

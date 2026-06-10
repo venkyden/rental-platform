@@ -226,7 +226,7 @@ async def delete_user_data(
         key = current_user.employment_data.get("storage_key")
         if key: await storage.delete_file(key)
 
-    # Delete property media
+    # Delete property media and mark properties as inactive
     props_result = await db.execute(select(Property).where(Property.landlord_id == current_user.id))
     properties = props_result.scalars().all()
     for prop in properties:
@@ -235,6 +235,7 @@ async def delete_user_data(
         if prop.ownership_data and isinstance(prop.ownership_data, dict):
             key = prop.ownership_data.get("storage_key")
             if key: await storage.delete_file(key)
+        prop.status = "inactive"
 
     # Delete any other documents associated with the user
     docs_result = await db.execute(select(Document).where(Document.user_id == current_user.id))
@@ -279,4 +280,29 @@ async def delete_user_data(
         "If you believe any data remains, contact dpo@roomivo.com.",
         "deleted_at": datetime.now(timezone.utc).isoformat(),
         "data_retention_note": "Anonymised records retained per GDPR Art. 17(3)(b)(e) for legal obligations.",
+    }
+
+
+@router.post("/purge-stale-applications", status_code=status.HTTP_202_ACCEPTED)
+async def trigger_stale_applications_purge(
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Triggers the Celery task to purge REJECTED/WITHDRAWN applications older than 30 days.
+    Only accessible by admins.
+    """
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only administrators can trigger data retention purges."
+        )
+
+    from app.workers.tasks import purge_stale_applications_task
+    # Dispatch to Celery
+    task = purge_stale_applications_task.delay()
+    
+    return {
+        "status": "accepted",
+        "message": "Stale applications purge task dispatched to background workers.",
+        "task_id": task.id
     }

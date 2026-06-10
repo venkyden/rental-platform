@@ -39,7 +39,7 @@ export default function Step9Success({ formData, t, mediaSession, publishing, on
             <div className="glass-card !p-12 rounded-[4rem] inline-block shadow-2xl">
                 <QRCodeDisplay
                     verificationCode={mediaSession?.verification_code || ''}
-                    captureUrl={`${typeof window !== 'undefined' ? window.location.origin : ''}/capture/${mediaSession?.id}`}
+                    captureUrl={`${typeof window !== 'undefined' ? window.location.origin : ''}/capture/${mediaSession?.verification_code}`}
                     expiresAt={mediaSession?.expires_at || new Date().toISOString()}
                 />
             </div>
