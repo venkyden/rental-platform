@@ -311,7 +311,7 @@ async def test_webhook(
         "event": "test",
         "timestamp": naive_utcnow().isoformat(),
         "data": {
-            "message": "This is a test webhook from Rental Platform",
+            "message": "This is a test webhook from Roomivo",
             "subscription_id": str(subscription_id),
         },
     }

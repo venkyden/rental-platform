@@ -23,7 +23,7 @@ async def geocode_address(
             response = await client.get(
                 "https://nominatim.openstreetmap.org/search",
                 params={"q": full_address, "format": "json", "limit": 1},
-                headers={"User-Agent": "Roomivo/1.0 (rental platform)"},
+                headers={"User-Agent": "Roomivo/1.0"},
             )
 
             if response.status_code == 200:

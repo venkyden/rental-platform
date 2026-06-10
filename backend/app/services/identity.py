@@ -467,7 +467,7 @@ Return ONLY the JSON."""
         }
         doc_hint = doc_hints.get(document_type, "front side of a government-issued photo ID")
 
-        prompt = f"""You are a strict KYC identity verification system for a French rental platform.
+        prompt = f"""You are a strict KYC identity verification system for Roomivo.
 
 The image shows a person holding their government-issued ID document next to their face.
 Claimed document type: '{document_type}' ({doc_hint}).

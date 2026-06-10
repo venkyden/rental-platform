@@ -1,5 +1,5 @@
 """
-Property models for rental platform.
+Property models for Roomivo.
 """
 
 import uuid

@@ -10,7 +10,7 @@ import FeaturedListings from '@/components/landing/FeaturedListings';
 import LandingFooter from '@/components/landing/LandingFooter';
 
 export const metadata: Metadata = {
-  title: `${BRAND.title} - Smart Rental Platform`,
+  title: `${BRAND.title}`,
   description: BRAND.description,
   keywords: ['rentals', 'france', 'apartments', 'roomivo', 'landlord', 'tenant', 'verified rentals'],
   alternates: { canonical: '/' },

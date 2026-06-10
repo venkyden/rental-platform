@@ -77,7 +77,7 @@ if not hasattr(fastapi.routing.APIRouter, "on_shutdown"):
 
 fastapi_app = FastAPI(
     title="Roomivo API",
-    description="Smart rental platform API",
+    description="Roomivo API",
     version="1.0.0",
 )
 

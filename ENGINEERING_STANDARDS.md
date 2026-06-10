@@ -1,8 +1,8 @@
-# 📘 Rental Platform Engineering Standards
+# 📘 Roomivo Engineering Standards
 
 **Version 1.0** | **Philosophy**: "Vibe-Coded, Robust, Zero-Cost"
 
-This document serves as the **Standard Operating Procedure (SOP)** for all engineering work on the Rental Platform.
+This document serves as the **Standard Operating Procedure (SOP)** for all engineering work on Roomivo.
 
 ---
 

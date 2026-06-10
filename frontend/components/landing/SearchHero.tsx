@@ -64,7 +64,7 @@ export default function SearchHero() {
             transition={{ delay: 0.3, duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
             className="text-lg sm:text-xl text-zinc-400 max-w-2xl mx-auto mb-20 font-black uppercase tracking-[0.4em] leading-relaxed"
           >
-            {t('landing.subtitle', undefined, 'The most secure and transparent rental platform in France.')}
+            {t('landing.subtitle', undefined, 'The most secure and transparent way to rent in France.')}
           </motion.p>
 
           {/* ─── Advanced Search Bar ─── */}

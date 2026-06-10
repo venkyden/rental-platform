@@ -84,7 +84,7 @@ export default async function Image() {
               textTransform: 'uppercase',
             }}
           >
-            French Rental Platform
+            Premium French Rentals
           </div>
 
           {/* Title */}

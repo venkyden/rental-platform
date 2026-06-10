@@ -10,6 +10,7 @@
  */
 
 import React from 'react';
+import Image from 'next/image';
 
 interface RoomivoBrandProps {
     variant?: 'icon' | 'wordmark' | 'full';
@@ -27,59 +28,39 @@ export default function RoomivoBrand({
     theme = 'dark'
 }: RoomivoBrandProps) {
     const sizes = {
-        sm: { icon: 'w-8 h-8', text: 'text-lg', tagline: 'text-xs', svg: 18, font: 'font-black' },
-        md: { icon: 'w-11 h-11', text: 'text-2xl', tagline: 'text-sm', svg: 24, font: 'font-black' },
-        lg: { icon: 'w-16 h-16', text: 'text-4xl', tagline: 'text-base', svg: 32, font: 'font-black' },
-        xl: { icon: 'w-24 h-24', text: 'text-6xl', tagline: 'text-lg', svg: 48, font: 'font-black' },
+        sm: { icon: 32, text: 'text-lg', tagline: 'text-xs' },
+        md: { icon: 44, text: 'text-2xl', tagline: 'text-sm' },
+        lg: { icon: 64, text: 'text-4xl', tagline: 'text-base' },
+        xl: { icon: 96, text: 'text-6xl', tagline: 'text-lg' },
     };
 
     const s = sizes[size] || sizes.md;
 
-    const themeClasses = {
-        dark: {
-            container: 'bg-zinc-900 text-white',
-            text: 'text-zinc-900',
-            mark: 'text-white'
-        },
-        light: {
-            container: 'bg-white text-zinc-900 shadow-xl',
-            text: 'text-zinc-900',
-            mark: 'text-zinc-900'
-        },
-        glass: {
-            container: 'bg-white/10 backdrop-blur-md border border-white/20 text-white',
-            text: 'text-white',
-            mark: 'text-white'
-        }
-    };
-
-    const t = themeClasses[theme];
-
     return (
         <div className={`flex items-center gap-4 ${className}`}>
-            {/* Logo Mark — The circular R */}
+            {/* Logo Mark — Image based */}
             <div
-                className={`${s.icon} flex items-center justify-center rounded-full shadow-2xl transition-transform duration-500 hover:scale-110 active:scale-95 ${
-                    theme === 'dark' ? 'bg-zinc-900' : 'bg-white'
-                } ${animate ? 'animate-in zoom-in duration-500' : ''}`}
+                className={`flex items-center justify-center transition-transform duration-500 hover:scale-105 active:scale-95 ${animate ? 'animate-in zoom-in duration-500' : ''}`}
             >
-                <span className={`${s.font} italic tracking-tighter ${
-                    theme === 'dark' ? 'text-white' : 'text-zinc-900'
-                }`} style={{ fontSize: s.svg }}>
-                    R
-                </span>
+                <Image
+                    src="/images/roomivo-icon.png"
+                    alt="Roomivo Logo"
+                    width={s.icon}
+                    height={s.icon}
+                    className="object-contain"
+                />
             </div>
 
             {/* Wordmark */}
             {(variant === 'wordmark' || variant === 'full') && (
-                <div className="flex flex-col">
+                <div className="flex flex-col justify-center">
                     <span className={`${s.text} font-black tracking-tighter leading-none ${
-                        theme === 'glass' ? 'text-white' : 'bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 to-zinc-500'
+                        theme === 'glass' ? 'text-white' : 'text-zinc-900 dark:text-white'
                     }`}>
                         Roomivo
                     </span>
                     {variant === 'full' && (
-                        <p className={`${s.tagline} font-bold text-zinc-500 mt-1 uppercase tracking-[0.2em]`}>
+                        <p className={`${s.tagline} font-bold text-gold mt-1 uppercase tracking-[0.2em]`}>
                             Premium Rentals
                         </p>
                     )}

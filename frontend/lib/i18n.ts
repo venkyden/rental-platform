@@ -10,7 +10,7 @@ export const translations = {
                 searchPlaceholder: "Where do you want to live?",
                 searchButton: "Search"
             },
-            subtitle: "The most secure and transparent rental platform in France. Verified listings, automated contracts, and end-to-end protection.",
+            subtitle: "The most secure and transparent way to rent in France. Verified listings, automated contracts, and end-to-end protection.",
             getStarted: "Get Started",
             signIn: "Sign In",
             valueProp: {

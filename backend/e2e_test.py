@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""End-to-end validation script for Rental Platform features"""
+"""End-to-end validation script for Roomivo features"""
 
 import json
 
@@ -8,7 +8,7 @@ import requests
 BASE = "http://localhost:8000"
 
 print("=" * 60)
-print("RENTAL PLATFORM - END-TO-END VALIDATION")
+print("ROOMIVO - END-TO-END VALIDATION")
 print("=" * 60)
 
 results = []

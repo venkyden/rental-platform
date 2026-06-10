@@ -1,4 +1,4 @@
-// Service Worker for Rental Platform PWA
+// Service Worker for Roomivo PWA
 const CACHE_NAME = 'rental-platform-v1';
 const STATIC_ASSETS = [
     '/',
@@ -110,7 +110,7 @@ async function syncProperties() {
 // Push notification handling
 self.addEventListener('push', (event) => {
     const data = event.data?.json() || {};
-    const title = data.title || 'Rental Platform';
+    const title = data.title || 'Roomivo';
     const options = {
         body: data.body || 'You have a new notification',
         icon: '/icons/icon-192.png',

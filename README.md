@@ -1,4 +1,4 @@
-# Rental Platform
+# Roomivo
 
 AI-powered rental platform serving 6 market segments with intelligent verification, matching, and lease generation.
 

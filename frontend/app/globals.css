@@ -8,6 +8,9 @@
     --primary: 240 5.9% 10%; /* Zinc-900 */
     --primary-foreground: 0 0% 100%;
     
+    --gold: 41 74% 48%; /* #d19a20 */
+    --gold-foreground: 0 0% 100%;
+    
     --card: 0 0% 100%;
     --card-foreground: 240 10% 3.9%;
     
@@ -23,6 +26,8 @@
   --color-foreground: hsl(var(--foreground));
   --color-primary: hsl(var(--primary));
   --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-gold: hsl(var(--gold));
+  --color-gold-foreground: hsl(var(--gold-foreground));
   --radius-xl: 1rem;
   --radius-2xl: 1.5rem;
   --radius-3xl: 2rem;
