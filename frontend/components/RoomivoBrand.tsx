@@ -29,25 +29,25 @@ export default function RoomivoBrand({
 }: RoomivoBrandProps) {
     /* ── Size presets ── */
     const iconSizes = {
-        sm: { h: 28,  w: 28  },
-        md: { h: 40,  w: 40  },
-        lg: { h: 56,  w: 56  },
-        xl: { h: 80,  w: 80  },
+        sm: { h: 40,  w: 40  },
+        md: { h: 56,  w: 56  },
+        lg: { h: 80,  w: 80  },
+        xl: { h: 120, w: 120 },
     };
 
     /* Logo (icon+text) aspect ratio ≈ 3.75:1  */
     const logoSizes = {
-        sm: { h: 28,  w: 105 },
-        md: { h: 36,  w: 135 },
-        lg: { h: 48,  w: 180 },
-        xl: { h: 64,  w: 240 },
+        sm: { h: 40,  w: 150 },
+        md: { h: 56,  w: 210 },
+        lg: { h: 80,  w: 300 },
+        xl: { h: 120, w: 450 },
     };
 
     const taglineSizes = {
-        sm: 'text-[9px]',
+        sm: 'text-[10px]',
         md: 'text-xs',
         lg: 'text-sm',
-        xl: 'text-base',
+        xl: 'text-lg',
     };
 
     const animClass = animate ? 'animate-in zoom-in duration-500' : '';
