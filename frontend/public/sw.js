@@ -1,5 +1,5 @@
 // Service Worker for Roomivo PWA
-const CACHE_NAME = 'rental-platform-v1';
+const CACHE_NAME = 'roomivo-v1';
 const STATIC_ASSETS = [
     '/',
     '/auth/login',
