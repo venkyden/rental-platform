@@ -28,10 +28,10 @@ export default function RoomivoBrand({
     theme = 'dark'
 }: RoomivoBrandProps) {
     const sizes = {
-        sm: { icon: 32, text: 'text-lg', tagline: 'text-xs' },
-        md: { icon: 44, text: 'text-2xl', tagline: 'text-sm' },
-        lg: { icon: 64, text: 'text-4xl', tagline: 'text-base' },
-        xl: { icon: 96, text: 'text-6xl', tagline: 'text-lg' },
+        sm: { icon: 32, w: 'w-8', h: 'h-8', text: 'text-lg', tagline: 'text-xs' },
+        md: { icon: 44, w: 'w-11', h: 'h-11', text: 'text-2xl', tagline: 'text-sm' },
+        lg: { icon: 64, w: 'w-16', h: 'h-16', text: 'text-4xl', tagline: 'text-base' },
+        xl: { icon: 96, w: 'w-24', h: 'h-24', text: 'text-6xl', tagline: 'text-lg' },
     };
 
     const s = sizes[size] || sizes.md;
@@ -40,14 +40,14 @@ export default function RoomivoBrand({
         <div className={`flex items-center gap-4 ${className}`}>
             {/* Logo Mark — Image based */}
             <div
-                className={`flex items-center justify-center transition-transform duration-500 hover:scale-105 active:scale-95 ${animate ? 'animate-in zoom-in duration-500' : ''}`}
+                className={`${s.w} ${s.h} flex items-center justify-center transition-transform duration-500 hover:scale-105 active:scale-95 ${animate ? 'animate-in zoom-in duration-500' : ''}`}
             >
                 <Image
                     src="/images/roomivo-icon.png"
                     alt="Roomivo Logo"
                     width={s.icon}
                     height={s.icon}
-                    className="object-contain"
+                    className="w-full h-full object-contain"
                 />
             </div>
 
@@ -55,7 +55,7 @@ export default function RoomivoBrand({
             {(variant === 'wordmark' || variant === 'full') && (
                 <div className="flex flex-col justify-center">
                     <span className={`${s.text} font-black tracking-tighter leading-none ${
-                        theme === 'glass' ? 'text-white' : 'text-zinc-900 dark:text-white'
+                        theme === 'glass' ? 'text-white' : 'bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 to-zinc-500'
                     }`}>
                         Roomivo
                     </span>
