@@ -1,6 +1,6 @@
 # Zero Cost Operations Guide 💸
 
-This guide outlines how to operate the Rental Platform with **$0 monthly operational costs** using free tiers and open-source alternatives.
+This guide outlines how to operate Roomivo with **$0 monthly operational costs** using free tiers and open-source alternatives.
 
 ## 1. AI & OCR (Implemented)
 *   **Paid**: Anthropic Claude 3 (`$0.01` / doc).

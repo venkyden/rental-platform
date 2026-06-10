@@ -1,7 +1,7 @@
 export const BRAND = {
     name: "Roomivo",
-    tagline: "Roomivo - Your first step to settling in",
-    title: "Roomivo - Your first step to settling in",
+    tagline: "Where your heart wants to live",
+    title: "Roomivo — Where your heart wants to live",
     description: "Roomivo: identity verification, AI matching, and digital leases for expats in France."
 };
 

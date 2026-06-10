@@ -1,12 +1,12 @@
 /**
  * Roomivo Brand Component
  * 
- * Official Roomivo brand identity: High-fidelity "R" mark in a circular container.
+ * Official Roomivo brand identity using the actual brand logo assets.
  * 
  * Variants:
- *  - "icon"     → logo mark only (circular R)
- *  - "wordmark" → icon + "Roomivo" text
- *  - "full"     → icon + "Roomivo" + tagline
+ *  - "icon"     → gold circle R mark only (/images/roomivo-icon.png)
+ *  - "wordmark" → icon + "Roomivo" text as single image (/images/roomivo-logo.png)
+ *  - "full"     → wordmark + tagline text
  */
 
 import React from 'react';
@@ -27,44 +27,68 @@ export default function RoomivoBrand({
     animate = true,
     theme = 'dark'
 }: RoomivoBrandProps) {
-    const sizes = {
-        sm: { icon: 32, w: 'w-8', h: 'h-8', text: 'text-lg', tagline: 'text-xs' },
-        md: { icon: 44, w: 'w-11', h: 'h-11', text: 'text-2xl', tagline: 'text-sm' },
-        lg: { icon: 64, w: 'w-16', h: 'h-16', text: 'text-4xl', tagline: 'text-base' },
-        xl: { icon: 96, w: 'w-24', h: 'h-24', text: 'text-6xl', tagline: 'text-lg' },
+    /* ── Size presets ── */
+    const iconSizes = {
+        sm: { h: 28,  w: 28  },
+        md: { h: 40,  w: 40  },
+        lg: { h: 56,  w: 56  },
+        xl: { h: 80,  w: 80  },
     };
 
-    const s = sizes[size] || sizes.md;
+    /* Logo (icon+text) aspect ratio ≈ 3.75:1  */
+    const logoSizes = {
+        sm: { h: 28,  w: 105 },
+        md: { h: 36,  w: 135 },
+        lg: { h: 48,  w: 180 },
+        xl: { h: 64,  w: 240 },
+    };
 
+    const taglineSizes = {
+        sm: 'text-[9px]',
+        md: 'text-xs',
+        lg: 'text-sm',
+        xl: 'text-base',
+    };
+
+    const animClass = animate ? 'animate-in zoom-in duration-500' : '';
+
+    /* ── Icon-only variant ── */
+    if (variant === 'icon') {
+        const s = iconSizes[size] || iconSizes.md;
+        return (
+            <div className={`flex items-center ${className}`}>
+                <div className={`transition-transform duration-500 hover:scale-105 active:scale-95 ${animClass}`}>
+                    <Image
+                        src="/images/roomivo-icon.png"
+                        alt="Roomivo"
+                        width={s.w}
+                        height={s.h}
+                        className="object-contain"
+                        priority
+                    />
+                </div>
+            </div>
+        );
+    }
+
+    /* ── Wordmark / Full variant — use the baked logo image ── */
+    const s = logoSizes[size] || logoSizes.md;
     return (
-        <div className={`flex items-center gap-4 ${className}`}>
-            {/* Logo Mark — Image based */}
-            <div
-                className={`${s.w} ${s.h} flex items-center justify-center transition-transform duration-500 hover:scale-105 active:scale-95 ${animate ? 'animate-in zoom-in duration-500' : ''}`}
-            >
+        <div className={`flex flex-col items-start ${className}`}>
+            <div className={`transition-transform duration-500 hover:scale-[1.03] active:scale-95 ${animClass}`}>
                 <Image
-                    src="/images/roomivo-icon.png"
-                    alt="Roomivo Logo"
-                    width={s.icon}
-                    height={s.icon}
-                    className="w-full h-full object-contain"
+                    src="/images/roomivo-logo.png"
+                    alt="Roomivo"
+                    width={s.w}
+                    height={s.h}
+                    className="object-contain object-left"
+                    priority
                 />
             </div>
-
-            {/* Wordmark */}
-            {(variant === 'wordmark' || variant === 'full') && (
-                <div className="flex flex-col justify-center">
-                    <span className={`${s.text} font-black tracking-tighter leading-none ${
-                        theme === 'glass' ? 'text-white' : 'bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 to-zinc-500'
-                    }`}>
-                        Roomivo
-                    </span>
-                    {variant === 'full' && (
-                        <p className={`${s.tagline} font-bold text-gold mt-1 uppercase tracking-[0.2em]`}>
-                            Premium Rentals
-                        </p>
-                    )}
-                </div>
+            {variant === 'full' && (
+                <p className={`${taglineSizes[size] || taglineSizes.md} font-bold text-gold mt-1 uppercase tracking-[0.2em]`}>
+                    Where your heart wants to live
+                </p>
             )}
         </div>
     );

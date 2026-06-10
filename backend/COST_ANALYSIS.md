@@ -1,6 +1,6 @@
 # Platform Cost Analysis (Estimates)
 
-This document outlines the projected operational costs for the Rental Platform based on the services used.
+This document outlines the projected operational costs for Roomivo based on the services used.
 
 > **Note**: Prices are estimates based on standard market rates (as of 2024/2025). Actual costs may vary by region and volume.
 

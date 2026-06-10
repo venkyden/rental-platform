@@ -1,6 +1,6 @@
 # Platform Environment Variables
 
-This document lists all API keys and configuration settings required to run the Rental Platform.
+This document lists all API keys and configuration settings required to run Roomivo.
 
 ## 🚨 Critical Infrastructure
 **Required for Application Startup.**

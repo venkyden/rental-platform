@@ -1,6 +1,6 @@
 # The "Growth Stack" Recommendation 🚀
 
-Based on your criteria (**Easy Integration**, **Cost Effective**, **Scalable**), here is the recommended stack for the Rental Platform. This setup avoids complex enterprise contracts while ensuring production quality.
+Based on your criteria (**Easy Integration**, **Cost Effective**, **Scalable**), here is the recommended stack for Roomivo. This setup avoids complex enterprise contracts while ensuring production quality.
 
 ## 1. Identity Verification (KYC)
 🏆 **Winner: Stripe Identity**

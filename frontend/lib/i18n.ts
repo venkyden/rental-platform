@@ -76,7 +76,7 @@ export const translations = {
                 privacy: "Privacy Policy",
                 notices: "Legal Notices",
                 help: "Help",
-                slogan: "Rent securely in France"
+                slogan: "Where your heart wants to live"
             }
         },
         navigation: {
@@ -2497,7 +2497,7 @@ export const translations = {
                 privacy: "Confidentialité",
                 notices: "Mentions Légales",
                 help: "Aide",
-                slogan: "Louez en toute sécurité en France"
+                slogan: "Là où ton cœur a envie de vivre"
             }
         },
         navigation: {
