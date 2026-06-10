@@ -280,3 +280,52 @@ async def test_insurance_upload_stores_cover_dates(client, monkeypatch):
         result = await session.execute(sa_select(UserModel).where(UserModel.id == user.id))
         db_user = result.scalar_one()
         assert db_user.insurance_data["mrh_cover_start"] == "2026-09-01"
+
+
+@pytest.mark.asyncio
+async def test_issue_mine_includes_mrh_claim(client):
+    from sqlalchemy import select as sa_select
+    from app.models.user import User as UserModel
+
+    sm = client._sessionmaker
+    user = await make_user(sm, role="tenant")
+
+    # Pre-set insurance fields directly in the DB
+    async with sm() as session:
+        result = await session.execute(sa_select(UserModel).where(UserModel.id == user.id))
+        db_user = result.scalar_one()
+        db_user.insurance_verified = True
+        db_user.insurance_status = "verified"
+        db_user.insurance_data = {"status": "verified", "mrh_assurance": "MEDIUM", "flags": []}
+        await session.commit()
+
+    resp = await client.post("/credentials/issue-mine", headers=auth(user))
+    assert resp.status_code == 201
+    claims = resp.json()["claims"]
+    assert claims["mrh_insurance_verified"] is True
+    assert claims["mrh_insurance_assurance"] == "MEDIUM"
+
+
+@pytest.mark.asyncio
+async def test_issue_mine_mrh_flagged_included_not_blocked(client):
+    from sqlalchemy import select as sa_select
+    from app.models.user import User as UserModel
+
+    sm = client._sessionmaker
+    user = await make_user(sm, role="tenant")
+
+    # Pre-set insurance fields directly in the DB
+    async with sm() as session:
+        result = await session.execute(sa_select(UserModel).where(UserModel.id == user.id))
+        db_user = result.scalar_one()
+        db_user.insurance_verified = False
+        db_user.insurance_status = "flagged"
+        db_user.insurance_data = {"status": "flagged", "mrh_assurance": "MEDIUM", "flags": ["name_mismatch"]}
+        await session.commit()
+
+    resp = await client.post("/credentials/issue-mine", headers=auth(user))
+    assert resp.status_code == 201
+    claims = resp.json()["claims"]
+    assert claims["mrh_insurance_verified"] is False
+    assert claims["mrh_insurance_status"] == "flagged"
+    assert "name_mismatch" in claims.get("mrh_insurance_flags", [])
