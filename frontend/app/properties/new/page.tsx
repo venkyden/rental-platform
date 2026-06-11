@@ -10,7 +10,7 @@ import { useToast } from '@/lib/ToastContext';
 import { apiClient } from '@/lib/api';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 
-import { PropertyFormData } from './steps/types';
+import { PropertyFormData, DpeWarning } from './steps/types';
 import Step1Identity from './steps/Step1Identity';
 import Step2Location from './steps/Step2Location';
 import Step3Details from './steps/Step3Details';
@@ -35,6 +35,7 @@ export default function NewPropertyPage() {
     const [loading, setLoading] = useState(false);
     const [enriching, setEnriching] = useState(false);
     const [publishing, setPublishing] = useState(false);
+    const [serverDpeWarnings, setServerDpeWarnings] = useState<DpeWarning[] | null>(null);
     const [generatingAi, setGeneratingAi] = useState(false);
 
     // ── Post-submit state ──────────────────────────────────────────────
@@ -194,9 +195,13 @@ export default function NewPropertyPage() {
             await apiClient.client.post(`/properties/${propertyId}/publish`, {
                 acknowledge_dpe_warning: acknowledgeDpe,
             });
+            setServerDpeWarnings(null);
         } catch (e: any) {
             if (e?.response?.status === 409) {
-                console.error('DPE acknowledgment required:', e.response.data?.detail);
+                const warnings: DpeWarning[] | undefined = e.response.data?.detail?.warnings;
+                if (warnings && warnings.length > 0) {
+                    setServerDpeWarnings(warnings);
+                }
                 toast.error(t('property.create.dpe.publishAckRequired', undefined, "This property's verified energy class requires acknowledgment before it can be published. Please review the energy rating."));
             } else {
                 console.error('Publish error:', e);
@@ -357,7 +362,7 @@ export default function NewPropertyPage() {
                                         <Step8Review formData={formData} t={t} declared={declared} setDeclared={setDeclared} loading={loading} onSubmit={handleSubmit} />
                                     )}
                                     {currentStep === 9 && (
-                                        <Step9Success formData={formData} t={t} mediaSession={mediaSession} publishing={publishing} onPublish={handlePublish} onReturn={() => router.push('/properties')} />
+                                        <Step9Success formData={formData} t={t} language={language} mediaSession={mediaSession} publishing={publishing} serverDpeWarnings={serverDpeWarnings} onPublish={handlePublish} onReturn={() => router.push('/properties')} />
                                     )}
                                 </motion.div>
                             </AnimatePresence>

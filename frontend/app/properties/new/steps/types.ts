@@ -58,3 +58,10 @@ export const STANDARD_AMENITIES = [
 ] as const;
 
 export type TFn = (key: string, params?: Record<string, string | number>, fallback?: string) => string;
+
+export interface DpeWarning {
+    code: string;
+    severity: string;
+    en: string;
+    fr: string;
+}
