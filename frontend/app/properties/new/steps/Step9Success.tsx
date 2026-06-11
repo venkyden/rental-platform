@@ -1,4 +1,5 @@
 
+import { useState } from 'react';
 import { CheckCircle2, Shield } from 'lucide-react';
 import QRCodeDisplay from '@/components/QRCodeDisplay';
 import { PropertyFormData, TFn } from './types';
@@ -8,18 +9,22 @@ interface Props {
     t: TFn;
     mediaSession: { verification_code: string; id: string; expires_at: string } | null;
     publishing: boolean;
-    onPublish: () => void;
+    onPublish: (acknowledgeDpe: boolean) => void;
     onReturn: () => void;
 }
 
 export default function Step9Success({ formData, t, mediaSession, publishing, onPublish, onReturn }: Props) {
+    const [dpeAcknowledged, setDpeAcknowledged] = useState(false);
+
     const isDepositLimitExceeded =
         formData.deposit !== undefined &&
         formData.monthly_rent > 0 &&
         formData.deposit > formData.monthly_rent * (formData.furnished ? 2 : 1);
-    const isDpeGBanned = formData.dpe_rating === 'G';
+    const isDpeDecenceWarning = formData.dpe_rating === 'G';
     const isSizeTooSmall = formData.size_sqm < 9;
-    const hasHardComplianceErrors = isDpeGBanned || isSizeTooSmall || isDepositLimitExceeded;
+    const hasHardComplianceErrors = isSizeTooSmall || isDepositLimitExceeded;
+    const publishBlocked =
+        publishing || hasHardComplianceErrors || (isDpeDecenceWarning && !dpeAcknowledged);
 
     return (
         <div className="text-center space-y-12">
@@ -54,9 +59,6 @@ export default function Step9Success({ formData, t, mediaSession, publishing, on
                             <span>{t('common.requiredByLaw', undefined, 'Required by Law')}</span>
                         </div>
                         <ul className="list-disc pl-5 space-y-2 text-xs font-bold text-red-600">
-                            {isDpeGBanned && (
-                                <li>{t('property.create.errors.dpeGBan', undefined, 'Properties with DPE G rating are banned from rental since January 2023.')}</li>
-                            )}
                             {isSizeTooSmall && (
                                 <li>{t('properties.new.steps.pricing.decencyWarning')} (Min 9m²)</li>
                             )}
@@ -70,9 +72,32 @@ export default function Step9Success({ formData, t, mediaSession, publishing, on
                         </ul>
                     </div>
                 )}
+                {isDpeDecenceWarning && (
+                    <div
+                        className="p-6 bg-amber-50/80 backdrop-blur-md border border-amber-200/60 rounded-3xl max-w-md mx-auto text-left space-y-3 mb-4 animate-fade-in"
+                        role="alert"
+                    >
+                        <div className="flex items-center gap-2 text-amber-800 font-black text-xs uppercase tracking-wider">
+                            <Shield className="w-4 h-4 text-amber-600" />
+                            <span>{t('property.create.dpe.decenceTitle', undefined, 'Energy decency notice')}</span>
+                        </div>
+                        <p className="text-xs font-bold text-amber-700">
+                            {t('property.create.dpe.decenceG', undefined, 'A class G dwelling cannot be leased as a primary residence (new or renewed lease) under the loi Climat. You may still publish this listing with its class shown.')}
+                        </p>
+                        <label className="flex items-start gap-2 text-xs font-bold text-amber-800 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={dpeAcknowledged}
+                                onChange={(e) => setDpeAcknowledged(e.target.checked)}
+                                className="mt-0.5"
+                            />
+                            <span>{t('property.create.dpe.decenceAck', undefined, 'I understand this dwelling cannot be leased as a primary residence in its current energy class.')}</span>
+                        </label>
+                    </div>
+                )}
                 <button
-                    onClick={onPublish}
-                    disabled={publishing || hasHardComplianceErrors}
+                    onClick={() => onPublish(isDpeDecenceWarning && dpeAcknowledged)}
+                    disabled={publishBlocked}
                     className="px-16 py-6 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.4em] rounded-[2rem] shadow-2xl hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
                     {publishing

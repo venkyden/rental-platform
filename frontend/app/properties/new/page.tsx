@@ -187,13 +187,19 @@ export default function NewPropertyPage() {
         }
     };
 
-    const handlePublish = async () => {
+    const handlePublish = async (acknowledgeDpe: boolean = false) => {
         if (!propertyId) return;
         setPublishing(true);
         try {
-            await apiClient.client.post(`/properties/${propertyId}/publish`);
-        } catch (e) {
-            console.error('Publish error:', e);
+            await apiClient.client.post(`/properties/${propertyId}/publish`, {
+                acknowledge_dpe_warning: acknowledgeDpe,
+            });
+        } catch (e: any) {
+            if (e?.response?.status === 409) {
+                console.error('DPE acknowledgment required:', e.response.data?.detail);
+            } else {
+                console.error('Publish error:', e);
+            }
         } finally {
             setPublishing(false);
         }
