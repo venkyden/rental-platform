@@ -15,7 +15,7 @@ moving on ([[roomivo-test-per-feature]]).
 
 Status legend: 🔴 blocking · 🟠 important · 🟡 polish · ✅ done.
 Verdicts: **KEEP / FIX / REPLACE / KILL / BUILD**.
-Last updated: 2026-06-05. Status: **planning — no code written yet.**
+Last updated: 2026-06-10. Status: **in progress** — Phase 2 items shipping incrementally; DPE reclassification enforcement (§5.4 PR-1/3/4/5) landed 2026-06-10 (see "Done this pass" in §5.4).
 
 ---
 
@@ -255,14 +255,35 @@ Tests follow the existing convention in `backend/tests_integration/` (real DB,
 ### 5.4 Property (PRD §6.3) — NEW module + `verification.py` property upload
 | # | Edge case | Expected | Now |
 |---|---|---|---|
-| PR-1 | DPE class **G** | **block** new primary-residence lease (loi Climat) | ❌ no ADEME |
-| PR-2 | Reference to class "H" | reject — scale is **A–G only** | ❌ |
-| PR-3 | 1 Jan 2026 DPE reform reclassification | read **live** ADEME, never hard-code class | ❌ |
-| PR-4 | DPE ID not found / invalid | `energy: UNVERIFIED`, **don't hard-block** | ❌ |
-| PR-5 | Expired DPE (>10yr / pre-Jul-2021) | require current | ❌ |
+| PR-1 | DPE class **G** | **warn + require acknowledgment** at publish, *not* hard-block (décence bites at lease formation, not advertising); keep class display mandatory (L126-33) | ✅ publish gate warns+ack, audit trail in `ownership_data` (2026-06-10) |
+| PR-2 | Reference to class "H" | reject — scale is **A–G only** | ✅ rejected in `ademe_dpe` |
+| PR-3 | 1 Jan 2026 DPE reform reclassification | read **live** ADEME, never hard-code class | ✅ authoritative ADEME (HIGH) class overrides self-typed at publish |
+| PR-4 | DPE ID not found / invalid | `energy: UNVERIFIED`, **don't hard-block** | ✅ self-declared allowed (flagged), publish not hard-blocked |
+| PR-5 | Expired DPE (>10yr / pre-Jul-2021) | require current | ✅ expired → warn + require acknowledgment at publish |
 | PR-6 | ADEME 5xx / timeout | **non-blocking** "pending", background retry | ❌ |
 | PR-7 | Zone tendue (encadrement loyers) | advisory flag vs loyer de référence majoré | ❌ |
 | PR-8 | Lister ≠ owner (ghost listing) | *taxe foncière* check, label **"control, not ownership-attested"** | 🔴 currently claims `ownership_verified=True` (overclaim) |
+
+**Done this pass — DPE reclassification enforcement (Phase 2 item 9, 2026-06-10)** —
+spec `docs/superpowers/specs/2026-06-10-dpe-reclassification-enforcement-design.md`,
+plan `docs/superpowers/plans/2026-06-10-dpe-reclassification-enforcement.md`.
+- New pure service `app/services/dpe_compliance.py` (`assess_dpe`): date-aware décence
+  calendar (G now / F 2028 / E 2034), authoritative-class resolution (ADEME HIGH > self-typed),
+  bilingual warnings. 10 unit tests.
+- Publish gate (`properties.py`) rewritten: missing class → 400 (**L126-33**, the ad must
+  state a class); class G / expired → **409 unless `acknowledge_dpe_warning`** (warn+ack, not
+  block); authoritative ADEME class overwrites self-typed `dpe_rating` for accuracy; ack audit
+  trail (`dpe_decence_acknowledged_at`/`_class`) in `ownership_data`.
+- Frontend: creation wizard + edit page warn (amber notice) instead of disabling publish;
+  required acknowledgment checkbox; ack UI driven by the backend **409 `warnings[]`** so
+  ADEME-override / expired cases are actionable (no dead-end); legally-correct copy
+  (loi Climat: class-G ban since **Jan 2025**, corrected from "2023"); FR/EN i18n parity.
+- **Legal grounding:** décence énergétique bites at lease formation (ANIL), not advertising,
+  so the platform warns rather than blocks; L126-33 makes the class *display* mandatory and
+  requires it be accurate (hence ADEME-class-wins). Sources in the spec.
+- 31 backend tests pass; frontend tsc clean.
+- Out of scope / follow-up: no ADEME DPE-number capture in the wizard (kept opt-in); no
+  scheduled live re-verification of existing listings.
 
 ### 5.5 Lease — generated (PRD §6.4) — `lease_generator.py`, `lease_templates.py`
 | # | Edge case | Expected | Now |
