@@ -18,6 +18,7 @@ from sqlalchemy import delete as sql_delete
 from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm.attributes import flag_modified
+from pydantic import BaseModel
 
 from app.core.database import get_db
 from app.models.property import Property, PropertyMedia, PropertyMediaSession, SavedProperty
@@ -35,6 +36,10 @@ from slowapi import Limiter
 from slowapi.util import get_remote_address
 
 limiter = Limiter(key_func=get_remote_address)
+
+
+class PublishRequest(BaseModel):
+    acknowledge_dpe_warning: bool = False
 
 router = APIRouter(prefix="/properties", tags=["Properties"])
 logger = logging.getLogger(__name__)
@@ -740,6 +745,7 @@ async def delete_property(
 async def publish_property(
     request: Request,
     property_id: UUID,
+    payload: Optional[PublishRequest] = None,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -825,6 +831,56 @@ async def publish_property(
             )
 
     # ── French Compliance Validations ──────────────────────────────────────
+
+    # DPE class: décence énergétique (warn + acknowledge, not block) and
+    # L126-33 (the class must appear in the ad, and be accurate).
+    from datetime import date
+    from app.services.dpe_compliance import assess_dpe
+
+    od = property_obj.ownership_data or {}
+    assessment = assess_dpe(
+        self_typed_class=property_obj.dpe_rating,
+        ademe_class=od.get("dpe_class"),
+        assurance=od.get("dpe_assurance"),
+        expired=od.get("dpe_expired"),
+        today=date.today(),
+    )
+
+    # L126-33: a rental ad must state the DPE class.
+    if assessment.authoritative_class is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                "A DPE (Diagnostic de Performance Énergétique) class is required to "
+                "publish a rental listing (Art. L126-33 CCH). — Une classe DPE est "
+                "obligatoire pour publier une annonce de location (art. L126-33 CCH)."
+            ),
+        )
+
+    # Keep the displayed class accurate (reclassification): authoritative wins.
+    if property_obj.dpe_rating != assessment.authoritative_class:
+        property_obj.dpe_rating = assessment.authoritative_class
+
+    acknowledged = payload.acknowledge_dpe_warning if payload else False
+    if assessment.requires_acknowledgment and not acknowledged:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={
+                "code": "dpe_acknowledgment_required",
+                "warnings": [
+                    {"code": w.code, "severity": w.severity, "en": w.en, "fr": w.fr}
+                    for w in assessment.warnings
+                ],
+            },
+        )
+    if assessment.requires_acknowledgment and acknowledged:
+        property_obj.ownership_data = {
+            **od,
+            "dpe_decence_acknowledged_at": naive_utcnow().isoformat(),
+            "dpe_decence_acknowledged_class": assessment.authoritative_class,
+        }
+
+    # Remaining French compliance (deposit cap, surface, rent control) — consolidated.
     from app.services.french_compliance import validate_property_compliance
     compliance_errors = validate_property_compliance(property_obj)
     if compliance_errors:
@@ -832,6 +888,7 @@ async def publish_property(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=" ".join(compliance_errors),
         )
+
     # ── End French Compliance ────────────────────────────────────────────
 
     # Publish

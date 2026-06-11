@@ -87,18 +87,15 @@ def validate_rent_control(
 
 def validate_property_compliance(property_obj) -> List[str]:
     """
-    Validates a property against French legal compliance requirements (DPE, Rent Caps, Surface).
+    Validates a property against French legal compliance requirements (Rent Caps, Surface).
     Returns a list of error strings. If the list is empty, the property is compliant.
+
+    DPE compliance is NOT handled here: the décence-énergétique class is assessed in
+    the publish endpoint via app.services.dpe_compliance.assess_dpe, which warns and
+    requires acknowledgment (rather than hard-blocking) and enforces the L126-33 class
+    display requirement. See docs/superpowers/specs/2026-06-10-dpe-reclassification-enforcement-design.md.
     """
     errors = []
-
-    # DPE rating is mandatory for all rental listings (since Jan 2021)
-    if not property_obj.dpe_rating:
-        errors.append("DPE (Diagnostic de Performance Énergétique) rating is required to publish a listing. This is mandatory under French law.")
-    
-    # DPE G ban: Properties with DPE G cannot be rented since January 2023
-    elif property_obj.dpe_rating == "G":
-        errors.append("Properties with DPE rating G are prohibited from being rented since January 2023 (Loi Climat et Résilience). Please improve the energy performance before listing.")
 
     deposit = _to_float(property_obj.deposit)
     monthly_rent = _to_float(property_obj.monthly_rent)
