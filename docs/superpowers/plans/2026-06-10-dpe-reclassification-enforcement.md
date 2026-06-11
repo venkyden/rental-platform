@@ -644,10 +644,22 @@ In `frontend/app/properties/new/page.tsx`, change `handlePublish` (lines 190-200
             await apiClient.client.post(`/properties/${propertyId}/publish`, {
                 acknowledge_dpe_warning: acknowledgeDpe,
             });
+            setServerDpeWarnings(null);
         } catch (e: any) {
             if (e?.response?.status === 409) {
-                console.error('DPE acknowledgment required:', e.response.data?.detail);
+                const warnings: DpeWarning[] | undefined = e.response.data?.detail?.warnings;
+                if (warnings && warnings.length > 0) {
+                    setServerDpeWarnings(warnings);
+                }
+                toast.error(t('property.create.dpe.publishAckRequired', undefined, "This property's verified energy class requires acknowledgment before it can be published. Please review the energy rating."));
             } else {
+                setServerDpeWarnings(null);
+                const detail = e?.response?.data?.detail;
+                const message =
+                    typeof detail === 'string'
+                        ? detail
+                        : t('common.error', undefined, 'Failed to publish property.');
+                toast.error(message);
                 console.error('Publish error:', e);
             }
         } finally {
@@ -710,7 +722,7 @@ Inside the FR `create:` object (around line 3605), add:
 
 - [ ] **Step 4: Verify parity and compile**
 
-Run: `cd frontend && node -e "const {translations}=require('./lib/i18n.ts')" 2>/dev/null || npx tsc --noEmit`
+Run: `cd frontend && npx tsc --noEmit`
 Expected: `npx tsc --noEmit` passes (no missing-key / syntax errors). Manually confirm the EN and FR `dpe` sub-objects have identical keys.
 
 - [ ] **Step 5: Commit**

@@ -737,8 +737,8 @@ export default function EditPropertyPage() {
                                                         <button
                                                             key={`dpe-${r}`}
                                                             onClick={() => updateFormData({ dpe_rating: r })}
-                                                            aria-label={`DPE ${r}${r === 'G' ? ' (banned)' : ''}`}
-                                                            className={`w-16 h-16 rounded-2xl flex items-center justify-center font-black text-xl transition-all ${formData.dpe_rating === r ? 'bg-zinc-900 text-white shadow-2xl scale-110' : r === 'G' ? 'bg-red-50 text-red-300 line-through' : 'bg-zinc-100 text-zinc-400'}`}
+                                                            aria-label={`DPE ${r}${r === 'G' ? ' (warning — requires acknowledgement)' : ''}`}
+                                                            className={`w-16 h-16 rounded-2xl flex items-center justify-center font-black text-xl transition-all ${formData.dpe_rating === r ? 'bg-zinc-900 text-white shadow-2xl scale-110' : r === 'G' ? 'bg-amber-50 text-amber-500' : 'bg-zinc-100 text-zinc-400'}`}
                                                         >
                                                             {r}
                                                         </button>

@@ -58,7 +58,7 @@ units, so any stored or self-typed class can be stale.
 Side-effect-free and fully unit-testable, mirroring `french_compliance.py`. It produces
 **facts only** — it makes no publish decision.
 
-```
+```python
 @dataclass
 class DPEAssessment:
     authoritative_class: Optional[str]   # ADEME HIGH class if present, else self-typed

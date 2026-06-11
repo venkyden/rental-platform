@@ -29,7 +29,8 @@ export default function Step9Success({ formData, t, language, mediaSession, publ
     // (fast path) OR when the backend returned a 409 with warnings (authoritative
     // class prohibited / expired DPE — only knowable server-side).
     const hasServerWarnings = !!serverDpeWarnings && serverDpeWarnings.length > 0;
-    const needsDpeAck = formData.dpe_rating === 'G' || hasServerWarnings;
+    const showDpeNotice = formData.dpe_rating === 'G' || hasServerWarnings;
+    const needsDpeAck = hasServerWarnings;
     const publishBlocked =
         publishing || hasHardComplianceErrors || (needsDpeAck && !dpeAcknowledged);
 
@@ -79,7 +80,7 @@ export default function Step9Success({ formData, t, language, mediaSession, publ
                         </ul>
                     </div>
                 )}
-                {needsDpeAck && (
+                {showDpeNotice && (
                     <div
                         className="p-6 bg-amber-50/80 backdrop-blur-md border border-amber-200/60 rounded-3xl max-w-md mx-auto text-left space-y-3 mb-4 animate-fade-in"
                         role="alert"

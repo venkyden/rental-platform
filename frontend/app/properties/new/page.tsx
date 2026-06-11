@@ -204,6 +204,13 @@ export default function NewPropertyPage() {
                 }
                 toast.error(t('property.create.dpe.publishAckRequired', undefined, "This property's verified energy class requires acknowledgment before it can be published. Please review the energy rating."));
             } else {
+                setServerDpeWarnings(null);
+                const detail = e?.response?.data?.detail;
+                const message =
+                    typeof detail === 'string'
+                        ? detail
+                        : t('common.error', undefined, 'Failed to publish property.');
+                toast.error(message);
                 console.error('Publish error:', e);
             }
         } finally {
