@@ -84,8 +84,9 @@ export default function Step9Success({ formData, t, mediaSession, publishing, on
                         <p className="text-xs font-bold text-amber-700">
                             {t('property.create.dpe.decenceG', undefined, 'A class G dwelling cannot be leased as a primary residence (new or renewed lease) under the loi Climat. You may still publish this listing with its class shown.')}
                         </p>
-                        <label className="flex items-start gap-2 text-xs font-bold text-amber-800 cursor-pointer">
+                        <label htmlFor="dpe-acknowledge" className="flex items-start gap-2 text-xs font-bold text-amber-800 cursor-pointer">
                             <input
+                                id="dpe-acknowledge"
                                 type="checkbox"
                                 checked={dpeAcknowledged}
                                 onChange={(e) => setDpeAcknowledged(e.target.checked)}

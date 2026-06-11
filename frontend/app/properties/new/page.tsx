@@ -197,6 +197,7 @@ export default function NewPropertyPage() {
         } catch (e: any) {
             if (e?.response?.status === 409) {
                 console.error('DPE acknowledgment required:', e.response.data?.detail);
+                toast.error(t('property.create.dpe.publishAckRequired', undefined, "This property's verified energy class requires acknowledgment before it can be published. Please review the energy rating."));
             } else {
                 console.error('Publish error:', e);
             }
