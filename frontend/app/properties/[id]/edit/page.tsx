@@ -737,16 +737,16 @@ export default function EditPropertyPage() {
                                                         <button
                                                             key={`dpe-${r}`}
                                                             onClick={() => updateFormData({ dpe_rating: r })}
-                                                            aria-label={`DPE ${r}${r === 'G' ? ' (banned)' : ''}`}
-                                                            className={`w-16 h-16 rounded-2xl flex items-center justify-center font-black text-xl transition-all ${formData.dpe_rating === r ? 'bg-zinc-900 text-white shadow-2xl scale-110' : r === 'G' ? 'bg-red-50 text-red-300 line-through' : 'bg-zinc-100 text-zinc-400'}`}
+                                                            aria-label={`DPE ${r}${r === 'G' ? ' (warning — requires acknowledgement)' : ''}`}
+                                                            className={`w-16 h-16 rounded-2xl flex items-center justify-center font-black text-xl transition-all ${formData.dpe_rating === r ? 'bg-zinc-900 text-white shadow-2xl scale-110' : r === 'G' ? 'bg-amber-50 text-amber-500' : 'bg-zinc-100 text-zinc-400'}`}
                                                         >
                                                             {r}
                                                         </button>
                                                     ))}
                                                 </div>
                                                 {formData.dpe_rating === 'G' && (
-                                                    <p className="text-red-500 text-xs font-bold" role="alert">
-                                                        ⚠️ {t('property.create.errors.dpeGBan', undefined, 'Properties with DPE G rating are banned from rental since January 2023.')}
+                                                    <p className="text-amber-600 text-xs font-bold" role="alert">
+                                                        ⚠️ {t('property.create.dpe.decenceG', undefined, 'A class G dwelling cannot be leased as a primary residence (new or renewed lease) under the loi Climat. You may still publish this listing with its class shown.')}
                                                     </p>
                                                 )}
                                             </div>
@@ -1758,12 +1758,23 @@ export default function EditPropertyPage() {
                                             {(() => {
                                                 const isDepositLimitExceeded = formData.deposit !== undefined && formData.monthly_rent > 0 && 
                                                     formData.deposit > formData.monthly_rent * (formData.furnished ? 2 : 1);
-                                                const isDpeGBanned = formData.dpe_rating === 'G';
+                                                const isDpeDecenceWarning = formData.dpe_rating === 'G';
                                                 const isSizeTooSmall = formData.size_sqm < 9;
-                                                const hasHardComplianceErrors = isDpeGBanned || isSizeTooSmall || isDepositLimitExceeded;
+                                                const hasHardComplianceErrors = isSizeTooSmall || isDepositLimitExceeded;
 
                                                 return (
                                                     <>
+                                                        {isDpeDecenceWarning && (
+                                                            <div className="p-6 bg-amber-50/80 backdrop-blur-md border border-amber-200/60 rounded-3xl text-left space-y-3 mb-4 animate-fade-in" role="alert">
+                                                                <div className="flex items-center gap-2 text-amber-800 font-black text-xs uppercase tracking-wider">
+                                                                    <Shield className="w-4 h-4 text-amber-600" />
+                                                                    <span>{t('property.create.dpe.decenceTitle', undefined, 'Energy decency notice')}</span>
+                                                                </div>
+                                                                <p className="text-xs font-bold text-amber-700">
+                                                                    {t('property.create.dpe.decenceG', undefined, 'A class G dwelling cannot be leased as a primary residence (new or renewed lease) under the loi Climat. You may still publish this listing with its class shown.')}
+                                                                </p>
+                                                            </div>
+                                                        )}
                                                         {hasHardComplianceErrors && (
                                                             <div className="p-6 bg-red-50/80 backdrop-blur-md border border-red-200/50 rounded-3xl text-left space-y-3 mb-4 animate-fade-in" role="alert">
                                                                 <div className="flex items-center gap-2 text-red-800 font-black text-xs uppercase tracking-wider">
@@ -1771,11 +1782,6 @@ export default function EditPropertyPage() {
                                                                     <span>{t('common.requiredByLaw', undefined, 'Required by Law')}</span>
                                                                 </div>
                                                                 <ul className="list-disc pl-5 space-y-2 text-xs font-bold text-red-600">
-                                                                    {isDpeGBanned && (
-                                                                        <li>
-                                                                            {t('property.create.errors.dpeGBan', undefined, 'Properties with DPE G rating are banned from rental since January 2023.')}
-                                                                        </li>
-                                                                    )}
                                                                     {isSizeTooSmall && (
                                                                         <li>
                                                                             {t('properties.new.steps.pricing.decencyWarning', undefined, 'Decency warning: Surface area is below 9m² per occupant.')} (Min 9m²)

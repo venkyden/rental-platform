@@ -1295,6 +1295,13 @@ export const translations = {
                 title: "Add New Property",
                 subtitle: "Setup your listing in a few simple steps.",
                 back: "Back to properties",
+                dpe: {
+                    decenceTitle: 'Energy decency notice',
+                    decenceG: 'A class G dwelling cannot be leased as a primary residence (new or renewed lease) under the loi Climat. You may still publish this listing with its class shown.',
+                    decenceAck: 'I understand this dwelling cannot be leased as a primary residence in its current energy class.',
+                    selfDeclared: 'Declared — not verified against ADEME',
+                    publishAckRequired: "This property's verified energy class requires acknowledgment before it can be published. Please review the energy rating.",
+                },
                 steps: {
                     basic: "Basic Information",
                     location: "Location",
@@ -3606,6 +3613,13 @@ export const translations = {
                 title: "Ajouter un Nouveau Bien",
                 subtitle: "Configurez votre annonce en quelques étapes simples.",
                 back: "Retour aux biens",
+                dpe: {
+                    decenceTitle: 'Décence énergétique',
+                    decenceG: "Un logement classé G ne peut être loué en résidence principale (bail nouveau ou renouvelé) selon la loi Climat. Vous pouvez tout de même publier cette annonce en affichant sa classe.",
+                    decenceAck: "Je comprends que ce logement ne peut être loué en résidence principale dans sa classe énergétique actuelle.",
+                    selfDeclared: 'Déclaré — non vérifié auprès de l’ADEME',
+                    publishAckRequired: "La classe énergétique vérifiée de ce logement doit être reconnue avant publication. Veuillez vérifier l'étiquette énergétique.",
+                },
                 steps: {
                     basic: "Informations de Base",
                     location: "Localisation",

@@ -87,18 +87,15 @@ def validate_rent_control(
 
 def validate_property_compliance(property_obj) -> List[str]:
     """
-    Validates a property against French legal compliance requirements (DPE, Rent Caps, Surface).
+    Validates a property against French legal compliance requirements (Rent Caps, Surface).
     Returns a list of error strings. If the list is empty, the property is compliant.
+
+    DPE compliance is NOT handled here: the décence-énergétique class is assessed in
+    the publish endpoint via app.services.dpe_compliance.assess_dpe, which warns and
+    requires acknowledgment (rather than hard-blocking) and enforces the L126-33 class
+    display requirement. See docs/superpowers/specs/2026-06-10-dpe-reclassification-enforcement-design.md.
     """
     errors = []
-
-    # DPE rating is mandatory for all rental listings (since Jan 2021)
-    if not property_obj.dpe_rating:
-        errors.append("DPE (Diagnostic de Performance Énergétique) rating is required to publish a listing. This is mandatory under French law.")
-    
-    # DPE G ban: Properties with DPE G cannot be rented since January 2023
-    elif property_obj.dpe_rating == "G":
-        errors.append("Properties with DPE rating G are prohibited from being rented since January 2023 (Loi Climat et Résilience). Please improve the energy performance before listing.")
 
     deposit = _to_float(property_obj.deposit)
     monthly_rent = _to_float(property_obj.monthly_rent)
@@ -136,6 +133,46 @@ def validate_property_compliance(property_obj) -> List[str]:
     if rent_error:
         errors.append(rent_error)
 
+    return errors
+
+
+def compliance_blocks_auto_activation(property_obj) -> List[str]:
+    """Non-interactive compliance gate (e.g. bulk import — no human present to
+    acknowledge a décence warning).
+
+    Combines ``validate_property_compliance`` (deposit/surface/rent control) with the
+    DPE décence assessment: a property that lacks a DPE class (L126-33), or whose
+    authoritative class requires décence acknowledgment (class G / expired DPE), must
+    NOT be silently activated — there is no one to acknowledge it. Returns a list of
+    error strings; an empty list means it is safe to keep the listing active.
+
+    The interactive publish endpoint does NOT use this — it surfaces the same DPE facts
+    as a warning + one-click acknowledgment instead (see properties.publish_property).
+    """
+    from datetime import date
+    from app.services.dpe_compliance import assess_dpe
+
+    errors = list(validate_property_compliance(property_obj))
+
+    raw_od = getattr(property_obj, "ownership_data", None)
+    od = raw_od if isinstance(raw_od, dict) else {}
+    assessment = assess_dpe(
+        self_typed_class=property_obj.dpe_rating,
+        ademe_class=od.get("dpe_class"),
+        assurance=od.get("dpe_assurance"),
+        expired=od.get("dpe_expired"),
+        today=date.today(),
+    )
+    if assessment.authoritative_class is None:
+        errors.append(
+            "A DPE (Diagnostic de Performance Énergétique) class is required to publish "
+            "a rental listing (Art. L126-33 CCH)."
+        )
+    elif assessment.requires_acknowledgment:
+        errors.append(
+            "DPE décence énergétique: this energy class cannot be leased as a primary "
+            "residence without acknowledgment (loi Climat) — left as draft for review."
+        )
     return errors
 
 

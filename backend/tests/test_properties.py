@@ -169,8 +169,8 @@ class TestPropertyCompliance:
             from conftest import mock_get_db
             target_app.dependency_overrides[get_db] = mock_get_db
 
-    def test_publish_dpe_g_ban(self, landlord_client):
-        """Publishing a property with DPE rating 'G' should fail (400 Bad Request) under French Law."""
+    def test_publish_dpe_g_requires_acknowledgment(self, landlord_client):
+        """Class G no longer hard-blocks; publish returns 409 until acknowledged."""
         from app.main import app
         from app.core.database import get_db
         from app.models.property import Property
@@ -183,16 +183,20 @@ class TestPropertyCompliance:
         mock_prop.id = property_id
         mock_prop.landlord_id = MOCK_LANDLORD.id
         mock_prop.dpe_rating = "G"
+        mock_prop.ownership_data = None
         mock_prop.deposit = None
         mock_prop.monthly_rent = 1000
+        mock_prop.size_sqm = 40
+        mock_prop.furnished = False
+        mock_prop.loyer_reference_majore = None
+        mock_prop.complement_de_loyer = None
+        mock_prop.complement_de_loyer_justification = None
         mock_prop.room_details = []
         mock_prop.photos = ["photo1.jpg"]
 
         mock_db = MagicMock()
         mock_db.execute = AsyncMock(
-            return_value=MagicMock(
-                scalar_one_or_none=MagicMock(return_value=mock_prop)
-            )
+            return_value=MagicMock(scalar_one_or_none=MagicMock(return_value=mock_prop))
         )
         mock_db.commit = AsyncMock()
         mock_db.refresh = AsyncMock()
@@ -202,11 +206,133 @@ class TestPropertyCompliance:
 
         target_app = app.app if hasattr(app, 'app') else app
         target_app.dependency_overrides[get_db] = override_get_db
-
         try:
             resp = landlord_client.post(f"/properties/{property_id}/publish")
-            assert resp.status_code == 400
-            assert "DPE rating G" in resp.json()["detail"]
+            assert resp.status_code == 409
+            detail = resp.json()["detail"]
+            assert detail["code"] == "dpe_acknowledgment_required"
+            assert any(w["code"] == "DECENCE_PROHIBITED" for w in detail["warnings"])
+        finally:
+            from conftest import mock_get_db
+            target_app.dependency_overrides[get_db] = mock_get_db
+
+    def test_publish_dpe_g_with_acknowledgment_succeeds(self, landlord_client):
+        """Class G publishes when the décence warning is acknowledged."""
+        from app.main import app
+        from app.core.database import get_db
+        from app.models.property import Property
+        from unittest.mock import AsyncMock, MagicMock
+        import uuid
+        from conftest import MOCK_LANDLORD
+
+        from datetime import datetime
+        property_id = uuid.uuid4()
+        mock_prop = MagicMock(spec=Property)
+        mock_prop.id = property_id
+        mock_prop.landlord_id = MOCK_LANDLORD.id
+        mock_prop.dpe_rating = "G"
+        mock_prop.ownership_data = None
+        mock_prop.deposit = None
+        mock_prop.monthly_rent = 1000
+        mock_prop.size_sqm = 40
+        mock_prop.furnished = False
+        mock_prop.loyer_reference_majore = None
+        mock_prop.complement_de_loyer = None
+        mock_prop.complement_de_loyer_justification = None
+        mock_prop.room_details = []
+        mock_prop.photos = ["photo1.jpg"]
+        # Concrete fields required for PropertyResponse serialization on the 200 path.
+        mock_prop.title = "Test apartment"
+        mock_prop.description = None
+        mock_prop.property_type = "apartment"
+        mock_prop.address_line1 = "1 Rue de Test"
+        mock_prop.address_line2 = None
+        mock_prop.city = "Paris"
+        mock_prop.postal_code = "75001"
+        mock_prop.country = "France"
+        mock_prop.latitude = None
+        mock_prop.longitude = None
+        mock_prop.bedrooms = 1
+        mock_prop.bathrooms = None
+        mock_prop.floor_number = None
+        mock_prop.kitchen_type = None
+        mock_prop.living_room_type = None
+        mock_prop.charges = None
+        mock_prop.charges_description = None
+        mock_prop.available_from = None
+        mock_prop.ges_rating = None
+        mock_prop.surface_type = None
+        mock_prop.loyer_reference = None
+        mock_prop.created_at = datetime(2026, 1, 1, 0, 0, 0)
+        mock_prop.updated_at = None
+        mock_prop.published_at = None
+
+        mock_db = MagicMock()
+        mock_db.execute = AsyncMock(
+            return_value=MagicMock(scalar_one_or_none=MagicMock(return_value=mock_prop))
+        )
+        mock_db.commit = AsyncMock()
+        mock_db.refresh = AsyncMock()
+
+        async def override_get_db():
+            yield mock_db
+
+        target_app = app.app if hasattr(app, 'app') else app
+        target_app.dependency_overrides[get_db] = override_get_db
+        try:
+            resp = landlord_client.post(
+                f"/properties/{property_id}/publish",
+                json={"acknowledge_dpe_warning": True},
+            )
+            assert resp.status_code == 200
+            assert mock_prop.status == "active"
+            assert mock_prop.ownership_data["dpe_decence_acknowledged_class"] == "G"
+            assert mock_prop.ownership_data["dpe_decence_acknowledged_at"]
+        finally:
+            from conftest import mock_get_db
+            target_app.dependency_overrides[get_db] = mock_get_db
+
+    def test_publish_high_ademe_class_overrides_self_typed(self, landlord_client):
+        """A HIGH ADEME 'G' overrides a self-typed 'F' → rating corrected + 409."""
+        from app.main import app
+        from app.core.database import get_db
+        from app.models.property import Property
+        from unittest.mock import AsyncMock, MagicMock
+        import uuid
+        from conftest import MOCK_LANDLORD
+
+        property_id = uuid.uuid4()
+        mock_prop = MagicMock(spec=Property)
+        mock_prop.id = property_id
+        mock_prop.landlord_id = MOCK_LANDLORD.id
+        mock_prop.dpe_rating = "F"
+        mock_prop.ownership_data = {"dpe_assurance": "HIGH", "dpe_class": "G", "dpe_expired": False}
+        mock_prop.deposit = None
+        mock_prop.monthly_rent = 1000
+        mock_prop.size_sqm = 40
+        mock_prop.furnished = False
+        mock_prop.loyer_reference_majore = None
+        mock_prop.complement_de_loyer = None
+        mock_prop.complement_de_loyer_justification = None
+        mock_prop.room_details = []
+        mock_prop.photos = ["photo1.jpg"]
+
+        mock_db = MagicMock()
+        mock_db.execute = AsyncMock(
+            return_value=MagicMock(scalar_one_or_none=MagicMock(return_value=mock_prop))
+        )
+        mock_db.commit = AsyncMock()
+        mock_db.refresh = AsyncMock()
+
+        async def override_get_db():
+            yield mock_db
+
+        target_app = app.app if hasattr(app, 'app') else app
+        target_app.dependency_overrides[get_db] = override_get_db
+        try:
+            resp = landlord_client.post(f"/properties/{property_id}/publish")
+            assert resp.status_code == 409
+            assert mock_prop.dpe_rating == "G"  # corrected from self-typed F
         finally:
             from conftest import mock_get_db
             target_app.dependency_overrides[get_db] = mock_get_db
@@ -225,6 +351,7 @@ class TestPropertyCompliance:
         mock_prop.id = property_id
         mock_prop.landlord_id = MOCK_LANDLORD.id
         mock_prop.dpe_rating = "D"
+        mock_prop.ownership_data = None
         mock_prop.furnished = False
         mock_prop.monthly_rent = 1000
         mock_prop.deposit = 1200  # Exceeds 1000 (1 month)
@@ -268,6 +395,7 @@ class TestPropertyCompliance:
         mock_prop.id = property_id
         mock_prop.landlord_id = MOCK_LANDLORD.id
         mock_prop.dpe_rating = "D"
+        mock_prop.ownership_data = None
         mock_prop.furnished = True
         mock_prop.monthly_rent = 1000
         mock_prop.deposit = 2500  # Exceeds 2000 (2 months)
@@ -311,6 +439,7 @@ class TestPropertyCompliance:
         mock_prop.id = property_id
         mock_prop.landlord_id = MOCK_LANDLORD.id
         mock_prop.dpe_rating = "D"
+        mock_prop.ownership_data = None
         mock_prop.deposit = None
         mock_prop.monthly_rent = 1000
         mock_prop.size_sqm = 8  # Below 9m2
