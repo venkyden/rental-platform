@@ -369,8 +369,8 @@ async def import_properties(
                 existing.ges_rating = row.get("ges_class") or existing.ges_rating
 
                 if existing.status == "active":
-                    from app.services.french_compliance import validate_property_compliance
-                    compliance_errors = validate_property_compliance(existing)
+                    from app.services.french_compliance import compliance_blocks_auto_activation
+                    compliance_errors = compliance_blocks_auto_activation(existing)
                     if compliance_errors:
                         existing.status = "draft"
                         results["errors"].append(
@@ -406,8 +406,8 @@ async def import_properties(
                 )
 
                 if prop.status == "active":
-                    from app.services.french_compliance import validate_property_compliance
-                    compliance_errors = validate_property_compliance(prop)
+                    from app.services.french_compliance import compliance_blocks_auto_activation
+                    compliance_errors = compliance_blocks_auto_activation(prop)
                     if compliance_errors:
                         prop.status = "draft"
                         results["errors"].append(

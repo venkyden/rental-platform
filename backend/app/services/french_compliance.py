@@ -136,6 +136,46 @@ def validate_property_compliance(property_obj) -> List[str]:
     return errors
 
 
+def compliance_blocks_auto_activation(property_obj) -> List[str]:
+    """Non-interactive compliance gate (e.g. bulk import — no human present to
+    acknowledge a décence warning).
+
+    Combines ``validate_property_compliance`` (deposit/surface/rent control) with the
+    DPE décence assessment: a property that lacks a DPE class (L126-33), or whose
+    authoritative class requires décence acknowledgment (class G / expired DPE), must
+    NOT be silently activated — there is no one to acknowledge it. Returns a list of
+    error strings; an empty list means it is safe to keep the listing active.
+
+    The interactive publish endpoint does NOT use this — it surfaces the same DPE facts
+    as a warning + one-click acknowledgment instead (see properties.publish_property).
+    """
+    from datetime import date
+    from app.services.dpe_compliance import assess_dpe
+
+    errors = list(validate_property_compliance(property_obj))
+
+    raw_od = getattr(property_obj, "ownership_data", None)
+    od = raw_od if isinstance(raw_od, dict) else {}
+    assessment = assess_dpe(
+        self_typed_class=property_obj.dpe_rating,
+        ademe_class=od.get("dpe_class"),
+        assurance=od.get("dpe_assurance"),
+        expired=od.get("dpe_expired"),
+        today=date.today(),
+    )
+    if assessment.authoritative_class is None:
+        errors.append(
+            "A DPE (Diagnostic de Performance Énergétique) class is required to publish "
+            "a rental listing (Art. L126-33 CCH)."
+        )
+    elif assessment.requires_acknowledgment:
+        errors.append(
+            "DPE décence énergétique: this energy class cannot be leased as a primary "
+            "residence without acknowledgment (loi Climat) — left as draft for review."
+        )
+    return errors
+
+
 def validate_alur_document_type(doc_type: str) -> Optional[str]:
     """Returns an error message if the document type is illegal to request under Loi ALUR."""
     if doc_type not in LOI_ALUR_ALLOWED_TENANT_DOCS:
