@@ -28,9 +28,12 @@ export default function Step9Success({ formData, t, language, mediaSession, publ
     // The décence acknowledgment is required when the self-typed class is G
     // (fast path) OR when the backend returned a 409 with warnings (authoritative
     // class prohibited / expired DPE — only knowable server-side).
+    // In the creation wizard there is no client-side ADEME data, so a self-typed G
+    // always requires backend acknowledgment — gate (and show the checkbox) upfront so
+    // it publishes in one click rather than after a failed 409 round-trip. Server 409
+    // warnings (e.g. ADEME-override / expired on an already-verified draft) also gate.
     const hasServerWarnings = !!serverDpeWarnings && serverDpeWarnings.length > 0;
-    const showDpeNotice = formData.dpe_rating === 'G' || hasServerWarnings;
-    const needsDpeAck = hasServerWarnings;
+    const needsDpeAck = formData.dpe_rating === 'G' || hasServerWarnings;
     const publishBlocked =
         publishing || hasHardComplianceErrors || (needsDpeAck && !dpeAcknowledged);
 
@@ -80,7 +83,7 @@ export default function Step9Success({ formData, t, language, mediaSession, publ
                         </ul>
                     </div>
                 )}
-                {showDpeNotice && (
+                {needsDpeAck && (
                     <div
                         className="p-6 bg-amber-50/80 backdrop-blur-md border border-amber-200/60 rounded-3xl max-w-md mx-auto text-left space-y-3 mb-4 animate-fade-in"
                         role="alert"
