@@ -76,8 +76,8 @@ export default function Step3Details({ formData, updateFormData, t }: Props) {
                     ))}
                 </div>
                 {formData.dpe_rating === 'G' && (
-                    <p className="text-red-500 text-xs font-bold" role="alert">
-                        ⚠️ {t('property.create.errors.dpeGBan', undefined, 'Properties with DPE G rating are banned from rental since January 2023.')}
+                    <p className="text-amber-600 text-xs font-bold" role="alert">
+                        ⚠️ {t('property.create.dpe.decenceG', undefined, 'A class G dwelling cannot be leased as a primary residence (new or renewed lease) under the loi Climat. You may still publish this listing with its class shown.')}
                     </p>
                 )}
             </div>
