@@ -58,6 +58,7 @@ interface VerificationStatusData {
     income_data: any;
     guarantor_type: string | null;
     guarantor_status: string | null;
+    guarantor_assurance: string | null;
     guarantor_data: any;
     visale_id: string | null;
     garantme_ref: string | null;
@@ -199,15 +200,19 @@ export default function VerificationPage() {
 
                             {/* Guarantor Progress Card */}
                             {isTenant && (
-                                <motion.div variants={itemVariants} className={`glass-card !p-10 flex flex-col items-center text-center group ${statusData?.guarantor_status === 'verified' ? 'border-emerald-100 bg-emerald-50/10' : ''}`}>
-                                    <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center mb-8 shadow-xl transition-all duration-500 group-hover:scale-110 ${statusData?.guarantor_status === 'verified' ? 'bg-emerald-950 text-white' : 'bg-zinc-100 text-zinc-400'}`}>
-                                        {statusData?.guarantor_status === 'verified' ? <ShieldCheck className="w-8 h-8" /> : <ShieldAlert className="w-8 h-8" />}
+                                <motion.div variants={itemVariants} className={`glass-card !p-10 flex flex-col items-center text-center group ${statusData?.guarantor_status === 'verified' ? 'border-emerald-100 bg-emerald-50/10' : statusData?.guarantor_status === 'submitted' ? 'border-blue-100 bg-blue-50/10' : ''}`}>
+                                    <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center mb-8 shadow-xl transition-all duration-500 group-hover:scale-110 ${statusData?.guarantor_status === 'verified' ? 'bg-emerald-950 text-white' : statusData?.guarantor_status === 'submitted' ? 'bg-blue-950 text-white' : 'bg-zinc-100 text-zinc-400'}`}>
+                                        {(statusData?.guarantor_status === 'verified' || statusData?.guarantor_status === 'submitted') ? <ShieldCheck className="w-8 h-8" /> : <ShieldAlert className="w-8 h-8" />}
                                     </div>
                                     <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] mb-3">
                                         {t('dashboard.verification.verification.tabs.guarantor', undefined, 'Guarantor')}
                                     </h3>
-                                    <p className={`text-lg font-black uppercase tracking-tight ${statusData?.guarantor_status === 'verified' ? 'text-zinc-950' : 'text-zinc-400'}`}>
-                                        {statusData?.guarantor_status === 'verified' ? t('dashboard.verification.verification.verified', undefined, 'Verified') : (statusData?.guarantor_status || 'None')}
+                                    <p className={`text-lg font-black uppercase tracking-tight ${statusData?.guarantor_status === 'verified' ? 'text-zinc-950' : statusData?.guarantor_status === 'submitted' ? 'text-zinc-950' : 'text-zinc-400'}`}>
+                                        {statusData?.guarantor_status === 'verified'
+                                            ? t('dashboard.verification.verification.verified', undefined, 'Verified')
+                                            : statusData?.guarantor_status === 'submitted'
+                                                ? t('verify.guarantor.statusSubmitted', undefined, 'Submitted')
+                                                : (statusData?.guarantor_status || 'None')}
                                     </p>
                                 </motion.div>
                             )}
@@ -414,13 +419,22 @@ export default function VerificationPage() {
                                                             </div>
                                                             <div className="flex justify-between items-center pb-4 border-b border-zinc-200/50">
                                                                 <span className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">Status</span>
-                                                                <span className={`text-[10px] px-3 py-1 rounded-full font-bold uppercase tracking-wider ${
-                                                                    statusData.guarantor_status === 'verified' ? 'bg-emerald-50 text-emerald-700' :
-                                                                    statusData.guarantor_status === 'pending' ? 'bg-amber-50 text-amber-700' :
-                                                                    'bg-zinc-100 text-zinc-600'
-                                                                }`}>
-                                                                    {statusData.guarantor_status}
-                                                                </span>
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className={`text-[10px] px-3 py-1 rounded-full font-bold uppercase tracking-wider ${
+                                                                        statusData.guarantor_status === 'verified' ? 'bg-emerald-50 text-emerald-700' :
+                                                                        statusData.guarantor_status === 'submitted' ? 'bg-blue-50 text-blue-700' :
+                                                                        statusData.guarantor_status === 'pending' ? 'bg-amber-50 text-amber-700' :
+                                                                        'bg-zinc-100 text-zinc-600'
+                                                                    }`}>
+                                                                        {statusData.guarantor_status}
+                                                                    </span>
+                                                                    {statusData.guarantor_assurance === 'MEDIUM' && (
+                                                                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 font-bold uppercase tracking-wider">OCR verified</span>
+                                                                    )}
+                                                                    {statusData.guarantor_assurance === 'DOCUMENT_SUBMITTED' && (
+                                                                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600 font-bold uppercase tracking-wider">Docs on file</span>
+                                                                    )}
+                                                                </div>
                                                             </div>
                                                             {statusData.guarantor_type === 'visale' && statusData.visale_id && (
                                                                 <div className="flex justify-between items-center">

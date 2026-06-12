@@ -98,6 +98,7 @@ class VerificationStatusResponse(BaseModel):
     income_data: Optional[dict] = None
     guarantor_type: Optional[str] = None
     guarantor_status: str = "unverified"
+    guarantor_assurance: Optional[str] = None  # "MEDIUM" | "DOCUMENT_SUBMITTED" | None
     guarantor_data: Optional[dict] = None
     visale_id: Optional[str] = None
     garantme_ref: Optional[str] = None
@@ -965,6 +966,7 @@ async def get_verification_status(current_user: User = Depends(get_current_user)
         "income_data": current_user.income_data,
         "guarantor_type": current_user.guarantor_type,
         "guarantor_status": current_user.guarantor_status,
+        "guarantor_assurance": (current_user.guarantor_data or {}).get("assurance"),
         "guarantor_data": safe_guarantor,
         "visale_id": current_user.visale_id,
         "garantme_ref": current_user.garantme_ref,
@@ -1032,17 +1034,26 @@ async def verify_visale(
     content = await file.read()
 
     from app.services.employment import employment_service
-    result = await employment_service.verify_document(
+    from app.services.guarantor_compliance import assess_guarantor_cert
+    from datetime import date
+
+    cert_data = await employment_service.extract_guarantor_cert(
         file_content=content,
         file_type=file.content_type,
-        expected_name=current_user.full_name,
-        document_type="visale_certificate",
+        cert_type="visale",
     )
-
-    if not result["verified"]:
+    if cert_data is None:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=result.get("rejection_reason") or "Visale certificate could not be verified. Please upload a valid certificate.",
+            detail="Could not read the Visale certificate. Please upload a clear copy.",
+        )
+
+    assessment = assess_guarantor_cert("visale", cert_data, current_user.full_name or "", date.today())
+    error_warnings = [w for w in assessment.warnings if w.severity == "error"]
+    if error_warnings:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=error_warnings[0].en,
         )
 
     watermarked_content = apply_watermark(content)
@@ -1062,11 +1073,18 @@ async def verify_visale(
         )
         await db.refresh(current_user)
     current_user.guarantor_status = "verified"
+    if assessment.cert_ref:
+        current_user.visale_id = assessment.cert_ref
     current_user.guarantor_data = {
         "file_url": storage_result["url"],
         "storage_key": storage_result.get("key"),
         "verified_at": naive_utcnow().isoformat(),
-        "extracted_data": result.get("data", {}),
+        "assurance": assessment.assurance,
+        "name_matched": assessment.name_matched,
+        "name_match_score": assessment.name_match_score,
+        "guaranteed_amount": assessment.guaranteed_amount,
+        "validity_date": assessment.validity_date.isoformat() if assessment.validity_date else None,
+        "warnings": [{"code": w.code, "severity": w.severity, "en": w.en, "fr": w.fr} for w in assessment.warnings],
     }
 
     await db.commit()
@@ -1076,6 +1094,8 @@ async def verify_visale(
         "message": "Visale certificate verified successfully",
         "guarantor_type": current_user.guarantor_type,
         "guarantor_status": current_user.guarantor_status,
+        "guarantor_assurance": assessment.assurance,
+        "visale_id": current_user.visale_id,
         "trust_score": current_user.trust_score,
     }
 
@@ -1100,17 +1120,26 @@ async def verify_garantme(
     content = await file.read()
 
     from app.services.employment import employment_service
-    result = await employment_service.verify_document(
+    from app.services.guarantor_compliance import assess_guarantor_cert
+    from datetime import date
+
+    cert_data = await employment_service.extract_guarantor_cert(
         file_content=content,
         file_type=file.content_type,
-        expected_name=current_user.full_name,
-        document_type="garantme_certificate",
+        cert_type="garantme",
     )
-
-    if not result["verified"]:
+    if cert_data is None:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=result.get("rejection_reason") or "Garantme certificate could not be verified. Please upload a valid certificate.",
+            detail="Could not read the Garantme certificate. Please upload a clear copy.",
+        )
+
+    assessment = assess_guarantor_cert("garantme", cert_data, current_user.full_name or "", date.today())
+    error_warnings = [w for w in assessment.warnings if w.severity == "error"]
+    if error_warnings:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=error_warnings[0].en,
         )
 
     watermarked_content = apply_watermark(content)
@@ -1130,11 +1159,18 @@ async def verify_garantme(
         )
         await db.refresh(current_user)
     current_user.guarantor_status = "verified"
+    if assessment.cert_ref:
+        current_user.garantme_ref = assessment.cert_ref
     current_user.guarantor_data = {
         "file_url": storage_result["url"],
         "storage_key": storage_result.get("key"),
         "verified_at": naive_utcnow().isoformat(),
-        "extracted_data": result.get("data", {}),
+        "assurance": assessment.assurance,
+        "name_matched": assessment.name_matched,
+        "name_match_score": assessment.name_match_score,
+        "guaranteed_amount": assessment.guaranteed_amount,
+        "validity_date": assessment.validity_date.isoformat() if assessment.validity_date else None,
+        "warnings": [{"code": w.code, "severity": w.severity, "en": w.en, "fr": w.fr} for w in assessment.warnings],
     }
 
     await db.commit()
@@ -1144,6 +1180,8 @@ async def verify_garantme(
         "message": "Garantme certificate verified successfully",
         "guarantor_type": current_user.guarantor_type,
         "guarantor_status": current_user.guarantor_status,
+        "guarantor_assurance": assessment.assurance,
+        "garantme_ref": current_user.garantme_ref,
         "trust_score": current_user.trust_score,
     }
 
@@ -1207,6 +1245,57 @@ async def upload_guarantor_document(
         "guarantor_type": current_user.guarantor_type,
         "guarantor_status": current_user.guarantor_status,
         "files": files_list,
+    }
+
+
+class PhysicalGuarantorSubmitRequest(BaseModel):
+    consent: bool  # explicit GDPR consent that the guarantor agreed to data upload
+
+
+@router.post("/guarantor/physical/submit")
+async def submit_physical_guarantor(
+    request: PhysicalGuarantorSubmitRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Mark physical guarantor dossier as submitted once all required docs are uploaded."""
+    if current_user.guarantor_type != "physical":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No physical guarantor flow in progress. Please upload documents first.",
+        )
+
+    if not request.consent:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Guarantor's explicit GDPR consent is required before submitting their documents.",
+        )
+
+    required_doc_types = {"id_card", "payslip", "tax_assessment", "proof_address"}
+    existing_files = (current_user.guarantor_data or {}).get("files", [])
+    uploaded_types = {f.get("document_type") for f in existing_files}
+    missing = required_doc_types - uploaded_types
+    if missing:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Missing required documents: {', '.join(sorted(missing))}",
+        )
+
+    current_user.guarantor_status = "submitted"
+    current_user.guarantor_data = {
+        **current_user.guarantor_data,
+        "assurance": "DOCUMENT_SUBMITTED",
+        "consent_at": naive_utcnow().isoformat(),
+    }
+
+    await db.commit()
+    await db.refresh(current_user)
+
+    return {
+        "message": "Physical guarantor dossier submitted successfully.",
+        "guarantor_type": current_user.guarantor_type,
+        "guarantor_status": current_user.guarantor_status,
+        "guarantor_assurance": "DOCUMENT_SUBMITTED",
     }
 
 

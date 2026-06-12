@@ -485,6 +485,85 @@ Return ONLY the JSON, no explanation."""
 
         return "Unknown error"
 
+    async def extract_guarantor_cert(
+        self,
+        file_content: bytes,
+        file_type: str,
+        cert_type: str,  # "visale" | "garantme"
+    ):
+        """Extract certificate fields from a Visale or Garantme guarantee document.
+
+        Returns a GuarantorCertData or None on failure. Intentionally separate from
+        the employment extraction path — guarantee certs are not employment documents.
+        """
+        from app.services.guarantor_compliance import GuarantorCertData
+
+        if not GEMINI_AVAILABLE or not self.ai_client:
+            logger.warning("Gemini not available; cannot extract guarantor certificate")
+            return None
+
+        import base64
+        if file_type == "application/pdf":
+            document_part = types.Part.from_bytes(data=file_content, mime_type="application/pdf")
+        else:
+            document_part = types.Part.from_bytes(data=file_content, mime_type=file_type)
+
+        prompt = f"""You are extracting fields from a French {cert_type.capitalize()} guarantee certificate.
+Return ONLY valid JSON with these exact keys:
+{{
+  "cert_id": "certificate number or reference visible on the document, or null",
+  "guaranteed_amount": 1200.00,
+  "validity_date": "YYYY-MM-DD or null",
+  "tenant_name": "full name of the guaranteed tenant, or null",
+  "institution": "Visale / Action Logement / Garantme / etc., or null"
+}}
+If a field is not visible or not applicable, return null for that field.
+Return ONLY the JSON object, no explanation."""
+
+        models_to_try = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"]
+        for model_name in models_to_try:
+            for attempt in range(2):
+                try:
+                    response = self.ai_client.models.generate_content(
+                        model=model_name,
+                        contents=[document_part, prompt],
+                        config=types.GenerateContentConfig(
+                            response_mime_type="application/json",
+                        ),
+                    )
+                    data = json.loads(response.text)
+
+                    validity_date = None
+                    raw_date = data.get("validity_date")
+                    if raw_date:
+                        try:
+                            from datetime import date as _date
+                            validity_date = _date.fromisoformat(raw_date)
+                        except (ValueError, TypeError):
+                            pass
+
+                    return GuarantorCertData(
+                        cert_id=data.get("cert_id") or None,
+                        guaranteed_amount=data.get("guaranteed_amount"),
+                        validity_date=validity_date,
+                        tenant_name=data.get("tenant_name") or None,
+                        institution=data.get("institution") or None,
+                    )
+                except Exception as e:
+                    error_str = str(e)
+                    if "503" in error_str or "UNAVAILABLE" in error_str or "429" in error_str:
+                        import asyncio as _aio
+                        await _aio.sleep((attempt + 1) * 2)
+                        continue
+                    elif "404" in error_str or "NOT_FOUND" in error_str:
+                        break
+                    else:
+                        logger.error(f"Guarantor cert extraction failed: {e}", exc_info=True)
+                        return None
+
+        logger.error("All AI models failed for guarantor cert extraction")
+        return None
+
     def calculate_income_ratio(
         self, net_salary: Decimal, monthly_rent: Decimal
     ) -> dict:

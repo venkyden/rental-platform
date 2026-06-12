@@ -15,7 +15,7 @@ moving on ([[roomivo-test-per-feature]]).
 
 Status legend: 🔴 blocking · 🟠 important · 🟡 polish · ✅ done.
 Verdicts: **KEEP / FIX / REPLACE / KILL / BUILD**.
-Last updated: 2026-06-10. Status: **in progress** — Phase 2 items shipping incrementally; DPE reclassification enforcement (§5.4 PR-1/3/4/5) landed 2026-06-10 (see "Done this pass" in §5.4).
+Last updated: 2026-06-12. Status: **in progress** — Phase 2 items shipping incrementally; DPE reclassification enforcement (§5.4 PR-1/3/4/5) landed 2026-06-10; guarantor verification fixes (§5.3 SV-3) landed 2026-06-12 (see "Done this pass" in §5.3).
 
 ---
 
@@ -245,12 +245,38 @@ Tests follow the existing convention in `backend/tests_integration/` (real DB,
 |---|---|---|---|
 | SV-1 | *Avis* printed text edited, 2D-Doc intact | read **signed payload** → tampering moot | ❌ OCRs printed text (defeated by this) |
 | SV-2 | Authentic but superseded *avis* | **SVAIR** recency check, else flag "recency unconfirmed" | 🟡 `verify_tax_notice` exists, no SVAIR |
-| SV-3 | Dependant on parent's *avis* (rattaché) | guarantor path (parent verifies own facts) | 🟡 guarantor flows exist |
+| SV-3 | Dependant on parent's *avis* (rattaché) | guarantor path (parent verifies own facts) | ✅ guarantor flows fixed (2026-06-12): dedicated cert AI extractor; `visale_id`/`garantme_ref` populated; expiry + name-match validation; physical submit endpoint; MEDIUM/DOCUMENT_SUBMITTED assurance tier |
 | SV-4 | No *avis* (student/first job/new arrival) | payslips/guarantor/Visale | 🟡 |
 | SV-5 | INTL foreign doc unverifiable | **MEDIUM** + currency normalisation | ❌ no FX normalisation |
 | SV-6 | FX volatility over lease term | flat labelled margin (+5%, as margin not σ) | ❌ |
 | SV-7 | Income just under threshold after margin | surface band honestly, **don't silently pass** | 🟡 `trust_score` opaque |
 | SV-8 | RFR mislabelled as monthly net income | present as **fiscal capacity**, not RFR/12 | ❌ audit all copy |
+
+**Done this pass — Guarantor verification fixes (Phase 2 item 11, 2026-06-12)** —
+spec `docs/superpowers/specs/2026-06-12-guarantor-verification-design.md`,
+plan `docs/superpowers/plans/2026-06-12-guarantor-verification.md`.
+- Fixed G-3 (critical): Visale/Garantme certs no longer routed through the employment
+  AI verifier. New `employment_service.extract_guarantor_cert()` method uses a dedicated
+  AI prompt to extract `cert_id`, `guaranteed_amount`, `validity_date`, `tenant_name`.
+- Fixed G-2 (critical): `visale_id` / `garantme_ref` User columns now populated from the
+  extracted `cert_id` after successful verification.
+- Fixed G-4 (important): certificate expiry check at verify time — expired certs → 422
+  with bilingual error (`CERT_EXPIRED`); boundary: cert expiring today is not expired.
+- Fixed G-5 (important): `guarantor_assurance` field added to `VerificationStatusResponse`
+  and status handler; values: `"MEDIUM"` (OCR-verified Visale/Garantme), `"DOCUMENT_SUBMITTED"`
+  (physical docs on file). Surfaced in both the verify page and verification dashboard.
+- Fixed G-1 (critical): physical guarantor submit button now calls new endpoint
+  `POST /verification/guarantor/physical/submit` with `{consent: bool}`; validates all 4 docs
+  present + consent; transitions to `"submitted"` status. Previously silently called `checkAuth()`
+  only and left status at `"pending"` forever.
+- New pure service `app/services/guarantor_compliance.py` (`assess_guarantor_cert`): fuzzy
+  name match, expiry, missing-field warnings (CERT_EXPIRED/NAME_MISMATCH → error; CERT_ID_NOT_EXTRACTED/
+  AMOUNT_NOT_EXTRACTED → info). 9 unit tests + 10 integration tests. 115 backend tests pass.
+- **Legal grounding:** Visale/Garantme verification is document-checking, not insurance distribution
+  (no ORIAS/IDD required); physical guarantor dossier collection is permissible under loi 89-462
+  art. 22-2 (ALUR) with explicit third-party GDPR consent. See spec §Legal basis.
+- Out of scope: Visale/Garantme direct API integration; admin review workflow for physical;
+  guarantor's own identity verification (HIGH assurance path).
 
 ### 5.4 Property (PRD §6.3) — NEW module + `verification.py` property upload
 | # | Edge case | Expected | Now |

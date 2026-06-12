@@ -48,6 +48,7 @@ export default function GuarantorVerifyPage() {
     // Existing guarantor status state
     const [existingType, setExistingType] = useState<string | null>(null);
     const [existingStatus, setExistingStatus] = useState<string | null>(null);
+    const [existingAssurance, setExistingAssurance] = useState<string | null>(null);
     const [existingData, setExistingData] = useState<any | null>(null);
     
     // Visale / Garantme certificate upload
@@ -77,6 +78,7 @@ export default function GuarantorVerifyPage() {
             const data = response.data;
             setExistingType(data.guarantor_type);
             setExistingStatus(data.guarantor_status);
+            setExistingAssurance(data.guarantor_assurance ?? null);
             setExistingData(data.guarantor_data);
             
             if (data.guarantor_type === 'physical' && data.guarantor_data?.files) {
@@ -308,13 +310,26 @@ export default function GuarantorVerifyPage() {
                                         </div>
                                         <div className="flex justify-between items-center">
                                             <span className="text-xs uppercase font-bold text-zinc-400 tracking-wider">Status</span>
-                                            <span className={`text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider ${
-                                                existingStatus === 'verified' ? 'bg-emerald-50 text-emerald-700' :
-                                                existingStatus === 'pending' ? 'bg-amber-50 text-amber-700' :
-                                                'bg-zinc-100 text-zinc-600'
-                                            }`}>
-                                                {existingStatus}
-                                            </span>
+                                            <div className="flex items-center gap-2">
+                                                <span className={`text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider ${
+                                                    existingStatus === 'verified' ? 'bg-emerald-50 text-emerald-700' :
+                                                    existingStatus === 'submitted' ? 'bg-blue-50 text-blue-700' :
+                                                    existingStatus === 'pending' ? 'bg-amber-50 text-amber-700' :
+                                                    'bg-zinc-100 text-zinc-600'
+                                                }`}>
+                                                    {existingStatus}
+                                                </span>
+                                                {existingAssurance === 'MEDIUM' && (
+                                                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 font-bold uppercase tracking-wider">
+                                                        {t('verify.guarantor.assuranceMedium', undefined, 'OCR verified')}
+                                                    </span>
+                                                )}
+                                                {existingAssurance === 'DOCUMENT_SUBMITTED' && (
+                                                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600 font-bold uppercase tracking-wider">
+                                                        {t('verify.guarantor.assuranceDocSubmitted', undefined, 'Docs on file')}
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
                                         {(existingType === 'visale' || existingType === 'garantme') && existingData?.file_url && (
                                             <div className="flex justify-between items-center">
@@ -729,13 +744,20 @@ export default function GuarantorVerifyPage() {
                                             <button
                                                 onClick={async () => {
                                                     if (!consentChecked) {
-                                                        toast.error('You must confirm consent to submit the guarantor dossier.');
+                                                        toast.error(t('verify.guarantor.physicalConsentRequired', undefined, 'You must confirm your guarantor\'s consent before submitting.'));
                                                         return;
                                                     }
-                                                    setSubmitting(true);
-                                                    await checkAuth();
-                                                    toast.success(t('verify.guarantor.success', undefined, 'Guarantor successfully registered!'));
-                                                    router.push('/dashboard');
+                                                    try {
+                                                        setSubmitting(true);
+                                                        await apiClient.client.post('/verification/guarantor/physical/submit', { consent: true });
+                                                        toast.success(t('verify.guarantor.physicalSubmitted', undefined, 'Guarantor dossier submitted. Your landlord will review the documents.'));
+                                                        await checkAuth();
+                                                        router.push('/dashboard');
+                                                    } catch (error: any) {
+                                                        toast.error(error.response?.data?.detail || t('verify.guarantor.submitFailed', undefined, 'Failed to submit the guarantor dossier.'));
+                                                    } finally {
+                                                        setSubmitting(false);
+                                                    }
                                                 }}
                                                 disabled={!isPhysicalComplete || submitting || !consentChecked}
                                                 className="w-full py-5 bg-zinc-950 hover:bg-zinc-900 text-white font-black text-xs uppercase tracking-widest transition-all rounded-3xl flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-50"
