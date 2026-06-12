@@ -221,11 +221,19 @@ async def test_identity_upload_rate_limited(client, sessionmaker_):
 @pytest.mark.asyncio
 async def test_visale_cert_upload_verified(client, sessionmaker_):
     user = await make_user(sessionmaker_, role="tenant")
+    from app.services.guarantor_compliance import GuarantorCertData
+    from datetime import date
 
     with patch("app.services.employment.employment_service") as mock_svc, \
          patch("app.services.storage.storage", _fake_storage()), \
          patch("app.routers.verification.apply_watermark", return_value=b"wm"):
-        mock_svc.verify_document = _fake_ai_verified()
+        mock_svc.extract_guarantor_cert = AsyncMock(return_value=GuarantorCertData(
+            cert_id="VS-2026-123",
+            guaranteed_amount=1200.0,
+            validity_date=date(2027, 1, 1),
+            tenant_name="Tenant User",
+            institution="Visale",
+        ))
         r = await client.post(
             "/verification/guarantor/visale",
             files={"file": ("visale_cert.pdf", b"%PDF content", "application/pdf")},
@@ -242,9 +250,17 @@ async def test_visale_cert_upload_verified(client, sessionmaker_):
 @pytest.mark.asyncio
 async def test_visale_cert_upload_ai_rejection_returns_422(client, sessionmaker_):
     user = await make_user(sessionmaker_, role="tenant")
+    from app.services.guarantor_compliance import GuarantorCertData
+    from datetime import date
 
     with patch("app.services.employment.employment_service") as mock_svc:
-        mock_svc.verify_document = _fake_ai_rejected("Name on document does not match account")
+        mock_svc.extract_guarantor_cert = AsyncMock(return_value=GuarantorCertData(
+            cert_id="VS-2026-123",
+            guaranteed_amount=1200.0,
+            validity_date=date(2027, 1, 1),
+            tenant_name="Mismatched Name",
+            institution="Visale",
+        ))
         r = await client.post(
             "/verification/guarantor/visale",
             files={"file": ("fake.jpg", b"not a cert", "image/jpeg")},
@@ -252,7 +268,7 @@ async def test_visale_cert_upload_ai_rejection_returns_422(client, sessionmaker_
         )
 
     assert r.status_code == 422
-    assert "Name on document" in r.json()["detail"]
+    assert "name" in r.json()["detail"].lower()
 
 
 @pytest.mark.asyncio
@@ -277,11 +293,19 @@ async def test_visale_upload_rate_limited(client, sessionmaker_):
 @pytest.mark.asyncio
 async def test_garantme_cert_upload_verified(client, sessionmaker_):
     user = await make_user(sessionmaker_, role="tenant")
+    from app.services.guarantor_compliance import GuarantorCertData
+    from datetime import date
 
     with patch("app.services.employment.employment_service") as mock_svc, \
          patch("app.services.storage.storage", _fake_storage()), \
          patch("app.routers.verification.apply_watermark", return_value=b"wm"):
-        mock_svc.verify_document = _fake_ai_verified()
+        mock_svc.extract_guarantor_cert = AsyncMock(return_value=GuarantorCertData(
+            cert_id="GM-2026-456",
+            guaranteed_amount=1000.0,
+            validity_date=date(2027, 1, 1),
+            tenant_name="Tenant User",
+            institution="Garantme",
+        ))
         r = await client.post(
             "/verification/guarantor/garantme",
             files={"file": ("garantme_cert.pdf", b"%PDF content", "application/pdf")},
@@ -300,7 +324,7 @@ async def test_garantme_cert_upload_ai_rejection_returns_422(client, sessionmake
     user = await make_user(sessionmaker_, role="tenant")
 
     with patch("app.services.employment.employment_service") as mock_svc:
-        mock_svc.verify_document = _fake_ai_rejected("Not a Garantme certificate")
+        mock_svc.extract_guarantor_cert = AsyncMock(return_value=None)
         r = await client.post(
             "/verification/guarantor/garantme",
             files={"file": ("fake.png", b"garbage", "image/png")},
