@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/useAuth';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api';
 import { useLanguage } from '@/lib/LanguageContext';
+import { useToast } from '@/lib/ToastContext';
 import PremiumLayout from '@/components/PremiumLayout';
 
 
@@ -15,6 +16,7 @@ export default function AccountSettingsPage() {
     const { user, logout } = useAuth();
     const { t } = useLanguage();
     const router = useRouter();
+    const toast = useToast();
 
     // Tab State for internal account sections
     const [activeTab, setActiveTab] = useState('profile');
@@ -76,8 +78,10 @@ export default function AccountSettingsPage() {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
             window.location.reload();
-        } catch (error) {
+        } catch (error: any) {
             console.error("Avatar upload failed:", error);
+            const msg = error?.response?.data?.detail || t('settings.account.messages.avatarError', undefined, 'Failed to upload avatar. Please try again.');
+            toast.error(typeof msg === 'string' ? msg : 'Failed to upload avatar.');
         } finally {
             setIsUploadingAvatar(false);
         }

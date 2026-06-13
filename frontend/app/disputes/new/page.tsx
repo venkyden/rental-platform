@@ -51,10 +51,26 @@ export default function NewDisputePage() {
         fetchLeases();
     }, [toast]);
 
+    const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
+    const ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif', 'video/mp4', 'video/quicktime', 'video/webm']);
+
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) {
-            setFiles(prev => [...prev, ...Array.from(e.target.files!)]);
+        if (!e.target.files) return;
+        const incoming = Array.from(e.target.files!);
+        const rejected: string[] = [];
+        const accepted: File[] = [];
+        for (const file of incoming) {
+            if (file.type && !ALLOWED_MIME.has(file.type)) {
+                rejected.push(`${file.name}: unsupported type`);
+            } else if (file.size > MAX_FILE_SIZE) {
+                rejected.push(`${file.name}: exceeds 50 MB`);
+            } else {
+                accepted.push(file);
+            }
         }
+        if (rejected.length > 0) toast.error(`Skipped: ${rejected.join(', ')}`);
+        if (accepted.length > 0) setFiles(prev => [...prev, ...accepted]);
+        e.target.value = '';
     };
 
     const removeFile = (index: number) => {
@@ -79,11 +95,21 @@ export default function NewDisputePage() {
             let evidenceUrls: string[] = [];
             if (files.length > 0) {
                 setUploading(true);
+                const failedNames: string[] = [];
                 for (const file of files) {
-                    const response = await apiClient.uploadMedia(file, "disputes");
-                    if (response.url) evidenceUrls.push(response.url);
+                    try {
+                        const response = await apiClient.uploadMedia(file, "disputes");
+                        if (response.url) evidenceUrls.push(response.url);
+                    } catch {
+                        failedNames.push(file.name);
+                    }
                 }
                 setUploading(false);
+                if (failedNames.length > 0) {
+                    toast.error(`Failed to upload: ${failedNames.join(', ')}. Remove them and try again.`);
+                    setSubmitting(false);
+                    return;
+                }
             }
 
             // Create dispute

@@ -61,6 +61,7 @@ export default function OnboardingPage() {
                 }
             } catch (err) {
                 console.error('Failed to load resume onboarding state', err);
+                setError(t('onboarding.error.resumeFailed', undefined, 'Could not restore your previous answers. You may need to start from scratch.'));
             } finally {
                 setLoadingResume(false);
             }

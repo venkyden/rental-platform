@@ -174,6 +174,13 @@ export default function EditPropertyPage() {
             try {
                 const response = await apiClient.client.get(`/properties/${propertyId}`);
                 const property = response.data;
+
+                if (property.landlord_id && user?.id && property.landlord_id !== user.id) {
+                    toast.error(t('properties.edit.unauthorized', undefined, 'You do not have permission to edit this property.'));
+                    router.push('/properties');
+                    return;
+                }
+
                 const standardAmenities = property.amenities?.standard || [];
                 const customAmenities = property.custom_amenities?.items || [];
                 const photos = property.photos || [];

@@ -1079,10 +1079,22 @@ async def upload_media(
         )
 
     import json
+    from pydantic import ValidationError
 
     # Parse metadata
-    meta = json.loads(metadata)
-    meta_obj = MediaUploadMetadata(**meta)
+    try:
+        meta = json.loads(metadata)
+        meta_obj = MediaUploadMetadata(**meta)
+    except json.JSONDecodeError as e:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Invalid metadata JSON: {e}",
+        )
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=e.errors(),
+        )
 
     # Get session
     result = await db.execute(
@@ -1143,7 +1155,20 @@ async def upload_media(
     from app.services.storage import storage
 
     content = await file.read()
-    file_extension = os.path.splitext(file.filename)[1]
+    file_extension = os.path.splitext(file.filename)[1] if file.filename else ""
+    if not file_extension:
+        # Infer extension from MIME type (common for mobile camera captures)
+        _mime_to_ext = {
+            "image/jpeg": ".jpg",
+            "image/png": ".png",
+            "image/webp": ".webp",
+            "image/heic": ".heic",
+            "image/heif": ".heif",
+            "video/mp4": ".mp4",
+            "video/quicktime": ".mov",
+            "video/webm": ".webm",
+        }
+        file_extension = _mime_to_ext.get((file.content_type or "").lower(), ".jpg")
     safe_filename = f"{secrets.token_urlsafe(16)}{file_extension}"
 
     try:

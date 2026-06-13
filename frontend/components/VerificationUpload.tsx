@@ -131,6 +131,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
     const [qrSession, setQrSession] = useState<{ code: string; captureUrl: string; expiresAt: string } | null>(null);
     const [qrLoading, setQrLoading] = useState(false);
     const pollRef = useRef<NodeJS.Timeout | null>(null);
+    const pollingCodeRef = useRef<string | null>(null);
     const eventSourceRef = useRef<EventSource | null>(null);
 
     // Property verification
@@ -163,6 +164,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
             if (recommended) setDocumentType(recommended.value);
         }
         return () => {
+            pollingCodeRef.current = null;
             if (pollRef.current) clearTimeout(pollRef.current);
             if (eventSourceRef.current) eventSourceRef.current.close();
         };
@@ -203,18 +205,27 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
         es.onerror = () => { es.close(); eventSourceRef.current = null; startPolling(code); };
     };
 
-    const startPolling = (code: string, delayMs = 2000) => {
+    const startPolling = (code: string, delayMs = 2000, retries = 0) => {
+        if (retries >= 40) {
+            setError('Verification session timed out. Please refresh the QR code.');
+            return;
+        }
+        pollingCodeRef.current = code;
         if (pollRef.current) clearTimeout(pollRef.current);
         pollRef.current = setTimeout(async () => {
+            pollRef.current = null;
+            if (pollingCodeRef.current !== code) return;
             try {
                 const res = await apiClient.client.get(`/verification/identity/session/${code}/status`);
                 if (res.data.completed) {
                     onSuccessAction();
-                } else {
-                    startPolling(code, Math.min(delayMs * 2, 30000));
+                } else if (pollingCodeRef.current === code) {
+                    startPolling(code, Math.min(delayMs * 2, 30000), retries + 1);
                 }
             } catch {
-                setError('Verification session expired. Please refresh the QR code.');
+                if (pollingCodeRef.current === code) {
+                    setError('Verification session expired. Please refresh the QR code.');
+                }
             }
         }, delayMs) as unknown as NodeJS.Timeout;
     };
@@ -247,8 +258,15 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
             setIdFile(processed);
             setIdPreviewUrl(URL.createObjectURL(processed));
             setIdStep('preview');
-        } catch {
-            toast.error('Failed to process image. Please try again.');
+        } catch (err: any) {
+            if (err?.message === 'COMPRESSION_TIMEOUT') {
+                toast('Image compression timed out — uploading at full size.', { icon: '⚠️' });
+                setIdFile(raw);
+                setIdPreviewUrl(URL.createObjectURL(raw));
+                setIdStep('preview');
+            } else {
+                toast.error('Failed to process image. Please try again.');
+            }
         }
         if (e.target) e.target.value = '';
     }, []);
@@ -256,7 +274,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
     const compressImage = (f: File): Promise<Blob> =>
         new Promise((resolve, reject) => {
             const timer = setTimeout(() => {
-                resolve(f);
+                reject(new Error('COMPRESSION_TIMEOUT'));
             }, 3000);
             const reader = new FileReader();
             reader.readAsDataURL(f);

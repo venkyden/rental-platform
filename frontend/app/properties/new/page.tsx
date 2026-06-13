@@ -170,7 +170,13 @@ export default function NewPropertyPage() {
             if (payload.dpe_rating === '') payload.dpe_rating = undefined as any;
             if (payload.ges_rating === '') payload.ges_rating = undefined as any;
             if (payload.complement_de_loyer_justification === '') payload.complement_de_loyer_justification = undefined as any;
-            payload.description = descLanguage === 'fr' ? descriptionFr.trim() : descriptionEn.trim();
+            if (descriptionEn.trim() && descriptionFr.trim()) {
+                payload.description = `### English\n${descriptionEn.trim()}\n\n### Français\n${descriptionFr.trim()}`;
+            } else if (descriptionEn.trim()) {
+                payload.description = descriptionEn.trim();
+            } else {
+                payload.description = descriptionFr.trim();
+            }
 
             const res = await apiClient.client.post('/properties', payload);
             const newId = res.data.id;
