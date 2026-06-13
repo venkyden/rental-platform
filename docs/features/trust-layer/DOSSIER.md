@@ -15,7 +15,7 @@ moving on ([[roomivo-test-per-feature]]).
 
 Status legend: 🔴 blocking · 🟠 important · 🟡 polish · ✅ done.
 Verdicts: **KEEP / FIX / REPLACE / KILL / BUILD**.
-Last updated: 2026-06-12. Status: **in progress** — Phase 2 items shipping incrementally; DPE reclassification enforcement (§5.4 PR-1/3/4/5) landed 2026-06-10; guarantor verification fixes (§5.3 SV-3) landed 2026-06-12 (see "Done this pass" in §5.3).
+Last updated: 2026-06-13. Status: **in progress** — Phase 2 items shipping incrementally; DPE reclassification enforcement (§5.4 PR-1/3/4/5) landed 2026-06-10; guarantor verification fixes (§5.3 SV-3) landed 2026-06-12; ADEME PENDING retry (PR-6) + zone tendue advisory (PR-7) landed 2026-06-13. Open: 8/9 (legal gate), 11 (CSCA), 12 (statelessness); SV-2 (SVAIR).
 
 ---
 
@@ -286,8 +286,8 @@ plan `docs/superpowers/plans/2026-06-12-guarantor-verification.md`.
 | PR-3 | 1 Jan 2026 DPE reform reclassification | read **live** ADEME, never hard-code class | ✅ authoritative ADEME (HIGH) class overrides self-typed at publish |
 | PR-4 | DPE ID not found / invalid | `energy: UNVERIFIED`, **don't hard-block** | ✅ self-declared allowed (flagged), publish not hard-blocked |
 | PR-5 | Expired DPE (>10yr / pre-Jul-2021) | require current | ✅ expired → warn + require acknowledgment at publish |
-| PR-6 | ADEME 5xx / timeout | **non-blocking** "pending", background retry | ❌ |
-| PR-7 | Zone tendue (encadrement loyers) | advisory flag vs loyer de référence majoré | ❌ |
+| PR-6 | ADEME 5xx / timeout | **non-blocking** "pending", background retry | ✅ `ADEMEUnavailable` → stores `PENDING`; `retry_pending_dpe_task` (Celery, 60 s countdown, 3 retries × 5 min) resolves to HIGH/UNVERIFIED |
+| PR-7 | Zone tendue (encadrement loyers) | advisory flag vs loyer de référence majoré | ✅ `app/services/zone_tendue.py` dept-prefix lookup; `PropertyResponse.is_zone_tendue` computed field; publish stores `zone_tendue_advisory` in `ownership_data` when in zone and no `loyer_reference_majore` set |
 | PR-8 | Lister ≠ owner (ghost listing) | *taxe foncière* check, label **"control, not ownership-attested"** | 🔴 currently claims `ownership_verified=True` (overclaim) |
 
 **Done this pass — DPE reclassification enforcement (Phase 2 item 9, 2026-06-10)** —
