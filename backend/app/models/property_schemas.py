@@ -7,7 +7,7 @@ from decimal import Decimal
 from typing import List, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 class PropertyCreate(BaseModel):
@@ -252,8 +252,17 @@ class PropertyResponse(BaseModel):
     match_score: Optional[int] = None
     match_breakdown: Optional[dict] = None
 
+    # Zone tendue advisory (PR-7) — computed from postal_code, never stored separately
+    is_zone_tendue: bool = False
+
     class Config:
         from_attributes = True
+
+    @model_validator(mode="after")
+    def _set_zone_tendue(self) -> "PropertyResponse":
+        from app.services.zone_tendue import is_zone_tendue
+        self.is_zone_tendue = is_zone_tendue(self.postal_code)
+        return self
 
 
 class MediaSessionCreate(BaseModel):

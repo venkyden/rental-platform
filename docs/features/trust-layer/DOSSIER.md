@@ -15,12 +15,13 @@ moving on ([[roomivo-test-per-feature]]).
 
 Status legend: 🔴 blocking · 🟠 important · 🟡 polish · ✅ done.
 Verdicts: **KEEP / FIX / REPLACE / KILL / BUILD**.
-Last updated: 2026-06-13. Status: **Phase 1 complete** — all 6 Phase-1 items shipped; Phase 2 MRH/DPE/guarantor also shipped. Open: Phase 2 items 8/9 (legal gate), 11 (CSCA), 12 (statelessness); INTL solvency FX; zone-tendue advisory.
+Last updated: 2026-06-13. Status: **Phase 1 complete** — all 6 Phase-1 items shipped; Phase 2 MRH/DPE/guarantor also shipped. Open: Phase 2 items 8/9 (legal gate), 11 (CSCA), 12 (statelessness); INTL solvency FX.
 - **Phase 1 complete (2026-06-13):** GLI removed; credential core; FR identity MEDIUM rail + avis cross-check; FR HIGH solvency (2D-Doc ECDSA); property control (taxe foncière, PR-8 fixed); both-sided wiring (/c/ verify page, issue-mine, QR share, anti-phishing).
 - **Item 2 (Credential core) landed 2026-06-05:** `Credential` model, `app/services/credential.py` (Ed25519 sign/verify), `app/routers/credentials.py` (POST /issue, GET /{id}, GET /public-key, GET /evidence.pdf, POST /issue-mine, POST /revoke), Alembic migration `c1d2e3f4a5b6`, 23 integration tests green. Assurance guards AS-1/AS-2/AS-3 enforced at signing time.
 - **DPE reclassification enforcement (§5.4 PR-1/3/4/5) landed 2026-06-10.**
 - **Guarantor verification fixes (§5.3 SV-3) landed 2026-06-12** (see "Done this pass" in §5.3).
 - **MRH insurance verification (§5.8 IN-1..IN-5) landed** (see "Done this pass" in §5.8).
+- **ADEME PENDING retry (PR-6) + zone tendue advisory (PR-7) landed 2026-06-13.**
 
 ---
 
@@ -309,8 +310,8 @@ spec `docs/superpowers/specs/2026-06-06-fr-identity-medium-rail-design.md` (2D-D
 | PR-3 | 1 Jan 2026 DPE reform reclassification | read **live** ADEME, never hard-code class | ✅ authoritative ADEME (HIGH) class overrides self-typed at publish |
 | PR-4 | DPE ID not found / invalid | `energy: UNVERIFIED`, **don't hard-block** | ✅ self-declared allowed (flagged), publish not hard-blocked |
 | PR-5 | Expired DPE (>10yr / pre-Jul-2021) | require current | ✅ expired → warn + require acknowledgment at publish |
-| PR-6 | ADEME 5xx / timeout | **non-blocking** "pending", background retry | ❌ |
-| PR-7 | Zone tendue (encadrement loyers) | advisory flag vs loyer de référence majoré | ❌ |
+| PR-6 | ADEME 5xx / timeout | **non-blocking** "pending", background retry | ✅ `ADEMEUnavailable` → stores `PENDING`; `retry_pending_dpe_task` (Celery, 60 s countdown, 3 retries × 5 min) resolves to HIGH/UNVERIFIED |
+| PR-7 | Zone tendue (encadrement loyers) | advisory flag vs loyer de référence majoré | ✅ `app/services/zone_tendue.py` dept-prefix lookup; `PropertyResponse.is_zone_tendue` computed field; publish stores `zone_tendue_advisory` in `ownership_data` when in zone and no `loyer_reference_majore` set |
 | PR-8 | Lister ≠ owner (ghost listing) | *taxe foncière* check, label **"control, not ownership-attested"** | ✅ `POST /verification/property/control` — AI-extracts taxe foncière; stores `property_control: "documented"` / `_assurance: "MEDIUM"`; never claims ownership proved (2026-06-13) |
 
 **Done this pass — DPE reclassification enforcement (Phase 2 item 9, 2026-06-10)** —
