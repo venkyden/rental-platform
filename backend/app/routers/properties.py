@@ -892,9 +892,9 @@ async def publish_property(
     # ── End French Compliance ────────────────────────────────────────────
 
     # PR-7: Zone tendue advisory — non-blocking, stored for audit + surfaced via
-    # is_zone_tendue on PropertyResponse.  Advisory fires when in zone tendue and
-    # loyer_reference_majore is absent; cleared explicitly on re-publish if the
-    # landlord has since supplied it (prevents stale advisory persisting forever).
+    # is_zone_tendue on PropertyResponse. Advisory fires when in zone tendue and
+    # loyer_reference_majore absent; cleared on re-publish if landlord supplies
+    # it (prevents stale advisory).
     from app.services.zone_tendue import is_zone_tendue
     _od = property_obj.ownership_data or {}
     if is_zone_tendue(property_obj.postal_code) and not property_obj.loyer_reference_majore:

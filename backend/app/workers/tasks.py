@@ -146,13 +146,18 @@ def retry_pending_dpe_task(self, property_id: str, dpe_number: str) -> dict:
                     select(Property).where(Property.id == _uuid.UUID(property_id))
                 )
                 prop = result.scalar_one_or_none()
-                if prop:
-                    prop.ownership_data = {
-                        **(prop.ownership_data or {}),
-                        "dpe_assurance": "UNVERIFIED",
-                        "dpe_number": dpe_number.strip(),
-                    }
-                    await db.commit()
+                if prop is None:
+                    logger.warning(
+                        "retry_pending_dpe: property %s no longer exists — dropping task",
+                        property_id,
+                    )
+                    return {"status": "not_found"}
+                prop.ownership_data = {
+                    **(prop.ownership_data or {}),
+                    "dpe_assurance": "UNVERIFIED",
+                    "dpe_number": dpe_number.strip(),
+                }
+                await db.commit()
             logger.info("retry_pending_dpe: DPE %r not found → UNVERIFIED (property %s)", dpe_number, property_id)
             return {"status": "unverified"}
         except ADEMEUnavailable as exc:

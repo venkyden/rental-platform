@@ -9,13 +9,13 @@ notice (not 3) at re-letting, rent increases between tenancies are capped
 where a prefectoral arrêté has been issued (Paris, Lille, Lyon, etc.).
 
 Implementation notes:
-- We use the 2-character department code as a proxy for zone tendue.
-  This over-approximates slightly (not every commune in a listed department
-  is zone tendue), but under-approximation would silently skip affected
-  landlords. The result is advisory only — never a hard block.
-- Corsica (2A/2B) and overseas departments (971–976) are excluded; they
+- Uses 2-character department code as proxy for zone tendue.
+  Over-approximates slightly (not every commune in listed department
+  is zone tendue), but under-approximation would skip affected
+  landlords. Result is advisory only — never a hard block.
+- Corsica (2A/2B) and overseas departments (971–976) excluded;
   operate under different legal frameworks.
-- The full commune-level list (~1 149 communes) is in the annexe to
+- Full commune-level list (~1 149 communes) in annexe to
   Arrêté du 1er août 2013 (NOR: ETLL1319837A), updated by Décret 2023-822.
 """
 from typing import Optional
@@ -73,10 +73,10 @@ _ZONE_TENDUE_DEPT_PREFIXES: frozenset = frozenset({
 
 def is_zone_tendue(postal_code: Optional[str]) -> bool:
     """
-    Return True if the postal code is likely in a zone tendue.
+    Returns True if postal code likely in zone tendue.
 
-    Uses the 2-digit department prefix. Advisory — may over-approximate;
-    never use as a hard compliance gate.
+    Uses 2-digit department prefix. Advisory — may over-approximate;
+    never use as hard compliance gate.
     """
     if not postal_code:
         return False
@@ -84,8 +84,8 @@ def is_zone_tendue(postal_code: Optional[str]) -> bool:
     if len(clean) < 2:
         return False
     dept = clean[:2]
-    # Exclude Corsica (2A/2B are not digit-only) — already excluded since
-    # they won't match any entry in the all-numeric set, but make it explicit.
+    # Exclude Corsica (2A/2B not digit-only) — already excluded (won't match
+    # any entry in all-numeric set), but make explicit.
     if not dept.isdigit():
         return False
     return dept in _ZONE_TENDUE_DEPT_PREFIXES
