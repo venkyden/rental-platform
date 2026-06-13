@@ -82,12 +82,6 @@
       "details": "Skipped - requires verified identity",
       "timestamp": "2026-05-23T14:52:49.354956"
     },
-    {
-      "name": "GLI Quote Generation",
-      "passed": true,
-      "details": "Premium: \u20ac24.0/mo",
-      "timestamp": "2026-05-23T14:52:49.410206"
-    }
   ],
   "load": [
     {

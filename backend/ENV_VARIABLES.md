@@ -12,6 +12,7 @@ The backend will fail to start if these are missing.
 | `SECRET_KEY` | 32+ character random string for security/crypto. | **YES** |
 | `ANTHROPIC_API_KEY` | API Key for Claude AI (Used for Document/Payslip Verification). | **YES** |
 | `FRONTEND_URL` | URL of the frontend app (for CORS and Deep Links). Default: `http://localhost:3000`. | **YES** |
+| `CREDENTIAL_SIGNING_KEY` | Ed25519 signing key — hex-encoded 32-byte seed (64 hex chars). **Required in production** (startup fails without it). In dev, an ephemeral key is used (credentials don't survive restart). Generate: `python scripts/generate_key.py --credential-key` | **YES (prod)** |
 
 ## ⚠️ Functional Dependencies
 **Required for specific features.**

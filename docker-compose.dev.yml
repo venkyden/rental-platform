@@ -15,6 +15,9 @@ services:
       - FRONTEND_URL=http://localhost:3001
       - ENVIRONMENT=development
       - PYTHONPATH=/app
+      - CREDENTIAL_SIGNING_KEY=${CREDENTIAL_SIGNING_KEY}
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - FROM_EMAIL=${FROM_EMAIL}
     depends_on:
       db:
         condition: service_healthy
@@ -38,6 +41,9 @@ services:
       - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
       - PYTHONPATH=/app
+      - CREDENTIAL_SIGNING_KEY=${CREDENTIAL_SIGNING_KEY}
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - FROM_EMAIL=${FROM_EMAIL}
     depends_on:
       - redis
       - db

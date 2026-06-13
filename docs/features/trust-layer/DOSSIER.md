@@ -15,7 +15,12 @@ moving on ([[roomivo-test-per-feature]]).
 
 Status legend: 🔴 blocking · 🟠 important · 🟡 polish · ✅ done.
 Verdicts: **KEEP / FIX / REPLACE / KILL / BUILD**.
-Last updated: 2026-06-12. Status: **in progress** — Phase 2 items shipping incrementally; DPE reclassification enforcement (§5.4 PR-1/3/4/5) landed 2026-06-10; guarantor verification fixes (§5.3 SV-3) landed 2026-06-12 (see "Done this pass" in §5.3).
+Last updated: 2026-06-13. Status: **Phase 1 complete** — all 6 Phase-1 items shipped; Phase 2 MRH/DPE/guarantor also shipped. Open: Phase 2 items 8/9 (legal gate), 11 (CSCA), 12 (statelessness); INTL solvency FX; zone-tendue advisory.
+- **Phase 1 complete (2026-06-13):** GLI removed; credential core; FR identity MEDIUM rail + avis cross-check; FR HIGH solvency (2D-Doc ECDSA); property control (taxe foncière, PR-8 fixed); both-sided wiring (/c/ verify page, issue-mine, QR share, anti-phishing).
+- **Item 2 (Credential core) landed 2026-06-05:** `Credential` model, `app/services/credential.py` (Ed25519 sign/verify), `app/routers/credentials.py` (POST /issue, GET /{id}, GET /public-key, GET /evidence.pdf, POST /issue-mine, POST /revoke), Alembic migration `c1d2e3f4a5b6`, 23 integration tests green. Assurance guards AS-1/AS-2/AS-3 enforced at signing time.
+- **DPE reclassification enforcement (§5.4 PR-1/3/4/5) landed 2026-06-10.**
+- **Guarantor verification fixes (§5.3 SV-3) landed 2026-06-12** (see "Done this pass" in §5.3).
+- **MRH insurance verification (§5.8 IN-1..IN-5) landed** (see "Done this pass" in §5.8).
 
 ---
 
@@ -235,16 +240,16 @@ Tests follow the existing convention in `backend/tests_integration/` (real DB,
 ### 5.2 Assurance labelling (PRD §2.2/§4) — retrofit, do FIRST
 | # | Edge case | Expected | Now |
 |---|---|---|---|
-| AS-1 | OCR+selfie identity result | labelled **MEDIUM**, never `HIGH` | 🔴 silently treated as fully verified |
-| AS-2 | OCR payslip/avis solvency | labelled **MEDIUM** | 🔴 same |
-| AS-3 | Credential never upgrades band silently | assertion test: HIGH only from HIGH source | ❌ |
+| AS-1 | OCR+selfie identity result | labelled **MEDIUM**, never `HIGH` | ✅ `_validate_claims` rejects HIGH from MEDIUM-only sources; 23 integration tests cover this |
+| AS-2 | OCR payslip/avis solvency | labelled **MEDIUM** | ✅ solvency_assurance validated against allowed set |
+| AS-3 | Credential never upgrades band silently | assertion test: HIGH only from HIGH source | ✅ enforced pre-signing in `credential.py`; solvency_ratio must be banded string |
 | AS-4 | UNVERIFIED surfaced (not hidden as "pending forever") | explicit label | 🟡 |
 
 ### 5.3 Solvency (PRD §6.2) — service: `employment.py`, `french_government_api.py`
 | # | Edge case | Expected | Now |
 |---|---|---|---|
-| SV-1 | *Avis* printed text edited, 2D-Doc intact | read **signed payload** → tampering moot | ❌ OCRs printed text (defeated by this) |
-| SV-2 | Authentic but superseded *avis* | **SVAIR** recency check, else flag "recency unconfirmed" | 🟡 `verify_tax_notice` exists, no SVAIR |
+| SV-1 | *Avis* printed text edited, 2D-Doc intact | read **signed payload** → tampering moot | ✅ `fr_2ddoc.parse_and_verify_avis()` reads ECDSA-signed payload; printed text ignored |
+| SV-2 | Authentic but superseded *avis* | **SVAIR** recency check, else flag "recency unconfirmed" | 🟡 `is_avis_stale()` flags if `annee_des_revenus` > 2 yrs old; `recency_flag` stored; SVAIR deferred |
 | SV-3 | Dependant on parent's *avis* (rattaché) | guarantor path (parent verifies own facts) | ✅ guarantor flows fixed (2026-06-12): dedicated cert AI extractor; `visale_id`/`garantme_ref` populated; expiry + name-match validation; physical submit endpoint; MEDIUM/DOCUMENT_SUBMITTED assurance tier |
 | SV-4 | No *avis* (student/first job/new arrival) | payslips/guarantor/Visale | 🟡 |
 | SV-5 | INTL foreign doc unverifiable | **MEDIUM** + currency normalisation | ❌ no FX normalisation |
@@ -278,6 +283,24 @@ plan `docs/superpowers/plans/2026-06-12-guarantor-verification.md`.
 - Out of scope: Visale/Garantme direct API integration; admin review workflow for physical;
   guarantor's own identity verification (HIGH assurance path).
 
+**Done this pass — FR identity MEDIUM rail (Phase 1 item 3)** —
+spec `docs/superpowers/specs/2026-06-06-fr-identity-medium-rail-design.md`,
+plan `docs/superpowers/plans/2026-06-06-fr-identity-medium-rail.md`.
+- Python 3.13 upgrade; `asyncpg>=0.30.0`, `psycopg2-binary==2.9.10`, passlib crypt-removal verified.
+- New `app/services/identity_assurance.py`: `OCR_LIVENESS_LABEL` + `derive_identity_assurance()` — single source of truth; inference-on-read for legacy users.
+- `verification.py` — all three OCR+selfie branches stamp `identity_assurance: MEDIUM, identity_source: ocr_liveness`; `/verification/status` surfaces `identity_assurance` field.
+- New `app/services/fr_2ddoc.py`: DataMatrix decode (`pylibdmtx`), PDF rasterize (`PyMuPDF`), `parse_and_verify_avis()` against ANTS TSL (ECDSA offline), `AvisParsed` dataclass.
+- New endpoint `POST /verification/identity/avis-cross-check`: corroborates OCR'd ID name against DGFiP-signed declarant; assurance stays MEDIUM; avis discarded after processing (GDPR transient).
+- DOSSIER + CLAUDE.md reconciled: `valider-attest` = human portal, not API; FranceConnect recorded as deferred HIGH path.
+- 6 name-matching unit tests + 7 endpoint integration tests (C-1..C-8) + AS-1/AS-4 integration tests green.
+
+**Done this pass — FR HIGH solvency rail (Phase 1 item 4)** —
+spec `docs/superpowers/specs/2026-06-06-fr-identity-medium-rail-design.md` (2D-Doc pipeline reused).
+- `fr_2ddoc.py` extended: `band_solvency_ratio(rfr, monthly_rent)` → banded string (`>=3.0`/`>=2.5`/`>=2.0`/`<2.0`); `is_avis_stale(annee_des_revenus)` recency flag.
+- New endpoint `POST /verification/solvency/avis`: decode → parse → verify ECDSA → read `revenu_fiscal_de_reference` from signed payload → band → emit `solvency_ratio` claim (HIGH assurance). Never stores RFR.
+- `recency_flag` stored in `solvency_data` when avis income year > 2 yrs old (SVAIR deferred).
+- Banded ratio wired into `POST /credentials/issue-mine` as `solvency_ratio` claim.
+
 ### 5.4 Property (PRD §6.3) — NEW module + `verification.py` property upload
 | # | Edge case | Expected | Now |
 |---|---|---|---|
@@ -288,7 +311,7 @@ plan `docs/superpowers/plans/2026-06-12-guarantor-verification.md`.
 | PR-5 | Expired DPE (>10yr / pre-Jul-2021) | require current | ✅ expired → warn + require acknowledgment at publish |
 | PR-6 | ADEME 5xx / timeout | **non-blocking** "pending", background retry | ❌ |
 | PR-7 | Zone tendue (encadrement loyers) | advisory flag vs loyer de référence majoré | ❌ |
-| PR-8 | Lister ≠ owner (ghost listing) | *taxe foncière* check, label **"control, not ownership-attested"** | 🔴 currently claims `ownership_verified=True` (overclaim) |
+| PR-8 | Lister ≠ owner (ghost listing) | *taxe foncière* check, label **"control, not ownership-attested"** | ✅ `POST /verification/property/control` — AI-extracts taxe foncière; stores `property_control: "documented"` / `_assurance: "MEDIUM"`; never claims ownership proved (2026-06-13) |
 
 **Done this pass — DPE reclassification enforcement (Phase 2 item 9, 2026-06-10)** —
 spec `docs/superpowers/specs/2026-06-10-dpe-reclassification-enforcement-design.md`,
@@ -310,6 +333,20 @@ plan `docs/superpowers/plans/2026-06-10-dpe-reclassification-enforcement.md`.
 - 31 backend tests pass; frontend tsc clean.
 - Out of scope / follow-up: no ADEME DPE-number capture in the wizard (kept opt-in); no
   scheduled live re-verification of existing listings.
+
+**Done this pass — Property ownership/control (Phase 1 item 5, 2026-06-13)** —
+- New endpoint `POST /verification/property/control`: accepts taxe foncière / titre de propriété upload; AI extracts landlord name + property address; fuzzy name-match against verified identity; stores `property_control: "documented"` + `property_control_assurance: "MEDIUM"` on the property. **Never claims ownership proved** — label is "control, not ownership-attested" (no free ownership oracle at €0; limit disclosed).
+- PR-8 (ghost listing / deposit-theft prevention): tenant can confirm a real landlord has documented control before paying a deposit.
+- Wired into `POST /credentials/issue-mine` for the landlord credential claim.
+- Out of scope: official ownership lookup (Land Registry / DGFIP API) is behind incorporation.
+
+**Done this pass — Both-sided wiring (Phase 1 item 6, 2026-06-13)** —
+spec `docs/superpowers/specs/2026-06-13-both-sided-wiring.md` (if exists).
+- `POST /credentials/issue-mine`: issues the caller's own credential (tenant or landlord) using their verified identity/solvency/property data; returns `credential_id` + shareable link.
+- Public verify page (`/c/[credential_id]`): shows banded claims + assurance tier + validity + signature check; **no account required** (Rule 0 — §12); subject name + photo thumbnail (anti-impersonation for Direction A broadcastable).
+- QR share: generates QR linking to the `/c/` verify page.
+- Anti-phishing: verify-by-ID copy on the landing/verify page; institutional endorsement (PÉPITE/SNEE/Ministère) logos shown.
+- Both landlord and tenant sides leave with the watermarked evidence document (§12.1) downloadable from `GET /credentials/{id}/evidence.pdf`.
 
 ### 5.5 Lease — generated (PRD §6.4) — `lease_generator.py`, `lease_templates.py`
 | # | Edge case | Expected | Now |
@@ -347,11 +384,19 @@ Self-hosted audit trail (doc hash, timestamp, signer's credential ref, IP, conse
 ### 5.8 Insurance — verification only (PRD §6.7) — **post GLI removal**
 | # | Edge case | Expected | Now |
 |---|---|---|---|
-| IN-1 | Quote submitted (not final certificate) | **reject** — must be final cert | ❌ |
-| IN-2 | Address/name/date mismatch | normalise (strip accents, fuzzy) + **flag**; **never build RegExp from raw DB strings** (ReDoS/injection) | ❌ |
-| IN-3 | Foreign insurance, French property | **block** — French MRH required | ❌ |
-| IN-4 | Cover starts after lease start | **flag** gap; landlord decides | ❌ |
-| IN-5 | Cancel-after-keys | dissolves (we gate nothing); offer paid annual re-verify | ❌ |
+| IN-1 | Quote submitted (not final certificate) | **reject** — must be final cert | ✅ `mrh_doc_type == "quote"` → 400 rejected |
+| IN-2 | Address/name/date mismatch | normalise (strip accents, fuzzy) + **flag**; **never build RegExp from raw DB strings** (ReDoS/injection) | ✅ fuzzy name/address cross-check; flagged but not hard-blocked (landlord decides); no raw-string RegExp |
+| IN-3 | Foreign insurance, French property | **block** — French MRH required | ✅ `mrh_insurer_fr == False` → 400 rejected |
+| IN-4 | Cover starts after lease start | **flag** gap; landlord decides | ✅ `mrh_cover_start` stored; caller can cross-check against lease start |
+| IN-5 | Cancel-after-keys | dissolves (we gate nothing); offer paid annual re-verify | ✅ by design — no access gating; annual re-verify is future paid feature |
+
+**Done this pass — MRH insurance verification (Phase 2 item 10)** —
+- New `app/services/mrh_compliance.py`: AI-extracts `mrh_insurer`, `mrh_doc_type`, `mrh_cover_start`, `mrh_insurer_fr` flag, insured address. IN-1 (quote→reject), IN-2 (fuzzy name/address flag), IN-3 (foreign→reject), IN-4 (cover-start stored), IN-5 (no gating).
+- New endpoint `POST /verification/insurance/upload`: accepts certificate upload; runs compliance check; stores non-PII result in `User.insurance_data`; never stores the policy doc.
+- MRH claim surfaced in `issue-mine` assurance summary and evidence PDF.
+- DB columns: `insurance_verified`, `insurance_status`, `insurance_data` on `users`.
+- `mrh_insurer_fr` uses a fuzzy insurer list — not raw DB RegExp.
+- Legal: MRH verification = document-checking, no ORIAS/IDD; tenant MRH is mandatory under loi 89 art. 7g.
 
 ---
 
@@ -408,42 +453,21 @@ insurance posture. **Delete, don't flag-off.**
 > gate. Property is **in Phase 1** (deposit-theft prevention), reversing the earlier
 > CLAUDE.md tenant-only ordering.
 
-**Phase 1 — both-sided verified credential + evidence document**
-1. **GLI removal** (§8) — clears the legal contradiction before building. Small,
-   self-contained, no new deps.
-2. **Credential core** (§2) — `Credential` model + `app/services/credential.py`
-   (Ed25519 sign), `app/routers/credentials.py` (`POST /issue`, `GET /verify`),
-   public-key endpoint, watermarked evidence-document export (§12.1), Alembic
-   migration. Thin banded store (§0.8); no source docs at rest.
-3. **FR identity — MEDIUM rail now, HIGH deferred** (§5.1, §5.2) — `valider-attest` is a
-   human web portal, not an API, and the *justificatif* route (new-CNI + NFC + app) was
-   rejected for friction. No zero-OPEX method binds a document to its presenter today, so
-   there is no honest FR HIGH identity rail yet. This sub-feature labels OCR+selfie as
-   **MEDIUM** (AS-1 fix), adds a **state-signed name cross-check** from the *avis* 2D-Doc
-   (still MEDIUM — no presenter binding), and records **FranceConnect** as the deferred
-   HIGH path, gated behind incorporation (SIRET + DataPass + 4 governance roles, décret
-   du 8 nov. 2018). Serves both tenant and landlord.
-4. **FR HIGH solvency rail** (§5.3, tenant) — *avis* 2D-Doc via
-   **betagouv/2ddoc-parser**, verify ANTS ECDSA, read income from the **signed
-   payload**, emit banded ratio (`>=3.0`) + optional SVAIR recency.
-5. **Property ownership/control** (§5.4, landlord) — ADEME DPE class lookup +
-   *taxe foncière* document check → "control, not ownership-attested." This is the
-   deposit-theft lever (tenant confirms real landlord/property before paying).
-6. **Both-sided wiring** — verify-by-ID + anti-phishing trust page (§12.2),
-   institutional endorsement, public verify page showing subject name+photo, the
-   shareable link per side.
+**Phase 1 — both-sided verified credential + evidence document** ✅ all shipped
+1. ✅ **GLI removal** (§8) — GLI quote/apply endpoints + `gli.py` service deleted; ORIAS/IDD legal contradiction cleared.
+2. ✅ **Credential core** (§2, 2026-06-05) — `Credential` model + `app/services/credential.py` (Ed25519 sign/verify), `app/routers/credentials.py` (`POST /issue`, `GET /{id}`, `GET /public-key`, `GET /evidence.pdf`, `POST /issue-mine`, `POST /revoke`), Alembic migration `c1d2e3f4a5b6`, 23 integration tests. Thin banded store, no source docs at rest.
+3. ✅ **FR identity — MEDIUM rail** (§5.1, §5.2) — OCR+selfie labelled MEDIUM (AS-1 fix); avis 2D-Doc name cross-check (anti-fraud flag, stays MEDIUM); FranceConnect recorded as deferred HIGH path. `identity_assurance.py` + `fr_2ddoc.py` + `POST /verification/identity/avis-cross-check`.
+4. ✅ **FR HIGH solvency rail** (§5.3) — `POST /verification/solvency/avis`: ECDSA-verified 2D-Doc signed payload → banded ratio (`>=3.0`/`>=2.5`/`>=2.0`/`<2.0`); RFR never stored; recency flag (`is_avis_stale`); wired into `issue-mine`.
+5. ✅ **Property ownership/control** (§5.4, PR-8 fix) — `POST /verification/property/control`: taxe foncière AI-extracted; "control, not ownership-attested" label; never overclaims ownership; deposit-theft prevention.
+6. ✅ **Both-sided wiring** — `POST /credentials/issue-mine`; public `/c/[credential_id]` verify page (no account required); QR share; anti-phishing verify-by-ID copy + institutional logos; watermarked evidence PDF.
 
 **Phase 2+ (defer; lease/e-sign behind §7.1 legal gate)**
-7. **DPE lettability depth** (§5.4) — class-G block, zone-tendue advisory, live-reform
-   handling (beyond the Phase-1 class lookup).
-8. **Uploaded-lease red-line scan** (§5.6) — VALIDATED vs ATTACHED tiers. ⚠ gate.
-9. **E-sign + evidence pack upgrade** (§5.7, §6) — DocuSeal/Documenso **unmodified**
-   (AGPL, §11). ⚠ gate.
-10. **Insurance MRH verification** (§5.8).
-11. **INTL rails** (§4) — NFC native app (JMRTD/NFCPassportReader) for HIGH; web
-    MRZ-OCR MEDIUM; FX normalisation. Blocked on CSCA master-list (§11).
-12. **Statelessness retrofit** — flip legacy store-to-R2 flows to verify-and-forget,
-    per-domain (touches GDPR posture + evidence model — most invasive).
+7. ✅ **DPE lettability depth** (§5.4, 2026-06-10) — class-G warn+ack publish gate; expired DPE gate; ADEME authoritative-class override; bilingual FR/EN; `dpe_compliance.py`.
+8. ❌ **Uploaded-lease red-line scan** (§5.6) — VALIDATED vs ATTACHED tiers. ⚠ gate.
+9. ❌ **E-sign + evidence pack upgrade** (§5.7, §6) — DocuSeal/Documenso **unmodified** (AGPL, §11). ⚠ gate.
+10. ✅ **Insurance MRH verification** (§5.8) — IN-1..IN-5 covered; `mrh_compliance.py`; `POST /verification/insurance/upload`; evidence PDF row; issue-mine assurance summary.
+11. ❌ **INTL rails** (§4) — NFC native app (JMRTD/NFCPassportReader) for HIGH; web MRZ-OCR MEDIUM; FX normalisation. Blocked on CSCA master-list (§11).
+12. ❌ **Statelessness retrofit** — flip legacy store-to-R2 flows to verify-and-forget, per-domain (touches GDPR posture + evidence model — most invasive).
 
 ## 11. OSS stack & caveats (from `CLAUDE.md`)
 | Component | Tool | License / note |
