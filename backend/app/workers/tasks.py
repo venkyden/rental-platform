@@ -105,3 +105,113 @@ def purge_stale_applications_task(self) -> dict:
         return future.result()
     else:
         return asyncio.run(_purge())
+
+
+@celery_app.task(
+    name="app.workers.tasks.purge_legacy_verification_docs_task",
+    bind=True,
+    max_retries=1,
+)
+def purge_legacy_verification_docs_task(self) -> dict:
+    """
+    One-time GDPR cleanup: delete source documents stored in R2 by the legacy
+    verification flows (identity, income, guarantor) before the statelessness
+    retrofit (Item 12). New flows no longer store source docs.
+
+    Safe to re-run: already-deleted keys are silently skipped by the storage layer.
+    """
+    import asyncio
+    from sqlalchemy import select
+    from app.core.database import AsyncSessionLocal
+    from app.models.user import User
+    from app.services.storage import storage
+
+    _IDENTITY_KEYS = ("storage_key", "selfie_storage_key", "back_storage_key")
+    _INCOME_KEYS = ("storage_key",)
+    _GUARANTOR_KEYS = ("storage_key",)
+
+    async def _purge_docs():
+        deleted = 0
+        errors = 0
+
+        async with AsyncSessionLocal() as db:
+            result = await db.execute(
+                select(User).where(
+                    (User.identity_data.isnot(None))
+                    | (User.income_data.isnot(None))
+                    | (User.guarantor_data.isnot(None))
+                )
+            )
+            users = result.scalars().all()
+
+            for user in users:
+                changed = False
+
+                # Identity
+                id_data = user.identity_data or {}
+                for key in _IDENTITY_KEYS:
+                    r2_key = id_data.get(key)
+                    if r2_key:
+                        try:
+                            await storage.delete_file(r2_key)
+                            deleted += 1
+                        except Exception as exc:
+                            logger.warning("purge_legacy_docs: identity key=%s err=%s", r2_key, exc)
+                            errors += 1
+                        id_data = {k: v for k, v in id_data.items() if k != key}
+                        changed = True
+                if changed:
+                    user.identity_data = id_data
+
+                # Income
+                inc_data = user.income_data or {}
+                changed = False
+                for key in _INCOME_KEYS:
+                    r2_key = inc_data.get(key)
+                    if r2_key:
+                        try:
+                            await storage.delete_file(r2_key)
+                            deleted += 1
+                        except Exception as exc:
+                            logger.warning("purge_legacy_docs: income key=%s err=%s", r2_key, exc)
+                            errors += 1
+                        inc_data = {k: v for k, v in inc_data.items() if k != key}
+                        changed = True
+                if changed:
+                    user.income_data = inc_data
+
+                # Guarantor (visale/garantme)
+                guar_data = user.guarantor_data or {}
+                changed = False
+                for key in _GUARANTOR_KEYS:
+                    r2_key = guar_data.get(key)
+                    if r2_key:
+                        try:
+                            await storage.delete_file(r2_key)
+                            deleted += 1
+                        except Exception as exc:
+                            logger.warning("purge_legacy_docs: guarantor key=%s err=%s", r2_key, exc)
+                            errors += 1
+                        guar_data = {k: v for k, v in guar_data.items() if k != key}
+                        changed = True
+                if changed:
+                    user.guarantor_data = guar_data
+
+            await db.commit()
+
+        logger.info(
+            "purge_legacy_verification_docs: deleted=%d errors=%d users_scanned=%d",
+            deleted, errors, len(users),
+        )
+        return {"deleted": deleted, "errors": errors, "users_scanned": len(users)}
+
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = None
+
+    if loop and loop.is_running():
+        future = asyncio.run_coroutine_threadsafe(_purge_docs(), loop)
+        return future.result()
+    else:
+        return asyncio.run(_purge_docs())
