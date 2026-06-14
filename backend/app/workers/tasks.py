@@ -155,11 +155,11 @@ def purge_legacy_verification_docs_task(self) -> dict:
                         try:
                             await storage.delete_file(r2_key)
                             deleted += 1
+                            id_data = {k: v for k, v in id_data.items() if k != key}
+                            changed = True
                         except Exception as exc:
                             logger.warning("purge_legacy_docs: identity key=%s err=%s", r2_key, exc)
                             errors += 1
-                        id_data = {k: v for k, v in id_data.items() if k != key}
-                        changed = True
                 if changed:
                     user.identity_data = id_data
 
@@ -172,15 +172,16 @@ def purge_legacy_verification_docs_task(self) -> dict:
                         try:
                             await storage.delete_file(r2_key)
                             deleted += 1
+                            inc_data = {k: v for k, v in inc_data.items() if k != key}
+                            changed = True
                         except Exception as exc:
                             logger.warning("purge_legacy_docs: income key=%s err=%s", r2_key, exc)
                             errors += 1
-                        inc_data = {k: v for k, v in inc_data.items() if k != key}
-                        changed = True
                 if changed:
                     user.income_data = inc_data
 
-                # Guarantor (visale/garantme)
+                # Guarantor: visale/garantme use top-level keys; physical guarantor nests
+                # storage_key inside files[*] (upload_guarantor_document schema).
                 guar_data = user.guarantor_data or {}
                 changed = False
                 for key in _GUARANTOR_KEYS:
@@ -189,11 +190,26 @@ def purge_legacy_verification_docs_task(self) -> dict:
                         try:
                             await storage.delete_file(r2_key)
                             deleted += 1
+                            guar_data = {k: v for k, v in guar_data.items() if k != key}
+                            changed = True
                         except Exception as exc:
                             logger.warning("purge_legacy_docs: guarantor key=%s err=%s", r2_key, exc)
                             errors += 1
-                        guar_data = {k: v for k, v in guar_data.items() if k != key}
-                        changed = True
+                purged_files = []
+                for file_entry in guar_data.get("files", []):
+                    r2_key = file_entry.get("storage_key")
+                    if r2_key:
+                        try:
+                            await storage.delete_file(r2_key)
+                            deleted += 1
+                            file_entry = {k: v for k, v in file_entry.items() if k != "storage_key"}
+                            changed = True
+                        except Exception as exc:
+                            logger.warning("purge_legacy_docs: guarantor file key=%s err=%s", r2_key, exc)
+                            errors += 1
+                    purged_files.append(file_entry)
+                if changed and "files" in guar_data:
+                    guar_data = {**guar_data, "files": purged_files}
                 if changed:
                     user.guarantor_data = guar_data
 

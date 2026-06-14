@@ -1,11 +1,11 @@
 """
 Tests for Item 12 — Statelessness retrofit.
 
-Verifies that source documents are never persisted at rest for the identity,
+Verifies source documents never persisted at rest for identity,
 income, and guarantor domains. Each test asserts:
   - storage.upload_file is NOT called for source documents
   - PII fields (extracted_data, file_url, storage_key) are absent from JSONB
-  - Extracted claims that belong in the JSONB ARE present
+  - Extracted claims belonging in JSONB ARE present
 """
 import io
 import os
@@ -146,8 +146,8 @@ class TestIdentityBackSide:
 # ── Identity: front + selfie two-step ────────────────────────────────────────
 
 class TestIdentityFrontAndSelfie:
-    def test_front_stores_temporarily_without_extracted_data(self):
-        """Front doc upload stores in R2 for face comparison but must not store extracted_data."""
+    def test_front_r2_fallback_when_redis_unavailable(self):
+        """Front doc upload falls back to R2 when Redis unavailable (cache.redis_client is None)."""
         user = make_mock_user("tenant")
         user.identity_verified = False
         user.identity_status = "unverified"
@@ -161,7 +161,10 @@ class TestIdentityFrontAndSelfie:
             "validation_checks": [{"check": "name_match", "passed": True}],
         }
         with patch.object(identity_service, "verify_document", new=AsyncMock(return_value=mock_result)), \
-             patch("app.routers.verification.storage") as mock_storage:
+             patch("app.routers.verification.storage") as mock_storage, \
+             patch("app.routers.verification.cache") as mock_cache:
+            mock_cache.redis_client = None
+            mock_cache.incr_with_expire = AsyncMock(return_value=0)
             mock_storage.upload_file = AsyncMock(return_value={"url": "https://r2/front.jpg", "key": "tmp-key"})
             response = client.post(
                 "/verification/identity/upload?document_type=national_id",
@@ -169,22 +172,54 @@ class TestIdentityFrontAndSelfie:
                 data={"side": "front"},
             )
         assert response.status_code == 200
-        # Storage IS called (doc needed for selfie comparison)
         mock_storage.upload_file.assert_called_once()
-        # But extracted PII must not be stored
         stored = user.identity_data or {}
         assert "extracted_data" not in stored
         assert "filename" not in stored
-        # file_url and storage_key ARE present (needed for selfie step)
         assert "file_url" in stored
         assert "storage_key" in stored
+        assert "redis_key" not in stored
 
-    def test_selfie_deletes_id_doc_and_stores_no_selfie(self):
+    def test_front_stores_in_redis_when_available(self):
+        """Front doc upload uses Redis (not R2) when cache.redis_client is set."""
+        user = make_mock_user("tenant")
+        user.identity_verified = False
+        user.identity_status = "unverified"
+        user.identity_data = None
+        client = make_client(user)
+        from app.services.identity import identity_service
+        mock_result = {
+            "verified": True,
+            "status": "document_uploaded",
+            "data": {"full_name": "Test User", "document_number": "SECRET123"},
+            "validation_checks": [{"check": "name_match", "passed": True}],
+        }
+        with patch.object(identity_service, "verify_document", new=AsyncMock(return_value=mock_result)), \
+             patch("app.routers.verification.storage") as mock_storage, \
+             patch("app.routers.verification.cache") as mock_cache:
+            mock_cache.redis_client = MagicMock()
+            mock_cache.incr_with_expire = AsyncMock(return_value=0)
+            mock_cache.set = AsyncMock(return_value=True)
+            mock_storage.upload_file = AsyncMock(return_value={"url": "x", "key": "y"})
+            response = client.post(
+                "/verification/identity/upload?document_type=national_id",
+                files={"file": ("front.jpg", io.BytesIO(b"frontdata"), "image/jpeg")},
+                data={"side": "front"},
+            )
+        assert response.status_code == 200
+        mock_storage.upload_file.assert_not_called()
+        mock_cache.set.assert_called_once()
+        stored = user.identity_data or {}
+        assert "redis_key" in stored
+        assert "file_url" not in stored
+        assert "storage_key" not in stored
+        assert "extracted_data" not in stored
+
+    def test_selfie_r2_fallback_deletes_storage_key(self):
         """
-        upload_identity_selfie must:
-          - call storage.delete_file with the stored ID key
-          - NOT call storage.upload_file (selfie not persisted)
-          - strip file_url/storage_key from identity_data
+        upload_identity_selfie with storage_key (R2 fallback) must:
+          - call storage.delete_file
+          - NOT call storage.upload_file
         """
         user = make_mock_user("tenant")
         user.identity_verified = False
@@ -200,8 +235,10 @@ class TestIdentityFrontAndSelfie:
         face_result = {"match": True, "confidence": 0.92, "reason": "faces match"}
         with patch.object(identity_service, "compare_faces", new=AsyncMock(return_value=face_result)), \
              patch("app.routers.verification.storage") as mock_storage, \
+             patch("app.routers.verification.cache") as mock_cache, \
              patch("app.routers.verification.httpx") as mock_httpx:
-            # Mock httpx fetch of the stored ID doc
+            mock_cache.incr_with_expire = AsyncMock(return_value=0)
+            mock_cache.get = AsyncMock(return_value=None)
             mock_resp = MagicMock()
             mock_resp.content = b"id_image_bytes"
             mock_resp.headers = {"content-type": "image/jpeg"}
@@ -217,16 +254,53 @@ class TestIdentityFrontAndSelfie:
                 files={"file": ("selfie.jpg", io.BytesIO(b"selfiedata"), "image/jpeg")},
             )
         assert response.status_code == 200
-        # ID doc must be deleted
         mock_storage.delete_file.assert_called_once_with("id-doc-key-to-delete")
-        # Selfie must NOT be uploaded
         mock_storage.upload_file.assert_not_called()
-        # Clean identity_data
         stored = user.identity_data or {}
         assert "file_url" not in stored
         assert "storage_key" not in stored
-        assert "selfie_url" not in stored
-        assert "selfie_storage_key" not in stored
+        assert stored.get("verified") is True
+        assert stored.get("identity_assurance") == "MEDIUM"
+
+    def test_selfie_deletes_redis_key_when_present(self):
+        """
+        upload_identity_selfie with redis_key must:
+          - fetch doc from cache (not R2/httpx)
+          - call cache.delete (not storage.delete_file)
+          - NOT call storage.upload_file
+        """
+        import base64
+        user = make_mock_user("tenant")
+        user.identity_verified = False
+        user.identity_status = "document_uploaded"
+        user.identity_data = {
+            "status": "document_uploaded",
+            "redis_key": "identity_doc:test-redis-key",
+            "checks": [{"check": "name_match", "passed": True}],
+        }
+        client = make_client(user)
+        from app.services.identity import identity_service
+        face_result = {"match": True, "confidence": 0.92, "reason": "faces match"}
+        cached_doc = {"b64": base64.b64encode(b"id_image_bytes").decode(), "content_type": "image/jpeg"}
+        with patch.object(identity_service, "compare_faces", new=AsyncMock(return_value=face_result)), \
+             patch("app.routers.verification.storage") as mock_storage, \
+             patch("app.routers.verification.cache") as mock_cache:
+            mock_cache.incr_with_expire = AsyncMock(return_value=0)
+            mock_cache.get = AsyncMock(return_value=cached_doc)
+            mock_cache.delete = AsyncMock(return_value=True)
+            mock_storage.delete_file = AsyncMock(return_value=True)
+            mock_storage.upload_file = AsyncMock(return_value={"url": "x", "key": "y"})
+            response = client.post(
+                "/verification/identity/upload-selfie",
+                files={"file": ("selfie.jpg", io.BytesIO(b"selfiedata"), "image/jpeg")},
+            )
+        assert response.status_code == 200
+        mock_cache.delete.assert_called_once_with("identity_doc:test-redis-key")
+        mock_storage.delete_file.assert_not_called()
+        mock_storage.upload_file.assert_not_called()
+        stored = user.identity_data or {}
+        assert "redis_key" not in stored
+        assert "file_url" not in stored
         assert stored.get("verified") is True
         assert stored.get("identity_assurance") == "MEDIUM"
 

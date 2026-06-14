@@ -2,6 +2,7 @@
 Verification API endpoints for identity and employment verification.
 """
 
+import base64
 import json
 import secrets
 import asyncio
@@ -201,25 +202,39 @@ async def upload_identity_document(
             detail=f"Verification failed: {result.get('rejection_reason')}",
         )
 
-    # Store temporarily in R2 — face-match in /upload-selfie will delete it immediately after use
-    from io import BytesIO
-    storage_result = await storage.upload_file(
-        file_data=BytesIO(content),
-        filename=file.filename,
-        content_type=file.content_type,
-        folder=f"verification/identity/{current_user.id}"
-    )
-
+    # Store temporarily for face-match: Redis with 10-min TTL preferred; R2 fallback if unavailable.
+    # Key includes a per-upload token so concurrent web/mobile sessions don't overwrite each other.
+    _redis_key = f"identity_doc:{current_user.id}:{secrets.token_hex(8)}"
+    if cache.redis_client:
+        await cache.set(_redis_key, {
+            "b64": base64.b64encode(content).decode(),
+            "content_type": file.content_type,
+        }, ttl=600)
+        current_user.identity_data = {
+            "verified": False,
+            "upload_date": naive_utcnow().isoformat(),
+            "redis_key": _redis_key,
+            "status": "document_uploaded",
+            "checks": result["validation_checks"],
+        }
+    else:
+        from io import BytesIO
+        storage_result = await storage.upload_file(
+            file_data=BytesIO(content),
+            filename=file.filename,
+            content_type=file.content_type,
+            folder=f"verification/identity/{current_user.id}"
+        )
+        current_user.identity_data = {
+            "verified": False,
+            "upload_date": naive_utcnow().isoformat(),
+            "file_url": storage_result["url"],
+            "storage_key": storage_result.get("key"),
+            "status": "document_uploaded",
+            "checks": result["validation_checks"],
+        }
     current_user.identity_verified = False
     current_user.identity_status = "document_uploaded"
-    current_user.identity_data = {
-        "verified": False,
-        "upload_date": naive_utcnow().isoformat(),
-        "file_url": storage_result["url"],
-        "storage_key": storage_result.get("key"),
-        "status": "document_uploaded",
-        "checks": result["validation_checks"],
-    }
 
     await db.commit()
     await db.refresh(current_user)
@@ -416,16 +431,27 @@ async def upload_identity_mobile(
                 detail="Upload and verify your identity document before submitting a selfie.",
             )
 
-        id_url = user.identity_data["file_url"]
-        async with httpx.AsyncClient(timeout=15.0) as http_client:
-            try:
-                id_resp = await http_client.get(id_url)
-                id_resp.raise_for_status()
-                id_bytes = id_resp.content
-                id_content_type = id_resp.headers.get("content-type", "image/jpeg").split(";")[0]
-            except Exception as e:
-                logger.error(f"Failed to fetch identity doc for face compare: {e}")
-                raise HTTPException(status_code=500, detail="Could not retrieve identity document for comparison.")
+        _redis_key = user.identity_data.get("redis_key")
+        if _redis_key:
+            _doc = await cache.get(_redis_key)
+            if not _doc:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Identity document session expired — please re-upload your document.",
+                )
+            id_bytes = base64.b64decode(_doc["b64"])
+            id_content_type = _doc.get("content_type", "image/jpeg")
+        else:
+            id_url = user.identity_data["file_url"]
+            async with httpx.AsyncClient(timeout=15.0) as http_client:
+                try:
+                    id_resp = await http_client.get(id_url)
+                    id_resp.raise_for_status()
+                    id_bytes = id_resp.content
+                    id_content_type = id_resp.headers.get("content-type", "image/jpeg").split(";")[0]
+                except Exception as e:
+                    logger.error(f"Failed to fetch identity doc for face compare: {e}")
+                    raise HTTPException(status_code=500, detail="Could not retrieve identity document for comparison.")
 
         face_result = await identity_service.compare_faces(
             id_image=id_bytes,
@@ -434,19 +460,24 @@ async def upload_identity_mobile(
             selfie_file_type=file.content_type,
         )
 
+        # Purge the temporarily-stored ID document immediately after comparison — regardless of
+        # match result — so the document is never retained after a failed attempt (GDPR).
+        _redis_key = user.identity_data.get("redis_key") if user.identity_data else None
+        if _redis_key:
+            await cache.delete(_redis_key)
+        else:
+            _id_key = user.identity_data.get("storage_key") if user.identity_data else None
+            if _id_key:
+                try:
+                    await storage.delete_file(_id_key)
+                except Exception as _del_exc:
+                    logger.warning("purge_identity_doc: failed to delete %s: %s", _id_key, _del_exc)
+
         if not face_result["match"] or face_result["confidence"] < 0.6:
             raise HTTPException(
                 status_code=422,
                 detail=f"Face does not match identity document. {face_result['reason']}",
             )
-
-        # Delete the temporarily-stored ID document from R2 immediately after comparison (GDPR)
-        _id_key = user.identity_data.get("storage_key") if user.identity_data else None
-        if _id_key:
-            try:
-                await storage.delete_file(_id_key)
-            except Exception as _del_exc:
-                logger.warning("purge_identity_doc: failed to delete %s: %s", _id_key, _del_exc)
 
         if not user.identity_verified:
             await db.execute(
@@ -506,27 +537,42 @@ async def upload_identity_mobile(
             detail=f"Verification failed: {doc_result.get('rejection_reason')}",
         )
 
-    # Store temporarily in R2 — selfie step will delete it immediately after face comparison
-    from io import BytesIO
-    storage_result = await storage.upload_file(
-        file_data=BytesIO(content),
-        filename=file.filename,
-        content_type=file.content_type,
-        folder=f"verification/identity/{user.id}",
-    )
-
+    # Store temporarily for face-match: Redis with 10-min TTL preferred; R2 fallback if unavailable.
+    # Key includes a per-upload token so concurrent web/mobile sessions don't overwrite each other.
+    _redis_key = f"identity_doc:{user.id}:{secrets.token_hex(8)}"
+    if cache.redis_client:
+        await cache.set(_redis_key, {
+            "b64": base64.b64encode(content).decode(),
+            "content_type": file.content_type,
+        }, ttl=600)
+        user.identity_data = {
+            "verified": False,
+            "upload_date": naive_utcnow().isoformat(),
+            "redis_key": _redis_key,
+            "source": "mobile_capture",
+            "status": "document_uploaded",
+            "checks": doc_result["validation_checks"],
+        }
+    else:
+        from io import BytesIO
+        storage_result = await storage.upload_file(
+            file_data=BytesIO(content),
+            filename=file.filename,
+            content_type=file.content_type,
+            folder=f"verification/identity/{user.id}",
+        )
+        user.identity_data = {
+            "verified": False,
+            "upload_date": naive_utcnow().isoformat(),
+            "file_url": storage_result["url"],
+            "source": "mobile_capture",
+            "storage_key": storage_result.get("key"),
+            "status": "document_uploaded",
+            "checks": doc_result["validation_checks"],
+        }
     # Document validated — selfie required to complete identity verification
     user.identity_verified = False
     user.identity_status = "document_uploaded"
-    user.identity_data = {
-        "verified": False,
-        "upload_date": naive_utcnow().isoformat(),
-        "file_url": storage_result["url"],
-        "source": "mobile_capture",
-        "storage_key": storage_result.get("key"),
-        "status": "document_uploaded",
-        "checks": doc_result["validation_checks"],
-    }
 
     # Session stays open until selfie completes it (never mark complete on doc upload)
     await db.commit()
@@ -565,16 +611,27 @@ async def upload_identity_selfie(
     await _validate_file_size(file)
     selfie_bytes = await file.read()
 
-    id_url = current_user.identity_data["file_url"]
-    async with httpx.AsyncClient(timeout=15.0) as http_client:
-        try:
-            id_resp = await http_client.get(id_url)
-            id_resp.raise_for_status()
-            id_bytes = id_resp.content
-            id_content_type = id_resp.headers.get("content-type", "image/jpeg").split(";")[0]
-        except Exception as e:
-            logger.error(f"Failed to fetch identity doc for face compare: {e}")
-            raise HTTPException(status_code=500, detail="Could not retrieve identity document for comparison.")
+    _redis_key = current_user.identity_data.get("redis_key")
+    if _redis_key:
+        _doc = await cache.get(_redis_key)
+        if not _doc:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Identity document session expired — please re-upload your document.",
+            )
+        id_bytes = base64.b64decode(_doc["b64"])
+        id_content_type = _doc.get("content_type", "image/jpeg")
+    else:
+        id_url = current_user.identity_data["file_url"]
+        async with httpx.AsyncClient(timeout=15.0) as http_client:
+            try:
+                id_resp = await http_client.get(id_url)
+                id_resp.raise_for_status()
+                id_bytes = id_resp.content
+                id_content_type = id_resp.headers.get("content-type", "image/jpeg").split(";")[0]
+            except Exception as e:
+                logger.error(f"Failed to fetch identity doc for face compare: {e}")
+                raise HTTPException(status_code=500, detail="Could not retrieve identity document for comparison.")
 
     from app.services.identity import identity_service
     face_result = await identity_service.compare_faces(
@@ -584,19 +641,24 @@ async def upload_identity_selfie(
         selfie_file_type=file.content_type,
     )
 
+    # Purge the temporarily-stored ID document immediately after comparison — regardless of match
+    # result — so the document is never retained after a failed attempt (GDPR).
+    _redis_key = current_user.identity_data.get("redis_key")
+    if _redis_key:
+        await cache.delete(_redis_key)
+    else:
+        _id_key = current_user.identity_data.get("storage_key")
+        if _id_key:
+            try:
+                await storage.delete_file(_id_key)
+            except Exception as _del_exc:
+                logger.warning("purge_identity_doc: failed to delete %s: %s", _id_key, _del_exc)
+
     if not face_result["match"] or face_result["confidence"] < 0.6:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Face does not match identity document. {face_result['reason']}",
         )
-
-    # Delete the temporarily-stored ID document from R2 immediately after comparison (GDPR)
-    _id_key = current_user.identity_data.get("storage_key")
-    if _id_key:
-        try:
-            await storage.delete_file(_id_key)
-        except Exception as _del_exc:
-            logger.warning("purge_identity_doc: failed to delete %s: %s", _id_key, _del_exc)
 
     if not current_user.identity_verified:
         await db.execute(
@@ -639,7 +701,7 @@ async def avis_cross_check(
     """
     if not current_user.identity_verified:
         raise HTTPException(status_code=400, detail="Verify your identity before cross-checking an avis.")
-    id_name = (current_user.identity_data or {}).get("extracted_data", {}).get("full_name")
+    id_name: Optional[str] = current_user.full_name  # type: ignore[assignment]
     if not id_name or id_name == "Unknown":
         raise HTTPException(status_code=400, detail="No identity name on file to corroborate.")
 
@@ -745,7 +807,7 @@ async def fr_solvency_check(
     recency_flag = fr_2ddoc.is_avis_stale(avis.annee_des_revenus) if avis.annee_des_revenus else False
 
     # Name corroboration against the verified identity (anti-fraud flag, no assurance change).
-    id_name = (current_user.identity_data or {}).get("extracted_data", {}).get("full_name")
+    id_name: Optional[str] = current_user.full_name  # type: ignore[assignment]
     name_corroborated = (
         fr_2ddoc.name_matches_any(id_name, avis.declarant_names) if id_name and id_name != "Unknown" else False
     )
