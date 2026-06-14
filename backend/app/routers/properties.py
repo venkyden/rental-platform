@@ -8,7 +8,7 @@ import logging
 from datetime import timedelta
 from app.core.timeutils import naive_utcnow
 from decimal import Decimal
-from typing import List, Optional
+from typing import List, Optional, cast
 from uuid import UUID
 
 from fastapi import (APIRouter, Depends, File, HTTPException, Query, Request,
@@ -58,15 +58,15 @@ def calculate_distance(
     """Calculate distance between two GPS coordinates in meters (Haversine formula)"""
     from math import asin, cos, radians, sin, sqrt
 
-    lat1, lon1, lat2, lon2 = map(float, [lat1, lon1, lat2, lon2])
+    flat1, flon1, flat2, flon2 = map(float, [lat1, lon1, lat2, lon2])
 
     # Convert to radians
-    lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
+    flat1, flon1, flat2, flon2 = map(radians, [flat1, flon1, flat2, flon2])
 
     # Haversine formula
-    dlat = lat2 - lat1
-    dlon = lon2 - lon1
-    a = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
+    dlat = flat2 - flat1
+    dlon = flon2 - flon1
+    a = sin(dlat / 2) ** 2 + cos(flat1) * cos(flat2) * sin(dlon / 2) ** 2
     c = 2 * asin(sqrt(a))
     r = 6371000  # Earth radius in meters
 
@@ -193,10 +193,10 @@ async def generate_property_description(
 
         response = client.models.generate_content(
             model="gemini-2.5-flash",
-            contents=[prompt],
+            contents=[prompt],  # type: ignore
         )
 
-        return {"description": response.text.strip()}
+        return {"description": (response.text or "").strip()}
     except Exception as e:
         logger.error(f"Failed to generate description with Gemini: {e}", exc_info=True)
         raise HTTPException(
@@ -571,7 +571,8 @@ async def get_property(
 
     if all_media:
         # Re-build photos array if it's out of sync (JSONB might be null or have fewer items)
-        if not property_obj.photos or len(property_obj.photos) < len(all_media):
+        photos = cast(Optional[list], property_obj.photos)
+        if not photos or len(photos) < len(all_media):
             new_photos = []
             for i, m in enumerate(all_media):
                 new_photos.append({
@@ -581,7 +582,7 @@ async def get_property(
                     "room_label": m.room_label,
                     "media_type": m.media_type,
                 })
-            property_obj.photos = new_photos
+            property_obj.photos = new_photos  # type: ignore
             flag_modified(property_obj, "photos")
 
     # Increment view count (exclude property owner to prevent inflation)
@@ -594,7 +595,7 @@ async def get_property(
             .values(views_count=Property.views_count + 1)
         )
         await db.commit()
-        property_obj.views_count += 1
+        property_obj.views_count += 1  # type: ignore
     else:
         # If we modified photos, we need to commit
         await db.commit()
@@ -603,7 +604,7 @@ async def get_property(
     
     # Calculate is_saved
     is_saved = False
-    if current_user:
+    if current_user is not None:
         saved_result = await db.execute(
             select(SavedProperty).where(
                 and_(
@@ -697,7 +698,7 @@ async def update_property(
                 detail=" ".join(compliance_errors),
             )
 
-    property_obj.updated_at = naive_utcnow()
+    property_obj.updated_at = naive_utcnow()  # type: ignore
 
     await db.commit()
     await db.refresh(property_obj)
@@ -791,7 +792,7 @@ async def publish_property(
         )
 
     # Check per-room media coverage
-    room_details = property_obj.room_details or []
+    room_details = cast(list, property_obj.room_details) if property_obj.room_details else []
     if len(room_details) > 0:
         # Query all media for this property
         from app.models.property import PropertyMedia
@@ -824,7 +825,8 @@ async def publish_property(
             )
     else:
         # No room_details — fall back to property-level check
-        if not property_obj.photos or len(property_obj.photos) == 0:
+        photos = cast(Optional[list], property_obj.photos)
+        if not photos or len(photos) == 0:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Property must have at least 1 photo or video to publish",
@@ -837,9 +839,9 @@ async def publish_property(
     from datetime import date
     from app.services.dpe_compliance import assess_dpe
 
-    od = property_obj.ownership_data or {}
+    od = cast(dict, property_obj.ownership_data or {})
     assessment = assess_dpe(
-        self_typed_class=property_obj.dpe_rating,
+        self_typed_class=cast(Optional[str], property_obj.dpe_rating),
         ademe_class=od.get("dpe_class"),
         assurance=od.get("dpe_assurance"),
         expired=od.get("dpe_expired"),
@@ -857,9 +859,8 @@ async def publish_property(
             ),
         )
 
-    # Keep the displayed class accurate (reclassification): authoritative wins.
     if property_obj.dpe_rating != assessment.authoritative_class:
-        property_obj.dpe_rating = assessment.authoritative_class
+        property_obj.dpe_rating = assessment.authoritative_class  # type: ignore
 
     acknowledged = payload.acknowledge_dpe_warning if payload else False
     if assessment.requires_acknowledgment and not acknowledged:
@@ -878,7 +879,7 @@ async def publish_property(
             **od,
             "dpe_decence_acknowledged_at": naive_utcnow().isoformat(),
             "dpe_decence_acknowledged_class": assessment.authoritative_class,
-        }
+        }  # type: ignore
 
     # Remaining French compliance (deposit cap, surface, rent control) — consolidated.
     from app.services.french_compliance import validate_property_compliance
@@ -892,8 +893,8 @@ async def publish_property(
     # ── End French Compliance ────────────────────────────────────────────
 
     # Publish
-    property_obj.status = "active"
-    property_obj.published_at = naive_utcnow()
+    property_obj.status = "active"  # type: ignore
+    property_obj.published_at = naive_utcnow()  # type: ignore
 
     await db.commit()
     await db.refresh(property_obj)
@@ -957,10 +958,11 @@ async def create_media_session(
 
     # Fetch room details for the capture page room selector
     rooms_list = None
-    if property_obj.room_details and len(property_obj.room_details) > 0:
+    room_details = cast(Optional[list], property_obj.room_details)
+    if room_details and len(room_details) > 0:
         rooms_list = [
             {"index": i, "label": f"Bedroom {i + 1}"}
-            for i in range(len(property_obj.room_details))
+            for i in range(len(room_details))
         ]
 
     return {
@@ -1013,16 +1015,18 @@ async def get_media_session(
     property_obj = prop_result.scalar_one_or_none()
 
     rooms_list = None
-    if property_obj and property_obj.room_details and len(property_obj.room_details) > 0:
-        rooms_list = [
-            {"index": i, "label": f"Bedroom {i + 1}"}
-            for i in range(len(property_obj.room_details))
-        ]
+    if property_obj:
+        room_details = cast(Optional[list], property_obj.room_details)
+        if room_details and len(room_details) > 0:
+            rooms_list = [
+                {"index": i, "label": f"Bedroom {i + 1}"}
+                for i in range(len(room_details))
+            ]
 
     return {
         "target_address": session.target_address,
-        "target_latitude": float(session.target_latitude) if session.target_latitude else None,
-        "target_longitude": float(session.target_longitude) if session.target_longitude else None,
+        "target_latitude": float(cast(Decimal, session.target_latitude)) if session.target_latitude else None,
+        "target_longitude": float(cast(Decimal, session.target_longitude)) if session.target_longitude else None,
         "gps_radius_meters": session.gps_radius_meters,
         "location_verified": session.location_verified or False,
         "expires_at": session.expires_at,
@@ -1130,8 +1134,8 @@ async def upload_media(
     if meta_obj.latitude and meta_obj.longitude and accuracy_ok:
         if session.target_latitude and session.target_longitude:
             distance = calculate_distance(
-                session.target_latitude,
-                session.target_longitude,
+                cast(Decimal, session.target_latitude),
+                cast(Decimal, session.target_longitude),
                 meta_obj.latitude,
                 meta_obj.longitude,
             )
@@ -1143,8 +1147,8 @@ async def upload_media(
 
                 # Persist session-level verification (verify-once)
                 if not session.location_verified:
-                    session.location_verified = True
-                    session.location_verified_at = naive_utcnow()
+                    session.location_verified = True  # type: ignore
+                    session.location_verified_at = naive_utcnow()  # type: ignore
 
     # Determine room info — prefer metadata over session
     upload_room_index = meta_obj.room_index if meta_obj.room_index is not None else session.room_index
@@ -1223,7 +1227,8 @@ async def upload_media(
     if property_obj:
         # Crucial: Initialize photos as a NEW list if it's currently None or empty
         # If we use += or append to an object pulled from SQLAlchemy without flag_modified, it might not track correctly.
-        current_photos = list(property_obj.photos) if property_obj.photos else []
+        photos = cast(Optional[list], property_obj.photos)
+        current_photos = list(photos) if photos else []
         
         current_photos.append({
             "url": media.file_url,
@@ -1233,7 +1238,7 @@ async def upload_media(
             "media_type": meta_obj.media_type,
         })
         
-        property_obj.photos = current_photos
+        property_obj.photos = current_photos  # type: ignore
         flag_modified(property_obj, "photos")
 
     await db.commit()

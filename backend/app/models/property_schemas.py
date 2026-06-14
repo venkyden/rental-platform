@@ -24,8 +24,8 @@ class PropertyCreate(BaseModel):
     country: str = "France"
 
     bedrooms: int = Field(..., ge=0)
-    bathrooms: Optional[Decimal] = Field(None, ge=0)
-    size_sqm: Optional[Decimal] = Field(None, gt=0)
+    bathrooms: Optional[Decimal] = Field(None, ge=Decimal("0"))
+    size_sqm: Optional[Decimal] = Field(None, gt=Decimal("0"))
     floor_number: Optional[int] = None
     furnished: bool = False
 
@@ -35,9 +35,9 @@ class PropertyCreate(BaseModel):
     kitchen_type: Optional[str] = None
     room_details: Optional[List[dict]] = []
 
-    monthly_rent: Decimal = Field(..., gt=0)
-    deposit: Optional[Decimal] = Field(None, ge=0)
-    charges: Optional[Decimal] = Field(None, ge=0)
+    monthly_rent: Decimal = Field(..., gt=Decimal("0"))
+    deposit: Optional[Decimal] = Field(None, ge=Decimal("0"))
+    charges: Optional[Decimal] = Field(None, ge=Decimal("0"))
     charges_included: bool = False
     charges_description: Optional[str] = None
 
@@ -73,9 +73,9 @@ class PropertyCreate(BaseModel):
     surface_type: Optional[str] = None  # 'standard' or 'loi_carrez'
     construction_year: Optional[int] = Field(None, ge=1800, le=2100)
     # Rent control (encadrement des loyers) — mandatory in Paris, Lyon, Lille, etc.
-    loyer_reference: Optional[Decimal] = Field(None, ge=0)  # Reference rent €/m²
-    loyer_reference_majore: Optional[Decimal] = Field(None, ge=0)  # Max reference rent €/m²
-    complement_de_loyer: Optional[Decimal] = Field(None, ge=0)  # Justified supplement
+    loyer_reference: Optional[Decimal] = Field(None, ge=Decimal("0"))  # Reference rent €/m²
+    loyer_reference_majore: Optional[Decimal] = Field(None, ge=Decimal("0"))  # Max reference rent €/m²
+    complement_de_loyer: Optional[Decimal] = Field(None, ge=Decimal("0"))  # Justified supplement
     complement_de_loyer_justification: Optional[str] = None  # Why supplement is charged
     # Natural risks
     natural_risks_compliant: bool = False  # ERP/ERNMT report provided
@@ -111,8 +111,8 @@ class PropertyUpdate(BaseModel):
     postal_code: Optional[str] = None
 
     bedrooms: Optional[int] = Field(None, ge=0)
-    bathrooms: Optional[Decimal] = Field(None, ge=0)
-    size_sqm: Optional[Decimal] = Field(None, gt=0)
+    bathrooms: Optional[Decimal] = Field(None, ge=Decimal("0"))
+    size_sqm: Optional[Decimal] = Field(None, gt=Decimal("0"))
     floor_number: Optional[int] = None
     furnished: Optional[bool] = None
 
@@ -122,9 +122,9 @@ class PropertyUpdate(BaseModel):
     kitchen_type: Optional[str] = None
     room_details: Optional[List[dict]] = None
 
-    monthly_rent: Optional[Decimal] = Field(None, gt=0)
-    deposit: Optional[Decimal] = Field(None, ge=0)
-    charges: Optional[Decimal] = Field(None, ge=0)
+    monthly_rent: Optional[Decimal] = Field(None, gt=Decimal("0"))
+    deposit: Optional[Decimal] = Field(None, ge=Decimal("0"))
+    charges: Optional[Decimal] = Field(None, ge=Decimal("0"))
     charges_included: Optional[bool] = None
     charges_description: Optional[str] = None
 
@@ -149,9 +149,9 @@ class PropertyUpdate(BaseModel):
     ges_value: Optional[int] = Field(None, ge=0)
     surface_type: Optional[str] = None
     construction_year: Optional[int] = Field(None, ge=1800, le=2100)
-    loyer_reference: Optional[Decimal] = Field(None, ge=0)
-    loyer_reference_majore: Optional[Decimal] = Field(None, ge=0)
-    complement_de_loyer: Optional[Decimal] = Field(None, ge=0)
+    loyer_reference: Optional[Decimal] = Field(None, ge=Decimal("0"))
+    loyer_reference_majore: Optional[Decimal] = Field(None, ge=Decimal("0"))
+    complement_de_loyer: Optional[Decimal] = Field(None, ge=Decimal("0"))
     complement_de_loyer_justification: Optional[str] = None
     natural_risks_compliant: Optional[bool] = None
 
@@ -299,8 +299,8 @@ class MediaUploadMetadata(BaseModel):
 
 class PropertyMatchResponse(PropertyResponse):
     """Schema for property response with match details"""
-    match_score: int
-    match_breakdown: dict
+    match_score: Optional[int]
+    match_breakdown: Optional[dict]
 
 
 class DescriptionGenerationRequest(BaseModel):
