@@ -1386,6 +1386,19 @@ async def verify_property_dpe(
             "dpe_number": dpe_number.strip(),
         }  # type: ignore
         await db.commit()
+        # Dispatch background retry (60 s delay to give ADEME time to recover).
+        try:
+            from app.workers.tasks import retry_pending_dpe_task
+            retry_pending_dpe_task.apply_async(
+                args=[str(prop.id), dpe_number.strip()],
+                countdown=60,
+            )
+        except Exception as _celery_exc:
+            logger.warning(
+                "retry_pending_dpe: failed to enqueue background retry for property %s: %s",
+                prop.id,
+                _celery_exc,
+            )
         return {
             "dpe_assurance": "PENDING",
             "dpe_class": None,
