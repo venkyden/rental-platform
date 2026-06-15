@@ -202,8 +202,22 @@ async def upload_identity_document(
             detail=f"Verification failed: {result.get('rejection_reason')}",
         )
 
-    # Store temporarily for face-match: Redis with 10-min TTL preferred; R2 fallback if unavailable.
-    # Key includes a per-upload token so concurrent web/mobile sessions don't overwrite each other.
+    # Purge any previous temp doc before overwriting the pointer (orphaned keys = GDPR leak).
+    _prev = current_user.identity_data or {}
+    if _prev.get("redis_key"):
+        _prev_rk = str(_prev["redis_key"])
+        deleted = await cache.delete(_prev_rk)
+        if not deleted:
+            logger.warning("purge_identity_doc: failed to delete redis key %s", _prev_rk)
+    elif _prev.get("storage_key"):
+        _prev_sk = str(_prev["storage_key"])
+        try:
+            await storage.delete_file(_prev_sk)
+        except Exception as _exc:
+            logger.warning("purge_identity_doc: failed to delete %s: %s", _prev_sk, _exc)
+
+    # Store temporarily for face-match: Redis with 10-min TTL primary; R2 fallback if Redis unavailable.
+    # Per-upload token suffix isolates concurrent web/mobile sessions.
     _redis_key = f"identity_doc:{current_user.id}:{secrets.token_hex(8)}"
     if cache.redis_client:
         await cache.set(_redis_key, {
@@ -453,25 +467,32 @@ async def upload_identity_mobile(
                     logger.error(f"Failed to fetch identity doc for face compare: {e}")
                     raise HTTPException(status_code=500, detail="Could not retrieve identity document for comparison.")
 
-        face_result = await identity_service.compare_faces(
-            id_image=id_bytes,
-            id_file_type=id_content_type,
-            selfie=content,
-            selfie_file_type=file.content_type,
-        )
-
-        # Purge the temporarily-stored ID document immediately after comparison — regardless of
-        # match result — so the document is never retained after a failed attempt (GDPR).
-        _redis_key = user.identity_data.get("redis_key") if user.identity_data else None
-        if _redis_key:
-            await cache.delete(_redis_key)
-        else:
-            _id_key = user.identity_data.get("storage_key") if user.identity_data else None
-            if _id_key:
-                try:
-                    await storage.delete_file(_id_key)
-                except Exception as _del_exc:
-                    logger.warning("purge_identity_doc: failed to delete %s: %s", _id_key, _del_exc)
+        try:
+            face_result = await identity_service.compare_faces(
+                id_image=id_bytes,
+                id_file_type=id_content_type,
+                selfie=content,
+                selfie_file_type=file.content_type or "image/jpeg",
+            )
+        except HTTPException:
+            raise
+        except Exception as _cmp_exc:
+            logger.error("compare_faces failed: %s", _cmp_exc)
+            raise HTTPException(status_code=500, detail="Face comparison failed.") from _cmp_exc
+        finally:
+            # Purge temp ID doc regardless of compare_faces outcome (GDPR: no retention on failure).
+            _rk = str(user.identity_data.get("redis_key")) if user.identity_data and user.identity_data.get("redis_key") else None
+            if _rk:
+                _deleted = await cache.delete(_rk)
+                if not _deleted:
+                    logger.warning("purge_identity_doc: failed to delete redis key %s", _rk)
+            else:
+                _sk = str(user.identity_data.get("storage_key")) if user.identity_data and user.identity_data.get("storage_key") else None
+                if _sk:
+                    try:
+                        await storage.delete_file(_sk)
+                    except Exception as _del_exc:
+                        logger.warning("purge_identity_doc: failed to delete %s: %s", _sk, _del_exc)
 
         if not face_result["match"] or face_result["confidence"] < 0.6:
             raise HTTPException(
@@ -537,8 +558,22 @@ async def upload_identity_mobile(
             detail=f"Verification failed: {doc_result.get('rejection_reason')}",
         )
 
-    # Store temporarily for face-match: Redis with 10-min TTL preferred; R2 fallback if unavailable.
-    # Key includes a per-upload token so concurrent web/mobile sessions don't overwrite each other.
+    # Purge any previous temp doc before overwriting the pointer (orphaned keys = GDPR leak).
+    _prev = user.identity_data or {}
+    if _prev.get("redis_key"):
+        _prev_rk = str(_prev["redis_key"])
+        deleted = await cache.delete(_prev_rk)
+        if not deleted:
+            logger.warning("purge_identity_doc: failed to delete redis key %s", _prev_rk)
+    elif _prev.get("storage_key"):
+        _prev_sk = str(_prev["storage_key"])
+        try:
+            await storage.delete_file(_prev_sk)
+        except Exception as _exc:
+            logger.warning("purge_identity_doc: failed to delete %s: %s", _prev_sk, _exc)
+
+    # Store temporarily for face-match: Redis with 10-min TTL primary; R2 fallback if Redis unavailable.
+    # Per-upload token suffix isolates concurrent web/mobile sessions.
     _redis_key = f"identity_doc:{user.id}:{secrets.token_hex(8)}"
     if cache.redis_client:
         await cache.set(_redis_key, {
@@ -634,25 +669,32 @@ async def upload_identity_selfie(
                 raise HTTPException(status_code=500, detail="Could not retrieve identity document for comparison.")
 
     from app.services.identity import identity_service
-    face_result = await identity_service.compare_faces(
-        id_image=id_bytes,
-        id_file_type=id_content_type,
-        selfie=selfie_bytes,
-        selfie_file_type=file.content_type,
-    )
-
-    # Purge the temporarily-stored ID document immediately after comparison — regardless of match
-    # result — so the document is never retained after a failed attempt (GDPR).
-    _redis_key = current_user.identity_data.get("redis_key")
-    if _redis_key:
-        await cache.delete(_redis_key)
-    else:
-        _id_key = current_user.identity_data.get("storage_key")
-        if _id_key:
-            try:
-                await storage.delete_file(_id_key)
-            except Exception as _del_exc:
-                logger.warning("purge_identity_doc: failed to delete %s: %s", _id_key, _del_exc)
+    try:
+        face_result = await identity_service.compare_faces(
+            id_image=id_bytes,
+            id_file_type=id_content_type,
+            selfie=selfie_bytes,
+            selfie_file_type=file.content_type or "image/jpeg",
+        )
+    except HTTPException:
+        raise
+    except Exception as _cmp_exc:
+        logger.error("compare_faces failed: %s", _cmp_exc)
+        raise HTTPException(status_code=500, detail="Face comparison failed.") from _cmp_exc
+    finally:
+        # Purge temp ID doc regardless of compare_faces outcome (GDPR: no retention on failure).
+        _rk = str(current_user.identity_data.get("redis_key")) if current_user.identity_data and current_user.identity_data.get("redis_key") else None
+        if _rk:
+            _deleted = await cache.delete(_rk)
+            if not _deleted:
+                logger.warning("purge_identity_doc: failed to delete redis key %s", _rk)
+        else:
+            _sk = str(current_user.identity_data.get("storage_key")) if current_user.identity_data and current_user.identity_data.get("storage_key") else None
+            if _sk:
+                try:
+                    await storage.delete_file(_sk)
+                except Exception as _del_exc:
+                    logger.warning("purge_identity_doc: failed to delete %s: %s", _sk, _del_exc)
 
     if not face_result["match"] or face_result["confidence"] < 0.6:
         raise HTTPException(

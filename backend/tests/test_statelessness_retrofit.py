@@ -304,6 +304,73 @@ class TestIdentityFrontAndSelfie:
         assert stored.get("verified") is True
         assert stored.get("identity_assurance") == "MEDIUM"
 
+    def test_selfie_face_mismatch_purges_storage_key(self):
+        """Face mismatch (422) must still call storage.delete_file — GDPR no-retention on rejection."""
+        user = make_mock_user("tenant")
+        user.identity_verified = False
+        user.identity_status = "document_uploaded"
+        user.identity_data = {
+            "status": "document_uploaded",
+            "file_url": "https://r2/front.jpg",
+            "storage_key": "tmp-key-to-purge",
+        }
+        client = make_client(user)
+        from app.services.identity import identity_service
+        face_result = {"match": False, "confidence": 0.21, "reason": "mismatch"}
+        with patch.object(identity_service, "compare_faces", new=AsyncMock(return_value=face_result)), \
+             patch("app.routers.verification.storage") as mock_storage, \
+             patch("app.routers.verification.cache") as mock_cache, \
+             patch("app.routers.verification.httpx") as mock_httpx:
+            mock_cache.incr_with_expire = AsyncMock(return_value=0)
+            mock_resp = MagicMock()
+            mock_resp.content = b"id_image_bytes"
+            mock_resp.headers = {"content-type": "image/jpeg"}
+            mock_resp.raise_for_status = MagicMock()
+            mock_client_ctx = AsyncMock()
+            mock_client_ctx.__aenter__ = AsyncMock(return_value=AsyncMock(get=AsyncMock(return_value=mock_resp)))
+            mock_client_ctx.__aexit__ = AsyncMock(return_value=None)
+            mock_httpx.AsyncClient.return_value = mock_client_ctx
+            mock_storage.delete_file = AsyncMock(return_value=True)
+            response = client.post(
+                "/verification/identity/upload-selfie",
+                files={"file": ("selfie.jpg", io.BytesIO(b"selfiedata"), "image/jpeg")},
+            )
+        assert response.status_code == 422
+        mock_storage.delete_file.assert_called_once_with("tmp-key-to-purge")
+
+    def test_selfie_compare_faces_exception_purges_storage_key(self):
+        """compare_faces exception must still trigger storage.delete_file before propagating."""
+        user = make_mock_user("tenant")
+        user.identity_verified = False
+        user.identity_status = "document_uploaded"
+        user.identity_data = {
+            "status": "document_uploaded",
+            "file_url": "https://r2/front.jpg",
+            "storage_key": "tmp-key-on-exception",
+        }
+        client = make_client(user)
+        from app.services.identity import identity_service
+        with patch.object(identity_service, "compare_faces", new=AsyncMock(side_effect=RuntimeError("model failure"))), \
+             patch("app.routers.verification.storage") as mock_storage, \
+             patch("app.routers.verification.cache") as mock_cache, \
+             patch("app.routers.verification.httpx") as mock_httpx:
+            mock_cache.incr_with_expire = AsyncMock(return_value=0)
+            mock_resp = MagicMock()
+            mock_resp.content = b"id_image_bytes"
+            mock_resp.headers = {"content-type": "image/jpeg"}
+            mock_resp.raise_for_status = MagicMock()
+            mock_client_ctx = AsyncMock()
+            mock_client_ctx.__aenter__ = AsyncMock(return_value=AsyncMock(get=AsyncMock(return_value=mock_resp)))
+            mock_client_ctx.__aexit__ = AsyncMock(return_value=None)
+            mock_httpx.AsyncClient.return_value = mock_client_ctx
+            mock_storage.delete_file = AsyncMock(return_value=True)
+            response = client.post(
+                "/verification/identity/upload-selfie",
+                files={"file": ("selfie.jpg", io.BytesIO(b"selfiedata"), "image/jpeg")},
+            )
+        assert response.status_code in (422, 500)
+        mock_storage.delete_file.assert_called_once_with("tmp-key-on-exception")
+
 
 # ── Income domain ─────────────────────────────────────────────────────────────
 
