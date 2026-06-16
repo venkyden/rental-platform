@@ -53,6 +53,7 @@ async def _make_verified_tenant(sm, full_name="Jean Dupont"):
     async with sm() as s:
         from app.models.user import User as U
         u = await s.get(U, tenant.id)
+        u.full_name = full_name  # PR #4: name read from user.full_name, not extracted_data
         u.identity_verified = True
         u.identity_status = "verified"
         u.identity_data = {
