@@ -1,4 +1,5 @@
 from typing import List
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
@@ -253,7 +254,6 @@ async def reset_verification(
 
     Returns 409 if the user completed verification between queue load and this call.
     """
-    from uuid import UUID
     uid = UUID(id)
 
     if type == "identity":
@@ -281,7 +281,6 @@ async def approve_verification(
     _: User = Depends(require_admin),
 ):
     """Manually approve a verification"""
-    from uuid import UUID
     uid = UUID(id)
 
     if type == "identity":
