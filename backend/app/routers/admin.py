@@ -9,7 +9,7 @@ from app.services.feature_flag_service import feature_flag_service
 from app.models.user import User, UserRole
 from app.models.property import Property
 from app.routers.auth import get_current_user
-from sqlalchemy import select, or_
+from sqlalchemy import select
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -159,22 +159,27 @@ async def get_pending_verifications(
     _: User = Depends(require_admin),
 ):
     """
-    List all verifications that require manual review.
-    Checks users (identity/employment) and properties (ownership).
+    List verifications that require operator attention.
 
-    Paginated to avoid loading unbounded result sets; `skip`/`limit` are
-    applied to each source query (users and properties).
+    Identity: users whose upload stalled > 15 minutes ago (Redis TTL is 10 min —
+    at 15 min the user cannot complete the flow without re-uploading). The
+    skip/limit is applied at the DB level; the Python-side age filter may reduce
+    the result count below `limit` — acceptable at MVP scale.
+
+    Property: unverified properties with verification_data present.
     """
+    from datetime import datetime, timedelta, timezone
+
+    STALL_THRESHOLD_MINUTES = 15
+
     pending = []
 
-    # 1. Check Users (Identity & Employment)
+    # ── 1. Stalled identity uploads ───────────────────────────────────────────
     user_query = (
         select(User)
         .where(
-            or_(
-                User.identity_status == "pending_review",
-                User.employment_status == "pending_review"
-            )
+            User.identity_status == "document_uploaded",
+            User.identity_verified == False,
         )
         .offset(skip)
         .limit(limit)
@@ -182,42 +187,43 @@ async def get_pending_verifications(
     user_result = await db.execute(user_query)
     users = user_result.scalars().all()
 
-    for user in users:
-        if user.identity_data and user.identity_data.get("status") == "pending_review":
-            pending.append(VerificationReview(
-                id=str(user.id),
-                user_name=user.full_name or user.email,
-                type="identity",
-                status="pending_review",
-                upload_date=user.identity_data.get("upload_date", ""),
-                file_url=user.identity_data.get("file_url", ""),
-                extracted_data=user.identity_data.get("extracted_data")
-            ))
-        
-        if user.employment_data and user.employment_data.get("status") == "pending_review":
-            pending.append(VerificationReview(
-                id=str(user.id),
-                user_name=user.full_name or user.email,
-                type="employment",
-                status="pending_review",
-                upload_date=user.employment_data.get("upload_date", ""),
-                file_url=user.employment_data.get("file_url", ""),
-                extracted_data=user.employment_data.get("extracted_data")
-            ))
+    now_utc = datetime.now(timezone.utc).replace(tzinfo=None)  # naive UTC matches stored dates
+    stall_threshold = timedelta(minutes=STALL_THRESHOLD_MINUTES)
 
-    # 2. Check Properties
+    for user in users:
+        if not user.identity_data:
+            continue
+        upload_date_str = user.identity_data.get("upload_date", "")
+        if not upload_date_str:
+            continue
+        try:
+            upload_dt = datetime.fromisoformat(upload_date_str)
+        except ValueError:
+            continue
+        stalled_for = now_utc - upload_dt
+        if stalled_for < stall_threshold:
+            continue
+        pending.append(VerificationReview(
+            id=str(user.id),
+            user_name=user.full_name or user.email,
+            type="identity_stalled",
+            status="stalled_upload",
+            upload_date=upload_date_str,
+            minutes_stalled=int(stalled_for.total_seconds() / 60),
+            checks=user.identity_data.get("checks"),
+        ))
+
+    # ── 2. Unverified properties ──────────────────────────────────────────────
     prop_query = (
         select(Property)
-        .where(Property.ownership_verified == False)  # Simplified for MVP
+        .where(Property.ownership_verified == False)
         .offset(skip)
         .limit(limit)
     )
-    # In a real app, we'd have a specific status field for property verification
     prop_result = await db.execute(prop_query)
     properties = prop_result.scalars().all()
 
     for prop in properties:
-        # Only include if there is verification data present
         if hasattr(prop, 'verification_data') and prop.verification_data:
             pending.append(VerificationReview(
                 id=str(prop.id),
@@ -225,8 +231,8 @@ async def get_pending_verifications(
                 type="property",
                 status="pending_review",
                 upload_date=prop.verification_data.get("upload_date", ""),
-                file_url=prop.verification_data.get("file_url", ""),
-                extracted_data=prop.verification_data.get("extracted_data")
+                minutes_stalled=0,
+                checks=prop.verification_data.get("checks"),
             ))
 
     return pending

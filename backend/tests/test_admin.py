@@ -59,3 +59,111 @@ class TestVerificationReviewModel:
             checks=None,
         )
         assert r.checks is None
+
+
+class TestPendingVerificationsQueue:
+    def _make_stalled_user(self, minutes_ago: int):
+        """Create a mock user stuck at document_uploaded N minutes ago."""
+        from datetime import datetime, timedelta, timezone
+        user = make_mock_user("tenant")
+        user.identity_verified = False
+        user.identity_status = "document_uploaded"
+        upload_dt = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(minutes=minutes_ago)
+        user.identity_data = {
+            "status": "document_uploaded",
+            "upload_date": upload_dt.isoformat(),
+            "checks": {"document_detected": True},
+        }
+        return user
+
+    def test_stalled_user_over_threshold_appears_in_queue(self):
+        stalled = self._make_stalled_user(minutes_ago=30)
+        mock_result = MagicMock()
+        mock_result.scalars.return_value.all.return_value = [stalled]
+
+        empty_result = MagicMock()
+        empty_result.scalars.return_value.all.return_value = []
+
+        mock_db = MagicMock()
+        mock_db.execute = AsyncMock(side_effect=[mock_result, empty_result])
+
+        target_app = app.app if hasattr(app, "app") else app
+        admin = make_mock_user("admin", "admin@test.com")
+        target_app.dependency_overrides[get_current_user] = lambda: admin
+        target_app.dependency_overrides[get_db] = lambda: mock_db
+
+        with TestClient(app) as client:
+            response = client.get("/admin/verifications/pending")
+
+        target_app.dependency_overrides.clear()
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) >= 1
+        item = next(x for x in data if x["type"] == "identity_stalled")
+        assert item["status"] == "stalled_upload"
+        assert item["minutes_stalled"] >= 28
+        assert "file_url" not in item
+        assert "extracted_data" not in item
+
+    def test_recent_upload_under_threshold_excluded(self):
+        """User uploaded 5 min ago — may still self-complete. Not shown."""
+        recent = self._make_stalled_user(minutes_ago=5)
+        mock_result = MagicMock()
+        mock_result.scalars.return_value.all.return_value = [recent]
+
+        empty_result = MagicMock()
+        empty_result.scalars.return_value.all.return_value = []
+
+        mock_db = MagicMock()
+        mock_db.execute = AsyncMock(side_effect=[mock_result, empty_result])
+
+        target_app = app.app if hasattr(app, "app") else app
+        admin = make_mock_user("admin", "admin@test.com")
+        target_app.dependency_overrides[get_current_user] = lambda: admin
+        target_app.dependency_overrides[get_db] = lambda: mock_db
+
+        with TestClient(app) as client:
+            response = client.get("/admin/verifications/pending")
+
+        target_app.dependency_overrides.clear()
+        assert response.status_code == 200
+        identity_items = [x for x in response.json() if x["type"] == "identity_stalled"]
+        assert identity_items == []
+
+    def test_missing_identity_data_skipped_silently(self):
+        """Users with identity_status=document_uploaded but no identity_data don't crash."""
+        user = make_mock_user("tenant")
+        user.identity_verified = False
+        user.identity_status = "document_uploaded"
+        user.identity_data = None
+
+        mock_result = MagicMock()
+        mock_result.scalars.return_value.all.return_value = [user]
+
+        empty_result = MagicMock()
+        empty_result.scalars.return_value.all.return_value = []
+
+        mock_db = MagicMock()
+        mock_db.execute = AsyncMock(side_effect=[mock_result, empty_result])
+
+        target_app = app.app if hasattr(app, "app") else app
+        admin = make_mock_user("admin", "admin@test.com")
+        target_app.dependency_overrides[get_current_user] = lambda: admin
+        target_app.dependency_overrides[get_db] = lambda: mock_db
+
+        with TestClient(app) as client:
+            response = client.get("/admin/verifications/pending")
+
+        target_app.dependency_overrides.clear()
+        assert response.status_code == 200
+        assert response.json() == []
+
+    def test_non_admin_gets_403(self):
+        target_app = app.app if hasattr(app, "app") else app
+        tenant = make_mock_user("tenant")
+        target_app.dependency_overrides[get_current_user] = lambda: tenant
+        target_app.dependency_overrides[get_db] = mock_get_db
+        with TestClient(app) as client:
+            response = client.get("/admin/verifications/pending")
+        target_app.dependency_overrides.clear()
+        assert response.status_code == 403
