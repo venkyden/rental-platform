@@ -167,3 +167,86 @@ class TestPendingVerificationsQueue:
             response = client.get("/admin/verifications/pending")
         target_app.dependency_overrides.clear()
         assert response.status_code == 403
+
+
+class TestResetVerification:
+    def _make_db_with_user(self, user):
+        mock_db = MagicMock()
+        mock_db.get = AsyncMock(return_value=user)
+        mock_db.commit = AsyncMock()
+        return mock_db
+
+    def _admin_client_with_db(self, mock_db):
+        target_app = app.app if hasattr(app, "app") else app
+        admin = make_mock_user("admin", "admin@test.com")
+        target_app.dependency_overrides[get_current_user] = lambda: admin
+        target_app.dependency_overrides[get_db] = lambda: mock_db
+        return target_app
+
+    def test_reset_stalled_user_returns_200(self):
+        user = make_mock_user("tenant")
+        user.identity_verified = False
+        user.identity_status = "document_uploaded"
+        user.identity_data = {"status": "document_uploaded", "upload_date": "2026-06-16T09:00:00"}
+        mock_db = self._make_db_with_user(user)
+        target_app = self._admin_client_with_db(mock_db)
+
+        with TestClient(app) as client:
+            response = client.post(f"/admin/verifications/{user.id}/reset?type=identity")
+
+        target_app.dependency_overrides.clear()
+        assert response.status_code == 200
+        assert response.json()["status"] == "reset"
+        assert user.identity_status == "unverified"
+        assert user.identity_data is None
+
+    def test_reset_already_verified_returns_409(self):
+        user = make_mock_user("tenant")
+        user.identity_verified = True
+        user.identity_status = "verified"
+        mock_db = self._make_db_with_user(user)
+        target_app = self._admin_client_with_db(mock_db)
+
+        with TestClient(app) as client:
+            response = client.post(f"/admin/verifications/{user.id}/reset?type=identity")
+
+        target_app.dependency_overrides.clear()
+        assert response.status_code == 409
+        assert "already completed" in response.json()["detail"]
+
+    def test_reset_user_not_found_returns_404(self):
+        mock_db = MagicMock()
+        mock_db.get = AsyncMock(return_value=None)
+        target_app = self._admin_client_with_db(mock_db)
+
+        with TestClient(app) as client:
+            response = client.post(f"/admin/verifications/{uuid.uuid4()}/reset?type=identity")
+
+        target_app.dependency_overrides.clear()
+        assert response.status_code == 404
+
+    def test_reset_unsupported_type_returns_400(self):
+        user = make_mock_user("tenant")
+        mock_db = self._make_db_with_user(user)
+        target_app = self._admin_client_with_db(mock_db)
+
+        with TestClient(app) as client:
+            response = client.post(f"/admin/verifications/{user.id}/reset?type=property")
+
+        target_app.dependency_overrides.clear()
+        assert response.status_code == 400
+
+    def test_reset_does_not_touch_trust_score(self):
+        user = make_mock_user("tenant")
+        user.trust_score = 50
+        user.identity_verified = False
+        user.identity_status = "document_uploaded"
+        user.identity_data = {"status": "document_uploaded", "upload_date": "2026-06-16T09:00:00"}
+        mock_db = self._make_db_with_user(user)
+        target_app = self._admin_client_with_db(mock_db)
+
+        with TestClient(app) as client:
+            client.post(f"/admin/verifications/{user.id}/reset?type=identity")
+
+        target_app.dependency_overrides.clear()
+        assert user.trust_score == 50

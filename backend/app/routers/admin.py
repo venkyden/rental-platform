@@ -238,6 +238,41 @@ async def get_pending_verifications(
 
     return pending
 
+
+@router.post("/verifications/{id}/reset")
+async def reset_verification(
+    id: str,
+    type: str,
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(require_admin),
+):
+    """
+    Reset a stalled identity verification so the user can restart the upload flow.
+    Clears identity_data and sets identity_status back to "unverified".
+    Trust score is unchanged — no trust was awarded for an incomplete flow.
+
+    Returns 409 if the user completed verification between queue load and this call.
+    """
+    from uuid import UUID
+    uid = UUID(id)
+
+    if type == "identity":
+        user = await db.get(User, uid)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        if user.identity_verified:
+            raise HTTPException(
+                status_code=409,
+                detail="User has already completed identity verification — cannot reset.",
+            )
+        user.identity_status = "unverified"
+        user.identity_data = None  # type: ignore
+        await db.commit()
+        return {"status": "reset", "user_id": id}
+
+    raise HTTPException(status_code=400, detail=f"Reset not supported for type: {type}")
+
+
 @router.post("/verifications/{id}/approve")
 async def approve_verification(
     id: str,
