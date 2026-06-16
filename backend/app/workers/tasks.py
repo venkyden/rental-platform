@@ -109,6 +109,132 @@ def purge_stale_applications_task(self) -> dict:
 
 
 @celery_app.task(
+    name="app.workers.tasks.purge_legacy_verification_docs_task",
+    bind=True,
+    max_retries=1,
+)
+def purge_legacy_verification_docs_task(self) -> dict:
+    """
+    One-time GDPR cleanup: delete source documents stored in R2 by the legacy
+    verification flows (identity, income, guarantor) before the statelessness
+    retrofit (Item 12). New flows no longer store source docs.
+
+    Safe to re-run: already-deleted keys are silently skipped by the storage layer.
+    """
+    import asyncio
+    from sqlalchemy import select
+    from app.core.database import AsyncSessionLocal
+    from app.models.user import User
+    from app.services.storage import storage
+
+    _IDENTITY_KEYS = ("storage_key", "selfie_storage_key", "back_storage_key")
+    _INCOME_KEYS = ("storage_key",)
+    _GUARANTOR_KEYS = ("storage_key",)
+
+    async def _purge_docs():
+        deleted = 0
+        errors = 0
+
+        async with AsyncSessionLocal() as db:
+            result = await db.execute(
+                select(User).where(
+                    (User.identity_data.isnot(None))
+                    | (User.income_data.isnot(None))
+                    | (User.guarantor_data.isnot(None))
+                )
+            )
+            users = result.scalars().all()
+
+            for user in users:
+                changed = False
+
+                # Identity
+                id_data = user.identity_data or {}
+                for key in _IDENTITY_KEYS:
+                    r2_key = id_data.get(key)
+                    if r2_key:
+                        try:
+                            await storage.delete_file(r2_key)
+                            deleted += 1
+                            id_data = {k: v for k, v in id_data.items() if k != key}
+                            changed = True
+                        except Exception as exc:
+                            logger.warning("purge_legacy_docs: identity key=%s err=%s", r2_key, exc)
+                            errors += 1
+                if changed:
+                    user.identity_data = id_data  # type: ignore
+
+                # Income
+                inc_data = user.income_data or {}
+                changed = False
+                for key in _INCOME_KEYS:
+                    r2_key = inc_data.get(key)
+                    if r2_key:
+                        try:
+                            await storage.delete_file(r2_key)
+                            deleted += 1
+                            inc_data = {k: v for k, v in inc_data.items() if k != key}
+                            changed = True
+                        except Exception as exc:
+                            logger.warning("purge_legacy_docs: income key=%s err=%s", r2_key, exc)
+                            errors += 1
+                if changed:
+                    user.income_data = inc_data  # type: ignore
+
+                # Guarantor: visale/garantme use top-level keys; physical guarantor nests
+                # storage_key inside files[*] (upload_guarantor_document schema).
+                guar_data = user.guarantor_data or {}
+                changed = False
+                for key in _GUARANTOR_KEYS:
+                    r2_key = guar_data.get(key)
+                    if r2_key:
+                        try:
+                            await storage.delete_file(r2_key)
+                            deleted += 1
+                            guar_data = {k: v for k, v in guar_data.items() if k != key}
+                            changed = True
+                        except Exception as exc:
+                            logger.warning("purge_legacy_docs: guarantor key=%s err=%s", r2_key, exc)
+                            errors += 1
+                purged_files = []
+                for file_entry in guar_data.get("files", []):
+                    r2_key = file_entry.get("storage_key")
+                    if r2_key:
+                        try:
+                            await storage.delete_file(r2_key)
+                            deleted += 1
+                            file_entry = {k: v for k, v in file_entry.items() if k != "storage_key"}
+                            changed = True
+                        except Exception as exc:
+                            logger.warning("purge_legacy_docs: guarantor file key=%s err=%s", r2_key, exc)
+                            errors += 1
+                    purged_files.append(file_entry)
+                if changed and "files" in guar_data:
+                    guar_data = {**guar_data, "files": purged_files}
+                if changed:
+                    user.guarantor_data = guar_data  # type: ignore
+
+            await db.commit()
+
+        logger.info(
+            "purge_legacy_verification_docs: deleted=%d errors=%d users_scanned=%d",
+            deleted, errors, len(users),
+        )
+        return {"deleted": deleted, "errors": errors, "users_scanned": len(users)}
+
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = None
+
+    if loop and loop.is_running():
+        future = asyncio.run_coroutine_threadsafe(_purge_docs(), loop)
+        return future.result()
+    else:
+        return asyncio.run(_purge_docs())
+
+
+@celery_app.task(
     name="app.workers.tasks.retry_pending_dpe_task",
     bind=True,
     max_retries=3,
@@ -152,7 +278,7 @@ def retry_pending_dpe_task(self, property_id: str, dpe_number: str) -> dict:
                         property_id,
                     )
                     return {"status": "not_found"}
-                prop.ownership_data = {
+                prop.ownership_data = {  # type: ignore
                     **(prop.ownership_data or {}),
                     "dpe_assurance": "UNVERIFIED",
                     "dpe_number": dpe_number.strip(),
@@ -175,8 +301,8 @@ def retry_pending_dpe_task(self, property_id: str, dpe_number: str) -> dict:
                     property_id,
                 )
                 return {"status": "not_found"}
-            prop.dpe_rating = dpe.energy_class
-            prop.ownership_data = {
+            prop.dpe_rating = dpe.energy_class  # type: ignore
+            prop.ownership_data = {  # type: ignore
                 **(prop.ownership_data or {}),
                 "dpe_assurance": "HIGH",
                 "dpe_number": dpe.dpe_number,

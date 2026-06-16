@@ -15,12 +15,13 @@ moving on ([[roomivo-test-per-feature]]).
 
 Status legend: 🔴 blocking · 🟠 important · 🟡 polish · ✅ done.
 Verdicts: **KEEP / FIX / REPLACE / KILL / BUILD**.
-Last updated: 2026-06-13. Status: **Phase 1 complete** — all 6 Phase-1 items shipped; Phase 2 MRH/DPE/guarantor also shipped. Open: Phase 2 items 8/9 (legal gate), 11 (CSCA), 12 (statelessness); INTL solvency FX.
+Last updated: 2026-06-15. Status: **Phase 1 complete** — all 6 Phase-1 items shipped; Phase 2 MRH/DPE/guarantor also shipped; Item 12 (statelessness retrofit + Redis TTL) landed 2026-06-15. Open: Phase 2 items 8/9 (legal gate), 11 (CSCA); INTL solvency FX.
 - **Phase 1 complete (2026-06-13):** GLI removed; credential core; FR identity MEDIUM rail + avis cross-check; FR HIGH solvency (2D-Doc ECDSA); property control (taxe foncière, PR-8 fixed); both-sided wiring (/c/ verify page, issue-mine, QR share, anti-phishing).
 - **Item 2 (Credential core) landed 2026-06-05:** `Credential` model, `app/services/credential.py` (Ed25519 sign/verify), `app/routers/credentials.py` (POST /issue, GET /{id}, GET /public-key, GET /evidence.pdf, POST /issue-mine, POST /revoke), Alembic migration `c1d2e3f4a5b6`, 23 integration tests green. Assurance guards AS-1/AS-2/AS-3 enforced at signing time.
 - **DPE reclassification enforcement (§5.4 PR-1/3/4/5) landed 2026-06-10.**
 - **Guarantor verification fixes (§5.3 SV-3) landed 2026-06-12** (see "Done this pass" in §5.3).
 - **MRH insurance verification (§5.8 IN-1..IN-5) landed** (see "Done this pass" in §5.8).
+- **Item 12 (Statelessness retrofit + Redis TTL) landed 2026-06-15:** identity, income, and guarantor (Visale/Garantme) domains flipped to verify-and-forget; two-step identity front doc now stored in Redis (10-min TTL, per-upload session token) not R2; `purge_legacy_verification_docs_task` Celery task for existing stored docs (incl. nested physical-guarantor files). See §9 item 12.
 - **ADEME PENDING retry (PR-6) + zone tendue advisory (PR-7) landed 2026-06-13.**
 
 ---
@@ -468,7 +469,7 @@ insurance posture. **Delete, don't flag-off.**
 9. ❌ **E-sign + evidence pack upgrade** (§5.7, §6) — DocuSeal/Documenso **unmodified** (AGPL, §11). ⚠ gate.
 10. ✅ **Insurance MRH verification** (§5.8) — IN-1..IN-5 covered; `mrh_compliance.py`; `POST /verification/insurance/upload`; evidence PDF row; issue-mine assurance summary.
 11. ❌ **INTL rails** (§4) — NFC native app (JMRTD/NFCPassportReader) for HIGH; web MRZ-OCR MEDIUM; FX normalisation. Blocked on CSCA master-list (§11).
-12. ❌ **Statelessness retrofit** — flip legacy store-to-R2 flows to verify-and-forget, per-domain (touches GDPR posture + evidence model — most invasive).
+12. ✅ **Statelessness retrofit + Redis TTL** (2026-06-15) — identity (`selfie_with_id`, `back`, `upload-selfie`), income, and guarantor (Visale/Garantme) domains flipped to verify-and-forget. Source docs discarded immediately after claim extraction; `extracted_data`/`file_url`/`storage_key` removed from JSONB. Two-step identity flow: front doc stored in **Redis with 10-min TTL** (primary); R2 fallback only if Redis unavailable; per-upload `secrets.token_hex(8)` suffix on key for web/mobile session isolation. Doc purged **before** raising face-match failure exception (GDPR: no retention on rejection). `purge_legacy_verification_docs_task` Celery task purges existing R2 docs for current users, now including nested `files[*].storage_key` for physical-guarantor records. Physical guarantor upload (human-review flow) out of scope. 15 new tests (+ 2 Redis-path tests). Known downstream: admin panel `file_url`/`extracted_data` fields always blank post-retrofit (accepted); insurance IN-2 name match uses profile name as permanent fallback (accepted statelessness tradeoff).
 
 ## 11. OSS stack & caveats (from `CLAUDE.md`)
 | Component | Tool | License / note |

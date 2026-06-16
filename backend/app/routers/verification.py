@@ -2,13 +2,14 @@
 Verification API endpoints for identity and employment verification.
 """
 
+import base64
 import json
 import secrets
 import asyncio
 import httpx
 from datetime import datetime, timedelta
 from app.core.timeutils import naive_utcnow
-from typing import Optional, cast
+from typing import Optional
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 from fastapi.responses import StreamingResponse
@@ -142,9 +143,9 @@ async def upload_identity_document(
     if side == "selfie_with_id":
         result = await identity_service.verify_selfie_with_id(
             file_content=content,
-            file_type=cast(str, file.content_type),
+            file_type=file.content_type,
             document_type=document_type,
-            expected_name=cast(str, current_user.full_name),
+            expected_name=current_user.full_name,
         )
         if not result["verified"] and result["status"] == "rejected":
             logger.warning(f"Selfie+ID rejected for user {current_user.id}: {result.get('rejection_reason')}")
@@ -152,33 +153,22 @@ async def upload_identity_document(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Verification failed: {result.get('rejection_reason')}",
             )
-        watermarked_content = apply_watermark(content)
-        storage_result = await storage.upload_file(
-            file_data=BytesIO(watermarked_content),
-            filename=cast(str, file.filename),
-            content_type=cast(str, file.content_type),
-            folder=f"verification/identity/{current_user.id}",
-        )
         if not current_user.identity_verified:
             await db.execute(
                 update(User).where(User.id == current_user.id)
                 .values(trust_score=func.least(100, User.trust_score + 30))
             )
             await db.refresh(current_user)
-        current_user.identity_verified = True  # type: ignore
-        current_user.identity_status = "verified"  # type: ignore
+        current_user.identity_verified = True
+        current_user.identity_status = "verified"
         current_user.identity_data = {
             "verified": True,
-            "upload_date": naive_utcnow().isoformat(),
-            "filename": file.filename,
-            "file_url": storage_result["url"],
-            "storage_key": storage_result.get("key"),
+            "verified_at": naive_utcnow().isoformat(),
             "status": "verified",
             "verification_method": "selfie_with_id",
-            "extracted_data": result["data"],
             "checks": result["validation_checks"],
             **OCR_LIVENESS_LABEL,
-        }  # type: ignore
+        }
         await db.commit()
         await db.refresh(current_user)
         return {
@@ -188,36 +178,21 @@ async def upload_identity_document(
             "trust_score": current_user.trust_score,
         }
 
-    # Back side: store without AI check (supplementary document)
+    # Back side: processed transiently — no storage (source doc is PII, GDPR)
     if side == "back":
-        watermarked_back = apply_watermark(content)
-        back_storage = await storage.upload_file(
-            file_data=BytesIO(watermarked_back),
-            filename=cast(str, file.filename),
-            content_type=cast(str, file.content_type),
-            folder=f"verification/identity/{current_user.id}"
-        )
-        current_id_data = cast(dict, current_user.identity_data or {})
-        current_user.identity_data = {
-            **current_id_data,
-            "back_file_url": back_storage["url"],
-            "back_storage_key": back_storage.get("key"),
-        }  # type: ignore
-        await db.commit()
-        await db.refresh(current_user)
         return {
             "message": "Back side uploaded",
             "verified": False,
-            "status": current_user.identity_data.get("status", "document_uploaded"),
+            "status": (current_user.identity_data or {}).get("status", "document_uploaded"),
             "trust_score": current_user.trust_score,
             "details": "Upload a selfie to complete identity verification",
         }
 
-    # Front side: AI verification BEFORE storing (GDPR - rejected docs not stored)
+    # Front side: AI verification BEFORE storing (rejected docs never stored)
     result = await identity_service.verify_document(
         file_content=content,
-        file_type=cast(str, file.content_type),
-        expected_name=cast(str, current_user.full_name),
+        file_type=file.content_type,
+        expected_name=current_user.full_name,
         document_type=document_type,
     )
     if not result["verified"] and result["status"] == "rejected":
@@ -227,27 +202,53 @@ async def upload_identity_document(
             detail=f"Verification failed: {result.get('rejection_reason')}",
         )
 
-    # Only store if verification passed
-    watermarked_content = apply_watermark(content)
-    storage_result = await storage.upload_file(
-        file_data=BytesIO(watermarked_content),
-        filename=cast(str, file.filename),
-        content_type=cast(str, file.content_type),
-        folder=f"verification/identity/{current_user.id}"
-    )
+    # Purge any previous temp doc before overwriting the pointer (orphaned keys = GDPR leak).
+    _prev = current_user.identity_data or {}
+    if _prev.get("redis_key"):
+        _prev_rk = str(_prev["redis_key"])
+        deleted = await cache.delete(_prev_rk)
+        if not deleted:
+            logger.warning("purge_identity_doc: failed to delete redis key %s", _prev_rk)
+    elif _prev.get("storage_key"):
+        _prev_sk = str(_prev["storage_key"])
+        try:
+            await storage.delete_file(_prev_sk)
+        except Exception as _exc:
+            logger.warning("purge_identity_doc: failed to delete %s: %s", _prev_sk, _exc)
 
-    current_user.identity_verified = False  # type: ignore
-    current_user.identity_status = "document_uploaded"  # type: ignore
-    current_user.identity_data = {
-        "verified": False,
-        "upload_date": naive_utcnow().isoformat(),
-        "filename": file.filename,
-        "file_url": storage_result["url"],
-        "storage_key": storage_result.get("key"),
-        "status": "document_uploaded",
-        "extracted_data": result["data"],
-        "checks": result["validation_checks"],
-    }  # type: ignore
+    # Store temporarily for face-match: Redis with 10-min TTL primary; R2 fallback if Redis unavailable.
+    # Per-upload token suffix isolates concurrent web/mobile sessions.
+    _redis_key = f"identity_doc:{current_user.id}:{secrets.token_hex(8)}"
+    if cache.redis_client:
+        await cache.set(_redis_key, {
+            "b64": base64.b64encode(content).decode(),
+            "content_type": file.content_type,
+        }, ttl=600)
+        current_user.identity_data = {
+            "verified": False,
+            "upload_date": naive_utcnow().isoformat(),
+            "redis_key": _redis_key,
+            "status": "document_uploaded",
+            "checks": result["validation_checks"],
+        }
+    else:
+        from io import BytesIO
+        storage_result = await storage.upload_file(
+            file_data=BytesIO(content),
+            filename=file.filename,
+            content_type=file.content_type,
+            folder=f"verification/identity/{current_user.id}"
+        )
+        current_user.identity_data = {
+            "verified": False,
+            "upload_date": naive_utcnow().isoformat(),
+            "file_url": storage_result["url"],
+            "storage_key": storage_result.get("key"),
+            "status": "document_uploaded",
+            "checks": result["validation_checks"],
+        }
+    current_user.identity_verified = False
+    current_user.identity_status = "document_uploaded"
 
     await db.commit()
     await db.refresh(current_user)
@@ -401,41 +402,30 @@ async def upload_identity_mobile(
     if side == "selfie_with_id":
         doc_result = await identity_service.verify_selfie_with_id(
             file_content=content,
-            file_type=cast(str, file.content_type),
+            file_type=file.content_type,
             document_type=document_type,
-            expected_name=cast(str, user.full_name),
+            expected_name=user.full_name,
         )
         if not doc_result["verified"] and doc_result["status"] == "rejected":
             logger.warning(f"Selfie+ID rejected for session {verification_code}: {doc_result.get('rejection_reason')}")
             raise HTTPException(status_code=400, detail=f"Verification failed: {doc_result.get('rejection_reason')}")
 
-        watermarked = apply_watermark(content)
-        storage_result = await storage.upload_file(
-            file_data=BytesIO(watermarked),
-            filename=cast(str, file.filename or "selfie_with_id.jpg"),
-            content_type=cast(str, file.content_type),
-            folder=f"verification/identity/{user.id}",
-        )
         if not user.identity_verified:
             await db.execute(
                 update(User).where(User.id == user.id)
                 .values(trust_score=func.least(100, User.trust_score + 30))
             )
             await db.refresh(user)
-        user.identity_verified = True  # type: ignore
-        user.identity_status = "verified"  # type: ignore
+        user.identity_verified = True
+        user.identity_status = "verified"
         user.identity_data = {
             "verified": True,
-            "upload_date": naive_utcnow().isoformat(),
-            "file_url": storage_result["url"],
-            "storage_key": storage_result.get("key"),
+            "verified_at": naive_utcnow().isoformat(),
             "status": "verified",
             "verification_method": "selfie_with_id",
-            "extracted_data": doc_result["data"],
             "checks": doc_result["validation_checks"],
-            "verified_at": naive_utcnow().isoformat(),
             **OCR_LIVENESS_LABEL,
-        }  # type: ignore
+        }
         session["completed"] = True
         await _update_session(verification_code, session)
         await db.commit()
@@ -455,24 +445,54 @@ async def upload_identity_mobile(
                 detail="Upload and verify your identity document before submitting a selfie.",
             )
 
-        id_data = cast(dict, user.identity_data or {})
-        id_url = id_data["file_url"]
-        async with httpx.AsyncClient(timeout=15.0) as http_client:
-            try:
-                id_resp = await http_client.get(id_url)
-                id_resp.raise_for_status()
-                id_bytes = id_resp.content
-                id_content_type = id_resp.headers.get("content-type", "image/jpeg").split(";")[0]
-            except Exception as e:
-                logger.error(f"Failed to fetch identity doc for face compare: {e}")
-                raise HTTPException(status_code=500, detail="Could not retrieve identity document for comparison.")
+        _redis_key = user.identity_data.get("redis_key")
+        if _redis_key:
+            _doc = await cache.get(_redis_key)
+            if not _doc:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Identity document session expired — please re-upload your document.",
+                )
+            id_bytes = base64.b64decode(_doc["b64"])
+            id_content_type = _doc.get("content_type", "image/jpeg")
+        else:
+            id_url = user.identity_data["file_url"]
+            async with httpx.AsyncClient(timeout=15.0) as http_client:
+                try:
+                    id_resp = await http_client.get(id_url)
+                    id_resp.raise_for_status()
+                    id_bytes = id_resp.content
+                    id_content_type = id_resp.headers.get("content-type", "image/jpeg").split(";")[0]
+                except Exception as e:
+                    logger.error(f"Failed to fetch identity doc for face compare: {e}")
+                    raise HTTPException(status_code=500, detail="Could not retrieve identity document for comparison.")
 
-        face_result = await identity_service.compare_faces(
-            id_image=id_bytes,
-            id_file_type=id_content_type,
-            selfie=content,
-            selfie_file_type=cast(str, file.content_type),
-        )
+        try:
+            face_result = await identity_service.compare_faces(
+                id_image=id_bytes,
+                id_file_type=id_content_type,
+                selfie=content,
+                selfie_file_type=file.content_type or "image/jpeg",
+            )
+        except HTTPException:
+            raise
+        except Exception as _cmp_exc:
+            logger.error("compare_faces failed: %s", _cmp_exc)
+            raise HTTPException(status_code=500, detail="Face comparison failed.") from _cmp_exc
+        finally:
+            # Purge temp ID doc regardless of compare_faces outcome (GDPR: no retention on failure).
+            _rk = str(user.identity_data.get("redis_key")) if user.identity_data and user.identity_data.get("redis_key") else None
+            if _rk:
+                _deleted = await cache.delete(_rk)
+                if not _deleted:
+                    logger.warning("purge_identity_doc: failed to delete redis key %s", _rk)
+            else:
+                _sk = str(user.identity_data.get("storage_key")) if user.identity_data and user.identity_data.get("storage_key") else None
+                if _sk:
+                    try:
+                        await storage.delete_file(_sk)
+                    except Exception as _del_exc:
+                        logger.warning("purge_identity_doc: failed to delete %s: %s", _sk, _del_exc)
 
         if not face_result["match"] or face_result["confidence"] < 0.6:
             raise HTTPException(
@@ -480,32 +500,23 @@ async def upload_identity_mobile(
                 detail=f"Face does not match identity document. {face_result['reason']}",
             )
 
-        watermarked = apply_watermark(content)
-        selfie_storage = await storage.upload_file(
-            file_data=BytesIO(watermarked),
-            filename=cast(str, file.filename or "selfie.jpg"),
-            content_type=cast(str, file.content_type),
-            folder=f"verification/selfie/{user.id}",
-        )
-
         if not user.identity_verified:
             await db.execute(
                 update(User).where(User.id == user.id)
                 .values(trust_score=func.least(100, User.trust_score + 30))
             )
             await db.refresh(user)
-        user.identity_verified = True  # type: ignore
-        user.identity_status = "verified"  # type: ignore
-        current_id_data = cast(dict, user.identity_data or {})
+        user.identity_verified = True
+        user.identity_status = "verified"
         user.identity_data = {
-            **current_id_data,
-            "selfie_url": selfie_storage["url"],
-            "selfie_storage_key": selfie_storage.get("key"),
-            "face_match_confidence": face_result["confidence"],
+            "verified": True,
             "verified_at": naive_utcnow().isoformat(),
             "status": "verified",
+            "verification_method": "ocr_selfie",
+            "face_match_confidence": face_result["confidence"],
+            "checks": (user.identity_data or {}).get("checks"),
             **OCR_LIVENESS_LABEL,
-        }  # type: ignore
+        }
 
         session["completed"] = True
         await _update_session(verification_code, session)
@@ -521,28 +532,13 @@ async def upload_identity_mobile(
         }
 
     # ── Document path ─────────────────────────────────────────────────────
-    watermarked_content = apply_watermark(content)
-    storage_result = await storage.upload_file(
-        file_data=BytesIO(watermarked_content),
-        filename=cast(str, file.filename),
-        content_type=cast(str, file.content_type),
-        folder=f"verification/identity/{user.id}",
-    )
 
-    # Back side: store supplementary file, keep existing front file_url intact
+    # Back side: processed transiently — no storage (source doc is PII, GDPR)
     if side == "back":
-        current_id_data = cast(dict, user.identity_data or {})
-        user.identity_data = {
-            **current_id_data,
-            "back_file_url": storage_result["url"],
-            "back_storage_key": storage_result.get("key"),
-        }  # type: ignore
-        await db.commit()
-        await db.refresh(user)
         return {
             "message": "Back side uploaded — please complete liveness check",
             "verified": False,
-            "status": user.identity_data.get("status", "document_uploaded"),
+            "status": (user.identity_data or {}).get("status", "document_uploaded"),
             "trust_score": user.trust_score,
             "details": "Capture a selfie to complete identity verification",
         }
@@ -550,8 +546,8 @@ async def upload_identity_mobile(
     # Front / bio page: run AI validation
     doc_result = await identity_service.verify_document(
         file_content=content,
-        file_type=cast(str, file.content_type),
-        expected_name=cast(str, user.full_name),
+        file_type=file.content_type,
+        expected_name=user.full_name,
         document_type=document_type,
     )
 
@@ -562,20 +558,56 @@ async def upload_identity_mobile(
             detail=f"Verification failed: {doc_result.get('rejection_reason')}",
         )
 
+    # Purge any previous temp doc before overwriting the pointer (orphaned keys = GDPR leak).
+    _prev = user.identity_data or {}
+    if _prev.get("redis_key"):
+        _prev_rk = str(_prev["redis_key"])
+        deleted = await cache.delete(_prev_rk)
+        if not deleted:
+            logger.warning("purge_identity_doc: failed to delete redis key %s", _prev_rk)
+    elif _prev.get("storage_key"):
+        _prev_sk = str(_prev["storage_key"])
+        try:
+            await storage.delete_file(_prev_sk)
+        except Exception as _exc:
+            logger.warning("purge_identity_doc: failed to delete %s: %s", _prev_sk, _exc)
+
+    # Store temporarily for face-match: Redis with 10-min TTL primary; R2 fallback if Redis unavailable.
+    # Per-upload token suffix isolates concurrent web/mobile sessions.
+    _redis_key = f"identity_doc:{user.id}:{secrets.token_hex(8)}"
+    if cache.redis_client:
+        await cache.set(_redis_key, {
+            "b64": base64.b64encode(content).decode(),
+            "content_type": file.content_type,
+        }, ttl=600)
+        user.identity_data = {
+            "verified": False,
+            "upload_date": naive_utcnow().isoformat(),
+            "redis_key": _redis_key,
+            "source": "mobile_capture",
+            "status": "document_uploaded",
+            "checks": doc_result["validation_checks"],
+        }
+    else:
+        from io import BytesIO
+        storage_result = await storage.upload_file(
+            file_data=BytesIO(content),
+            filename=file.filename,
+            content_type=file.content_type,
+            folder=f"verification/identity/{user.id}",
+        )
+        user.identity_data = {
+            "verified": False,
+            "upload_date": naive_utcnow().isoformat(),
+            "file_url": storage_result["url"],
+            "source": "mobile_capture",
+            "storage_key": storage_result.get("key"),
+            "status": "document_uploaded",
+            "checks": doc_result["validation_checks"],
+        }
     # Document validated — selfie required to complete identity verification
-    user.identity_verified = False  # type: ignore
-    user.identity_status = "document_uploaded"  # type: ignore
-    user.identity_data = {
-        "verified": False,
-        "upload_date": naive_utcnow().isoformat(),
-        "filename": file.filename,
-        "file_url": storage_result["url"],
-        "source": "mobile_capture",
-        "storage_key": storage_result.get("key"),
-        "status": "document_uploaded",
-        "extracted_data": doc_result["data"],
-        "checks": doc_result["validation_checks"],
-    }  # type: ignore
+    user.identity_verified = False
+    user.identity_status = "document_uploaded"
 
     # Session stays open until selfie completes it (never mark complete on doc upload)
     await db.commit()
@@ -614,25 +646,55 @@ async def upload_identity_selfie(
     await _validate_file_size(file)
     selfie_bytes = await file.read()
 
-    id_data = cast(dict, current_user.identity_data or {})
-    id_url = id_data["file_url"]
-    async with httpx.AsyncClient(timeout=15.0) as http_client:
-        try:
-            id_resp = await http_client.get(id_url)
-            id_resp.raise_for_status()
-            id_bytes = id_resp.content
-            id_content_type = id_resp.headers.get("content-type", "image/jpeg").split(";")[0]
-        except Exception as e:
-            logger.error(f"Failed to fetch identity doc for face compare: {e}")
-            raise HTTPException(status_code=500, detail="Could not retrieve identity document for comparison.")
+    _redis_key = current_user.identity_data.get("redis_key")
+    if _redis_key:
+        _doc = await cache.get(_redis_key)
+        if not _doc:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Identity document session expired — please re-upload your document.",
+            )
+        id_bytes = base64.b64decode(_doc["b64"])
+        id_content_type = _doc.get("content_type", "image/jpeg")
+    else:
+        id_url = current_user.identity_data["file_url"]
+        async with httpx.AsyncClient(timeout=15.0) as http_client:
+            try:
+                id_resp = await http_client.get(id_url)
+                id_resp.raise_for_status()
+                id_bytes = id_resp.content
+                id_content_type = id_resp.headers.get("content-type", "image/jpeg").split(";")[0]
+            except Exception as e:
+                logger.error(f"Failed to fetch identity doc for face compare: {e}")
+                raise HTTPException(status_code=500, detail="Could not retrieve identity document for comparison.")
 
     from app.services.identity import identity_service
-    face_result = await identity_service.compare_faces(
-        id_image=id_bytes,
-        id_file_type=id_content_type,
-        selfie=selfie_bytes,
-        selfie_file_type=cast(str, file.content_type),
-    )
+    try:
+        face_result = await identity_service.compare_faces(
+            id_image=id_bytes,
+            id_file_type=id_content_type,
+            selfie=selfie_bytes,
+            selfie_file_type=file.content_type or "image/jpeg",
+        )
+    except HTTPException:
+        raise
+    except Exception as _cmp_exc:
+        logger.error("compare_faces failed: %s", _cmp_exc)
+        raise HTTPException(status_code=500, detail="Face comparison failed.") from _cmp_exc
+    finally:
+        # Purge temp ID doc regardless of compare_faces outcome (GDPR: no retention on failure).
+        _rk = str(current_user.identity_data.get("redis_key")) if current_user.identity_data and current_user.identity_data.get("redis_key") else None
+        if _rk:
+            _deleted = await cache.delete(_rk)
+            if not _deleted:
+                logger.warning("purge_identity_doc: failed to delete redis key %s", _rk)
+        else:
+            _sk = str(current_user.identity_data.get("storage_key")) if current_user.identity_data and current_user.identity_data.get("storage_key") else None
+            if _sk:
+                try:
+                    await storage.delete_file(_sk)
+                except Exception as _del_exc:
+                    logger.warning("purge_identity_doc: failed to delete %s: %s", _sk, _del_exc)
 
     if not face_result["match"] or face_result["confidence"] < 0.6:
         raise HTTPException(
@@ -640,33 +702,23 @@ async def upload_identity_selfie(
             detail=f"Face does not match identity document. {face_result['reason']}",
         )
 
-    watermarked = apply_watermark(selfie_bytes)
-    from io import BytesIO
-    selfie_storage = await storage.upload_file(
-        file_data=BytesIO(watermarked),
-        filename=cast(str, file.filename or "selfie.jpg"),
-        content_type=cast(str, file.content_type),
-        folder=f"verification/selfie/{current_user.id}",
-    )
-
     if not current_user.identity_verified:
         await db.execute(
             update(User).where(User.id == current_user.id)
             .values(trust_score=func.least(100, User.trust_score + 30))
         )
         await db.refresh(current_user)
-    current_user.identity_verified = True  # type: ignore
-    current_user.identity_status = "verified"  # type: ignore
-    current_id_data = cast(dict, current_user.identity_data or {})
+    current_user.identity_verified = True
+    current_user.identity_status = "verified"
     current_user.identity_data = {
-        **current_id_data,
-        "selfie_url": selfie_storage["url"],
-        "selfie_storage_key": selfie_storage.get("key"),
-        "face_match_confidence": face_result["confidence"],
+        "verified": True,
         "verified_at": naive_utcnow().isoformat(),
         "status": "verified",
+        "verification_method": "ocr_selfie",
+        "face_match_confidence": face_result["confidence"],
+        "checks": current_user.identity_data.get("checks"),
         **OCR_LIVENESS_LABEL,
-    }  # type: ignore
+    }
 
     await db.commit()
     await db.refresh(current_user)
@@ -691,7 +743,7 @@ async def avis_cross_check(
     """
     if not current_user.identity_verified:
         raise HTTPException(status_code=400, detail="Verify your identity before cross-checking an avis.")
-    id_name = (current_user.identity_data or {}).get("extracted_data", {}).get("full_name")
+    id_name: Optional[str] = current_user.full_name  # type: ignore[assignment]
     if not id_name or id_name == "Unknown":
         raise HTTPException(status_code=400, detail="No identity name on file to corroborate.")
 
@@ -705,7 +757,7 @@ async def avis_cross_check(
 
     from app.services import fr_2ddoc
     try:
-        raw = fr_2ddoc.decode_2ddoc(content, cast(str, file.content_type))
+        raw = fr_2ddoc.decode_2ddoc(content, file.content_type)
         avis = fr_2ddoc.parse_and_verify_avis(raw)
     except fr_2ddoc.BarcodeUnreadable:
         raise HTTPException(status_code=422, detail="Could not read the 2D-Doc barcode — please rescan the avis.")
@@ -716,11 +768,10 @@ async def avis_cross_check(
 
     matched = fr_2ddoc.name_matches_any(id_name, avis.declarant_names)
     if matched:
-        current_id_data = cast(dict, current_user.identity_data or {})
         current_user.identity_data = {
-            **current_id_data,
+            **(current_user.identity_data or {}),
             "identity_name_corroborated_by": "avis_2ddoc",
-        }  # type: ignore
+        }
         await db.commit()
         await db.refresh(current_user)
     return {"corroborated": matched, "reason": "name_match" if matched else "name_mismatch"}
@@ -777,7 +828,7 @@ async def fr_solvency_check(
 
     from app.services import fr_2ddoc
     try:
-        raw = fr_2ddoc.decode_2ddoc(content, cast(str, file.content_type))
+        raw = fr_2ddoc.decode_2ddoc(content, file.content_type)
         avis = fr_2ddoc.parse_and_verify_avis(raw)
     except fr_2ddoc.BarcodeUnreadable:
         raise HTTPException(status_code=422, detail="Could not read the 2D-Doc barcode — please rescan the avis.")
@@ -798,22 +849,21 @@ async def fr_solvency_check(
     recency_flag = fr_2ddoc.is_avis_stale(avis.annee_des_revenus) if avis.annee_des_revenus else False
 
     # Name corroboration against the verified identity (anti-fraud flag, no assurance change).
-    id_name = (current_user.identity_data or {}).get("extracted_data", {}).get("full_name")
+    id_name: Optional[str] = current_user.full_name  # type: ignore[assignment]
     name_corroborated = (
         fr_2ddoc.name_matches_any(id_name, avis.declarant_names) if id_name and id_name != "Unknown" else False
     )
 
     # Persist only the banded claims — raw RFR is discarded here.
-    current_id_data = cast(dict, current_user.identity_data or {})
     current_user.identity_data = {
-        **current_id_data,
+        **(current_user.identity_data or {}),
         "solvency_assurance": solvency_assurance,
         "solvency_ratio": solvency_ratio,
         "solvency_source": "fr_2ddoc_avis",
         "solvency_annee_des_revenus": avis.annee_des_revenus,
         "solvency_recency_flag": recency_flag,
         "solvency_name_corroborated": name_corroborated,
-    }  # type: ignore
+    }
     await db.commit()
     await db.refresh(current_user)
 
@@ -857,8 +907,8 @@ async def upload_income_document(
     try:
         result = await employment_service.verify_document(
             file_content=content,
-            file_type=cast(str, file.content_type),
-            expected_name=cast(str, current_user.full_name),
+            file_type=file.content_type,
+            expected_name=current_user.full_name,
             document_type=document_type,
         )
     except Exception as e:
@@ -885,37 +935,13 @@ async def upload_income_document(
         )
         await db.refresh(current_user)
 
-    # Apply watermark before upload
-    watermarked_content = apply_watermark(content)
-    
-    # Save file to Cloud Storage
-    from io import BytesIO
-    storage_result = await storage.upload_file(
-        file_data=BytesIO(watermarked_content),
-        filename=cast(str, file.filename),
-        content_type=cast(str, file.content_type),
-        folder=f"verification/income/{current_user.id}"
-    )
-    
-    file_url = storage_result["url"]
-
-    # Store verification data
-    extracted = result.get("data")
-    if extracted and isinstance(extracted, dict):
-        for k, v in extracted.items():
-            if hasattr(v, 'as_integer_ratio'):  # duck-type check for Decimal/float
-                extracted[k] = float(v)
-
+    # Source document processed transiently — never stored (GDPR)
     current_user.income_data = {
         "verified": result["verified"],
-        "upload_date": naive_utcnow().isoformat(),
-        "filename": file.filename,
-        "file_url": file_url,
-        "storage_key": storage_result.get("key"),
+        "verified_at": naive_utcnow().isoformat(),
         "status": result["status"],
-        "extracted_data": extracted,
         "checks": result["validation_checks"],
-    }  # type: ignore
+    }
 
     await db.commit()
     await db.refresh(current_user)
@@ -942,9 +968,9 @@ async def upload_employment_document(
     """
     res = await upload_income_document(document_type, file, current_user, db)
     # Mirror employment fields from the result (income and employment use same flow here)
-    current_user.employment_verified = bool(res.get("verified", False))  # type: ignore
-    current_user.employment_status = str(res.get("status", "unverified"))  # type: ignore
-    current_user.employment_data = current_user.income_data  # type: ignore
+    current_user.employment_verified = res.get("verified", False)
+    current_user.employment_status = res.get("status", "unverified")
+    current_user.employment_data = current_user.income_data
     await db.commit()
     return res
 
@@ -959,7 +985,7 @@ async def get_verification_status(current_user: User = Depends(get_current_user)
     return {
         "identity_verified": current_user.identity_verified,
         "identity_assurance": derive_identity_assurance(
-            bool(current_user.identity_verified), cast(Optional[dict], current_user.identity_data)
+            current_user.identity_verified, current_user.identity_data
         ),
         "employment_verified": current_user.employment_verified,
         "employment_status": current_user.employment_status if hasattr(current_user, 'employment_status') else "unverified",
@@ -1002,14 +1028,14 @@ async def init_guarantor(
         )
         await db.refresh(current_user)
 
-    current_user.guarantor_type = request.guarantor_type  # type: ignore
-    current_user.guarantor_status = "unverified"  # type: ignore
-    current_user.guarantor_data = None  # type: ignore
-    current_user.visale_id = None  # type: ignore
-    current_user.garantme_ref = None  # type: ignore
+    current_user.guarantor_type = request.guarantor_type
+    current_user.guarantor_status = "unverified"
+    current_user.guarantor_data = None
+    current_user.visale_id = None
+    current_user.garantme_ref = None
     
     if request.guarantor_type == "none":
-        current_user.guarantor_status = "unverified"  # type: ignore
+        current_user.guarantor_status = "unverified"
         
     await db.commit()
     await db.refresh(current_user)
@@ -1047,7 +1073,7 @@ async def verify_visale(
 
     cert_data = await employment_service.extract_guarantor_cert(
         file_content=content,
-        file_type=cast(str, file.content_type),
+        file_type=file.content_type,
         cert_type="visale",
     )
     if cert_data is None:
@@ -1056,7 +1082,7 @@ async def verify_visale(
             detail="Could not read the Visale certificate. Please upload a clear copy.",
         )
 
-    assessment = assess_guarantor_cert("visale", cert_data, cast(str, current_user.full_name or ""), date.today())
+    assessment = assess_guarantor_cert("visale", cert_data, current_user.full_name or "", date.today())
     error_warnings = [w for w in assessment.warnings if w.severity == "error"]
     if error_warnings:
         raise HTTPException(
@@ -1064,28 +1090,18 @@ async def verify_visale(
             detail=error_warnings[0].en,
         )
 
-    watermarked_content = apply_watermark(content)
-    from io import BytesIO
-    storage_result = await storage.upload_file(
-        file_data=BytesIO(watermarked_content),
-        filename=cast(str, file.filename),
-        content_type=cast(str, file.content_type),
-        folder=f"verification/guarantor/{current_user.id}",
-    )
-
-    current_user.guarantor_type = "visale"  # type: ignore
+    # Certificate processed transiently — extracted claims stored, source doc discarded (GDPR)
+    current_user.guarantor_type = "visale"
     if current_user.guarantor_status != "verified":
         await db.execute(
             update(User).where(User.id == current_user.id)
             .values(trust_score=func.least(100, User.trust_score + 15))
         )
         await db.refresh(current_user)
-    current_user.guarantor_status = "verified"  # type: ignore
+    current_user.guarantor_status = "verified"
     if assessment.cert_ref:
-        current_user.visale_id = assessment.cert_ref  # type: ignore
+        current_user.visale_id = assessment.cert_ref
     current_user.guarantor_data = {
-        "file_url": storage_result["url"],
-        "storage_key": storage_result.get("key"),
         "verified_at": naive_utcnow().isoformat(),
         "assurance": assessment.assurance,
         "name_matched": assessment.name_matched,
@@ -1093,7 +1109,7 @@ async def verify_visale(
         "guaranteed_amount": assessment.guaranteed_amount,
         "validity_date": assessment.validity_date.isoformat() if assessment.validity_date else None,
         "warnings": [{"code": w.code, "severity": w.severity, "en": w.en, "fr": w.fr} for w in assessment.warnings],
-    }  # type: ignore
+    }
 
     await db.commit()
     await db.refresh(current_user)
@@ -1133,7 +1149,7 @@ async def verify_garantme(
 
     cert_data = await employment_service.extract_guarantor_cert(
         file_content=content,
-        file_type=cast(str, file.content_type),
+        file_type=file.content_type,
         cert_type="garantme",
     )
     if cert_data is None:
@@ -1142,7 +1158,7 @@ async def verify_garantme(
             detail="Could not read the Garantme certificate. Please upload a clear copy.",
         )
 
-    assessment = assess_guarantor_cert("garantme", cert_data, cast(str, current_user.full_name or ""), date.today())
+    assessment = assess_guarantor_cert("garantme", cert_data, current_user.full_name or "", date.today())
     error_warnings = [w for w in assessment.warnings if w.severity == "error"]
     if error_warnings:
         raise HTTPException(
@@ -1150,28 +1166,18 @@ async def verify_garantme(
             detail=error_warnings[0].en,
         )
 
-    watermarked_content = apply_watermark(content)
-    from io import BytesIO
-    storage_result = await storage.upload_file(
-        file_data=BytesIO(watermarked_content),
-        filename=cast(str, file.filename),
-        content_type=cast(str, file.content_type),
-        folder=f"verification/guarantor/{current_user.id}",
-    )
-
-    current_user.guarantor_type = "garantme"  # type: ignore
+    # Certificate processed transiently — extracted claims stored, source doc discarded (GDPR)
+    current_user.guarantor_type = "garantme"
     if current_user.guarantor_status != "verified":
         await db.execute(
             update(User).where(User.id == current_user.id)
             .values(trust_score=func.least(100, User.trust_score + 15))
         )
         await db.refresh(current_user)
-    current_user.guarantor_status = "verified"  # type: ignore
+    current_user.guarantor_status = "verified"
     if assessment.cert_ref:
-        current_user.garantme_ref = assessment.cert_ref  # type: ignore
+        current_user.garantme_ref = assessment.cert_ref
     current_user.guarantor_data = {
-        "file_url": storage_result["url"],
-        "storage_key": storage_result.get("key"),
         "verified_at": naive_utcnow().isoformat(),
         "assurance": assessment.assurance,
         "name_matched": assessment.name_matched,
@@ -1179,7 +1185,7 @@ async def verify_garantme(
         "guaranteed_amount": assessment.guaranteed_amount,
         "validity_date": assessment.validity_date.isoformat() if assessment.validity_date else None,
         "warnings": [{"code": w.code, "severity": w.severity, "en": w.en, "fr": w.fr} for w in assessment.warnings],
-    }  # type: ignore
+    }
 
     await db.commit()
     await db.refresh(current_user)
@@ -1219,18 +1225,18 @@ async def upload_guarantor_document(
     from io import BytesIO
     storage_result = await storage.upload_file(
         file_data=BytesIO(watermarked_content),
-        filename=cast(str, file.filename),
-        content_type=cast(str, file.content_type),
+        filename=file.filename,
+        content_type=file.content_type,
         folder=f"verification/guarantor/{current_user.id}"
     )
     file_url = storage_result["url"]
     
     # Initialize guarantor_data if empty or if type changed
     if not current_user.guarantor_data or current_user.guarantor_type != "physical":
-        current_user.guarantor_data = {"files": []}  # type: ignore
+        current_user.guarantor_data = {"files": []}
         
-    current_user.guarantor_type = "physical"  # type: ignore
-    current_user.guarantor_status = "pending"  # type: ignore
+    current_user.guarantor_type = "physical"
+    current_user.guarantor_status = "pending"
     
     files_list = current_user.guarantor_data.get("files", [])
     new_entry = {
@@ -1243,7 +1249,7 @@ async def upload_guarantor_document(
     # Replace existing entry for same doc_type (last-write-wins)
     files_list = [f for f in files_list if f.get("document_type") != document_type]
     files_list.append(new_entry)
-    current_user.guarantor_data = {"files": files_list}  # type: ignore
+    current_user.guarantor_data = {"files": files_list}
     
     await db.commit()
     await db.refresh(current_user)
@@ -1267,7 +1273,7 @@ async def submit_physical_guarantor(
     db: AsyncSession = Depends(get_db),
 ):
     """Mark physical guarantor dossier as submitted once all required docs are uploaded."""
-    if cast(Optional[str], current_user.guarantor_type) != "physical":
+    if current_user.guarantor_type != "physical":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="No physical guarantor flow in progress. Please upload documents first.",
@@ -1280,7 +1286,7 @@ async def submit_physical_guarantor(
         )
 
     required_doc_types = {"id_card", "payslip", "tax_assessment", "proof_address"}
-    existing_files = cast(dict, current_user.guarantor_data or {}).get("files", [])
+    existing_files = (current_user.guarantor_data or {}).get("files", [])
     uploaded_types = {f.get("document_type") for f in existing_files}
     missing = required_doc_types - uploaded_types
     if missing:
@@ -1289,13 +1295,12 @@ async def submit_physical_guarantor(
             detail=f"Missing required documents: {', '.join(sorted(missing))}",
         )
 
-    current_user.guarantor_status = "submitted"  # type: ignore
-    current_guar_data = cast(dict, current_user.guarantor_data or {})
+    current_user.guarantor_status = "submitted"
     current_user.guarantor_data = {
-        **current_guar_data,
+        **current_user.guarantor_data,
         "assurance": "DOCUMENT_SUBMITTED",
         "consent_at": naive_utcnow().isoformat(),
-    }  # type: ignore
+    }
 
     await db.commit()
     await db.refresh(current_user)
@@ -1321,11 +1326,11 @@ async def delete_guarantor(
         )
         await db.refresh(current_user)
 
-    current_user.guarantor_type = None  # type: ignore
-    current_user.guarantor_status = "unverified"  # type: ignore
-    current_user.guarantor_data = None  # type: ignore
-    current_user.visale_id = None  # type: ignore
-    current_user.garantme_ref = None  # type: ignore
+    current_user.guarantor_type = None
+    current_user.guarantor_status = "unverified"
+    current_user.guarantor_data = None
+    current_user.visale_id = None
+    current_user.garantme_ref = None
     
     await db.commit()
     await db.refresh(current_user)
@@ -1379,14 +1384,12 @@ async def verify_property_dpe(
         raise HTTPException(status_code=422, detail=str(exc))
     except ademe_dpe.ADEMEUnavailable:
         # PR-6: non-blocking — store PENDING so the frontend can retry later.
-        current_ownership = cast(dict, prop.ownership_data or {})
         prop.ownership_data = {
-            **current_ownership,
+            **(prop.ownership_data or {}),
             "dpe_assurance": "PENDING",
             "dpe_number": dpe_number.strip(),
-        }  # type: ignore
+        }
         await db.commit()
-        # Dispatch background retry (60 s delay to give ADEME time to recover).
         try:
             from app.workers.tasks import retry_pending_dpe_task
             retry_pending_dpe_task.apply_async(
@@ -1407,12 +1410,11 @@ async def verify_property_dpe(
         }
     except ademe_dpe.DPENotFound:
         # PR-4: not found → UNVERIFIED, non-blocking.
-        current_ownership = cast(dict, prop.ownership_data or {})
         prop.ownership_data = {
-            **current_ownership,
+            **(prop.ownership_data or {}),
             "dpe_assurance": "UNVERIFIED",
             "dpe_number": dpe_number.strip(),
-        }  # type: ignore
+        }
         await db.commit()
         return {
             "dpe_assurance": "UNVERIFIED",
@@ -1422,10 +1424,9 @@ async def verify_property_dpe(
         }
 
     # PR-3: update property.dpe_rating from live ADEME (never from caller input).
-    prop.dpe_rating = dpe.energy_class  # type: ignore
-    current_ownership = cast(dict, prop.ownership_data or {})
+    prop.dpe_rating = dpe.energy_class
     prop.ownership_data = {
-        **current_ownership,
+        **(prop.ownership_data or {}),
         "dpe_assurance": "HIGH",
         "dpe_number": dpe.dpe_number,
         "dpe_class": dpe.energy_class,
@@ -1434,7 +1435,7 @@ async def verify_property_dpe(
         "dpe_expired": dpe.expired,
         # address stored for corroboration display, never treated as ownership proof
         "dpe_ademe_address": dpe.address_line,
-    }  # type: ignore
+    }
     await db.commit()
     await db.refresh(prop)
 
@@ -1481,11 +1482,11 @@ async def upload_insurance_document(
     content = await file.read()
 
     # Derive expected name from identity_data (for IN-2 cross-check)
-    identity_data = cast(dict, current_user.identity_data or {})
-    expected_name = cast(Optional[str], (
+    identity_data = current_user.identity_data or {}
+    expected_name = (
         (identity_data.get("extracted_data") or {}).get("full_name")
         or current_user.full_name
-    ))
+    )
 
     result = await mrh_insurance_service.verify(
         file_content=content,
@@ -1502,8 +1503,8 @@ async def upload_insurance_document(
         )
 
     # Store banded result (source document never persisted)
-    current_user.insurance_verified = result["verified"]  # type: ignore
-    current_user.insurance_status = result["status"]  # type: ignore
+    current_user.insurance_verified = result["verified"]
+    current_user.insurance_status = result["status"]
     current_user.insurance_data = {
         "status": result["status"],
         "upload_date": naive_utcnow().isoformat(),
@@ -1514,7 +1515,7 @@ async def upload_insurance_document(
         "mrh_cover_start": result["mrh_cover_start"],
         "mrh_cover_end": result["mrh_cover_end"],
         "flags": result["flags"],
-    }  # type: ignore
+    }
 
     await db.commit()
 
@@ -1584,8 +1585,8 @@ async def upload_property_document(
     try:
         verification_result = await property_verification_service.verify_document(
             file_content=content,
-            file_type=cast(str, file.content_type),
-            expected_owner_name=cast(str, current_user.full_name),
+            file_type=file.content_type,
+            expected_owner_name=current_user.full_name,
             expected_address=f"{property_obj.address_line1} {property_obj.address_line2 or ''} {property_obj.city} {property_obj.postal_code} {property_obj.country}".strip(),
             document_type=document_type,
         )
@@ -1609,10 +1610,9 @@ async def upload_property_document(
     control_documented = verification_result.get("verified", False)
 
     # PR-8: store "control, not ownership-attested" — never claim ownership is proven.
-    property_obj.ownership_verified = control_documented  # type: ignore
-    current_ownership_data = cast(dict, property_obj.ownership_data or {})
+    property_obj.ownership_verified = control_documented
     property_obj.ownership_data = {
-        **current_ownership_data,
+        **(property_obj.ownership_data or {}),
         "label": "control_not_ownership_attested",
         "assurance": "MEDIUM",
         "control_documented": control_documented,
@@ -1622,7 +1622,7 @@ async def upload_property_document(
         # extracted_data carries owner_name + address for corroboration display only;
         # it is NEVER treated as ownership proof and contains no raw identity document data.
         "extracted_data": verification_result.get("data"),
-    }  # type: ignore
+    }
 
     # Update user-level control status — mirrors property, keeps same "control" framing.
     # Trust score bump is kept (legitimate incentive) but status label is corrected.
@@ -1632,14 +1632,14 @@ async def upload_property_document(
             .values(trust_score=func.least(100, User.trust_score + 20))
         )
         await db.refresh(current_user)
-        current_user.ownership_verified = True  # type: ignore
-        current_user.ownership_status = "control_documented"  # type: ignore
+        current_user.ownership_verified = True
+        current_user.ownership_status = "control_documented"
         current_user.ownership_data = {
             "label": "control_not_ownership_attested",
             "assurance": "MEDIUM",
-        }  # type: ignore
+        }
     else:
-        current_user.ownership_status = "unverified"  # type: ignore
+        current_user.ownership_status = "unverified"
 
     await db.commit()
     await db.refresh(property_obj)
