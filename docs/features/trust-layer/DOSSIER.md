@@ -232,11 +232,11 @@ Tests follow the existing convention in `backend/tests_integration/` (real DB,
 | ID-2 | *Justificatif* for a different recipient | recipient mismatch → **block** | ❌ deferred |
 | ID-3 | Expired single-use *justificatif* (TTL) | **block**, regenerate | ❌ deferred |
 | ID-4 | No new-CNI / no NFC phone | **fallback → MEDIUM**, labelled | ✅ labelled (AS-1 fix) |
-| ID-5 | Web NFC cannot read passport (impossible) | auto web-MEDIUM, never claim HIGH | ❌ |
-| ID-6 | MRZ checksum (mod-10) fails | transcription error → **re-scan** | ❌ |
-| ID-7 | Passport without chip (older book) | MEDIUM only, labelled | ❌ |
-| ID-8 | Liveness spoof (photo-of-photo / replay) | liveness **reject**; residual noted in MEDIUM | 🟡 face-match yes; true replay detection? |
-| ID-9 | Non-Latin / transliterated names | MRZ transliteration tolerance, surface both forms | 🟡 fuzzy match, not MRZ-aware |
+| ID-5 | Web NFC cannot read passport (impossible) | auto web-MEDIUM, never claim HIGH | ✅ `assurance` hard-coded `"MEDIUM"` in `extract_mrz`; `_FAILED_RESULT` also MEDIUM — no code path emits HIGH |
+| ID-6 | MRZ checksum (mod-10) fails | transcription error → **re-scan** | ✅ `_validate_checksums` in `mrz.py`; AI pass 1 → Tesseract pass 2 → 422 `MRZ_CHECKSUM_FAIL` (bilingual) if both fail |
+| ID-7 | Passport without chip (older book) | MEDIUM only, labelled | ✅ MRZ parsed normally → `identity_assurance: "MEDIUM"`; chip presence irrelevant on web path |
+| ID-8 | Liveness spoof (photo-of-photo / replay) | liveness **reject**; residual noted in MEDIUM | 🟡 AI face-match rejects obvious spoofs; true replay detection not possible with OSS web path — pre-existing gap, not regressed |
+| ID-9 | Non-Latin / transliterated names | MRZ transliteration tolerance, surface both forms | ✅ `name_transliteration_mismatch: true` when `full_name` non-ASCII + fuzzy-match < 0.6; MEDIUM still granted — never blocks (ID-9) |
 | ID-10 | Signer ≠ verified credential subject | **block** at e-sign | ❌ |
 
 ### 5.2 Assurance labelling (PRD §2.2/§4) — retrofit, do FIRST
@@ -254,9 +254,10 @@ Tests follow the existing convention in `backend/tests_integration/` (real DB,
 | SV-2 | Authentic but superseded *avis* | **SVAIR** recency check, else flag "recency unconfirmed" | 🟡 `is_avis_stale()` flags if `annee_des_revenus` > 2 yrs old; `recency_flag` stored; SVAIR deferred |
 | SV-3 | Dependant on parent's *avis* (rattaché) | guarantor path (parent verifies own facts) | ✅ guarantor flows fixed (2026-06-12): dedicated cert AI extractor; `visale_id`/`garantme_ref` populated; expiry + name-match validation; physical submit endpoint; MEDIUM/DOCUMENT_SUBMITTED assurance tier |
 | SV-4 | No *avis* (student/first job/new arrival) | payslips/guarantor/Visale | 🟡 |
-| SV-5 | INTL foreign doc unverifiable | **MEDIUM** + currency normalisation | ❌ no FX normalisation |
-| SV-6 | FX volatility over lease term | flat labelled margin (+5%, as margin not σ) | ❌ |
-| SV-7 | Income just under threshold after margin | surface band honestly, **don't silently pass** | 🟡 `trust_score` opaque |
+| SV-5 | INTL foreign doc unverifiable | **MEDIUM** + currency normalisation | ✅ `POST /intl/solvency`; `decret_2015_1437_disclaimer: true` stored; MEDIUM assurance |
+| SV-6 | FX volatility over lease term | flat labelled margin (+5%, as margin not σ) | ✅ `_MARGIN = 0.05`, `fx_margin_label = "currency volatility buffer"` in `fx_normalise.py`; never varies by currency |
+| SV-7 | Income just under threshold after margin | surface band honestly, **don't silently pass** | ✅ `band_solvency_ratio()` — post-margin figure banded; 2.97 → `">=2.0"` not `">=3.0"` (unit-tested) |
+| SV-8a | Foreign doc shows annual figure | ÷12 or flag unclear | ✅ `normalise_income_to_monthly()` — annual ÷12; unknown → no division + `income_period_unclear: true` (conservative) |
 | SV-8 | RFR mislabelled as monthly net income | present as **fiscal capacity**, not RFR/12 | ❌ audit all copy |
 
 **Done this pass — Guarantor verification fixes (Phase 2 item 11, 2026-06-12)** —
@@ -468,7 +469,7 @@ insurance posture. **Delete, don't flag-off.**
 8. ❌ **Uploaded-lease red-line scan** (§5.6) — VALIDATED vs ATTACHED tiers. ⚠ gate.
 9. ❌ **E-sign + evidence pack upgrade** (§5.7, §6) — DocuSeal/Documenso **unmodified** (AGPL, §11). ⚠ gate.
 10. ✅ **Insurance MRH verification** (§5.8) — IN-1..IN-5 covered; `mrh_compliance.py`; `POST /verification/insurance/upload`; evidence PDF row; issue-mine assurance summary.
-11. ❌ **INTL rails** (§4) — NFC native app (JMRTD/NFCPassportReader) for HIGH; web MRZ-OCR MEDIUM; FX normalisation. Blocked on CSCA master-list (§11).
+11. 🟡 **INTL rails** (§4) — MEDIUM rail shipped (2026-06-16): `mrz.py` hybrid AI+Tesseract+ICAO-checksum; `fx_normalise.py` Frankfurter→static-29→UNVERIFIED; 3 endpoints: `POST /verification/intl/identity/upload`, `/intl/identity/selfie`, `/intl/solvency`. HIGH (NFC chip / Passive Auth) still blocked on CSCA master-list assembly. Spec: `docs/superpowers/specs/2026-06-15-intl-rails-design.md`.
 12. ✅ **Statelessness retrofit + Redis TTL** (2026-06-15) — identity (`selfie_with_id`, `back`, `upload-selfie`), income, and guarantor (Visale/Garantme) domains flipped to verify-and-forget. Source docs discarded immediately after claim extraction; `extracted_data`/`file_url`/`storage_key` removed from JSONB. Two-step identity flow: front doc stored in **Redis with 10-min TTL** (primary); R2 fallback only if Redis unavailable; per-upload `secrets.token_hex(8)` suffix on key for web/mobile session isolation. Doc purged **before** raising face-match failure exception (GDPR: no retention on rejection). `purge_legacy_verification_docs_task` Celery task purges existing R2 docs for current users, now including nested `files[*].storage_key` for physical-guarantor records. Physical guarantor upload (human-review flow) out of scope. 15 new tests (+ 2 Redis-path tests). Known downstream: admin panel `file_url`/`extracted_data` fields always blank post-retrofit (accepted); insurance IN-2 name match uses profile name as permanent fallback (accepted statelessness tradeoff).
 
 ## 11. OSS stack & caveats (from `CLAUDE.md`)
