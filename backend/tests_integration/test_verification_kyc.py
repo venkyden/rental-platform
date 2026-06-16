@@ -632,7 +632,8 @@ async def test_back_side_stores_without_marking_verified(client, sessionmaker_):
 
     assert refreshed.identity_verified is False
     assert refreshed.identity_data["file_url"] == "https://r2.test/front.jpg"
-    assert "back_file_url" in refreshed.identity_data
+    # PR #4 statelessness: back side is processed transiently, not stored in R2
+    assert "back_file_url" not in refreshed.identity_data
 
 
 # ── 11. AI extraction failure on front → pending_review (not hard reject) ──
