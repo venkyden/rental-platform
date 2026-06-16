@@ -9,6 +9,7 @@ back to FastAPI ``BackgroundTasks`` instead.
 
 import logging
 import os
+import uuid as _uuid
 from typing import Optional
 
 from app.workers.celery_app import celery_app
@@ -161,7 +162,7 @@ def purge_legacy_verification_docs_task(self) -> dict:
                             logger.warning("purge_legacy_docs: identity key=%s err=%s", r2_key, exc)
                             errors += 1
                 if changed:
-                    user.identity_data = id_data
+                    user.identity_data = id_data  # type: ignore
 
                 # Income
                 inc_data = user.income_data or {}
@@ -178,7 +179,7 @@ def purge_legacy_verification_docs_task(self) -> dict:
                             logger.warning("purge_legacy_docs: income key=%s err=%s", r2_key, exc)
                             errors += 1
                 if changed:
-                    user.income_data = inc_data
+                    user.income_data = inc_data  # type: ignore
 
                 # Guarantor: visale/garantme use top-level keys; physical guarantor nests
                 # storage_key inside files[*] (upload_guarantor_document schema).
@@ -211,7 +212,7 @@ def purge_legacy_verification_docs_task(self) -> dict:
                 if changed and "files" in guar_data:
                     guar_data = {**guar_data, "files": purged_files}
                 if changed:
-                    user.guarantor_data = guar_data
+                    user.guarantor_data = guar_data  # type: ignore
 
             await db.commit()
 
@@ -231,3 +232,101 @@ def purge_legacy_verification_docs_task(self) -> dict:
         return future.result()
     else:
         return asyncio.run(_purge_docs())
+
+
+@celery_app.task(
+    name="app.workers.tasks.retry_pending_dpe_task",
+    bind=True,
+    max_retries=3,
+    default_retry_delay=300,  # 5 min between retries
+    acks_late=True,
+)
+def retry_pending_dpe_task(self, property_id: str, dpe_number: str) -> dict:
+    """
+    Retry ADEME DPE lookup for a property whose last attempt returned PENDING (PR-6).
+
+    On success: updates ownership_data to HIGH and sets dpe_rating.
+    On DPENotFound: updates to UNVERIFIED.
+    On ADEMEUnavailable: retries up to max_retries times (5 min apart).
+    """
+    import asyncio
+    from sqlalchemy import select
+    from app.core.database import AsyncSessionLocal
+    from app.models.property import Property
+    from app.services.ademe_dpe import (
+        lookup_dpe,
+        ADEMEUnavailable,
+        DPENotFound,
+        InvalidDPENumber,
+    )
+
+    async def _retry():
+        try:
+            dpe = await lookup_dpe(dpe_number)
+        except InvalidDPENumber:
+            logger.warning("retry_pending_dpe: invalid DPE number %r — skipping", dpe_number)
+            return {"status": "invalid_dpe_number"}
+        except DPENotFound:
+            async with AsyncSessionLocal() as db:
+                result = await db.execute(
+                    select(Property).where(Property.id == _uuid.UUID(property_id))
+                )
+                prop = result.scalar_one_or_none()
+                if prop is None:
+                    logger.warning(
+                        "retry_pending_dpe: property %s no longer exists — dropping task",
+                        property_id,
+                    )
+                    return {"status": "not_found"}
+                prop.ownership_data = {  # type: ignore
+                    **(prop.ownership_data or {}),
+                    "dpe_assurance": "UNVERIFIED",
+                    "dpe_number": dpe_number.strip(),
+                }
+                await db.commit()
+            logger.info("retry_pending_dpe: DPE %r not found → UNVERIFIED (property %s)", dpe_number, property_id)
+            return {"status": "unverified"}
+        except ADEMEUnavailable as exc:
+            logger.warning("retry_pending_dpe: ADEME still unavailable for %s — scheduling retry", property_id)
+            raise self.retry(exc=exc)
+
+        async with AsyncSessionLocal() as db:
+            result = await db.execute(
+                select(Property).where(Property.id == _uuid.UUID(property_id))
+            )
+            prop = result.scalar_one_or_none()
+            if prop is None:
+                logger.warning(
+                    "retry_pending_dpe: property %s no longer exists — dropping task",
+                    property_id,
+                )
+                return {"status": "not_found"}
+            prop.dpe_rating = dpe.energy_class  # type: ignore
+            prop.ownership_data = {  # type: ignore
+                **(prop.ownership_data or {}),
+                "dpe_assurance": "HIGH",
+                "dpe_number": dpe.dpe_number,
+                "dpe_class": dpe.energy_class,
+                "dpe_valid_until": dpe.valid_until.isoformat() if dpe.valid_until else None,
+                "dpe_established": dpe.established_date.isoformat() if dpe.established_date else None,
+                "dpe_expired": dpe.expired,
+                "dpe_ademe_address": dpe.address_line,
+            }
+            await db.commit()
+        logger.info(
+            "retry_pending_dpe: resolved property %s → class %s",
+            property_id,
+            dpe.energy_class,
+        )
+        return {"status": "resolved", "dpe_class": dpe.energy_class}
+
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = None
+
+    if loop and loop.is_running():
+        future = asyncio.run_coroutine_threadsafe(_retry(), loop)
+        return future.result()
+    else:
+        return asyncio.run(_retry())
