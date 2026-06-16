@@ -1655,3 +1655,389 @@ async def upload_property_document(
             "no free ownership oracle is available. Disclosed limitation."
         ),
     }
+
+# ── INTL rails ─────────────────────────────────────────────────────────────────
+
+async def _ai_extract_intl_income(
+    file_content: bytes, content_type: str, ai_client=None
+) -> Optional[dict]:
+    """Extract income data from a foreign income document via Gemini AI."""
+    prompt = (
+        "Extract income data from this foreign income document "
+        "(payslip, tax return, bank statement, or equivalent).\n\n"
+        "Return ONLY this JSON — no markdown:\n"
+        '{"income_amount": <number or null>, "income_currency": "<ISO 4217>", '
+        '"income_period": "monthly"|"annual"|"unknown", '
+        '"employee_name": "<name or null>", '
+        '"document_type": "payslip"|"tax_return"|"bank_statement"|"other"}\n\n'
+        "Rules:\n"
+        "- income_amount: primary gross/net income figure (not deductions)\n"
+        "- income_currency: must be ISO 4217 (INR, USD, GBP, CNY, JPY, etc.)\n"
+        "- income_period: monthly for payslips, annual for tax returns\n"
+        "- Return null for income_amount if you cannot determine it"
+    )
+    try:
+        from google import genai as _genai
+        from google.genai import types as _types
+        from app.core.config import settings
+
+        client = ai_client
+        if client is None and getattr(settings, "GEMINI_API_KEY", None):
+            client = _genai.Client(api_key=settings.GEMINI_API_KEY)
+        if client is None:
+            return None
+
+        image_part = _types.Part.from_bytes(data=file_content, mime_type=content_type)
+        for model in ("gemini-2.0-flash", "gemini-1.5-flash"):
+            try:
+                response = client.models.generate_content(
+                    model=model, contents=[image_part, prompt]
+                )
+                import json as _json
+                text = response.text.strip()
+                if text.startswith("```"):
+                    text = text.split("```")[1].lstrip("json").strip()
+                return _json.loads(text)
+            except Exception as _exc:
+                logger.warning("AI intl income extraction (%s) failed: %s", model, _exc)
+    except Exception as _exc:
+        logger.error("_ai_extract_intl_income crashed: %s", _exc)
+    return None
+
+
+@router.post("/intl/identity/upload")
+async def upload_intl_identity_document(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Passport upload for INTL MEDIUM rail: MRZ scan + expiry check + temp store."""
+    import base64
+    from datetime import date
+    from difflib import SequenceMatcher
+    from app.services.mrz import extract_mrz
+
+    allowed = {"image/jpeg", "image/png", "image/jpg", "application/pdf", "image/heic", "image/heif"}
+    if file.content_type not in allowed:
+        raise HTTPException(status_code=400, detail=f"Invalid file type: {file.content_type}")
+    await _validate_file_size(file)
+    content = await file.read()
+    await _check_upload_rate_limit(str(current_user.id), "intl_identity")
+
+    # Purge previous temp doc before overwriting pointer — GDPR
+    _prev = current_user.identity_data or {}
+    if _prev.get("redis_key"):
+        deleted = await cache.delete(str(_prev["redis_key"]))
+        if not deleted:
+            logger.warning("purge_intl_doc: redis delete failed for %s", _prev["redis_key"])
+    elif _prev.get("storage_key"):
+        try:
+            await storage.delete_file(str(_prev["storage_key"]))
+        except Exception as _exc:
+            logger.warning("purge_intl_doc: storage delete failed for %s: %s", _prev["storage_key"], _exc)
+
+    mrz = await extract_mrz(content, file.content_type or "image/jpeg")
+    if not mrz.mrz_valid:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=(
+                "MRZ_CHECKSUM_FAIL — Le document ne peut pas être lu. Veuillez reprendre "
+                "une photo nette de la page de données du passeport. / "
+                "The document could not be read. Please retake a clear photo of the passport data page."
+            ),
+        )
+
+    # Expiry: YYMMDD where YY<50 -> 2000s, YY>=50 -> 1900s
+    try:
+        exp_yy = int(mrz.expiry[0:2])
+        exp_year = 2000 + exp_yy if exp_yy < 50 else 1900 + exp_yy
+        if date(exp_year, int(mrz.expiry[2:4]), int(mrz.expiry[4:6])) < date.today():
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=(
+                    "PASSPORT_EXPIRED — Passeport expiré. Veuillez utiliser un passeport "
+                    "en cours de validité. / Passport expired. Please use a valid passport."
+                ),
+            )
+    except HTTPException:
+        raise
+    except Exception:
+        pass  # malformed expiry — not a hard block
+
+    # Name match — advisory only, never blocks (same as FR avis cross-check)
+    name_mismatch = False
+    name_transliteration_mismatch = False
+    mrz_name = f"{mrz.surname} {mrz.given_names}".strip()
+    if current_user.full_name and mrz_name:
+        similarity = SequenceMatcher(
+            None,
+            current_user.full_name.upper(),
+            mrz_name.upper(),
+        ).ratio()
+        if similarity < 0.6:
+            if not current_user.full_name.isascii():
+                name_transliteration_mismatch = True  # ID-9
+            else:
+                name_mismatch = True
+
+    # Store temp doc in Redis (TTL 600s) or R2 fallback
+    _redis_key = f"intl_passport:{current_user.id}:{secrets.token_hex(8)}"
+    if cache.redis_client:
+        await cache.set(
+            _redis_key,
+            {"b64": base64.b64encode(content).decode(), "content_type": file.content_type},
+            ttl=600,
+        )
+        current_user.identity_data = {
+            "verified": False,
+            "upload_date": naive_utcnow().isoformat(),
+            "redis_key": _redis_key,
+            "identity_rail": "INTL",
+            "status": "document_uploaded",
+            "name_mismatch": name_mismatch,
+            "name_transliteration_mismatch": name_transliteration_mismatch,
+            "mrz_valid": True,
+            "extraction_path": mrz.extraction_path,
+        }
+    else:
+        from io import BytesIO
+        r2 = await storage.upload_file(
+            file_data=BytesIO(content),
+            filename=file.filename or "passport.jpg",
+            content_type=file.content_type or "image/jpeg",
+            folder=f"verification/intl/identity/{current_user.id}",
+        )
+        current_user.identity_data = {
+            "verified": False,
+            "upload_date": naive_utcnow().isoformat(),
+            "file_url": r2["url"],
+            "storage_key": r2.get("key"),
+            "identity_rail": "INTL",
+            "status": "document_uploaded",
+            "name_mismatch": name_mismatch,
+            "name_transliteration_mismatch": name_transliteration_mismatch,
+            "mrz_valid": True,
+            "extraction_path": mrz.extraction_path,
+        }
+
+    current_user.identity_verified = False
+    current_user.identity_status = "document_uploaded"
+    await db.commit()
+    await db.refresh(current_user)
+
+    return {
+        "message": (
+            "Passeport scanné — veuillez compléter la vérification de vivacité. / "
+            "Passport scanned — please complete the liveness check."
+        ),
+        "verified": False,
+        "status": "document_uploaded",
+        "identity_rail": "INTL",
+        "name_mismatch": name_mismatch,
+        "name_transliteration_mismatch": name_transliteration_mismatch,
+    }
+
+
+@router.post("/intl/identity/selfie")
+async def upload_intl_identity_selfie(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Selfie face-match against stored INTL passport -> MEDIUM identity credential."""
+    import base64
+    from app.services.identity import identity_service
+
+    allowed = {"image/jpeg", "image/png", "image/jpg", "image/heic", "image/heif"}
+    if file.content_type not in allowed:
+        raise HTTPException(status_code=400, detail=f"Invalid file type: {file.content_type}")
+    await _validate_file_size(file)
+    content = await file.read()
+    await _check_upload_rate_limit(str(current_user.id), "intl_selfie")
+
+    if not current_user.identity_data or current_user.identity_data.get("status") != "document_uploaded":
+        raise HTTPException(
+            status_code=400,
+            detail="Upload passport first / Veuillez d'abord télécharger votre passeport.",
+        )
+
+    _id_data = current_user.identity_data or {}
+    _redis_key = _id_data.get("redis_key")
+    _storage_key = _id_data.get("storage_key")
+    _file_url = _id_data.get("file_url")
+
+    id_bytes: bytes = b""
+    id_content_type = "image/jpeg"
+
+    if _redis_key:
+        cached = await cache.get(str(_redis_key))
+        if cached and isinstance(cached, dict):
+            id_bytes = base64.b64decode(cached["b64"])
+            id_content_type = cached.get("content_type", "image/jpeg")
+
+    if not id_bytes and _file_url:
+        try:
+            async with httpx.AsyncClient(timeout=15.0) as http:
+                resp = await http.get(_file_url)
+                resp.raise_for_status()
+                id_bytes = resp.content
+                id_content_type = resp.headers.get("content-type", "image/jpeg").split(";")[0]
+        except Exception as exc:
+            logger.error("Failed to retrieve INTL passport for face compare: %s", exc)
+            raise HTTPException(status_code=500, detail="Could not retrieve passport for comparison.")
+
+    # Face-match in try/except/finally — finally always purges stored passport (GDPR)
+    try:
+        face_result = await identity_service.compare_faces(
+            id_image=id_bytes,
+            id_file_type=id_content_type,
+            selfie=content,
+            selfie_file_type=file.content_type or "image/jpeg",
+        )
+    except HTTPException:
+        raise
+    except Exception as _exc:
+        logger.error("compare_faces failed (INTL): %s", _exc)
+        raise HTTPException(status_code=500, detail="Face comparison failed.") from _exc
+    finally:
+        if _redis_key:
+            deleted = await cache.delete(str(_redis_key))
+            if not deleted:
+                logger.warning("purge_intl_passport: redis delete failed for %s", _redis_key)
+        elif _storage_key:
+            try:
+                await storage.delete_file(str(_storage_key))
+            except Exception as _del:
+                logger.warning("purge_intl_passport: storage delete failed for %s: %s", _storage_key, _del)
+
+    if not face_result["match"] or face_result["confidence"] < 0.6:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Face does not match passport. {face_result['reason']}",
+        )
+
+    if not current_user.identity_verified:
+        await db.execute(
+            update(User)
+            .where(User.id == current_user.id)
+            .values(trust_score=func.least(100, User.trust_score + 30))
+        )
+        await db.refresh(current_user)
+
+    prev = _id_data
+    current_user.identity_verified = True
+    current_user.identity_status = "verified"
+    current_user.identity_data = {
+        "verified": True,
+        "verified_at": naive_utcnow().isoformat(),
+        "status": "verified",
+        "identity_assurance": "MEDIUM",
+        "identity_rail": "INTL",
+        "verification_method": "mrz_selfie",
+        "mrz_valid": prev.get("mrz_valid", True),
+        "name_mismatch": prev.get("name_mismatch", False),
+        "name_transliteration_mismatch": prev.get("name_transliteration_mismatch", False),
+        "face_match_confidence": face_result["confidence"],
+        # storage_key, file_url, redis_key intentionally NOT carried forward
+    }
+    await db.commit()
+    await db.refresh(current_user)
+
+    return {
+        "message": "Identité vérifiée (MEDIUM) / Identity verified (MEDIUM)",
+        "verified": True,
+        "status": "verified",
+        "identity_assurance": "MEDIUM",
+        "identity_rail": "INTL",
+        "trust_score": current_user.trust_score,
+    }
+
+
+@router.post("/intl/solvency")
+async def upload_intl_solvency_document(
+    file: UploadFile = File(...),
+    monthly_rent: Optional[float] = Form(None),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Foreign income doc -> FX-normalised banded solvency -> MEDIUM (or UNVERIFIED if FX unavailable)."""
+    from app.services.fx_normalise import convert_to_eur, normalise_income_to_monthly, band_solvency_ratio
+
+    allowed = {"image/jpeg", "image/png", "image/jpg", "application/pdf", "image/heic", "image/heif"}
+    if file.content_type not in allowed:
+        raise HTTPException(status_code=400, detail=f"Invalid file type: {file.content_type}")
+    await _validate_file_size(file)
+    content = await file.read()
+    await _check_upload_rate_limit(str(current_user.id), "intl_solvency")
+
+    extraction = await _ai_extract_intl_income(content, file.content_type or "image/jpeg")
+    if not extraction or extraction.get("income_amount") is None:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=(
+                "Impossible d'extraire les revenus du document. / "
+                "Could not extract income from document."
+            ),
+        )
+
+    raw_amount = float(extraction["income_amount"])
+    currency = str(extraction.get("income_currency", "EUR")).upper()
+    income_period = str(extraction.get("income_period", "unknown"))
+
+    monthly_amount, normalised_period, period_unclear = normalise_income_to_monthly(
+        raw_amount, income_period
+    )
+
+    fx = await convert_to_eur(monthly_amount, currency)
+
+    # Band ratio — raw amounts discarded after this point (data minimisation)
+    if fx.eur_amount is not None and monthly_rent and monthly_rent > 0:
+        solvency_ratio = band_solvency_ratio(fx.eur_amount / monthly_rent)
+        solvency_assurance = "MEDIUM"
+    elif fx.eur_amount is not None:
+        solvency_ratio = "income_only"
+        solvency_assurance = "MEDIUM"
+    else:
+        solvency_ratio = "unavailable"
+        solvency_assurance = "UNVERIFIED"
+
+    current_user.income_verified = fx.eur_amount is not None
+    current_user.income_status = "verified" if fx.eur_amount is not None else "unverified"
+    current_user.income_data = {
+        "verified": current_user.income_verified,
+        "upload_date": naive_utcnow().isoformat(),
+        "solvency_assurance": solvency_assurance,
+        "solvency_ratio": solvency_ratio,
+        "income_currency": currency,
+        "income_period": income_period,
+        "income_period_normalised": normalised_period,
+        "income_period_unclear": period_unclear,
+        "fx_source": fx.fx_source,
+        "fx_margin_applied": fx.margin_applied,
+        "fx_margin_label": fx.fx_margin_label,
+        "decret_2015_1437_disclaimer": True,
+        "status": current_user.income_status,
+        # raw eur_amount and raw foreign amount intentionally NOT stored
+    }
+
+    if fx.eur_amount is not None and not current_user.income_verified:
+        await db.execute(
+            update(User)
+            .where(User.id == current_user.id)
+            .values(trust_score=func.least(100, User.trust_score + 20))
+        )
+        await db.refresh(current_user)
+
+    await db.commit()
+    await db.refresh(current_user)
+
+    return {
+        "message": "Revenus vérifiés / Income verified",
+        "verified": current_user.income_verified,
+        "solvency_assurance": solvency_assurance,
+        "solvency_ratio": solvency_ratio,
+        "income_currency": currency,
+        "fx_source": fx.fx_source,
+        "decret_2015_1437_disclaimer": True,
+        "trust_score": current_user.trust_score,
+    }
