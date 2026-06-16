@@ -9,7 +9,12 @@ from app.services.feature_flag_service import feature_flag_service
 from app.models.user import User, UserRole
 from app.models.property import Property
 from app.routers.auth import get_current_user
+from datetime import datetime, timedelta, timezone
+
 from sqlalchemy import select
+
+# Redis TTL is 10 min; 15 min gives the user a grace window before operator escalation
+_STALL_THRESHOLD_MINUTES = 15
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -168,10 +173,6 @@ async def get_pending_verifications(
 
     Property: unverified properties with verification_data present.
     """
-    from datetime import datetime, timedelta, timezone
-
-    STALL_THRESHOLD_MINUTES = 15
-
     pending = []
 
     # ── 1. Stalled identity uploads ───────────────────────────────────────────
@@ -188,7 +189,7 @@ async def get_pending_verifications(
     users = user_result.scalars().all()
 
     now_utc = datetime.now(timezone.utc).replace(tzinfo=None)  # naive UTC matches stored dates
-    stall_threshold = timedelta(minutes=STALL_THRESHOLD_MINUTES)
+    stall_threshold = timedelta(minutes=_STALL_THRESHOLD_MINUTES)
 
     for user in users:
         if not user.identity_data:
@@ -198,7 +199,7 @@ async def get_pending_verifications(
             continue
         try:
             upload_dt = datetime.fromisoformat(upload_date_str)
-        except ValueError:
+        except (ValueError, TypeError):
             continue
         stalled_for = now_utc - upload_dt
         if stalled_for < stall_threshold:
