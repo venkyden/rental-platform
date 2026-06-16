@@ -22,11 +22,11 @@ def require_admin(current_user: User = Depends(get_current_user)) -> User:
 class VerificationReview(BaseModel):
     id: str
     user_name: str
-    type: str  # identity, employment, property
-    status: str
-    upload_date: str
-    file_url: str
-    extracted_data: dict | None
+    type: str            # "identity_stalled" | "property"
+    status: str          # "stalled_upload" | "pending_review" (property)
+    upload_date: str     # ISO UTC from identity_data["upload_date"]
+    minutes_stalled: int # floor((now_utc - upload_date).total_seconds() / 60)
+    checks: dict | None  # identity_data.get("checks") — partial OCR results if any
 
 class ReviewAction(BaseModel):
     approved: bool
