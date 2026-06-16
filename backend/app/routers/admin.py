@@ -281,6 +281,15 @@ async def approve_verification(
     _: User = Depends(require_admin),
 ):
     """Manually approve a verification"""
+    if type == "identity":
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Identity verifications cannot be manually approved — "
+                "no document is retained post-retrofit. Use /reset to unblock stalled users."
+            ),
+        )
+
     uid = UUID(id)
 
     if type == "identity":

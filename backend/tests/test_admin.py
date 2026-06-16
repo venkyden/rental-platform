@@ -250,3 +250,42 @@ class TestResetVerification:
 
         target_app.dependency_overrides.clear()
         assert user.trust_score == 50
+
+
+class TestApproveGuard:
+    def test_approve_identity_returns_400(self):
+        user = make_mock_user("tenant")
+        user.identity_data = {"status": "document_uploaded"}
+        mock_db = MagicMock()
+        mock_db.get = AsyncMock(return_value=user)
+
+        target_app = app.app if hasattr(app, "app") else app
+        admin = make_mock_user("admin", "admin@test.com")
+        target_app.dependency_overrides[get_current_user] = lambda: admin
+        target_app.dependency_overrides[get_db] = lambda: mock_db
+
+        with TestClient(app) as client:
+            response = client.post(f"/admin/verifications/{user.id}/approve?type=identity")
+
+        target_app.dependency_overrides.clear()
+        assert response.status_code == 400
+        assert "/reset" in response.json()["detail"]
+
+    def test_approve_property_still_works(self):
+        prop = MagicMock()
+        prop.id = uuid.uuid4()
+        mock_db = MagicMock()
+        mock_db.get = AsyncMock(return_value=prop)
+        mock_db.commit = AsyncMock()
+
+        target_app = app.app if hasattr(app, "app") else app
+        admin = make_mock_user("admin", "admin@test.com")
+        target_app.dependency_overrides[get_current_user] = lambda: admin
+        target_app.dependency_overrides[get_db] = lambda: mock_db
+
+        with TestClient(app) as client:
+            response = client.post(f"/admin/verifications/{prop.id}/approve?type=property")
+
+        target_app.dependency_overrides.clear()
+        assert response.status_code == 200
+        assert prop.ownership_verified is True
