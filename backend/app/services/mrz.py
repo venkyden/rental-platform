@@ -33,7 +33,7 @@ except ImportError:
     _TESSERACT_AVAILABLE = False
 
 
-@dataclass
+@dataclass(frozen=True)
 class MRZResult:
     surname: str
     given_names: str

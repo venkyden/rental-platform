@@ -283,6 +283,7 @@ def _fx_unavailable():
 class TestIntlSolvency:
     def test_inr_income_returns_medium_solvency(self):
         user = make_mock_user("tenant")
+        user.identity_verified = True
         user.income_verified = False
         user.income_data = None
         client = make_client(user)
@@ -318,6 +319,7 @@ class TestIntlSolvency:
 
     def test_unknown_currency_fx_unavailable_returns_200_unverified(self):
         user = make_mock_user("tenant")
+        user.identity_verified = True
         user.income_data = None
         client = make_client(user)
 
@@ -344,6 +346,7 @@ class TestIntlSolvency:
 
     def test_ai_extraction_failure_returns_422(self):
         user = make_mock_user("tenant")
+        user.identity_verified = True
         user.income_data = None
         client = make_client(user)
 
@@ -358,3 +361,17 @@ class TestIntlSolvency:
             )
 
         assert response.status_code == 422
+
+    def test_solvency_without_identity_returns_400(self):
+        """INTL solvency must require identity_verified — no skipping the prerequisite."""
+        user = make_mock_user("tenant")
+        user.identity_verified = False
+        client = make_client(user)
+
+        with patch("app.routers.verification._check_upload_rate_limit", new=AsyncMock()):
+            response = client.post(
+                "/verification/intl/solvency",
+                files={"file": ("slip.jpg", io.BytesIO(_FAKE_JPEG), "image/jpeg")},
+            )
+
+        assert response.status_code == 400

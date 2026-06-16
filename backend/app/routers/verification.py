@@ -1721,8 +1721,8 @@ async def upload_intl_identity_document(
     if file.content_type not in allowed:
         raise HTTPException(status_code=400, detail=f"Invalid file type: {file.content_type}")
     await _validate_file_size(file)
-    content = await file.read()
     await _check_upload_rate_limit(str(current_user.id), "intl_identity")
+    content = await file.read()
 
     # Purge previous temp doc before overwriting pointer — GDPR
     _prev = current_user.identity_data or {}
@@ -1852,8 +1852,8 @@ async def upload_intl_identity_selfie(
     if file.content_type not in allowed:
         raise HTTPException(status_code=400, detail=f"Invalid file type: {file.content_type}")
     await _validate_file_size(file)
-    content = await file.read()
     await _check_upload_rate_limit(str(current_user.id), "intl_selfie")
+    content = await file.read()
 
     if not current_user.identity_data or current_user.identity_data.get("status") != "document_uploaded":
         raise HTTPException(
@@ -1875,19 +1875,28 @@ async def upload_intl_identity_selfie(
             id_bytes = base64.b64decode(cached["b64"])
             id_content_type = cached.get("content_type", "image/jpeg")
 
-    if not id_bytes and _file_url:
-        try:
-            async with httpx.AsyncClient(timeout=15.0) as http:
-                resp = await http.get(_file_url)
-                resp.raise_for_status()
-                id_bytes = resp.content
-                id_content_type = resp.headers.get("content-type", "image/jpeg").split(";")[0]
-        except Exception as exc:
-            logger.error("Failed to retrieve INTL passport for face compare: %s", exc)
-            raise HTTPException(status_code=500, detail="Could not retrieve passport for comparison.")
-
-    # Face-match in try/except/finally — finally always purges stored passport (GDPR)
+    # Single try/finally so passport is purged even if R2 fetch or compare_faces raises
     try:
+        if not id_bytes and _file_url:
+            try:
+                async with httpx.AsyncClient(timeout=15.0) as http:
+                    resp = await http.get(_file_url)
+                    resp.raise_for_status()
+                    id_bytes = resp.content
+                    id_content_type = resp.headers.get("content-type", "image/jpeg").split(";")[0]
+            except Exception as exc:
+                logger.error("Failed to retrieve INTL passport for face compare: %s", exc)
+                raise HTTPException(status_code=500, detail="Could not retrieve passport for comparison.")
+
+        if not id_bytes:
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    "Session expirée — veuillez télécharger à nouveau votre passeport. / "
+                    "Session expired — re-upload passport."
+                ),
+            )
+
         face_result = await identity_service.compare_faces(
             id_image=id_bytes,
             id_file_type=id_content_type,
@@ -1963,12 +1972,21 @@ async def upload_intl_solvency_document(
     """Foreign income doc -> FX-normalised banded solvency -> MEDIUM (or UNVERIFIED if FX unavailable)."""
     from app.services.fx_normalise import convert_to_eur, normalise_income_to_monthly, band_solvency_ratio
 
+    if not current_user.identity_verified:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Vérifiez d'abord votre identité. / "
+                "Identity verification required before solvency check."
+            ),
+        )
+
     allowed = {"image/jpeg", "image/png", "image/jpg", "application/pdf", "image/heic", "image/heif"}
     if file.content_type not in allowed:
         raise HTTPException(status_code=400, detail=f"Invalid file type: {file.content_type}")
     await _validate_file_size(file)
-    content = await file.read()
     await _check_upload_rate_limit(str(current_user.id), "intl_solvency")
+    content = await file.read()
 
     extraction = await _ai_extract_intl_income(content, file.content_type or "image/jpeg")
     if not extraction or extraction.get("income_amount") is None:
@@ -2001,6 +2019,7 @@ async def upload_intl_solvency_document(
         solvency_ratio = "unavailable"
         solvency_assurance = "UNVERIFIED"
 
+    was_income_verified = current_user.income_verified
     current_user.income_verified = fx.eur_amount is not None
     current_user.income_status = "verified" if fx.eur_amount is not None else "unverified"
     current_user.income_data = {
@@ -2020,7 +2039,7 @@ async def upload_intl_solvency_document(
         # raw eur_amount and raw foreign amount intentionally NOT stored
     }
 
-    if fx.eur_amount is not None and not current_user.income_verified:
+    if fx.eur_amount is not None and not was_income_verified:
         await db.execute(
             update(User)
             .where(User.id == current_user.id)
