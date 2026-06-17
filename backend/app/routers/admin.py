@@ -292,20 +292,7 @@ async def approve_verification(
 
     uid = UUID(id)
 
-    if type == "identity":
-        user = await db.get(User, uid)
-        if user and user.identity_data:
-            user.identity_verified = True
-            user.identity_status = "verified"
-            # We must be careful: modifying a dict inside a TypeDecorator-managed field
-            # might not trigger the 'dirty' flag if it's already a dict in memory.
-            # But here it's an EncryptedJSON, so any reassignment triggers it.
-            new_data = dict(user.identity_data)
-            new_data["status"] = "verified"
-            user.identity_data = new_data
-            user.trust_score = min(100, user.trust_score + 30)
-    
-    elif type == "employment":
+    if type == "employment":
         user = await db.get(User, uid)
         if user and user.employment_data:
             user.employment_verified = True
