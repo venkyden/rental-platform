@@ -41,6 +41,37 @@ class TestVerificationReviewModel:
         assert r.minutes_stalled == 45
         assert r.checks == {"document_detected": True}
 
+    def test_sanitize_checks_strips_pii_details(self):
+        """identity_data['checks'] is a list of dicts with PII-bearing 'details'
+        strings (extracted name, expiry date). Only name/passed should survive."""
+        from app.routers.admin import _sanitize_checks
+        raw_checks = [
+            {
+                "name": "name_match",
+                "description": "Name on document matches account name",
+                "passed": True,
+                "critical": True,
+                "details": "Document: Jean Dupont | Account: Jean Dupont | Match: 100%",
+            },
+            {
+                "name": "not_expired",
+                "description": "Document is not expired",
+                "passed": True,
+                "critical": True,
+                "details": "Valid until 2030-01-01",
+            },
+        ]
+        sanitized = _sanitize_checks(raw_checks)
+        assert sanitized == {"name_match": True, "not_expired": True}
+        serialized = str(sanitized)
+        assert "Jean Dupont" not in serialized
+        assert "2030-01-01" not in serialized
+
+    def test_sanitize_checks_handles_none_and_empty(self):
+        from app.routers.admin import _sanitize_checks
+        assert _sanitize_checks(None) is None
+        assert _sanitize_checks([]) is None
+
     def test_model_has_no_file_url_field(self):
         from app.routers.admin import VerificationReview
         fields = VerificationReview.model_fields
@@ -72,7 +103,21 @@ class TestPendingVerificationsQueue:
         user.identity_data = {
             "status": "document_uploaded",
             "upload_date": upload_dt.isoformat(),
-            "checks": {"document_detected": True},
+            # Real shape: list of check dicts with PII-bearing "details" strings.
+            "checks": [
+                {
+                    "name": "name_match",
+                    "passed": True,
+                    "critical": True,
+                    "details": "Document: Jean Dupont | Account: Jean Dupont | Match: 100%",
+                },
+                {
+                    "name": "not_expired",
+                    "passed": True,
+                    "critical": True,
+                    "details": "Valid until 2030-01-01",
+                },
+            ],
         }
         return user
 
@@ -104,6 +149,10 @@ class TestPendingVerificationsQueue:
         assert item["minutes_stalled"] >= 28
         assert "file_url" not in item
         assert "extracted_data" not in item
+        # checks must be sanitized to {name: passed} booleans — no PII details
+        assert item["checks"] == {"name_match": True, "not_expired": True}
+        assert "Jean Dupont" not in response.text
+        assert "2030-01-01" not in response.text
 
     def test_recent_upload_under_threshold_excluded(self):
         """User uploaded 5 min ago — may still self-complete. Not shown."""

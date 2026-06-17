@@ -28,11 +28,26 @@ def require_admin(current_user: User = Depends(get_current_user)) -> User:
 class VerificationReview(BaseModel):
     id: str
     user_name: str
-    type: str            # "identity_stalled" | "property"
-    status: str          # "stalled_upload" | "pending_review" (property)
-    upload_date: str     # ISO UTC from identity_data["upload_date"]
-    minutes_stalled: int # floor((now_utc - upload_date).total_seconds() / 60)
-    checks: dict | None  # identity_data.get("checks") — partial OCR results if any
+    type: str               # "identity_stalled" | "property"
+    status: str              # "stalled_upload" | "pending_review" (property)
+    upload_date: str         # ISO UTC from identity_data["upload_date"]
+    minutes_stalled: int     # floor((now_utc - upload_date).total_seconds() / 60)
+    checks: dict[str, bool] | None  # check name -> passed; PII-bearing "details" stripped
+
+
+def _sanitize_checks(raw_checks: list | None) -> dict[str, bool] | None:
+    """
+    Reduce identity_data["checks"] (a list of validation-check dicts with
+    PII-bearing "details" strings — e.g. extracted name, expiry date) to a
+    {name: passed} boolean map safe for the admin API response.
+    """
+    if not raw_checks:
+        return None
+    return {
+        c["name"]: c["passed"]
+        for c in raw_checks
+        if isinstance(c, dict) and "name" in c and "passed" in c
+    } or None
 
 class ReviewAction(BaseModel):
     approved: bool
@@ -212,7 +227,7 @@ async def get_pending_verifications(
             status="stalled_upload",
             upload_date=upload_date_str,
             minutes_stalled=int(stalled_for.total_seconds() / 60),
-            checks=user.identity_data.get("checks"),
+            checks=_sanitize_checks(user.identity_data.get("checks")),
         ))
 
     # ── 2. Unverified properties ──────────────────────────────────────────────
@@ -234,7 +249,7 @@ async def get_pending_verifications(
                 status="pending_review",
                 upload_date=prop.verification_data.get("upload_date", ""),
                 minutes_stalled=0,
-                checks=prop.verification_data.get("checks"),
+                checks=_sanitize_checks(prop.verification_data.get("checks")),
             ))
 
     return pending
