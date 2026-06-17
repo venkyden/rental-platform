@@ -1,4 +1,5 @@
 from typing import List
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
@@ -9,7 +10,12 @@ from app.services.feature_flag_service import feature_flag_service
 from app.models.user import User, UserRole
 from app.models.property import Property
 from app.routers.auth import get_current_user
-from sqlalchemy import select, or_
+from datetime import datetime, timedelta, timezone
+
+from sqlalchemy import select
+
+# Redis TTL is 10 min; 15 min gives the user a grace window before operator escalation
+_STALL_THRESHOLD_MINUTES = 15
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -22,11 +28,26 @@ def require_admin(current_user: User = Depends(get_current_user)) -> User:
 class VerificationReview(BaseModel):
     id: str
     user_name: str
-    type: str  # identity, employment, property
-    status: str
-    upload_date: str
-    file_url: str
-    extracted_data: dict | None
+    type: str               # "identity_stalled" | "property"
+    status: str              # "stalled_upload" | "pending_review" (property)
+    upload_date: str         # ISO UTC from identity_data["upload_date"]
+    minutes_stalled: int     # floor((now_utc - upload_date).total_seconds() / 60)
+    checks: dict[str, bool] | None  # check name -> passed; PII-bearing "details" stripped
+
+
+def _sanitize_checks(raw_checks: list | None) -> dict[str, bool] | None:
+    """
+    Reduce identity_data["checks"] (a list of validation-check dicts with
+    PII-bearing "details" strings — e.g. extracted name, expiry date) to a
+    {name: passed} boolean map safe for the admin API response.
+    """
+    if not raw_checks:
+        return None
+    return {
+        c["name"]: c["passed"]
+        for c in raw_checks
+        if isinstance(c, dict) and "name" in c and "passed" in c
+    } or None
 
 class ReviewAction(BaseModel):
     approved: bool
@@ -159,22 +180,23 @@ async def get_pending_verifications(
     _: User = Depends(require_admin),
 ):
     """
-    List all verifications that require manual review.
-    Checks users (identity/employment) and properties (ownership).
+    List verifications that require operator attention.
 
-    Paginated to avoid loading unbounded result sets; `skip`/`limit` are
-    applied to each source query (users and properties).
+    Identity: users whose upload stalled > 15 minutes ago (Redis TTL is 10 min —
+    at 15 min the user cannot complete the flow without re-uploading). The
+    skip/limit is applied at the DB level; the Python-side age filter may reduce
+    the result count below `limit` — acceptable at MVP scale.
+
+    Property: unverified properties with verification_data present.
     """
     pending = []
 
-    # 1. Check Users (Identity & Employment)
+    # ── 1. Stalled identity uploads ───────────────────────────────────────────
     user_query = (
         select(User)
         .where(
-            or_(
-                User.identity_status == "pending_review",
-                User.employment_status == "pending_review"
-            )
+            User.identity_status == "document_uploaded",
+            User.identity_verified == False,
         )
         .offset(skip)
         .limit(limit)
@@ -182,42 +204,43 @@ async def get_pending_verifications(
     user_result = await db.execute(user_query)
     users = user_result.scalars().all()
 
-    for user in users:
-        if user.identity_data and user.identity_data.get("status") == "pending_review":
-            pending.append(VerificationReview(
-                id=str(user.id),
-                user_name=user.full_name or user.email,
-                type="identity",
-                status="pending_review",
-                upload_date=user.identity_data.get("upload_date", ""),
-                file_url=user.identity_data.get("file_url", ""),
-                extracted_data=user.identity_data.get("extracted_data")
-            ))
-        
-        if user.employment_data and user.employment_data.get("status") == "pending_review":
-            pending.append(VerificationReview(
-                id=str(user.id),
-                user_name=user.full_name or user.email,
-                type="employment",
-                status="pending_review",
-                upload_date=user.employment_data.get("upload_date", ""),
-                file_url=user.employment_data.get("file_url", ""),
-                extracted_data=user.employment_data.get("extracted_data")
-            ))
+    now_utc = datetime.now(timezone.utc).replace(tzinfo=None)  # naive UTC matches stored dates
+    stall_threshold = timedelta(minutes=_STALL_THRESHOLD_MINUTES)
 
-    # 2. Check Properties
+    for user in users:
+        if not user.identity_data:
+            continue
+        upload_date_str = user.identity_data.get("upload_date", "")
+        if not upload_date_str:
+            continue
+        try:
+            upload_dt = datetime.fromisoformat(upload_date_str)
+        except (ValueError, TypeError):
+            continue
+        stalled_for = now_utc - upload_dt
+        if stalled_for < stall_threshold:
+            continue
+        pending.append(VerificationReview(
+            id=str(user.id),
+            user_name=user.full_name or user.email,
+            type="identity_stalled",
+            status="stalled_upload",
+            upload_date=upload_date_str,
+            minutes_stalled=int(stalled_for.total_seconds() / 60),
+            checks=_sanitize_checks(user.identity_data.get("checks")),
+        ))
+
+    # ── 2. Unverified properties ──────────────────────────────────────────────
     prop_query = (
         select(Property)
-        .where(Property.ownership_verified == False)  # Simplified for MVP
+        .where(Property.ownership_verified == False)
         .offset(skip)
         .limit(limit)
     )
-    # In a real app, we'd have a specific status field for property verification
     prop_result = await db.execute(prop_query)
     properties = prop_result.scalars().all()
 
     for prop in properties:
-        # Only include if there is verification data present
         if hasattr(prop, 'verification_data') and prop.verification_data:
             pending.append(VerificationReview(
                 id=str(prop.id),
@@ -225,11 +248,45 @@ async def get_pending_verifications(
                 type="property",
                 status="pending_review",
                 upload_date=prop.verification_data.get("upload_date", ""),
-                file_url=prop.verification_data.get("file_url", ""),
-                extracted_data=prop.verification_data.get("extracted_data")
+                minutes_stalled=0,
+                checks=_sanitize_checks(prop.verification_data.get("checks")),
             ))
 
     return pending
+
+
+@router.post("/verifications/{id}/reset")
+async def reset_verification(
+    id: str,
+    type: str,
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(require_admin),
+):
+    """
+    Reset a stalled identity verification so the user can restart the upload flow.
+    Clears identity_data and sets identity_status back to "unverified".
+    Trust score is unchanged — no trust was awarded for an incomplete flow.
+
+    Returns 409 if the user completed verification between queue load and this call.
+    """
+    uid = UUID(id)
+
+    if type == "identity":
+        user = await db.get(User, uid)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        if user.identity_verified:
+            raise HTTPException(
+                status_code=409,
+                detail="User has already completed identity verification — cannot reset.",
+            )
+        user.identity_status = "unverified"
+        user.identity_data = None  # type: ignore
+        await db.commit()
+        return {"status": "reset", "user_id": id}
+
+    raise HTTPException(status_code=400, detail=f"Reset not supported for type: {type}")
+
 
 @router.post("/verifications/{id}/approve")
 async def approve_verification(
@@ -239,23 +296,18 @@ async def approve_verification(
     _: User = Depends(require_admin),
 ):
     """Manually approve a verification"""
-    from uuid import UUID
+    if type == "identity":
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Identity verifications cannot be manually approved — "
+                "no document is retained post-retrofit. Use /reset to unblock stalled users."
+            ),
+        )
+
     uid = UUID(id)
 
-    if type == "identity":
-        user = await db.get(User, uid)
-        if user and user.identity_data:
-            user.identity_verified = True
-            user.identity_status = "verified"
-            # We must be careful: modifying a dict inside a TypeDecorator-managed field
-            # might not trigger the 'dirty' flag if it's already a dict in memory.
-            # But here it's an EncryptedJSON, so any reassignment triggers it.
-            new_data = dict(user.identity_data)
-            new_data["status"] = "verified"
-            user.identity_data = new_data
-            user.trust_score = min(100, user.trust_score + 30)
-    
-    elif type == "employment":
+    if type == "employment":
         user = await db.get(User, uid)
         if user and user.employment_data:
             user.employment_verified = True
