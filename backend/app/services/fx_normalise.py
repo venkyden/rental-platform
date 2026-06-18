@@ -113,6 +113,24 @@ def band_solvency_ratio(ratio: float) -> str:
     return "<2.0"
 
 
+def band_funds_coverage(eur_funds: float, monthly_rent: float) -> str:
+    """Band available funds by months of rent covered. Never round up.
+
+    Mirrors band_solvency_ratio's floor-not-ceiling discipline: a value on the
+    boundary lands in the band it meets, never the one above.
+    """
+    if not monthly_rent or monthly_rent <= 0:
+        return "amount_only"
+    months = eur_funds / monthly_rent
+    if months >= 12:
+        return "covers_12m_plus"
+    if months >= 6:
+        return "covers_6m"
+    if months >= 3:
+        return "covers_3m"
+    return "covers_under_3m"
+
+
 def normalise_income_to_monthly(
     amount: float, income_period: str
 ) -> tuple[float, str, bool]:

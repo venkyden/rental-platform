@@ -331,3 +331,29 @@ class TestIncomePeriodNormalisation:
         amount, period, unclear = normalise_income_to_monthly(5000.0, "unknown")
         assert amount == 5000.0  # no division
         assert unclear is True
+
+
+class TestFundsCoverageBanding:
+    def test_twelve_months_or_more(self):
+        from app.services.fx_normalise import band_funds_coverage
+        assert band_funds_coverage(12000.0, 1000.0) == "covers_12m_plus"
+
+    def test_exactly_twelve_months(self):
+        from app.services.fx_normalise import band_funds_coverage
+        assert band_funds_coverage(12000.0, 1000.0) == "covers_12m_plus"
+
+    def test_six_to_eleven_months(self):
+        from app.services.fx_normalise import band_funds_coverage
+        assert band_funds_coverage(6000.0, 1000.0) == "covers_6m"
+
+    def test_three_to_five_months(self):
+        from app.services.fx_normalise import band_funds_coverage
+        assert band_funds_coverage(3000.0, 1000.0) == "covers_3m"
+
+    def test_under_three_months(self):
+        from app.services.fx_normalise import band_funds_coverage
+        assert band_funds_coverage(2000.0, 1000.0) == "covers_under_3m"
+
+    def test_zero_or_negative_rent_returns_amount_only(self):
+        from app.services.fx_normalise import band_funds_coverage
+        assert band_funds_coverage(5000.0, 0.0) == "amount_only"
