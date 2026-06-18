@@ -42,7 +42,7 @@ export default function GDPRPage() {
                             {t('legal.gdpr.title', undefined, 'GDPR & Rights')}
                         </h1>
                         <p className="text-xl text-zinc-500 font-medium max-w-2xl mx-auto">
-                            {t('legal.gdpr.subtitle', undefined, 'Built entirely within the European Union. Your data belongs to you.')}
+                            {t('legal.gdpr.subtitle', undefined, 'Your account data is hosted in the EU. Document analysis uses Google Gemini as a data processor — we keep only the verification result, never your documents.')}
                         </p>
                     </motion.div>
 
