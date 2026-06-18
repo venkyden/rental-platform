@@ -1705,6 +1705,22 @@ async def _ai_extract_intl_income(
     return None
 
 
+def _name_present(user_full_name: str, document_name: str | None) -> bool:
+    """MEDIUM-grade anti-fraud flag: does the applicant's name appear on the doc?
+
+    For self-funds the applicant is the account holder; for sponsor-funds the
+    applicant should appear as the named beneficiary. Token-overlap check only —
+    this raises a flag, never an assurance tier.
+    """
+    if not user_full_name or not document_name:
+        return False
+
+    def _tokens(s: str) -> set:
+        return {t for t in "".join(c.lower() if c.isalnum() else " " for c in s).split() if len(t) >= 2}
+
+    return bool(_tokens(user_full_name) & _tokens(document_name))
+
+
 @router.post("/intl/identity/upload")
 async def upload_intl_identity_document(
     file: UploadFile = File(...),

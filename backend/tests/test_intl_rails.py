@@ -357,3 +357,29 @@ class TestFundsCoverageBanding:
     def test_zero_or_negative_rent_returns_amount_only(self):
         from app.services.fx_normalise import band_funds_coverage
         assert band_funds_coverage(5000.0, 0.0) == "amount_only"
+
+
+class TestNamePresent:
+    def test_exact_match_true(self):
+        from app.routers.verification import _name_present
+        assert _name_present("Priya Sharma", "Priya Sharma") is True
+
+    def test_shared_surname_true(self):
+        from app.routers.verification import _name_present
+        assert _name_present("Priya Sharma", "Account holder: Sharma, Priya R.") is True
+
+    def test_no_overlap_false(self):
+        from app.routers.verification import _name_present
+        assert _name_present("Priya Sharma", "Account holder: John Smith") is False
+
+    def test_empty_doc_name_false(self):
+        from app.routers.verification import _name_present
+        assert _name_present("Priya Sharma", None) is False
+
+    def test_empty_user_name_false(self):
+        from app.routers.verification import _name_present
+        assert _name_present("", "Priya Sharma") is False
+
+    def test_ignores_short_tokens(self):
+        from app.routers.verification import _name_present
+        assert _name_present("A B", "Zoe Q") is False
