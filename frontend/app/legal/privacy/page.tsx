@@ -64,6 +64,19 @@ export default function PrivacyPage() {
                         ))}
                     </div>
 
+                    {/* Automated document analysis & third-party processing (GDPR subprocessor disclosure) */}
+                    <motion.section
+                        variants={sectionVariants}
+                        className="glass-card !p-12 rounded-[3rem] border-zinc-100"
+                    >
+                        <h2 className="text-2xl font-black tracking-tight text-zinc-900 mb-6 uppercase">
+                            {t('legal.privacy.sections.ai_processing.title', undefined, 'Automated Document Analysis')}
+                        </h2>
+                        <p className="text-zinc-600 leading-relaxed text-lg">
+                            {t('legal.privacy.sections.ai_processing.content', undefined, "To verify your identity, income and funds, Roomivo uses automated analysis powered by Google's Gemini AI. Documents you upload are transmitted to Google solely to extract the specific facts required for verification; Google acts as a data processor on Roomivo's behalf under a data-processing agreement. Roomivo applies a verify-and-forget model: your source document is processed transiently and is not retained after the verification result is produced — we keep only the banded result (for example \"funds cover ≥ 12 months of rent\"), never the original file. By uploading a document you consent to this automated processing, and you may contact us at any time to exercise your GDPR rights (access, erasure, objection).")}
+                        </p>
+                    </motion.section>
+
                     {/* Security Badge */}
                     <motion.div 
                         variants={sectionVariants}
