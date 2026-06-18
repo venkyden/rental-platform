@@ -1721,6 +1721,60 @@ def _name_present(user_full_name: str, document_name: str | None) -> bool:
     return bool(_tokens(user_full_name) & _tokens(document_name))
 
 
+async def _ai_extract_intl_funds(
+    file_content: bytes, content_type: str, ai_client=None
+) -> Optional[dict]:
+    """Extract fiscal-capacity data from a funding document via Gemini AI.
+
+    Covers bank statements, scholarship/sponsorship letters, and loan approvals.
+    """
+    prompt = (
+        "Extract funding/fiscal-capacity data from this document "
+        "(bank statement, scholarship award letter, sponsorship letter, or "
+        "education loan approval).\n\n"
+        "Return ONLY this JSON — no markdown:\n"
+        '{"funds_amount": <number or null>, "funds_currency": "<ISO 4217>", '
+        '"coverage_period_months": <number or null>, '
+        '"beneficiary_name": "<name or null>", '
+        '"issuer": "<bank/awarding body/sponsor/lender or null>"}\n\n'
+        "Rules:\n"
+        "- funds_amount: total available balance, awarded amount, sponsored sum, "
+        "or sanctioned loan amount\n"
+        "- funds_currency: must be ISO 4217 (INR, USD, GBP, CNY, EUR, etc.)\n"
+        "- coverage_period_months: for time-bounded funding (scholarship/loan/"
+        "sponsorship) the number of months it covers; null for a bank balance\n"
+        "- beneficiary_name: the person who holds or receives the funds\n"
+        "- Return null for funds_amount if you cannot determine it"
+    )
+    try:
+        from google import genai as _genai
+        from google.genai import types as _types
+        from app.core.config import settings
+
+        client = ai_client
+        if client is None and getattr(settings, "GEMINI_API_KEY", None):
+            client = _genai.Client(api_key=settings.GEMINI_API_KEY)
+        if client is None:
+            return None
+
+        image_part = _types.Part.from_bytes(data=file_content, mime_type=content_type)
+        for model in ("gemini-2.0-flash", "gemini-1.5-flash"):
+            try:
+                response = client.models.generate_content(
+                    model=model, contents=[image_part, prompt]
+                )
+                import json as _json
+                text = response.text.strip()
+                if text.startswith("```"):
+                    text = text.split("```")[1].lstrip("json").strip()
+                return _json.loads(text)
+            except Exception as _exc:
+                logger.warning("AI intl funds extraction (%s) failed: %s", model, _exc)
+    except Exception as _exc:
+        logger.error("_ai_extract_intl_funds crashed: %s", _exc)
+    return None
+
+
 @router.post("/intl/identity/upload")
 async def upload_intl_identity_document(
     file: UploadFile = File(...),

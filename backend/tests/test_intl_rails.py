@@ -383,3 +383,13 @@ class TestNamePresent:
     def test_ignores_short_tokens(self):
         from app.routers.verification import _name_present
         assert _name_present("A B", "Zoe Q") is False
+
+
+class TestIntlFundsExtraction:
+    def test_no_ai_client_returns_none(self):
+        import asyncio
+        from app.routers.verification import _ai_extract_intl_funds
+        result = asyncio.get_event_loop().run_until_complete(
+            _ai_extract_intl_funds(b"fake", "image/jpeg", ai_client=None)
+        )
+        assert result is None
