@@ -2130,3 +2130,114 @@ async def upload_intl_solvency_document(
         "decret_2015_1437_disclaimer": True,
         "trust_score": current_user.trust_score,
     }
+
+
+@router.post("/intl/funds")
+async def upload_intl_funds_document(
+    file: UploadFile = File(...),
+    document_type: str = Form(...),   # bank_statement|scholarship_letter|sponsorship_letter|loan_approval
+    funds_source: str = Form(...),    # self|sponsor
+    monthly_rent: Optional[float] = Form(None),
+    lease_months: Optional[int] = Form(None),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Foreign funding doc -> FX-normalised banded fiscal capacity -> MEDIUM.
+
+    Document discarded after banding (verify-and-forget). Never inflates to HIGH.
+    """
+    from app.services.fx_normalise import convert_to_eur, band_funds_coverage
+
+    if not current_user.identity_verified:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Vérifiez d'abord votre identité. / "
+                "Identity verification required before funds check."
+            ),
+        )
+
+    valid_types = {"bank_statement", "scholarship_letter", "sponsorship_letter", "loan_approval"}
+    if document_type not in valid_types:
+        raise HTTPException(status_code=400, detail=f"Invalid document_type: {document_type}")
+    if funds_source not in {"self", "sponsor"}:
+        raise HTTPException(status_code=400, detail=f"Invalid funds_source: {funds_source}")
+
+    allowed = {"image/jpeg", "image/png", "image/jpg", "application/pdf", "image/heic", "image/heif"}
+    if file.content_type not in allowed:
+        raise HTTPException(status_code=400, detail=f"Invalid file type: {file.content_type}")
+    await _validate_file_size(file)
+    await _check_upload_rate_limit(str(current_user.id), "intl_funds")
+    content = await file.read()
+
+    extraction = await _ai_extract_intl_funds(content, file.content_type or "image/jpeg")
+    if not extraction or extraction.get("funds_amount") is None:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=(
+                "Impossible d'extraire les fonds du document. / "
+                "Could not extract funds from document."
+            ),
+        )
+
+    raw_amount = float(extraction["funds_amount"])
+    currency = str(extraction.get("funds_currency", "EUR")).upper()
+    coverage_period = extraction.get("coverage_period_months")
+    beneficiary_name = extraction.get("beneficiary_name")
+
+    fx = await convert_to_eur(raw_amount, currency)
+
+    if fx.eur_amount is not None:
+        funds_band = band_funds_coverage(fx.eur_amount, monthly_rent or 0.0)
+        funds_assurance = "MEDIUM"
+    else:
+        funds_band = "unavailable"
+        funds_assurance = "UNVERIFIED"
+
+    source_strength = "proof" if document_type == "bank_statement" else "promise"
+
+    if coverage_period is not None and lease_months:
+        duration_flag = int(coverage_period) >= int(lease_months)
+    else:
+        duration_flag = None  # N/A (bank balance, or lease term unknown) — never False
+
+    name_present = _name_present(current_user.full_name or "", beneficiary_name)
+
+    prior = current_user.income_data or {}
+    prior_funds = prior.get("funds_coverage") or {}
+    had_solvency = bool(current_user.income_verified) or prior_funds.get("assurance") == "MEDIUM"
+
+    new_income = dict(prior)
+    new_income["funds_coverage"] = {
+        "funds_band": funds_band,
+        "funds_source": funds_source,
+        "document_type": document_type,
+        "source_strength": source_strength,
+        "assurance": funds_assurance,
+        "flags": {"name_present": name_present, "duration_covers_lease": duration_flag},
+        "fx_source": fx.fx_source,
+        "fx_margin_applied": fx.margin_applied,
+        "fx_margin_label": fx.fx_margin_label,
+        "upload_date": naive_utcnow().isoformat(),
+    }
+    current_user.income_data = new_income
+
+    if funds_assurance == "MEDIUM" and not had_solvency:
+        await db.execute(
+            update(User)
+            .where(User.id == current_user.id)
+            .values(trust_score=func.least(100, User.trust_score + 20))
+        )
+
+    await db.commit()
+    await db.refresh(current_user)
+
+    return {
+        "message": "Capacité fiscale vérifiée / Fiscal capacity verified",
+        "funds_band": funds_band,
+        "funds_source": funds_source,
+        "source_strength": source_strength,
+        "assurance": funds_assurance,
+        "fx_source": fx.fx_source,
+        "trust_score": current_user.trust_score,
+    }

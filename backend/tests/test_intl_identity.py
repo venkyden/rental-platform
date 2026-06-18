@@ -375,3 +375,182 @@ class TestIntlSolvency:
             )
 
         assert response.status_code == 400
+
+
+# ── POST /verification/intl/funds ──────────────────────────────────────────────
+
+def _mock_user_id_verified():
+    from tests.conftest import make_mock_user
+    u = make_mock_user("tenant")
+    u.identity_verified = True
+    u.full_name = "Priya Sharma"
+    u.income_verified = False
+    u.income_data = None
+    u.trust_score = 50
+    u.identity_data = {"identity_assurance": "MEDIUM"}
+    u.ownership_data = None
+    u.insurance_data = None
+    return u
+
+
+def _intl_client_for(user):
+    from app.main import app
+    from app.core.database import get_db
+    from app.routers.auth import get_current_user
+    from tests.conftest import mock_get_db
+    from fastapi.testclient import TestClient
+    target_app = app.app if hasattr(app, "app") else app
+    target_app.dependency_overrides[get_current_user] = lambda: user
+    target_app.dependency_overrides[get_db] = mock_get_db
+    return target_app, TestClient(app)
+
+
+class TestIntlFunds:
+    def _patches(self, extraction):
+        from unittest.mock import AsyncMock, patch
+        return [
+            patch("app.routers.verification._check_upload_rate_limit", new=AsyncMock()),
+            patch("app.routers.verification._ai_extract_intl_funds",
+                  new=AsyncMock(return_value=extraction)),
+            patch("app.routers.verification.cache"),
+        ]
+
+    def test_self_bank_statement_funds_covers_12m(self):
+        user = _mock_user_id_verified()
+        target_app, client = _intl_client_for(user)
+        extraction = {
+            "funds_amount": 13000.0, "funds_currency": "EUR",
+            "coverage_period_months": None,
+            "beneficiary_name": "Priya Sharma", "issuer": "Revolut",
+        }
+        import contextlib
+        with contextlib.ExitStack() as stack:
+            for p in self._patches(extraction):
+                stack.enter_context(p)
+            with client:
+                resp = client.post(
+                    "/verification/intl/funds",
+                    data={"document_type": "bank_statement", "funds_source": "self",
+                          "monthly_rent": "1000"},
+                    files={"file": ("s.jpg", b"x", "image/jpeg")},
+                )
+        target_app.dependency_overrides.clear()
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["funds_band"] == "covers_12m_plus"
+        assert body["funds_source"] == "self"
+        assert body["source_strength"] == "proof"
+        assert body["assurance"] == "MEDIUM"
+        assert user.income_data["funds_coverage"]["funds_band"] == "covers_12m_plus"
+        assert user.income_data["funds_coverage"]["flags"]["name_present"] is True
+        assert user.income_data["funds_coverage"]["flags"]["duration_covers_lease"] is None
+
+    def test_sponsor_loan_is_promise_and_duration_flag(self):
+        user = _mock_user_id_verified()
+        target_app, client = _intl_client_for(user)
+        extraction = {
+            "funds_amount": 8000.0, "funds_currency": "EUR",
+            "coverage_period_months": 6,
+            "beneficiary_name": "Priya Sharma", "issuer": "HDFC Credila",
+        }
+        import contextlib
+        with contextlib.ExitStack() as stack:
+            for p in self._patches(extraction):
+                stack.enter_context(p)
+            with client:
+                resp = client.post(
+                    "/verification/intl/funds",
+                    data={"document_type": "loan_approval", "funds_source": "sponsor",
+                          "monthly_rent": "1000", "lease_months": "12"},
+                    files={"file": ("s.jpg", b"x", "image/jpeg")},
+                )
+        target_app.dependency_overrides.clear()
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["source_strength"] == "promise"
+        assert user.income_data["funds_coverage"]["flags"]["duration_covers_lease"] is False
+
+    def test_fx_unavailable_returns_unverified(self):
+        user = _mock_user_id_verified()
+        target_app, client = _intl_client_for(user)
+        extraction = {
+            "funds_amount": 500000.0, "funds_currency": "XYZ",
+            "coverage_period_months": None,
+            "beneficiary_name": "Priya Sharma", "issuer": "Bank",
+        }
+        import contextlib
+        with contextlib.ExitStack() as stack:
+            for p in self._patches(extraction):
+                stack.enter_context(p)
+            with client:
+                resp = client.post(
+                    "/verification/intl/funds",
+                    data={"document_type": "bank_statement", "funds_source": "self",
+                          "monthly_rent": "1000"},
+                    files={"file": ("s.jpg", b"x", "image/jpeg")},
+                )
+        target_app.dependency_overrides.clear()
+        assert resp.status_code == 200
+        assert resp.json()["assurance"] == "UNVERIFIED"
+
+    def test_name_mismatch_sets_flag_false(self):
+        user = _mock_user_id_verified()
+        target_app, client = _intl_client_for(user)
+        extraction = {
+            "funds_amount": 13000.0, "funds_currency": "EUR",
+            "coverage_period_months": None,
+            "beneficiary_name": "John Smith", "issuer": "Revolut",
+        }
+        import contextlib
+        with contextlib.ExitStack() as stack:
+            for p in self._patches(extraction):
+                stack.enter_context(p)
+            with client:
+                resp = client.post(
+                    "/verification/intl/funds",
+                    data={"document_type": "bank_statement", "funds_source": "self",
+                          "monthly_rent": "1000"},
+                    files={"file": ("s.jpg", b"x", "image/jpeg")},
+                )
+        target_app.dependency_overrides.clear()
+        assert resp.status_code == 200
+        assert user.income_data["funds_coverage"]["flags"]["name_present"] is False
+
+    def test_no_rent_gives_amount_only(self):
+        user = _mock_user_id_verified()
+        target_app, client = _intl_client_for(user)
+        extraction = {
+            "funds_amount": 13000.0, "funds_currency": "EUR",
+            "coverage_period_months": None,
+            "beneficiary_name": "Priya Sharma", "issuer": "Revolut",
+        }
+        import contextlib
+        with contextlib.ExitStack() as stack:
+            for p in self._patches(extraction):
+                stack.enter_context(p)
+            with client:
+                resp = client.post(
+                    "/verification/intl/funds",
+                    data={"document_type": "bank_statement", "funds_source": "self"},
+                    files={"file": ("s.jpg", b"x", "image/jpeg")},
+                )
+        target_app.dependency_overrides.clear()
+        assert resp.status_code == 200
+        assert resp.json()["funds_band"] == "amount_only"
+
+    def test_extraction_failure_returns_422(self):
+        user = _mock_user_id_verified()
+        target_app, client = _intl_client_for(user)
+        import contextlib
+        with contextlib.ExitStack() as stack:
+            for p in self._patches(None):
+                stack.enter_context(p)
+            with client:
+                resp = client.post(
+                    "/verification/intl/funds",
+                    data={"document_type": "bank_statement", "funds_source": "self",
+                          "monthly_rent": "1000"},
+                    files={"file": ("s.jpg", b"x", "image/jpeg")},
+                )
+        target_app.dependency_overrides.clear()
+        assert resp.status_code == 422
