@@ -24,7 +24,7 @@ Last updated: 2026-06-17. Status: **Phase 1 complete** — all 6 Phase-1 items s
 - **Item 12 (Statelessness retrofit + Redis TTL) landed 2026-06-15:** identity, income, and guarantor (Visale/Garantme) domains flipped to verify-and-forget; two-step identity front doc now stored in Redis (10-min TTL, per-upload session token) not R2; `purge_legacy_verification_docs_task` Celery task for existing stored docs (incl. nested physical-guarantor files). See §9 item 12.
 - **Item 12 admin downstream gap resolved 2026-06-16:** dead `pending_review` queue and stale `VerificationReview` fields (`file_url`, `extracted_data`, always blank post-retrofit) replaced with a stranded-upload monitor — `identity_stalled` queue (users stuck >15 min at `document_uploaded`) + `POST /reset` to unblock; evidence-free identity `/approve` guarded off (400, points to `/reset`). See §9 item 12.
 - **ADEME PENDING retry (PR-6) + zone tendue advisory (PR-7) landed 2026-06-13.**
-- **Planning session 2026-06-17 — back-to-school roadmap set (nothing built this pass):** added decisions §0.12–0.18 (INTL student solvency = funds-not-income; rejected AIS + visa-based; plain-language assurance; Gemini-paid not NVIDIA; funds-boundary reaffirmed; e-sign legal gate **lifted**; "safer & provable" evidence positioning; SIRET nuance). New §9 paths 13–16: INTL fiscal-capacity funds rail (spec'd+planned), INTL solvency UI tab, deposit-binding evidence layer (IBAN + Verification of Payee), entity/SCI landlord verification (SIRENE/INPI). Build order in §9. Finding: **FranceConnect was never built — nothing to hide.**
+- **Planning session 2026-06-17 — back-to-school roadmap set (nothing built this pass):** added decisions §0.12–0.18 (INTL student solvency = funds-not-income; rejected AIS + visa-based; plain-language assurance; Gemini-paid not NVIDIA; funds-boundary reaffirmed; e-sign legal gate **lifted**; "safer & provable" evidence positioning; SIRET nuance). New §9 paths 13–16: INTL fiscal-capacity funds rail (spec'd+planned), INTL solvency UI tab, deposit-binding evidence layer (IBAN + Verification of Payee), entity/SCI landlord verification (SIRENE/INPI). Build order in §9. Findings: **FranceConnect was never built — nothing to hide**; **EU AI Act check (§0.19) — most likely not high-risk by design, with a bright line: never become a solvency *scorer*, never 1:many biometrics, never auto-gate access.**
 
 ---
 
@@ -130,6 +130,24 @@ Last updated: 2026-06-17. Status: **Phase 1 complete** — all 6 Phase-1 items s
     4-governance-roles incorporation stays deferred. Tribee.fr = love-money funding
     only — **not** evidence of willingness-to-pay; don't present a cagnotte as
     commercial traction.
+19. **EU AI Act classification (checked 2026-06-17 — orientation; lawyer to confirm
+    via a classification memo on the same engagement as the e-sign blessing).**
+    Current build is **most likely NOT high-risk**, *by design*:
+    - **Biometric:** the selfie↔ID match is **1:1 biometric *verification*** (confirm
+      the person is who they claim) → carved out of the high-risk biometric category.
+    - **Solvency:** the AI only **extracts** figures from documents; **banding is a
+      transparent deterministic rule, not an AI credit score**, and the human
+      (landlord) decides → outside Annex III "creditworthiness evaluation."
+    **🔴 Bright line — never cross (any one flips you to Annex III high-risk):**
+    (1) no ML model that *scores/predicts* solvency or risk — keep AI = extractor,
+    banding = fixed rule; (2) no **1:many** biometric identification — 1:1 only;
+    (3) never **auto-gate** housing access — Roomivo states facts, the human decides.
+    **Now:** limited-risk **transparency** applies — users must be told they're subject
+    to automated AI processing (covered by the privacy AI-subprocessor disclosure;
+    add an upload-step notice). Google carries the GPAI *provider* obligations; Roomivo
+    is a *deployer*. High-risk Annex III obligations deferred to **2 Dec 2027**
+    (Digital Omnibus, 7 May 2026) — runway, but architect to stay out, don't lean on it.
+    Separate from GDPR data-residency (the Gemini→Vertex-EU question, §9 build notes).
 
 ---
 
