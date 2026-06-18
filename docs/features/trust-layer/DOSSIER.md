@@ -15,7 +15,7 @@ moving on ([[roomivo-test-per-feature]]).
 
 Status legend: 🔴 blocking · 🟠 important · 🟡 polish · ✅ done.
 Verdicts: **KEEP / FIX / REPLACE / KILL / BUILD**.
-Last updated: 2026-06-15. Status: **Phase 1 complete** — all 6 Phase-1 items shipped; Phase 2 MRH/DPE/guarantor also shipped; Item 12 (statelessness retrofit + Redis TTL) landed 2026-06-15. Open: Phase 2 items 8/9 (legal gate), 11 (CSCA); INTL solvency FX.
+Last updated: 2026-06-17. Status: **Phase 1 complete** — all 6 Phase-1 items shipped; Phase 2 MRH/DPE/guarantor shipped; statelessness retrofit (item 12) + admin monitor done. **2026-06-17 planning:** back-to-school roadmap set (§0.12–0.18, §9 items 13–16). Open/next: launch prereqs (Gemini billing, legal pages, logos), INTL funds rail + UI (13/14, spec'd), deposit-binding + SCI (15/16), e-sign Path B (8/9, gate lifted).
 - **Phase 1 complete (2026-06-13):** GLI removed; credential core; FR identity MEDIUM rail + avis cross-check; FR HIGH solvency (2D-Doc ECDSA); property control (taxe foncière, PR-8 fixed); both-sided wiring (/c/ verify page, issue-mine, QR share, anti-phishing).
 - **Item 2 (Credential core) landed 2026-06-05:** `Credential` model, `app/services/credential.py` (Ed25519 sign/verify), `app/routers/credentials.py` (POST /issue, GET /{id}, GET /public-key, GET /evidence.pdf, POST /issue-mine, POST /revoke), Alembic migration `c1d2e3f4a5b6`, 23 integration tests green. Assurance guards AS-1/AS-2/AS-3 enforced at signing time.
 - **DPE reclassification enforcement (§5.4 PR-1/3/4/5) landed 2026-06-10.**
@@ -24,6 +24,7 @@ Last updated: 2026-06-15. Status: **Phase 1 complete** — all 6 Phase-1 items s
 - **Item 12 (Statelessness retrofit + Redis TTL) landed 2026-06-15:** identity, income, and guarantor (Visale/Garantme) domains flipped to verify-and-forget; two-step identity front doc now stored in Redis (10-min TTL, per-upload session token) not R2; `purge_legacy_verification_docs_task` Celery task for existing stored docs (incl. nested physical-guarantor files). See §9 item 12.
 - **Item 12 admin downstream gap resolved 2026-06-16:** dead `pending_review` queue and stale `VerificationReview` fields (`file_url`, `extracted_data`, always blank post-retrofit) replaced with a stranded-upload monitor — `identity_stalled` queue (users stuck >15 min at `document_uploaded`) + `POST /reset` to unblock; evidence-free identity `/approve` guarded off (400, points to `/reset`). See §9 item 12.
 - **ADEME PENDING retry (PR-6) + zone tendue advisory (PR-7) landed 2026-06-13.**
+- **Planning session 2026-06-17 — back-to-school roadmap set (nothing built this pass):** added decisions §0.12–0.18 (INTL student solvency = funds-not-income; rejected AIS + visa-based; plain-language assurance; Gemini-paid not NVIDIA; funds-boundary reaffirmed; e-sign legal gate **lifted**; "safer & provable" evidence positioning; SIRET nuance). New §9 paths 13–16: INTL fiscal-capacity funds rail (spec'd+planned), INTL solvency UI tab, deposit-binding evidence layer (IBAN + Verification of Payee), entity/SCI landlord verification (SIRENE/INPI). Build order in §9. Finding: **FranceConnect was never built — nothing to hide.**
 
 ---
 
@@ -84,6 +85,51 @@ Last updated: 2026-06-15. Status: **Phase 1 complete** — all 6 Phase-1 items s
     for display**. See [[roomivo-legal-status-snee]].
 11. **Scoping (assumption — confirm):** Phase 1 / Direction A = **(a) Roomivo-scoped
     broadcastable** credential. Direction B (Phase 2) = **(b) recipient-scoped**.
+
+### Decisions added 2026-06-17 (this session)
+
+12. **INTL student solvency = funds, not income.** Students have no salary/avis →
+    measure *available funds*, banded as "covers ≥ N months of rent." **Rejected:**
+    Open Banking AIS (needs a commercial aggregator or AISP licence — violates
+    "no commercial intermediary in the data path") and **visa/titre-de-séjour as a
+    solvency signal** (floor-only, stale, and nationality-coupled → Code pénal
+    225-1/225-2 discrimination + breaks "same tiers for everyone"). **Deferred gold
+    standard:** EUDI Wallet verifiable credential, offline-verified like the avis
+    2D-Doc. Self-contained document rail ships now (item 13).
+13. **Plain-language assurance to consumers.** Raw `HIGH`/`MEDIUM`/`UNVERIFIED` tier
+    words create landlord friction (amber "MEDIUM" badge reads as a defect; almost
+    everyone is MEDIUM today). Tiers stay in the credential JSON + B2B API (insurers
+    price on them); **consumer surfaces render affirmative sentences** ("ID checked +
+    selfie match"). Never collapse to a bare "Verified ✓" (rebuilds the fake-badge
+    problem). See item 13 spec.
+14. **Extraction stays on Gemini (paid), not NVIDIA.** The `GEMINI_DAILY_LIMIT: 1500`
+    is the *free* tier — fix the quota by enabling billing, not by migrating. NVIDIA
+    NIM free tier is ~40 RPM (also capped), needs a full `_ai_extract_*` rewrite +
+    accuracy re-validation, and is the *same* GDPR posture (US subprocessor). NVIDIA
+    kept only as a possible future fallback or self-hosted-NIM (GDPR) play.
+15. **Funds boundary reaffirmed (hard).** Roomivo **never** touches/holds/escrows/routes
+    the deposit or rent — that triggers payment-services + Hoguet *maniement de fonds*.
+    Deposit and rent flow **directly tenant→landlord, off-platform** (their own
+    neobank/transfer). Roomivo verifies the parties and records the agreed terms only.
+16. **E-sign legal gate cleared (record formally).** A lawyer blessed the self-service
+    framing (templates by contract type **or** landlord-uploaded + both parties sign).
+    **Action: write this into PRD §7.6** — verbal isn't enough. Build order: **Path B**
+    (upload + e-sign, lower risk) before **Path A** (Décret 2015-587 template
+    generation). Constraints unchanged: official wording only, DocuSeal/Documenso
+    unmodified + self-hosted (AGPL), no success fee, no funds. eIDAS simple signature
+    is valid for a bail. Not the launch wedge → fast-follow.
+17. **Evidence positioning = "safer & provable," not "safe."** The evidence doc proves
+    *who* + *agreed terms* + *when* (tamper-evident), **not** that money moved (the
+    tenant's bank receipt does that — Roomivo isn't in the flow). "Court-admissible"
+    framing must be lawyer-blessed and not overpromise an outcome; MEDIUM identity is a
+    strong lead, not bulletproof ID. Binding the verified parties to a *specific*
+    deposit transaction (item 15) is what turns the generic credential into a
+    deposit-dispute artifact.
+18. **SIRET nuance.** Free MEDIUM beta needs **no SIRET**; *charging* needs a quick
+    micro-entreprise SIRET (days, free); FranceConnect's heavy SIRET + DataPass +
+    4-governance-roles incorporation stays deferred. Tribee.fr = love-money funding
+    only — **not** evidence of willingness-to-pay; don't present a cagnotte as
+    commercial traction.
 
 ---
 
@@ -467,11 +513,23 @@ insurance posture. **Delete, don't flag-off.**
 
 **Phase 2+ (defer; lease/e-sign behind §7.1 legal gate)**
 7. ✅ **DPE lettability depth** (§5.4, 2026-06-10) — class-G warn+ack publish gate; expired DPE gate; ADEME authoritative-class override; bilingual FR/EN; `dpe_compliance.py`.
-8. ❌ **Uploaded-lease red-line scan** (§5.6) — VALIDATED vs ATTACHED tiers. ⚠ gate.
-9. ❌ **E-sign + evidence pack upgrade** (§5.7, §6) — DocuSeal/Documenso **unmodified** (AGPL, §11). ⚠ gate.
+8. ❌ **Uploaded-lease red-line scan** (§5.6) — VALIDATED vs ATTACHED tiers. ⚠ gate **lifted 2026-06-17** (lawyer blessed framing, §0.16 — record in PRD §7.6). Build as **Path B** first (ATTACHED: landlord uploads, both sign, no opinion on content).
+9. ❌ **E-sign + evidence pack upgrade** (§5.7, §6) — DocuSeal/Documenso **unmodified + self-hosted** (AGPL, §11). ⚠ gate **lifted 2026-06-17** (§0.16). eIDAS simple sig valid for a bail. Fast-follow, not launch wedge.
 10. ✅ **Insurance MRH verification** (§5.8) — IN-1..IN-5 covered; `mrh_compliance.py`; `POST /verification/insurance/upload`; evidence PDF row; issue-mine assurance summary.
-11. 🟡 **INTL rails** (§4) — MEDIUM rail shipped (2026-06-16): `mrz.py` hybrid AI+Tesseract+ICAO-checksum; `fx_normalise.py` Frankfurter→static-29→UNVERIFIED; 3 endpoints: `POST /verification/intl/identity/upload`, `/intl/identity/selfie`, `/intl/solvency`. HIGH (NFC chip / Passive Auth) still blocked on CSCA master-list assembly. Spec: `docs/superpowers/specs/2026-06-15-intl-rails-design.md`.
+11. 🟡 **INTL rails** (§4) — MEDIUM rail shipped (2026-06-16): `mrz.py` hybrid AI+Tesseract+ICAO-checksum; `fx_normalise.py` Frankfurter→static-29→UNVERIFIED; 3 endpoints: `POST /verification/intl/identity/upload`, `/intl/identity/selfie`, `/intl/solvency`. HIGH (NFC chip / Passive Auth) blocked on CSCA master-list assembly **AND a native app** (Web NFC is Android-only; no iOS) → **deferred to EUDI Wallet** (§0.12), not pursued now. Spec: `docs/superpowers/specs/2026-06-15-intl-rails-design.md`.
 12. ✅ **Statelessness retrofit + Redis TTL** (2026-06-15) — identity (`selfie_with_id`, `back`, `upload-selfie`), income, and guarantor (Visale/Garantme) domains flipped to verify-and-forget. Source docs discarded immediately after claim extraction; `extracted_data`/`file_url`/`storage_key` removed from JSONB. Two-step identity flow: front doc stored in **Redis with 10-min TTL** (primary); R2 fallback only if Redis unavailable; per-upload `secrets.token_hex(8)` suffix on key for web/mobile session isolation. Doc purged **before** raising face-match failure exception (GDPR: no retention on rejection). `purge_legacy_verification_docs_task` Celery task purges existing R2 docs for current users, now including nested `files[*].storage_key` for physical-guarantor records. Physical guarantor upload (human-review flow) out of scope. 15 new tests (+ 2 Redis-path tests). Known downstream: admin panel `file_url`/`extracted_data` fields always blank post-retrofit (accepted); insurance IN-2 name match uses profile name as permanent fallback (accepted statelessness tradeoff). **Admin downstream gap resolved 2026-06-16:** dead `pending_review` queue (never set post-retrofit) and stale `VerificationReview` fields (`file_url`, `extracted_data`, always blank) replaced with a stranded-upload monitor — `identity_stalled` queue surfaces users stuck >15 min at `document_uploaded`, plus a `POST /reset` endpoint so operators can unblock them. Evidence-free `/approve` action for identity guarded off (returns 400, points to `/reset`).
+
+**New paths surfaced 2026-06-17 (specs/plans pending — sequenced for back-to-school)**
+13. 🟡 **INTL fiscal-capacity (funds) solvency + plain-language assurance** — spec'd + planned, **not built**. `POST /verification/intl/funds`: bank statement / scholarship / sponsorship / loan-approval → FX-normalised banded `funds_coverage` (MEDIUM, funds-not-income, self-contained, no third party). Sponsor funds = fiscal-capacity signal, **not** guarantor brokering. `issue_mine` emits `funds_coverage_*`. Plain-language rendering on verify page + evidence PDF (§0.13). Spec: `docs/superpowers/specs/2026-06-17-intl-fiscal-capacity-solvency-design.md`; Plan: `docs/superpowers/plans/2026-06-17-intl-fiscal-capacity-solvency.md` (8 tasks).
+14. ❌ **INTL solvency/funds UI tab** — the INTL identity/solvency/funds endpoints are **backend-only; no frontend**. International students can verify *identity* via the existing OCR flow (MEDIUM) but have **no UI solvency path**. This is the real "serve students" gap. Wire an INTL tab calling `/intl/solvency` + `/intl/funds` (ships with item 13's endpoint).
+15. ❌ **Deposit-binding evidence layer** — today's credential proves *verification status*, not a *specific deposit transaction*. Bind verified tenant ↔ verified landlord ↔ property ↔ deposit amount ↔ **payee IBAN + name-match result** ↔ date into the signed evidence doc. Student pays via own neobank (Revolut/Wise/transfer) — Roomivo not in the money flow (§0.15). Lean on EU **Verification of Payee** at pay time; mismatch (e.g. redirect to a third-party account) = red flag. GDPR: IBAN is the landlord's data → emit-and-forget, with consent.
+16. ❌ **Entity / SCI landlord verification** — the person↔IBAN name-match breaks when the lessor is an **SCI** (account + lease in the entity name, not the gérant's). Verify the entity via **free state registries** (INSEE SIRENE + INPI/RNE for the gérant), then a three-way chain: verified gérant → SCI → SCI-held IBAN → property. Match becomes entity↔entity. Model already scaffolds it (`kbis_verified`, `carte_g_verified` — the latter for the property-manager/mandataire / Hoguet carte G case). Adds a **landlord-type branch** (individual vs. entity vs. manager).
+
+### Suggested build order (back-to-school critical path)
+1. **Launch prerequisites:** funded Gemini key (§0.14); privacy policy + consent + Mentions Légales (Google subprocessor disclosure, no-SIRET status, §0.18); wire the already-authorized PÉPITE/SNEE/Ministère logos (§0.10) into verify/landing/anti-phishing surfaces.
+2. **Item 13 + 14** — INTL funds rail + its UI (makes the loop actually serve students).
+3. **Item 15 + 16** — deposit-binding + entity/SCI (the deposit-safety story).
+4. **Items 8/9** — e-sign Path B fast-follow (gate now lifted, §0.16).
 
 ## 11. OSS stack & caveats (from `CLAUDE.md`)
 | Component | Tool | License / note |
