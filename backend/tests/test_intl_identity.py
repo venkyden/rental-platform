@@ -628,3 +628,37 @@ class TestIssueMineFundsClaim:
         user.income_data = {"funds_coverage": {"funds_band": "unavailable", "assurance": "UNVERIFIED"}}
         claims = _build_claims_for_user(user)
         assert "funds_coverage_band" not in claims
+
+
+class TestEvidencePdfFunds:
+    def test_funds_credential_pdf_has_no_tier_words(self):
+        from app.services.credential import credential_service
+        record = {
+            "subject_role": "tenant",
+            "subject_display_name": "Priya Sharma",
+            "rail": "INTL",
+            "issued_at": "2026-06-17T00:00:00",
+            "expires_at": "2026-07-17T00:00:00",
+            "credential_id": "test-id",
+            "claims": {
+                "identity_verified": True,
+                "identity_assurance": "MEDIUM",
+                "funds_coverage_band": "covers_12m_plus",
+                "funds_coverage_source": "sponsor",
+                "funds_coverage_assurance": "MEDIUM",
+            },
+            "disclaimer": "x", "signature": "y",
+        }
+        pdf = credential_service.export_evidence_pdf(record)
+        assert isinstance(pdf, bytes) and len(pdf) > 800
+        # PDF bytes are FlateDecode-compressed and font-glyph-encoded, so the
+        # rendered text cannot be byte-grepped. Assert on the source the PDF is
+        # built from instead: the tier-word dict must be gone and replaced by the
+        # affirmative consumer-facing phrase, and the funds row must be present.
+        import inspect
+        src = inspect.getsource(credential_service.export_evidence_pdf)
+        assert "assurance_fr" not in src          # tier-word dict removed
+        assert "INTERM" not in src                 # 'INTERMÉDIAIRE' tier word gone
+        assert "_verified_phrase" in src           # affirmative phrase helper used
+        assert "Vérifié ✓" in src                  # consumer-facing wording
+        assert "funds_coverage_band" in src        # funds row added
