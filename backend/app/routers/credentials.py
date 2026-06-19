@@ -283,18 +283,8 @@ class IssueMineResponse(BaseModel):
     shareable_url: str
 
 
-@router.post("/issue-mine", response_model=IssueMineResponse, status_code=status.HTTP_201_CREATED)
-async def issue_mine(
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    """
-    Assemble a credential from the user's current verified state and sign it.
-
-    Reads identity_data, income_data, and ownership_data to build banded claims.
-    Never inflates assurance — MEDIUM stays MEDIUM, UNVERIFIED stays UNVERIFIED.
-    The returned credential_id is the shareable verify key: roomivo.app/c/<id>.
-    """
+def _build_claims_for_user(current_user) -> dict:
+    """Assemble banded claims from the user's verified state. Never inflates."""
     identity_data = current_user.identity_data or {}
     income_data = current_user.income_data or {}
     ownership_data = current_user.ownership_data or {}
@@ -308,6 +298,13 @@ async def issue_mine(
     if solvency_ratio and solvency_assurance != "UNVERIFIED":
         claims["solvency_ratio"] = solvency_ratio
         claims["solvency_assurance"] = solvency_assurance
+
+    # Fiscal-capacity (funds) claim — MEDIUM only, never inflated
+    funds = income_data.get("funds_coverage") or {}
+    if funds.get("assurance") == "MEDIUM" and funds.get("funds_band") not in (None, "unavailable"):
+        claims["funds_coverage_band"] = funds["funds_band"]
+        claims["funds_coverage_source"] = funds.get("funds_source", "self")
+        claims["funds_coverage_assurance"] = "MEDIUM"
 
     dpe_assurance = ownership_data.get("dpe_assurance") or ownership_data.get("assurance")
     control_label = ownership_data.get("label")
@@ -325,6 +322,23 @@ async def issue_mine(
         claims["mrh_insurance_status"] = mrh_status
         if insurance_data.get("flags"):
             claims["mrh_insurance_flags"] = insurance_data["flags"]
+
+    return claims
+
+
+@router.post("/issue-mine", response_model=IssueMineResponse, status_code=status.HTTP_201_CREATED)
+async def issue_mine(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Assemble a credential from the user's current verified state and sign it.
+
+    Reads identity_data, income_data, and ownership_data to build banded claims.
+    Never inflates assurance — MEDIUM stays MEDIUM, UNVERIFIED stays UNVERIFIED.
+    The returned credential_id is the shareable verify key: roomivo.app/c/<id>.
+    """
+    claims = _build_claims_for_user(current_user)
 
     # Determine role and rail from what the user has verified
     subject_role = "landlord" if current_user.ownership_verified else "tenant"

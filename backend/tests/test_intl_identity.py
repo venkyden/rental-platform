@@ -605,3 +605,26 @@ class TestIntlFunds:
         stored = json.dumps(user.income_data)
         assert "13000" not in stored
         assert "funds_amount" not in user.income_data["funds_coverage"]
+
+
+class TestIssueMineFundsClaim:
+    def test_medium_funds_emitted(self):
+        from app.routers.credentials import _build_claims_for_user
+        user = _mock_user_id_verified()
+        user.income_data = {
+            "funds_coverage": {
+                "funds_band": "covers_12m_plus", "funds_source": "sponsor",
+                "assurance": "MEDIUM",
+            }
+        }
+        claims = _build_claims_for_user(user)
+        assert claims["funds_coverage_band"] == "covers_12m_plus"
+        assert claims["funds_coverage_source"] == "sponsor"
+        assert claims["funds_coverage_assurance"] == "MEDIUM"
+
+    def test_unverified_funds_not_emitted(self):
+        from app.routers.credentials import _build_claims_for_user
+        user = _mock_user_id_verified()
+        user.income_data = {"funds_coverage": {"funds_band": "unavailable", "assurance": "UNVERIFIED"}}
+        claims = _build_claims_for_user(user)
+        assert "funds_coverage_band" not in claims
