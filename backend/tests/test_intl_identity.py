@@ -554,3 +554,54 @@ class TestIntlFunds:
                 )
         target_app.dependency_overrides.clear()
         assert resp.status_code == 422
+
+    def test_no_identity_returns_400(self):
+        """Identity verification is a prerequisite for /intl/funds."""
+        user = _mock_user_id_verified()
+        user.identity_verified = False
+        target_app, client = _intl_client_for(user)
+        extraction = {
+            "funds_amount": 13000.0, "funds_currency": "EUR",
+            "coverage_period_months": None,
+            "beneficiary_name": "Priya Sharma", "issuer": "Revolut",
+        }
+        import contextlib
+        with contextlib.ExitStack() as stack:
+            for p in self._patches(extraction):
+                stack.enter_context(p)
+            with client:
+                resp = client.post(
+                    "/verification/intl/funds",
+                    data={"document_type": "bank_statement", "funds_source": "self",
+                          "monthly_rent": "1000"},
+                    files={"file": ("s.jpg", b"x", "image/jpeg")},
+                )
+        target_app.dependency_overrides.clear()
+        assert resp.status_code == 400
+
+    def test_raw_funds_amount_not_persisted(self):
+        """Statelessness guard: raw amounts never stored in income_data."""
+        user = _mock_user_id_verified()
+        target_app, client = _intl_client_for(user)
+        extraction = {
+            "funds_amount": 13000.0, "funds_currency": "EUR",
+            "coverage_period_months": None,
+            "beneficiary_name": "Priya Sharma", "issuer": "Revolut",
+        }
+        import contextlib
+        with contextlib.ExitStack() as stack:
+            for p in self._patches(extraction):
+                stack.enter_context(p)
+            with client:
+                resp = client.post(
+                    "/verification/intl/funds",
+                    data={"document_type": "bank_statement", "funds_source": "self",
+                          "monthly_rent": "1000"},
+                    files={"file": ("s.jpg", b"x", "image/jpeg")},
+                )
+        target_app.dependency_overrides.clear()
+        assert resp.status_code == 200
+        import json
+        stored = json.dumps(user.income_data)
+        assert "13000" not in stored
+        assert "funds_amount" not in user.income_data["funds_coverage"]
