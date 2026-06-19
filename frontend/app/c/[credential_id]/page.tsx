@@ -48,6 +48,7 @@ function claimSentence(key: string, value: string, claims: Record<string, string
         case 'solvency_assurance':
             return value === 'UNVERIFIED' ? null : 'Revenus vérifiés (capacité fiscale)';
         case 'funds_coverage_assurance': {
+            if (value === 'UNVERIFIED') return null;
             const band = claims['funds_coverage_band'];
             const months: Record<string, string> = {
                 covers_12m_plus: '12 mois ou plus',

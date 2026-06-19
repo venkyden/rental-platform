@@ -669,6 +669,30 @@ class TestIntlFunds:
         target_app.dependency_overrides.clear()
         assert resp.status_code == 422
 
+    def test_zero_funds_amount_returns_422(self):
+        """A zero/negative funds amount must not become a verified MEDIUM claim."""
+        user = _mock_user_id_verified()
+        target_app, client = _intl_client_for(user)
+        extraction = {
+            "funds_amount": 0, "funds_currency": "EUR",
+            "coverage_period_months": None,
+            "beneficiary_name": "Priya Sharma", "issuer": "Revolut",
+        }
+        import contextlib
+        with contextlib.ExitStack() as stack:
+            for p in self._patches(extraction):
+                stack.enter_context(p)
+            with client:
+                resp = client.post(
+                    "/verification/intl/funds",
+                    data={"document_type": "bank_statement", "funds_source": "self",
+                          "monthly_rent": "1000"},
+                    files={"file": ("s.jpg", b"x", "image/jpeg")},
+                )
+        target_app.dependency_overrides.clear()
+        assert resp.status_code == 422
+        assert user.income_data is None  # nothing persisted for a rejected amount
+
 
 class TestIssueMineFundsClaim:
     def test_medium_funds_emitted(self):

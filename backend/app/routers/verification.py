@@ -2186,6 +2186,11 @@ async def upload_intl_funds_document(
         raw_amount = float(extraction["funds_amount"])
     except (ValueError, TypeError):
         raise HTTPException(status_code=422, detail="Could not parse funds amount.")
+    if raw_amount <= 0:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Funds amount must be greater than 0.",
+        )
     currency = str(extraction.get("funds_currency", "EUR")).upper()
     coverage_period = extraction.get("coverage_period_months")
     beneficiary_name = extraction.get("beneficiary_name")
