@@ -606,6 +606,69 @@ class TestIntlFunds:
         assert "13000" not in stored
         assert "funds_amount" not in user.income_data["funds_coverage"]
 
+    def test_solvency_upload_preserves_funds_coverage(self):
+        """A /intl/solvency upload must merge into income_data, not erase an
+        existing funds_coverage block left by a prior /intl/funds upload."""
+        from unittest.mock import AsyncMock, patch
+        user = _mock_user_id_verified()
+        user.income_data = {
+            "funds_coverage": {
+                "funds_band": "covers_12m_plus",
+                "assurance": "MEDIUM",
+                "funds_source": "self",
+            }
+        }
+        target_app, client = _intl_client_for(user)
+        import contextlib
+        with contextlib.ExitStack() as stack:
+            stack.enter_context(
+                patch("app.routers.verification._check_upload_rate_limit", new=AsyncMock())
+            )
+            stack.enter_context(
+                patch(
+                    "app.routers.verification._ai_extract_intl_income",
+                    new=AsyncMock(return_value={
+                        "income_amount": 3000.0,
+                        "income_currency": "EUR",
+                        "income_period": "monthly",
+                    }),
+                )
+            )
+            stack.enter_context(patch("app.routers.verification.cache"))
+            with client:
+                resp = client.post(
+                    "/verification/intl/solvency",
+                    data={"monthly_rent": "1000"},
+                    files={"file": ("s.jpg", b"x", "image/jpeg")},
+                )
+        target_app.dependency_overrides.clear()
+        assert resp.status_code == 200
+        assert user.income_data["funds_coverage"]["funds_band"] == "covers_12m_plus"
+        assert "solvency_ratio" in user.income_data
+
+    def test_non_numeric_funds_amount_returns_422(self):
+        """Untrusted AI output that isn't numeric must yield 422, not an uncaught 500."""
+        user = _mock_user_id_verified()
+        target_app, client = _intl_client_for(user)
+        extraction = {
+            "funds_amount": "twelve thousand", "funds_currency": "EUR",
+            "coverage_period_months": None,
+            "beneficiary_name": "Priya Sharma", "issuer": "X",
+        }
+        import contextlib
+        with contextlib.ExitStack() as stack:
+            for p in self._patches(extraction):
+                stack.enter_context(p)
+            with client:
+                resp = client.post(
+                    "/verification/intl/funds",
+                    data={"document_type": "bank_statement", "funds_source": "self",
+                          "monthly_rent": "1000"},
+                    files={"file": ("s.jpg", b"x", "image/jpeg")},
+                )
+        target_app.dependency_overrides.clear()
+        assert resp.status_code == 422
+
 
 class TestIssueMineFundsClaim:
     def test_medium_funds_emitted(self):

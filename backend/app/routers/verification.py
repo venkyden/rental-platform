@@ -2092,7 +2092,8 @@ async def upload_intl_solvency_document(
     was_income_verified = current_user.income_verified
     current_user.income_verified = fx.eur_amount is not None
     current_user.income_status = "verified" if fx.eur_amount is not None else "unverified"
-    current_user.income_data = {
+    _income = dict(current_user.income_data or {})
+    _income.update({
         "verified": current_user.income_verified,
         "upload_date": naive_utcnow().isoformat(),
         "solvency_assurance": solvency_assurance,
@@ -2107,7 +2108,8 @@ async def upload_intl_solvency_document(
         "decret_2015_1437_disclaimer": True,
         "status": current_user.income_status,
         # raw eur_amount and raw foreign amount intentionally NOT stored
-    }
+    })
+    current_user.income_data = _income
 
     if fx.eur_amount is not None and not was_income_verified:
         await db.execute(
@@ -2180,7 +2182,10 @@ async def upload_intl_funds_document(
             ),
         )
 
-    raw_amount = float(extraction["funds_amount"])
+    try:
+        raw_amount = float(extraction["funds_amount"])
+    except (ValueError, TypeError):
+        raise HTTPException(status_code=422, detail="Could not parse funds amount.")
     currency = str(extraction.get("funds_currency", "EUR")).upper()
     coverage_period = extraction.get("coverage_period_months")
     beneficiary_name = extraction.get("beneficiary_name")
@@ -2196,10 +2201,12 @@ async def upload_intl_funds_document(
 
     source_strength = "proof" if document_type == "bank_statement" else "promise"
 
+    duration_flag = None
     if coverage_period is not None and lease_months:
-        duration_flag = int(coverage_period) >= int(lease_months)
-    else:
-        duration_flag = None  # N/A (bank balance, or lease term unknown) — never False
+        try:
+            duration_flag = int(coverage_period) >= int(lease_months)
+        except (ValueError, TypeError):
+            duration_flag = None  # unparseable period → treat as N/A, never crash
 
     name_present = _name_present(current_user.full_name or "", beneficiary_name)
 
