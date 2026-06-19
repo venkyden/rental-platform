@@ -35,28 +35,40 @@ interface VerifyResponse {
     assurance_summary: string;
 }
 
-const ASSURANCE_BADGE: Record<string, { label: string; className: string }> = {
-    HIGH: { label: 'HIGH', className: 'bg-emerald-100 text-emerald-800 border border-emerald-200' },
-    MEDIUM: { label: 'MEDIUM', className: 'bg-amber-100 text-amber-800 border border-amber-200' },
-    UNVERIFIED: { label: 'UNVERIFIED', className: 'bg-zinc-100 text-zinc-500 border border-zinc-200' },
-    PENDING: { label: 'PENDING', className: 'bg-blue-100 text-blue-700 border border-blue-200' },
-};
-
-const CLAIM_LABELS: Record<string, string> = {
-    identity_assurance: 'Identité',
-    solvency_assurance: 'Solvabilité',
-    solvency_ratio: 'Ratio loyer/revenus',
-    property_control_assurance: 'Contrôle du bien',
-    property_control_label: 'Qualification',
-};
-
-function AssuranceBadge({ level }: { level: string }) {
-    const badge = ASSURANCE_BADGE[level] ?? ASSURANCE_BADGE['UNVERIFIED'];
-    return (
-        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold ${badge.className}`}>
-            {badge.label}
-        </span>
-    );
+// Plain-language statements of what was verified. Internal tiers (HIGH/MEDIUM)
+// are intentionally NOT shown to the landlord — only the affirmative fact.
+function claimSentence(key: string, value: string, claims: Record<string, string>): string | null {
+    switch (key) {
+        case 'identity_assurance':
+            return value === 'HIGH'
+                ? "Identité confirmée auprès des registres de l'État"
+                : value === 'MEDIUM'
+                ? "Pièce d'identité vérifiée + selfie concordant"
+                : null;
+        case 'solvency_assurance':
+            return value === 'UNVERIFIED' ? null : 'Revenus vérifiés (capacité fiscale)';
+        case 'funds_coverage_assurance': {
+            const band = claims['funds_coverage_band'];
+            const months: Record<string, string> = {
+                covers_12m_plus: '12 mois ou plus',
+                covers_6m: '6 à 11 mois',
+                covers_3m: '3 à 5 mois',
+                covers_under_3m: 'moins de 3 mois',
+                amount_only: '',
+            };
+            const span = months[band] ? ` couvrant ${months[band]} de loyer` : '';
+            const sponsor = claims['funds_coverage_source'] === 'sponsor' ? ' (via un garant/sponsor)' : '';
+            return `Fonds vérifiés${span}${sponsor}`;
+        }
+        case 'property_control_assurance':
+            return 'Documents de contrôle du bien vérifiés';
+        case 'mrh_insurance_assurance':
+            return String(claims['mrh_insurance_verified']) === 'true'
+                ? 'Assurance habitation (MRH) vérifiée'
+                : 'Assurance habitation (MRH) signalée pour vérification';
+        default:
+            return null; // raw bands / labels / sources are inputs to other sentences
+    }
 }
 
 function StatusBanner({ data }: { data: VerifyResponse }) {
@@ -153,7 +165,7 @@ export default function CredentialVerifyPage() {
     }
 
     const roleLabel = data.subject_role === 'landlord' ? 'Propriétaire / Bailleur' : 'Locataire';
-    const claimEntries = Object.entries(data.claims).filter(([k]) => CLAIM_LABELS[k]);
+    const claimEntries = Object.entries(data.claims);
 
     return (
         <div className="min-h-screen bg-zinc-50">
@@ -198,20 +210,22 @@ export default function CredentialVerifyPage() {
                     <p className="text-sm text-zinc-500">{roleLabel} · Rail {data.rail}</p>
                 </div>
 
-                {/* Claims table */}
+                {/* Claims table — plain-language, no tier words */}
                 <div className="bg-white rounded-2xl border border-zinc-200 divide-y divide-zinc-100">
-                    {claimEntries.length === 0 ? (
-                        <div className="p-5 text-sm text-zinc-400">Aucune vérification enregistrée.</div>
-                    ) : claimEntries.map(([key, value]) => (
-                        <div key={key} className="flex items-center justify-between px-5 py-3">
-                            <span className="text-sm text-zinc-600">{CLAIM_LABELS[key]}</span>
-                            {key.endsWith('_assurance') ? (
-                                <AssuranceBadge level={value} />
-                            ) : (
-                                <span className="text-sm font-medium text-zinc-900 font-mono">{value}</span>
-                            )}
-                        </div>
-                    ))}
+                    {(() => {
+                        const rows = claimEntries
+                            .map(([key, value]) => claimSentence(key, String(value), data.claims))
+                            .filter((s): s is string => Boolean(s));
+                        if (rows.length === 0) {
+                            return <div className="p-5 text-sm text-zinc-400">Aucune vérification enregistrée.</div>;
+                        }
+                        return rows.map((sentence, i) => (
+                            <div key={i} className="flex items-center gap-3 px-5 py-3">
+                                <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
+                                <span className="text-sm text-zinc-800">{sentence}</span>
+                            </div>
+                        ));
+                    })()}
                 </div>
 
                 {/* Assurance summary */}
