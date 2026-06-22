@@ -2090,6 +2090,9 @@ async def upload_intl_solvency_document(
         solvency_assurance = "UNVERIFIED"
 
     was_income_verified = current_user.income_verified
+    _prior_income = current_user.income_data or {}  # capture BEFORE merge/reassignment
+    _prior_funds = _prior_income.get("funds_coverage") or {}
+    had_solvency = bool(was_income_verified) or _prior_funds.get("assurance") == "MEDIUM"
     current_user.income_verified = fx.eur_amount is not None
     current_user.income_status = "verified" if fx.eur_amount is not None else "unverified"
     _income = dict(current_user.income_data or {})
@@ -2111,7 +2114,7 @@ async def upload_intl_solvency_document(
     })
     current_user.income_data = _income
 
-    if fx.eur_amount is not None and not was_income_verified:
+    if fx.eur_amount is not None and not had_solvency:
         await db.execute(
             update(User)
             .where(User.id == current_user.id)
