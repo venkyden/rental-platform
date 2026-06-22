@@ -2,6 +2,7 @@
 
 import { useLanguage } from '@/lib/LanguageContext';
 import Link from 'next/link';
+import Image from 'next/image';
 import RoomivoBrand from '../RoomivoBrand';
 import { ShieldCheck, Globe, Lock } from 'lucide-react';
 
@@ -62,6 +63,29 @@ export default function LandingFooter() {
               <div className="flex items-center gap-3 text-zinc-400">
                 <Globe className="w-5 h-5 text-zinc-900" />
                 <span className="text-[10px] font-black uppercase tracking-widest">{t('landing.footer.gdprCompliant', undefined, 'GDPR Compliant')}</span>
+              </div>
+            </div>
+
+            {/* ─── Institutional endorsement (PÉPITE / SNEE / Ministère ESR) ─── */}
+            <div className="mt-12">
+              <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-4">
+                {t('landing.footer.backedBy', undefined, 'Soutenu par')}
+              </p>
+              <div className="flex flex-wrap items-center gap-6">
+                <Image
+                  src="/images/pepite-snee.jpg"
+                  alt="PÉPITE Pays de la Loire — Statut National Étudiant-Entrepreneur (SNEE)"
+                  width={150}
+                  height={56}
+                  className="h-12 w-auto object-contain opacity-90"
+                />
+                <Image
+                  src="/images/ministere-esr.png"
+                  alt="Ministère de l'Enseignement supérieur et de la Recherche"
+                  width={120}
+                  height={56}
+                  className="h-14 w-auto object-contain opacity-90"
+                />
               </div>
             </div>
           </div>
