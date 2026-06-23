@@ -1705,6 +1705,76 @@ async def _ai_extract_intl_income(
     return None
 
 
+def _name_present(user_full_name: str, document_name: str | None) -> bool:
+    """MEDIUM-grade anti-fraud flag: does the applicant's name appear on the doc?
+
+    For self-funds the applicant is the account holder; for sponsor-funds the
+    applicant should appear as the named beneficiary. Token-overlap check only —
+    this raises a flag, never an assurance tier.
+    """
+    if not user_full_name or not document_name:
+        return False
+
+    def _tokens(s: str) -> set:
+        return {t for t in "".join(c.lower() if c.isalnum() else " " for c in s).split() if len(t) >= 2}
+
+    return bool(_tokens(user_full_name) & _tokens(document_name))
+
+
+async def _ai_extract_intl_funds(
+    file_content: bytes, content_type: str, ai_client=None
+) -> Optional[dict]:
+    """Extract fiscal-capacity data from a funding document via Gemini AI.
+
+    Covers bank statements, scholarship/sponsorship letters, and loan approvals.
+    """
+    prompt = (
+        "Extract funding/fiscal-capacity data from this document "
+        "(bank statement, scholarship award letter, sponsorship letter, or "
+        "education loan approval).\n\n"
+        "Return ONLY this JSON — no markdown:\n"
+        '{"funds_amount": <number or null>, "funds_currency": "<ISO 4217>", '
+        '"coverage_period_months": <number or null>, '
+        '"beneficiary_name": "<name or null>", '
+        '"issuer": "<bank/awarding body/sponsor/lender or null>"}\n\n'
+        "Rules:\n"
+        "- funds_amount: total available balance, awarded amount, sponsored sum, "
+        "or sanctioned loan amount\n"
+        "- funds_currency: must be ISO 4217 (INR, USD, GBP, CNY, EUR, etc.)\n"
+        "- coverage_period_months: for time-bounded funding (scholarship/loan/"
+        "sponsorship) the number of months it covers; null for a bank balance\n"
+        "- beneficiary_name: the person who holds or receives the funds\n"
+        "- Return null for funds_amount if you cannot determine it"
+    )
+    try:
+        from google import genai as _genai
+        from google.genai import types as _types
+        from app.core.config import settings
+
+        client = ai_client
+        if client is None and getattr(settings, "GEMINI_API_KEY", None):
+            client = _genai.Client(api_key=settings.GEMINI_API_KEY)
+        if client is None:
+            return None
+
+        image_part = _types.Part.from_bytes(data=file_content, mime_type=content_type)
+        for model in ("gemini-2.0-flash", "gemini-1.5-flash"):
+            try:
+                response = client.models.generate_content(
+                    model=model, contents=[image_part, prompt]
+                )
+                import json as _json
+                text = response.text.strip()
+                if text.startswith("```"):
+                    text = text.split("```")[1].lstrip("json").strip()
+                return _json.loads(text)
+            except Exception as _exc:
+                logger.warning("AI intl funds extraction (%s) failed: %s", model, _exc)
+    except Exception as _exc:
+        logger.error("_ai_extract_intl_funds crashed: %s", _exc)
+    return None
+
+
 @router.post("/intl/identity/upload")
 async def upload_intl_identity_document(
     file: UploadFile = File(...),
@@ -2022,7 +2092,8 @@ async def upload_intl_solvency_document(
     was_income_verified = current_user.income_verified
     current_user.income_verified = fx.eur_amount is not None
     current_user.income_status = "verified" if fx.eur_amount is not None else "unverified"
-    current_user.income_data = {
+    _income = dict(current_user.income_data or {})
+    _income.update({
         "verified": current_user.income_verified,
         "upload_date": naive_utcnow().isoformat(),
         "solvency_assurance": solvency_assurance,
@@ -2037,7 +2108,8 @@ async def upload_intl_solvency_document(
         "decret_2015_1437_disclaimer": True,
         "status": current_user.income_status,
         # raw eur_amount and raw foreign amount intentionally NOT stored
-    }
+    })
+    current_user.income_data = _income
 
     if fx.eur_amount is not None and not was_income_verified:
         await db.execute(
@@ -2058,5 +2130,126 @@ async def upload_intl_solvency_document(
         "income_currency": currency,
         "fx_source": fx.fx_source,
         "decret_2015_1437_disclaimer": True,
+        "trust_score": current_user.trust_score,
+    }
+
+
+@router.post("/intl/funds")
+async def upload_intl_funds_document(
+    file: UploadFile = File(...),
+    document_type: str = Form(...),   # bank_statement|scholarship_letter|sponsorship_letter|loan_approval
+    funds_source: str = Form(...),    # self|sponsor
+    monthly_rent: Optional[float] = Form(None),
+    lease_months: Optional[int] = Form(None),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Foreign funding doc -> FX-normalised banded fiscal capacity -> MEDIUM.
+
+    Document discarded after banding (verify-and-forget). Never inflates to HIGH.
+    """
+    from app.services.fx_normalise import convert_to_eur, band_funds_coverage
+
+    if not current_user.identity_verified:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Vérifiez d'abord votre identité. / "
+                "Identity verification required before funds check."
+            ),
+        )
+
+    valid_types = {"bank_statement", "scholarship_letter", "sponsorship_letter", "loan_approval"}
+    if document_type not in valid_types:
+        raise HTTPException(status_code=400, detail=f"Invalid document_type: {document_type}")
+    if funds_source not in {"self", "sponsor"}:
+        raise HTTPException(status_code=400, detail=f"Invalid funds_source: {funds_source}")
+
+    allowed = {"image/jpeg", "image/png", "image/jpg", "application/pdf", "image/heic", "image/heif"}
+    if file.content_type not in allowed:
+        raise HTTPException(status_code=400, detail=f"Invalid file type: {file.content_type}")
+    await _validate_file_size(file)
+    await _check_upload_rate_limit(str(current_user.id), "intl_funds")
+    content = await file.read()
+
+    extraction = await _ai_extract_intl_funds(content, file.content_type or "image/jpeg")
+    if not extraction or extraction.get("funds_amount") is None:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=(
+                "Impossible d'extraire les fonds du document. / "
+                "Could not extract funds from document."
+            ),
+        )
+
+    try:
+        raw_amount = float(extraction["funds_amount"])
+    except (ValueError, TypeError):
+        raise HTTPException(status_code=422, detail="Could not parse funds amount.")
+    if raw_amount <= 0:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Funds amount must be greater than 0.",
+        )
+    currency = str(extraction.get("funds_currency", "EUR")).upper()
+    coverage_period = extraction.get("coverage_period_months")
+    beneficiary_name = extraction.get("beneficiary_name")
+
+    fx = await convert_to_eur(raw_amount, currency)
+
+    if fx.eur_amount is not None:
+        funds_band = band_funds_coverage(fx.eur_amount, monthly_rent or 0.0)
+        funds_assurance = "MEDIUM"
+    else:
+        funds_band = "unavailable"
+        funds_assurance = "UNVERIFIED"
+
+    source_strength = "proof" if document_type == "bank_statement" else "promise"
+
+    duration_flag = None
+    if coverage_period is not None and lease_months:
+        try:
+            duration_flag = int(coverage_period) >= int(lease_months)
+        except (ValueError, TypeError):
+            duration_flag = None  # unparseable period → treat as N/A, never crash
+
+    name_present = _name_present(current_user.full_name or "", beneficiary_name)
+
+    prior = current_user.income_data or {}
+    prior_funds = prior.get("funds_coverage") or {}
+    had_solvency = bool(current_user.income_verified) or prior_funds.get("assurance") == "MEDIUM"
+
+    new_income = dict(prior)
+    new_income["funds_coverage"] = {
+        "funds_band": funds_band,
+        "funds_source": funds_source,
+        "document_type": document_type,
+        "source_strength": source_strength,
+        "assurance": funds_assurance,
+        "flags": {"name_present": name_present, "duration_covers_lease": duration_flag},
+        "fx_source": fx.fx_source,
+        "fx_margin_applied": fx.margin_applied,
+        "fx_margin_label": fx.fx_margin_label,
+        "upload_date": naive_utcnow().isoformat(),
+    }
+    current_user.income_data = new_income
+
+    if funds_assurance == "MEDIUM" and not had_solvency:
+        await db.execute(
+            update(User)
+            .where(User.id == current_user.id)
+            .values(trust_score=func.least(100, User.trust_score + 20))
+        )
+
+    await db.commit()
+    await db.refresh(current_user)
+
+    return {
+        "message": "Capacité fiscale vérifiée / Fiscal capacity verified",
+        "funds_band": funds_band,
+        "funds_source": funds_source,
+        "source_strength": source_strength,
+        "assurance": funds_assurance,
+        "fx_source": fx.fx_source,
         "trust_score": current_user.trust_score,
     }
