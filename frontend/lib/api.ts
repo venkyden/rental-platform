@@ -236,9 +236,8 @@ class ApiClient {
         } catch (e) {
             console.error('Logout error', e);
         }
-        if (typeof window !== 'undefined') {
-            window.location.href = '/auth/login';
-        }
+        // Redirect is the caller's responsibility — the logout page needs
+        // to finish its animation before navigating.
     }
 
     // Health check

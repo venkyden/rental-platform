@@ -52,7 +52,7 @@ export default function ErrorPage({
           transition={{ delay: 0.2, duration: 0.8 }}
           className="text-zinc-400 font-bold uppercase text-[10px] tracking-widest leading-relaxed max-w-md mx-auto mb-16"
         >
-          {t('common.error.genericDesc', undefined, 'An unexpected system error has occurred. Our engineering team has been notified.')}
+          {t('common.error.genericDesc', undefined, 'An unexpected error has occurred. Please try again or go back to the homepage.')}
         </motion.p>
 
         {/* Action Buttons */}

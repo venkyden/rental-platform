@@ -699,10 +699,17 @@ export default function GuarantorVerifyPage() {
                                                         toast.error('You must confirm consent to submit the guarantor dossier.');
                                                         return;
                                                     }
-                                                    setSubmitting(true);
-                                                    await checkAuth();
-                                                    toast.success(t('verify.guarantor.success', undefined, 'Guarantor successfully registered!'));
-                                                    router.push('/dashboard');
+                                                    try {
+                                                        setSubmitting(true);
+                                                        await apiClient.client.post('/verification/guarantor/submit');
+                                                        await checkAuth();
+                                                        toast.success(t('verify.guarantor.success', undefined, 'Guarantor successfully registered!'));
+                                                        router.push('/dashboard');
+                                                    } catch (error: any) {
+                                                        toast.error(error.response?.data?.detail || t('verify.guarantor.verificationFailed', undefined, 'Submission failed. Please try again.'));
+                                                    } finally {
+                                                        setSubmitting(false);
+                                                    }
                                                 }}
                                                 disabled={!isPhysicalComplete || submitting || !consentChecked}
                                                 className="w-full py-5 bg-zinc-950 hover:bg-zinc-900 text-white font-black text-xs uppercase tracking-widest transition-all rounded-3xl flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-50"

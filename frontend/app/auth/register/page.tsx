@@ -1,28 +1,37 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Eye, EyeOff, User, Home, Building, ChevronRight, ArrowLeft, Check, ShieldCheck } from 'lucide-react';
 import { apiClient } from '@/lib/api';
-import { motion, AnimatePresence, Variants } from 'framer-motion';
+import { motion, AnimatePresence, Variants, useReducedMotion } from 'framer-motion';
 import { useLanguage } from '@/lib/LanguageContext';
 import { useGoogleSignIn } from '@/lib/useGoogleSignIn';
 import { useAuth } from '@/lib/useAuth';
+import { isValidEmail } from '@/app/lib/utils/validation';
 
 /* ----------------------------------------------------------------
-   Framer-motion variants
+   Framer-motion variants — factories that respect prefers-reduced-motion
    ---------------------------------------------------------------- */
-const containerVariants: Variants = {
-    hidden: { opacity: 0, x: 20 },
-    show: { opacity: 1, x: 0, transition: { staggerChildren: 0.05, duration: 0.4, ease: [0.16, 1, 0.3, 1] } },
-    exit: { opacity: 0, x: -20, transition: { duration: 0.3 } }
-};
+const makeContainerVariants = (reduce: boolean): Variants => ({
+    hidden: reduce ? { opacity: 0 } : { opacity: 0, x: 20 },
+    show: {
+        opacity: 1, x: 0,
+        transition: reduce
+            ? { duration: 0 }
+            : { staggerChildren: 0.05, duration: 0.4, ease: [0.16, 1, 0.3, 1] },
+    },
+    exit: reduce ? { opacity: 0 } : { opacity: 0, x: -20, transition: { duration: 0.3 } },
+});
 
-const itemVariants: Variants = {
-    hidden: { opacity: 0, y: 15 },
-    show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } },
-};
+const makeItemVariants = (reduce: boolean): Variants => ({
+    hidden: reduce ? { opacity: 0 } : { opacity: 0, y: 15 },
+    show: {
+        opacity: 1, y: 0,
+        transition: reduce ? { duration: 0 } : { type: 'spring', stiffness: 300, damping: 24 },
+    },
+});
 
 /* ================================================================
    REGISTER PAGE
@@ -47,6 +56,10 @@ export default function RegisterPage() {
     const { t } = useLanguage();
     const router = useRouter();
     const { checkAuth } = useAuth();
+
+    const reduceMotion = useReducedMotion() ?? false;
+    const containerVariants = makeContainerVariants(reduceMotion);
+    const itemVariants = makeItemVariants(reduceMotion);
 
     const roleRef = useRef(formData.role);
     roleRef.current = formData.role;
@@ -123,7 +136,7 @@ export default function RegisterPage() {
                 setError(t('auth.register.error.required', undefined, 'Name and Email are required'));
                 return;
             }
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+            if (!isValidEmail(formData.email)) {
                 setError(t('auth.register.error.emailInvalid', undefined, 'Please enter a valid email'));
                 return;
             }

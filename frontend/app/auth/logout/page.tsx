@@ -24,17 +24,17 @@ export default function LogoutPage() {
             });
         }, 50);
 
-        // Perform actual logout logic
+        // Perform actual logout logic then redirect once animation completes.
+        // apiClient.logout() clears the in-memory token and POSTs to the backend;
+        // it does NOT redirect — we own the navigation here so the animation plays.
         const performLogout = async () => {
             try {
                 await apiClient.logout();
-                // Clear any local storage/state overrides here if needed
             } catch {
-                // Best-effort: even if the network call fails, the local token is
-                // already cleared by apiClient.logout(); proceed to redirect.
+                // Best-effort: token is already cleared; proceed to redirect.
             }
 
-            // Redirect smoothly once animation completes (approx 1.2s)
+            // Wait for the progress-bar animation to finish (~1.2s) then navigate.
             setTimeout(() => {
                 router.push('/auth/login');
             }, 1200);

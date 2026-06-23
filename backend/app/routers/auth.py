@@ -1,7 +1,6 @@
 import logging
-import httpx
 import uuid
-from datetime import datetime, timedelta
+from datetime import timedelta
 from app.core.timeutils import naive_utcnow
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, Response, status
@@ -452,7 +451,10 @@ async def upload_avatar(
     if file_ext not in allowed_extensions:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid image type")
 
-    content = await file.read()
+    _MAX_AVATAR_BYTES = 5 * 1024 * 1024  # 5 MB
+    content = await file.read(_MAX_AVATAR_BYTES + 1)
+    if len(content) > _MAX_AVATAR_BYTES:
+        raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail="Avatar must be under 5 MB")
     file_obj = BytesIO(content)
     safe_filename = f"avatar_{current_user.id}_{secrets.token_hex(4)}{file_ext}"
 
@@ -809,13 +811,15 @@ async def forgot_email(
 
 
 @router.post("/forgot-password")
+@limiter.limit("5/minute")
 async def forgot_password(
-    request: ForgotPasswordRequest,
+    request: Request,
+    payload: ForgotPasswordRequest,
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
 ):
     """Send password reset email"""
-    result = await db.execute(select(User).where(User.email == request.email))
+    result = await db.execute(select(User).where(User.email == payload.email))
     user = result.scalar_one_or_none()
 
     # Always return success (don't reveal if email exists)
@@ -845,8 +849,11 @@ async def forgot_password(
 
 
 @router.post("/reset-password")
+@limiter.limit("10/minute")
 async def reset_password(
-    request: ResetPasswordRequest, db: AsyncSession = Depends(get_db)
+    http_request: Request,
+    request: ResetPasswordRequest,
+    db: AsyncSession = Depends(get_db),
 ):
     """Reset password using token"""
     payload = verify_token(request.token)
@@ -884,11 +891,9 @@ async def reset_password(
     return {"message": "Password reset successful"}
 
 
-from datetime import datetime
-
-
 @router.get("/verify-email")
-async def verify_email(token: str, db: AsyncSession = Depends(get_db)):
+@limiter.limit("10/minute")
+async def verify_email(http_request: Request, token: str, db: AsyncSession = Depends(get_db)):  # noqa: ARG001 — http_request consumed by @limiter
     """Verify email address using token"""
     payload = verify_token(token)
 
@@ -918,7 +923,9 @@ async def verify_email(token: str, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/resend-verification")
+@limiter.limit("3/minute")
 async def resend_verification(
+    http_request: Request,  # consumed by @limiter via get_remote_address
     background_tasks: BackgroundTasks,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),

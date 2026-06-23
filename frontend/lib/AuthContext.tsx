@@ -103,8 +103,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             await apiClient.logout();
         } finally {
             setUser(null);
-            // router.push is usually redundant if apiClient.logout does window.location.href
-            // but we keep it as a fallback
             router.push('/auth/login');
         }
     };

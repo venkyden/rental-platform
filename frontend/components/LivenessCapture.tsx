@@ -97,6 +97,15 @@ export default function LivenessCapture({ onCapture, onError, language }: Livene
     useEffect(() => {
         let cancelled = false;
 
+        // Abort if model download stalls — covers slow/blocked CDN
+        const timeoutId = setTimeout(() => {
+            if (!cancelled) {
+                cancelled = true;
+                stopStream();
+                onError('Camera setup timed out. Please check your connection and try again.');
+            }
+        }, 20_000);
+
         const init = async () => {
             try {
                 const { FaceLandmarker, FilesetResolver } = await import('@mediapipe/tasks-vision');
@@ -120,6 +129,7 @@ export default function LivenessCapture({ onCapture, onError, language }: Livene
                 video.srcObject = stream;
                 await video.play();
 
+                clearTimeout(timeoutId);
                 setUiState('ready');
                 setTimeout(() => {
                     if (!cancelled) {
@@ -128,6 +138,7 @@ export default function LivenessCapture({ onCapture, onError, language }: Livene
                     }
                 }, 800);
             } catch (err: any) {
+                clearTimeout(timeoutId);
                 if (!cancelled) onError(err?.message ?? 'Camera access failed');
             }
         };
@@ -136,6 +147,7 @@ export default function LivenessCapture({ onCapture, onError, language }: Livene
 
         return () => {
             cancelled = true;
+            clearTimeout(timeoutId);
             cancelAnimationFrame(rafRef.current);
             stopStream();
             landmarkerRef.current?.close?.();

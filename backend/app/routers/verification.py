@@ -84,6 +84,7 @@ class VerificationStatusResponse(BaseModel):
 @router.post("/identity/upload")
 async def upload_identity_document(
     document_type: str,
+    side: str = Form("front"),
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -110,6 +111,79 @@ async def upload_identity_document(
     _check_upload_rate_limit(str(current_user.id), "identity")
 
     from app.services.identity import identity_service
+    from io import BytesIO
+
+    # Selfie-with-ID: single image combines liveness + face-match + OCR
+    if side == "selfie_with_id":
+        result = await identity_service.verify_selfie_with_id(
+            file_content=content,
+            file_type=file.content_type,
+            document_type=document_type,
+            expected_name=current_user.full_name,
+        )
+        if not result["verified"] and result["status"] == "rejected":
+            logger.warning(f"Selfie+ID rejected for user {current_user.id}: {result.get('rejection_reason')}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Verification failed: {result.get('rejection_reason')}",
+            )
+        watermarked_content = apply_watermark(content)
+        storage_result = await storage.upload_file(
+            file_data=BytesIO(watermarked_content),
+            filename=file.filename,
+            content_type=file.content_type,
+            folder=f"verification/identity/{current_user.id}",
+        )
+        if not current_user.identity_verified:
+            current_user.trust_score = min(100, current_user.trust_score + 30)
+        current_user.identity_verified = True
+        current_user.identity_status = "verified"
+        current_user.identity_data = {
+            "verified": True,
+            "upload_date": naive_utcnow().isoformat(),
+            "filename": file.filename,
+            "file_url": storage_result["url"],
+            "storage_key": storage_result.get("key"),
+            "status": "verified",
+            "verification_method": "selfie_with_id",
+            "extracted_data": result["data"],
+            "checks": result["validation_checks"],
+        }
+        await db.commit()
+        await db.refresh(current_user)
+        return {
+            "message": "Identity verified",
+            "verified": True,
+            "status": "verified",
+            "trust_score": current_user.trust_score,
+        }
+
+    # Apply watermark before upload
+    watermarked_content = apply_watermark(content)
+    storage_result = await storage.upload_file(
+        file_data=BytesIO(watermarked_content),
+        filename=file.filename,
+        content_type=file.content_type,
+        folder=f"verification/identity/{current_user.id}"
+    )
+
+    # Back side: store supplementary file, keep existing front file_url intact
+    if side == "back":
+        current_user.identity_data = {
+            **(current_user.identity_data or {}),
+            "back_file_url": storage_result["url"],
+            "back_storage_key": storage_result.get("key"),
+        }
+        await db.commit()
+        await db.refresh(current_user)
+        return {
+            "message": "Back side uploaded",
+            "verified": False,
+            "status": current_user.identity_data.get("status", "document_verified"),
+            "trust_score": current_user.trust_score,
+            "details": "Upload a selfie to complete identity verification",
+        }
+
     result = await identity_service.verify_document(
         file_content=content,
         file_type=file.content_type,
@@ -124,28 +198,13 @@ async def upload_identity_document(
             detail=f"Verification failed: {result.get('rejection_reason')}",
         )
 
-    # Apply watermark before upload
-    watermarked_content = apply_watermark(content)
-    
-    # Save file to Cloud Storage
-    from io import BytesIO
-    storage_result = await storage.upload_file(
-        file_data=BytesIO(watermarked_content),
-        filename=file.filename,
-        content_type=file.content_type,
-        folder=f"verification/identity/{current_user.id}"
-    )
-    
-    file_url = storage_result["url"]
-
-    # Document passed AI validation — awaiting selfie to complete verification
     current_user.identity_verified = False
     current_user.identity_status = "document_verified"
     current_user.identity_data = {
         "verified": False,
         "upload_date": naive_utcnow().isoformat(),
         "filename": file.filename,
-        "file_url": file_url,
+        "file_url": storage_result["url"],
         "storage_key": storage_result.get("key"),
         "status": "document_verified",
         "extracted_data": result["data"],
@@ -257,8 +316,8 @@ async def check_identity_session_status_stream(code: str):
 async def upload_identity_mobile(
     verification_code: str = Query(...),
     document_type: str = Query("passport"),
+    side: Optional[str] = Query(None),
     file: UploadFile = File(...),
-    side: Optional[str] = Form(None),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -295,6 +354,51 @@ async def upload_identity_mobile(
 
     from app.services.identity import identity_service
     from io import BytesIO
+
+    # ── Selfie-with-ID path: single image, completes verification ─────────
+    if side == "selfie_with_id":
+        doc_result = await identity_service.verify_selfie_with_id(
+            file_content=content,
+            file_type=file.content_type,
+            document_type=document_type,
+            expected_name=user.full_name,
+        )
+        if not doc_result["verified"] and doc_result["status"] == "rejected":
+            logger.warning(f"Selfie+ID rejected for session {verification_code}: {doc_result.get('rejection_reason')}")
+            raise HTTPException(status_code=400, detail=f"Verification failed: {doc_result.get('rejection_reason')}")
+
+        watermarked = apply_watermark(content)
+        storage_result = await storage.upload_file(
+            file_data=BytesIO(watermarked),
+            filename=file.filename or "selfie_with_id.jpg",
+            content_type=file.content_type,
+            folder=f"verification/identity/{user.id}",
+        )
+        if not user.identity_verified:
+            user.trust_score = min(100, user.trust_score + 30)
+        user.identity_verified = True
+        user.identity_status = "verified"
+        user.identity_data = {
+            "verified": True,
+            "upload_date": naive_utcnow().isoformat(),
+            "file_url": storage_result["url"],
+            "storage_key": storage_result.get("key"),
+            "status": "verified",
+            "verification_method": "selfie_with_id",
+            "extracted_data": doc_result["data"],
+            "checks": doc_result["validation_checks"],
+            "verified_at": naive_utcnow().isoformat(),
+        }
+        session["completed"] = True
+        await _update_session(verification_code, session)
+        await db.commit()
+        await db.refresh(user)
+        return {
+            "message": "Identity verified",
+            "verified": True,
+            "status": "verified",
+            "trust_score": user.trust_score,
+        }
 
     # ── Selfie path: face-match against stored identity document ──────────
     if side == "selfie":
@@ -362,7 +466,33 @@ async def upload_identity_mobile(
             "details": "Liveness check passed — identity confirmed",
         }
 
-    # ── Document path: OCR + AI validation ────────────────────────────────
+    # ── Document path ─────────────────────────────────────────────────────
+    watermarked_content = apply_watermark(content)
+    storage_result = await storage.upload_file(
+        file_data=BytesIO(watermarked_content),
+        filename=file.filename,
+        content_type=file.content_type,
+        folder=f"verification/identity/{user.id}",
+    )
+
+    # Back side: store supplementary file, keep existing front file_url intact
+    if side == "back":
+        user.identity_data = {
+            **(user.identity_data or {}),
+            "back_file_url": storage_result["url"],
+            "back_storage_key": storage_result.get("key"),
+        }
+        await db.commit()
+        await db.refresh(user)
+        return {
+            "message": "Back side uploaded — please complete liveness check",
+            "verified": False,
+            "status": user.identity_data.get("status", "document_verified"),
+            "trust_score": user.trust_score,
+            "details": "Capture a selfie to complete identity verification",
+        }
+
+    # Front / bio page: run AI validation
     doc_result = await identity_service.verify_document(
         file_content=content,
         file_type=file.content_type,
@@ -376,14 +506,6 @@ async def upload_identity_mobile(
             status_code=400,
             detail=f"Verification failed: {doc_result.get('rejection_reason')}",
         )
-
-    watermarked_content = apply_watermark(content)
-    storage_result = await storage.upload_file(
-        file_data=BytesIO(watermarked_content),
-        filename=file.filename,
-        content_type=file.content_type,
-        folder=f"verification/identity/{user.id}",
-    )
 
     # Document validated — selfie required to complete identity verification
     user.identity_verified = False

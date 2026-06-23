@@ -1113,6 +1113,13 @@ export const translations = {
                 failedDesc: "Failed to verify email change. The link may have expired.",
                 returnToSettings: "Return to Settings"
             },
+            error: {
+                title: "Something went wrong",
+                description: "An unexpected error occurred. Please try again or return to the login page.",
+                retry: "Try again",
+                backToLogin: "Back to login",
+                details: "Error details"
+            },
             resetPassword: {
                 title: "Set new password",
                 subtitle: "Enter your new password below",

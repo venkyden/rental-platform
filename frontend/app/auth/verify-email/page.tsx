@@ -3,13 +3,10 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import axios from 'axios';
 import { apiClient } from '@/lib/api';
 import { useLanguage } from '@/lib/LanguageContext';
 import { motion } from 'framer-motion';
 import { Check, AlertCircle, Loader2 } from 'lucide-react';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 function VerifyEmailContent() {
     const { t } = useLanguage();
@@ -26,35 +23,31 @@ function VerifyEmailContent() {
             return;
         }
 
-        verifyEmail();
-    }, [token]);
+        let cancelled = false;
 
-    async function verifyEmail() {
-        try {
-            const response = await axios.get(`${API_URL}/auth/verify-email`, {
-                params: { token }
+        apiClient.client.get('/auth/verify-email', { params: { token } })
+            .then((response) => {
+                if (cancelled) return;
+                setStatus('success');
+                setMessage(response.data.message || t('auth.verifyEmail.success', undefined, 'Email verified successfully!'));
+
+                setTimeout(() => {
+                    if (cancelled) return;
+                    const accessToken = apiClient.getToken();
+                    router.push(accessToken ? '/dashboard' : '/auth/login');
+                }, 3000);
+            })
+            .catch((error) => {
+                if (cancelled) return;
+                setStatus('error');
+                setMessage(
+                    error.response?.data?.detail ||
+                    t('auth.verifyEmail.errors.default', undefined, 'Failed to verify email. The link may have expired.')
+                );
             });
 
-            setStatus('success');
-            setMessage(response.data.message || t('auth.verifyEmail.success', undefined, 'Email verified successfully!'));
-
-            // Redirect based on login status after 3 seconds
-            setTimeout(() => {
-                const accessToken = apiClient.getToken();
-                if (accessToken) {
-                    router.push('/dashboard');
-                } else {
-                    router.push('/auth/login');
-                }
-            }, 3000);
-        } catch (error: any) {
-            setStatus('error');
-            setMessage(
-                error.response?.data?.detail ||
-                t('auth.verifyEmail.errors.default', undefined, 'Failed to verify email. The link may have expired.')
-            );
-        }
-    }
+        return () => { cancelled = true; };
+    }, [token, router, t]);
 
     return (
         <div className="w-full text-center space-y-6" role={status === 'error' ? 'alert' : 'status'} aria-live={status === 'error' ? 'assertive' : 'polite'}>
@@ -63,17 +56,17 @@ function VerifyEmailContent() {
                     {t('auth.verifyEmail.title', undefined, 'Email Verification')}
                 </h2>
                 <p className="mt-2 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
-                    {status === 'verifying' 
-                        ? t('auth.verifyEmail.verifyingSub', undefined, 'Authenticating your request') 
-                        : status === 'success' 
-                            ? t('auth.verifyEmail.successSub', undefined, 'Account fully activated') 
+                    {status === 'verifying'
+                        ? t('auth.verifyEmail.verifyingSub', undefined, 'Authenticating your request')
+                        : status === 'success'
+                            ? t('auth.verifyEmail.successSub', undefined, 'Account fully activated')
                             : t('auth.verifyEmail.errorSub', undefined, 'Activation failed')}
                 </p>
             </div>
 
             <div className="py-4">
                 {status === 'verifying' && (
-                    <motion.div 
+                    <motion.div
                         initial={{ scale: 0.8, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         className="flex flex-col items-center justify-center space-y-4"
@@ -86,7 +79,7 @@ function VerifyEmailContent() {
                 )}
 
                 {status === 'success' && (
-                    <motion.div 
+                    <motion.div
                         initial={{ scale: 0.8, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         className="flex flex-col items-center justify-center space-y-4"
@@ -105,7 +98,7 @@ function VerifyEmailContent() {
                 )}
 
                 {status === 'error' && (
-                    <motion.div 
+                    <motion.div
                         initial={{ scale: 0.8, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         className="flex flex-col items-center justify-center space-y-4"
@@ -117,7 +110,7 @@ function VerifyEmailContent() {
                             {t('auth.verifyEmail.failed', undefined, 'Verification Failed')}
                         </h3>
                         <p className="text-xs text-zinc-500 font-medium max-w-sm px-4">{message}</p>
-                        
+
                         <div className="w-full pt-6 space-y-3">
                             <Link
                                 href="/auth/login"
