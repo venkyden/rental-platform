@@ -357,7 +357,7 @@ test.describe('Identity upload — AI-processing consent gate', () => {
         // ('self') and are interceptable by page.route.
         await mockAuthSession(page);
         // Guard against an accidental real upload if the gate ever regresses.
-        await page.route('**/verification/identity/upload', route =>
+        await page.route('**/verification/identity/upload*', route =>
             route.fulfill({ status: 200, contentType: 'application/json', body: '{}' }),
         );
 

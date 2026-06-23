@@ -98,13 +98,15 @@ export default function RootLayout({
       "query-input": "required name=search_term_string"
     }
   };
+  // Escape < to block </script> breakout if a config-derived field ever holds one.
+  const jsonLdString = JSON.stringify(jsonLd).replace(/</g, '\\u003c');
 
   return (
     <html lang="fr" suppressHydrationWarning>
       <head>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: jsonLdString }}
         />
         {/* Load Google Identity Services script once */}
         <Script 

@@ -19,6 +19,13 @@ const STATIC_ROUTES: Array<{ path: string; changeFrequency: MetadataRoute.Sitema
   { path: '/legal/mentions-legales', changeFrequency: 'monthly', priority: 0.3 },
 ];
 
+// Safe YYYY-MM-DD; invalid/missing dates fall back to today so one bad record
+// can't throw and empty the whole property sitemap.
+const toIsoDate = (value?: string): string => {
+  const d = value ? new Date(value) : new Date();
+  return (Number.isNaN(d.getTime()) ? new Date() : d).toISOString().split('T')[0];
+};
+
 async function getPropertyEntries(): Promise<MetadataRoute.Sitemap> {
   // Best-effort: a sitemap must never fail the build/route if the API is down.
   try {
@@ -32,9 +39,7 @@ async function getPropertyEntries(): Promise<MetadataRoute.Sitemap> {
       .filter((p) => p?.id)
       .map((p) => ({
         url: `${SITE_URL}/properties/${p.id}`,
-        lastModified: p.updated_at 
-          ? new Date(p.updated_at).toISOString().split('T')[0] 
-          : new Date().toISOString().split('T')[0],
+        lastModified: toIsoDate(p.updated_at),
         changeFrequency: 'daily' as const,
         priority: 0.7,
       }));
