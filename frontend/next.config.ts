@@ -18,7 +18,7 @@ const apiHostname = getApiHostname(API_URL);
 // - img-src: allow blob/data URIs for image previews
 const csp = [
   `default-src 'self'`,
-  `script-src 'self' 'unsafe-inline' https://accounts.google.com`,
+  `script-src 'self' 'unsafe-inline'${isProd ? '' : " 'unsafe-eval'"} https://accounts.google.com`,
   `style-src 'self' 'unsafe-inline'`,
   `img-src 'self' data: blob: https://*.googleapis.com https://*.gstatic.com http://localhost:* http://127.0.0.1:*${isProd ? ' https:' : ''}`,
   `font-src 'self' data:`,
