@@ -56,7 +56,7 @@ class IdentityVerificationService:
 
         from app.core.config import settings
 
-        if GEMINI_AVAILABLE and settings.GEMINI_API_KEY:
+        if GEMINI_AVAILABLE and genai is not None and settings.GEMINI_API_KEY:
             self.ai_client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
     def _get_file_hash(self, file_content: bytes) -> str:
@@ -136,7 +136,7 @@ class IdentityVerificationService:
                 "rejection_reason": None,
             }
 
-        validation_results = self._validate_identity_data(extracted_data, expected_name)
+        validation_results = self._validate_identity_data(extracted_data, expected_name, document_type)
 
         critical_failed = any(
             not check["passed"] and check["critical"] for check in validation_results
@@ -180,6 +180,9 @@ class IdentityVerificationService:
         if not self.ai_client:
             logger.warning("AI client not initialized — skipping verification")
             return None
+
+        from app.core.gemini_quota import check_quota
+        await check_quota()
 
         start_time = time.time()
         
@@ -276,9 +279,44 @@ Return ONLY the JSON."""
         return None
 
     def _validate_identity_data(
-        self, data: IdentityData, expected_name: str
+        self, data: IdentityData, expected_name: str, expected_document_type: Optional[str] = None
     ) -> list:
         checks = []
+
+        # Check if the document type matches the expected document type
+        if expected_document_type:
+            french_mappings = {
+                "passport": {"passeport"},
+                "id_card": {"carte_d_identite", "carte_nationale_d_identite", "cni", "national_id", "national_id_card", "id"},
+                "residence_permit": {"titre_de_sejour", "carte_de_sejour", "residence_card", "permit", "french_residence_permit"},
+                "drivers_license": {"permis_de_conduire", "driver_license", "license"},
+            }
+            def get_canonical_type(val: str) -> str:
+                import unicodedata
+                import re
+                # Strip accents and lower-case
+                norm = ''.join(c for c in unicodedata.normalize('NFD', val.lower())
+                              if unicodedata.category(c) != 'Mn')
+                # Replace any sequence of non-alphanumeric chars with a single underscore
+                norm = re.sub(r'[^a-z0-9]+', '_', norm).strip('_')
+                for canonical, synonyms in french_mappings.items():
+                    if norm == canonical or norm in synonyms:
+                        return canonical
+                return norm
+
+            expected_canonical = get_canonical_type(expected_document_type)
+            detected_canonical = get_canonical_type(data.document_type)
+            type_matches = (expected_canonical == detected_canonical)
+
+            checks.append(
+                {
+                    "name": "document_type_match",
+                    "description": "Document type matches the selected type",
+                    "passed": type_matches,
+                    "critical": True,
+                    "details": f"Expected: {expected_document_type} | Detected: {data.document_type}",
+                }
+            )
 
         # 1. CRITICAL: Is this actually an identity document?
         checks.append(
@@ -418,6 +456,9 @@ Return ONLY the JSON."""
                 "rejection_reason": None,
             }
 
+        from app.core.gemini_quota import check_quota
+        await check_quota()
+
         start_time = time.time()
         image_part = types.Part.from_bytes(data=file_content, mime_type=file_type)
 
@@ -506,6 +547,38 @@ Rules:
                             "details": f"Confidence: {float(data.get('confidence_score', 0)):.0%}",
                         },
                     ]
+
+                    detected_type = data.get("detected_document_type", document_type)
+                    french_mappings = {
+                        "passport": {"passeport"},
+                        "id_card": {"carte_d_identite", "carte_nationale_d_identite", "cni", "national_id", "national_id_card", "id"},
+                        "residence_permit": {"titre_de_sejour", "carte_de_sejour", "residence_card", "permit", "french_residence_permit"},
+                        "drivers_license": {"permis_de_conduire", "driver_license", "license"},
+                    }
+                    def get_canonical_type(val: str) -> str:
+                        import unicodedata
+                        import re
+                        # Strip accents and lower-case
+                        norm = ''.join(c for c in unicodedata.normalize('NFD', val.lower())
+                                      if unicodedata.category(c) != 'Mn')
+                        # Replace any sequence of non-alphanumeric chars with a single underscore
+                        norm = re.sub(r'[^a-z0-9]+', '_', norm).strip('_')
+                        for canonical, synonyms in french_mappings.items():
+                            if norm == canonical or norm in synonyms:
+                                return canonical
+                        return norm
+
+                    expected_canonical = get_canonical_type(document_type)
+                    detected_canonical = get_canonical_type(detected_type)
+                    type_matches = (expected_canonical == detected_canonical)
+
+                    checks.append({
+                        "name": "document_type_match",
+                        "description": "Document type matches the selected type",
+                        "passed": type_matches,
+                        "critical": True,
+                        "details": f"Expected: {document_type} | Detected: {detected_type}",
+                    })
 
                     full_name = data.get("full_name", "Unknown")
                     if full_name and full_name != "Unknown" and expected_name:

@@ -855,16 +855,16 @@ async def reset_password(
     payload: ResetPasswordRequest,
     db: AsyncSession = Depends(get_db),
 ):
-    """Reset password using token"""
-    payload = verify_token(payload.token)
+    new_password = payload.new_password
+    token_payload = verify_token(payload.token)
 
-    if payload is None or payload.get("type") != "password_reset":
+    if token_payload is None or token_payload.get("type") != "password_reset":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid or expired reset token",
         )
 
-    email = payload.get("sub")
+    email = token_payload.get("sub")
     result = await db.execute(select(User).where(User.email == email))
     user = result.scalar_one_or_none()
 
@@ -876,7 +876,7 @@ async def reset_password(
     # Single-use enforcement: the link is bound to the session version that was
     # current when it was issued. Once used (or once any other session-revoking
     # action runs), the version no longer matches and the link is dead.
-    token_rtv = payload.get("rtv")
+    token_rtv = token_payload.get("rtv")
     if token_rtv is not None and token_rtv != user.refresh_token_version:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -884,7 +884,7 @@ async def reset_password(
         )
 
     # Update password and revoke all existing sessions / outstanding reset links.
-    user.hashed_password = get_password_hash(payload.new_password)
+    user.hashed_password = get_password_hash(new_password)
     user.refresh_token_version += 1
     await db.commit()
 

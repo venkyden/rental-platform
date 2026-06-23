@@ -23,14 +23,6 @@ def _today_key() -> str:
     return "gemini:daily:" + datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
 
-def _increment_redis(client) -> int:
-    key = _today_key()
-    count = client.incr(key)
-    if count == 1:
-        client.expire(key, 90000)  # 25 hours — survives the day boundary
-    return count
-
-
 def _increment_fallback() -> int:
     today = datetime.now(timezone.utc).date()
     if _fallback["date"] != today:
@@ -52,7 +44,7 @@ async def check_quota() -> None:
     try:
         from app.core.cache import cache
         if cache.redis_client:
-            count = _increment_redis(cache.redis_client)
+            count = await cache.incr_with_expire(_today_key(), 90000)
         else:
             count = _increment_fallback()
     except Exception as e:
@@ -74,7 +66,8 @@ async def get_usage() -> dict:
     try:
         from app.core.cache import cache
         if cache.redis_client:
-            count = int(cache.redis_client.get(_today_key()) or 0)
+            raw_val = await cache.redis_client.get(_today_key())
+            count = int(raw_val) if raw_val is not None else 0
         else:
             today = datetime.now(timezone.utc).date()
             count = _fallback["count"] if _fallback["date"] == today else 0
