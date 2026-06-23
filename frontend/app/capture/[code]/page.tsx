@@ -41,7 +41,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
-        const handleOnline = () => { setIsOffline(false); checkQueue(); };
+        const handleOnline = () => { setIsOffline(false); syncOfflineQueue(); };
         const handleOffline = () => setIsOffline(true);
         window.addEventListener('online', handleOnline);
         window.addEventListener('offline', handleOffline);
@@ -59,6 +59,15 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
             window.removeEventListener('offline', handleOffline);
         };
     }, []);
+
+    const requestLocation = () => {
+        if (!navigator.geolocation) return;
+        navigator.geolocation.getCurrentPosition(
+            (pos) => setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy }),
+            () => { /* silently ignore denied/unavailable */ },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+        );
+    };
 
     const loadSessionDetails = async () => {
         try {
