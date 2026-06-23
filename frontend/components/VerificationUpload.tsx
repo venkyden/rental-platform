@@ -668,9 +668,9 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">Verifying...</p>
                         </div>
                     ) : (
-                        <>
-                            {/* AI-processing consent (GDPR — documents are analysed by Google Gemini, then discarded) */}
-                            <label className="flex items-start gap-3 px-2 cursor-pointer select-none">
+                        <div className="space-y-4">
+                            {/* AI-processing consent (GDPR — ID analysed by Google Gemini, then discarded) */}
+                            <label className="flex items-start gap-3 cursor-pointer select-none">
                                 <input
                                     type="checkbox"
                                     checked={consent}
@@ -685,7 +685,6 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                                     </a>
                                 </span>
                             </label>
-
                             <div className="grid grid-cols-2 gap-4">
                                 <button
                                     onClick={() => { setIdFile(null); setIdPreviewUrl(null); setError(''); idFileInputRef.current?.click(); }}
@@ -697,7 +696,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                                     Submit <ArrowRight className="w-4 h-4" />
                                 </button>
                             </div>
-                        </>
+                        </div>
                     )}
 
                     <input ref={idFileInputRef} type="file" accept="image/jpeg,image/png,image/heic,image/heif"

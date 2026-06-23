@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import Image from 'next/image';
 import { QRCodeSVG } from 'qrcode.react';
 import {
     CheckCircle2,
@@ -188,16 +189,21 @@ export default function CredentialVerifyPage() {
                         <span className="text-2xl font-bold tracking-tight text-zinc-900">Roomivo</span>
                     </div>
                     <p className="text-sm text-zinc-500">Attestation de vérification</p>
-                    <div className="flex items-center justify-center gap-3 pt-1">
-                        <span className="text-xs text-zinc-400 border border-zinc-200 rounded px-2 py-0.5">
-                            PÉPITE Pays de la Loire
-                        </span>
-                        <span className="text-xs text-zinc-400 border border-zinc-200 rounded px-2 py-0.5">
-                            SNEE
-                        </span>
-                        <span className="text-xs text-zinc-400 border border-zinc-200 rounded px-2 py-0.5">
-                            Ministère ESRI
-                        </span>
+                    <div className="flex items-center justify-center gap-5 pt-2">
+                        <Image
+                            src="/images/pepite-snee.jpg"
+                            alt="PÉPITE Pays de la Loire — Statut National Étudiant-Entrepreneur (SNEE)"
+                            width={120}
+                            height={44}
+                            className="h-9 w-auto object-contain opacity-90"
+                        />
+                        <Image
+                            src="/images/ministere-esr.png"
+                            alt="Ministère de l'Enseignement supérieur et de la Recherche"
+                            width={96}
+                            height={44}
+                            className="h-11 w-auto object-contain opacity-90"
+                        />
                     </div>
                 </div>
 
