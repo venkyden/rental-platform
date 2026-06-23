@@ -10,7 +10,7 @@ import { useToast } from '@/lib/ToastContext';
 import { apiClient } from '@/lib/api';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 
-import { PropertyFormData, DpeWarning } from './steps/types';
+import { PropertyFormData } from './steps/types';
 import Step1Identity from './steps/Step1Identity';
 import Step2Location from './steps/Step2Location';
 import Step3Details from './steps/Step3Details';
@@ -35,7 +35,6 @@ export default function NewPropertyPage() {
     const [loading, setLoading] = useState(false);
     const [enriching, setEnriching] = useState(false);
     const [publishing, setPublishing] = useState(false);
-    const [serverDpeWarnings, setServerDpeWarnings] = useState<DpeWarning[] | null>(null);
     const [generatingAi, setGeneratingAi] = useState(false);
 
     // ── Post-submit state ──────────────────────────────────────────────
@@ -75,6 +74,8 @@ export default function NewPropertyPage() {
         room_details: [],
         dpe_rating: '',
         ges_rating: '',
+        dpe_value: undefined,
+        ges_value: undefined,
         surface_type: 'standard',
         monthly_rent: 800,
         charges_included: false,
@@ -89,6 +90,7 @@ export default function NewPropertyPage() {
         loyer_reference_majore: undefined,
         complement_de_loyer: undefined,
         complement_de_loyer_justification: '',
+        lease_duration_months: undefined,
         natural_risks_compliant: false,
     });
 
@@ -170,13 +172,7 @@ export default function NewPropertyPage() {
             if (payload.dpe_rating === '') payload.dpe_rating = undefined as any;
             if (payload.ges_rating === '') payload.ges_rating = undefined as any;
             if (payload.complement_de_loyer_justification === '') payload.complement_de_loyer_justification = undefined as any;
-            if (descriptionEn.trim() && descriptionFr.trim()) {
-                payload.description = `### English\n${descriptionEn.trim()}\n\n### Français\n${descriptionFr.trim()}`;
-            } else if (descriptionEn.trim()) {
-                payload.description = descriptionEn.trim();
-            } else {
-                payload.description = descriptionFr.trim();
-            }
+            payload.description = descLanguage === 'fr' ? descriptionFr.trim() : descriptionEn.trim();
 
             const res = await apiClient.client.post('/properties', payload);
             const newId = res.data.id;
@@ -194,31 +190,13 @@ export default function NewPropertyPage() {
         }
     };
 
-    const handlePublish = async (acknowledgeDpe: boolean = false) => {
+    const handlePublish = async () => {
         if (!propertyId) return;
         setPublishing(true);
         try {
-            await apiClient.client.post(`/properties/${propertyId}/publish`, {
-                acknowledge_dpe_warning: acknowledgeDpe,
-            });
-            setServerDpeWarnings(null);
-        } catch (e: any) {
-            if (e?.response?.status === 409) {
-                const warnings: DpeWarning[] | undefined = e.response.data?.detail?.warnings;
-                if (warnings && warnings.length > 0) {
-                    setServerDpeWarnings(warnings);
-                }
-                toast.error(t('property.create.dpe.publishAckRequired', undefined, "This property's verified energy class requires acknowledgment before it can be published. Please review the energy rating."));
-            } else {
-                setServerDpeWarnings(null);
-                const detail = e?.response?.data?.detail;
-                const message =
-                    typeof detail === 'string'
-                        ? detail
-                        : t('common.error', undefined, 'Failed to publish property.');
-                toast.error(message);
-                console.error('Publish error:', e);
-            }
+            await apiClient.client.post(`/properties/${propertyId}/publish`);
+        } catch (e) {
+            console.error('Publish error:', e);
         } finally {
             setPublishing(false);
         }
@@ -230,9 +208,14 @@ export default function NewPropertyPage() {
             case 1: return !!formData.title;
             case 2: return !!(formData.address_line1 && formData.city && formData.postal_code);
             case 3: {
-                const ok = formData.bedrooms >= 0 && formData.size_sqm > 0 && !!formData.dpe_rating;
+                const ok = formData.bedrooms >= 0 && formData.size_sqm > 0 && !!formData.dpe_rating && formData.dpe_value !== undefined && formData.dpe_value >= 0 && formData.ges_value !== undefined && formData.ges_value >= 0;
                 if (ok && formData.size_sqm < 9 * formData.accommodation_capacity)
                     toast.warning(t('properties.new.steps.pricing.decencyWarning'));
+                if (!ok) {
+                    if (formData.dpe_value === undefined || formData.ges_value === undefined) {
+                        toast.error(t('properties.new.steps.details.missingDpeValues', undefined, 'Please enter exact DPE and GES values.'));
+                    }
+                }
                 return ok;
             }
             case 4: {
@@ -243,6 +226,10 @@ export default function NewPropertyPage() {
             }
             case 5: {
                 const ok = formData.monthly_rent > 0;
+                if (formData.complement_de_loyer && formData.complement_de_loyer > 0 && !formData.complement_de_loyer_justification?.trim()) {
+                    toast.error(t('properties.new.steps.pricing.missingJustification', undefined, 'A written justification is required for rent supplements.'));
+                    return false;
+                }
                 if (ok && formData.deposit !== undefined) {
                     const max = formData.monthly_rent * (formData.furnished ? 2 : 1);
                     if (formData.deposit > max)
@@ -375,7 +362,7 @@ export default function NewPropertyPage() {
                                         <Step8Review formData={formData} t={t} declared={declared} setDeclared={setDeclared} loading={loading} onSubmit={handleSubmit} />
                                     )}
                                     {currentStep === 9 && (
-                                        <Step9Success formData={formData} t={t} language={language} mediaSession={mediaSession} publishing={publishing} serverDpeWarnings={serverDpeWarnings} onPublish={handlePublish} onReturn={() => router.push('/properties')} />
+                                        <Step9Success formData={formData} t={t} language={language} propertyId={propertyId} mediaSession={mediaSession} publishing={publishing} onPublish={handlePublish} onReturn={() => router.push('/properties')} />
                                     )}
                                 </motion.div>
                             </AnimatePresence>

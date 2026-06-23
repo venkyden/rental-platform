@@ -2,9 +2,20 @@
 
 import { useState, useRef, useEffect, use } from 'react';
 import { apiClient } from '@/lib/api';
+import { useRouter } from 'next/navigation';
 import { useToast } from '@/lib/ToastContext';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Camera, CheckCircle2, Shield, MapPin, ChevronRight, WifiOff } from 'lucide-react';
+import { motion, Variants, AnimatePresence } from 'framer-motion';
+import { Camera, CheckCircle2, Shield, Zap, Info, MapPin, ChevronRight, Upload, WifiOff, RefreshCw } from 'lucide-react';
+
+const containerVariants: Variants = {
+    hidden: { opacity: 0 },
+    show: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.1
+        }
+    }
+};
 
 interface Room {
     index: number;
@@ -13,103 +24,67 @@ interface Room {
 
 export default function CapturePage({ params }: { params: Promise<{ code: string }> }) {
     const { code } = use(params);
+    const router = useRouter();
     const { showToast } = useToast();
-    const [step, setStep] = useState<'intro' | 'preview' | 'uploading' | 'success' | 'finished'>('intro');
+    const [step, setStep] = useState<'intro' | 'capturing' | 'ready_to_capture' | 'preview' | 'uploading' | 'success' | 'finished'>('intro');
     const [files, setFiles] = useState<File[]>([]);
     const [previewUrls, setPreviewUrls] = useState<string[]>([]);
     const [location, setLocation] = useState<{ lat: number; lng: number; accuracy: number } | null>(null);
     const [isSessionVerified, setIsSessionVerified] = useState(false);
     const [isOffline, setIsOffline] = useState(false);
     const [pendingCount, setPendingCount] = useState(0);
+    const [isSyncing, setIsSyncing] = useState(false);
     const [sessionDetails, setSessionDetails] = useState<any>(null);
     const [rooms, setRooms] = useState<Room[]>([]);
     const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
-    const [error, setError] = useState<string | null>(null);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
-        if (!code) return;
-        const handleOnline = () => {
-            setIsOffline(false);
-            syncOfflineQueue();
-        };
+        const handleOnline = () => { setIsOffline(false); checkQueue(); };
         const handleOffline = () => setIsOffline(true);
         window.addEventListener('online', handleOnline);
         window.addEventListener('offline', handleOffline);
         setIsOffline(!navigator.onLine);
-
-        const loadSessionDetails = async () => {
-            try {
-                const res = await apiClient.client.get(`/properties/media-sessions/${code}`);
-                setSessionDetails(res.data);
-                if (res.data.location_verified) setIsSessionVerified(true);
-                if (res.data.rooms) setRooms(res.data.rooms);
-            } catch (e) {
-                setError('Invalid or expired capture session code.');
-                showToast('Invalid or expired capture session code.', 'error');
-            }
-        };
-
         loadSessionDetails();
         requestLocation();
-        checkQueue();
+        const { backgroundSyncManager } = require('@/lib/backgroundSync');
+        const unsubscribe = backgroundSyncManager.subscribe((count: number) => {
+            setPendingCount(count);
+        });
 
         return () => {
+            unsubscribe();
             window.removeEventListener('online', handleOnline);
             window.removeEventListener('offline', handleOffline);
         };
-    }, [code]);
+    }, []);
 
-    const requestLocation = () => {
-        if (!navigator.geolocation) return;
-        navigator.geolocation.getCurrentPosition(
-            (pos) => {
-                setLocation({
-                    lat: pos.coords.latitude,
-                    lng: pos.coords.longitude,
-                    accuracy: pos.coords.accuracy,
-                });
-            },
-            () => {
-                // Permission denied or unavailable — uploads still work without GPS
-            },
-            { enableHighAccuracy: true, timeout: 10000 }
-        );
-    };
-
-    const checkQueue = async () => {
-        const { offlineQueue } = await import('@/lib/offlineQueue');
-        const count = await offlineQueue.count();
-        setPendingCount(count);
+    const loadSessionDetails = async () => {
+        try {
+            const res = await apiClient.client.get(`/properties/media-sessions/${code}`);
+            setSessionDetails(res.data);
+            if (res.data.location_verified) setIsSessionVerified(true);
+            if (res.data.rooms) setRooms(res.data.rooms);
+        } catch (e) {
+            console.error(e);
+        }
     };
 
     const syncOfflineQueue = async () => {
-        const { offlineQueue } = await import('@/lib/offlineQueue');
-        const queue = await offlineQueue.getQueue();
-        if (queue.length === 0) return;
-
-        let synced = 0;
-        for (const item of queue) {
-            try {
-                await apiClient.uploadPropertyMedia(item.file as File, item.metadata, item.code);
-                if (item.id !== undefined) await offlineQueue.removeFromQueue(item.id);
-                synced++;
-            } catch {
-                // Leave in queue to retry later
-            }
-        }
-        if (synced > 0) {
-            showToast(`${synced} offline photo${synced > 1 ? 's' : ''} uploaded.`, 'success');
-            await checkQueue();
+        const { backgroundSyncManager } = await import('@/lib/backgroundSync');
+        await backgroundSyncManager.sync();
+        if (pendingCount > 0) {
+            // It will update via subscription, but we can show a toast
+            showToast('Sync triggered.', 'info');
         }
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
-            const newFiles = Array.from(e.target.files);
-            setFiles(prev => [...prev, ...newFiles]);
-            setPreviewUrls(prev => [...prev, ...newFiles.map(f => URL.createObjectURL(f))]);
+            const newlyCapturedFiles = Array.from(e.target.files);
+            setFiles(prev => [...prev, ...newlyCapturedFiles]);
+            setPreviewUrls(prev => [...prev, ...newlyCapturedFiles.map(f => URL.createObjectURL(f))]);
             setStep('preview');
         }
     };
@@ -121,9 +96,9 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
 
         for (const file of files) {
             const metadataObj = {
-                latitude: location?.lat ?? null,
-                longitude: location?.lng ?? null,
-                gps_accuracy: location?.accuracy ?? null,
+                latitude: location?.lat || null,
+                longitude: location?.lng || null,
+                gps_accuracy: location?.accuracy || null,
                 captured_at: new Date().toISOString(),
                 media_type: file.type.startsWith('video') ? 'video' : 'photo',
                 room_index: selectedRoom?.index ?? null,
@@ -131,8 +106,8 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
             };
 
             if (isOffline) {
-                const { offlineQueue } = await import('@/lib/offlineQueue');
-                await offlineQueue.addToQueue(
+                const { backgroundSyncManager } = await import('@/lib/backgroundSync');
+                await backgroundSyncManager.enqueueAndSync(
                     file,
                     JSON.stringify(metadataObj),
                     code,
@@ -150,8 +125,8 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                 const msg = err?.response?.data?.detail || 'Upload failed. Saving for retry when online.';
                 showToast(msg, 'error');
                 // Queue for offline retry
-                const { offlineQueue } = await import('@/lib/offlineQueue');
-                await offlineQueue.addToQueue(
+                const { backgroundSyncManager } = await import('@/lib/backgroundSync');
+                await backgroundSyncManager.enqueueAndSync(
                     file,
                     JSON.stringify(metadataObj),
                     code,
@@ -159,8 +134,6 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                 );
             }
         }
-
-        await checkQueue();
 
         if (isOffline) {
             showToast(`${successCount} photo${successCount !== 1 ? 's' : ''} queued — will upload when back online.`, 'info');
@@ -180,7 +153,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
 
     return (
         <div className="min-h-screen bg-white text-zinc-900 font-sans selection:bg-zinc-900/10">
-            <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-5 pointer-events-none" />
+            <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-5 pointer-events-none"></div>
 
             <main className="max-w-xl mx-auto px-6 py-12 flex flex-col min-h-screen relative z-10">
                 <header className="flex items-center justify-between mb-16">
@@ -188,34 +161,15 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                         <Camera className="text-white w-6 h-6" />
                     </div>
                     {pendingCount > 0 && (
-                        <button
-                            onClick={syncOfflineQueue}
-                            className="flex items-center gap-2 px-4 py-2 bg-zinc-900 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg"
-                        >
+                        <div className="flex items-center gap-2 px-4 py-2 bg-zinc-900 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">
                             <WifiOff className="w-3 h-3" />
                             {pendingCount} Pending
-                        </button>
+                        </div>
                     )}
                 </header>
 
                 <AnimatePresence mode="wait">
-                    {error && (
-                        <motion.div
-                            key="error"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            className="flex-1 flex flex-col items-center justify-center text-center space-y-6"
-                        >
-                            <div className="w-20 h-20 bg-zinc-900 text-white rounded-3xl flex items-center justify-center mx-auto mb-4">
-                                <WifiOff className="w-10 h-10" />
-                            </div>
-                            <h2 className="text-3xl font-black uppercase tracking-tighter text-zinc-900">Session Error</h2>
-                            <p className="text-zinc-500 font-bold px-4">{error}</p>
-                        </motion.div>
-                    )}
-
-                    {!error && step === 'intro' && (
+                    {step === 'intro' && (
                         <motion.div
                             key="intro"
                             initial={{ opacity: 0, y: 20 }}
@@ -268,7 +222,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                                     onClick={() => fileInputRef.current?.click()}
                                     className="w-full py-8 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.4em] rounded-[2.5rem] shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-4"
                                 >
-                                    Add Photos / Videos
+                                    Initialize Camera
                                     <ChevronRight className="w-4 h-4" />
                                 </button>
                             </div>
@@ -306,13 +260,13 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                                     onClick={handleUpload}
                                     className="w-full py-8 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.4em] rounded-[2.5rem] shadow-2xl hover:scale-105 active:scale-95 transition-all"
                                 >
-                                    {isOffline ? 'Queue for Upload' : 'Transmit Telemetry'}
+                                    Transmit Telemetry
                                 </button>
                                 <button
                                     onClick={() => fileInputRef.current?.click()}
                                     className="w-full py-6 text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 hover:text-zinc-900 transition-all"
                                 >
-                                    Add More
+                                    Add More Channels
                                 </button>
                             </div>
                         </motion.div>
@@ -344,56 +298,34 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                                 <CheckCircle2 className="w-16 h-16 text-white" />
                             </div>
                             <div className="space-y-4">
-                                <h2 className="text-5xl font-black tracking-tighter uppercase">
-                                    {isOffline ? 'Queued' : 'Data Synced'}
-                                </h2>
-                                <p className="text-xl text-zinc-500 font-medium max-w-xs mx-auto">
-                                    {isOffline
-                                        ? 'Photos saved offline. They will upload automatically when you reconnect.'
-                                        : 'Visual telemetry successfully committed to the asset registry.'}
-                                </p>
+                                <h2 className="text-5xl font-black tracking-tighter uppercase">Data Synced</h2>
+                                <p className="text-xl text-zinc-500 font-medium max-w-xs mx-auto">Visual telemetry successfully committed to the asset registry.</p>
                             </div>
                             <div className="pt-12 flex flex-col gap-6 w-full">
                                 <button
-                                    onClick={resetForNextCapture}
+                                    onClick={() => { setFiles([]); setPreviewUrls([]); setStep('intro'); }}
                                     className="w-full py-8 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.4em] rounded-[2.5rem] shadow-2xl"
                                 >
-                                    Capture More
+                                    Capture New Node
                                 </button>
                                 <button
                                     onClick={() => setStep('finished')}
                                     className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400"
                                 >
-                                    Finish Session
+                                    Terminate Session
                                 </button>
-                            </div>
-                        </motion.div>
-                    )}
-
-                    {step === 'finished' && (
-                        <motion.div
-                            key="finished"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="flex-1 flex flex-col items-center justify-center text-center space-y-8"
-                        >
-                            <div className="w-24 h-24 bg-zinc-100 rounded-[3rem] flex items-center justify-center mx-auto">
-                                <Shield className="w-12 h-12 text-zinc-400" />
-                            </div>
-                            <div className="space-y-4">
-                                <h2 className="text-4xl font-black tracking-tighter uppercase">Session Complete</h2>
-                                <p className="text-zinc-500 font-medium">You can close this tab. Your photos have been recorded.</p>
                             </div>
                         </motion.div>
                     )}
                 </AnimatePresence>
 
-                {/* File input — no `capture` attribute so both camera and gallery are available */}
+                {/* Hidden Input */}
                 <input
                     type="file"
                     ref={fileInputRef}
                     onChange={handleFileChange}
                     accept="image/*,video/*"
+                    capture="environment"
                     multiple
                     className="hidden"
                 />

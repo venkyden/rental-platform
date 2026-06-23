@@ -75,6 +75,35 @@ export default function Step3Details({ formData, updateFormData, t }: Props) {
                         </button>
                     ))}
                 </div>
+                
+                <div className="grid grid-cols-2 gap-8 mt-6">
+                    <div className="space-y-4">
+                        <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                            {t('property.create.details.dpeValue', undefined, 'DPE Value (kWh/m²/year)')}
+                            <span className="text-red-500 ml-1">*</span>
+                        </label>
+                        <input
+                            type="number"
+                            value={formData.dpe_value === undefined ? '' : formData.dpe_value}
+                            onChange={(e) => updateFormData({ dpe_value: e.target.value === '' ? undefined : parseInt(e.target.value) || 0 })}
+                            placeholder="e.g. 150"
+                            className="w-full bg-zinc-50 p-4 rounded-xl border-none font-black text-xl"
+                        />
+                    </div>
+                    <div className="space-y-4">
+                        <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                            {t('property.create.details.gesValue', undefined, 'GES Value (kg CO₂/m²/year)')}
+                            <span className="text-red-500 ml-1">*</span>
+                        </label>
+                        <input
+                            type="number"
+                            value={formData.ges_value === undefined ? '' : formData.ges_value}
+                            onChange={(e) => updateFormData({ ges_value: e.target.value === '' ? undefined : parseInt(e.target.value) || 0 })}
+                            placeholder="e.g. 35"
+                            className="w-full bg-zinc-50 p-4 rounded-xl border-none font-black text-xl"
+                        />
+                    </div>
+                </div>
                 {formData.dpe_rating === 'G' && (
                     <p className="text-amber-600 text-xs font-bold" role="alert">
                         ⚠️ {t('property.create.dpe.decenceG', undefined, 'A class G dwelling cannot be leased as a primary residence (new or renewed lease) under the loi Climat. You may still publish this listing with its class shown.')}
