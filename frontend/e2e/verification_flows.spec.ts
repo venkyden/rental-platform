@@ -332,18 +332,17 @@ test.describe('Verification Flows E2E', () => {
     });
 });
 
-// Regression: the GDPR AI-processing consent gate must cover the identity upload
-// path, not only the employment/property form. The mobile identity flow reaches a
-// preview step whose Submit button stays disabled until consent is given.
+// Regression: GDPR AI-processing consent gate covers identity upload path, not
+// only employment/property form. Mobile preview: Submit disabled until consent.
 test.describe('Identity upload — AI-processing consent gate', () => {
-    // Force the mobile selfie-with-ID flow (isMobileDevice() matches the UA).
+    // Force mobile selfie-with-ID flow (UA matches isMobileDevice()).
     test.use({
         userAgent:
             'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
         viewport: { width: 390, height: 844 },
     });
 
-    // Minimal valid 1x1 JPEG so handleIdFileChange's canvas compression succeeds.
+    // Minimal valid 1x1 JPEG for handleIdFileChange canvas compression.
     const TINY_JPEG = Buffer.from(
         '/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRof' +
         'Hh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/wAALCAABAAEBAREA/8QAFAAB' +
@@ -352,11 +351,10 @@ test.describe('Identity upload — AI-processing consent gate', () => {
     );
 
     test.beforeEach(async ({ page }) => {
-        // Mock only the specific API endpoints. The app must be built with a
-        // same-origin NEXT_PUBLIC_API_URL so these calls satisfy CSP connect-src
-        // ('self') and are interceptable by page.route.
+        // Mock specific API endpoints. Requires same-origin NEXT_PUBLIC_API_URL
+        // so calls satisfy CSP connect-src ('self') and stay interceptable.
         await mockAuthSession(page);
-        // Guard against an accidental real upload if the gate ever regresses.
+        // Guard against accidental real upload if gate regresses.
         await page.route('**/verification/identity/upload*', route =>
             route.fulfill({ status: 200, contentType: 'application/json', body: '{}' }),
         );
