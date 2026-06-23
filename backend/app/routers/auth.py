@@ -268,7 +268,6 @@ async def login(
         key="refresh_token",
         value=refresh_token,
         httponly=True,
-        path="/",
         max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
         expires=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
         samesite="lax",
@@ -354,7 +353,6 @@ async def refresh_token(
         key="refresh_token",
         value=new_refresh_token,
         httponly=True,
-        path="/",
         max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
         expires=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
         samesite="lax",
@@ -379,54 +377,21 @@ async def refresh_token(
 
 @router.post("/logout")
 async def logout(
-    request: Request,
     response: Response,
+    current_user: User = Depends(get_current_user_optional),
     db: AsyncSession = Depends(get_db)
 ):
-    """Logout user and revoke sessions.
-    
-    Tries to identify the user from:
-    1. The Bearer access token (if present)
-    2. The refresh_token cookie (fallback — covers the case where
-       the frontend cleared the access token before calling logout)
-    """
-    user = None
-    
-    # Try #1: Bearer token
-    auth_header = request.headers.get("authorization", "")
-    if auth_header.startswith("Bearer "):
-        token = auth_header[7:]
-        payload = verify_token(token)
-        if payload and payload.get("type") == "access":
-            email = payload.get("sub")
-            if email:
-                result = await db.execute(select(User).where(User.email == email))
-                user = result.scalar_one_or_none()
-
-    # Try #2: Refresh token cookie (fallback)
-    if not user:
-        refresh_cookie = request.cookies.get("refresh_token")
-        if refresh_cookie:
-            payload = verify_token(refresh_cookie)
-            if payload and payload.get("type") == "refresh":
-                email = payload.get("sub")
-                if email:
-                    result = await db.execute(select(User).where(User.email == email))
-                    user = result.scalar_one_or_none()
-
-    if user and user.is_active:
+    """Logout user and revoke sessions"""
+    if current_user:
         # Increment version to invalidate all current refresh tokens
-        user.refresh_token_version += 1
+        current_user.refresh_token_version += 1
         await db.commit()
-        audit_logger.info(f"LOGOUT_SUCCESS email={user.email}")
-    else:
-        audit_logger.info("LOGOUT_ANONYMOUS (no identifiable user)")
+        audit_logger.info(f"LOGOUT_SUCCESS email={current_user.email}")
     
     response.delete_cookie(
         key="refresh_token",
         httponly=True,
         samesite="lax",
-        path="/",
         secure=settings.ENVIRONMENT == "production",
         domain=settings.COOKIE_DOMAIN if settings.ENVIRONMENT == "production" else None,
     )
@@ -732,9 +697,14 @@ async def google_auth(
         except Exception:
             pass
             
+        # Distinguish between schema issues and other errors
+        error_msg = "Account setup failed. Please try again."
+        if "column" in str(e).lower() or "relation" in str(e).lower():
+            error_msg = "Database schema mismatch. Please run migrations (alembic upgrade head)."
+            
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Account setup failed. Please try again.",
+            detail=error_msg,
         )
 
     # ---- Step 3: Create tokens and return ----
@@ -758,7 +728,6 @@ async def google_auth(
             key="refresh_token",
             value=refresh_token,
             httponly=True,
-            path="/",
             max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
             expires=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
             samesite="lax",
@@ -845,12 +814,12 @@ async def forgot_email(
 @limiter.limit("5/minute")
 async def forgot_password(
     request: Request,
-    body: ForgotPasswordRequest,
+    payload: ForgotPasswordRequest,
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
 ):
     """Send password reset email"""
-    result = await db.execute(select(User).where(User.email == body.email))
+    result = await db.execute(select(User).where(User.email == payload.email))
     user = result.scalar_one_or_none()
 
     # Always return success (don't reveal if email exists)
@@ -882,12 +851,12 @@ async def forgot_password(
 @router.post("/reset-password")
 @limiter.limit("10/minute")
 async def reset_password(
-    request: Request,
-    body: ResetPasswordRequest,
+    http_request: Request,
+    request: ResetPasswordRequest,
     db: AsyncSession = Depends(get_db),
 ):
     """Reset password using token"""
-    payload = verify_token(body.token)
+    payload = verify_token(request.token)
 
     if payload is None or payload.get("type") != "password_reset":
         raise HTTPException(
@@ -915,7 +884,7 @@ async def reset_password(
         )
 
     # Update password and revoke all existing sessions / outstanding reset links.
-    user.hashed_password = get_password_hash(body.new_password)
+    user.hashed_password = get_password_hash(request.new_password)
     user.refresh_token_version += 1
     await db.commit()
 
@@ -924,7 +893,7 @@ async def reset_password(
 
 @router.get("/verify-email")
 @limiter.limit("10/minute")
-async def verify_email(request: Request, token: str, db: AsyncSession = Depends(get_db)):
+async def verify_email(http_request: Request, token: str, db: AsyncSession = Depends(get_db)):  # noqa: ARG001 — http_request consumed by @limiter
     """Verify email address using token"""
     payload = verify_token(token)
 
@@ -956,7 +925,7 @@ async def verify_email(request: Request, token: str, db: AsyncSession = Depends(
 @router.post("/resend-verification")
 @limiter.limit("3/minute")
 async def resend_verification(
-    request: Request,
+    http_request: Request,  # consumed by @limiter via get_remote_address
     background_tasks: BackgroundTasks,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -1012,7 +981,7 @@ async def get_my_segment_config(current_user: User = Depends(get_current_user)):
             "id_verified": current_user.identity_verified,
             "email_verified": current_user.email_verified,
             "employment_verified": current_user.employment_verified,
-            "onboarding_completed": current_user.onboarding_status.get(role_value, False) if current_user.onboarding_status else False,
+            "onboarding_completed": current_user.onboarding_completed,
         },
     }
 

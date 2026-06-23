@@ -59,8 +59,6 @@ app.db
 
 # Agent Specific
 artifacts/
-.superpowers/
-.claude/
 backend/scratch/
 backend/app/scratch/
 frontend/scratch/
@@ -87,6 +85,7 @@ node_modules_old/
 backend/test_*.py
 frontend/test-results/
 frontend/playwright-report/
+
 
 # Agent tooling
 .claude/

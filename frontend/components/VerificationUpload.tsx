@@ -7,7 +7,6 @@ import { apiClient } from '@/lib/api';
 import { QRCodeSVG } from 'qrcode.react';
 import { motion, Variants } from 'framer-motion';
 import { useLanguage } from '@/lib/LanguageContext';
-import { useAuth } from '@/lib/useAuth';
 
 const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -86,39 +85,16 @@ function IdSelfieIllustration() {
     );
 }
 
-// ─── Copy link button ─────────────────────────────────────────────────────────
-
-function CopyLinkButton({ url }: { url: string }) {
-    const [copied, setCopied] = useState(false);
-    const handleCopy = () => {
-        navigator.clipboard.writeText(url).then(() => {
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-        });
-    };
-    return (
-        <button
-            onClick={handleCopy}
-            className="mt-4 text-xs text-zinc-500 hover:text-zinc-900 underline underline-offset-2 transition-colors"
-        >
-            {copied ? '✓ Copied!' : 'Copy link'}
-        </button>
-    );
-}
-
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function VerificationUpload({ verificationType, propertyId, onSuccessAction, user }: VerificationUploadProps) {
     const { t } = useLanguage();
-    const { user: authUser } = useAuth();
-    const activeUser = user || authUser;
 
     // Common state
     const [files, setFiles] = useState<File[]>([]);
     const [documentType, setDocumentType] = useState('');
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState('');
-    const [consent, setConsent] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
 
     // Identity mobile selfie-with-ID flow
@@ -132,7 +108,6 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
     const [qrSession, setQrSession] = useState<{ code: string; captureUrl: string; expiresAt: string } | null>(null);
     const [qrLoading, setQrLoading] = useState(false);
     const pollRef = useRef<NodeJS.Timeout | null>(null);
-    const pollingCodeRef = useRef<string | null>(null);
     const eventSourceRef = useRef<EventSource | null>(null);
 
     // Property verification
@@ -165,11 +140,10 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
             if (recommended) setDocumentType(recommended.value);
         }
         return () => {
-            pollingCodeRef.current = null;
-            if (pollRef.current) clearTimeout(pollRef.current);
+            if (pollRef.current) clearInterval(pollRef.current);
             if (eventSourceRef.current) eventSourceRef.current.close();
         };
-    }, [verificationType, isMobile, activeUser]);
+    }, [verificationType, isMobile, user]);
 
     useEffect(() => {
         return () => { if (idPreviewUrl) URL.revokeObjectURL(idPreviewUrl); };
@@ -193,7 +167,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
 
     const startSseConnection = (code: string) => {
         if (eventSourceRef.current) eventSourceRef.current.close();
-        if (pollRef.current) clearTimeout(pollRef.current);
+        if (pollRef.current) clearInterval(pollRef.current);
         const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/verification/identity/session/${code}/stream`;
         const es = new EventSource(url);
         eventSourceRef.current = es;
@@ -206,29 +180,14 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
         es.onerror = () => { es.close(); eventSourceRef.current = null; startPolling(code); };
     };
 
-    const startPolling = (code: string, delayMs = 2000, retries = 0) => {
-        if (retries >= 40) {
-            setError('Verification session timed out. Please refresh the QR code.');
-            return;
-        }
-        pollingCodeRef.current = code;
-        if (pollRef.current) clearTimeout(pollRef.current);
-        pollRef.current = setTimeout(async () => {
-            pollRef.current = null;
-            if (pollingCodeRef.current !== code) return;
+    const startPolling = (code: string) => {
+        if (pollRef.current) clearInterval(pollRef.current);
+        pollRef.current = setInterval(async () => {
             try {
                 const res = await apiClient.client.get(`/verification/identity/session/${code}/status`);
-                if (res.data.completed) {
-                    onSuccessAction();
-                } else if (pollingCodeRef.current === code) {
-                    startPolling(code, Math.min(delayMs * 2, 30000), retries + 1);
-                }
-            } catch {
-                if (pollingCodeRef.current === code) {
-                    setError('Verification session expired. Please refresh the QR code.');
-                }
-            }
-        }, delayMs) as unknown as NodeJS.Timeout;
+                if (res.data.completed) { clearInterval(pollRef.current!); onSuccessAction(); }
+            } catch { clearInterval(pollRef.current!); setError('Verification session expired. Please refresh the QR code.'); }
+        }, 3000);
     };
 
     const copyToClipboard = (url: string) => {
@@ -241,49 +200,26 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
     const handleIdFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
         const raw = e.target.files?.[0];
         if (!raw) return;
-        // Validate MIME type — accept attribute can be bypassed
-        const ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/heic', 'image/heif']);
-        if (raw.type && !ALLOWED_MIME.has(raw.type)) {
-            toast.error('Only JPEG, PNG, or HEIC images are accepted.');
-            if (e.target) e.target.value = '';
-            return;
-        }
-        if (raw.size > 15 * 1024 * 1024) {
-            toast.error('Image must be smaller than 15 MB.');
-            if (e.target) e.target.value = '';
-            return;
-        }
-        const isHeic = /\.heic|\.heif$/i.test(raw.name) || raw.type === 'image/heic' || raw.type === 'image/heif';
+        const isHeic = /\.heic|\.heif$/i.test(raw.name);
         try {
             const processed: Blob = isHeic ? raw : await compressImage(raw);
             setIdFile(processed);
             setIdPreviewUrl(URL.createObjectURL(processed));
             setIdStep('preview');
-        } catch (err: any) {
-            if (err?.message === 'COMPRESSION_TIMEOUT') {
-                toast('Image compression timed out — uploading at full size.', { icon: '⚠️' });
-                setIdFile(raw);
-                setIdPreviewUrl(URL.createObjectURL(raw));
-                setIdStep('preview');
-            } else {
-                toast.error('Failed to process image. Please try again.');
-            }
+        } catch {
+            toast.error('Failed to process image. Please try again.');
         }
         if (e.target) e.target.value = '';
     }, []);
 
     const compressImage = (f: File): Promise<Blob> =>
         new Promise((resolve, reject) => {
-            const timer = setTimeout(() => {
-                reject(new Error('COMPRESSION_TIMEOUT'));
-            }, 3000);
             const reader = new FileReader();
             reader.readAsDataURL(f);
             reader.onload = ev => {
                 const img = new Image();
                 img.src = ev.target?.result as string;
                 img.onload = () => {
-                    clearTimeout(timer);
                     const MAX = 1800;
                     let w = img.width, h = img.height;
                     if (w > MAX || h > MAX) {
@@ -293,31 +229,14 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                     const canvas = document.createElement('canvas');
                     canvas.width = w; canvas.height = h;
                     canvas.getContext('2d', { willReadFrequently: true })?.drawImage(img, 0, 0, w, h);
-                    canvas.toBlob(b => { if (!b) { resolve(f); return; } resolve(b); }, 'image/jpeg', 0.88);
-                };
-                img.onerror = () => {
-                    clearTimeout(timer);
-                    resolve(f);
+                    canvas.toBlob(b => b ? resolve(b) : reject(new Error('Compression failed')), 'image/jpeg', 0.88);
                 };
             };
-            reader.onerror = () => {
-                clearTimeout(timer);
-                resolve(f);
-            };
+            reader.onerror = reject;
         });
-
-    const requireConsent = () => {
-        if (!consent) {
-            setError(t('verification.upload.consentRequired', undefined,
-                'Please consent to automated document analysis to continue'));
-            return false;
-        }
-        return true;
-    };
 
     const handleIdUpload = async () => {
         if (!idFile) return;
-        if (!requireConsent()) return;
         setIdUploading(true);
         setError('');
         try {
@@ -341,8 +260,8 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
     // ── Document type lists ───────────────────────────────────────────────
 
     const getEmploymentDocumentTypes = () => {
-        const role = activeUser?.role || 'tenant';
-        const rolePrefs = activeUser?.preferences?.[role] || activeUser?.preferences || {};
+        const role = user?.role || 'tenant';
+        const rolePrefs = user?.preferences?.[role] || user?.preferences || {};
         const contractType = rolePrefs?.contract_type;
         const situation = rolePrefs?.situation;
 
@@ -398,7 +317,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
             return IDENTITY_DOC_TYPES;
         }
         if (verificationType === 'property') {
-            const landlordPrefs = activeUser?.preferences?.landlord || {};
+            const landlordPrefs = user?.preferences?.landlord || {};
             const isProfessional = landlordPrefs.property_count === '5_100' || landlordPrefs.property_count === '100_plus';
             return [
                 { value: 'property_deed', label: t('docs.property_deed', undefined, 'Property Deed (Titre de propriété)'), captures: 1, recommended: !isProfessional },
@@ -420,23 +339,6 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
             const selectedFiles = Array.from(e.target.files);
-            // Validate MIME type in addition to extension — the file input `accept`
-            // attribute is advisory only and can be bypassed by the user.
-            const ALLOWED_MIME = new Set([
-                'image/jpeg', 'image/png', 'image/heic', 'image/heif',
-                'application/pdf',
-            ]);
-            const invalid = selectedFiles.filter(f => f.type && !ALLOWED_MIME.has(f.type));
-            if (invalid.length > 0) {
-                setError('Only JPEG, PNG, HEIC, and PDF files are accepted.');
-                return;
-            }
-            // 10 MB per file
-            const tooBig = selectedFiles.filter(f => f.size > 10 * 1024 * 1024);
-            if (tooBig.length > 0) {
-                setError('Each file must be smaller than 10 MB.');
-                return;
-            }
             const hasHeic = selectedFiles.some(f => /\.heic|\.heif$/i.test(f.name));
             if (hasHeic) toast.success('HEIC image detected. Uploading directly.');
             setFiles(selectedFiles);
@@ -450,7 +352,6 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
             setError('Please select a document type and upload all required files');
             return;
         }
-        if (!requireConsent()) return;
         setUploading(true);
         setError('');
         try {
@@ -512,9 +413,6 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                             <div className="absolute inset-0 bg-zinc-900/5 rounded-full blur-[100px] animate-pulse" />
                             <div className="p-10 bg-white rounded-[3rem] shadow-[0_64px_128px_-32px_rgba(0,0,0,0.2)] border border-white/40 relative z-10 group">
                                 <QRCodeSVG value={qrSession.captureUrl} size={240} level="H" includeMargin={false} />
-                                {qrSession && (
-                                    <CopyLinkButton url={qrSession.captureUrl} />
-                                )}
                                 <div className="mt-8 flex items-center justify-center gap-3">
                                     <div className="w-2 h-2 rounded-full bg-zinc-900 animate-ping" />
                                     <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-900">
@@ -668,34 +566,16 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">Verifying...</p>
                         </div>
                     ) : (
-                        <div className="space-y-4">
-                            {/* AI-processing consent (GDPR — ID analysed by Google Gemini, then discarded) */}
-                            <label className="flex items-start gap-3 cursor-pointer select-none">
-                                <input
-                                    type="checkbox"
-                                    checked={consent}
-                                    onChange={(e) => setConsent(e.target.checked)}
-                                    className="mt-0.5 h-4 w-4 shrink-0 accent-zinc-900"
-                                />
-                                <span className="text-xs text-zinc-500 leading-relaxed">
-                                    {t('verification.upload.consent', undefined,
-                                        'I consent to automated analysis of my document by Google Gemini to extract only the facts needed for verification. The document is not retained afterwards.')}{' '}
-                                    <a href="/legal/privacy" target="_blank" rel="noopener noreferrer" className="underline text-zinc-700 hover:text-zinc-900">
-                                        {t('verification.upload.consentLink', undefined, 'Privacy Policy')}
-                                    </a>
-                                </span>
-                            </label>
-                            <div className="grid grid-cols-2 gap-4">
-                                <button
-                                    onClick={() => { setIdFile(null); setIdPreviewUrl(null); setError(''); idFileInputRef.current?.click(); }}
-                                    className="flex items-center justify-center gap-2 bg-zinc-100 text-zinc-900 font-black py-5 rounded-2xl text-[10px] uppercase tracking-[0.3em]">
-                                    <RefreshCcw className="w-4 h-4" /> Retake
-                                </button>
-                                <button onClick={handleIdUpload} disabled={!consent}
-                                    className="flex items-center justify-center gap-2 bg-zinc-900 text-white font-black py-5 rounded-2xl shadow-xl text-[10px] uppercase tracking-[0.3em] disabled:opacity-50">
-                                    Submit <ArrowRight className="w-4 h-4" />
-                                </button>
-                            </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <button
+                                onClick={() => { setIdFile(null); setIdPreviewUrl(null); setError(''); idFileInputRef.current?.click(); }}
+                                className="flex items-center justify-center gap-2 bg-zinc-100 text-zinc-900 font-black py-5 rounded-2xl text-[10px] uppercase tracking-[0.3em]">
+                                <RefreshCcw className="w-4 h-4" /> Retake
+                            </button>
+                            <button onClick={handleIdUpload}
+                                className="flex items-center justify-center gap-2 bg-zinc-900 text-white font-black py-5 rounded-2xl shadow-xl text-[10px] uppercase tracking-[0.3em]">
+                                Submit <ArrowRight className="w-4 h-4" />
+                            </button>
                         </div>
                     )}
 
@@ -798,13 +678,16 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                             </label>
                             <p className="text-sm font-black text-zinc-900 uppercase tracking-widest">
                                 {(() => {
-                                    const role = activeUser?.role || 'tenant';
-                                    const rolePrefs = activeUser?.preferences?.[role] || activeUser?.preferences || {};
+                                    const role = user?.role || 'tenant';
+                                    const rolePrefs = user?.preferences?.[role] || user?.preferences || {};
                                     let questionId = 'contract_type';
                                     if (role === 'landlord' || role === 'property_manager') questionId = 'property_count';
                                     else if (rolePrefs.situation) questionId = 'situation';
                                     else if (rolePrefs.contract_type) questionId = 'contract_type';
                                     const value = rolePrefs[questionId] || 'Standard';
+                                    if (value === '1_4') return '1 - 4 Properties';
+                                    if (value === '5_100') return '5 - 100 Properties';
+                                    if (value === '100_plus') return '100+ Properties';
                                     const translationRole = (role === 'landlord' || role === 'property_manager') ? 'landlord' : 'tenant';
                                     const translated = t(`onboarding.questions.${translationRole}.${questionId}.options.${value}`, undefined, '');
                                     if (translated) return translated;
@@ -855,25 +738,8 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                         </motion.div>
                     )}
 
-                    {/* AI-processing consent (GDPR — documents are analysed by Google Gemini, then discarded) */}
-                    <label className="flex items-start gap-3 px-2 cursor-pointer select-none">
-                        <input
-                            type="checkbox"
-                            checked={consent}
-                            onChange={(e) => setConsent(e.target.checked)}
-                            className="mt-0.5 h-4 w-4 shrink-0 accent-zinc-900"
-                        />
-                        <span className="text-xs text-zinc-500 leading-relaxed">
-                            {t('verification.upload.consent', undefined,
-                                'I consent to automated analysis of my document by Google Gemini to extract only the facts needed for verification. The document is not retained afterwards.')}{' '}
-                            <a href="/legal/privacy" target="_blank" rel="noopener noreferrer" className="underline text-zinc-700 hover:text-zinc-900">
-                                {t('verification.upload.consentLink', undefined, 'Privacy Policy')}
-                            </a>
-                        </span>
-                    </label>
-
                     <motion.button whileHover={{ scale: 1.02, y: -4 }} whileTap={{ scale: 0.98 }}
-                        type="submit" disabled={uploading || files.length === 0 || !consent}
+                        type="submit" disabled={uploading || files.length === 0}
                         className="w-full py-6 bg-zinc-900 text-white rounded-[2rem] text-xs font-black uppercase tracking-[0.4em] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] disabled:opacity-50 transition-all">
                         {uploading ? 'Uploading...' : 'Submit for Verification'}
                     </motion.button>
