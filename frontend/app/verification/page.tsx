@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import PremiumLayout from '@/components/PremiumLayout';
 import VerificationUpload from '@/components/VerificationUpload';
+import IntlSolvencyUpload from '@/components/IntlSolvencyUpload';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { 
     CheckCircle2, 
@@ -72,6 +73,7 @@ export default function VerificationPage() {
     const toast = useToast();
     
     const [activeTab, setActiveTab] = useState<'identity' | 'income' | 'guarantor' | 'property'>('identity');
+    const [intlIncome, setIntlIncome] = useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
     const [loading, setLoading] = useState(true);
     const [statusData, setStatusData] = useState<VerificationStatusData | null>(null);
@@ -373,12 +375,36 @@ export default function VerificationPage() {
                                                 </p>
                                             </div>
                                         ) : (
-                                            <VerificationUpload
-                                                key={`income-${refreshKey}`}
-                                                verificationType="employment"
-                                                onSuccessAction={handleSuccess}
-                                                user={user}
-                                            />
+                                            <div className="space-y-6">
+                                                {/* Document-origin toggle — same tiers for everyone, self-selected by documents held */}
+                                                <div className="flex items-center justify-center gap-2 text-xs">
+                                                    <button
+                                                        onClick={() => setIntlIncome(false)}
+                                                        className={`px-4 py-2 rounded-full font-black uppercase tracking-widest text-[10px] transition-all ${!intlIncome ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500'}`}
+                                                    >
+                                                        French documents
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setIntlIncome(true)}
+                                                        className={`px-4 py-2 rounded-full font-black uppercase tracking-widest text-[10px] transition-all ${intlIncome ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500'}`}
+                                                    >
+                                                        International documents
+                                                    </button>
+                                                </div>
+                                                {intlIncome ? (
+                                                    <IntlSolvencyUpload
+                                                        key={`intl-${refreshKey}`}
+                                                        onSuccessAction={handleSuccess}
+                                                    />
+                                                ) : (
+                                                    <VerificationUpload
+                                                        key={`income-${refreshKey}`}
+                                                        verificationType="employment"
+                                                        onSuccessAction={handleSuccess}
+                                                        user={user}
+                                                    />
+                                                )}
+                                            </div>
                                         )
                                     )}
 
