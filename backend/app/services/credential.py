@@ -95,6 +95,78 @@ def _canonical_payload(payload: dict) -> bytes:
     return json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
 
 
+def _evidence_claim_rows(claims: dict) -> list:
+    """Build (label, value, assurance) text rows for the evidence-PDF claims table.
+
+    Handles BOTH claim vocabularies so every issued credential renders correctly:
+    - direct POST /issue: `identity_verified`, `property_control`, `property_assurance`
+    - POST /issue-mine: `identity_assurance`, `property_control_assurance`,
+      `property_control_label`
+    Assurance is rendered as an affirmative phrase — never the internal tier word.
+    """
+    def phrase(level: str) -> str:
+        return "Vérifié ✓" if level in ("HIGH", "MEDIUM") else "Non vérifié"
+
+    rows = []
+
+    # Identity — present in either vocabulary; skip a purely UNVERIFIED identity.
+    identity_assur = claims.get("identity_assurance", "UNVERIFIED")
+    if "identity_verified" in claims or identity_assur != "UNVERIFIED":
+        verified = claims.get("identity_verified", identity_assur in ("HIGH", "MEDIUM"))
+        rows.append(("Identité vérifiée", "Oui" if verified else "Non", phrase(identity_assur)))
+
+    if "solvency_ratio" in claims:
+        rows.append((
+            "Capacité fiscale (ratio)",
+            str(claims["solvency_ratio"]),
+            phrase(claims.get("solvency_assurance", "UNVERIFIED")),
+        ))
+
+    if "funds_coverage_band" in claims:
+        band_fr = {
+            "covers_12m_plus": "couvre 12 mois ou plus de loyer",
+            "covers_6m": "couvre 6 à 11 mois de loyer",
+            "covers_3m": "couvre 3 à 5 mois de loyer",
+            "covers_under_3m": "couvre moins de 3 mois de loyer",
+            "amount_only": "fonds vérifiés",
+        }
+        src = " (via garant/sponsor)" if claims.get("funds_coverage_source") == "sponsor" else ""
+        rows.append((
+            "Capacité fiscale (fonds)",
+            band_fr.get(claims["funds_coverage_band"], "fonds vérifiés") + src,
+            phrase(claims.get("funds_coverage_assurance", "UNVERIFIED")),
+        ))
+
+    if "property_dpe_class" in claims:
+        rows.append((
+            "Classe DPE (ADEME)",
+            str(claims["property_dpe_class"]),
+            phrase(claims.get("property_assurance", "UNVERIFIED")),
+        ))
+
+    # Property control — present in either vocabulary.
+    if "property_control" in claims or "property_control_assurance" in claims:
+        if "property_control_label" in claims:
+            prop_value = str(claims["property_control_label"])
+        else:
+            prop_value = "Oui" if claims.get("property_control") else "Non"
+        prop_assur = claims.get("property_control_assurance") or claims.get("property_assurance", "UNVERIFIED")
+        rows.append(("Contrôle du bien (non-attestation de propriété)", prop_value, phrase(prop_assur)))
+
+    if "mrh_insurance_assurance" in claims:
+        mrh_ok = claims.get("mrh_insurance_verified")
+        mrh_status_label = "Vérifié ✓" if mrh_ok else "Signalé ⚠"
+        flags = claims.get("mrh_insurance_flags") or []
+        flag_note = f" — signalements : {', '.join(flags)}" if flags else ""
+        rows.append((
+            "Assurance MRH (loi 89 art. 7g)",
+            f"{mrh_status_label}{flag_note}",
+            phrase(claims.get("mrh_insurance_assurance", "UNVERIFIED")),
+        ))
+
+    return rows
+
+
 class CredentialService:
     """
     Singleton service for issuing and verifying signed credentials.
@@ -282,62 +354,16 @@ class CredentialService:
         story.append(Paragraph("Attestations vérifiées", h2))
         claims = record.get("claims", {})
 
-        def _verified_phrase(level: str) -> str:
-            # Consumer-facing: affirmative, no internal tier words
-            return "Vérifié ✓" if level in ("HIGH", "MEDIUM") else "Non vérifié"
-
         claims_rows = [[
             Paragraph("Attestation", label_style),
             Paragraph("Valeur / Bande", label_style),
             Paragraph("Niveau d'assurance", label_style),
         ]]
-        if "identity_verified" in claims:
+        for _label, _value, _assur in _evidence_claim_rows(claims):
             claims_rows.append([
-                Paragraph("Identité vérifiée", body),
-                Paragraph("Oui" if claims["identity_verified"] else "Non", body),
-                Paragraph(_verified_phrase(claims.get("identity_assurance", "UNVERIFIED")), body),
-            ])
-        if "solvency_ratio" in claims:
-            claims_rows.append([
-                Paragraph("Capacité fiscale (ratio)", body),
-                Paragraph(str(claims["solvency_ratio"]), body),
-                Paragraph(_verified_phrase(claims.get("solvency_assurance", "UNVERIFIED")), body),
-            ])
-        if "funds_coverage_band" in claims:
-            band_fr = {
-                "covers_12m_plus": "couvre 12 mois ou plus de loyer",
-                "covers_6m": "couvre 6 à 11 mois de loyer",
-                "covers_3m": "couvre 3 à 5 mois de loyer",
-                "covers_under_3m": "couvre moins de 3 mois de loyer",
-                "amount_only": "fonds vérifiés",
-            }
-            src = " (via garant/sponsor)" if claims.get("funds_coverage_source") == "sponsor" else ""
-            claims_rows.append([
-                Paragraph("Capacité fiscale (fonds)", body),
-                Paragraph(band_fr.get(claims["funds_coverage_band"], "fonds vérifiés") + src, body),
-                Paragraph(_verified_phrase(claims.get("funds_coverage_assurance", "UNVERIFIED")), body),
-            ])
-        if "property_dpe_class" in claims:
-            claims_rows.append([
-                Paragraph("Classe DPE (ADEME)", body),
-                Paragraph(str(claims["property_dpe_class"]), body),
-                Paragraph(_verified_phrase(claims.get("property_assurance", "UNVERIFIED")), body),
-            ])
-        if "property_control" in claims:
-            claims_rows.append([
-                Paragraph("Contrôle du bien (non-attestation de propriété)", body),
-                Paragraph("Oui" if claims["property_control"] else "Non", body),
-                Paragraph(_verified_phrase(claims.get("property_assurance", "UNVERIFIED")), body),
-            ])
-        if "mrh_insurance_assurance" in claims:
-            mrh_ok = claims.get("mrh_insurance_verified")
-            mrh_status_label = "Vérifié ✓" if mrh_ok else "Signalé ⚠"
-            flags = claims.get("mrh_insurance_flags") or []
-            flag_note = f" — signalements : {', '.join(flags)}" if flags else ""
-            claims_rows.append([
-                Paragraph("Assurance MRH (loi 89 art. 7g)", body),
-                Paragraph(f"{mrh_status_label}{flag_note}", body),
-                Paragraph(_verified_phrase(claims.get("mrh_insurance_assurance", "UNVERIFIED")), body),
+                Paragraph(_label, body),
+                Paragraph(_value, body),
+                Paragraph(_assur, body),
             ])
 
         if len(claims_rows) > 1:

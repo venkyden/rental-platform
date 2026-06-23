@@ -693,6 +693,74 @@ class TestIntlFunds:
         assert resp.status_code == 422
         assert user.income_data is None  # nothing persisted for a rejected amount
 
+    def test_solvency_skips_trust_bump_when_funds_already_verified(self):
+        """funds→solvency must not double-count trust (+20 once, not +40)."""
+        from unittest.mock import AsyncMock, MagicMock, patch
+        from app.main import app
+        from app.core.database import get_db
+        from app.routers.auth import get_current_user
+        from fastapi.testclient import TestClient
+
+        user = _mock_user_id_verified()
+        user.income_verified = False
+        # prior MEDIUM funds_coverage already granted a bump
+        user.income_data = {"funds_coverage": {"funds_band": "covers_12m_plus", "assurance": "MEDIUM", "funds_source": "self"}}
+
+        mock_db = MagicMock()
+        mock_db.execute = AsyncMock()
+        mock_db.commit = AsyncMock()
+        mock_db.refresh = AsyncMock()
+
+        target_app = app.app if hasattr(app, "app") else app
+        target_app.dependency_overrides[get_current_user] = lambda: user
+        target_app.dependency_overrides[get_db] = lambda: mock_db
+
+        extraction = {"income_amount": 3000.0, "income_currency": "EUR", "income_period": "monthly"}
+        with patch("app.routers.verification._check_upload_rate_limit", new=AsyncMock()), \
+             patch("app.routers.verification._ai_extract_intl_income", new=AsyncMock(return_value=extraction)), \
+             patch("app.routers.verification.cache"):
+            with TestClient(app) as client:
+                resp = client.post("/verification/intl/solvency",
+                                   data={"monthly_rent": "1000"},
+                                   files={"file": ("s.jpg", b"x", "image/jpeg")})
+        target_app.dependency_overrides.clear()
+        assert resp.status_code == 200
+        # no trust-bump UPDATE should have been issued (prior funds already counted)
+        assert mock_db.execute.await_count == 0
+
+    def test_solvency_bumps_trust_for_fresh_user(self):
+        """Sanity: a user with no prior solvency DOES get the solvency bump."""
+        from unittest.mock import AsyncMock, MagicMock, patch
+        from app.main import app
+        from app.core.database import get_db
+        from app.routers.auth import get_current_user
+        from fastapi.testclient import TestClient
+
+        user = _mock_user_id_verified()
+        user.income_verified = False
+        user.income_data = None
+
+        mock_db = MagicMock()
+        mock_db.execute = AsyncMock()
+        mock_db.commit = AsyncMock()
+        mock_db.refresh = AsyncMock()
+
+        target_app = app.app if hasattr(app, "app") else app
+        target_app.dependency_overrides[get_current_user] = lambda: user
+        target_app.dependency_overrides[get_db] = lambda: mock_db
+
+        extraction = {"income_amount": 3000.0, "income_currency": "EUR", "income_period": "monthly"}
+        with patch("app.routers.verification._check_upload_rate_limit", new=AsyncMock()), \
+             patch("app.routers.verification._ai_extract_intl_income", new=AsyncMock(return_value=extraction)), \
+             patch("app.routers.verification.cache"):
+            with TestClient(app) as client:
+                resp = client.post("/verification/intl/solvency",
+                                   data={"monthly_rent": "1000"},
+                                   files={"file": ("s.jpg", b"x", "image/jpeg")})
+        target_app.dependency_overrides.clear()
+        assert resp.status_code == 200
+        assert mock_db.execute.await_count == 1   # the +20 bump fired
+
 
 class TestIssueMineFundsClaim:
     def test_medium_funds_emitted(self):
@@ -717,19 +785,75 @@ class TestIssueMineFundsClaim:
         assert "funds_coverage_band" not in claims
 
 
-class TestEvidencePdfFunds:
-    def test_funds_credential_pdf_has_no_tier_words(self):
+class TestEvidencePdfRows:
+    """The evidence-PDF claims table is built from `_evidence_claim_rows`, which
+    must render every claim for BOTH vocabularies (direct /issue and /issue-mine)
+    and never leak internal tier words. Asserting on the helper's text tuples is
+    reliable; the PDF bytes themselves are FlateDecode-compressed and opaque."""
+
+    def _labels(self, rows):
+        return [r[0] for r in rows]
+
+    def test_issue_mine_vocabulary_renders_identity_and_property(self):
+        # Regression: /issue-mine emits identity_assurance + property_control_*,
+        # NOT identity_verified/property_control. Both rows must still appear.
+        from app.services.credential import _evidence_claim_rows
+        rows = _evidence_claim_rows({
+            "identity_assurance": "MEDIUM",
+            "property_control_assurance": "MEDIUM",
+            "property_control_label": "Contrôle documenté (taxe foncière)",
+            "funds_coverage_band": "covers_12m_plus",
+            "funds_coverage_source": "sponsor",
+            "funds_coverage_assurance": "MEDIUM",
+        })
+        labels = self._labels(rows)
+        assert "Identité vérifiée" in labels          # was silently dropped before the fix
+        assert "Contrôle du bien (non-attestation de propriété)" in labels
+        assert "Capacité fiscale (fonds)" in labels
+        # property value cell uses the qualification label, not Oui/Non
+        prop = next(r for r in rows if r[0].startswith("Contrôle du bien"))
+        assert prop[1] == "Contrôle documenté (taxe foncière)"
+
+    def test_direct_issue_vocabulary_still_renders(self):
+        # The older direct-/issue keys must keep working unchanged.
+        from app.services.credential import _evidence_claim_rows
+        rows = _evidence_claim_rows({
+            "identity_verified": True,
+            "identity_assurance": "HIGH",
+            "property_control": True,
+            "property_assurance": "MEDIUM",
+        })
+        labels = self._labels(rows)
+        assert "Identité vérifiée" in labels
+        assert "Contrôle du bien (non-attestation de propriété)" in labels
+        ident = next(r for r in rows if r[0] == "Identité vérifiée")
+        assert ident[1] == "Oui"
+
+    def test_no_internal_tier_words_in_assurance_cells(self):
+        from app.services.credential import _evidence_claim_rows
+        rows = _evidence_claim_rows({
+            "identity_assurance": "MEDIUM",
+            "funds_coverage_band": "covers_6m",
+            "funds_coverage_assurance": "MEDIUM",
+        })
+        for _, _, assur in rows:
+            assert assur in ("Vérifié ✓", "Non vérifié")  # never HIGH/MEDIUM/INTERMÉDIAIRE
+
+    def test_unverified_identity_row_hidden(self):
+        from app.services.credential import _evidence_claim_rows
+        rows = _evidence_claim_rows({"identity_assurance": "UNVERIFIED"})
+        assert rows == []
+
+    def test_pdf_still_generates(self):
         from app.services.credential import credential_service
         record = {
-            "subject_role": "tenant",
-            "subject_display_name": "Priya Sharma",
-            "rail": "INTL",
-            "issued_at": "2026-06-17T00:00:00",
-            "expires_at": "2026-07-17T00:00:00",
-            "credential_id": "test-id",
+            "subject_role": "tenant", "subject_display_name": "Priya Sharma",
+            "rail": "INTL", "issued_at": "2026-06-17T00:00:00",
+            "expires_at": "2026-07-17T00:00:00", "credential_id": "test-id",
             "claims": {
-                "identity_verified": True,
                 "identity_assurance": "MEDIUM",
+                "property_control_assurance": "MEDIUM",
+                "property_control_label": "Contrôle documenté",
                 "funds_coverage_band": "covers_12m_plus",
                 "funds_coverage_source": "sponsor",
                 "funds_coverage_assurance": "MEDIUM",
@@ -738,14 +862,3 @@ class TestEvidencePdfFunds:
         }
         pdf = credential_service.export_evidence_pdf(record)
         assert isinstance(pdf, bytes) and len(pdf) > 800
-        # PDF bytes are FlateDecode-compressed and font-glyph-encoded, so the
-        # rendered text cannot be byte-grepped. Assert on the source the PDF is
-        # built from instead: the tier-word dict must be gone and replaced by the
-        # affirmative consumer-facing phrase, and the funds row must be present.
-        import inspect
-        src = inspect.getsource(credential_service.export_evidence_pdf)
-        assert "assurance_fr" not in src          # tier-word dict removed
-        assert "INTERM" not in src                 # 'INTERMÉDIAIRE' tier word gone
-        assert "_verified_phrase" in src           # affirmative phrase helper used
-        assert "Vérifié ✓" in src                  # consumer-facing wording
-        assert "funds_coverage_band" in src        # funds row added
