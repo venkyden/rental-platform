@@ -49,6 +49,7 @@ interface VerificationStatusData {
     identity_verified: boolean;
     employment_verified: boolean;
     income_verified: boolean;
+    solvency_verified?: boolean;
     income_status: string;
     ownership_verified: boolean;
     kbis_verified?: boolean;
@@ -187,15 +188,15 @@ export default function VerificationPage() {
 
                             {/* Income Progress Card */}
                             {isTenant && (
-                                <motion.div variants={itemVariants} className={`glass-card !p-10 flex flex-col items-center text-center group ${statusData?.income_verified ? 'border-emerald-100 bg-emerald-50/10' : ''}`}>
-                                    <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center mb-8 shadow-xl transition-all duration-500 group-hover:scale-110 ${statusData?.income_verified ? 'bg-emerald-950 text-white' : 'bg-zinc-100 text-zinc-400'}`}>
-                                        {statusData?.income_verified ? <Briefcase className="w-8 h-8" /> : <Clock className="w-8 h-8" />}
+                                <motion.div variants={itemVariants} className={`glass-card !p-10 flex flex-col items-center text-center group ${statusData?.solvency_verified ? 'border-emerald-100 bg-emerald-50/10' : ''}`}>
+                                    <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center mb-8 shadow-xl transition-all duration-500 group-hover:scale-110 ${statusData?.solvency_verified ? 'bg-emerald-950 text-white' : 'bg-zinc-100 text-zinc-400'}`}>
+                                        {statusData?.solvency_verified ? <Briefcase className="w-8 h-8" /> : <Clock className="w-8 h-8" />}
                                     </div>
                                     <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] mb-3">
                                         {t('dashboard.verification.verification.tabs.income', undefined, 'Income')}
                                     </h3>
-                                    <p className={`text-lg font-black uppercase tracking-tight ${statusData?.income_verified ? 'text-zinc-950' : 'text-zinc-400'}`}>
-                                        {statusData?.income_verified ? t('dashboard.verification.verification.verified', undefined, 'Verified') : (statusData?.income_status || 'Unverified')}
+                                    <p className={`text-lg font-black uppercase tracking-tight ${statusData?.solvency_verified ? 'text-zinc-950' : 'text-zinc-400'}`}>
+                                        {statusData?.solvency_verified ? t('dashboard.verification.verification.verified', undefined, 'Verified') : (statusData?.income_status || 'Unverified')}
                                     </p>
                                 </motion.div>
                             )}
@@ -362,7 +363,7 @@ export default function VerificationPage() {
                                                     Verify Identity First <ArrowRight className="w-4 h-4" />
                                                 </button>
                                             </div>
-                                        ) : statusData?.income_verified ? (
+                                        ) : statusData?.solvency_verified ? (
                                             <div className="text-center py-16 space-y-6">
                                                 <div className="w-24 h-24 bg-zinc-900 text-white rounded-[2.5rem] flex items-center justify-center mx-auto shadow-2xl">
                                                     <CheckCircle2 className="w-12 h-12" />

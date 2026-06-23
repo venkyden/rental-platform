@@ -126,6 +126,53 @@ def test_guarantor_data_strips_file_urls():
     assert gdata["file_count"] == 1
 
 
+def _status_for(user):
+    # Optional[dict] fields must be None (not MagicMock) for response validation
+    user.identity_data = None
+    user.employment_data = None
+    user.ownership_data = None
+    user.guarantor_data = None
+    client = make_client(user)
+    resp = client.get("/verification/status")
+    assert resp.status_code == 200
+    return resp.json()
+
+
+def test_solvency_verified_true_for_funds_only_user():
+    """A funds-only applicant (MEDIUM funds_coverage, no income) reads as solvency-verified."""
+    user = make_mock_user("tenant")
+    user.income_verified = False
+    user.income_data = {"funds_coverage": {"funds_band": "covers_12m_plus", "assurance": "MEDIUM", "funds_source": "self"}}
+    data = _status_for(user)
+    assert data["income_verified"] is False        # income rail untouched
+    assert data["solvency_verified"] is True        # rollup picks up funds_coverage
+
+
+def test_solvency_verified_false_without_any_signal():
+    user = make_mock_user("tenant")
+    user.income_verified = False
+    user.income_data = None
+    data = _status_for(user)
+    assert data["solvency_verified"] is False
+
+
+def test_solvency_verified_true_for_income_verified_user():
+    user = make_mock_user("tenant")
+    user.income_verified = True
+    user.income_data = {"solvency_ratio": ">=3.0", "solvency_assurance": "MEDIUM"}
+    data = _status_for(user)
+    assert data["solvency_verified"] is True
+
+
+def test_solvency_verified_false_for_unverified_funds():
+    """Funds present but UNVERIFIED (e.g. FX failed) must NOT count as solvency-verified."""
+    user = make_mock_user("tenant")
+    user.income_verified = False
+    user.income_data = {"funds_coverage": {"funds_band": "unavailable", "assurance": "UNVERIFIED"}}
+    data = _status_for(user)
+    assert data["solvency_verified"] is False
+
+
 # ── Guarantor dedup ───────────────────────────────────────────────────────────
 
 def test_guarantor_dedup_same_doc_type():
