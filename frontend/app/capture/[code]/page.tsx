@@ -47,7 +47,14 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
         window.addEventListener('offline', handleOffline);
         setIsOffline(!navigator.onLine);
         loadSessionDetails();
+        requestLocation();
+        const { backgroundSyncManager } = require('@/lib/backgroundSync');
+        const unsubscribe = backgroundSyncManager.subscribe((count: number) => {
+            setPendingCount(count);
+        });
+
         return () => {
+            unsubscribe();
             window.removeEventListener('online', handleOnline);
             window.removeEventListener('offline', handleOffline);
         };
@@ -64,10 +71,13 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
         }
     };
 
-    const checkQueue = async () => {
-        const { offlineQueue } = await import('@/lib/offlineQueue');
-        const count = await offlineQueue.count();
-        setPendingCount(count);
+    const syncOfflineQueue = async () => {
+        const { backgroundSyncManager } = await import('@/lib/backgroundSync');
+        await backgroundSyncManager.sync();
+        if (pendingCount > 0) {
+            // It will update via subscription, but we can show a toast
+            showToast('Sync triggered.', 'info');
+        }
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -95,17 +105,50 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                 room_label: selectedRoom?.label ?? null,
             };
 
+            if (isOffline) {
+                const { backgroundSyncManager } = await import('@/lib/backgroundSync');
+                await backgroundSyncManager.enqueueAndSync(
+                    file,
+                    JSON.stringify(metadataObj),
+                    code,
+                    file.type.startsWith('video') ? 'video' : 'photo'
+                );
+                successCount++;
+                continue;
+            }
+
             try {
                 const response = await apiClient.uploadPropertyMedia(file, JSON.stringify(metadataObj), code);
                 if (response.gps_verified) setIsSessionVerified(true);
                 successCount++;
-            } catch (error) {
-                console.error(error);
+            } catch (err: any) {
+                const msg = err?.response?.data?.detail || 'Upload failed. Saving for retry when online.';
+                showToast(msg, 'error');
+                // Queue for offline retry
+                const { backgroundSyncManager } = await import('@/lib/backgroundSync');
+                await backgroundSyncManager.enqueueAndSync(
+                    file,
+                    JSON.stringify(metadataObj),
+                    code,
+                    file.type.startsWith('video') ? 'video' : 'photo'
+                );
             }
         }
 
-        if (successCount > 0) setStep('success');
-        else setStep('preview');
+        if (isOffline) {
+            showToast(`${successCount} photo${successCount !== 1 ? 's' : ''} queued — will upload when back online.`, 'info');
+            setStep('success');
+        } else if (successCount > 0) {
+            setStep('success');
+        } else {
+            setStep('preview');
+        }
+    };
+
+    const resetForNextCapture = () => {
+        setFiles([]);
+        setPreviewUrls([]);
+        setStep('intro');
     };
 
     return (

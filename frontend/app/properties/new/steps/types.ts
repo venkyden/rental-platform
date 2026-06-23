@@ -27,8 +27,8 @@ export type PropertyFormData = {
     }>;
     dpe_rating: string;
     ges_rating: string;
-    dpe_value?: number;
-    ges_value?: number;
+    dpe_value: number | undefined;
+    ges_value: number | undefined;
     surface_type: string;
     construction_year?: number;
     monthly_rent: number;
@@ -37,6 +37,7 @@ export type PropertyFormData = {
     charges_included: boolean;
     charges_description?: string;
     available_from?: string;
+    lease_duration_months?: number;
     caf_eligible: boolean;
     guarantor_required: boolean;
     accepted_guarantor_types: string[];

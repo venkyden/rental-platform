@@ -15,20 +15,37 @@ export default function Step5Pricing({ formData, updateFormData, t, showRentCont
     return (
         <div className="space-y-12">
             {/* Monthly rent */}
-            <div className="space-y-6">
-                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
-                    {t('properties.new.steps.pricing.monthlyRent')}
-                </label>
-                <div className="flex items-baseline gap-4">
-                    <span className="text-4xl font-black text-zinc-300">€</span>
+            <div className="grid grid-cols-2 gap-8">
+                <div className="space-y-6">
+                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                        {t('properties.new.steps.pricing.monthlyRent')}
+                    </label>
+                    <div className="flex items-baseline gap-4">
+                        <span className="text-4xl font-black text-zinc-300">€</span>
+                        <input
+                            type="number"
+                            value={isNaN(formData.monthly_rent) ? '' : formData.monthly_rent}
+                            onChange={(e) =>
+                                updateFormData({ monthly_rent: e.target.value === '' ? 0 : parseInt(e.target.value) || 0 })
+                            }
+                            className="bg-transparent text-8xl font-black tracking-tighter border-none focus:ring-0 w-full"
+                            aria-label={t('property.create.pricing.monthlyRent', undefined, 'Monthly rent')}
+                        />
+                    </div>
+                </div>
+                <div className="space-y-6">
+                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                        {t('properties.new.steps.pricing.leaseDuration', undefined, 'Lease Duration (Months)')}
+                    </label>
                     <input
                         type="number"
-                        value={isNaN(formData.monthly_rent) ? '' : formData.monthly_rent}
+                        value={formData.lease_duration_months === undefined ? '' : formData.lease_duration_months}
                         onChange={(e) =>
-                            updateFormData({ monthly_rent: e.target.value === '' ? 0 : parseInt(e.target.value) || 0 })
+                            updateFormData({ lease_duration_months: e.target.value === '' ? undefined : parseInt(e.target.value) || 0 })
                         }
-                        className="bg-transparent text-8xl font-black tracking-tighter border-none focus:ring-0 w-full"
-                        aria-label={t('property.create.pricing.monthlyRent', undefined, 'Monthly rent')}
+                        placeholder={t('property.create.pricing.flexibleDuration', undefined, 'Flexible / Open-ended')}
+                        className="bg-transparent text-6xl font-black tracking-tighter border-none focus:ring-0 w-full"
+                        aria-label={t('property.create.pricing.leaseDuration', undefined, 'Lease duration')}
                     />
                 </div>
             </div>
@@ -259,6 +276,9 @@ export default function Step5Pricing({ formData, updateFormData, t, showRentCont
                                     <div className="space-y-4">
                                         <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
                                             {t('properties.new.steps.pricing.complementLoyerJustificationLabel')}
+                                            {formData.complement_de_loyer && formData.complement_de_loyer > 0 ? (
+                                                <span className="text-red-500 ml-1">*</span>
+                                            ) : null}
                                         </label>
                                         <textarea
                                             value={formData.complement_de_loyer_justification ?? ''}

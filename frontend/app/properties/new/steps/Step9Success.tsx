@@ -1,19 +1,69 @@
 'use client';
 
-import { CheckCircle2, Shield } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { CheckCircle2, Shield, Camera, RefreshCw } from 'lucide-react';
 import QRCodeDisplay from '@/components/QRCodeDisplay';
-import { PropertyFormData, TFn } from './types';
+import { apiClient } from '@/lib/api';
+import { resolveMediaUrl } from '@/lib/mediaUrl';
+import { PropertyFormData, TFn, DpeWarning } from './types';
+
+interface CapturedPhoto {
+    url: string;
+    room_label?: string;
+    captured_at?: string;
+}
 
 interface Props {
     formData: PropertyFormData;
     t: TFn;
+    language: string;
+    propertyId: string | null;
     mediaSession: { verification_code: string; id: string; expires_at: string } | null;
     publishing: boolean;
     onPublish: () => void;
     onReturn: () => void;
 }
 
-export default function Step9Success({ formData, t, mediaSession, publishing, onPublish, onReturn }: Props) {
+export default function Step9Success({ formData, t, language, propertyId, mediaSession, publishing, onPublish, onReturn }: Props) {
+    const [dpeAcknowledged, setDpeAcknowledged] = useState(false);
+    const [capturedPhotos, setCapturedPhotos] = useState<CapturedPhoto[]>([]);
+    const [isPolling, setIsPolling] = useState(false);
+    const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
+    const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+    const fetchPhotos = async () => {
+        if (!propertyId) return;
+        try {
+            const res = await apiClient.client.get(`/properties/${propertyId}`);
+            const photos = Array.isArray(res.data.photos)
+                ? res.data.photos
+                : res.data.photos?.urls?.map((url: string) => ({ url })) ?? [];
+            setCapturedPhotos(photos);
+            setLastRefreshed(new Date());
+        } catch {
+            // silent — polling will retry
+        }
+    };
+
+    // Start polling when component mounts and stop when publishing
+    useEffect(() => {
+        if (!propertyId) return;
+        setIsPolling(true);
+        fetchPhotos();
+        pollIntervalRef.current = setInterval(fetchPhotos, 5000);
+        return () => {
+            if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+        };
+    }, [propertyId]);
+
+    // Stop polling once publishing starts
+    useEffect(() => {
+        if (publishing && pollIntervalRef.current) {
+            clearInterval(pollIntervalRef.current);
+            setIsPolling(false);
+        }
+    }, [publishing]);
+
     const isDepositLimitExceeded =
         formData.deposit !== undefined &&
         formData.monthly_rent > 0 &&
@@ -42,6 +92,67 @@ export default function Step9Success({ formData, t, mediaSession, publishing, on
                     captureUrl={`${typeof window !== 'undefined' ? window.location.origin : ''}/capture/${mediaSession?.id}`}
                     expiresAt={mediaSession?.expires_at || new Date().toISOString()}
                 />
+            </div>
+
+            {/* Live photo feed */}
+            <div className="w-full max-w-md mx-auto">
+                <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                        <Camera className="w-4 h-4 text-zinc-500" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">
+                            Captured Media
+                        </span>
+                        {capturedPhotos.length > 0 && (
+                            <span className="px-3 py-1 bg-zinc-900 text-white rounded-full text-[9px] font-black uppercase tracking-wider">
+                                {capturedPhotos.length}
+                            </span>
+                        )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                        {isPolling && (
+                            <RefreshCw className="w-3 h-3 text-zinc-300 animate-spin" />
+                        )}
+                        {lastRefreshed && (
+                            <span className="text-[9px] text-zinc-300 font-medium">
+                                Live
+                            </span>
+                        )}
+                    </div>
+                </div>
+
+                {capturedPhotos.length === 0 ? (
+                    <div className="border-2 border-dashed border-zinc-100 rounded-[2rem] p-10 text-center">
+                        <Camera className="w-8 h-8 text-zinc-200 mx-auto mb-3" />
+                        <p className="text-xs font-black uppercase tracking-widest text-zinc-300">
+                            Scan QR code on your phone to capture photos
+                        </p>
+                        <p className="text-[10px] text-zinc-200 mt-2 font-medium">
+                            Photos will appear here automatically
+                        </p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-3 gap-3">
+                        {capturedPhotos.map((photo, i) => (
+                            <div
+                                key={i}
+                                className="aspect-square rounded-2xl overflow-hidden bg-zinc-100 relative group"
+                            >
+                                <img
+                                    src={resolveMediaUrl(photo.url || (photo as any))}
+                                    alt={photo.room_label || `Photo ${i + 1}`}
+                                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                />
+                                {photo.room_label && (
+                                    <div className="absolute bottom-0 inset-x-0 bg-black/50 px-2 py-1">
+                                        <span className="text-[8px] font-black uppercase tracking-wider text-white truncate block">
+                                            {photo.room_label}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
 
             <div className="pt-12 flex flex-col gap-6">

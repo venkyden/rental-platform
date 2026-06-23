@@ -86,3 +86,6 @@ backend/test_*.py
 frontend/test-results/
 frontend/playwright-report/
 
+# Agent tooling
+.claude/
+.superpowers/
