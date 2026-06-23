@@ -10,8 +10,6 @@ import { BRAND, SITE_URL } from "@/lib/constants";
 
 
 export const metadata: Metadata = {
-  // metadataBase makes all relative OG/Twitter image URLs resolve against the
-  // real origin instead of localhost (previously broke social-share previews).
   metadataBase: new URL(SITE_URL),
   title: {
     default: BRAND.title,
@@ -32,12 +30,40 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
     title: "Roomivo",
   },
-  icons: {
-    icon: [
-      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
-      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+  robots: {
+    index: true,
+    follow: true,
+    nocache: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  openGraph: {
+    title: BRAND.title,
+    description: BRAND.description,
+    url: SITE_URL,
+    siteName: BRAND.name,
+    locale: "fr_FR",
+    alternateLocale: "en_US",
+    type: "website",
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: `${BRAND.name} Preview`,
+      },
     ],
-    apple: "/icons/icon-192.png",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: BRAND.title,
+    description: BRAND.description,
+    images: ["/opengraph-image"],
   },
 };
 
@@ -60,9 +86,26 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: BRAND.name,
+    url: SITE_URL,
+    description: BRAND.description,
+    potentialAction: {
+      "@type": "SearchAction",
+      target: `${SITE_URL}/search?q={search_term_string}`,
+      "query-input": "required name=search_term_string"
+    }
+  };
+
   return (
     <html lang="fr" suppressHydrationWarning>
       <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         {/* Load Google Identity Services script once */}
         <Script 
           src="https://accounts.google.com/gsi/client" 

@@ -32,7 +32,9 @@ async function getPropertyEntries(): Promise<MetadataRoute.Sitemap> {
       .filter((p) => p?.id)
       .map((p) => ({
         url: `${SITE_URL}/properties/${p.id}`,
-        lastModified: p.updated_at ? new Date(p.updated_at) : new Date(),
+        lastModified: p.updated_at 
+          ? new Date(p.updated_at).toISOString().split('T')[0] 
+          : new Date().toISOString().split('T')[0],
         changeFrequency: 'daily' as const,
         priority: 0.7,
       }));
@@ -42,9 +44,10 @@ async function getPropertyEntries(): Promise<MetadataRoute.Sitemap> {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const now = new Date().toISOString().split('T')[0];
   const staticEntries: MetadataRoute.Sitemap = STATIC_ROUTES.map((r) => ({
     url: `${SITE_URL}${r.path}`,
-    lastModified: new Date(),
+    lastModified: now,
     changeFrequency: r.changeFrequency,
     priority: r.priority,
   }));
