@@ -851,12 +851,12 @@ async def forgot_password(
 @router.post("/reset-password")
 @limiter.limit("10/minute")
 async def reset_password(
-    http_request: Request,
-    request: ResetPasswordRequest,
+    request: Request,  # noqa: ARG001 — consumed by @limiter
+    payload: ResetPasswordRequest,
     db: AsyncSession = Depends(get_db),
 ):
     """Reset password using token"""
-    payload = verify_token(request.token)
+    payload = verify_token(payload.token)
 
     if payload is None or payload.get("type") != "password_reset":
         raise HTTPException(
@@ -884,7 +884,7 @@ async def reset_password(
         )
 
     # Update password and revoke all existing sessions / outstanding reset links.
-    user.hashed_password = get_password_hash(request.new_password)
+    user.hashed_password = get_password_hash(payload.new_password)
     user.refresh_token_version += 1
     await db.commit()
 
@@ -893,7 +893,7 @@ async def reset_password(
 
 @router.get("/verify-email")
 @limiter.limit("10/minute")
-async def verify_email(http_request: Request, token: str, db: AsyncSession = Depends(get_db)):  # noqa: ARG001 — http_request consumed by @limiter
+async def verify_email(request: Request, token: str, db: AsyncSession = Depends(get_db)):  # noqa: ARG001 — request consumed by @limiter
     """Verify email address using token"""
     payload = verify_token(token)
 
@@ -925,7 +925,7 @@ async def verify_email(http_request: Request, token: str, db: AsyncSession = Dep
 @router.post("/resend-verification")
 @limiter.limit("3/minute")
 async def resend_verification(
-    http_request: Request,  # consumed by @limiter via get_remote_address
+    request: Request,  # noqa: ARG001 — consumed by @limiter via get_remote_address
     background_tasks: BackgroundTasks,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
