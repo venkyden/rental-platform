@@ -20,6 +20,7 @@ interface TenantSummary {
     identity_verified: boolean;
     employment_verified: boolean;
     income_verified: boolean;
+    solvency_verified?: boolean;
     guarantor_type?: string;
 }
 
@@ -318,7 +319,7 @@ export default function ReceivedApplicationsPage() {
                                                                     <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider ${tenant.employment_verified ? 'text-emerald-600' : 'text-zinc-400'}`}>
                                                                         <CheckCircle className="w-3.5 h-3.5" /> {t('applications.employment')}
                                                                     </span>
-                                                                    <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider ${tenant.income_verified ? 'text-emerald-600' : 'text-zinc-400'}`}>
+                                                                    <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider ${(tenant.solvency_verified ?? tenant.income_verified) ? 'text-emerald-600' : 'text-zinc-400'}`}>
                                                                         <CheckCircle className="w-3.5 h-3.5" /> {t('applications.resources')}
                                                                     </span>
                                                                     {tenant.guarantor_type && (

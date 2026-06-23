@@ -59,6 +59,7 @@ class UserResponse(BaseModel):
     identity_verified: bool = False
     employment_verified: bool = False
     income_verified: bool = False
+    solvency_verified: bool = False
     income_status: Optional[str] = "unverified"
     ownership_verified: Optional[bool] = False
     kbis_verified: Optional[bool] = False
@@ -174,6 +175,7 @@ class TenantSummary(BaseModel):
     identity_verified: bool = False
     employment_verified: bool = False
     income_verified: bool = False
+    solvency_verified: bool = False
     guarantor_type: Optional[str] = None
 
     class Config:

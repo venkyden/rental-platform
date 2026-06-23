@@ -47,7 +47,8 @@ export default function VerificationGate({
             case 'email':
                 return user.email_verified === true;
             case 'income':
-                return (user as any).income_verified === true;
+                // solvency rollup: income rail OR a MEDIUM funds_coverage (INTL funds)
+                return ((user as any).solvency_verified ?? (user as any).income_verified) === true;
             case 'employment':
                 return user.employment_verified === true;
             case 'property_docs':

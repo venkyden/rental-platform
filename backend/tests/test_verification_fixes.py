@@ -126,6 +126,81 @@ def test_guarantor_data_strips_file_urls():
     assert gdata["file_count"] == 1
 
 
+def test_solvency_verified_property_rollup():
+    """User.solvency_verified = income_verified OR a MEDIUM funds_coverage.
+    Tested on a real User (MagicMock can't run the property)."""
+    from app.models.user import User
+    u = User()
+
+    # nothing → False
+    u.income_verified = False
+    u.income_data = None
+    assert u.solvency_verified is False
+
+    # income rail verified → True
+    u.income_verified = True
+    assert u.solvency_verified is True
+
+    # funds-only, MEDIUM → True (income rail still False)
+    u.income_verified = False
+    u.income_data = {"funds_coverage": {"funds_band": "covers_12m_plus", "assurance": "MEDIUM"}}
+    assert u.solvency_verified is True
+
+    # funds present but UNVERIFIED (FX failed) → False
+    u.income_data = {"funds_coverage": {"funds_band": "unavailable", "assurance": "UNVERIFIED"}}
+    assert u.solvency_verified is False
+
+    # income_data present but no funds_coverage → False
+    u.income_data = {"solvency_ratio": ">=3.0", "solvency_assurance": "MEDIUM"}
+    assert u.solvency_verified is False
+
+
+def _summary_user(email):
+    """Real (unsaved) User with the fields TenantSummary reads explicitly set —
+    unsaved instances have None (not the column default) until a DB flush."""
+    from app.models.user import User
+    u = User()
+    u.id = uuid.uuid4()
+    u.email = email
+    u.full_name = "Intl Student"
+    u.identity_verified = False
+    u.employment_verified = False
+    u.income_verified = False
+    u.trust_score = 0
+    return u
+
+
+def test_solvency_verified_flows_through_schema_via_from_attributes():
+    """The feature's core mechanism: from_attributes must INVOKE User.solvency_verified
+    when serialising the landlord-facing applicant schema — not fall back to the schema
+    default. A funds-only User must serialise as solvency_verified=True."""
+    from app.models.schemas import TenantSummary
+
+    funds_only = _summary_user("intl@student.test")
+    funds_only.income_data = {"funds_coverage": {"funds_band": "covers_12m_plus", "assurance": "MEDIUM"}}
+    # True proves the @property ran; if from_attributes skipped it, the schema
+    # default (False) would win.
+    assert TenantSummary.model_validate(funds_only).solvency_verified is True
+
+    bare = _summary_user("bare@test.test")
+    bare.income_data = None
+    assert TenantSummary.model_validate(bare).solvency_verified is False
+
+
+def test_status_response_includes_solvency_verified():
+    """GET /verification/status surfaces the solvency_verified rollup field."""
+    user = make_mock_user("tenant")
+    user.solvency_verified = True  # endpoint reads current_user.solvency_verified
+    user.identity_data = None
+    user.employment_data = None
+    user.ownership_data = None
+    user.guarantor_data = None
+    client = make_client(user)
+    resp = client.get("/verification/status")
+    assert resp.status_code == 200
+    assert resp.json()["solvency_verified"] is True
+
+
 # ── Guarantor dedup ───────────────────────────────────────────────────────────
 
 def test_guarantor_dedup_same_doc_type():

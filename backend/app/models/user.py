@@ -79,6 +79,16 @@ class User(Base):
     insurance_status = Column(String, default="unverified")
     insurance_data = Column(EncryptedJSON, nullable=True)
 
+    @property
+    def solvency_verified(self) -> bool:
+        """Single source of truth for "is this user solvency-verified?": the income
+        rail OR a MEDIUM funds_coverage (INTL funds rail). Consumed by the status
+        endpoint, the auth/me UserResponse, and the landlord-facing applicant schema,
+        so funds-only applicants read as verified everywhere — not just their own
+        dashboard. Does NOT mutate income_verified (the rails stay distinct axes)."""
+        funds = (self.income_data or {}).get("funds_coverage") or {}
+        return bool(self.income_verified) or funds.get("assurance") == "MEDIUM"
+
     # Trust scoring
     trust_score = Column(Integer, default=0)  # 0-100
     risk_tier = Column(String, nullable=True)  # LOW_RISK, MEDIUM_RISK, etc.
