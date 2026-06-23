@@ -306,12 +306,18 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
             };
         });
 
+    const requireConsent = () => {
+        if (!consent) {
+            setError(t('verification.upload.consentRequired', undefined,
+                'Please consent to automated document analysis to continue'));
+            return false;
+        }
+        return true;
+    };
+
     const handleIdUpload = async () => {
         if (!idFile) return;
-        if (!consent) {
-            setError('Please consent to automated document analysis to continue');
-            return;
-        }
+        if (!requireConsent()) return;
         setIdUploading(true);
         setError('');
         try {
@@ -444,10 +450,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
             setError('Please select a document type and upload all required files');
             return;
         }
-        if (!consent) {
-            setError('Please consent to automated document analysis to continue');
-            return;
-        }
+        if (!requireConsent()) return;
         setUploading(true);
         setError('');
         try {

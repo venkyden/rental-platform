@@ -331,3 +331,77 @@ test.describe('Verification Flows E2E', () => {
         });
     });
 });
+
+// Regression: GDPR AI-processing consent gate covers identity upload path, not
+// only employment/property form. Mobile preview: Submit disabled until consent.
+test.describe('Identity upload — AI-processing consent gate', () => {
+    // Force mobile selfie-with-ID flow (UA matches isMobileDevice()).
+    test.use({
+        userAgent:
+            'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
+        viewport: { width: 390, height: 844 },
+    });
+
+    // Minimal valid 1x1 JPEG for handleIdFileChange canvas compression.
+    const TINY_JPEG = Buffer.from(
+        '/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRof' +
+        'Hh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/wAALCAABAAEBAREA/8QAFAAB' +
+        'AAAAAAAAAAAAAAAAAAAAAP/EABQQAQAAAAAAAAAAAAAAAAAAAAD/2gAIAQEAAD8AfwD/2Q==',
+        'base64',
+    );
+
+    test.beforeEach(async ({ page }) => {
+        // Mock specific API endpoints. Requires same-origin NEXT_PUBLIC_API_URL
+        // so calls satisfy CSP connect-src ('self') and stay interceptable.
+        await mockAuthSession(page);
+        // Guard against accidental real upload if gate regresses.
+        await page.route('**/verification/identity/upload*', route =>
+            route.fulfill({ status: 200, contentType: 'application/json', body: '{}' }),
+        );
+
+        await page.goto('/');
+        await page.evaluate(() => localStorage.setItem('app-language', 'en'));
+        await page.reload();
+    });
+
+    test('Submit is disabled until the consent checkbox is checked', async ({ page }) => {
+        await page.goto('/verify/identity');
+
+        // The authenticated identity component only renders when the e2e auth
+        // mock is interceptable (needs a same-origin NEXT_PUBLIC_API_URL build so
+        // the /auth calls satisfy CSP connect-src). Skip gracefully otherwise —
+        // matching this suite's "skip if routes are unavailable" philosophy.
+        const passport = page.getByRole('button', { name: /Passport/i });
+        try {
+            await passport.waitFor({ state: 'visible', timeout: 15_000 });
+        } catch {
+            test.skip(true, 'Identity flow unreachable — auth mock unavailable in this build/CSP setup');
+        }
+
+        // Choose a document type, then advance to the capture guide.
+        await passport.click();
+        await page.getByRole('button', { name: /Continue/i }).click();
+
+        // Feed the photo straight to the hidden file input → advances to preview.
+        await page.locator('input[type="file"]').setInputFiles({
+            name: 'selfie_with_id.jpg',
+            mimeType: 'image/jpeg',
+            buffer: TINY_JPEG,
+        });
+
+        const submit = page.getByRole('button', { name: /^Submit$/ });
+        const consent = page.getByRole('checkbox');
+
+        // Preview step: consent unchecked → Submit disabled.
+        await expect(submit).toBeVisible({ timeout: 10_000 });
+        await expect(consent).not.toBeChecked();
+        await expect(submit).toBeDisabled();
+
+        // Checking consent enables Submit; unchecking disables it again.
+        await consent.check();
+        await expect(submit).toBeEnabled();
+
+        await consent.uncheck();
+        await expect(submit).toBeDisabled();
+    });
+});
