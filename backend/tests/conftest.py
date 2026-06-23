@@ -57,6 +57,7 @@ def make_mock_user(role: str = "tenant", email: str = "test@example.com"):
     user.income_verified = False
     user.income_status = "unverified"
     user.income_data = None
+    user.solvency_verified = False  # real User has a @property; mocks need a bool default
     user.guarantor_type = None
     user.guarantor_status = "unverified"
     user.guarantor_data = None

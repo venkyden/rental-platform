@@ -985,9 +985,6 @@ async def get_verification_status(current_user: User = Depends(get_current_user)
     safe_guarantor = {k: v for k, v in guarantor_data_raw.items() if k != "files"}
     safe_guarantor["file_count"] = len(guarantor_data_raw.get("files", []))
 
-    _funds = (current_user.income_data or {}).get("funds_coverage") or {}
-    solvency_verified = bool(current_user.income_verified) or _funds.get("assurance") == "MEDIUM"
-
     return {
         "identity_verified": current_user.identity_verified,
         "identity_assurance": derive_identity_assurance(
@@ -997,7 +994,7 @@ async def get_verification_status(current_user: User = Depends(get_current_user)
         "employment_status": current_user.employment_status if hasattr(current_user, 'employment_status') else "unverified",
         "income_verified": current_user.income_verified,
         "income_status": current_user.income_status,
-        "solvency_verified": solvency_verified,
+        "solvency_verified": current_user.solvency_verified,
         "ownership_verified": current_user.ownership_verified,
         "kbis_verified": current_user.kbis_verified,
         "carte_g_verified": current_user.carte_g_verified,
