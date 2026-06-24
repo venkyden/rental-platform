@@ -14,6 +14,9 @@ export function safeRedirectPath(path: unknown, fallback = '/dashboard'): string
     } catch {
         return fallback;
     }
+    // Browsers normalise "\" to "/" (WHATWG URL), so "/\evil.com" resolves to
+    // "//evil.com" — reject before the leading-slash check to close that bypass.
+    if (value.includes('\\')) return fallback;
     // Must start with a single / and not //
     if (!value.startsWith('/') || value.startsWith('//')) return fallback;
     // Must not contain a protocol (e.g. http:, javascript:)
