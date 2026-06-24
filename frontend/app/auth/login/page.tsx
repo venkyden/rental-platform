@@ -10,6 +10,7 @@ import { useLanguage } from '@/lib/LanguageContext';
 import { useGoogleSignIn } from '@/lib/useGoogleSignIn';
 import { useAuth } from '@/lib/useAuth';
 import { isValidEmail } from '@/app/lib/utils/validation';
+import { safeRedirectPath } from '@/lib/safeRedirect';
 
 /* ----------------------------------------------------------------
    Framer-motion variants (factories so they can honour reduced-motion)
@@ -95,7 +96,7 @@ function LoginContent() {
                 const result = await apiClient.googleLogin(credential);
                 await checkAuth();
                 const safeRedirect = getSafeRedirectUrl(searchParams.get('returnUrl'));
-                router.push(safeRedirect || result.redirect_path || '/dashboard');
+                router.push(safeRedirect || safeRedirectPath(result.redirect_path));
             } catch (err: any) {
                 const detail = err.response?.data?.detail;
                 setError(typeof detail === 'string' ? detail : t('auth.login.error.googleFail', undefined, 'Google login failed'));
@@ -150,7 +151,7 @@ function LoginContent() {
             const response = await apiClient.login(email, password);
             await checkAuth();
             const safeRedirect = getSafeRedirectUrl(searchParams.get('returnUrl'));
-            router.push(safeRedirect || response.redirect_path || '/dashboard');
+            router.push(safeRedirect || safeRedirectPath(response.redirect_path));
         } catch (err: any) {
             const detail = err.response?.data?.detail;
             let msg = t('auth.login.error.loginFail', undefined, 'Login failed');

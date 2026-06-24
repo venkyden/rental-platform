@@ -10,6 +10,7 @@ import { useLanguage } from '@/lib/LanguageContext';
 import { useGoogleSignIn } from '@/lib/useGoogleSignIn';
 import { useAuth } from '@/lib/useAuth';
 import { isValidEmail } from '@/app/lib/utils/validation';
+import { safeRedirectPath } from '@/lib/safeRedirect';
 
 /* ----------------------------------------------------------------
    Framer-motion variants — factories that respect prefers-reduced-motion
@@ -73,7 +74,7 @@ export default function RegisterPage() {
                 const roleToUse = roleRef.current || 'tenant';
                 const result = await apiClient.googleLogin(credential, roleToUse);
                 await checkAuth();
-                router.push(result.redirect_path || '/dashboard');
+                router.push(safeRedirectPath(result.redirect_path));
             } catch (err: unknown) {
                 const axiosErr = err as { response?: { data?: { detail?: string } } };
                 const detail = axiosErr?.response?.data?.detail;
@@ -175,7 +176,7 @@ export default function RegisterPage() {
             });
             const loginRes = await apiClient.login(formData.email, formData.password);
             await checkAuth();
-            router.push(loginRes.redirect_path || '/dashboard');
+            router.push(safeRedirectPath(loginRes.redirect_path));
         } catch (err: any) {
             const detail = err.response?.data?.detail;
             setError(typeof detail === 'string' ? detail : t('auth.register.error.fail', undefined, 'Registration failed'));
