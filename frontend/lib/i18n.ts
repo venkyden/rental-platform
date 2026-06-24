@@ -2,6 +2,57 @@ export type Language = 'en' | 'fr';
 
 export const translations = {
     en: {
+        esign: {
+            title: "Electronic signature",
+            subtitle: "Both verified parties sign the landlord-provided lease. Roomivo did not draft the wording and does not certify its legal compliance; it attests verified identities, document integrity, and timestamps.",
+            loading: "Loading signing status…",
+            list: {
+                title: "My leases",
+                loading: "Loading…",
+                empty: "No leases yet",
+                error: "Could not load your leases",
+                start: "Start",
+                month: "mo",
+                statusSigned: "Signed",
+                statusToSign: "To sign",
+                statusDraft: "Draft",
+            },
+            step: {
+                document: "Lease uploaded",
+                landlord: "Landlord signed",
+                tenant: "Tenant signed",
+                evidence: "Proof issued",
+            },
+            upload: {
+                cta: "Upload your lease (PDF)",
+                hint: "Your own lease document. Roomivo does not modify it.",
+                waiting: "Waiting for the landlord to upload the lease.",
+            },
+            sign: {
+                ready: "The lease is ready for your signature.",
+                draw: "Draw your signature",
+                clear: "Clear",
+                orTyped: "Or type your full name",
+                typedPlaceholder: "Full legal name",
+                consent: "I consent to signing this lease electronically (eIDAS simple signature). I confirm my identity has been verified by Roomivo.",
+                submit: "Sign the lease",
+                waitingOther: "You have signed. Waiting for the other party to sign.",
+            },
+            done: {
+                title: "Lease signed by both parties",
+                body: "A tamper-evident proof of signature is available. It records both verified signers, the document fingerprint (SHA-256), and timestamps, sealed with Roomivo’s Ed25519 signature.",
+                download: "Download proof of signature",
+            },
+            error: {
+                load: "Could not load the signing status",
+                notPdf: "The lease must be a PDF file",
+                upload: "Upload failed",
+                noSignature: "Draw or type your signature",
+                noConsent: "You must consent to sign electronically",
+                sign: "Signing failed",
+                evidence: "Could not download the evidence pack",
+            },
+        },
         // Landing Page
         landing: {
             hero: {
@@ -2291,6 +2342,57 @@ export const translations = {
         }
     },
     fr: {
+        esign: {
+            title: "Signature électronique",
+            subtitle: "Les deux parties vérifiées signent le bail fourni par le bailleur. Roomivo n'en a pas rédigé les clauses et n'atteste pas de sa conformité légale ; il atteste l'identité vérifiée des signataires, l'intégrité du document et l'horodatage.",
+            loading: "Chargement du statut de signature…",
+            list: {
+                title: "Mes baux",
+                loading: "Chargement…",
+                empty: "Aucun bail pour le moment",
+                error: "Impossible de charger vos baux",
+                start: "Début",
+                month: "mois",
+                statusSigned: "Signé",
+                statusToSign: "À signer",
+                statusDraft: "Brouillon",
+            },
+            step: {
+                document: "Bail téléversé",
+                landlord: "Bailleur a signé",
+                tenant: "Locataire a signé",
+                evidence: "Preuve émise",
+            },
+            upload: {
+                cta: "Téléverser votre bail (PDF)",
+                hint: "Votre propre document de bail. Roomivo ne le modifie pas.",
+                waiting: "En attente du téléversement du bail par le bailleur.",
+            },
+            sign: {
+                ready: "Le bail est prêt à être signé.",
+                draw: "Dessinez votre signature",
+                clear: "Effacer",
+                orTyped: "Ou saisissez votre nom complet",
+                typedPlaceholder: "Nom légal complet",
+                consent: "Je consens à signer ce bail électroniquement (signature simple eIDAS). Je confirme que mon identité a été vérifiée par Roomivo.",
+                submit: "Signer le bail",
+                waitingOther: "Vous avez signé. En attente de la signature de l'autre partie.",
+            },
+            done: {
+                title: "Bail signé par les deux parties",
+                body: "Une preuve de signature infalsifiable est disponible. Elle enregistre les deux signataires vérifiés, l'empreinte du document (SHA-256) et les horodatages, scellés par la signature Ed25519 de Roomivo.",
+                download: "Télécharger la preuve de signature",
+            },
+            error: {
+                load: "Impossible de charger le statut de signature",
+                notPdf: "Le bail doit être un fichier PDF",
+                upload: "Échec du téléversement",
+                noSignature: "Dessinez ou saisissez votre signature",
+                noConsent: "Vous devez consentir à signer électroniquement",
+                sign: "Échec de la signature",
+                evidence: "Impossible de télécharger le dossier de preuve",
+            },
+        },
         inbox: {
             title: "Boîte de réception",
             unread: "non lu(s)",

@@ -445,11 +445,33 @@ French residential lease = *acte sous seing privé* → **no qualified sig requi
 Self-hosted audit trail (doc hash, timestamp, signer's credential ref, IP, consent).
 | # | Edge case | Expected | Now |
 |---|---|---|---|
-| SG-1 | Signer ≠ verified party | **block** (matches ID-10) | ❌ |
-| SG-2 | One party abandons | session expires, **no lease**, nothing stored | 🟡 stateful sig columns exist |
-| SG-3 | Document altered after signing | hash mismatch → sig invalid, surfaced | 🟡 confirm hash chain |
-| SG-4 | Repudiation / dispute | produce **evidence pack** (§6), label AES vs QTSP | ❌ |
-| SG-5 | Party wants max robustness | offer **QTSP** upgrade (paid, v2) | ❌ |
+| SG-1 | Signer ≠ verified party | **block** (matches ID-10) | ✅ `esign.can_sign` + router 403 |
+| SG-2 | One party abandons | session expires, **no lease**, nothing stored | ✅ manifest emitted only when both parties signed (`is_fully_signed`) |
+| SG-3 | Document altered after signing | hash mismatch → sig invalid, surfaced | ✅ SHA-256 pinned at upload; re-checked at every sign + in `verify_manifest` |
+| SG-4 | Repudiation / dispute | produce **evidence pack** (§6), label AES vs QTSP | ✅ `export_signature_evidence_pdf` (labelled simple/AES eIDAS, not QTSP) |
+| SG-5 | Party wants max robustness | offer **QTSP** upgrade (paid, v2) | ⏸ deferred (DocuSeal/QTSP) by design |
+
+**Done this pass — E-sign Path B v1 (Phase 2 item 8/9, 2026-06-24, branch `feat/esign-path-b`)** —
+spec `docs/superpowers/specs/2026-06-24-esign-path-b-design.md`.
+- **Engine decision: in-house Ed25519, not DocuSeal/Documenso** (founder constraint: 0 opex/capex —
+  no second service to host, no AGPL surface). Reuses the credential signing key via new
+  `CredentialService.sign_payload`/`verify_payload`, so the **published public key verifies both
+  credentials and lease signatures**. DocuSeal/QTSP stay the deferred SG-5 v2 upgrade.
+- Flow: landlord uploads **their own** lease PDF (Roomivo authors no wording → loi 1971 clear) →
+  both **verified** parties e-sign → Ed25519-signed manifest + watermarked evidence pack.
+- New `app/services/esign.py` (pure, unit-tested): `compute_document_hash` (SG-3 anchor),
+  `can_sign` (SG-1), `is_fully_signed` (SG-2), `build/sign/verify_manifest`,
+  `export_signature_evidence_pdf` (SG-4).
+- New `app/routers/esign.py`: `POST /esign/leases/{id}/document` (landlord, identity-verified),
+  `POST /esign/leases/{id}/sign` (party; SG-1/SG-3/consent), `GET …/status`, `GET …/evidence.pdf`.
+- DB: `Lease.document_hash`, `document_source`, `esign_manifest` (migration `d184160e73e2`);
+  reuses existing `signature_data`/`landlord_signature`/`tenant_signature`/`status`/`pdf_path`.
+- The uploaded lease is recorded **ATTACHED / NOT LEGALITY-VERIFIED** (§5.6) — the LU-* legality
+  red-line check does **not** gate signing and is the next increment.
+- 14 service tests cover SG-1..SG-4 + cross-key verification; full backend suite 258 green.
+- **Out of v1 / next:** LU-* legality red-line (§5.6); Path A template generation (§5.5);
+  frontend sign UI (the cryptographic rail is the load-bearing core delivered here); DocuSeal/QTSP.
+- ⚠ Still on founder (unchanged): file the lawyer's **written** e-sign blessing (PRD §7.6, §0.16).
 
 ### 5.8 Insurance — verification only (PRD §6.7) — **post GLI removal**
 | # | Edge case | Expected | Now |
@@ -533,8 +555,8 @@ insurance posture. **Delete, don't flag-off.**
 
 **Phase 2+ (defer; lease/e-sign behind §7.1 legal gate)**
 7. ✅ **DPE lettability depth** (§5.4, 2026-06-10) — class-G warn+ack publish gate; expired DPE gate; ADEME authoritative-class override; bilingual FR/EN; `dpe_compliance.py`.
-8. ❌ **Uploaded-lease + generated-lease, then e-sign** (§5.5/§5.6) — ✅ **gate CLEARED 2026-06-24: lawyer green-lit BOTH paths** — (a) landlord uploads own lease → e-sign, and (b) Roomivo generates a lease by contract type (Décret 2015-587 model only) → e-sign. ⚠ **TODO: obtain the lawyer's blessing in writing for the file** (chat confirmation only so far). Constraints unchanged: official model wording only (no custom clauses, loi 1971); no success fee; never touch the deposit/funds. Recommend building **Path B (upload + e-sign)** first, then **Path A (template generation)** with its French-law rule-set (deposit caps, furnished 11 items, bail mobilité, mandatory annexes DPE/ERP/notice, DPE-G gate).
-9. ❌ **E-sign + evidence pack upgrade** (§5.7, §6) — DocuSeal/Documenso **unmodified + self-hosted** (AGPL, §11). ✅ gate CLEARED 2026-06-24 (§0.16). eIDAS simple/advanced sig valid for a bail. Now the next major feature (own brainstorm→spec→plan per [[roomivo-new-convo-per-feature]]).
+8. 🟡 **Uploaded-lease + generated-lease, then e-sign** (§5.5/§5.6) — ✅ **gate CLEARED 2026-06-24: lawyer green-lit BOTH paths**. ✅ **Path B (upload + e-sign) v1 SHIPPED 2026-06-24** (branch `feat/esign-path-b`, see §5.7 "Done this pass"): landlord uploads own lease → both verified parties sign → tamper-evident evidence pack. **Still ❌:** Path A (Décret 2015-587 template generation) and the LU-* legality red-line check (§5.6). ⚠ **TODO: obtain the lawyer's blessing in writing for the file** (chat confirmation only so far). Constraints unchanged: official model wording only (no custom clauses, loi 1971); no success fee; never touch the deposit/funds.
+9. 🟡 **E-sign + evidence pack** (§5.7, §6) — ✅ **SHIPPED 2026-06-24 as in-house Ed25519** (NOT DocuSeal/Documenso — founder 0 opex/capex; reuses the credential signing key so one published public key verifies both). eIDAS simple/advanced sig valid for a bail; gate CLEARED 2026-06-24 (§0.16). DocuSeal/QTSP **deferred** to the SG-5 "max robustness" v2 upgrade. SG-1..SG-4 enforced + tested (§5.7).
 10. ✅ **Insurance MRH verification** (§5.8) — IN-1..IN-5 covered; `mrh_compliance.py`; `POST /verification/insurance/upload`; evidence PDF row; issue-mine assurance summary.
 11. 🟡 **INTL rails** (§4) — MEDIUM rail shipped (2026-06-16): `mrz.py` hybrid AI+Tesseract+ICAO-checksum; `fx_normalise.py` Frankfurter→static-29→UNVERIFIED; 3 endpoints: `POST /verification/intl/identity/upload`, `/intl/identity/selfie`, `/intl/solvency`. HIGH (NFC chip / Passive Auth) blocked on CSCA master-list assembly **AND a native app** (Web NFC is Android-only; no iOS) → **deferred to EUDI Wallet** (§0.12), not pursued now. Spec: `docs/superpowers/specs/2026-06-15-intl-rails-design.md`.
 12. ✅ **Statelessness retrofit + Redis TTL** (2026-06-15) — identity (`selfie_with_id`, `back`, `upload-selfie`), income, and guarantor (Visale/Garantme) domains flipped to verify-and-forget. Source docs discarded immediately after claim extraction; `extracted_data`/`file_url`/`storage_key` removed from JSONB. Two-step identity flow: front doc stored in **Redis with 10-min TTL** (primary); R2 fallback only if Redis unavailable; per-upload `secrets.token_hex(8)` suffix on key for web/mobile session isolation. Doc purged **before** raising face-match failure exception (GDPR: no retention on rejection). `purge_legacy_verification_docs_task` Celery task purges existing R2 docs for current users, now including nested `files[*].storage_key` for physical-guarantor records. Physical guarantor upload (human-review flow) out of scope. 15 new tests (+ 2 Redis-path tests). Known downstream: admin panel `file_url`/`extracted_data` fields always blank post-retrofit (accepted); insurance IN-2 name match uses profile name as permanent fallback (accepted statelessness tradeoff). **Admin downstream gap resolved 2026-06-16:** dead `pending_review` queue (never set post-retrofit) and stale `VerificationReview` fields (`file_url`, `extracted_data`, always blank) replaced with a stranded-upload monitor — `identity_stalled` queue surfaces users stuck >15 min at `document_uploaded`, plus a `POST /reset` endpoint so operators can unblock them. Evidence-free `/approve` action for identity guarded off (returns 400, points to `/reset`).

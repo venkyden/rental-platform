@@ -10,7 +10,7 @@ import NotificationBell from '@/components/NotificationBell';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Home, Building2, Search, Mail, ShieldCheck, LogOut, ChevronDown, User, Settings, Building, CreditCard, Shield, Plus } from 'lucide-react';
+import { Menu, X, Home, Building2, Search, Mail, ShieldCheck, LogOut, ChevronDown, User, Settings, Building, CreditCard, Shield, Plus, FileText } from 'lucide-react';
 
 import RoomivoBrand from './RoomivoBrand';
 
@@ -55,6 +55,7 @@ export default function Navbar() {
             ? [{ href: '/properties', label: t('dashboard.stats.properties', undefined, 'Properties'), icon: <Building2 className="w-4 h-4" /> }]
             : [{ href: '/search', label: t('dashboard.quickActions.browse.title', undefined, 'Browse'), icon: <Search className="w-4 h-4" /> }]),
         { href: '/inbox', label: t('dashboard.inbox.title', undefined, 'Inbox'), icon: <Mail className="w-4 h-4" /> },
+        { href: '/leases', label: t('esign.list.title', undefined, 'My leases'), icon: <FileText className="w-4 h-4" /> },
         { href: '/verification', label: t('dashboard.verification.verification.pageTitle', undefined, 'Verification'), icon: <ShieldCheck className="w-4 h-4" /> },
     ] : [];
 

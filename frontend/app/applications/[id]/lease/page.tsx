@@ -198,9 +198,9 @@ export default function LeaseGeneratorPage() {
             });
 
             toast.success('Bail enregistré avec succès !');
-            // Redirect to newly created lease or dashboard
+            // Redirect into the e-sign flow for the newly created lease, or dashboard
             if (response.data?.lease_id) {
-                router.push(`/leases/${response.data.lease_id}`);
+                router.push(`/leases/${response.data.lease_id}/sign`);
             } else {
                 router.push('/dashboard');
             }
