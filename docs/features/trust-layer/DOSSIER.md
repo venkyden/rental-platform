@@ -15,7 +15,7 @@ moving on ([[roomivo-test-per-feature]]).
 
 Status legend: 🔴 blocking · 🟠 important · 🟡 polish · ✅ done.
 Verdicts: **KEEP / FIX / REPLACE / KILL / BUILD**.
-Last updated: 2026-06-17. Status: **Phase 1 complete** — all 6 Phase-1 items shipped; Phase 2 MRH/DPE/guarantor shipped; statelessness retrofit (item 12) + admin monitor done. **2026-06-17 planning:** back-to-school roadmap set (§0.12–0.18, §9 items 13–16). Open/next: launch prereqs (Gemini billing, legal pages, logos), INTL funds rail + UI (13/14, spec'd), deposit-binding + SCI (15/16), e-sign Path B (8/9, gate lifted).
+Last updated: 2026-06-24. Status: **Phase 1 complete**; INTL fiscal-capacity rail + UI + solvency_verified rollup **shipped & merged** (PRs #6–#11); launch prereqs done (Gemini billing, privacy/subprocessor disclosure, logos, consent). **2026-06-24: e-sign legal gate CLEARED (§0.16) — both paths (upload + generate) green-lit.** Open/next: **e-sign + lease module (items 8/9)** = the next major feature; deposit-binding + SCI (15/16); INTL HIGH deferred to EUDI. Still on founder: file the lawyer's written blessing (PRD §7.6).
 - **Phase 1 complete (2026-06-13):** GLI removed; credential core; FR identity MEDIUM rail + avis cross-check; FR HIGH solvency (2D-Doc ECDSA); property control (taxe foncière, PR-8 fixed); both-sided wiring (/c/ verify page, issue-mine, QR share, anti-phishing).
 - **Item 2 (Credential core) landed 2026-06-05:** `Credential` model, `app/services/credential.py` (Ed25519 sign/verify), `app/routers/credentials.py` (POST /issue, GET /{id}, GET /public-key, GET /evidence.pdf, POST /issue-mine, POST /revoke), Alembic migration `c1d2e3f4a5b6`, 23 integration tests green. Assurance guards AS-1/AS-2/AS-3 enforced at signing time.
 - **DPE reclassification enforcement (§5.4 PR-1/3/4/5) landed 2026-06-10.**
@@ -111,13 +111,15 @@ Last updated: 2026-06-17. Status: **Phase 1 complete** — all 6 Phase-1 items s
     the deposit or rent — that triggers payment-services + Hoguet *maniement de fonds*.
     Deposit and rent flow **directly tenant→landlord, off-platform** (their own
     neobank/transfer). Roomivo verifies the parties and records the agreed terms only.
-16. **E-sign legal gate cleared (record formally).** A lawyer blessed the self-service
-    framing (templates by contract type **or** landlord-uploaded + both parties sign).
-    **Action: write this into PRD §7.6** — verbal isn't enough. Build order: **Path B**
-    (upload + e-sign, lower risk) before **Path A** (Décret 2015-587 template
-    generation). Constraints unchanged: official wording only, DocuSeal/Documenso
-    unmodified + self-hosted (AGPL), no success fee, no funds. eIDAS simple signature
-    is valid for a bail. Not the launch wedge → fast-follow.
+16. **E-sign legal gate CLEARED 2026-06-24.** Lawyer green-lit **both** paths:
+    (a) landlord-uploaded lease → e-sign, **and** (b) Roomivo-generated lease by
+    contract type → e-sign. ⚠ **Still TODO: obtain the blessing in writing** (PRD §7.6) —
+    confirmation is verbal/chat so far; file an email/memo for the record. Build order:
+    **Path B** (upload + e-sign, lower risk) before **Path A** (Décret 2015-587 template
+    generation). Constraints unchanged (and survive the green light): official model
+    wording only (no custom clauses, loi 1971), DocuSeal/Documenso unmodified +
+    self-hosted (AGPL), no success fee, never touch the deposit/funds. eIDAS simple/
+    advanced signature is valid for a bail. Now the next major feature.
 17. **Evidence positioning = "safer & provable," not "safe."** The evidence doc proves
     *who* + *agreed terms* + *when* (tamper-evident), **not** that money moved (the
     tenant's bank receipt does that — Roomivo isn't in the flow). "Court-admissible"
@@ -531,8 +533,8 @@ insurance posture. **Delete, don't flag-off.**
 
 **Phase 2+ (defer; lease/e-sign behind §7.1 legal gate)**
 7. ✅ **DPE lettability depth** (§5.4, 2026-06-10) — class-G warn+ack publish gate; expired DPE gate; ADEME authoritative-class override; bilingual FR/EN; `dpe_compliance.py`.
-8. ❌ **Uploaded-lease red-line scan** (§5.6) — VALIDATED vs ATTACHED tiers. ⚠ gate **lifted 2026-06-17** (lawyer blessed framing, §0.16 — record in PRD §7.6). Build as **Path B** first (ATTACHED: landlord uploads, both sign, no opinion on content).
-9. ❌ **E-sign + evidence pack upgrade** (§5.7, §6) — DocuSeal/Documenso **unmodified + self-hosted** (AGPL, §11). ⚠ gate **lifted 2026-06-17** (§0.16). eIDAS simple sig valid for a bail. Fast-follow, not launch wedge.
+8. ❌ **Uploaded-lease + generated-lease, then e-sign** (§5.5/§5.6) — ✅ **gate CLEARED 2026-06-24: lawyer green-lit BOTH paths** — (a) landlord uploads own lease → e-sign, and (b) Roomivo generates a lease by contract type (Décret 2015-587 model only) → e-sign. ⚠ **TODO: obtain the lawyer's blessing in writing for the file** (chat confirmation only so far). Constraints unchanged: official model wording only (no custom clauses, loi 1971); no success fee; never touch the deposit/funds. Recommend building **Path B (upload + e-sign)** first, then **Path A (template generation)** with its French-law rule-set (deposit caps, furnished 11 items, bail mobilité, mandatory annexes DPE/ERP/notice, DPE-G gate).
+9. ❌ **E-sign + evidence pack upgrade** (§5.7, §6) — DocuSeal/Documenso **unmodified + self-hosted** (AGPL, §11). ✅ gate CLEARED 2026-06-24 (§0.16). eIDAS simple/advanced sig valid for a bail. Now the next major feature (own brainstorm→spec→plan per [[roomivo-new-convo-per-feature]]).
 10. ✅ **Insurance MRH verification** (§5.8) — IN-1..IN-5 covered; `mrh_compliance.py`; `POST /verification/insurance/upload`; evidence PDF row; issue-mine assurance summary.
 11. 🟡 **INTL rails** (§4) — MEDIUM rail shipped (2026-06-16): `mrz.py` hybrid AI+Tesseract+ICAO-checksum; `fx_normalise.py` Frankfurter→static-29→UNVERIFIED; 3 endpoints: `POST /verification/intl/identity/upload`, `/intl/identity/selfie`, `/intl/solvency`. HIGH (NFC chip / Passive Auth) blocked on CSCA master-list assembly **AND a native app** (Web NFC is Android-only; no iOS) → **deferred to EUDI Wallet** (§0.12), not pursued now. Spec: `docs/superpowers/specs/2026-06-15-intl-rails-design.md`.
 12. ✅ **Statelessness retrofit + Redis TTL** (2026-06-15) — identity (`selfie_with_id`, `back`, `upload-selfie`), income, and guarantor (Visale/Garantme) domains flipped to verify-and-forget. Source docs discarded immediately after claim extraction; `extracted_data`/`file_url`/`storage_key` removed from JSONB. Two-step identity flow: front doc stored in **Redis with 10-min TTL** (primary); R2 fallback only if Redis unavailable; per-upload `secrets.token_hex(8)` suffix on key for web/mobile session isolation. Doc purged **before** raising face-match failure exception (GDPR: no retention on rejection). `purge_legacy_verification_docs_task` Celery task purges existing R2 docs for current users, now including nested `files[*].storage_key` for physical-guarantor records. Physical guarantor upload (human-review flow) out of scope. 15 new tests (+ 2 Redis-path tests). Known downstream: admin panel `file_url`/`extracted_data` fields always blank post-retrofit (accepted); insurance IN-2 name match uses profile name as permanent fallback (accepted statelessness tradeoff). **Admin downstream gap resolved 2026-06-16:** dead `pending_review` queue (never set post-retrofit) and stale `VerificationReview` fields (`file_url`, `extracted_data`, always blank) replaced with a stranded-upload monitor — `identity_stalled` queue surfaces users stuck >15 min at `document_uploaded`, plus a `POST /reset` endpoint so operators can unblock them. Evidence-free `/approve` action for identity guarded off (returns 400, points to `/reset`).
