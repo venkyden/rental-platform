@@ -95,6 +95,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
     const [documentType, setDocumentType] = useState('');
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState('');
+    const [consent, setConsent] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
 
     // Identity mobile selfie-with-ID flow
@@ -235,8 +236,18 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
             reader.onerror = reject;
         });
 
+    const requireConsent = () => {
+        if (!consent) {
+            setError(t('verification.upload.consentRequired', undefined,
+                'Please consent to automated document analysis to continue'));
+            return false;
+        }
+        return true;
+    };
+
     const handleIdUpload = async () => {
         if (!idFile) return;
+        if (!requireConsent()) return;
         setIdUploading(true);
         setError('');
         try {
@@ -352,6 +363,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
             setError('Please select a document type and upload all required files');
             return;
         }
+        if (!requireConsent()) return;
         setUploading(true);
         setError('');
         try {
@@ -566,16 +578,34 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">Verifying...</p>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-2 gap-4">
-                            <button
-                                onClick={() => { setIdFile(null); setIdPreviewUrl(null); setError(''); idFileInputRef.current?.click(); }}
-                                className="flex items-center justify-center gap-2 bg-zinc-100 text-zinc-900 font-black py-5 rounded-2xl text-[10px] uppercase tracking-[0.3em]">
-                                <RefreshCcw className="w-4 h-4" /> Retake
-                            </button>
-                            <button onClick={handleIdUpload}
-                                className="flex items-center justify-center gap-2 bg-zinc-900 text-white font-black py-5 rounded-2xl shadow-xl text-[10px] uppercase tracking-[0.3em]">
-                                Submit <ArrowRight className="w-4 h-4" />
-                            </button>
+                        <div className="space-y-4">
+                            {/* AI-processing consent (GDPR — ID analysed by Google Gemini, then discarded) */}
+                            <label className="flex items-start gap-3 cursor-pointer select-none">
+                                <input
+                                    type="checkbox"
+                                    checked={consent}
+                                    onChange={(e) => setConsent(e.target.checked)}
+                                    className="mt-0.5 h-4 w-4 shrink-0 accent-zinc-900"
+                                />
+                                <span className="text-xs text-zinc-500 leading-relaxed">
+                                    {t('verification.upload.consent', undefined,
+                                        'I consent to automated analysis of my document by Google Gemini to extract only the facts needed for verification. The document is not retained afterwards.')}{' '}
+                                    <a href="/legal/privacy" target="_blank" rel="noopener noreferrer" className="underline text-zinc-700 hover:text-zinc-900">
+                                        {t('verification.upload.consentLink', undefined, 'Privacy Policy')}
+                                    </a>
+                                </span>
+                            </label>
+                            <div className="grid grid-cols-2 gap-4">
+                                <button
+                                    onClick={() => { setIdFile(null); setIdPreviewUrl(null); setError(''); idFileInputRef.current?.click(); }}
+                                    className="flex items-center justify-center gap-2 bg-zinc-100 text-zinc-900 font-black py-5 rounded-2xl text-[10px] uppercase tracking-[0.3em]">
+                                    <RefreshCcw className="w-4 h-4" /> Retake
+                                </button>
+                                <button onClick={handleIdUpload} disabled={!consent}
+                                    className="flex items-center justify-center gap-2 bg-zinc-900 text-white font-black py-5 rounded-2xl shadow-xl text-[10px] uppercase tracking-[0.3em] disabled:opacity-50">
+                                    Submit <ArrowRight className="w-4 h-4" />
+                                </button>
+                            </div>
                         </div>
                     )}
 
@@ -738,8 +768,25 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                         </motion.div>
                     )}
 
+                    {/* AI-processing consent (GDPR — documents analysed by Google Gemini, then discarded) */}
+                    <label className="flex items-start gap-3 px-2 cursor-pointer select-none">
+                        <input
+                            type="checkbox"
+                            checked={consent}
+                            onChange={(e) => setConsent(e.target.checked)}
+                            className="mt-0.5 h-4 w-4 shrink-0 accent-zinc-900"
+                        />
+                        <span className="text-xs text-zinc-500 leading-relaxed">
+                            {t('verification.upload.consent', undefined,
+                                'I consent to automated analysis of my document by Google Gemini to extract only the facts needed for verification. The document is not retained afterwards.')}{' '}
+                            <a href="/legal/privacy" target="_blank" rel="noopener noreferrer" className="underline text-zinc-700 hover:text-zinc-900">
+                                {t('verification.upload.consentLink', undefined, 'Privacy Policy')}
+                            </a>
+                        </span>
+                    </label>
+
                     <motion.button whileHover={{ scale: 1.02, y: -4 }} whileTap={{ scale: 0.98 }}
-                        type="submit" disabled={uploading || files.length === 0}
+                        type="submit" disabled={uploading || files.length === 0 || !consent}
                         className="w-full py-6 bg-zinc-900 text-white rounded-[2rem] text-xs font-black uppercase tracking-[0.4em] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] disabled:opacity-50 transition-all">
                         {uploading ? 'Uploading...' : 'Submit for Verification'}
                     </motion.button>
