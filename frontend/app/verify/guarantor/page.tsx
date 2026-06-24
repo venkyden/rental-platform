@@ -38,7 +38,8 @@ export default function GuarantorVerifyPage() {
     const router = useRouter();
     const toast = useToast();
     const { t } = useLanguage();
-    const { checkAuth } = useAuth();
+    const { checkAuth, user } = useAuth();
+    const isFrenchResident = !user?.preferences?.nationality || user.preferences.nationality === 'france' || user.preferences.nationality === 'fr';
     
     const [currentStep, setCurrentStep] = useState<GuarantorType>('selection');
     const [loading, setLoading] = useState(true);
@@ -47,6 +48,7 @@ export default function GuarantorVerifyPage() {
     // Existing guarantor status state
     const [existingType, setExistingType] = useState<string | null>(null);
     const [existingStatus, setExistingStatus] = useState<string | null>(null);
+    const [existingAssurance, setExistingAssurance] = useState<string | null>(null);
     const [existingData, setExistingData] = useState<any | null>(null);
     
     // Visale / Garantme certificate upload
@@ -76,6 +78,7 @@ export default function GuarantorVerifyPage() {
             const data = response.data;
             setExistingType(data.guarantor_type);
             setExistingStatus(data.guarantor_status);
+            setExistingAssurance(data.guarantor_assurance ?? null);
             setExistingData(data.guarantor_data);
             
             if (data.guarantor_type === 'physical' && data.guarantor_data?.files) {
@@ -307,13 +310,26 @@ export default function GuarantorVerifyPage() {
                                         </div>
                                         <div className="flex justify-between items-center">
                                             <span className="text-xs uppercase font-bold text-zinc-400 tracking-wider">Status</span>
-                                            <span className={`text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider ${
-                                                existingStatus === 'verified' ? 'bg-emerald-50 text-emerald-700' :
-                                                existingStatus === 'pending' ? 'bg-amber-50 text-amber-700' :
-                                                'bg-zinc-100 text-zinc-600'
-                                            }`}>
-                                                {existingStatus}
-                                            </span>
+                                            <div className="flex items-center gap-2">
+                                                <span className={`text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider ${
+                                                    existingStatus === 'verified' ? 'bg-emerald-50 text-emerald-700' :
+                                                    existingStatus === 'submitted' ? 'bg-blue-50 text-blue-700' :
+                                                    existingStatus === 'pending' ? 'bg-amber-50 text-amber-700' :
+                                                    'bg-zinc-100 text-zinc-600'
+                                                }`}>
+                                                    {existingStatus}
+                                                </span>
+                                                {existingAssurance === 'MEDIUM' && (
+                                                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 font-bold uppercase tracking-wider">
+                                                        {t('verify.guarantor.assuranceMedium', undefined, 'OCR verified')}
+                                                    </span>
+                                                )}
+                                                {existingAssurance === 'DOCUMENT_SUBMITTED' && (
+                                                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600 font-bold uppercase tracking-wider">
+                                                        {t('verify.guarantor.assuranceDocSubmitted', undefined, 'Docs on file')}
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
                                         {(existingType === 'visale' || existingType === 'garantme') && existingData?.file_url && (
                                             <div className="flex justify-between items-center">
@@ -356,6 +372,24 @@ export default function GuarantorVerifyPage() {
                                     </div>
                                 </div>
                             ) : (
+                                <>
+                                {/* Step progress indicator */}
+                                {currentStep !== 'selection' && (
+                                    <div className="flex items-center justify-center gap-2 mb-8">
+                                        {(['selection', 'type', 'upload', 'confirm'] as const).map((label, idx) => {
+                                            const stepIndex = ['selection', 'visale', 'garantme', 'physical', 'none'].indexOf(currentStep);
+                                            const isActive = idx <= (stepIndex >= 0 ? Math.min(stepIndex, 3) : 0);
+                                            return (
+                                                <div
+                                                    key={label}
+                                                    className={`h-2 rounded-full transition-all duration-300 ${
+                                                        isActive ? 'bg-zinc-900 w-8' : 'bg-zinc-200 w-4'
+                                                    }`}
+                                                />
+                                            );
+                                        })}
+                                    </div>
+                                )}
                                 <AnimatePresence mode="wait">
                                     {/* Selection Stage */}
                                     {currentStep === 'selection' && (
@@ -389,7 +423,12 @@ export default function GuarantorVerifyPage() {
                                                             <LinkIcon className="w-5 h-5" />
                                                         </div>
                                                         <div>
-                                                            <h3 className="font-bold text-zinc-900 text-base">{t('verify.guarantor.visale', undefined, 'Visale (Action Logement)')}</h3>
+                                                            <div className="flex items-center gap-2">
+                                                                <h3 className="font-bold text-zinc-900 text-base">{t('verify.guarantor.visale', undefined, 'Visale (Action Logement)')}</h3>
+                                                                {!isFrenchResident && (
+                                                                    <span className="text-[10px] font-black uppercase tracking-widest bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">{t('verify.guarantor.visaleFranceOnly', undefined, 'France only')}</span>
+                                                                )}
+                                                            </div>
                                                             <p className="text-sm text-zinc-500 font-medium leading-normal mt-1">{t('verify.guarantor.visaleDesc', undefined, 'Free government guarantee for students and CDI < 1500€/mo.')}</p>
                                                         </div>
                                                     </div>
@@ -467,6 +506,15 @@ export default function GuarantorVerifyPage() {
                                                     {t('verify.guarantor.uploadCertificateInstruction', undefined, 'Upload the certificate issued by Visale. The name on the document must match your account.')}
                                                 </p>
                                             </div>
+
+                                            {!isFrenchResident && (
+                                                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex gap-3 items-start">
+                                                    <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                                                    <p className="text-sm font-medium text-amber-800">
+                                                        {t('verify.guarantor.visaleNotEligibleInternational', undefined, 'Visale is only available to residents working or studying in France. Consider Garantme as an alternative — it accepts international profiles.')}
+                                                    </p>
+                                                </div>
+                                            )}
 
                                             <form onSubmit={handleSubmitVisale} className="space-y-6">
                                                 <div className="space-y-2">
@@ -610,7 +658,7 @@ export default function GuarantorVerifyPage() {
                                                     {t('verify.guarantor.physical', undefined, 'Physical Guarantor')}
                                                 </h2>
                                                 <p className="text-zinc-500 max-w-sm mx-auto font-medium">
-                                                    Please upload the required dossiers for your physical guarantor. Under French Alur law, the landlord can check these.
+                                                    {t('verify.guarantor.physicalInstructions', undefined, 'Please upload the required dossiers for your physical guarantor. Under French Alur law, the landlord can request these.')}
                                                 </p>
                                             </div>
 
@@ -688,7 +736,7 @@ export default function GuarantorVerifyPage() {
                                                         className="mt-1 h-4.5 w-4.5 rounded-lg border-zinc-300 focus:ring-zinc-950 text-zinc-950" 
                                                     />
                                                     <span className="text-xs text-zinc-500 font-medium leading-relaxed">
-                                                        I confirm that I have my guarantor's explicit consent to upload their personal details and documents to Roomivo, in compliance with GDPR guidelines and CNIL regulations.
+                                                        {t('verify.guarantor.physicalGdprConsent', undefined, "I confirm that I have my guarantor's explicit consent to upload their personal details and documents to Roomivo, in compliance with GDPR guidelines and CNIL regulations.")}
                                                     </span>
                                                 </label>
                                             </div>
@@ -696,17 +744,17 @@ export default function GuarantorVerifyPage() {
                                             <button
                                                 onClick={async () => {
                                                     if (!consentChecked) {
-                                                        toast.error('You must confirm consent to submit the guarantor dossier.');
+                                                        toast.error(t('verify.guarantor.physicalConsentRequired', undefined, 'You must confirm your guarantor\'s consent before submitting.'));
                                                         return;
                                                     }
                                                     try {
                                                         setSubmitting(true);
-                                                        await apiClient.client.post('/verification/guarantor/submit');
+                                                        await apiClient.client.post('/verification/guarantor/physical/submit', { consent: true });
+                                                        toast.success(t('verify.guarantor.physicalSubmitted', undefined, 'Guarantor dossier submitted. Your landlord will review the documents.'));
                                                         await checkAuth();
-                                                        toast.success(t('verify.guarantor.success', undefined, 'Guarantor successfully registered!'));
                                                         router.push('/dashboard');
                                                     } catch (error: any) {
-                                                        toast.error(error.response?.data?.detail || t('verify.guarantor.verificationFailed', undefined, 'Submission failed. Please try again.'));
+                                                        toast.error(error.response?.data?.detail || t('verify.guarantor.submitFailed', undefined, 'Failed to submit the guarantor dossier.'));
                                                     } finally {
                                                         setSubmitting(false);
                                                     }
@@ -715,11 +763,12 @@ export default function GuarantorVerifyPage() {
                                                 className="w-full py-5 bg-zinc-950 hover:bg-zinc-900 text-white font-black text-xs uppercase tracking-widest transition-all rounded-3xl flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-50"
                                             >
                                                 {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                                                Complete Registration
+                                                {t('verify.guarantor.physicalSubmitCta', undefined, 'Complete Registration')}
                                             </button>
                                         </motion.div>
                                     )}
                                 </AnimatePresence>
+                                </>
                             )}
                         </div>
                     </motion.div>
