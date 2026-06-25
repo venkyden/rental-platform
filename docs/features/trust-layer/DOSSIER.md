@@ -465,12 +465,18 @@ spec `docs/superpowers/specs/2026-06-24-esign-path-b-design.md`.
 - New `app/routers/esign.py`: `POST /esign/leases/{id}/document` (landlord, identity-verified),
   `POST /esign/leases/{id}/sign` (party; SG-1/SG-3/consent), `GET …/status`, `GET …/evidence.pdf`.
 - DB: `Lease.document_hash`, `document_source`, `esign_manifest` (migration `d184160e73e2`);
-  reuses existing `signature_data`/`landlord_signature`/`tenant_signature`/`status`/`pdf_path`.
+  reuses existing `signature_data`/`landlord_signature`/`tenant_signature`/`status`/`pdf_path`
+  (`pdf_path` now holds the **storage key**, not a raw path).
+- **Uploaded PDF stored via the R2 `storage` service** (durable; local fallback in dev) — new
+  `storage.download_file` reads it back for the SG-3 re-hash at sign time. No ephemeral-disk gap.
 - The uploaded lease is recorded **ATTACHED / NOT LEGALITY-VERIFIED** (§5.6) — the LU-* legality
   red-line check does **not** gate signing and is the next increment.
-- 14 service tests cover SG-1..SG-4 + cross-key verification; full backend suite 258 green.
+- Frontend: `EsignManager` (upload / draw-or-type sign / consent / proof download), `/leases/[id]/sign`
+  page, **My leases** list, Navbar entry, FR/EN i18n; landlord post-create redirect → `/sign`.
+- 16 service tests cover SG-1..SG-4 + cross-key verification + storage round-trip; full backend
+  suite 260 green; frontend `tsc` clean.
 - **Out of v1 / next:** LU-* legality red-line (§5.6); Path A template generation (§5.5);
-  frontend sign UI (the cryptographic rail is the load-bearing core delivered here); DocuSeal/QTSP.
+  tenant push-notification on upload (list is pull-based); DocuSeal/QTSP.
 - ⚠ Still on founder (unchanged): file the lawyer's **written** e-sign blessing (PRD §7.6, §0.16).
 
 ### 5.8 Insurance — verification only (PRD §6.7) — **post GLI removal**

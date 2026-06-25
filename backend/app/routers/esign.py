@@ -9,7 +9,7 @@ Endpoints (all under /esign):
 - GET  /esign/leases/{id}/evidence.pdf  signature evidence pack, once fully signed (SG-4)
 """
 
-import os
+from io import BytesIO
 
 from fastapi import (
     APIRouter, Depends, File, HTTPException, Request, Response, UploadFile, status,
@@ -24,21 +24,12 @@ from app.models.user import User
 from app.models.visits_and_leases import Lease
 from app.routers.auth import get_current_user
 from app.services import esign
+from app.services.storage import storage
 
 router = APIRouter(prefix="/esign", tags=["esign"])
 
-UPLOAD_DIR = os.environ.get("UPLOAD_DIR_LEASES", "uploads/leases")
-try:
-    os.makedirs(UPLOAD_DIR, exist_ok=True)
-except PermissionError:
-    pass
-
 MAX_PDF_MB = 15
 VERIFY_BASE_URL = "https://roomivo.app"
-
-
-def _lease_pdf_path(lease_id) -> str:
-    return os.path.join(UPLOAD_DIR, f"{lease_id}.pdf")
 
 
 def _client_ip(request: Request) -> str | None:
@@ -96,16 +87,21 @@ async def upload_lease_document(
     if not content.startswith(b"%PDF"):
         raise HTTPException(status_code=400, detail="Document must be a PDF")
 
+    # Store via the durable storage service (R2 in prod; local fallback in dev).
     try:
-        with open(_lease_pdf_path(lease_id), "wb") as f:
-            f.write(content)
-    except OSError as exc:
+        result = await storage.upload_file(
+            BytesIO(content),
+            filename=f"{lease_id}.pdf",
+            content_type="application/pdf",
+            folder=f"leases/{lease_id}",
+        )
+    except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Could not store the document: {exc}")
 
     # New document → fresh signing round: clear any prior signatures/manifest.
     lease.document_hash = esign.compute_document_hash(content)
     lease.document_source = "uploaded"
-    lease.pdf_path = _lease_pdf_path(lease_id)
+    lease.pdf_path = result["key"]  # storage key (cloud or local), not a raw path
     lease.signature_data = {"esign_audit": []}
     lease.landlord_signature = None
     lease.tenant_signature = None
@@ -150,12 +146,11 @@ async def sign_lease(
     if not body.signature_image and not body.typed_name:
         raise HTTPException(status_code=400, detail="A drawn or typed signature is required")
 
-    # SG-3 — recompute the hash of the document on disk; reject if altered.
-    try:
-        with open(lease.pdf_path, "rb") as f:
-            current_hash = esign.compute_document_hash(f.read())
-    except OSError:
+    # SG-3 — re-read the stored document and recompute its hash; reject if altered.
+    stored = await storage.download_file(lease.pdf_path)
+    if stored is None:
         raise HTTPException(status_code=409, detail="Stored document is unavailable")
+    current_hash = esign.compute_document_hash(stored)
     if current_hash != lease.document_hash:
         raise HTTPException(status_code=409, detail="Document has been altered since upload; signing blocked")
 

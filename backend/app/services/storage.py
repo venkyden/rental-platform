@@ -259,6 +259,22 @@ class CloudStorageService:
         except Exception:
             return ""
 
+    async def download_file(self, key: str) -> Optional[bytes]:
+        """Read a stored file's bytes back (cloud or local). Returns None if absent."""
+        if self.client and not self.is_local:
+            try:
+                obj = self.client.get_object(Bucket=self.bucket_name, Key=key)
+                return obj["Body"].read()
+            except Exception as e:
+                logger.error(f"Cloud download failed for key={key}: {e}")
+                return None
+        else:
+            full_path = os.path.join(self.local_path, key)
+            if os.path.exists(full_path):
+                with open(full_path, "rb") as f:
+                    return f.read()
+            return None
+
     async def delete_file(self, key: str) -> bool:
         """Delete file from storage"""
         if self.client and not self.is_local:

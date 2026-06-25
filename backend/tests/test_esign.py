@@ -6,11 +6,14 @@ verified-party gate, the SG-2 both-parties gate, the SG-3 tamper anchor, manifes
 signing against the shared Ed25519 key, and the SG-4 evidence pack.
 """
 
+import asyncio
 import types
 import uuid
+from io import BytesIO
 
 from app.services import esign
 from app.services.credential import credential_service
+from app.services.storage import storage
 
 
 def _user(uid=None, identity_verified=True, full_name="Jean Dupont"):
@@ -156,3 +159,26 @@ def test_evidence_pdf_is_a_pdf():
     pdf = esign.export_signature_evidence_pdf(manifest)
     assert pdf.startswith(b"%PDF")
     assert len(pdf) > 500
+
+
+# ── storage round-trip (load-bearing SG-3 retrieval) ─────────────────────────
+
+def test_storage_upload_download_roundtrip():
+    """The stored lease PDF must come back byte-identical so the SG-3 re-hash holds."""
+    content = b"%PDF-1.7 e-sign storage roundtrip"
+    key = None
+    try:
+        result = asyncio.run(storage.upload_file(
+            BytesIO(content), filename="rt.pdf", content_type="application/pdf", folder="leases/test-rt",
+        ))
+        key = result["key"]
+        fetched = asyncio.run(storage.download_file(key))
+        assert fetched == content
+        assert esign.compute_document_hash(fetched) == esign.compute_document_hash(content)
+    finally:
+        if key:
+            asyncio.run(storage.delete_file(key))
+
+
+def test_storage_download_missing_returns_none():
+    assert asyncio.run(storage.download_file("leases/does-not-exist/nope.pdf")) is None
