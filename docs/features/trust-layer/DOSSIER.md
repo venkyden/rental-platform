@@ -15,7 +15,7 @@ moving on ([[roomivo-test-per-feature]]).
 
 Status legend: 🔴 blocking · 🟠 important · 🟡 polish · ✅ done.
 Verdicts: **KEEP / FIX / REPLACE / KILL / BUILD**.
-Last updated: 2026-06-24. Status: **Phase 1 complete**; INTL fiscal-capacity rail + UI + solvency_verified rollup **shipped & merged** (PRs #6–#11); launch prereqs done (Gemini billing, privacy/subprocessor disclosure, logos, consent). **2026-06-24: e-sign legal gate CLEARED (§0.16) — both paths (upload + generate) green-lit.** Open/next: **e-sign + lease module (items 8/9)** = the next major feature; deposit-binding + SCI (15/16); INTL HIGH deferred to EUDI. Still on founder: file the lawyer's written blessing (PRD §7.6).
+Last updated: 2026-06-24. Status: **Phase 1 complete**; INTL fiscal-capacity rail + UI + solvency_verified rollup **shipped & merged** (PRs #6–#11); launch prereqs done (Gemini billing, privacy/subprocessor disclosure, logos, consent). **2026-06-24: e-sign legal gate CLEARED (§0.16) — both paths (upload + generate) green-lit.** Open/next: **e-sign + lease module (items 8/9)** = the next major feature; deposit-binding + SCI (15/16); INTL HIGH deferred to EUDI. ✅ Lawyer's **written** e-sign/lease opinion now on file (2026-06-20, Mathieu Galand — `docs/legal/2026-06-20-avis-avocat-esign-lease-galand.md`); PRD §7.6 written-blessing item closed.
 - **Phase 1 complete (2026-06-13):** GLI removed; credential core; FR identity MEDIUM rail + avis cross-check; FR HIGH solvency (2D-Doc ECDSA); property control (taxe foncière, PR-8 fixed); both-sided wiring (/c/ verify page, issue-mine, QR share, anti-phishing).
 - **Item 2 (Credential core) landed 2026-06-05:** `Credential` model, `app/services/credential.py` (Ed25519 sign/verify), `app/routers/credentials.py` (POST /issue, GET /{id}, GET /public-key, GET /evidence.pdf, POST /issue-mine, POST /revoke), Alembic migration `c1d2e3f4a5b6`, 23 integration tests green. Assurance guards AS-1/AS-2/AS-3 enforced at signing time.
 - **DPE reclassification enforcement (§5.4 PR-1/3/4/5) landed 2026-06-10.**
@@ -113,8 +113,12 @@ Last updated: 2026-06-24. Status: **Phase 1 complete**; INTL fiscal-capacity rai
     neobank/transfer). Roomivo verifies the parties and records the agreed terms only.
 16. **E-sign legal gate CLEARED 2026-06-24.** Lawyer green-lit **both** paths:
     (a) landlord-uploaded lease → e-sign, **and** (b) Roomivo-generated lease by
-    contract type → e-sign. ⚠ **Still TODO: obtain the blessing in writing** (PRD §7.6) —
-    confirmation is verbal/chat so far; file an email/memo for the record. Build order:
+    contract type → e-sign. ✅ **Written opinion now on file (2026-06-20, Mathieu Galand,
+    Avocat au Barreau de Paris)** — `docs/legal/2026-06-20-avis-avocat-esign-lease-galand.md`;
+    closes the PRD §7.6 "obtain the blessing in writing" item. The opinion deems both modules
+    permissible and "suitable for commercial deployment," **subject to** §3 conditions (mandatory
+    provisions; annexes/diagnostics; identity verification; auditable signing record; GDPR) — the
+    first two are **gating for Path A**, already met by Path B. Build order:
     **Path B** (upload + e-sign, lower risk) before **Path A** (Décret 2015-587 template
     generation). Constraints unchanged (and survive the green light): official model
     wording only (no custom clauses, loi 1971), DocuSeal/Documenso unmodified +
@@ -477,7 +481,8 @@ spec `docs/superpowers/specs/2026-06-24-esign-path-b-design.md`.
   suite 260 green; frontend `tsc` clean.
 - **Out of v1 / next:** LU-* legality red-line (§5.6); Path A template generation (§5.5);
   tenant push-notification on upload (list is pull-based); DocuSeal/QTSP.
-- ⚠ Still on founder (unchanged): file the lawyer's **written** e-sign blessing (PRD §7.6, §0.16).
+- ✅ Lawyer's **written** e-sign/lease opinion filed (2026-06-20, Mathieu Galand) —
+  `docs/legal/2026-06-20-avis-avocat-esign-lease-galand.md`; PRD §7.6 / §0.16 written-blessing item closed.
 
 ### 5.8 Insurance — verification only (PRD §6.7) — **post GLI removal**
 | # | Edge case | Expected | Now |
@@ -561,7 +566,7 @@ insurance posture. **Delete, don't flag-off.**
 
 **Phase 2+ (defer; lease/e-sign behind §7.1 legal gate)**
 7. ✅ **DPE lettability depth** (§5.4, 2026-06-10) — class-G warn+ack publish gate; expired DPE gate; ADEME authoritative-class override; bilingual FR/EN; `dpe_compliance.py`.
-8. 🟡 **Uploaded-lease + generated-lease, then e-sign** (§5.5/§5.6) — ✅ **gate CLEARED 2026-06-24: lawyer green-lit BOTH paths**. ✅ **Path B (upload + e-sign) v1 SHIPPED 2026-06-24** (branch `feat/esign-path-b`, see §5.7 "Done this pass"): landlord uploads own lease → both verified parties sign → tamper-evident evidence pack. **Still ❌:** Path A (Décret 2015-587 template generation) and the LU-* legality red-line check (§5.6). ⚠ **TODO: obtain the lawyer's blessing in writing for the file** (chat confirmation only so far). Constraints unchanged: official model wording only (no custom clauses, loi 1971); no success fee; never touch the deposit/funds.
+8. 🟡 **Uploaded-lease + generated-lease, then e-sign** (§5.5/§5.6) — ✅ **gate CLEARED 2026-06-24: lawyer green-lit BOTH paths**. ✅ **Path B (upload + e-sign) v1 SHIPPED 2026-06-24** (branch `feat/esign-path-b`, see §5.7 "Done this pass"): landlord uploads own lease → both verified parties sign → tamper-evident evidence pack. **Still ❌:** Path A (Décret 2015-587 template generation) and the LU-* legality red-line check (§5.6). ✅ **Lawyer's written opinion on file** (2026-06-20, Mathieu Galand — `docs/legal/2026-06-20-avis-avocat-esign-lease-galand.md`); deems both modules deployable **subject to** §3 conditions (mandatory provisions + annexes are **gating for Path A**). Constraints unchanged: official model wording only (no custom clauses, loi 1971); no success fee; never touch the deposit/funds.
 9. 🟡 **E-sign + evidence pack** (§5.7, §6) — ✅ **SHIPPED 2026-06-24 as in-house Ed25519** (NOT DocuSeal/Documenso — founder 0 opex/capex; reuses the credential signing key so one published public key verifies both). eIDAS simple/advanced sig valid for a bail; gate CLEARED 2026-06-24 (§0.16). DocuSeal/QTSP **deferred** to the SG-5 "max robustness" v2 upgrade. SG-1..SG-4 enforced + tested (§5.7).
 10. ✅ **Insurance MRH verification** (§5.8) — IN-1..IN-5 covered; `mrh_compliance.py`; `POST /verification/insurance/upload`; evidence PDF row; issue-mine assurance summary.
 11. 🟡 **INTL rails** (§4) — MEDIUM rail shipped (2026-06-16): `mrz.py` hybrid AI+Tesseract+ICAO-checksum; `fx_normalise.py` Frankfurter→static-29→UNVERIFIED; 3 endpoints: `POST /verification/intl/identity/upload`, `/intl/identity/selfie`, `/intl/solvency`. HIGH (NFC chip / Passive Auth) blocked on CSCA master-list assembly **AND a native app** (Web NFC is Android-only; no iOS) → **deferred to EUDI Wallet** (§0.12), not pursued now. Spec: `docs/superpowers/specs/2026-06-15-intl-rails-design.md`.
