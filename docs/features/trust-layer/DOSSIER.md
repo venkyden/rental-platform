@@ -477,10 +477,12 @@ spec `docs/superpowers/specs/2026-06-24-esign-path-b-design.md`.
   red-line check does **not** gate signing and is the next increment.
 - Frontend: `EsignManager` (upload / draw-or-type sign / consent / proof download), `/leases/[id]/sign`
   page, **My leases** list, Navbar entry, FR/EN i18n; landlord post-create redirect → `/sign`.
+- Notifications (best-effort, never block signing): tenant nudged on upload ("ready to sign");
+  both parties notified on full signature ("proof ready"). New `NotificationType.LEASE` +
+  `notify_lease_ready_to_sign`/`notify_lease_fully_signed` (in-app + preferred channels).
 - 16 service tests cover SG-1..SG-4 + cross-key verification + storage round-trip; full backend
   suite 260 green; frontend `tsc` clean.
-- **Out of v1 / next:** LU-* legality red-line (§5.6); Path A template generation (§5.5);
-  tenant push-notification on upload (list is pull-based); DocuSeal/QTSP.
+- **Out of v1 / next:** LU-* legality red-line (§5.6); Path A template generation (§5.5); DocuSeal/QTSP.
 - ✅ Lawyer's **written** e-sign/lease opinion filed (2026-06-20, Mathieu Galand) —
   `docs/legal/2026-06-20-avis-avocat-esign-lease-galand.md`; PRD §7.6 / §0.16 written-blessing item closed.
 

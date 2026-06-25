@@ -9,6 +9,7 @@ Endpoints (all under /esign):
 - GET  /esign/leases/{id}/evidence.pdf  signature evidence pack, once fully signed (SG-4)
 """
 
+import logging
 from io import BytesIO
 
 from fastapi import (
@@ -24,7 +25,10 @@ from app.models.user import User
 from app.models.visits_and_leases import Lease
 from app.routers.auth import get_current_user
 from app.services import esign
+from app.services.notification_service import NotificationService
 from app.services.storage import storage
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/esign", tags=["esign"])
 
@@ -38,6 +42,14 @@ def _client_ip(request: Request) -> str | None:
     if fwd:
         return fwd.split(",")[0].strip()
     return request.client.host if request.client else None
+
+
+async def _notify(db: AsyncSession, method_name: str, recipient_id, lease_id) -> None:
+    """Best-effort notification — a delivery failure must never break signing."""
+    try:
+        await getattr(NotificationService(db), method_name)(recipient_id, lease_id)
+    except Exception:
+        logger.warning("e-sign notification %s failed", method_name, exc_info=True)
 
 
 async def _get_lease_or_404(lease_id: UUID, db: AsyncSession) -> Lease:
@@ -109,6 +121,11 @@ async def upload_lease_document(
     lease.status = "awaiting_signatures"
 
     await db.commit()
+
+    # Best-effort: nudge the tenant that a lease awaits their signature.
+    if lease.tenant_id is not None:
+        await _notify(db, "notify_lease_ready_to_sign", lease.tenant_id, lease.id)
+
     return {
         "lease_id": str(lease.id),
         "status": lease.status,
@@ -187,6 +204,14 @@ async def sign_lease(
         lease.status = "signed"
 
     await db.commit()
+
+    if finalised:
+        # Best-effort: tell both parties the lease is signed and proof is ready.
+        # (The "ready to sign" nudge already went to the tenant at upload time.)
+        for recipient_id in (lease.landlord_id, lease.tenant_id):
+            if recipient_id is not None:
+                await _notify(db, "notify_lease_fully_signed", recipient_id, lease.id)
+
     return {
         "lease_id": str(lease.id),
         "status": lease.status,

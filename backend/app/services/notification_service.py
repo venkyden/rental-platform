@@ -253,6 +253,40 @@ class NotificationService:
             action_url=action_url,
         )
 
+    async def notify_lease_ready_to_sign(self, recipient_id: UUID, lease_id: UUID):
+        """Notify a party that a lease is uploaded and awaiting their e-signature."""
+        action_url = f"/leases/{lease_id}/sign"
+        await self.create_notification(
+            user_id=recipient_id,
+            notification_type=NotificationType.LEASE.value,
+            title="Lease ready to sign",
+            message="✍️ A lease is ready for your electronic signature.",
+            action_url=action_url,
+        )
+        await self._send_via_preferred_channels(
+            user_id=recipient_id,
+            subject="✍️ A lease is ready for your signature",
+            message="A lease is ready for your electronic signature. Open Roomivo to review and sign.",
+            action_url=action_url,
+        )
+
+    async def notify_lease_fully_signed(self, recipient_id: UUID, lease_id: UUID):
+        """Notify a party that the lease is signed by both sides and proof is available."""
+        action_url = f"/leases/{lease_id}/sign"
+        await self.create_notification(
+            user_id=recipient_id,
+            notification_type=NotificationType.LEASE.value,
+            title="Lease signed by both parties",
+            message="✅ The lease is signed by both parties. A proof of signature is available.",
+            action_url=action_url,
+        )
+        await self._send_via_preferred_channels(
+            user_id=recipient_id,
+            subject="✅ Your lease is fully signed",
+            message="The lease has been signed by both parties. Open Roomivo to download the proof of signature.",
+            action_url=action_url,
+        )
+
     async def get_user_notifications(
         self, user_id: UUID, unread_only: bool = False, limit: int = 20
     ) -> List[Notification]:
