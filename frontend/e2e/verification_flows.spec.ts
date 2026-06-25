@@ -66,19 +66,10 @@ async function mockAuthSession(page: Page, overrides: Record<string, unknown> = 
 
 test.describe('Verification Flows E2E', () => {
     test.beforeEach(async ({ page }) => {
-        // Setup routing intercept to allow local pages but mock API calls
-        const originalRoute = page.route.bind(page);
-        (page as any).route = (pattern: any, handler: any, options: any) => {
-            return originalRoute(pattern, (route) => {
-                if (route.request().url().includes(':3001')) {
-                    route.continue();
-                    return;
-                }
-                return handler(route);
-            }, options);
-        };
-
-        // Mock authenticated session
+        // Mock API calls. Routes are path-specific (/auth/*, /verification/*);
+        // unmatched requests (pages, assets) pass through by default — so this
+        // works whether the API is same-origin or cross-origin with the app.
+        // (A prior :3001-continue wrapper broke auth mocks under same-origin CI.)
         await mockAuthSession(page);
 
         // Set English locale via localStorage to ensure consistent i18n behavior
