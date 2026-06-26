@@ -126,6 +126,7 @@ def build_manifest(
         "document_source": getattr(lease, "document_source", None) or "uploaded",
         "legality_status": legality.get("status", LEGALITY_STATUS_ATTACHED),
         "legality_flags": legality.get("flags", []),
+        "legality_notes": legality.get("notes", []),
         "finalised_at": utcnow().replace(microsecond=0).isoformat(),
         "signatures": audit_entries,
         "disclaimer": ESIGN_DISCLAIMER,
@@ -240,6 +241,14 @@ def export_signature_evidence_pdf(
         ("GRID", (0, 0), (-1, -1), 0.3, colors.HexColor("#C0C0C0")),
     ]))
     story.append(doc_table)
+
+    # LU-6 liability evidence: name the points that were shown and signed over anyway.
+    legality_notes = manifest.get("legality_notes", [])
+    if legality_status != "VALIDATED" and legality_notes:
+        story.append(Spacer(1, 0.2 * cm))
+        story.append(Paragraph("Signalements présentés aux parties avant signature :", small))
+        for note in legality_notes:
+            story.append(Paragraph(f"• {note}", small))
     story.append(Spacer(1, 0.4 * cm))
 
     # ── signers ──────────────────────────────────────────────────────────────

@@ -161,6 +161,34 @@ def test_evidence_pdf_is_a_pdf():
     assert len(pdf) > 500
 
 
+def test_manifest_carries_legality_and_signs_over_it():
+    """The §5.6 result must be recorded in the signed manifest (LU-6 evidence)."""
+    lease = _lease(_user().id, _user().id)
+    legality = {"status": "ATTACHED_NOT_LEGALITY_VERIFIED",
+                "flags": ["LU4_missing_dpe"], "notes": ["DPE absent."]}
+    manifest = esign.sign_manifest(
+        esign.build_manifest(lease, "abc", _entries(), legality=legality)
+    )
+    assert manifest["legality_status"] == "ATTACHED_NOT_LEGALITY_VERIFIED"
+    assert manifest["legality_flags"] == ["LU4_missing_dpe"]
+    assert manifest["legality_notes"] == ["DPE absent."]
+    assert esign.verify_manifest(manifest) is True  # legality is inside the signed payload
+    # Tampering with the recorded legality breaks the signature.
+    manifest["legality_status"] = "VALIDATED"
+    assert esign.verify_manifest(manifest) is False
+
+
+def test_evidence_pdf_renders_with_flags():
+    lease = _lease(_user().id, _user().id)
+    legality = {"status": "ATTACHED_NOT_LEGALITY_VERIFIED",
+                "flags": ["LU5_not_french_law"], "notes": ["Droit français non référencé."]}
+    manifest = esign.sign_manifest(
+        esign.build_manifest(lease, "abc", _entries(), legality=legality)
+    )
+    pdf = esign.export_signature_evidence_pdf(manifest)
+    assert pdf.startswith(b"%PDF")
+
+
 # ── storage round-trip (load-bearing SG-3 retrieval) ─────────────────────────
 
 def test_storage_upload_download_roundtrip():

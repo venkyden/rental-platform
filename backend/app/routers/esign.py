@@ -107,8 +107,9 @@ async def upload_lease_document(
             content_type="application/pdf",
             folder=f"leases/{lease_id}",
         )
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Could not store the document: {exc}")
+    except Exception:
+        logger.exception("Lease document storage failed for lease %s", lease_id)
+        raise HTTPException(status_code=500, detail="Could not store the document")
 
     # Deterministic legality red-line screen (§5.6) — advisory, never blocks signing.
     legality = lease_legality.screen_lease_pdf(content).as_dict()
@@ -167,6 +168,11 @@ async def sign_lease(
         raise HTTPException(status_code=400, detail="Explicit consent is required to sign")
     if not body.signature_image and not body.typed_name:
         raise HTTPException(status_code=400, detail="A drawn or typed signature is required")
+    # Bound the signature inputs — a drawn PNG is small; reject oversized payloads.
+    if body.signature_image and len(body.signature_image) > 1_500_000:
+        raise HTTPException(status_code=400, detail="Signature image is too large")
+    if body.typed_name and len(body.typed_name) > 200:
+        raise HTTPException(status_code=400, detail="Typed name is too long")
 
     # SG-3 — re-read the stored document and recompute its hash; reject if altered.
     stored = await storage.download_file(lease.pdf_path)
