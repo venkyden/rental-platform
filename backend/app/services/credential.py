@@ -261,6 +261,29 @@ class CredentialService:
         except (InvalidSignature, KeyError, ValueError):
             return False
 
+    # ── generic payload signing (reused by the e-sign rail) ───────────────────
+
+    def sign_payload(self, payload: dict) -> str:
+        """
+        Sign an arbitrary dict with the same Ed25519 key used for credentials.
+
+        Returns the hex-encoded signature over the canonical JSON of `payload`.
+        Used by the e-sign rail (DOSSIER §5.7) so lease signatures and credentials
+        share one verifiable key — the published public key checks both.
+        """
+        return self._private_key.sign(_canonical_payload(payload)).hex()
+
+    def verify_payload(self, payload: dict, signature_hex: str) -> bool:
+        """Re-verify a signature produced by `sign_payload` over `payload`."""
+        try:
+            self._public_key.verify(
+                bytes.fromhex(signature_hex),
+                _canonical_payload(payload),
+            )
+            return True
+        except (InvalidSignature, KeyError, ValueError):
+            return False
+
     # ── evidence PDF ─────────────────────────────────────────────────────────
 
     def export_evidence_pdf(self, record: dict, verify_base_url: str = "https://roomivo.app") -> bytes:

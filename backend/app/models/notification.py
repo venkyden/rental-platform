@@ -22,6 +22,7 @@ class NotificationType(str, enum.Enum):
     VERIFICATION = "verification"
     SYSTEM = "system"
     DISPUTE = "dispute"
+    LEASE = "lease"
 
 
 class Notification(Base):

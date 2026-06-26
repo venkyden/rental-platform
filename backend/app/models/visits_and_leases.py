@@ -85,6 +85,11 @@ class Lease(Base):
     landlord_signature = Column(String, nullable=True)  # Base64 PNG
     tenant_signature = Column(String, nullable=True)  # Base64 PNG
 
+    # E-sign Path B (in-house Ed25519 — DOSSIER §5.7)
+    document_hash = Column(String, nullable=True)  # SHA-256 hex of signed PDF (SG-3 anchor)
+    document_source = Column(String, nullable=True)  # 'uploaded' (Path B) | 'generated'
+    esign_manifest = Column(JSONB, nullable=True)  # Ed25519-signed manifest, set when both sign
+
     # Metadata
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
