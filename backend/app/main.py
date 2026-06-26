@@ -294,6 +294,9 @@ fastapi_app.include_router(notifications.router)
 from app.routers import leases
 fastapi_app.include_router(leases.router)
 
+from app.routers import esign
+fastapi_app.include_router(esign.router)
+
 from app.routers import inventory
 fastapi_app.include_router(inventory.router)
 

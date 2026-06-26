@@ -10,9 +10,10 @@ The backend will fail to start if these are missing.
 |----------|-------------|-----------|
 | `DATABASE_URL` | PostgreSQL connection string (e.g., `postgresql+asyncpg://user:pass@localhost/db`) | **YES** |
 | `SECRET_KEY` | 32+ character random string for security/crypto. | **YES** |
-| `CREDENTIAL_SIGNING_KEY` | Ed25519 signing key — hex-encoded 32-byte seed (64 hex chars). **Required in production** (startup fails without it). In dev, an ephemeral key is used (credentials don't survive restart). Generate: `python -c "import os; print(os.urandom(32).hex())"` | **YES (prod)** |
+| `CREDENTIAL_SIGNING_KEY` | Ed25519 signing key — hex-encoded 32-byte seed (64 hex chars). Signs **both** verification credentials **and** lease e-signature manifests (Path B). **Required in production** and **must be stable across deploys** — rotating it invalidates every previously issued credential and lease-signature proof. In dev, an ephemeral key is used (signatures don't survive restart). Generate: `python scripts/generate_key.py --credential-key` | **YES (prod)** |
 | `MASTER_ENCRYPTION_KEY` | AES encryption key for GDPR PII at rest. **Required in production**. Generate: `python -c "import os; print(os.urandom(32).hex())"` | **YES (prod)** |
 | `FRONTEND_URL` | URL of the frontend app (for CORS and Deep Links). Default: `http://localhost:3000`. | **YES** |
+
 
 ## ⚠️ Functional Dependencies
 **Required for specific features.**
