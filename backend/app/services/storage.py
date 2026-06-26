@@ -22,6 +22,12 @@ except ImportError:
     BOTO3_AVAILABLE = False
 
 
+class StorageUnavailableError(Exception):
+    """Raised when a stored object cannot be read due to a transient/infra failure
+    (network, throttling, credentials) — as opposed to the object being absent.
+    Callers must NOT treat this as 'file missing'."""
+
+
 class CloudStorageService:
     """
     Cloud storage service supporting:
@@ -260,14 +266,22 @@ class CloudStorageService:
             return ""
 
     async def download_file(self, key: str) -> Optional[bytes]:
-        """Read a stored file's bytes back (cloud or local). Returns None if absent."""
+        """
+        Read a stored file's bytes back (cloud or local).
+
+        Returns None only when the object is confirmed **absent**. A transient/infra
+        failure raises StorageUnavailableError so callers can distinguish "missing"
+        from "temporarily unreachable" (signing-critical — see esign SG-3).
+        """
         if self.client and not self.is_local:
             try:
                 obj = self.client.get_object(Bucket=self.bucket_name, Key=key)
                 return obj["Body"].read()
+            except self.client.exceptions.NoSuchKey:
+                return None  # confirmed absent
             except Exception as e:
-                logger.error(f"Cloud download failed for key={key}: {e}")
-                return None
+                logger.error(f"Cloud download transient failure for key={key}: {e}")
+                raise StorageUnavailableError(key) from e
         else:
             full_path = os.path.join(self.local_path, key)
             if os.path.exists(full_path):

@@ -26,7 +26,7 @@ from app.models.visits_and_leases import Lease
 from app.routers.auth import get_current_user
 from app.services import esign, lease_legality
 from app.services.notification_service import NotificationService
-from app.services.storage import storage
+from app.services.storage import storage, StorageUnavailableError
 
 logger = logging.getLogger(__name__)
 
@@ -37,10 +37,13 @@ VERIFY_BASE_URL = "https://roomivo.app"
 
 
 def _client_ip(request: Request) -> str | None:
-    # Honour the proxy header but only take the first hop; fall back to the socket.
-    fwd = request.headers.get("x-forwarded-for")
-    if fwd:
-        return fwd.split(",")[0].strip()
+    # Use X-Real-IP — our nginx overwrites it with $remote_addr on every request, so it
+    # is not client-spoofable. Do NOT trust X-Forwarded-For[0]: nginx *appends* the real
+    # IP to the client-supplied value, so the first hop is attacker-controlled, and this
+    # IP is sealed into the signed manifest (eIDAS audit trail).
+    real = request.headers.get("x-real-ip")
+    if real:
+        return real.strip()
     return request.client.host if request.client else None
 
 
@@ -50,13 +53,18 @@ async def _notify(db: AsyncSession, method_name: str, recipient_id, lease_id) ->
         await getattr(NotificationService(db), method_name)(recipient_id, lease_id)
     except Exception:
         logger.warning("e-sign notification %s failed", method_name, exc_info=True)
+        # Clear any half-applied notification write so the shared session stays usable.
+        try:
+            await db.rollback()
+        except Exception:
+            pass
 
 
 async def _get_lease_or_404(lease_id: UUID, db: AsyncSession) -> Lease:
     result = await db.execute(select(Lease).where(Lease.id == lease_id))
     lease = result.scalar_one_or_none()
     if not lease:
-        raise HTTPException(status_code=404, detail="Lease not found")
+        raise HTTPException(status_code=404, detail="Bail introuvable")
     return lease
 
 
@@ -81,23 +89,23 @@ async def upload_lease_document(
     lease = await _get_lease_or_404(lease_id, db)
 
     if lease.landlord_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Only the landlord can upload the lease document")
+        raise HTTPException(status_code=403, detail="Seul le bailleur peut téléverser le document du bail")
     if not current_user.identity_verified:
-        raise HTTPException(status_code=403, detail="Identity verification required to upload a lease")
+        raise HTTPException(status_code=403, detail="Vérification d'identité requise pour téléverser un bail")
     if lease.status == "signed":
-        raise HTTPException(status_code=409, detail="Lease is already signed; document cannot be replaced")
+        raise HTTPException(status_code=409, detail="Le bail est déjà signé ; le document ne peut être remplacé")
 
     # Reject oversized uploads BEFORE reading into memory (DoS guard).
     max_bytes = MAX_PDF_MB * 1024 * 1024
     declared_size = getattr(file, "size", None)
     if declared_size is not None and declared_size > max_bytes:
-        raise HTTPException(status_code=400, detail=f"File exceeds the {MAX_PDF_MB}MB limit")
+        raise HTTPException(status_code=400, detail=f"Le fichier dépasse la limite de {MAX_PDF_MB} Mo")
 
     content = await file.read()
     if len(content) > max_bytes:
-        raise HTTPException(status_code=400, detail=f"File exceeds the {MAX_PDF_MB}MB limit")
+        raise HTTPException(status_code=400, detail=f"Le fichier dépasse la limite de {MAX_PDF_MB} Mo")
     if not content.startswith(b"%PDF"):
-        raise HTTPException(status_code=400, detail="Document must be a PDF")
+        raise HTTPException(status_code=400, detail="Le document doit être un PDF")
 
     # Store via the durable storage service (R2 in prod; local fallback in dev).
     try:
@@ -109,12 +117,13 @@ async def upload_lease_document(
         )
     except Exception:
         logger.exception("Lease document storage failed for lease %s", lease_id)
-        raise HTTPException(status_code=500, detail="Could not store the document")
+        raise HTTPException(status_code=500, detail="Impossible d'enregistrer le document")
 
     # Deterministic legality red-line screen (§5.6) — advisory, never blocks signing.
     legality = lease_legality.screen_lease_pdf(content).as_dict()
 
     # New document → fresh signing round: clear any prior signatures/manifest.
+    superseded_key = lease.pdf_path  # a prior upload being replaced (if any)
     lease.document_hash = esign.compute_document_hash(content)
     lease.document_source = "uploaded"
     lease.pdf_path = result["key"]  # storage key (cloud or local), not a raw path
@@ -125,6 +134,13 @@ async def upload_lease_document(
     lease.status = "awaiting_signatures"
 
     await db.commit()
+
+    # Best-effort: drop the superseded document so re-uploads don't orphan objects.
+    if superseded_key and superseded_key != result["key"]:
+        try:
+            await storage.delete_file(superseded_key)
+        except Exception:
+            logger.warning("Could not delete superseded lease document %s", superseded_key)
 
     # Best-effort: nudge the tenant that a lease awaits their signature.
     if lease.tenant_id is not None:
@@ -161,35 +177,45 @@ async def sign_lease(
         raise HTTPException(status_code=403, detail=reason)
 
     if not lease.document_hash or not lease.pdf_path:
-        raise HTTPException(status_code=400, detail="No document has been uploaded for signing")
+        raise HTTPException(status_code=400, detail="Aucun document n'a été téléversé pour signature")
     if lease.status == "signed":
-        raise HTTPException(status_code=409, detail="Lease is already fully signed")
+        raise HTTPException(status_code=409, detail="Le bail est déjà entièrement signé")
     if not body.consent:
-        raise HTTPException(status_code=400, detail="Explicit consent is required to sign")
+        raise HTTPException(status_code=400, detail="Le consentement explicite est requis pour signer")
     if not body.signature_image and not body.typed_name:
-        raise HTTPException(status_code=400, detail="A drawn or typed signature is required")
+        raise HTTPException(status_code=400, detail="Une signature manuscrite ou saisie est requise")
     # Bound the signature inputs — a drawn PNG is small; reject oversized payloads.
     if body.signature_image and len(body.signature_image) > 1_500_000:
-        raise HTTPException(status_code=400, detail="Signature image is too large")
+        raise HTTPException(status_code=400, detail="L'image de signature est trop volumineuse")
     if body.typed_name and len(body.typed_name) > 200:
-        raise HTTPException(status_code=400, detail="Typed name is too long")
+        raise HTTPException(status_code=400, detail="Le nom saisi est trop long")
 
     # SG-3 — re-read the stored document and recompute its hash; reject if altered.
-    stored = await storage.download_file(lease.pdf_path)
+    # A transient storage failure (503) must NOT be reported as a missing/tampered
+    # document (409) — they are semantically opposite for a signing flow.
+    try:
+        stored = await storage.download_file(lease.pdf_path)
+    except StorageUnavailableError:
+        logger.exception("Storage unavailable during SG-3 re-check, lease %s", lease_id)
+        raise HTTPException(
+            status_code=503,
+            detail="Le stockage du document est temporairement indisponible. Réessayez dans un instant.",
+        )
     if stored is None:
-        raise HTTPException(status_code=409, detail="Stored document is unavailable")
+        logger.error("SG-3: stored lease document is gone, lease %s key %s", lease_id, lease.pdf_path)
+        raise HTTPException(status_code=409, detail="Le document signé est introuvable et ne peut être vérifié")
     current_hash = esign.compute_document_hash(stored)
     if current_hash != lease.document_hash:
-        raise HTTPException(status_code=409, detail="Document has been altered since upload; signing blocked")
+        raise HTTPException(status_code=409, detail="Le document a été modifié depuis le téléversement ; signature bloquée")
 
     party = esign.party_of(current_user, lease)
     if party is None:  # already guaranteed by can_sign(); keeps the contract explicit
-        raise HTTPException(status_code=403, detail="Not authorized")
+        raise HTTPException(status_code=403, detail="Non autorisé")
     sig_data = lease.signature_data or {}
     audit = list(sig_data.get("esign_audit", []))
     legality = sig_data.get("legality")  # recorded at upload — preserved through signing
     if any(e.get("party") == party for e in audit):
-        raise HTTPException(status_code=409, detail="This party has already signed")
+        raise HTTPException(status_code=409, detail="Cette partie a déjà signé")
 
     audit.append(esign.build_audit_entry(
         party,
@@ -243,7 +269,7 @@ async def esign_status(
     lease = await _get_lease_or_404(lease_id, db)
     your_party = esign.party_of(current_user, lease)
     if your_party is None:
-        raise HTTPException(status_code=403, detail="Not authorized")
+        raise HTTPException(status_code=403, detail="Non autorisé")
 
     sig_data = lease.signature_data or {}
     audit = sig_data.get("esign_audit", [])
@@ -274,14 +300,14 @@ async def esign_evidence(
     """SG-4 — the watermarked signature evidence pack, once both parties have signed."""
     lease = await _get_lease_or_404(lease_id, db)
     if esign.party_of(current_user, lease) is None:
-        raise HTTPException(status_code=403, detail="Not authorized")
+        raise HTTPException(status_code=403, detail="Non autorisé")
     if lease.status != "signed" or not lease.esign_manifest:
-        raise HTTPException(status_code=409, detail="Lease is not fully signed yet")
+        raise HTTPException(status_code=409, detail="Le bail n'est pas encore entièrement signé")
 
     # Defensive: the manifest is a dispute artifact — refuse to emit a pack whose
     # stored signature no longer verifies (DB tamper / key mismatch).
     if not esign.verify_manifest(lease.esign_manifest):
-        raise HTTPException(status_code=409, detail="Signature manifest failed verification")
+        raise HTTPException(status_code=409, detail="La vérification du procès-verbal de signature a échoué")
 
     pdf_bytes = esign.export_signature_evidence_pdf(lease.esign_manifest, verify_base_url=VERIFY_BASE_URL)
     return Response(

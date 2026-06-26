@@ -55,7 +55,7 @@ def test_can_sign_blocks_non_party():
     lease = _lease(_user().id, _user().id)
     ok, reason = esign.can_sign(_user(), lease)
     assert ok is False
-    assert "party" in reason.lower()
+    assert "partie" in reason.lower()
 
 
 def test_can_sign_blocks_unverified_party():
@@ -63,7 +63,7 @@ def test_can_sign_blocks_unverified_party():
     lease = _lease(landlord.id, _user().id)
     ok, reason = esign.can_sign(landlord, lease)
     assert ok is False
-    assert "verification" in reason.lower()
+    assert "identité" in reason.lower()
 
 
 def test_can_sign_allows_verified_party():

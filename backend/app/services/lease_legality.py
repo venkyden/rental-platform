@@ -21,14 +21,22 @@ it is testable offline and does not over-claim.
 """
 
 import re
+import logging
 import unicodedata
 from dataclasses import dataclass, field
+
+logger = logging.getLogger(__name__)
 
 VALIDATED = "VALIDATED"
 ATTACHED = "ATTACHED_NOT_LEGALITY_VERIFIED"
 
 # Minimum extracted characters to consider the PDF to have a real text layer (LU-1).
 _MIN_TEXT_CHARS = 200
+
+
+class LegalityExtractError(Exception):
+    """The PDF text could not be extracted (missing extractor or unreadable file).
+    Distinct from a genuine 'no text layer' so we don't record a false 'scanned' verdict."""
 
 
 @dataclass
@@ -49,16 +57,23 @@ def _normalise(text: str) -> str:
 
 
 def extract_pdf_text(pdf_bytes: bytes) -> str:
-    """Extract the embedded text layer (no OCR). Empty string if none / unreadable."""
+    """
+    Extract the embedded text layer (no OCR). Returns "" only when the PDF genuinely
+    has no/empty text layer. A missing extractor or an unreadable/corrupt file raises
+    LegalityExtractError — so the caller records an honest "could not analyse" flag
+    instead of a false "scanned document" verdict, and a prod misconfig is loud.
+    """
     try:
         import fitz  # PyMuPDF
-    except ImportError:
-        return ""
+    except ImportError as exc:
+        logger.error("PyMuPDF (fitz) unavailable — lease legality screen cannot run")
+        raise LegalityExtractError("extractor_unavailable") from exc
     try:
         with fitz.open(stream=pdf_bytes, filetype="pdf") as doc:
             return "\n".join(page.get_text() for page in doc)
-    except Exception:
-        return ""
+    except Exception as exc:
+        logger.exception("Lease PDF text extraction failed")
+        raise LegalityExtractError("parse_failed") from exc
 
 
 # ── French-law anchor (LU-5) ─────────────────────────────────────────────────
@@ -75,11 +90,14 @@ _FR_ANCHORS = (
 # Explicit foreign governing-law signals → never VALIDATED (LU-5).
 _FOREIGN_LAW = (
     "governing law",
-    "loi applicable : droit",   # followed by a non-French jurisdiction
     "submitted to the laws of",
-    "regi par le droit anglais",
-    "regi par le droit belge",
-    "regi par le droit suisse",
+)
+# Whitespace-tolerant FR phrasing: real PDFs extract "Loi applicable: droit anglais",
+# "régi par le droit belge", etc. with arbitrary spacing/newlines (substring matching
+# on the fixed literal silently missed these).
+_FOREIGN_LAW_RE = re.compile(
+    r"(loi applicable\s*:?\s*droit|regi par le droit)\s+"
+    r"(anglais|belge|suisse|luxembourgeois|allemand|espagnol|italien|etranger)"
 )
 
 # ── Mandatory annexes (LU-4) — loi 89 art. 3-3 + décret 2015-1437 ────────────
@@ -124,7 +142,7 @@ def screen_lease_text(text: str) -> LegalityResult:
     if not any(anchor in norm for anchor in _FR_ANCHORS):
         flags.append("LU5_not_french_law")
         notes.append("Le document ne référence pas le droit locatif français (loi du 6 juillet 1989).")
-    if any(sig in norm for sig in _FOREIGN_LAW):
+    if any(sig in norm for sig in _FOREIGN_LAW) or _FOREIGN_LAW_RE.search(norm):
         flags.append("LU5_foreign_governing_law")
         notes.append("Une clause de droit applicable étranger a été détectée.")
 
@@ -145,5 +163,17 @@ def screen_lease_text(text: str) -> LegalityResult:
 
 
 def screen_lease_pdf(pdf_bytes: bytes) -> LegalityResult:
-    """Convenience: extract the text layer then screen it."""
-    return screen_lease_text(extract_pdf_text(pdf_bytes))
+    """
+    Extract the text layer then screen it. An extraction failure (corrupt file or
+    missing extractor) yields ATTACHED with an honest `LU1_extract_failed` flag —
+    never a false "scanned document" verdict, and never VALIDATED.
+    """
+    try:
+        text = extract_pdf_text(pdf_bytes)
+    except LegalityExtractError:
+        return LegalityResult(
+            status=ATTACHED,
+            flags=["LU1_extract_failed"],
+            notes=["Le contenu du document n'a pas pu être analysé (fichier illisible ou corrompu)."],
+        )
+    return screen_lease_text(text)

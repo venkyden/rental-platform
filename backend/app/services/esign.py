@@ -23,6 +23,7 @@ Edge cases enforced (DOSSIER §5.7):
 
 import io
 import os
+from xml.sax.saxutils import escape as _xml_escape
 
 from app.core.timeutils import utcnow
 from app.services.credential import credential_service
@@ -63,9 +64,9 @@ def can_sign(user, lease) -> tuple[bool, str | None]:
     surface to the caller (no PII).
     """
     if party_of(user, lease) is None:
-        return False, "Signer is not a party to this lease"
+        return False, "Le signataire n'est pas une partie à ce bail"
     if not getattr(user, "identity_verified", False):
-        return False, "Identity verification required before signing"
+        return False, "Vérification d'identité requise avant de signer"
     return True, None
 
 
@@ -260,9 +261,12 @@ def export_signature_evidence_pdf(
         Paragraph("Consentement", label_style),
     ]]
     for entry in manifest.get("signatures", []):
+        # display_name is user-editable (profile full_name) — escape before it hits
+        # reportlab's XML-like Paragraph markup, or a name with '<'/'&' corrupts/crashes
+        # the dispute artifact.
         sig_rows.append([
             Paragraph(role_fr.get(entry.get("party", ""), entry.get("party", "")), body),
-            Paragraph(entry.get("display_name", "—"), body),
+            Paragraph(_xml_escape(str(entry.get("display_name", "—"))), body),
             Paragraph(entry.get("signed_at", "—"), small),
             Paragraph("Oui ✓" if entry.get("consent") else "Non", body),
         ])

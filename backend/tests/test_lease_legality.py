@@ -91,6 +91,26 @@ def test_as_dict_shape():
     assert d["status"] == ll.VALIDATED
 
 
-def test_extract_pdf_text_handles_garbage_bytes():
-    # Non-PDF bytes must not raise — just yields empty text → ATTACHED downstream.
-    assert ll.extract_pdf_text(b"not a pdf") == ""
+def test_foreign_governing_law_whitespace_tolerant_lu5():
+    # Real PDFs extract varied spacing/casing — the screen must still fire (I1 fix).
+    for variant in (
+        "Loi applicable: droit anglais.",
+        "loi applicable :  droit  belge",
+        "Le présent contrat est régi par le droit suisse.",
+    ):
+        res = ll.screen_lease_text(COMPLIANT + " " + variant)
+        assert "LU5_foreign_governing_law" in res.flags, variant
+
+
+def test_extract_failure_yields_attached_not_false_scanned():
+    # Corrupt/non-PDF bytes → extraction error → honest LU1_extract_failed (not a
+    # false "scanned document" verdict), ATTACHED, never VALIDATED (C2 fix).
+    res = ll.screen_lease_pdf(b"not a pdf at all")
+    assert res.status == ll.ATTACHED
+    assert res.flags == ["LU1_extract_failed"]
+
+
+def test_extract_pdf_text_raises_on_unreadable_bytes():
+    import pytest
+    with pytest.raises(ll.LegalityExtractError):
+        ll.extract_pdf_text(b"not a pdf")
