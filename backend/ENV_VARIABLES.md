@@ -10,19 +10,28 @@ The backend will fail to start if these are missing.
 |----------|-------------|-----------|
 | `DATABASE_URL` | PostgreSQL connection string (e.g., `postgresql+asyncpg://user:pass@localhost/db`) | **YES** |
 | `SECRET_KEY` | 32+ character random string for security/crypto. | **YES** |
-| `ANTHROPIC_API_KEY` | API Key for Claude AI (Used for Document/Payslip Verification). | **YES** |
+| `CREDENTIAL_SIGNING_KEY` | Ed25519 signing key — hex-encoded 32-byte seed (64 hex chars). **Required in production** (startup fails without it). In dev, an ephemeral key is used (credentials don't survive restart). Generate: `python -c "import os; print(os.urandom(32).hex())"` | **YES (prod)** |
+| `MASTER_ENCRYPTION_KEY` | AES encryption key for GDPR PII at rest. **Required in production**. Generate: `python -c "import os; print(os.urandom(32).hex())"` | **YES (prod)** |
 | `FRONTEND_URL` | URL of the frontend app (for CORS and Deep Links). Default: `http://localhost:3000`. | **YES** |
-| `CREDENTIAL_SIGNING_KEY` | Ed25519 signing key — hex-encoded 32-byte seed (64 hex chars). **Required in production** (startup fails without it). In dev, an ephemeral key is used (credentials don't survive restart). Generate: `python scripts/generate_key.py --credential-key` | **YES (prod)** |
 
 ## ⚠️ Functional Dependencies
 **Required for specific features.**
 The application will start without these, but related features (Messaging, Storage) will fail silently or log errors.
 
-### Notification Channels (Email & SMS)
+### AI / Document OCR
 | Variable | Description | Feature Impact |
 |----------|-------------|----------------|
-| `SENDGRID_API_KEY` | SendGrid API Key. | Email delivery (Invites, Alerts). |
-| `RESEND_API_KEY` | *Alternative* to SendGrid. | Email delivery. |
+| `GOOGLE_API_KEY` | Google Gemini API Key (free tier: 1500 req/day). | Document OCR, payslip verification. |
+
+### Monitoring
+| Variable | Description | Feature Impact |
+|----------|-------------|----------------|
+| `SENTRY_DSN` | Sentry Data Source Name. | Error tracking + performance monitoring. |
+
+### Notification Channels (Email)
+| `RESEND_API_KEY` | Resend API Key (primary email provider). | Email delivery (verification, reset, invites). |
+| `FROM_EMAIL` | Sender address — must match verified Resend domain. Default: `Roomivo <onboarding@resend.dev>` (test). Production: `noreply@roomivo.eu`. | Email deliverability. |
+| `SENDGRID_API_KEY` | *Alternative* to Resend. | Email delivery. |
 | `TWILIO_ACCOUNT_SID` | Twilio Account SID. | SMS & WhatsApp notifications. |
 | `TWILIO_AUTH_TOKEN` | Twilio Auth Token. | SMS & WhatsApp notifications. |
 | `TWILIO_PHONE_NUMBER` | Sender Phone Number (E.164 format). | SMS delivery. |

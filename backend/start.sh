@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e # Exit immediately if a command exits with a non-zero status
-set -x # Print commands and their arguments as they are executed
+# set -x intentionally disabled in production — leaks env vars to logs
 
 echo "🚀 Starting Roomivo Backend Initialization..."
 
@@ -58,5 +58,10 @@ echo "🏗️ Running database migrations..."
 alembic upgrade head
 
 echo "🔥 Starting FastAPI application with Uvicorn..."
-# Using exec so uvicorn becomes PID 1 and receives signals correctly
-exec uvicorn app.main:app --host 0.0.0.0 --port $PORT --log-level debug --proxy-headers --forwarded-allow-ips='*'
+# Production settings:
+#   --workers 2          : Handle concurrent requests (fits Render Starter 512MB)
+#   --log-level info     : No debug noise (override via LOG_LEVEL env var)
+#   --timeout-keep-alive : Above Render's 60s proxy timeout to prevent 502s
+LOG_LEVEL="${LOG_LEVEL:-info}"
+WORKERS="${WEB_CONCURRENCY:-2}"
+exec uvicorn app.main:app --host 0.0.0.0 --port $PORT --log-level "$LOG_LEVEL" --workers "$WORKERS" --timeout-keep-alive 75 --proxy-headers --forwarded-allow-ips='*'

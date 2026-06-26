@@ -194,8 +194,7 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
             "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
             "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With, Accept, Language",
             "Access-Control-Allow-Credentials": "true",
-            "Cross-Origin-Opener-Policy": "unsafe-none",
-            "Cross-Origin-Embedder-Policy": "unsafe-none",
+            "Cross-Origin-Opener-Policy": "same-origin-allow-popups",
             "Cross-Origin-Resource-Policy": "cross-origin",
         }
     )
@@ -220,8 +219,9 @@ async def global_exception_handler(request: Request, exc: Exception):
     else:
         allow_origin = "http://localhost:3000"
 
-    content = {"detail": f"Server error: {type(exc).__name__}"}
+    content = {"detail": "Internal server error"}
     if settings.ENVIRONMENT != "production":
+        content["detail"] = f"Server error: {type(exc).__name__}"
         content["message"] = str(exc)
 
     return JSONResponse(
@@ -232,8 +232,7 @@ async def global_exception_handler(request: Request, exc: Exception):
             "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
             "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With, Accept, Language",
             "Access-Control-Allow-Credentials": "true",
-            "Cross-Origin-Opener-Policy": "unsafe-none",
-            "Cross-Origin-Embedder-Policy": "unsafe-none",
+            "Cross-Origin-Opener-Policy": "same-origin-allow-popups",
             "Cross-Origin-Resource-Policy": "cross-origin",
         }
     )
