@@ -24,7 +24,7 @@ from app.core.database import get_db
 from app.models.user import User
 from app.models.visits_and_leases import Lease
 from app.routers.auth import get_current_user
-from app.services import esign
+from app.services import esign, lease_legality
 from app.services.notification_service import NotificationService
 from app.services.storage import storage
 
@@ -110,11 +110,14 @@ async def upload_lease_document(
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Could not store the document: {exc}")
 
+    # Deterministic legality red-line screen (§5.6) — advisory, never blocks signing.
+    legality = lease_legality.screen_lease_pdf(content).as_dict()
+
     # New document → fresh signing round: clear any prior signatures/manifest.
     lease.document_hash = esign.compute_document_hash(content)
     lease.document_source = "uploaded"
     lease.pdf_path = result["key"]  # storage key (cloud or local), not a raw path
-    lease.signature_data = {"esign_audit": []}
+    lease.signature_data = {"esign_audit": [], "legality": legality}
     lease.landlord_signature = None
     lease.tenant_signature = None
     lease.esign_manifest = None
@@ -130,7 +133,9 @@ async def upload_lease_document(
         "lease_id": str(lease.id),
         "status": lease.status,
         "document_hash": lease.document_hash,
-        "legality_status": esign.LEGALITY_STATUS_ATTACHED,
+        "legality_status": legality["status"],
+        "legality_flags": legality["flags"],
+        "legality_notes": legality["notes"],
     }
 
 
@@ -174,7 +179,9 @@ async def sign_lease(
     party = esign.party_of(current_user, lease)
     if party is None:  # already guaranteed by can_sign(); keeps the contract explicit
         raise HTTPException(status_code=403, detail="Not authorized")
-    audit = list((lease.signature_data or {}).get("esign_audit", []))
+    sig_data = lease.signature_data or {}
+    audit = list(sig_data.get("esign_audit", []))
+    legality = sig_data.get("legality")  # recorded at upload — preserved through signing
     if any(e.get("party") == party for e in audit):
         raise HTTPException(status_code=409, detail="This party has already signed")
 
@@ -193,12 +200,12 @@ async def sign_lease(
     else:
         lease.tenant_signature = sig_value
 
-    lease.signature_data = {"esign_audit": audit}
+    lease.signature_data = {"esign_audit": audit, "legality": legality}
 
     finalised = esign.is_fully_signed(audit, lease)
     if finalised:
         manifest = esign.sign_manifest(
-            esign.build_manifest(lease, lease.document_hash, audit)
+            esign.build_manifest(lease, lease.document_hash, audit, legality=legality)
         )
         lease.esign_manifest = manifest
         lease.status = "signed"
@@ -232,7 +239,9 @@ async def esign_status(
     if your_party is None:
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    audit = (lease.signature_data or {}).get("esign_audit", [])
+    sig_data = lease.signature_data or {}
+    audit = sig_data.get("esign_audit", [])
+    legality = sig_data.get("legality") or {}
     signed_parties = [e["party"] for e in audit]
     return {
         "lease_id": str(lease.id),
@@ -242,6 +251,9 @@ async def esign_status(
         "document_present": bool(lease.document_hash),
         "document_hash": lease.document_hash,
         "document_source": lease.document_source,
+        "legality_status": legality.get("status"),
+        "legality_flags": legality.get("flags", []),
+        "legality_notes": legality.get("notes", []),
         "signed_parties": signed_parties,
         "fully_signed": lease.status == "signed",
     }

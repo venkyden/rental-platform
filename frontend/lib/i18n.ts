@@ -43,6 +43,11 @@ export const translations = {
                 body: "A tamper-evident proof of signature is available. It records both verified signers, the document fingerprint (SHA-256), and timestamps, sealed with Roomivo’s Ed25519 signature.",
                 download: "Download proof of signature",
             },
+            legality: {
+                validated: "Legality screen passed: the lease references French tenancy law, the mandatory annexes, and no prohibited clause was detected.",
+                flaggedTitle: "Lease attached — not legality-verified",
+                flaggedBody: "This is an automated screen, not legal advice. The following points were flagged; you may still proceed — signing records that they were shown and accepted.",
+            },
             error: {
                 load: "Could not load the signing status",
                 notPdf: "The lease must be a PDF file",
@@ -2382,6 +2387,11 @@ export const translations = {
                 title: "Bail signé par les deux parties",
                 body: "Une preuve de signature infalsifiable est disponible. Elle enregistre les deux signataires vérifiés, l'empreinte du document (SHA-256) et les horodatages, scellés par la signature Ed25519 de Roomivo.",
                 download: "Télécharger la preuve de signature",
+            },
+            legality: {
+                validated: "Contrôle de légalité passé : le bail référence le droit locatif français, les annexes obligatoires, et aucune clause prohibée n'a été détectée.",
+                flaggedTitle: "Bail joint — non vérifié juridiquement",
+                flaggedBody: "Ceci est un contrôle automatique, et non un avis juridique. Les points suivants ont été signalés ; vous pouvez néanmoins poursuivre — la signature enregistre qu'ils ont été présentés et acceptés.",
             },
             error: {
                 load: "Impossible de charger le statut de signature",

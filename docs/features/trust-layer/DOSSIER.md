@@ -437,12 +437,12 @@ Two acceptance tiers: **VALIDATED** (passed red-line) vs **ATTACHED / NOT
 LEGALITY-VERIFIED** (override or unanalysable). The credential records which.
 | # | Edge case | Expected | Now |
 |---|---|---|---|
-| LU-1 | Scanned PDF, no text layer | OCR; low confidence → **ATTACHED** + notice | ❌ |
-| LU-2 | Clause *réputée non écrite* (loi 89-462 art. 4) | **flag** + one-click swap to template; keep → ATTACHED | ❌ |
-| LU-3 | Deposit/rent over cap | flag + override → ATTACHED | ❌ |
-| LU-4 | Missing mandatory annex | flag + offer to attach | ❌ |
-| LU-5 | Foreign-law lease | **never VALIDATED** → ATTACHED | ❌ |
-| LU-6 | Landlord insists on non-compliant lease | allowed; **record flags-shown-and-overridden** (liability) | ❌ |
+| LU-1 | Scanned PDF, no text layer | OCR; low confidence → **ATTACHED** + notice | ✅ `lease_legality`: no text layer (<200 chars) → ATTACHED + `LU1_no_text_layer` (PyMuPDF text extract, no OCR yet) |
+| LU-2 | Clause *réputée non écrite* (loi 89-462 art. 4) | **flag** + one-click swap to template; keep → ATTACHED | 🟡 conservative high-precision patterns (salaire/pénalité/renonciation/quittance) flag → ATTACHED; no template swap (Path A) yet |
+| LU-3 | Deposit/rent over cap | flag + override → ATTACHED | ❌ deferred — needs reliable amount extraction (AI); deterministic text parse too noisy. `french_compliance` caps ready to reuse |
+| LU-4 | Missing mandatory annex | flag + offer to attach | ✅ DPE/ERP/notice referenced-check → flag if missing (no auto-attach yet) |
+| LU-5 | Foreign-law lease | **never VALIDATED** → ATTACHED | ✅ FR-law anchor absent OR foreign governing-law signal → ATTACHED |
+| LU-6 | Landlord insists on non-compliant lease | allowed; **record flags-shown-and-overridden** (liability) | ✅ never blocks; flags shown in `EsignManager` (amber) + recorded in the signed manifest (`legality_status`/`legality_flags`) |
 
 ### 5.7 E-signature (PRD §6.6) — `leases.py`, lease signature columns
 French residential lease = *acte sous seing privé* → **no qualified sig required.**
@@ -473,16 +473,20 @@ spec `docs/superpowers/specs/2026-06-24-esign-path-b-design.md`.
   (`pdf_path` now holds the **storage key**, not a raw path).
 - **Uploaded PDF stored via the R2 `storage` service** (durable; local fallback in dev) — new
   `storage.download_file` reads it back for the SG-3 re-hash at sign time. No ephemeral-disk gap.
-- The uploaded lease is recorded **ATTACHED / NOT LEGALITY-VERIFIED** (§5.6) — the LU-* legality
-  red-line check does **not** gate signing and is the next increment.
+- **§5.6 legality red-line shipped** (`lease_legality.py`, deterministic): on upload, screens the
+  PDF text → **VALIDATED** vs **ATTACHED**; LU-1 (no text layer), LU-2 (art. 4 prohibited-clause
+  patterns, partial), LU-4 (DPE/ERP/notice referenced), LU-5 (FR-law / foreign governing law).
+  Never blocks (LU-6): flags shown in the UI + recorded in the signed manifest. LU-3 (deposit/rent
+  cap from text) deferred to AI extraction. 10 unit tests.
 - Frontend: `EsignManager` (upload / draw-or-type sign / consent / proof download), `/leases/[id]/sign`
   page, **My leases** list, Navbar entry, FR/EN i18n; landlord post-create redirect → `/sign`.
 - Notifications (best-effort, never block signing): tenant nudged on upload ("ready to sign");
   both parties notified on full signature ("proof ready"). New `NotificationType.LEASE` +
   `notify_lease_ready_to_sign`/`notify_lease_fully_signed` (in-app + preferred channels).
-- 16 service tests cover SG-1..SG-4 + cross-key verification + storage round-trip; full backend
-  suite 260 green; frontend `tsc` clean.
-- **Out of v1 / next:** LU-* legality red-line (§5.6); Path A template generation (§5.5); DocuSeal/QTSP.
+- 16 esign + 10 legality service tests (SG-1..SG-4, cross-key, storage round-trip, LU-1/2/4/5);
+  full backend suite 270 green; frontend `tsc` clean.
+- **Out of v1 / next:** LU-3 deposit-cap + AI clause extraction (§5.6); Path A template generation
+  (§5.5, legally gated by the opinion's mandatory-provisions + annexes conditions); DocuSeal/QTSP.
 - ✅ Lawyer's **written** e-sign/lease opinion filed (2026-06-20, Mathieu Galand) —
   `docs/legal/2026-06-20-avis-avocat-esign-lease-galand.md`; PRD §7.6 / §0.16 written-blessing item closed.
 
@@ -568,7 +572,7 @@ insurance posture. **Delete, don't flag-off.**
 
 **Phase 2+ (defer; lease/e-sign behind §7.1 legal gate)**
 7. ✅ **DPE lettability depth** (§5.4, 2026-06-10) — class-G warn+ack publish gate; expired DPE gate; ADEME authoritative-class override; bilingual FR/EN; `dpe_compliance.py`.
-8. 🟡 **Uploaded-lease + generated-lease, then e-sign** (§5.5/§5.6) — ✅ **gate CLEARED 2026-06-24: lawyer green-lit BOTH paths**. ✅ **Path B (upload + e-sign) v1 SHIPPED 2026-06-24** (branch `feat/esign-path-b`, see §5.7 "Done this pass"): landlord uploads own lease → both verified parties sign → tamper-evident evidence pack. **Still ❌:** Path A (Décret 2015-587 template generation) and the LU-* legality red-line check (§5.6). ✅ **Lawyer's written opinion on file** (2026-06-20, Mathieu Galand — `docs/legal/2026-06-20-avis-avocat-esign-lease-galand.md`); deems both modules deployable **subject to** §3 conditions (mandatory provisions + annexes are **gating for Path A**). Constraints unchanged: official model wording only (no custom clauses, loi 1971); no success fee; never touch the deposit/funds.
+8. 🟡 **Uploaded-lease + generated-lease, then e-sign** (§5.5/§5.6) — ✅ **gate CLEARED 2026-06-24: lawyer green-lit BOTH paths**. ✅ **Path B (upload + e-sign) v1 SHIPPED 2026-06-24** (branch `feat/esign-path-b`, see §5.7 "Done this pass"): landlord uploads own lease → both verified parties sign → tamper-evident evidence pack; ✅ **§5.6 legality red-line shipped** (LU-1/2/4/5/6; LU-3 deferred to AI). **Still ❌:** Path A (Décret 2015-587 template generation). ✅ **Lawyer's written opinion on file** (2026-06-20, Mathieu Galand — `docs/legal/2026-06-20-avis-avocat-esign-lease-galand.md`); deems both modules deployable **subject to** §3 conditions (mandatory provisions + annexes are **gating for Path A**). Constraints unchanged: official model wording only (no custom clauses, loi 1971); no success fee; never touch the deposit/funds.
 9. 🟡 **E-sign + evidence pack** (§5.7, §6) — ✅ **SHIPPED 2026-06-24 as in-house Ed25519** (NOT DocuSeal/Documenso — founder 0 opex/capex; reuses the credential signing key so one published public key verifies both). eIDAS simple/advanced sig valid for a bail; gate CLEARED 2026-06-24 (§0.16). DocuSeal/QTSP **deferred** to the SG-5 "max robustness" v2 upgrade. SG-1..SG-4 enforced + tested (§5.7).
 10. ✅ **Insurance MRH verification** (§5.8) — IN-1..IN-5 covered; `mrh_compliance.py`; `POST /verification/insurance/upload`; evidence PDF row; issue-mine assurance summary.
 11. 🟡 **INTL rails** (§4) — MEDIUM rail shipped (2026-06-16): `mrz.py` hybrid AI+Tesseract+ICAO-checksum; `fx_normalise.py` Frankfurter→static-29→UNVERIFIED; 3 endpoints: `POST /verification/intl/identity/upload`, `/intl/identity/selfie`, `/intl/solvency`. HIGH (NFC chip / Passive Auth) blocked on CSCA master-list assembly **AND a native app** (Web NFC is Android-only; no iOS) → **deferred to EUDI Wallet** (§0.12), not pursued now. Spec: `docs/superpowers/specs/2026-06-15-intl-rails-design.md`.

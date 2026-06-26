@@ -1,0 +1,149 @@
+"""
+Lease legality red-line screen (DOSSIER §5.6) — uploaded-lease Path B.
+
+A **deterministic, heuristic** screen over the uploaded lease text. It assigns one of
+two acceptance tiers (DOSSIER §5.6):
+
+- **VALIDATED** — passed every red-line check below.
+- **ATTACHED / NOT LEGALITY-VERIFIED** — any check failed/uncertain, OR no text layer.
+
+It is a *screen*, not legal advice, and **never hard-blocks** signing (LU-6: the landlord
+may proceed; the flags are recorded as shown-and-overridden). False-negatives (under-
+flagging) are preferred to wrongly downgrading — ATTACHED is the safe default anyway.
+
+Sources: loi n°89-462 du 6 juillet 1989 (art. 3-3 annexes, art. 4 clauses réputées non
+écrites, art. 22 dépôt de garantie); décret n°2015-1437 (notice d'information). All
+patterns are matched against fixed, hardcoded legal phrasing — never against DB/user
+strings — so there is no ReDoS / injection surface.
+
+AI extraction (Gemini) for amounts/clauses is a future enhancement; v1 is rule-based so
+it is testable offline and does not over-claim.
+"""
+
+import re
+import unicodedata
+from dataclasses import dataclass, field
+
+VALIDATED = "VALIDATED"
+ATTACHED = "ATTACHED_NOT_LEGALITY_VERIFIED"
+
+# Minimum extracted characters to consider the PDF to have a real text layer (LU-1).
+_MIN_TEXT_CHARS = 200
+
+
+@dataclass
+class LegalityResult:
+    status: str                       # VALIDATED | ATTACHED
+    flags: list[str] = field(default_factory=list)   # machine codes (LU-*)
+    notes: list[str] = field(default_factory=list)   # human-readable FR notes
+
+    def as_dict(self) -> dict:
+        return {"status": self.status, "flags": self.flags, "notes": self.notes}
+
+
+def _normalise(text: str) -> str:
+    """Lowercase + strip accents so patterns match regardless of accentuation."""
+    stripped = unicodedata.normalize("NFKD", text)
+    stripped = "".join(c for c in stripped if not unicodedata.combining(c))
+    return stripped.lower()
+
+
+def extract_pdf_text(pdf_bytes: bytes) -> str:
+    """Extract the embedded text layer (no OCR). Empty string if none / unreadable."""
+    try:
+        import fitz  # PyMuPDF
+    except ImportError:
+        return ""
+    try:
+        with fitz.open(stream=pdf_bytes, filetype="pdf") as doc:
+            return "\n".join(page.get_text() for page in doc)
+    except Exception:
+        return ""
+
+
+# ── French-law anchor (LU-5) ─────────────────────────────────────────────────
+# A genuine French residential lease references loi 89 and/or core bail vocabulary.
+_FR_ANCHORS = (
+    "loi du 6 juillet 1989",
+    "loi n 89-462",
+    "89-462",
+    "bailleur",
+    "locataire",
+    "depot de garantie",
+)
+
+# Explicit foreign governing-law signals → never VALIDATED (LU-5).
+_FOREIGN_LAW = (
+    "governing law",
+    "loi applicable : droit",   # followed by a non-French jurisdiction
+    "submitted to the laws of",
+    "regi par le droit anglais",
+    "regi par le droit belge",
+    "regi par le droit suisse",
+)
+
+# ── Mandatory annexes (LU-4) — loi 89 art. 3-3 + décret 2015-1437 ────────────
+# code → (human note, accepted phrasings)
+_MANDATORY_ANNEXES = {
+    "dpe": ("Diagnostic de performance énergétique (DPE) absent ou non référencé",
+            ("diagnostic de performance energetique", "dpe")),
+    "erp": ("État des risques (ERP) absent ou non référencé",
+            ("etat des risques", "erp", "ernmt", "errial")),
+    "notice": ("Notice d'information (décret 2015-1437) absente ou non référencée",
+               ("notice d information", "notice d'information")),
+}
+
+# ── Clauses réputées non écrites (LU-2) — loi 89 art. 4 ──────────────────────
+# Conservative, high-precision phrasings. code → (art.4 letter + human note, pattern)
+_PROHIBITED_CLAUSES = {
+    "art4_salaire": ("art. 4 c) — prélèvement automatique sur salaire interdit",
+                     "prelevement automatique sur (le )?salaire"),
+    "art4_penalite": ("art. 4 g) — pénalité/amende en cas d'infraction au règlement interdite",
+                      "(penalite|amende) en cas d infraction"),
+    "art4_renonciation": ("art. 4 l) — renonciation du locataire à ses droits interdite",
+                          "le locataire renonce a (tout|son|ses)"),
+    "art4_quittance": ("art. 4 e) — frais de délivrance de quittance à la charge du locataire interdits",
+                       "frais (de|d envoi|d edition) (de )?quittance"),
+}
+
+
+def screen_lease_text(text: str) -> LegalityResult:
+    """Run the deterministic red-line checks; return the tier + flags."""
+    if not text or len(text.strip()) < _MIN_TEXT_CHARS:
+        return LegalityResult(
+            status=ATTACHED,
+            flags=["LU1_no_text_layer"],
+            notes=["Document scanné sans couche de texte — vérification de légalité impossible."],
+        )
+
+    norm = _normalise(text)
+    flags: list[str] = []
+    notes: list[str] = []
+
+    # LU-5 — French-law lease?
+    if not any(anchor in norm for anchor in _FR_ANCHORS):
+        flags.append("LU5_not_french_law")
+        notes.append("Le document ne référence pas le droit locatif français (loi du 6 juillet 1989).")
+    if any(sig in norm for sig in _FOREIGN_LAW):
+        flags.append("LU5_foreign_governing_law")
+        notes.append("Une clause de droit applicable étranger a été détectée.")
+
+    # LU-2 — clauses réputées non écrites (art. 4)
+    for code, (note, pattern) in _PROHIBITED_CLAUSES.items():
+        if re.search(pattern, norm):
+            flags.append(f"LU2_{code}")
+            notes.append(f"Clause possiblement réputée non écrite — {note}.")
+
+    # LU-4 — mandatory annexes referenced
+    for code, (note, phrasings) in _MANDATORY_ANNEXES.items():
+        if not any(p in norm for p in phrasings):
+            flags.append(f"LU4_missing_{code}")
+            notes.append(note + ".")
+
+    status = VALIDATED if not flags else ATTACHED
+    return LegalityResult(status=status, flags=flags, notes=notes)
+
+
+def screen_lease_pdf(pdf_bytes: bytes) -> LegalityResult:
+    """Convenience: extract the text layer then screen it."""
+    return screen_lease_text(extract_pdf_text(pdf_bytes))

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import SignatureCanvas from 'react-signature-canvas';
 import { apiClient } from '@/lib/api';
 import { useLanguage } from '@/lib/LanguageContext';
-import { Loader2, FileText, ShieldCheck, UploadCloud, PenLine, Clock, Download } from 'lucide-react';
+import { Loader2, FileText, ShieldCheck, UploadCloud, PenLine, Clock, Download, AlertTriangle, BadgeCheck } from 'lucide-react';
 
 interface EsignStatus {
     lease_id: string;
@@ -13,6 +13,9 @@ interface EsignStatus {
     you_signed: boolean;
     document_present: boolean;
     document_source: string | null;
+    legality_status: string | null;
+    legality_flags: string[];
+    legality_notes: string[];
     signed_parties: string[];
     fully_signed: boolean;
 }
@@ -168,6 +171,28 @@ export default function EsignManager({ leaseId }: EsignManagerProps) {
                     4. {t('esign.step.evidence', undefined, 'Proof issued')}
                 </span>
             </div>
+
+            {/* Legality red-line result (§5.6) — shown so flags are "shown-and-overridden" (LU-6) */}
+            {status.document_present && status.legality_status === 'VALIDATED' && (
+                <div className="mb-8 flex items-center gap-3 px-4 py-3 bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm rounded">
+                    <BadgeCheck className="w-5 h-5 shrink-0" />
+                    {t('esign.legality.validated', undefined, 'Legality screen passed: the lease references French tenancy law, the mandatory annexes, and no prohibited clause was detected.')}
+                </div>
+            )}
+            {status.document_present && status.legality_status !== 'VALIDATED' && (status.legality_flags?.length ?? 0) > 0 && (
+                <div className="mb-8 px-4 py-3 bg-amber-50 border border-amber-200 text-amber-800 text-sm rounded">
+                    <div className="flex items-center gap-2 font-black uppercase tracking-tight mb-2">
+                        <AlertTriangle className="w-5 h-5 shrink-0" />
+                        {t('esign.legality.flaggedTitle', undefined, 'Lease attached — not legality-verified')}
+                    </div>
+                    <p className="mb-2">
+                        {t('esign.legality.flaggedBody', undefined, 'This is an automated screen, not legal advice. The following points were flagged; you may still proceed — signing records that they were shown and accepted.')}
+                    </p>
+                    <ul className="list-disc pl-5 space-y-1">
+                        {status.legality_notes?.map((note, i) => (<li key={i}>{note}</li>))}
+                    </ul>
+                </div>
+            )}
 
             {/* Upload — landlord only */}
             {needsUpload && isLandlord && (

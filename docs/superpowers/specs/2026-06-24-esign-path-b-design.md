@@ -16,11 +16,13 @@ Source of truth: `docs/features/trust-layer/DOSSIER.md` §0.16, §5.6, §5.7, §
 
 ## Scope (v1)
 Upload → both **verified** parties sign → emit a tamper-evident **signature evidence pack**.
-The uploaded lease is recorded as **ATTACHED / NOT LEGALITY-VERIFIED** (honest default,
-DOSSIER §5.6). The LU-1..LU-6 legality red-line (clause *réputée non écrite*, deposit caps,
-missing annexes) is the **next increment**, not v1 — it does not gate signing.
+The uploaded lease is screened by the **§5.6 legality red-line** (`lease_legality.py`,
+deterministic): LU-1 (no text layer), LU-2 (art. 4 prohibited-clause patterns, partial),
+LU-4 (DPE/ERP/notice referenced), LU-5 (FR-law / foreign governing law) → **VALIDATED** or
+**ATTACHED / NOT LEGALITY-VERIFIED**. It never gates signing (LU-6): flags are shown in the UI
+and recorded in the signed manifest. LU-3 (deposit/rent over cap) is deferred to AI extraction.
 
-Out of v1: Path A template generation; DocuSeal/QTSP; legality red-line auto-check; frontend
+Out of v1: Path A template generation; DocuSeal/QTSP; LU-3 + AI clause extraction; frontend
 wizard (a thin status/sign UI follows; the cryptographic rail is the load-bearing core).
 
 ## Boundaries held (DOSSIER §1)

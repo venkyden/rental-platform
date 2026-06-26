@@ -106,18 +106,26 @@ def is_fully_signed(audit_entries: list[dict], lease) -> bool:
     return {"landlord", "tenant"}.issubset(parties)
 
 
-def build_manifest(lease, document_hash: str, audit_entries: list[dict]) -> dict:
+def build_manifest(
+    lease, document_hash: str, audit_entries: list[dict], legality: dict | None = None
+) -> dict:
     """
     Assemble the canonical, signable manifest once both parties have signed (SG-2).
     The manifest binds the exact document (hash), the parties, and the timestamps.
+
+    `legality` is the §5.6 red-line result recorded at upload. Carrying it into the
+    signed manifest is the LU-6 evidence: the flags were shown and the parties signed
+    anyway (shown-and-overridden). Absent → treated as ATTACHED / NOT LEGALITY-VERIFIED.
     """
+    legality = legality or {"status": LEGALITY_STATUS_ATTACHED, "flags": [], "notes": []}
     return {
         "manifest_id": "sig_" + os.urandom(16).hex(),
         "lease_id": str(lease.id),
         "property_id": str(lease.property_id),
         "document_hash": document_hash,
         "document_source": getattr(lease, "document_source", None) or "uploaded",
-        "legality_status": LEGALITY_STATUS_ATTACHED,
+        "legality_status": legality.get("status", LEGALITY_STATUS_ATTACHED),
+        "legality_flags": legality.get("flags", []),
         "finalised_at": utcnow().replace(microsecond=0).isoformat(),
         "signatures": audit_entries,
         "disclaimer": ESIGN_DISCLAIMER,
@@ -209,10 +217,18 @@ def export_signature_evidence_pdf(
 
     # ── document block ───────────────────────────────────────────────────────
     story.append(Paragraph("Document signé", h2))
+    legality_status = manifest.get("legality_status", LEGALITY_STATUS_ATTACHED)
+    legality_flags = manifest.get("legality_flags", [])
+    if legality_status == "VALIDATED":
+        conformity = "Contrôle de légalité passé (VÉRIFIÉ)"
+    else:
+        conformity = "Joint — non vérifié juridiquement"
+        if legality_flags:
+            conformity += f" ; {len(legality_flags)} signalement(s) présenté(s) et passé(s) outre"
     doc_rows = [
         [Paragraph("Empreinte SHA-256", label_style), Paragraph(manifest.get("document_hash", "—"), small)],
         [Paragraph("Origine", label_style), Paragraph("Fourni par le bailleur (non rédigé par Roomivo)", body)],
-        [Paragraph("Statut de conformité", label_style), Paragraph("Joint — non vérifié juridiquement", body)],
+        [Paragraph("Statut de conformité", label_style), Paragraph(conformity, body)],
         [Paragraph("Finalisé le", label_style), Paragraph(manifest.get("finalised_at", "—"), body)],
     ]
     doc_table = Table(doc_rows, colWidths=[5 * cm, None])
