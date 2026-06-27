@@ -422,15 +422,20 @@ spec `docs/superpowers/specs/2026-06-13-both-sided-wiring.md` (if exists).
 - Anti-phishing: verify-by-ID copy on the landing/verify page; institutional endorsement (PÉPITE/SNEE/Ministère) logos shown.
 - Both landlord and tenant sides leave with the watermarked evidence document (§12.1) downloadable from `GET /credentials/{id}/evidence.pdf`.
 
-### 5.5 Lease — generated (PRD §6.4) — `lease_generator.py`, `lease_templates.py`
+### 5.5 Lease — generated (PRD §6.4) — `lease_generator.py`, `lease_templates.py`, `lease_rules.py`
+**Rule-set built 2026-06-28** (`lease_rules.py`, deterministic, 21 tests, branch `feat/path-a-lease-rules`) —
+the LG-1..LG-6 finalisation legality gate, **independent of lease wording**. NOT yet wired into a
+generation finaliser: Path A generation itself stays **gated** on the validated Décret 2015-587 model
+text + the lawyer's mandatory-provisions checklist (the existing `lease_templates.py` is custom-drafted
+prose, not the official model — must be replaced/blessed before generation ships).
 | # | Edge case | Expected | Now |
 |---|---|---|---|
-| LG-1 | Deposit over cap for type | **block** w/ specific legal cap | 🟡 caps in `LEASE_CONFIGS`, enforce-at-finalise? |
-| LG-2 | Bail mobilité with non-zero deposit | force **0** | 🟡 config=0, needs test |
-| LG-3 | Furnished: Décret 2015-981 **11-item** list incomplete | **block** until all 11 confirmed | ❌ |
-| LG-4 | Missing mandatory annex (DPE/ERP/diagnostics/notice) | **block** finalisation; auto-stitch notice | ❌ |
-| LG-5 | Zone tendue / complément de loyer | carry advisory flag into lease | ❌ |
-| LG-6 | Only Décret 2015-587 model wording (no custom) | enforce — avoids loi 1971 | 🟡 verify no free-text clause path |
+| LG-1 | Deposit over cap for type | **block** w/ specific legal cap | ✅ `validate_deposit` (vide 1 / meublé·étudiant 2 mois HC; loi 89 art. 22) |
+| LG-2 | Bail mobilité with non-zero deposit | force **0** | ✅ `validate_deposit` blocks any deposit > 0 (loi ELAN art. 25-12); `max_deposit`→0 to clamp |
+| LG-3 | Furnished: Décret 2015-981 **11-item** list incomplete | **block** until all 11 confirmed | ✅ `validate_furnished_inventory` (11 categories, lists missing) |
+| LG-4 | Missing mandatory annex (DPE/ERP/diagnostics/notice) | **block** finalisation; auto-stitch notice | 🟡 `validate_annexes` blocks on missing DPE/ERP/notice; auto-stitch + property-specific diagnostics deferred to the generator |
+| LG-5 | Zone tendue / complément de loyer | carry advisory flag into lease | ✅ `zone_tendue_advisory` (advisory, never blocks) |
+| LG-6 | Only Décret 2015-587 model wording (no custom) | enforce — avoids loi 1971 | ✅ `reject_custom_wording` blocks any custom-clause input |
 
 ### 5.6 Lease — uploaded & legality-checked (PRD §6.5) — **all NEW**
 Two acceptance tiers: **VALIDATED** (passed red-line) vs **ATTACHED / NOT
