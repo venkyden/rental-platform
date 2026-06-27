@@ -9,6 +9,9 @@ function getApiHostname(url: string): string {
   try { return new URL(url).hostname; } catch { return '127.0.0.1'; }
 }
 const apiHostname = getApiHostname(API_URL);
+// A plain-http API target means a local/CI backend (real prod uses https).
+// In that case the CSP must allow http to it and must NOT upgrade-insecure-requests.
+const httpApi = API_URL.startsWith('http://');
 
 // Content Security Policy
 // - script-src: allow Next.js inline scripts (nonce not yet wired), Google GSI script, and self
@@ -22,14 +25,14 @@ const csp = [
   `style-src 'self' 'unsafe-inline'`,
   `img-src 'self' data: blob: https://*.googleapis.com https://*.gstatic.com http://localhost:* http://127.0.0.1:*${isProd ? ' https:' : ''}`,
   `font-src 'self' data:`,
-  `connect-src 'self' https://accounts.google.com https://oauth2.googleapis.com https://*.googleapis.com${isProd ? ` https://${apiHostname}` : ` http://localhost:* http://127.0.0.1:*`}`,
+  `connect-src 'self' https://accounts.google.com https://oauth2.googleapis.com https://*.googleapis.com${isProd && !httpApi ? ` https://${apiHostname}` : ` http://localhost:* http://127.0.0.1:*`}`,
   `frame-src https://accounts.google.com`,
   `frame-ancestors 'none'`,
   `object-src 'none'`,
   `base-uri 'self'`,
   `form-action 'self'`,
-  `upgrade-insecure-requests`,
-].join('; ');
+  ...(isProd && !httpApi ? ['upgrade-insecure-requests'] : []),
+].filter(Boolean).join('; ');
 
 const nextConfig: NextConfig = {
   output: 'standalone',
