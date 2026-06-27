@@ -29,14 +29,17 @@
 import { test, expect, Page } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
+    // Apply route mocks ONLY to the cross-origin API (:8000); let all app-origin
+    // requests (pages, assets) through. Keying on the API port — not the app port
+    // — makes this work on any frontend port (CI :3001, local :3220, etc.) and
+    // prevents broad globs like **/auth/login from aborting the page navigation.
     const originalRoute = page.route.bind(page);
     (page as any).route = (pattern: any, handler: any, options: any) => {
         return originalRoute(pattern, (route) => {
-            if (route.request().url().includes(':3001')) {
-                route.continue();
-                return;
+            if (route.request().url().includes(':8000')) {
+                return handler(route);
             }
-            return handler(route);
+            route.continue();
         }, options);
     };
 });
