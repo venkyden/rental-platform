@@ -40,3 +40,24 @@ def test_unsupported_type_raises():
 def test_unknown_version_raises():
     with pytest.raises(KeyError):
         registry.model_path("vide", version="1999.01")
+
+
+def test_footnotes_resolve_and_load_verbatim():
+    p = registry.footnotes_path("vide")
+    assert p.name == "annexe1_vide_footnotes.md"
+    assert "2025-01-01" in p.parts
+    text = registry.load_footnotes("vide")
+    # Note (1) — société civile familiale; note (8) — zones tendues definition.
+    assert "société civile constituée exclusivement entre parents et alliés" in text
+    assert "plus de 50 000 habitants" in text
+
+
+def test_all_body_markers_have_footnotes():
+    """Every (n) marker referenced in the body must have a matching footnote text."""
+    import re
+    body = registry.load_model("vide")
+    notes = registry.load_footnotes("vide")
+    body_markers = set(re.findall(r"\((\d{1,2})\)", body))
+    note_markers = set(re.findall(r"^\((\d{1,2})\)", notes, flags=re.M))
+    missing = body_markers - note_markers
+    assert not missing, f"body references footnotes with no text: {sorted(missing, key=int)}"

@@ -27,6 +27,10 @@ TEMPLATE_VERSIONS: dict[str, dict] = {
             # "meuble"/"etudiant": Décret 2015-587 Annexe 2 — pending fetch + sign-off
             # "mobilite": bail mobilité (loi ELAN) model — pending fetch + sign-off
         },
+        # Official explanatory footnotes (markers (n) in the body) — version-matched.
+        "footnotes": {
+            "vide": "annexe1_vide_footnotes.md",
+        },
     },
 }
 
@@ -47,6 +51,17 @@ def model_path(lease_type: str, version: str = CURRENT_TEMPLATE_VERSION) -> Path
 def load_model(lease_type: str, version: str = CURRENT_TEMPLATE_VERSION) -> str:
     """Return the verbatim model text for (lease_type, version)."""
     return model_path(lease_type, version).read_text(encoding="utf-8")
+
+
+def footnotes_path(lease_type: str, version: str = CURRENT_TEMPLATE_VERSION) -> Path:
+    """Resolve the immutable footnotes file for (lease_type, version)."""
+    spec = TEMPLATE_VERSIONS[version]
+    return _MODELS_DIR / spec["dir"] / spec["footnotes"][lease_type]
+
+
+def load_footnotes(lease_type: str, version: str = CURRENT_TEMPLATE_VERSION) -> str:
+    """Return the verbatim official footnotes text for (lease_type, version)."""
+    return footnotes_path(lease_type, version).read_text(encoding="utf-8")
 
 
 def supported_types(version: str = CURRENT_TEMPLATE_VERSION) -> list[str]:
