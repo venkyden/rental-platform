@@ -10,7 +10,7 @@ out/
 e2e/
 playwright-report/
 test-results/
-playwright.config.ts
+playwright*.config.ts
 
 # Debug / scratch files
 errors.txt
