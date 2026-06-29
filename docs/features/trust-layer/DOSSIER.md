@@ -443,10 +443,10 @@ LEGALITY-VERIFIED** (override or unanalysable). The credential records which.
 | # | Edge case | Expected | Now |
 |---|---|---|---|
 | LU-1 | Scanned PDF, no text layer | OCR; low confidence → **ATTACHED** + notice | ✅ `lease_legality`: no text layer (<200 chars) → ATTACHED + `LU1_no_text_layer` (PyMuPDF text extract, no OCR yet) |
-| LU-2 | Clause *réputée non écrite* (loi 89-462 art. 4) | **flag** + one-click swap to template; keep → ATTACHED | 🟡 conservative high-precision patterns (salaire/pénalité/renonciation/quittance) flag → ATTACHED; no template swap (Path A) yet |
+| LU-2 | Clause *réputée non écrite* (loi 89-462 art. 4) | **flag** + one-click swap to template; keep → ATTACHED | 🟡 patterns: salaire/pénalité/**clause pénale**/**astreinte**/renonciation/**renonciation-maintien**/quittance + **stale commandement delay** (loi 2023 → 6 semaines) → ATTACHED; no template swap (Path A) yet. Hardened against a real-lease corpus (de-identified). |
 | LU-3 | Deposit/rent over cap | flag + override → ATTACHED | ❌ deferred — needs reliable amount extraction (AI); deterministic text parse too noisy. `french_compliance` caps ready to reuse |
 | LU-4 | Missing mandatory annex | flag + offer to attach | ✅ DPE/ERP/notice referenced-check → flag if missing (no auto-attach yet) |
-| LU-5 | Foreign-law lease | **never VALIDATED** → ATTACHED | ✅ FR-law anchor absent OR foreign governing-law signal → ATTACHED |
+| LU-5 | Foreign-law lease | **never VALIDATED** → ATTACHED | ✅ FR-law anchor absent OR foreign governing-law signal OR **opts out of loi 89** (`LU5_excludes_loi_89`) → ATTACHED |
 | LU-6 | Landlord insists on non-compliant lease | allowed; **record flags-shown-and-overridden** (liability) | ✅ never blocks; flags shown in `EsignManager` (amber) + recorded in the signed manifest (`legality_status`/`legality_flags`) |
 
 ### 5.7 E-signature (PRD §6.6) — `leases.py`, lease signature columns

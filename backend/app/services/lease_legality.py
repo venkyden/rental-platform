@@ -112,17 +112,39 @@ _MANDATORY_ANNEXES = {
 }
 
 # ── Clauses réputées non écrites (LU-2) — loi 89 art. 4 ──────────────────────
-# Conservative, high-precision phrasings. code → (art.4 letter + human note, pattern)
+# Conservative, high-precision phrasings. code → (art.4 letter + human note, pattern).
+# Patterns are fixed legal phrasing (never DB/user input) → no ReDoS/injection surface.
+# Several entries below are drawn from real-world leases seen in the wild.
 _PROHIBITED_CLAUSES = {
     "art4_salaire": ("art. 4 c) — prélèvement automatique sur salaire interdit",
                      "prelevement automatique sur (le )?salaire"),
     "art4_penalite": ("art. 4 g) — pénalité/amende en cas d'infraction au règlement interdite",
                       "(penalite|amende) en cas d infraction"),
+    "art4_clause_penale": ("art. 4 g) — clause pénale / majoration forfaitaire interdite",
+                           "clauses? penales?"),
+    "art4_astreinte": ("art. 4 g) — astreinte journalière de retard interdite",
+                       "astreinte par jour"),
     "art4_renonciation": ("art. 4 l) — renonciation du locataire à ses droits interdite",
                           "le locataire renonce a (tout|son|ses)"),
+    "art4_renonciation_maintien": ("art. 4 — renonciation au maintien dans les lieux interdite",
+                                   "renonc(e|iation) a tout maintien dans les lieux"),
     "art4_quittance": ("art. 4 e) — frais de délivrance de quittance à la charge du locataire interdits",
                        "frais (de|d envoi|d edition) (de )?quittance"),
 }
+
+# LU-5 — a residential lease that opts OUT of the protective loi 89 regime. Largely
+# ineffective for a principal residence (the protections are public-order), so its
+# penalty / no-maintien clauses are typically réputées non écrites. Strong red flag.
+# `d['’ ]application` tolerates the apostrophe (straight or curly) and the space form,
+# since `_normalise` does not collapse apostrophes.
+_EXCLUDES_LOI_89_RE = re.compile(
+    r"(sorti|exclu)(e|es|s)? du champ d['’ ]application de la loi|"
+    r"hors du champ d['’ ]application de la loi"
+)
+
+# LU-2 — clause résolutoire delay possibly outdated: the loi du 27 juillet 2023 reduced
+# the commandement-de-payer delay from two months to **six weeks** for unpaid rent.
+_STALE_COMMANDEMENT_RE = re.compile(r"deux mois (apres|suivant)?\s*(un )?commandement")
 
 
 def screen_lease_text(text: str) -> LegalityResult:
@@ -146,11 +168,23 @@ def screen_lease_text(text: str) -> LegalityResult:
         flags.append("LU5_foreign_governing_law")
         notes.append("Une clause de droit applicable étranger a été détectée.")
 
+    # LU-5 — opts out of loi 89 (only meaningful if it actually references loi 89).
+    if _EXCLUDES_LOI_89_RE.search(norm) and ("89-462" in norm or "6 juillet 1989" in norm):
+        flags.append("LU5_excludes_loi_89")
+        notes.append("Le bail se déclare exclu du champ d'application de la loi du 6 juillet 1989 — "
+                     "régime protecteur potentiellement écarté à tort pour une résidence principale.")
+
     # LU-2 — clauses réputées non écrites (art. 4)
     for code, (note, pattern) in _PROHIBITED_CLAUSES.items():
         if re.search(pattern, norm):
             flags.append(f"LU2_{code}")
             notes.append(f"Clause possiblement réputée non écrite — {note}.")
+
+    # LU-2 — possibly outdated commandement-de-payer delay (loi 2023 → six semaines).
+    if _STALE_COMMANDEMENT_RE.search(norm):
+        flags.append("LU2_stale_commandement_delay")
+        notes.append("Délai de commandement de payer de deux mois possiblement obsolète "
+                     "(depuis la loi du 27 juillet 2023, le délai est de six semaines).")
 
     # LU-4 — mandatory annexes referenced
     for code, (note, phrasings) in _MANDATORY_ANNEXES.items():
