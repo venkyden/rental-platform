@@ -112,6 +112,10 @@ services:
         sync: false
       - key: SECRET_KEY
         sync: false
+      - key: MASTER_ENCRYPTION_KEY
+        sync: false
+      - key: CREDENTIAL_SIGNING_KEY
+        sync: false
       - key: RESEND_API_KEY
         sync: false
       - key: FROM_EMAIL
