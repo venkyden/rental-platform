@@ -1,11 +1,16 @@
 from celery import Celery
 from app.core.config import settings
 
+redis_url = settings.REDIS_URL or "redis://redis:6379/0"
+if redis_url.startswith("rediss://") and "ssl_cert_reqs=" not in redis_url:
+    sep = "&" if "?" in redis_url else "?"
+    redis_url += f"{sep}ssl_cert_reqs=CERT_NONE"
+
 # Initialize Celery app
 celery_app = Celery(
     "rental_platform_worker",
-    broker=settings.REDIS_URL or "redis://redis:6379/0",
-    backend=settings.REDIS_URL or "redis://redis:6379/0",
+    broker=redis_url,
+    backend=redis_url,
 )
 
 # Optional configuration
