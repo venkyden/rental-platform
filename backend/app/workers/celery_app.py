@@ -21,6 +21,11 @@ celery_app.conf.update(
     timezone="UTC",
     enable_utc=True,
     task_track_started=True,
+    # Survive brief Upstash blips, but exit (non-zero) on a sustained broker
+    # outage instead of looping silently — a crashed worker flips Render to a
+    # failed state and fires the notifyOnFail alert. ~3 min to surface vs ~50.
+    broker_connection_retry_on_startup=True,
+    broker_connection_max_retries=10,
 )
 
 # Discover tasks automatically (you can add tasks later)
