@@ -24,12 +24,16 @@ TEMPLATE_VERSIONS: dict[str, dict] = {
         "dir": "2025-01-01",
         "models": {
             "vide": "annexe1_vide.md",
-            # "meuble"/"etudiant": Décret 2015-587 Annexe 2 — pending fetch + sign-off
+            # Annexe 2 (meublé) serves both meublé and the 9-month student variant.
+            "meuble": "annexe2_meuble.md",
+            "etudiant": "annexe2_meuble.md",
             # "mobilite": bail mobilité (loi ELAN) model — pending fetch + sign-off
         },
         # Official explanatory footnotes (markers (n) in the body) — version-matched.
         "footnotes": {
             "vide": "annexe1_vide_footnotes.md",
+            "meuble": "annexe2_meuble_footnotes.md",
+            "etudiant": "annexe2_meuble_footnotes.md",
         },
     },
 }

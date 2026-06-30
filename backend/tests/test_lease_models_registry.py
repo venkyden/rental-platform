@@ -24,17 +24,31 @@ def test_load_model_returns_verbatim_official_text():
     assert "inférieur ou égal à un mois de loyers hors charges" in text
 
 
-def test_supported_types_only_has_signed_off_models():
+def test_supported_types_present_and_absent():
     types = registry.supported_types()
-    assert "vide" in types
-    # meublé / mobilité models are not yet fetched + signed off.
-    assert "meuble" not in types
+    assert {"vide", "meuble", "etudiant"}.issubset(types)
+    # bail mobilité (loi ELAN) model not fetched + signed off yet.
     assert "mobilite" not in types
+
+
+def test_meuble_model_and_deposit_cap():
+    p = registry.model_path("meuble")
+    assert p.name == "annexe2_meuble.md"
+    assert "2025-01-01" in p.parts
+    text = registry.load_model("meuble")
+    # §VI meublé cap = two months (vs one for vide) — cross-checks LG-1.
+    assert "inférieur ou égal à deux mois de loyers hors charges" in text
+    # §III carries the 9-month student variant.
+    assert "neuf mois" in text
+
+
+def test_etudiant_uses_the_meuble_model():
+    assert registry.model_path("etudiant").name == "annexe2_meuble.md"
 
 
 def test_unsupported_type_raises():
     with pytest.raises(KeyError):
-        registry.model_path("meuble")  # pending sign-off → not in the registry yet
+        registry.model_path("mobilite")  # bail mobilité pending sign-off → not registered
 
 
 def test_unknown_version_raises():
@@ -52,12 +66,13 @@ def test_footnotes_resolve_and_load_verbatim():
     assert "plus de 50 000 habitants" in text
 
 
-def test_all_body_markers_have_footnotes():
+@pytest.mark.parametrize("lease_type", ["vide", "meuble", "etudiant"])
+def test_all_body_markers_have_footnotes(lease_type):
     """Every (n) marker referenced in the body must have a matching footnote text."""
     import re
-    body = registry.load_model("vide")
-    notes = registry.load_footnotes("vide")
+    body = registry.load_model(lease_type)
+    notes = registry.load_footnotes(lease_type)
     body_markers = set(re.findall(r"\((\d{1,2})\)", body))
     note_markers = set(re.findall(r"^\((\d{1,2})\)", notes, flags=re.M))
     missing = body_markers - note_markers
-    assert not missing, f"body references footnotes with no text: {sorted(missing, key=int)}"
+    assert not missing, f"{lease_type}: body references footnotes with no text: {sorted(missing, key=int)}"
