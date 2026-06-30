@@ -69,6 +69,13 @@ def test_hors_loi_89_dodge_is_flagged():
     assert "LU2_art4_renonciation_maintien" in res.flags
 
 
+def test_hors_loi_89_curly_apostrophe_still_flagged():
+    # Word-processor / OCR output uses a curly apostrophe (d’application); the opt-out
+    # must still fire so punctuation can't silently regress LU5_excludes_loi_89.
+    res = ll.screen_lease_text(HORS_LOI_89.replace("d'application", "d’application"))
+    assert "LU5_excludes_loi_89" in res.flags
+
+
 def test_minimal_lease_flags_missing_annexes():
     res = ll.screen_lease_text(MINIMAL_NO_ANNEXES)
     assert res.status == ll.ATTACHED
@@ -87,3 +94,15 @@ def test_stale_commandement_delay_is_flagged():
 def test_deposit_two_months_does_not_trigger_stale_delay():
     # "deux mois de loyer" (a deposit cap) must NOT be read as a commandement delay.
     assert "LU2_stale_commandement_delay" not in ll.screen_lease_text(COMPLIANT_MEUBLE).flags
+
+
+def test_non_payment_commandement_does_not_trigger_stale_delay():
+    # A "deux mois … commandement" that is NOT about unpaid rent (e.g. quitter les lieux)
+    # must not be read as the outdated payment delay.
+    text = COMPLIANT_MEUBLE + (
+        " Le locataire dispose de deux mois après un commandement de quitter les lieux "
+        "pour former un recours."
+    )
+    res = ll.screen_lease_text(text)
+    assert "LU2_stale_commandement_delay" not in res.flags
+    assert res.status == ll.VALIDATED

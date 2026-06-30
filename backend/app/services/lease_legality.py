@@ -144,7 +144,12 @@ _EXCLUDES_LOI_89_RE = re.compile(
 
 # LU-2 — clause résolutoire delay possibly outdated: the loi du 27 juillet 2023 reduced
 # the commandement-de-payer delay from two months to **six weeks** for unpaid rent.
-_STALE_COMMANDEMENT_RE = re.compile(r"deux mois (apres|suivant)?\s*(un )?commandement")
+# Scoped to a *payment* commandement so unrelated commandements (e.g. de quitter les
+# lieux) don't wrongly force ATTACHED. Bounded quantifier → no ReDoS.
+_STALE_COMMANDEMENT_RE = re.compile(
+    r"deux mois (apres|suivant)?\s*(un )?commandement"
+    r"(?: de payer|[\s\S]{0,80}defaut de paiement)"
+)
 
 
 def screen_lease_text(text: str) -> LegalityResult:
