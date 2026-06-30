@@ -145,8 +145,11 @@ test.describe('Landlord Listing Wizard', () => {
         await continueBtn.click();
 
         // Step 3: Details — select DPE rating B (exact aria-label avoids matching
-        // other buttons that contain the letter "B").
+        // other buttons that contain the letter "B"), then fill the required
+        // DPE/GES values (size defaults to 30; both values are required to proceed).
         await page.getByRole('button', { name: 'DPE rating B', exact: true }).click();
+        await page.locator('input[placeholder="e.g. 150"]').fill('150');
+        await page.locator('input[placeholder="e.g. 35"]').fill('35');
         await continueBtn.click();
 
         // Step 4: Layout & Capacity
