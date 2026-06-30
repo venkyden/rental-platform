@@ -37,6 +37,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
     const [sessionDetails, setSessionDetails] = useState<any>(null);
     const [rooms, setRooms] = useState<Room[]>([]);
     const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
+    const [loadError, setLoadError] = useState(false);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -73,10 +74,12 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
         try {
             const res = await apiClient.client.get(`/properties/media-sessions/${code}`);
             setSessionDetails(res.data);
+            setLoadError(false);
             if (res.data.location_verified) setIsSessionVerified(true);
             if (res.data.rooms) setRooms(res.data.rooms);
         } catch (e) {
             console.error(e);
+            setLoadError(true);
         }
     };
 
@@ -178,7 +181,25 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                 </header>
 
                 <AnimatePresence mode="wait">
-                    {step === 'intro' && (
+                    {loadError && (
+                        <motion.div
+                            key="load-error"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className="flex-1 flex flex-col items-center justify-center text-center space-y-8"
+                        >
+                            <div className="space-y-4">
+                                <div className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">Security Protocol</div>
+                                <h1 className="text-4xl font-black tracking-tighter uppercase leading-[0.9]">Invalid or expired link</h1>
+                                <p className="text-lg text-zinc-500 font-medium leading-relaxed max-w-sm">
+                                    This capture session could not be found. The link may be invalid or expired — please request a new one.
+                                </p>
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {!loadError && step === 'intro' && (
                         <motion.div
                             key="intro"
                             initial={{ opacity: 0, y: 20 }}

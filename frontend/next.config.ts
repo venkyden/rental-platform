@@ -25,7 +25,7 @@ const csp = [
   `style-src 'self' 'unsafe-inline'`,
   `img-src 'self' data: blob: https://*.googleapis.com https://*.gstatic.com http://localhost:* http://127.0.0.1:*${isProd ? ' https:' : ''}`,
   `font-src 'self' data:`,
-  `connect-src 'self' https://accounts.google.com https://oauth2.googleapis.com https://*.googleapis.com${isProd && !httpApi ? ` https://${apiHostname}` : ` http://localhost:* http://127.0.0.1:*`}`,
+  `connect-src 'self' https://accounts.google.com https://oauth2.googleapis.com https://*.googleapis.com https://photon.komoot.io${isProd && !httpApi ? ` https://${apiHostname}` : ` http://localhost:* http://127.0.0.1:*`}`,
   `frame-src https://accounts.google.com`,
   `frame-ancestors 'none'`,
   `object-src 'none'`,

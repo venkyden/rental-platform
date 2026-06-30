@@ -419,6 +419,18 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                     </div>
                 )}
 
+                {!qrLoading && !qrSession && error && (
+                    <div className="py-16 flex flex-col items-center text-center space-y-6">
+                        <div className="p-4 rounded-2xl bg-zinc-900 text-white shadow-xl max-w-sm">
+                            <p className="text-[10px] font-black uppercase tracking-[0.3em]">{error}</p>
+                        </div>
+                        <button onClick={() => { setError(''); createQrSession(); }}
+                            className="px-6 py-3 bg-zinc-100 text-zinc-900 font-black rounded-2xl text-[10px] uppercase tracking-[0.3em] hover:bg-zinc-200 transition-colors">
+                            {t('common.actions.retry', undefined, 'Try Again')}
+                        </button>
+                    </div>
+                )}
+
                 {qrSession && (
                     <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-16">
                         <div className="flex justify-center relative">
