@@ -46,9 +46,22 @@ def test_etudiant_uses_the_meuble_model():
     assert registry.model_path("etudiant").name == "annexe2_meuble.md"
 
 
+def test_mobilite_is_a_reference_not_a_fillable_model():
+    # bail mobilité has no decree contrat-type → it must NOT be a fillable model.
+    with pytest.raises(KeyError):
+        registry.model_path("mobilite")
+    assert "mobilite" not in registry.supported_types()
+    # …but its legal-requirement reference resolves and carries the key rules.
+    p = registry.reference_path("mobilite")
+    assert p.name == "bail_mobilite_requirements.md"
+    text = registry.load_reference("mobilite")
+    assert "interdiction pour le bailleur d'exiger le versement d'un dépôt de garantie" in text
+    assert "non renouvelable et non reconductible" in text
+
+
 def test_unsupported_type_raises():
     with pytest.raises(KeyError):
-        registry.model_path("mobilite")  # bail mobilité pending sign-off → not registered
+        registry.model_path("colocation")  # unknown type → not registered
 
 
 def test_unknown_version_raises():

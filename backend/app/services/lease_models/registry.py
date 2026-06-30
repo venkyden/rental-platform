@@ -27,13 +27,18 @@ TEMPLATE_VERSIONS: dict[str, dict] = {
             # Annexe 2 (meublé) serves both meublé and the 9-month student variant.
             "meuble": "annexe2_meuble.md",
             "etudiant": "annexe2_meuble.md",
-            # "mobilite": bail mobilité (loi ELAN) model — pending fetch + sign-off
+            # bail mobilité has NO decree contrat-type → not a fillable model here; see `references`.
         },
         # Official explanatory footnotes (markers (n) in the body) — version-matched.
         "footnotes": {
             "vide": "annexe1_vide_footnotes.md",
             "meuble": "annexe2_meuble_footnotes.md",
             "etudiant": "annexe2_meuble_footnotes.md",
+        },
+        # Legal-requirement references (NOT fillable contrat-types). The bail mobilité has
+        # no decree model — it reuses the meublé body + the art. 25-13 mandatory mentions.
+        "references": {
+            "mobilite": "bail_mobilite_requirements.md",
         },
     },
 }
@@ -69,4 +74,16 @@ def load_footnotes(lease_type: str, version: str = CURRENT_TEMPLATE_VERSION) -> 
 
 
 def supported_types(version: str = CURRENT_TEMPLATE_VERSION) -> list[str]:
+    """Lease types with a fillable contrat-type model (excludes reference-only types)."""
     return sorted(TEMPLATE_VERSIONS[version]["models"].keys())
+
+
+def reference_path(lease_type: str, version: str = CURRENT_TEMPLATE_VERSION) -> Path:
+    """Resolve a legal-requirement reference (e.g. bail mobilité) — NOT a fillable model."""
+    spec = TEMPLATE_VERSIONS[version]
+    return _MODELS_DIR / spec["dir"] / spec["references"][lease_type]
+
+
+def load_reference(lease_type: str, version: str = CURRENT_TEMPLATE_VERSION) -> str:
+    """Return the verbatim legal-requirement reference text for (lease_type, version)."""
+    return reference_path(lease_type, version).read_text(encoding="utf-8")
