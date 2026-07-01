@@ -67,8 +67,11 @@ class CacheLayer:
             return
 
         ssl_kwargs = {}
-        if redis_url.startswith("rediss://"):
-            ssl_kwargs["ssl_cert_reqs"] = None
+        # For TLS Redis, verify the server certificate by default. If the URL
+        # sets ssl_cert_reqs explicitly, let from_url honour it (don't override).
+        if redis_url.startswith("rediss://") and "ssl_cert_reqs=" not in redis_url:
+            import ssl
+            ssl_kwargs["ssl_cert_reqs"] = ssl.CERT_REQUIRED
 
         for attempt in range(2):
             try:
