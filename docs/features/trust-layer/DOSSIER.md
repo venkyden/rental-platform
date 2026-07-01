@@ -428,6 +428,14 @@ the LG-1..LG-6 finalisation legality gate, **independent of lease wording**. NOT
 generation finaliser: Path A generation itself stays **gated** on the validated Décret 2015-587 model
 text + the lawyer's mandatory-provisions checklist (the existing `lease_templates.py` is custom-drafted
 prose, not the official model — must be replaced/blessed before generation ships).
+**Official model assets fetched (branch `feat/path-a-lease-generation`, ⏳ pending lawyer sign-off):**
+verbatim Décret 2015-587 **Annexe 1 (vide)** + **Annexe 2 (meublé, serves meublé + étudiant 9-mois)**,
+each with its official footnotes, version-stamped under `app/services/lease_models/2025-01-01/` and
+exposed via `registry.py` (`CURRENT_TEMPLATE_VERSION="2025.01"`; a generated lease will stamp
+`template_version` into the e-sign manifest). **Bail mobilité** has **no decree contrat-type** —
+stored as a legal-requirement *reference* (`bail_mobilite_requirements.md`, verbatim loi 89 art.
+25-12/13/14): reuses the meublé body + art. 25-13 mandatory mentions, no deposit, 1–10 mois
+non-renouvelable, no solidarity clause. **Model set complete; all ⏳ pending lawyer sign-off.**
 | # | Edge case | Expected | Now |
 |---|---|---|---|
 | LG-1 | Deposit over cap for type | **block** w/ specific legal cap | ✅ `validate_deposit` (vide 1 / meublé·étudiant 2 mois HC; loi 89 art. 22) |
