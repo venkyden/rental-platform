@@ -436,6 +436,12 @@ exposed via `registry.py` (`CURRENT_TEMPLATE_VERSION="2025.01"`; a generated lea
 stored as a legal-requirement *reference* (`bail_mobilite_requirements.md`, verbatim loi 89 art.
 25-12/13/14): reuses the meublé body + art. 25-13 mandatory mentions, no deposit, 1–10 mois
 non-renouvelable, no solidarity clause. **Model set complete; all ⏳ pending lawyer sign-off.**
+**Generator v0.1** (`lease_generation.py`, ⏳ gated): fills the tokenized fillable model
+(`annexe1_vide.fill.md`) blanks with validated values, runs the LG-1..LG-6 gate first, and
+refuses to finalise while any blank remains. **Safety invariant test**: the fillable's
+non-blank text is byte-identical to the verbatim model → generation never alters blessed
+wording (LG-6). v0.1 = `vide` core fields (10 tokens); optional "le cas échéant" sections,
+meublé/mobilité fillables, PDF + e-sign wiring (stamping `template_version`) are next.
 | # | Edge case | Expected | Now |
 |---|---|---|---|
 | LG-1 | Deposit over cap for type | **block** w/ specific legal cap | ✅ `validate_deposit` (vide 1 / meublé·étudiant 2 mois HC; loi 89 art. 22) |

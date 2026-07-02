@@ -40,6 +40,12 @@ TEMPLATE_VERSIONS: dict[str, dict] = {
         "references": {
             "mobilite": "bail_mobilite_requirements.md",
         },
+        # Tokenized fillable variants: the {{token}} blanks are filled by the generator;
+        # ALL non-blank standardized text is byte-identical to the verbatim model (enforced
+        # by test_lease_generation). v0.1: `vide` core fields tokenized; more to follow.
+        "fillables": {
+            "vide": "annexe1_vide.fill.md",
+        },
     },
 }
 
@@ -87,3 +93,18 @@ def reference_path(lease_type: str, version: str = CURRENT_TEMPLATE_VERSION) -> 
 def load_reference(lease_type: str, version: str = CURRENT_TEMPLATE_VERSION) -> str:
     """Return the verbatim legal-requirement reference text for (lease_type, version)."""
     return reference_path(lease_type, version).read_text(encoding="utf-8")
+
+
+def fill_model_path(lease_type: str, version: str = CURRENT_TEMPLATE_VERSION) -> Path:
+    """Resolve the tokenized fillable model for (lease_type, version)."""
+    spec = TEMPLATE_VERSIONS[version]
+    return _MODELS_DIR / spec["dir"] / spec["fillables"][lease_type]
+
+
+def load_fill_model(lease_type: str, version: str = CURRENT_TEMPLATE_VERSION) -> str:
+    """Return the tokenized fillable model text for (lease_type, version)."""
+    return fill_model_path(lease_type, version).read_text(encoding="utf-8")
+
+
+def fillable_types(version: str = CURRENT_TEMPLATE_VERSION) -> list[str]:
+    return sorted(TEMPLATE_VERSIONS[version]["fillables"].keys())
