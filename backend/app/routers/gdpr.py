@@ -213,6 +213,7 @@ async def delete_user_data(
 
     # Delete verification documents (using new folder structure)
     await storage.delete_files_by_prefix(f"verification/identity/{current_user.id}")
+    await storage.delete_files_by_prefix(f"verification/intl/identity/{current_user.id}")
     await storage.delete_files_by_prefix(f"verification/employment/{current_user.id}")
     await storage.delete_files_by_prefix(f"verification/guarantor/{current_user.id}")
     await storage.delete_files_by_prefix(f"verification/property/{current_user.id}")

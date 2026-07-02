@@ -1252,14 +1252,14 @@ async def upload_guarantor_document(
     }
     # Replace existing entry for same doc_type (last-write-wins) — purge the
     # replaced storage object so no orphaned guarantor PII stays at rest (GDPR)
-    for _old in (f for f in files_list if f.get("document_type") == document_type):
-        _old_key = _old.get("storage_key")
-        if _old_key:
-            try:
-                await storage.delete_file(_old_key)
-            except Exception as _exc:
-                logger.warning("purge_guarantor_doc: failed to delete %s: %s", _old_key, _exc)
-    files_list = [f for f in files_list if f.get("document_type") != document_type]
+    _kept = []
+    for _f in files_list:
+        if _f.get("document_type") == document_type:
+            if _f.get("storage_key"):
+                await storage.purge_object(_f["storage_key"], "guarantor_reupload")
+        else:
+            _kept.append(_f)
+    files_list = _kept
     files_list.append(new_entry)
     current_user.guarantor_data = {"files": files_list}
     
@@ -1340,12 +1340,8 @@ async def delete_guarantor(
 
     # Purge stored guarantor files before dropping their last reference (GDPR)
     for _f in (current_user.guarantor_data or {}).get("files", []):
-        _key = _f.get("storage_key")
-        if _key:
-            try:
-                await storage.delete_file(_key)
-            except Exception as _exc:
-                logger.warning("purge_guarantor_doc: failed to delete %s: %s", _key, _exc)
+        if _f.get("storage_key"):
+            await storage.purge_object(_f["storage_key"], "guarantor_delete")
 
     current_user.guarantor_type = None
     current_user.guarantor_status = "unverified"

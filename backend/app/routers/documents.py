@@ -152,10 +152,7 @@ async def delete_document(
 
     storage_key = (doc.extra_data or {}).get("storage_key")
     if storage_key:
-        try:
-            await storage.delete_file(storage_key)
-        except Exception as exc:
-            logger.warning("delete_document: failed to delete storage object %s: %s", storage_key, exc)
+        await storage.purge_object(storage_key, "delete_document")
 
     await db.delete(doc)
     await db.commit()
