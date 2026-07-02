@@ -18,7 +18,7 @@ Safety design (why this can't produce an illegal/altered lease):
 import re
 from dataclasses import dataclass, field
 
-from app.services import lease_rules
+from app.services import lease_fields, lease_rules
 from app.services.lease_models import registry
 
 _TOKEN_RE = re.compile(r"\{\{(\w+)\}\}")
@@ -92,8 +92,32 @@ def generate(
         )
 
     template = registry.load_fill_model(lease_type, version)
-    text = _fill(template, {k: str(v) for k, v in fields.items()})
 
+    # Resolve each template token via the field schema: required must be provided,
+    # enums must be valid, optional fall back to the schema default.
+    values: dict[str, str] = {}
+    field_errors: list[str] = []
+    for tok in set(_TOKEN_RE.findall(template)):
+        spec = lease_fields.FIELDS.get(tok)
+        provided = fields.get(tok)
+        provided = None if provided in (None, "") else str(provided)
+        if spec and spec.type == "enum" and provided is not None and provided not in spec.enum:
+            field_errors.append(f"Valeur invalide pour « {spec.label or tok} » : {provided} "
+                                f"(attendu : {' / '.join(spec.enum)}).")
+            continue
+        if provided is not None:
+            values[tok] = provided
+        elif spec is not None and not spec.required:
+            values[tok] = spec.default
+        else:
+            field_errors.append(f"Champ obligatoire manquant : {(spec.label if spec else tok)}.")
+    if field_errors:
+        return GenerationResult(
+            ok=False, template_version=version,
+            blocking=field_errors, advisory=rules.advisory,
+        )
+
+    text = _fill(template, values)
     remaining = [f"{{{{{t}}}}}" for t in sorted(set(_TOKEN_RE.findall(text)))]
     remaining += _BLANK_RE.findall(text)
     return GenerationResult(

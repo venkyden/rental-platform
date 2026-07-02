@@ -20,8 +20,8 @@ Le présent contrat est conclu entre les soussignés :
 
 - {{bailleur_designation}} (2) désigné(s) ci-après le bailleur ;
 - le cas échéant, représenté par le mandataire :
-- [nom ou raison sociale et adresse du mandataire ainsi que l'activité exercée] ;
-- le cas échéant, [numéro et lieu de délivrance de la carte professionnelle / nom et adresse du garant] (3).
+- {{mandataire_designation}} ;
+- le cas échéant, {{carte_pro_garant}} (3).
 - {{locataire_designation}} désigné(s) ci-après le locataire
 
 Il a été convenu ce qui suit :
@@ -33,16 +33,16 @@ Le présent contrat a pour objet la location d'un logement ainsi déterminé :
 ### A. Consistance du logement
 
 - localisation du logement : {{logement_localisation}} ;
-- identifiant fiscal du logement : [Numéro Identifiant Fiscal du logement] ;
-- type d'habitat : [immeuble collectif ou individuel] ;
-- régime juridique de l'immeuble : [mono propriété ou copropriété] ;
-- période de construction : [exemples : avant 1949, de 1949 à 1974, de 1975 à 1989, de 1989 à 2005, depuis 2005] ;
+- identifiant fiscal du logement : {{logement_id_fiscal}} ;
+- type d'habitat : {{logement_type_habitat}} ;
+- régime juridique de l'immeuble : {{logement_regime}} ;
+- période de construction : {{logement_periode_construction}} ;
 - surface habitable : {{logement_surface_habitable}} m2 ;
 - nombre de pièces principales : {{logement_nb_pieces}} ;
 - le cas échéant, Autres parties du logement : [exemples : grenier, comble aménagé ou non, terrasse, balcon, loggia, jardin etc.] ;
 - le cas échéant, Eléments d'équipements du logement : [exemples : cuisine équipée, détail des installations sanitaires etc.] ;
-- modalité de production de chauffage : [individuel ou collectif] (4) ;
-- modalité de production d'eau chaude sanitaire : [individuelle ou collective] (5).
+- modalité de production de chauffage : {{chauffage_modalite}} (4) ;
+- modalité de production d'eau chaude sanitaire : {{ecs_modalite}} (5).
 
 - rappel : un logement décent doit respecter les critères minimaux de performance suivants :
 
@@ -213,5 +213,5 @@ F. Le cas échéant, Les références aux loyers habituellement constatés dans 
 
 ---
 
-Le [date], à [lieu],
+Le {{date_signature}}, à {{lieu_signature}},
 Signature du bailleur [ou de son mandataire, le cas échéant]     Signature du locataire
