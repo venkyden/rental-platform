@@ -83,6 +83,7 @@ def generate(
         complement_de_loyer=complement_de_loyer,
         complement_justification=complement_justification,
         custom_clauses=custom_clauses,
+        dpe_class=fields.get("logement_dpe_classe"),  # LG-7: block class G
     )
     if not rules.ok:
         return GenerationResult(

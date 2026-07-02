@@ -90,3 +90,11 @@ def test_lg_gate_blocks_custom_clause():
     res = gen.generate(**kw)
     assert res.ok is False
     assert any("1971" in b for b in res.blocking)
+
+
+def test_lg_gate_blocks_dpe_class_g():
+    kw = {**VALID_KW, "fields": {**CORE_FIELDS, "logement_dpe_classe": "G"}}
+    res = gen.generate(**kw)
+    assert res.ok is False
+    assert res.text is None
+    assert any("loi Climat" in b for b in res.blocking)

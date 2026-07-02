@@ -450,6 +450,7 @@ meublé/mobilité fillables, PDF + e-sign wiring (stamping `template_version`) a
 | LG-4 | Missing mandatory annex (DPE/ERP/diagnostics/notice) | **block** finalisation; auto-stitch notice | 🟡 `validate_annexes` blocks on missing DPE/ERP/notice; auto-stitch + property-specific diagnostics deferred to the generator |
 | LG-5 | Zone tendue / complément de loyer | carry advisory flag into lease | ✅ `zone_tendue_advisory` (advisory, never blocks) |
 | LG-6 | Only Décret 2015-587 model wording (no custom) | enforce — avoids loi 1971 | ✅ `reject_custom_wording` blocks any custom-clause input |
+| LG-7 | DPE class G (décence, loi Climat since Jan 2025) | **block** new-lease generation | ✅ `validate_dpe` blocks G + out-of-scale (A–G, no H); wired into the generator via `logement_dpe_classe` |
 
 ### 5.6 Lease — uploaded & legality-checked (PRD §6.5) — **all NEW**
 Two acceptance tiers: **VALIDATED** (passed red-line) vs **ATTACHED / NOT
