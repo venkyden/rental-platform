@@ -45,6 +45,8 @@ TEMPLATE_VERSIONS: dict[str, dict] = {
         # by test_lease_generation). v0.1: `vide` core fields tokenized; more to follow.
         "fillables": {
             "vide": "annexe1_vide.fill.md",
+            "meuble": "annexe2_meuble.fill.md",
+            "etudiant": "annexe2_meuble.fill.md",
         },
     },
 }

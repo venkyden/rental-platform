@@ -440,7 +440,7 @@ non-renouvelable, no solidarity clause. **Model set complete; all ⏳ pending la
 (`annexe1_vide.fill.md`) blanks with validated values, runs the LG-1..LG-6 gate first, and
 refuses to finalise while any blank remains. **Safety invariant test**: the fillable's
 non-blank text is byte-identical to the verbatim model → generation never alters blessed
-wording (LG-6). v0.1 = `vide` core fields (10 tokens); optional "le cas échéant" sections,
+wording (LG-6). v0.1 = `vide` + `meublé`/`étudiant` core fields tokenized (safety invariant covers all 3); optional "le cas échéant" sections,
 meublé/mobilité fillables, PDF + e-sign wiring (stamping `template_version`) are next.
 | # | Edge case | Expected | Now |
 |---|---|---|---|
