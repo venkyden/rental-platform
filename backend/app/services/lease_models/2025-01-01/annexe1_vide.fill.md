@@ -78,7 +78,7 @@ La durée du contrat et sa date de prise d'effet sont ainsi définies :
 
 A. Date de prise d'effet du contrat : {{date_prise_effet}}
 
-B. Durée du contrat : [durée minimale de trois ou six ans selon la qualité du bailleur] ou [durée réduite et minimale d'un an lorsqu'un événement précis (6) le justifie]
+B. Durée du contrat : {{duree_contrat}} ou [durée réduite et minimale d'un an lorsqu'un événement précis (6) le justifie]
 
 C. Le cas échéant, Evénement et raison justifiant la durée réduite du contrat de location : […]
 
@@ -157,7 +157,7 @@ Modalités particulières des obligations en cas de pluralité de locataires : [
 
 Modalités de résiliation de plein droit du contrat : [clause prévoyant la résiliation de plein droit du contrat de location pour un défaut de paiement du loyer ou des charges aux termes convenus, le non versement du dépôt de garantie, la non-souscription d'une assurance des risques locatifs ou le non-respect de l'obligation d'user paisiblement des locaux loués, résultant de troubles de voisinage constatés par une décision de justice passée en force de chose jugée].
 
-## IX. Honoraires de location
+## IX. Le cas échéant, Honoraires de location (17)
 
 ### A. Dispositions applicables
 

@@ -80,12 +80,16 @@ def test_footnotes_resolve_and_load_verbatim():
 
 
 @pytest.mark.parametrize("lease_type", ["vide", "meuble", "etudiant"])
-def test_all_body_markers_have_footnotes(lease_type):
-    """Every (n) marker referenced in the body must have a matching footnote text."""
+def test_body_and_footnote_markers_match_bidirectionally(lease_type):
+    """Every body (n) marker has a footnote text AND every footnote has a body marker
+    (no orphan notes) — catches both dropped markers and orphaned footnotes."""
     import re
     body = registry.load_model(lease_type)
     notes = registry.load_footnotes(lease_type)
     body_markers = set(re.findall(r"\((\d{1,2})\)", body))
     note_markers = set(re.findall(r"^\((\d{1,2})\)", notes, flags=re.M))
-    missing = body_markers - note_markers
-    assert not missing, f"{lease_type}: body references footnotes with no text: {sorted(missing, key=int)}"
+    assert body_markers == note_markers, (
+        f"{lease_type}: marker mismatch — "
+        f"body-only {sorted(body_markers - note_markers, key=int)}, "
+        f"orphan notes {sorted(note_markers - body_markers, key=int)}"
+    )

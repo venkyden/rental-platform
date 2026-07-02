@@ -157,7 +157,7 @@ Modalités particulières des obligations en cas de pluralité de locataires : [
 
 Modalités de résiliation de plein droit du contrat : [clause prévoyant la résiliation de plein droit du contrat de location pour un défaut de paiement du loyer ou des charges aux termes convenus, le non versement du dépôt de garantie, la non-souscription d'une assurance des risques locatifs ou le non-respect de l'obligation d'user paisiblement des locaux loués, résultant de troubles de voisinage constatés par une décision de justice passée en force de chose jugée].
 
-## IX. Honoraires de location
+## IX. Le cas échéant, Honoraires de location (17)
 
 ### A. Dispositions applicables
 
