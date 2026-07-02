@@ -1185,16 +1185,14 @@ export const translations = {
             forgotEmail: {
                 title: "Find your email",
                 subtitle: "Find your email address",
-                desc: "Enter your registered full name and phone number and we'll help you find your email address.",
+                desc: "Enter your registered full name and phone number and we'll send a reminder to the matching email address.",
                 fullName: "Full Name",
                 phone: "Phone Number",
-                submit: "Find Email",
-                successTitle: "Account Found",
-                successDesc: "We found an account matching your details.",
-                resultLabel: "Your email address is",
+                submit: "Send reminder",
+                successTitle: "Check your inbox",
+                successDesc: "If an account matches the details you provided, we've sent a reminder to its email address.",
                 errors: {
-                    notFound: "No account found matching this name and phone number.",
-                    default: "Failed to find account. Please try again."
+                    default: "Something went wrong. Please try again."
                 }
             },
             logout: {
@@ -3567,16 +3565,14 @@ export const translations = {
             forgotEmail: {
                 title: "Trouver votre e-mail",
                 subtitle: "Trouvez votre adresse e-mail",
-                desc: "Entrez votre nom complet et votre numéro de téléphone enregistrés pour trouver votre adresse e-mail.",
+                desc: "Entrez votre nom complet et votre numéro de téléphone enregistrés ; nous enverrons un rappel à l'adresse e-mail correspondante.",
                 fullName: "Nom complet",
                 phone: "Numéro de téléphone",
-                submit: "Trouver l'e-mail",
-                successTitle: "Compte trouvé",
-                successDesc: "Nous avons trouvé un compte correspondant à vos informations.",
-                resultLabel: "Votre adresse e-mail est",
+                submit: "Envoyer un rappel",
+                successTitle: "Consultez votre boîte de réception",
+                successDesc: "Si un compte correspond aux informations fournies, nous avons envoyé un rappel à son adresse e-mail.",
                 errors: {
-                    notFound: "Aucun compte trouvé avec ce nom et ce numéro de téléphone.",
-                    default: "Échec de la recherche de compte. Veuillez réessayer."
+                    default: "Une erreur s'est produite. Veuillez réessayer."
                 }
             },
             logout: {
