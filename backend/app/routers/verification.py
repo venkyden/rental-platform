@@ -1250,8 +1250,16 @@ async def upload_guarantor_document(
         "storage_key": storage_result.get("key"),
         "uploaded_at": naive_utcnow().isoformat()
     }
-    # Replace existing entry for same doc_type (last-write-wins)
-    files_list = [f for f in files_list if f.get("document_type") != document_type]
+    # Replace existing entry for same doc_type (last-write-wins) — purge the
+    # replaced storage object so no orphaned guarantor PII stays at rest (GDPR)
+    _kept = []
+    for _f in files_list:
+        if _f.get("document_type") == document_type:
+            if _f.get("storage_key"):
+                await storage.purge_object(_f["storage_key"], "guarantor_reupload")
+        else:
+            _kept.append(_f)
+    files_list = _kept
     files_list.append(new_entry)
     current_user.guarantor_data = {"files": files_list}
     
@@ -1329,6 +1337,11 @@ async def delete_guarantor(
             .values(trust_score=func.greatest(0, User.trust_score - 15))
         )
         await db.refresh(current_user)
+
+    # Purge stored guarantor files before dropping their last reference (GDPR)
+    for _f in (current_user.guarantor_data or {}).get("files", []):
+        if _f.get("storage_key"):
+            await storage.purge_object(_f["storage_key"], "guarantor_delete")
 
     current_user.guarantor_type = None
     current_user.guarantor_status = "unverified"

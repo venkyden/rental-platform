@@ -306,6 +306,22 @@ class CloudStorageService:
                 return True
             return False
 
+    async def purge_object(self, key: str, context: str) -> bool:
+        """GDPR purge: delete a stored object, warning (never raising) on failure.
+
+        delete_file returns False instead of raising on cloud errors, so callers
+        that only try/except never see failures — this wrapper logs both cases
+        with the caller's context and is safe to call on request paths.
+        """
+        try:
+            deleted = await self.delete_file(key)
+        except Exception as exc:
+            logger.warning("purge_object(%s): failed to delete %s: %s", context, key, exc)
+            return False
+        if not deleted:
+            logger.warning("purge_object(%s): delete returned False for %s", context, key)
+        return deleted
+
     async def delete_files_by_prefix(self, prefix: str) -> int:
         """Delete all files starting with a prefix (e.g. 'users/{user_id}/')"""
         count = 0
