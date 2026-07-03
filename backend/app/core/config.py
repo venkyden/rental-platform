@@ -51,6 +51,11 @@ class Settings(BaseSettings):
     # If absent (dev), an ephemeral key is generated. MUST be set in production.
     CREDENTIAL_SIGNING_KEY: Optional[str] = None
 
+    # Trust Layer — retired verify-only public keys (comma-separated hex-encoded
+    # 32-byte raw Ed25519 public keys). Kept until every credential signed by the
+    # retired key has expired. Runbook: docs/features/trust-layer/KEY-LIFECYCLE.md
+    CREDENTIAL_RETIRED_VERIFY_KEYS: Optional[str] = None
+
     # CORS
     FRONTEND_URL: str = "http://localhost:3000"
     
