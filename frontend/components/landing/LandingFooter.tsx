@@ -15,8 +15,7 @@ export default function LandingFooter() {
       links: [
         { href: '/search', label: t('dashboard.quickActions.browse.title', undefined, 'Browse') },
         { href: '/properties', label: t('dashboard.stats.properties', undefined, 'Properties') },
-        { href: '/auth/register', label: t('landing.getStarted', undefined, 'Get Started') },
-        { href: '/relocation', label: t('dashboard.inbox.tenant.discover', undefined, 'Relocation') }
+        { href: '/auth/register', label: t('landing.getStarted', undefined, 'Get Started') }
       ]
     },
     { 

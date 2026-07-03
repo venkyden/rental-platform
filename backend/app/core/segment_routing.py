@@ -146,16 +146,9 @@ SEGMENT_CONFIGS: Dict[str, SegmentConfig] = {
             "verification",
             "history",
             "premium_search",
-            "relocation",
         ],
         quick_actions=[
             {"id": "search", "label": "Search", "icon": "🔍", "path": "/search"},
-            {
-                "id": "relocation",
-                "label": "Relocation Services",
-                "icon": "🚚",
-                "path": "/relocation",
-            },
             {
                 "id": "documents",
                 "label": "Secure Vault",
