@@ -2,6 +2,16 @@ export type Language = 'en' | 'fr';
 
 export const translations = {
     en: {
+        tenant: {
+            features: {
+                trust: {
+                    badge: "Trust Layer",
+                    title: "Verified Profile",
+                    desc: "Verify your identity and solvency once — get a signed, expiring proof any landlord can check, here or on any classifieds site.",
+                    cta: "Get Verified"
+                }
+            }
+        },
         esign: {
             title: "Electronic signature",
             subtitle: "Both verified parties sign the landlord-provided lease. Roomivo did not draft the wording and does not certify its legal compliance; it attests verified identities, document integrity, and timestamps.",
@@ -2337,6 +2347,16 @@ export const translations = {
         }
     },
     fr: {
+        tenant: {
+            features: {
+                trust: {
+                    badge: "Couche de Confiance",
+                    title: "Profil Vérifié",
+                    desc: "Vérifiez votre identité et votre solvabilité une seule fois — obtenez une preuve signée et à durée limitée, vérifiable par tout bailleur, ici ou sur n'importe quel site d'annonces.",
+                    cta: "Se faire vérifier"
+                }
+            }
+        },
         esign: {
             title: "Signature électronique",
             subtitle: "Les deux parties vérifiées signent le bail fourni par le bailleur. Roomivo n'en a pas rédigé les clauses et n'atteste pas de sa conformité légale ; il atteste l'identité vérifiée des signataires, l'intégrité du document et l'horodatage.",

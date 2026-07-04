@@ -3,7 +3,7 @@ Matching Service — DISABLED (decision 2026-07-03, see docs/features/trust-laye
 
 Personalized counterparty matching/recommendation is entremise under Loi Hoguet,
 which Roomivo (unlicensed pure SaaS) must never perform. No router may import this
-module. Retained for reference only, pending an explicit lawyer opinion.
+module. Retained for reference only, pending explicit lawyer opinion.
 
 Calculates compatibility scores between Tenants and Properties.
 Implements "Soft Scoring" logic (Weighted Preferences).

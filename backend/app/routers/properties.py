@@ -368,10 +368,10 @@ async def get_recommendations(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Deprecated — always returns an empty list.
+    Deprecated — always returns empty list.
 
     Personalized counterparty recommendation is entremise under Loi Hoguet;
-    Roomivo operates without a carte professionnelle and must never perform it.
+    Roomivo operates without carte professionnelle and must never perform it.
     Stub retained so existing clients don't break.
     """
     return []
