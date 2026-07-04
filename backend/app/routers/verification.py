@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 from app.core.timeutils import naive_utcnow
 from typing import Optional
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile, status
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy import func, select, update
@@ -26,7 +26,39 @@ from app.services.storage import storage
 
 logger = logging.getLogger(__name__)
 from app.utils.watermark import apply_watermark
+from app.models.biometric_consent import BIOMETRIC_CONSENT_VERSION, BiometricConsent
 from app.services.identity_assurance import OCR_LIVENESS_LABEL, derive_identity_assurance
+
+
+async def _has_biometric_consent(user_id, db: AsyncSession) -> bool:
+    result = await db.execute(
+        select(BiometricConsent.id)
+        .where(
+            BiometricConsent.user_id == user_id,
+            BiometricConsent.consent_version == BIOMETRIC_CONSENT_VERSION,
+        )
+        .limit(1)
+    )
+    return result.scalar_one_or_none() is not None
+
+
+async def _require_biometric_consent(user_id, db: AsyncSession) -> None:
+    """GDPR Art. 9: block any selfie/face-match processing without a recorded
+    explicit consent at the current wording version."""
+    if not await _has_biometric_consent(user_id, db):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "code": "BIOMETRIC_CONSENT_REQUIRED",
+                "message": (
+                    "Explicit consent to the selfie face-match is required before "
+                    "any biometric processing. Record it via POST "
+                    "/api/v1/verification/biometric-consent, or use a "
+                    "document-only verification instead."
+                ),
+                "consent_version": BIOMETRIC_CONSENT_VERSION,
+            },
+        )
 
 async def _validate_file_size(file: UploadFile, max_size_mb: int = 10):
     """Validate file size securely before calling await file.read() to prevent memory exhaustion DoS."""
@@ -109,6 +141,43 @@ class VerificationStatusResponse(BaseModel):
     trust_score: int
 
 
+@router.post("/biometric-consent", status_code=status.HTTP_201_CREATED)
+async def record_biometric_consent(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Record explicit GDPR Art. 9 consent to the selfie face-match.
+
+    Stores who/when/version only — never biometric data. Required once per
+    consent-wording version before any selfie endpoint will process images.
+    """
+    if await _has_biometric_consent(current_user.id, db):
+        return {"status": "already_recorded", "consent_version": BIOMETRIC_CONSENT_VERSION}
+
+    db.add(
+        BiometricConsent(
+            user_id=current_user.id,
+            consent_version=BIOMETRIC_CONSENT_VERSION,
+            user_agent=(request.headers.get("user-agent") or "")[:400] or None,
+        )
+    )
+    await db.commit()
+    return {"status": "recorded", "consent_version": BIOMETRIC_CONSENT_VERSION}
+
+
+@router.get("/biometric-consent")
+async def get_biometric_consent_status(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Whether the user has consented at the current wording version."""
+    return {
+        "consented": await _has_biometric_consent(current_user.id, db),
+        "consent_version": BIOMETRIC_CONSENT_VERSION,
+    }
+
+
 @router.post("/identity/upload")
 async def upload_identity_document(
     document_type: str,
@@ -123,6 +192,9 @@ async def upload_identity_document(
     For MVP: Simulates document verification
     For Production: Integrate with Fourthline API
     """
+    # GDPR Art. 9: the selfie_with_id path runs a face-match on the image
+    if side == "selfie_with_id":
+        await _require_biometric_consent(current_user.id, db)
 
     # Validate file type
     allowed_types = ["image/jpeg", "image/png", "image/jpg", "application/pdf", "image/heic", "image/heif"]
@@ -391,6 +463,10 @@ async def upload_identity_mobile(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
+    # GDPR Art. 9: selfie sides run a face-match on the image
+    if side in ("selfie_with_id", "selfie"):
+        await _require_biometric_consent(user.id, db)
+
     # Apply rate limit
     await _check_upload_rate_limit(str(user.id), "identity")
 
@@ -631,6 +707,7 @@ async def upload_identity_selfie(
     db: AsyncSession = Depends(get_db),
 ):
     """Upload selfie for face-match against the stored identity document."""
+    await _require_biometric_consent(current_user.id, db)
     if not current_user.identity_data or current_user.identity_data.get("status") != "document_uploaded":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -1932,6 +2009,7 @@ async def upload_intl_identity_selfie(
     db: AsyncSession = Depends(get_db),
 ):
     """Selfie face-match against stored INTL passport -> MEDIUM identity credential."""
+    await _require_biometric_consent(current_user.id, db)
     import base64
     from app.services.identity import identity_service
 

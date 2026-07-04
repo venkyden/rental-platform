@@ -2,6 +2,16 @@ export type Language = 'en' | 'fr';
 
 export const translations = {
     en: {
+        tenant: {
+            features: {
+                trust: {
+                    badge: "Trust Layer",
+                    title: "Verified Profile",
+                    desc: "Verify your identity and solvency once — get a signed, expiring proof any landlord can check, here or on any classifieds site.",
+                    cta: "Get Verified"
+                }
+            }
+        },
         esign: {
             title: "Electronic signature",
             subtitle: "Both verified parties sign the landlord-provided lease. Roomivo did not draft the wording and does not certify its legal compliance; it attests verified identities, document integrity, and timestamps.",
@@ -73,9 +83,9 @@ export const translations = {
                 title: "Why Choose Roomivo?",
                 subtitle: "The most secure and transparent way to rent in France.",
                 dossier: { title: "Digital Dossier", desc: "No more paper. Your verified identity and documents in one secure place." },
-                matching: { title: "AI-Powered Matching", desc: "Find properties matching your profile. Note: Suggestions are recommendations; final decisions are subject to human oversight." },
+                proof: { title: "Signed Proof", desc: "Every verification issues a cryptographically signed, expiring credential — anyone can check it on roomivo.app, no account needed." },
                 legal: { title: "French Law Compliant", desc: "Digital leases generated according to the latest French regulations." },
-                payments: { title: "Secure Payments", desc: "Pay your rent and deposits through our integrated secure gateway." }
+                funds: { title: "Your Money Stays Yours", desc: "Roomivo never touches rent or deposits. You pay the other party directly — with signed proof of who they really are." }
             },
             howItWorks: {
                 title: "How it Works",
@@ -307,6 +317,18 @@ export const translations = {
                 step3: "Submit for secure validation",
                 consentLabel: "I explicitly consent to the processing of my biometric data and identity document for verification purposes, in accordance with Roomivo's GDPR policy.",
                 consentRequired: "Consent is required to proceed with identity verification."
+            },
+            biometricConsent: {
+                title: "Your Explicit Consent",
+                subtitle: "European law (GDPR Art. 9) requires your explicit consent before any biometric processing.",
+                point1: "To verify your identity, we compare your selfie with the photo on your ID document. This is a biometric face-match.",
+                point2: "Your images are processed transiently and deleted immediately after the check — whatever the outcome. Nothing biometric is stored.",
+                point3: "You can refuse. Without the selfie step your identity simply stays unverified — you keep full access to your account.",
+                checkbox: "I explicitly consent to the processing of my biometric data (selfie face-match) for this identity verification.",
+                accept: "I Consent — Continue",
+                refuse: "Not now",
+                submitting: "Recording…",
+                error: "Could not record your consent. Please try again."
             },
             income: {
                 title: "Income & Resources Verification",
@@ -864,17 +886,10 @@ export const translations = {
                     visits: "Scheduled Visits",
                     favorites: "Favorites",
                     activeDisputes: "Active Disputes",
-                    premiumTitle: "Premium Services",
-                    premiumDesc: "Take advantage of our relocation services for your professional mobility",
                     discover: "Discover",
                     recentSearches: "Recent Searches",
                     noSearches: "You haven't made any searches yet.",
-                    searchButton: "Search for a property",
-                    smartMatches: "Smart Matches",
-                    smartMatchesDesc: "Top properties perfectly matching your profile",
-                    matchScore: "{{score}}% Match",
-                    loadingMatches: "Finding your perfect home...",
-                    noMatches: "Complete your onboarding to see personalized matches"
+                    searchButton: "Search for a property"
                 },
                 landlord: {
                     welcome: "Welcome, {{name}}",
@@ -1921,7 +1936,6 @@ export const translations = {
             },
             status: {
                 loading: "Initializing Discovery...",
-                compatibilityIndex: "Compatibility Index",
                 error: "Impossible to load listings.",
                 noResults: "Market Vacant",
                 noResultsDesc: "Try expanding your search parameters to discover hidden gems."
@@ -2345,6 +2359,16 @@ export const translations = {
         }
     },
     fr: {
+        tenant: {
+            features: {
+                trust: {
+                    badge: "Couche de Confiance",
+                    title: "Profil Vérifié",
+                    desc: "Vérifiez votre identité et votre solvabilité une seule fois — obtenez une preuve signée et à durée limitée, vérifiable par tout bailleur, ici ou sur n'importe quel site d'annonces.",
+                    cta: "Se faire vérifier"
+                }
+            }
+        },
         esign: {
             title: "Signature électronique",
             subtitle: "Les deux parties vérifiées signent le bail fourni par le bailleur. Roomivo n'en a pas rédigé les clauses et n'atteste pas de sa conformité légale ; il atteste l'identité vérifiée des signataires, l'intégrité du document et l'horodatage.",
@@ -2570,9 +2594,9 @@ export const translations = {
                 title: "Pourquoi Choisir Roomivo ?",
                 subtitle: "La façon la plus sécurisée et transparente de louer en France.",
                 dossier: { title: "Dossier Numérique", desc: "Plus de papier. Votre identité et vos documents vérifiés en un seul lieu sûr." },
-                matching: { title: "Matching IA", desc: "Trouvez des biens correspondant à votre profil. Remarque : les suggestions sont des recommandations ; les décisions finales sont soumises à un contrôle humain." },
+                proof: { title: "Preuve Signée", desc: "Chaque vérification émet une attestation signée cryptographiquement et à durée limitée — vérifiable par tous sur roomivo.app, sans compte." },
                 legal: { title: "Conforme à la Loi Française", desc: "Baux numériques générés selon les dernières réglementations françaises." },
-                payments: { title: "Paiements Sécurisés", desc: "Payez votre loyer et vos dépôts via notre passerelle sécurisée intégrée." }
+                funds: { title: "Votre Argent Reste le Vôtre", desc: "Roomivo ne touche jamais au loyer ni au dépôt de garantie. Vous payez directement l'autre partie — avec la preuve signée de son identité." }
             },
             howItWorks: {
                 title: "Comment ça marche",
@@ -2672,6 +2696,18 @@ export const translations = {
                 step3: "Soumettez pour validation sécurisée",
                 consentLabel: "Je consens explicitement au traitement de mes données biométriques et de ma pièce d'identité pour la vérification, conformément à la politique RGPD de Roomivo.",
                 consentRequired: "Le consentement est obligatoire pour procéder à la vérification d'identité."
+            },
+            biometricConsent: {
+                title: "Votre Consentement Explicite",
+                subtitle: "Le droit européen (RGPD art. 9) exige votre consentement explicite avant tout traitement biométrique.",
+                point1: "Pour vérifier votre identité, nous comparons votre selfie avec la photo de votre pièce d'identité. Il s'agit d'une comparaison faciale biométrique.",
+                point2: "Vos images sont traitées de manière transitoire et supprimées immédiatement après la vérification, quel qu'en soit le résultat. Aucune donnée biométrique n'est conservée.",
+                point3: "Vous pouvez refuser. Sans l'étape selfie, votre identité reste simplement non vérifiée — vous conservez l'accès complet à votre compte.",
+                checkbox: "Je consens explicitement au traitement de mes données biométriques (comparaison faciale par selfie) pour cette vérification d'identité.",
+                accept: "Je Consens — Continuer",
+                refuse: "Pas maintenant",
+                submitting: "Enregistrement…",
+                error: "Impossible d'enregistrer votre consentement. Veuillez réessayer."
             },
             income: {
                 title: "Vérification des Revenus & Ressources",
@@ -3245,17 +3281,10 @@ export const translations = {
                     visits: "Visites prévues",
                     favorites: "Favoris",
                     activeDisputes: "Litiges en cours",
-                    premiumTitle: "Services Premium",
-                    premiumDesc: "Profitez de nos services de relocation pour votre mobilité professionnelle",
                     discover: "Découvrir",
                     recentSearches: "Recherches récentes",
                     noSearches: "Vous n'avez pas encore effectué de recherche.",
-                    searchButton: "Rechercher un bien",
-                    smartMatches: "Matchs Intelligents",
-                    smartMatchesDesc: "Les meilleurs biens correspondant à votre profil",
-                    matchScore: "{{score}}% de Match",
-                    loadingMatches: "Recherche de votre foyer idéal...",
-                    noMatches: "Complétez votre onboarding pour voir vos matchs personnalisés"
+                    searchButton: "Rechercher un bien"
                 },
                 landlord: {
                     welcome: "Bienvenue, {{name}}",
@@ -4322,7 +4351,6 @@ export const translations = {
             },
             status: {
                 loading: "Initialisation de la découverte...",
-                compatibilityIndex: "Indice de compatibilité",
                 error: "Impossible de charger les annonces.",
                 noResults: "Marché Vacant",
                 noResultsDesc: "Essayez d'élargir vos paramètres de recherche pour découvrir des pépites."
@@ -4333,12 +4361,6 @@ export const translations = {
                     bedrooms: "Chambres",
                     bathrooms: "Salles de bain",
                     floor: "Étage"
-                },
-                match: {
-                    title: "Indice de Compatibilité",
-                    reason1: "Correspond à votre budget",
-                    reason2: "Proximité idéale des pôles d'activité",
-                    reason3: "Équipements premium inclus"
                 }
             }
         },

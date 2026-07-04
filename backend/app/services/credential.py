@@ -8,6 +8,7 @@ Key rules (non-negotiable from DOSSIER §2):
 - Source documents are NEVER stored here; only the banded credential record is.
 """
 
+import hashlib
 import io
 import json
 import logging
@@ -15,7 +16,10 @@ import os
 from datetime import datetime, timedelta
 
 from cryptography.exceptions import InvalidSignature
-from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+from cryptography.hazmat.primitives.asymmetric.ed25519 import (
+    Ed25519PrivateKey,
+    Ed25519PublicKey,
+)
 from cryptography.hazmat.primitives.serialization import (
     Encoding,
     NoEncryption,
@@ -175,17 +179,34 @@ def _evidence_claim_rows(claims: dict) -> list:
     return rows
 
 
+def _kid_for(public_key: Ed25519PublicKey) -> str:
+    """Key id: first 16 hex chars of SHA-256 over raw 32-byte public key."""
+    raw = public_key.public_bytes(Encoding.Raw, PublicFormat.Raw)
+    return hashlib.sha256(raw).hexdigest()[:16]
+
+
 class CredentialService:
     """
     Singleton service for issuing and verifying signed credentials.
 
-    Key lifecycle: loaded once from CREDENTIAL_SIGNING_KEY env var (hex-encoded
-    32-byte Ed25519 seed). If the var is absent (dev only), an ephemeral key is
-    generated with a logged warning — signatures survive the process lifetime only.
-    In production the env var MUST be set and MUST be stable across deploys.
+    Key lifecycle (runbook: docs/features/trust-layer/KEY-LIFECYCLE.md):
+    - CREDENTIAL_SIGNING_KEY (hex 32-byte Ed25519 seed): ACTIVE key — signs
+      every new credential; its `kid` is embedded inside signed payload.
+    - CREDENTIAL_RETIRED_VERIFY_KEYS (comma-separated hex 32-byte raw public
+      keys): RETIRED keys kept verify-only until every credential they signed
+      expires. Rotation = move old public key here, set new signing seed.
+    - Records carrying kid verify against that key only (unknown kid fails
+      closed); legacy records without kid tried against all known keys.
+
+    Signing var absent (dev only): ephemeral key generated with logged
+    warning. Production MUST set the env var and keep it stable.
     """
 
-    def __init__(self, signing_key_hex: str | None = None):
+    def __init__(
+        self,
+        signing_key_hex: str | None = None,
+        retired_verify_keys_hex: list[str] | None = None,
+    ):
         if signing_key_hex:
             seed = bytes.fromhex(signing_key_hex)
             if len(seed) != 32:
@@ -199,6 +220,19 @@ class CredentialService:
             self._private_key = Ed25519PrivateKey.generate()
 
         self._public_key = self._private_key.public_key()
+        self._kid = _kid_for(self._public_key)
+
+        # kid -> public key; insertion order = active first, then retired
+        self._verify_keys: dict[str, Ed25519PublicKey] = {self._kid: self._public_key}
+        for pub_hex in retired_verify_keys_hex or []:
+            raw = bytes.fromhex(pub_hex)
+            if len(raw) != 32:
+                raise ValueError(
+                    "CREDENTIAL_RETIRED_VERIFY_KEYS entries must be 32-byte raw "
+                    "Ed25519 public keys (64 hex chars)"
+                )
+            pub = Ed25519PublicKey.from_public_bytes(raw)
+            self._verify_keys[_kid_for(pub)] = pub
 
     # ── public key ──────────────────────────────────────────────────────────
 
@@ -206,6 +240,19 @@ class CredentialService:
         return self._public_key.public_bytes(
             Encoding.PEM, PublicFormat.SubjectPublicKeyInfo
         ).decode()
+
+    def key_history(self) -> list[dict]:
+        """All known verification keys, active first, for the /public-keys endpoint."""
+        return [
+            {
+                "kid": kid,
+                "public_key_pem": key.public_bytes(
+                    Encoding.PEM, PublicFormat.SubjectPublicKeyInfo
+                ).decode(),
+                "status": "active" if kid == self._kid else "retired",
+            }
+            for kid, key in self._verify_keys.items()
+        ]
 
     # ── issuance ─────────────────────────────────────────────────────────────
 
@@ -242,6 +289,7 @@ class CredentialService:
             "rail": rail,
             "claims": claims,
             "disclaimer": DISCLAIMER,
+            "kid": self._kid,
         }
 
         sig = self._private_key.sign(_canonical_payload(payload))
@@ -253,21 +301,37 @@ class CredentialService:
 
     def verify_signature(self, record: dict) -> bool:
         """
-        Re-verify the Ed25519 signature on a stored credential record.
-        The signed payload excludes subject_display_name (added after signing).
+        Re-verify Ed25519 signature on stored credential record.
+        Signed payload excludes subject_display_name (added after signing).
+
+        Records carrying kid verify against that key only — unknown kid
+        fails closed. Legacy records (no kid) tried against all known keys.
         """
         payload = {k: record[k] for k in (
             "credential_id", "subject_role", "issued_at", "expires_at",
-            "rail", "claims", "disclaimer",
+            "rail", "claims", "disclaimer", "kid",
         ) if k in record}
-        try:
-            self._public_key.verify(
-                bytes.fromhex(record["signature"]),
-                _canonical_payload(payload),
-            )
-            return True
-        except (InvalidSignature, KeyError, ValueError):
-            return False
+
+        kid = record.get("kid")
+        if kid is not None:
+            key = self._verify_keys.get(kid)
+            if key is None:
+                logger.warning("verify_signature: unknown kid %s — failing closed", kid)
+                return False
+            candidates = [key]
+        else:
+            candidates = list(self._verify_keys.values())
+
+        for key in candidates:
+            try:
+                key.verify(
+                    bytes.fromhex(record["signature"]),
+                    _canonical_payload(payload),
+                )
+                return True
+            except (InvalidSignature, KeyError, ValueError):
+                continue
+        return False
 
     # ── generic payload signing (reused by the e-sign rail) ───────────────────
 
@@ -282,15 +346,20 @@ class CredentialService:
         return self._private_key.sign(_canonical_payload(payload)).hex()
 
     def verify_payload(self, payload: dict, signature_hex: str) -> bool:
-        """Re-verify a signature produced by `sign_payload` over `payload`."""
-        try:
-            self._public_key.verify(
-                bytes.fromhex(signature_hex),
-                _canonical_payload(payload),
-            )
-            return True
-        except (InvalidSignature, KeyError, ValueError):
-            return False
+        """
+        Re-verify signature produced by `sign_payload` over `payload`.
+        Tried against all known keys (these signatures carry no kid).
+        """
+        for key in self._verify_keys.values():
+            try:
+                key.verify(
+                    bytes.fromhex(signature_hex),
+                    _canonical_payload(payload),
+                )
+                return True
+            except (InvalidSignature, KeyError, ValueError):
+                continue
+        return False
 
     # ── evidence PDF ─────────────────────────────────────────────────────────
 
@@ -469,7 +538,9 @@ class CredentialService:
 
 def _load_service() -> CredentialService:
     key_hex = os.environ.get("CREDENTIAL_SIGNING_KEY")
-    return CredentialService(signing_key_hex=key_hex)
+    retired_raw = os.environ.get("CREDENTIAL_RETIRED_VERIFY_KEYS", "")
+    retired = [k.strip() for k in retired_raw.split(",") if k.strip()]
+    return CredentialService(signing_key_hex=key_hex, retired_verify_keys_hex=retired)
 
 
 credential_service: CredentialService = _load_service()

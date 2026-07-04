@@ -22,9 +22,9 @@ test.describe('Landing Page E2E Tests', () => {
     test('value proposition bento grid renders', async ({ page }) => {
         // Check for Value Props
         await expect(page.getByText('Digital Dossier')).toBeVisible();
-        await expect(page.getByText('AI-Powered Matching')).toBeVisible();
+        await expect(page.getByText('Signed Proof')).toBeVisible();
         await expect(page.getByText('French Law Compliant')).toBeVisible();
-        await expect(page.getByText('Secure Payments')).toBeVisible();
+        await expect(page.getByText('Your Money Stays Yours')).toBeVisible();
     });
 
     test('how it works progressive steps render', async ({ page }) => {

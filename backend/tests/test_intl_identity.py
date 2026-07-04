@@ -18,6 +18,22 @@ from app.routers.auth import get_current_user
 from tests.conftest import make_mock_user, mock_get_db
 
 
+import pytest
+
+
+@pytest.fixture(autouse=True)
+def _biometric_consent_granted():
+    """These flows predate the Art. 9 gate — run them as a consented user;
+    the gate itself is covered in tests/test_biometric_consent.py."""
+    from unittest.mock import AsyncMock, patch as _patch
+    with _patch(
+        "app.routers.verification._has_biometric_consent",
+        new=AsyncMock(return_value=True),
+    ):
+        yield
+
+
+
 _FAKE_JPEG = b"\xff\xd8\xff" + b"\x00" * 100
 
 
