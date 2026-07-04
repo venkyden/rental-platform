@@ -52,8 +52,8 @@ class Settings(BaseSettings):
     CREDENTIAL_SIGNING_KEY: Optional[str] = None
 
     # Trust Layer — retired verify-only public keys (comma-separated hex-encoded
-    # 32-byte raw Ed25519 public keys). Kept until every credential signed by the
-    # retired key has expired. Runbook: docs/features/trust-layer/KEY-LIFECYCLE.md
+    # 32-byte raw Ed25519 public keys). Kept until every credential signed by
+    # retired key expires. Runbook: docs/features/trust-layer/KEY-LIFECYCLE.md
     CREDENTIAL_RETIRED_VERIFY_KEYS: Optional[str] = None
 
     # CORS

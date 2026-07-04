@@ -1,8 +1,8 @@
 # Credential Signing Key — Lifecycle & Compromise Runbook
 
-The Ed25519 signing key **is the product**: every credential and evidence document
-is only as trustworthy as this key. This runbook covers identification, routine
-rotation, and compromise response. (Stress-test finding F12, WS-3.)
+Ed25519 signing key **is the product**: every credential and evidence document
+is only as trustworthy as this key. Runbook covers key identification, routine
+rotation, compromise response. (Stress-test finding F12, WS-3.)
 
 ## Key identification (`kid`)
 

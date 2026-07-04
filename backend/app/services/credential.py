@@ -172,7 +172,7 @@ def _evidence_claim_rows(claims: dict) -> list:
 
 
 def _kid_for(public_key: Ed25519PublicKey) -> str:
-    """Key id: first 16 hex chars of SHA-256 over the raw 32-byte public key."""
+    """Key id: first 16 hex chars of SHA-256 over raw 32-byte public key."""
     raw = public_key.public_bytes(Encoding.Raw, PublicFormat.Raw)
     return hashlib.sha256(raw).hexdigest()[:16]
 
@@ -182,16 +182,16 @@ class CredentialService:
     Singleton service for issuing and verifying signed credentials.
 
     Key lifecycle (runbook: docs/features/trust-layer/KEY-LIFECYCLE.md):
-    - CREDENTIAL_SIGNING_KEY (hex 32-byte Ed25519 seed): the ACTIVE key — signs
-      every new credential; its `kid` is embedded inside the signed payload.
+    - CREDENTIAL_SIGNING_KEY (hex 32-byte Ed25519 seed): ACTIVE key — signs
+      every new credential; its `kid` is embedded inside signed payload.
     - CREDENTIAL_RETIRED_VERIFY_KEYS (comma-separated hex 32-byte raw public
       keys): RETIRED keys kept verify-only until every credential they signed
-      has expired. Rotation = move old public key here, set a new signing seed.
-    - Records carrying a kid verify against that key only (unknown kid fails
-      closed); legacy records without a kid are tried against all known keys.
+      expires. Rotation = move old public key here, set new signing seed.
+    - Records carrying kid verify against that key only (unknown kid fails
+      closed); legacy records without kid tried against all known keys.
 
-    If the signing var is absent (dev only), an ephemeral key is generated with
-    a logged warning. In production the env var MUST be set and stable.
+    Signing var absent (dev only): ephemeral key generated with logged
+    warning. Production MUST set the env var and keep it stable.
     """
 
     def __init__(
@@ -293,11 +293,11 @@ class CredentialService:
 
     def verify_signature(self, record: dict) -> bool:
         """
-        Re-verify the Ed25519 signature on a stored credential record.
-        The signed payload excludes subject_display_name (added after signing).
+        Re-verify Ed25519 signature on stored credential record.
+        Signed payload excludes subject_display_name (added after signing).
 
-        Records carrying a kid verify against that key only — an unknown kid
-        fails closed. Legacy records (no kid) are tried against all known keys.
+        Records carrying kid verify against that key only — unknown kid
+        fails closed. Legacy records (no kid) tried against all known keys.
         """
         payload = {k: record[k] for k in (
             "credential_id", "subject_role", "issued_at", "expires_at",
@@ -339,7 +339,7 @@ class CredentialService:
 
     def verify_payload(self, payload: dict, signature_hex: str) -> bool:
         """
-        Re-verify a signature produced by `sign_payload` over `payload`.
+        Re-verify signature produced by `sign_payload` over `payload`.
         Tried against all known keys (these signatures carry no kid).
         """
         for key in self._verify_keys.values():

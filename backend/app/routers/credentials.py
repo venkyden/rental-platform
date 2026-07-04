@@ -106,17 +106,27 @@ async def get_public_key():
     )
 
 
-@router.get("/public-keys", summary="Verification key history (JSON)")
+class KeyHistoryEntry(BaseModel):
+    kid: str
+    public_key_pem: str
+    status: str  # active | retired
+
+
+class PublicKeysResponse(BaseModel):
+    keys: list[KeyHistoryEntry]
+
+
+@router.get("/public-keys", summary="Verification key history (JSON)", response_model=PublicKeysResponse)
 async def get_public_keys():
     """
-    All verification keys: the active signing key first, then retired keys kept
-    verify-only until the credentials they signed have expired.
+    All verification keys: active signing key first, then retired keys kept
+    verify-only until credentials they signed expire.
 
-    Each entry: {kid, public_key_pem, status: active|retired}. A credential's
-    `kid` names the key that signed it; verifiers should reject unknown kids.
+    Each entry: {kid, public_key_pem, status: active|retired}. Credential
+    `kid` names its signing key; verifiers should reject unknown kids.
     Rotation runbook: docs/features/trust-layer/KEY-LIFECYCLE.md
     """
-    return {"keys": credential_service.key_history()}
+    return PublicKeysResponse(keys=credential_service.key_history())
 
 
 @router.post("/issue", response_model=CredentialResponse, status_code=status.HTTP_201_CREATED)

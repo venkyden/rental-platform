@@ -1,11 +1,11 @@
 """
-Key-lifecycle tests for the credential service (WS-3, stress-test finding F12).
+Key-lifecycle tests for credential service (WS-3, stress-test finding F12).
 
 Invariants:
-- every newly signed credential carries a `kid` bound inside the signed payload
-- rotation: a credential signed under a retired key still verifies when that
-  key's public half is kept in the retired verify set
-- fail-closed: a credential whose kid matches no known key never verifies
+- every newly signed credential carries `kid` bound inside signed payload
+- rotation: credential signed under retired key still verifies while that
+  key's public half stays in retired verify set
+- fail-closed: credential whose kid matches no known key never verifies
 - legacy records (signed before kid existed) still verify by key trial
 """
 
@@ -14,7 +14,7 @@ import hashlib
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 
-from app.services.credential import CredentialService, _canonical_payload
+from app.services.credential import CredentialService
 
 KEY_A = Ed25519PrivateKey.generate()
 KEY_B = Ed25519PrivateKey.generate()

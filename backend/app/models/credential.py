@@ -48,9 +48,10 @@ class Credential(Base):
     # Hex-encoded Ed25519 signature over the canonical payload JSON
     signature = Column(String(128), nullable=False)
 
-    # Key id of the signing key (inside the signed payload). Nullable: credentials
-    # issued before key rotation existed carry no kid and verify by key trial.
-    kid = Column(String(32), nullable=True)
+    # Key id of signing key (inside signed payload). Nullable: credentials
+    # issued before key rotation carry no kid, verify by key trial.
+    # Indexed for bulk revocation by kid (compromise runbook).
+    kid = Column(String(32), nullable=True, index=True)
 
     revoked = Column(Boolean, default=False, nullable=False)
     revoked_at = Column(DateTime, nullable=True)

@@ -17,10 +17,13 @@ depends_on = None
 
 
 def upgrade() -> None:
-    # Nullable: credentials issued before key rotation existed carry no kid
-    # and verify by key trial (see services/credential.py verify_signature).
+    # Nullable: credentials issued before key rotation carry no kid, verify
+    # by key trial (see services/credential.py verify_signature). Index
+    # supports bulk revocation by kid (compromise runbook).
     op.add_column("credentials", sa.Column("kid", sa.String(length=32), nullable=True))
+    op.create_index("ix_credentials_kid", "credentials", ["kid"])
 
 
 def downgrade() -> None:
+    op.drop_index("ix_credentials_kid", table_name="credentials")
     op.drop_column("credentials", "kid")
