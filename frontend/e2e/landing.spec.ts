@@ -22,7 +22,8 @@ test.describe('Landing Page E2E Tests', () => {
     test('value proposition bento grid renders', async ({ page }) => {
         // Check for Value Props
         await expect(page.getByText('Digital Dossier')).toBeVisible();
-        await expect(page.getByText('Signed Proof')).toBeVisible();
+        // exact: the funds-card copy contains the substring "signed proof"
+        await expect(page.getByText('Signed Proof', { exact: true })).toBeVisible();
         await expect(page.getByText('French Law Compliant')).toBeVisible();
         await expect(page.getByText('Your Money Stays Yours')).toBeVisible();
     });
