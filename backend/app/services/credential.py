@@ -36,6 +36,14 @@ DISCLAIMER = (
 
 DEFAULT_TTL_DAYS = 30
 
+# Anti-phishing statement rendered on every evidence PDF (WS-6). Scammers clone
+# the brand on typo-domains; the document itself must name the one real domain.
+CANONICAL_DOMAIN_STATEMENT = (
+    "roomivo.app est le SEUL domaine officiel Roomivo. Toute variante "
+    "(faute de frappe, autre extension, sous-domaine d'un autre site) est "
+    "frauduleuse. La clé publique de vérification est publiée sur le site officiel."
+)
+
 # Valid assurance levels — order matters for the "never inflate" check
 ASSURANCE_LEVELS = {"HIGH", "MEDIUM", "UNVERIFIED"}
 
@@ -503,6 +511,7 @@ class CredentialService:
         ))
         story.append(Paragraph(f"Identifiant : <font name='Courier'>{cid}</font>", body))
         story.append(Paragraph(f"URL de vérification : {verify_url}", body))
+        story.append(Paragraph(CANONICAL_DOMAIN_STATEMENT, small))
 
         sig_hex = record.get("signature", "")
         sig_display = sig_hex[:32] + "..." if len(sig_hex) > 32 else sig_hex

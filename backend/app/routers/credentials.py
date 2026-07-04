@@ -12,9 +12,11 @@ import io
 import logging
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import Response, StreamingResponse
 from pydantic import BaseModel
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
@@ -27,6 +29,11 @@ from app.models.user import User
 from app.services.credential import credential_service
 
 logger = logging.getLogger(__name__)
+
+# Per-IP rate limiting on the PUBLIC endpoints (verify page, evidence PDF):
+# credential IDs are 128-bit so enumeration is hopeless, but the limits stop
+# scraping and unauthenticated DB hammering (anti-phishing dossier, WS-6).
+limiter = Limiter(key_func=get_remote_address)
 
 router = APIRouter(prefix="/credentials", tags=["Credentials"])
 
@@ -191,7 +198,12 @@ async def issue_credential(
 
 
 @router.get("/{credential_id}", response_model=VerifyResponse, summary="Verify credential (public)")
+# shared_limit + fixed scope: the default limit buckets per URL PATH, so an
+# enumerator rotating credential IDs would get a fresh allowance per guess.
+# A shared scope buckets per IP across the whole endpoint.
+@limiter.shared_limit("30/minute", scope="credentials-verify")
 async def verify_credential(
+    request: Request,  # noqa: ARG001 — consumed by @limiter
     credential_id: str,
     db: AsyncSession = Depends(get_db),
 ):
@@ -254,7 +266,9 @@ async def verify_credential(
     summary="Download watermarked evidence document (public)",
     response_class=Response,
 )
+@limiter.shared_limit("10/minute", scope="credentials-evidence")  # PDF generation is expensive; see scope note above
 async def get_evidence_pdf(
+    request: Request,  # noqa: ARG001 — consumed by @limiter
     credential_id: str,
     db: AsyncSession = Depends(get_db),
 ):
