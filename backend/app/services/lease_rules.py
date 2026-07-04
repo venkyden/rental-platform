@@ -138,6 +138,28 @@ def reject_custom_wording(custom_clauses) -> list[str]:
     return []
 
 
+# DPE décence énergétique — scale is A–G (no H). Class G is barred from new leases.
+VALID_DPE_CLASSES = frozenset("ABCDEFG")
+BLOCKED_DPE_CLASSES = frozenset("G")  # loi Climat, depuis le 1er janvier 2025
+
+
+def validate_dpe(dpe_class: str | None) -> list[str]:
+    """LG-7 — a class-G dwelling cannot be let under a new lease (loi Climat 2025).
+
+    Empty class is not blocked here (its absence is a missing-field/annex concern);
+    an out-of-scale value (e.g. 'H') is rejected as invalid.
+    """
+    c = (dpe_class or "").strip().upper()
+    if not c:
+        return []
+    if c not in VALID_DPE_CLASSES:
+        return [f"Classe DPE « {dpe_class} » invalide (échelle réglementaire A–G)."]
+    if c in BLOCKED_DPE_CLASSES:
+        return [f"Un logement classé {c} au DPE ne peut faire l'objet d'un nouveau bail "
+                "(décence énergétique, loi Climat, depuis le 1er janvier 2025)."]
+    return []
+
+
 def validate_lease_finalisation(
     *,
     lease_type: str,
@@ -149,12 +171,14 @@ def validate_lease_finalisation(
     complement_de_loyer: float = 0.0,
     complement_justification: str | None = None,
     custom_clauses=None,
+    dpe_class: str | None = None,
 ) -> LeaseRuleResult:
-    """Run all LG-1..LG-6 checks. `blocking` must be empty to finalise."""
+    """Run all LG-1..LG-7 checks. `blocking` must be empty to finalise."""
     blocking: list[str] = []
     blocking += validate_deposit(lease_type, deposit, monthly_rent_hc)
     blocking += validate_furnished_inventory(lease_type, furnished_items)
     blocking += validate_annexes(present_annexes)
     blocking += reject_custom_wording(custom_clauses)
+    blocking += validate_dpe(dpe_class)
     advisory = zone_tendue_advisory(in_zone_tendue, complement_de_loyer, complement_justification)
     return LeaseRuleResult(blocking=blocking, advisory=advisory)
