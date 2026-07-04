@@ -87,7 +87,7 @@ stance; WS-5 implements it.
 
 ## Track 1 — start immediately (no decisions, no blockers)
 
-### WS-1 `fix/gdpr-purge-parity` — F3 (URGENT: live PII at rest)
+### WS-1 `fix/gdpr-purge-parity` — F3 — ✅ MERGED as PR #27 (2026-07-02) + local sweep 2026-07-03
 **Type:** engineering. **Worktree:** `../rental-platform-gdpr-purge-parity`
 **Scope:**
 - Guarantor uploads ([verification.py:1207](../../../backend/app/routers/verification.py#L1207)
