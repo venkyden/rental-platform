@@ -6,7 +6,7 @@ import { FeatureGate } from '@/lib/SegmentContext';
 import { useLanguage } from '@/lib/LanguageContext';
 import { apiClient } from '@/lib/api';
 import { motion } from 'framer-motion';
-import { Sparkles, ArrowRight, Home, Zap, Calendar, FileText, Crown } from 'lucide-react';
+import { Sparkles, ArrowRight, Home, Zap, Calendar, FileText } from 'lucide-react';
 import { useAuth } from '@/lib/useAuth';
 import { resolveMediaUrl } from '@/lib/mediaUrl';
 
@@ -71,14 +71,17 @@ export default function TenantFeatures() {
                                 {t('tenant.features.new', undefined, 'Platform Exclusive')}
                             </div>
                             <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-zinc-900 uppercase italic">
-                                {t('tenant.features.mobility.title', undefined, 'Premium Mobility')}
+                                {t('tenant.features.mobility.title', undefined, 'Get Verified')}
                             </h2>
                             <p className="text-zinc-500 font-medium text-lg leading-relaxed max-w-xl italic">
-                                {t('tenant.features.mobility.desc', undefined, 'Unlock zero-deposit moves and instant property matching with our premium certification.')}
+                                {t('tenant.features.mobility.desc', undefined, 'A signed, portable proof of your identity and solvency — any landlord can check it on roomivo.app.')}
                             </p>
                         </div>
-                        <button className="px-12 py-6 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.4em] rounded-3xl shadow-2xl shadow-zinc-900/40 hover:scale-105 active:scale-95 transition-all">
-                            {t('tenant.features.mobility.cta', undefined, 'Get Certified')}
+                        <button
+                            onClick={() => router.push('/verify/identity')}
+                            className="px-12 py-6 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.4em] rounded-3xl shadow-2xl shadow-zinc-900/40 hover:scale-105 active:scale-95 transition-all"
+                        >
+                            {t('tenant.features.mobility.cta', undefined, 'Start Verification')}
                         </button>
                     </div>
                 </div>
@@ -206,32 +209,6 @@ export default function TenantFeatures() {
                                     <p className="text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em] mt-2">{stat.sub}</p>
                                 </div>
                             ))}
-                        </div>
-                    </div>
-                </section>
-            </FeatureGate>
-
-            <FeatureGate feature="relocation">
-                <section>
-                    <div className="glass-card !p-12 relative overflow-hidden group shadow-2xl rounded-[3rem] border-zinc-100/50 bg-zinc-900 text-white">
-                        <div className="absolute top-0 right-0 w-96 h-96 bg-zinc-800 rounded-full blur-[100px] -mr-48 -mt-48 opacity-40 group-hover:scale-150 transition-transform duration-1000" />
-                        
-                        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-12">
-                            <div className="flex-1 space-y-8">
-                                <div className="inline-flex items-center px-5 py-2 rounded-full bg-zinc-800 text-zinc-300 text-[10px] font-black uppercase tracking-[0.4em]">
-                                    <Crown className="w-3.5 h-3.5 mr-3 text-zinc-300" />
-                                    {t('tenant.features.premium.badge', undefined, 'Roomivo Black')}
-                                </div>
-                                <h2 className="text-5xl md:text-7xl font-black tracking-tighter leading-[0.85] uppercase italic">
-                                    {t('tenant.features.premium.title', undefined, 'The Future of Renting')}
-                                </h2>
-                                <p className="text-zinc-400 font-medium text-xl leading-relaxed max-w-2xl italic">
-                                    {t('tenant.features.premium.desc', undefined, 'Access off-market listings, priority viewings, and a dedicated rental agent to handle your entire move.')}
-                                </p>
-                            </div>
-                            <button className="px-16 py-8 bg-white text-zinc-900 text-[10px] font-black uppercase tracking-[0.5em] rounded-[2rem] shadow-[0_20px_50px_rgba(255,255,255,0.1)] hover:scale-105 active:scale-95 transition-all">
-                                {t('tenant.features.premium.cta', undefined, 'Join the Elite')}
-                            </button>
                         </div>
                     </div>
                 </section>
