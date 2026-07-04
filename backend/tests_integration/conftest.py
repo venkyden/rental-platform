@@ -94,7 +94,7 @@ async def client(engine, sessionmaker_):
 
 # ── data helpers ──────────────────────────────────────────────────────────
 
-async def make_user(sm, role="tenant", email=None) -> User:
+async def make_user(sm, role="tenant", email=None, biometric_consent=True) -> User:
     email = email or f"{role}_{uuid.uuid4().hex[:8]}@test.com"
     async with sm() as s:
         u = User(
@@ -109,6 +109,15 @@ async def make_user(sm, role="tenant", email=None) -> User:
         )
         s.add(u)
         await s.commit()
+        # Selfie endpoints 403 without a recorded Art. 9 consent; seed one by
+        # default so flow tests pass. Pass biometric_consent=False to test the
+        # gate itself (test_biometric_consent_gate_403_without_consent).
+        if biometric_consent:
+            from app.models.biometric_consent import (
+                BIOMETRIC_CONSENT_VERSION, BiometricConsent)
+            s.add(BiometricConsent(
+                user_id=u.id, consent_version=BIOMETRIC_CONSENT_VERSION))
+            await s.commit()
         await s.refresh(u)
         return u
 
