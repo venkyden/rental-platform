@@ -472,59 +472,90 @@ async def upload_avatar(
     return current_user
 
 @router.post("/change-password")
+@limiter.limit("10/minute")  # old-password check is a brute-force oracle for a stolen session
 async def change_password(
-    request: ChangePasswordRequest,
+    request: Request,  # noqa: ARG001 — consumed by @limiter
+    response: Response,
+    payload: ChangePasswordRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Change password for an authenticated user"""
     if not current_user.hashed_password:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, 
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="Cannot change password for a Google-only account. Try resetting it instead if needed."
         )
 
-    if not verify_password(request.old_password, current_user.hashed_password):
+    if not verify_password(payload.old_password, current_user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Incorrect old password"
         )
 
-    current_user.hashed_password = get_password_hash(request.new_password)
+    current_user.hashed_password = get_password_hash(payload.new_password)
+    # Revoke refresh tokens on every other device (same as reset-password),
+    # then re-issue a fresh cookie so THIS session stays logged in.
+    current_user.refresh_token_version += 1
     await db.commit()
+
+    new_refresh = create_refresh_token(
+        data={"sub": current_user.email, "version": current_user.refresh_token_version}
+    )
+    response.set_cookie(
+        key="refresh_token",
+        value=new_refresh,
+        httponly=True,
+        max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
+        expires=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
+        samesite="lax",
+        secure=settings.ENVIRONMENT == "production",
+        domain=settings.COOKIE_DOMAIN if settings.ENVIRONMENT == "production" else None,
+    )
+    audit_logger.info(f"PASSWORD_CHANGE email={current_user.email} sessions_revoked=true")
     return {"message": "Password changed successfully"}
 
 @router.post("/request-email-change")
+@limiter.limit("5/minute")  # password check is a brute-force oracle for a stolen session
 async def request_email_change(
-    request: RequestEmailChangeRequest,
+    request: Request,  # noqa: ARG001 — consumed by @limiter
+    payload: RequestEmailChangeRequest,
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Request to change the account email. Sends a validation link to the new email."""
-    if current_user.hashed_password and not verify_password(request.password, current_user.hashed_password):
+    # The confirmation link goes to the NEW (attacker-choosable) address, so the
+    # password check below is the only barrier against a stolen access token
+    # redirecting the account. Google-only accounts have no password → refuse.
+    if not current_user.hashed_password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This account signs in with Google; its email cannot be changed here. Set a password first via password reset.",
+        )
+    if not verify_password(payload.password, current_user.hashed_password):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Incorrect password")
-        
+
     # Check if new email is already taken
-    result = await db.execute(select(User).where(User.email == request.new_email))
+    result = await db.execute(select(User).where(User.email == payload.new_email))
     if result.scalar_one_or_none():
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already in use")
 
     # Generate token with new email embedded
     change_token = create_access_token(
-        data={"sub": current_user.email, "type": "email_change", "new_email": request.new_email},
+        data={"sub": current_user.email, "type": "email_change", "new_email": payload.new_email},
         expires_delta=timedelta(hours=1),
     )
 
     # Send confirmation email to the NEW email address
     background_tasks.add_task(
         email_service.send_email_change_verification,
-        to_email=request.new_email,
+        to_email=payload.new_email,
         token=change_token,
         full_name=current_user.full_name or "User",
     )
 
-    return {"message": f"Verification link sent to {request.new_email}"}
+    return {"message": f"Verification link sent to {payload.new_email}"}
 
 @router.post("/confirm-email-change")
 async def confirm_email_change(
@@ -1011,7 +1042,9 @@ async def switch_role(
 
     if target_role_str not in current_roles:
         # Auto-unlock standard roles for existing users
-        if target_role_str in ["tenant", "landlord", "property_manager"]:
+        # property_manager is agency tooling (FROZEN per 2026-07-04 verdicts) —
+        # never auto-unlock it; admin grants it explicitly.
+        if target_role_str in ["tenant", "landlord"]:
             current_roles.append(target_role_str)
             current_user.available_roles = current_roles
             # We don't commit yet, we'll commit below

@@ -187,3 +187,56 @@ class TestAuthEndpoints:
         }
         resp = tenant_client.post("/auth/change-password", json=payload)
         assert resp.status_code == 400
+
+
+class TestAuthAuditHardening:
+    """2026-07-04 auth audit: session revocation on password change,
+    Google-only email-change refusal, property_manager auto-unlock removal."""
+
+    def _client_for(self, user):
+        from fastapi.testclient import TestClient
+        from app.main import app
+        from app.core.database import get_db
+        from app.routers.auth import get_current_user
+        from tests.conftest import mock_get_db
+        target_app = app.app if hasattr(app, "app") else app
+        target_app.dependency_overrides[get_current_user] = lambda: user
+        target_app.dependency_overrides[get_db] = mock_get_db
+        return TestClient(app)
+
+    def test_change_password_revokes_other_sessions(self):
+        from unittest.mock import patch
+        from tests.conftest import make_mock_user
+        user = make_mock_user("tenant")
+        user.refresh_token_version = 3
+        client = self._client_for(user)
+        with patch("app.routers.auth.verify_password", return_value=True):
+            resp = client.post(
+                "/auth/change-password",
+                json={"old_password": "Old!Passw0rd", "new_password": "NewStrong!Pass1"},
+            )
+        assert resp.status_code == 200
+        assert user.refresh_token_version == 4  # other sessions revoked
+        assert "refresh_token" in resp.headers.get("set-cookie", "")  # this one re-issued
+
+    def test_email_change_refused_for_google_only_account(self):
+        """Confirmation link goes to the attacker-choosable NEW address, so the
+        password check is the only barrier — accounts without one must be refused."""
+        from tests.conftest import make_mock_user
+        user = make_mock_user("tenant")
+        user.hashed_password = None
+        client = self._client_for(user)
+        resp = client.post(
+            "/auth/request-email-change",
+            json={"password": "irrelevant", "new_email": "attacker@evil.example"},
+        )
+        assert resp.status_code == 400
+        assert "Google" in resp.json()["detail"]
+
+    def test_switch_role_never_auto_unlocks_property_manager(self):
+        from tests.conftest import make_mock_user
+        user = make_mock_user("tenant")
+        user.available_roles = ["tenant"]
+        client = self._client_for(user)
+        resp = client.post("/auth/switch-role", json={"role": "property_manager"})
+        assert resp.status_code == 403
