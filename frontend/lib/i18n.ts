@@ -308,6 +308,18 @@ export const translations = {
                 consentLabel: "I explicitly consent to the processing of my biometric data and identity document for verification purposes, in accordance with Roomivo's GDPR policy.",
                 consentRequired: "Consent is required to proceed with identity verification."
             },
+            biometricConsent: {
+                title: "Your Explicit Consent",
+                subtitle: "European law (GDPR Art. 9) requires your explicit consent before any biometric processing.",
+                point1: "To verify your identity, we compare your selfie with the photo on your ID document. This is a biometric face-match.",
+                point2: "Your images are processed transiently and deleted immediately after the check — whatever the outcome. Nothing biometric is stored.",
+                point3: "You can refuse. Without the selfie step your identity simply stays unverified — you keep full access to your account.",
+                checkbox: "I explicitly consent to the processing of my biometric data (selfie face-match) for this identity verification.",
+                accept: "I Consent — Continue",
+                refuse: "Not now",
+                submitting: "Recording…",
+                error: "Could not record your consent. Please try again."
+            },
             income: {
                 title: "Income & Resources Verification",
                 description: "To comply with French rental standards (rent should be max 33% of income), please verify your resources.",
@@ -2672,6 +2684,18 @@ export const translations = {
                 step3: "Soumettez pour validation sécurisée",
                 consentLabel: "Je consens explicitement au traitement de mes données biométriques et de ma pièce d'identité pour la vérification, conformément à la politique RGPD de Roomivo.",
                 consentRequired: "Le consentement est obligatoire pour procéder à la vérification d'identité."
+            },
+            biometricConsent: {
+                title: "Votre Consentement Explicite",
+                subtitle: "Le droit européen (RGPD art. 9) exige votre consentement explicite avant tout traitement biométrique.",
+                point1: "Pour vérifier votre identité, nous comparons votre selfie avec la photo de votre pièce d'identité. Il s'agit d'une comparaison faciale biométrique.",
+                point2: "Vos images sont traitées de manière transitoire et supprimées immédiatement après la vérification, quel qu'en soit le résultat. Aucune donnée biométrique n'est conservée.",
+                point3: "Vous pouvez refuser. Sans l'étape selfie, votre identité reste simplement non vérifiée — vous conservez l'accès complet à votre compte.",
+                checkbox: "Je consens explicitement au traitement de mes données biométriques (comparaison faciale par selfie) pour cette vérification d'identité.",
+                accept: "Je Consens — Continuer",
+                refuse: "Pas maintenant",
+                submitting: "Enregistrement…",
+                error: "Impossible d'enregistrer votre consentement. Veuillez réessayer."
             },
             income: {
                 title: "Vérification des Revenus & Ressources",

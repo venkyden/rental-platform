@@ -190,7 +190,16 @@ export default function VerifyCapturePage() {
             });
             setStep('success');
         } catch (err: any) {
-            setErrorMessage(err.response?.data?.detail || (fr ? 'Envoi échoué. Vérifiez votre connexion.' : 'Upload failed. Check your connection.'));
+            const detail = err.response?.data?.detail;
+            if (detail?.code === 'BIOMETRIC_CONSENT_REQUIRED') {
+                setErrorMessage(fr
+                    ? "Consentement biométrique requis : retournez sur votre ordinateur, acceptez l'écran de consentement, puis rescannez le QR code."
+                    : 'Biometric consent required: go back to your computer, accept the consent screen, then rescan the QR code.');
+            } else {
+                setErrorMessage(typeof detail === 'string' && detail
+                    ? detail
+                    : (fr ? 'Envoi échoué. Vérifiez votre connexion.' : 'Upload failed. Check your connection.'));
+            }
             setStep('preview');
         }
     };
