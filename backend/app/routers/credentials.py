@@ -53,6 +53,7 @@ class CredentialResponse(BaseModel):
     claims: dict
     disclaimer: str
     signature: str
+    kid: Optional[str] = None    # id of the signing key (see /credentials/public-keys)
     revoked: bool
 
 
@@ -69,6 +70,7 @@ class VerifyResponse(BaseModel):
     rail: str
     claims: dict
     disclaimer: str
+    kid: Optional[str] = None    # id of the signing key (see /credentials/public-keys)
     assurance_summary: str       # human-readable summary for the verify page
 
 
@@ -102,6 +104,29 @@ async def get_public_key():
         content=credential_service.public_key_pem(),
         media_type="application/x-pem-file",
     )
+
+
+class KeyHistoryEntry(BaseModel):
+    kid: str
+    public_key_pem: str
+    status: str  # active | retired
+
+
+class PublicKeysResponse(BaseModel):
+    keys: list[KeyHistoryEntry]
+
+
+@router.get("/public-keys", summary="Verification key history (JSON)", response_model=PublicKeysResponse)
+async def get_public_keys():
+    """
+    All verification keys: active signing key first, then retired keys kept
+    verify-only until credentials they signed expire.
+
+    Each entry: {kid, public_key_pem, status: active|retired}. Credential
+    `kid` names its signing key; verifiers should reject unknown kids.
+    Rotation runbook: docs/features/trust-layer/KEY-LIFECYCLE.md
+    """
+    return PublicKeysResponse(keys=credential_service.key_history())
 
 
 @router.post("/issue", response_model=CredentialResponse, status_code=status.HTTP_201_CREATED)
@@ -144,6 +169,7 @@ async def issue_credential(
         claims=payload["claims"],
         disclaimer=payload["disclaimer"],
         signature=payload["signature"],
+        kid=payload.get("kid"),
         revoked=False,
     )
     db.add(row)
@@ -159,6 +185,7 @@ async def issue_credential(
         claims=row.claims,
         disclaimer=row.disclaimer,
         signature=row.signature,
+        kid=row.kid,
         revoked=row.revoked,
     )
 
@@ -198,6 +225,9 @@ async def verify_credential(
         "signature": row.signature,
         "subject_display_name": row.subject_display_name,
     }
+    # Legacy rows have no kid — omit the field so key-trial verification applies
+    if row.kid:
+        record["kid"] = row.kid
     sig_valid = credential_service.verify_signature(record)
     valid = sig_valid and not expired and not revoked
 
@@ -214,6 +244,7 @@ async def verify_credential(
         rail=row.rail,
         claims=row.claims,
         disclaimer=row.disclaimer,
+        kid=row.kid,
         assurance_summary=_assurance_summary(row.claims),
     )
 
@@ -280,6 +311,7 @@ class IssueMineResponse(BaseModel):
     claims: dict
     disclaimer: str
     signature: str
+    kid: Optional[str] = None
     shareable_url: str
 
 
@@ -369,6 +401,7 @@ async def issue_mine(
         claims=payload["claims"],
         disclaimer=payload["disclaimer"],
         signature=payload["signature"],
+        kid=payload.get("kid"),
         revoked=False,
     )
     db.add(row)
@@ -385,6 +418,7 @@ async def issue_mine(
         claims=row.claims,
         disclaimer=row.disclaimer,
         signature=row.signature,
+        kid=row.kid,
         shareable_url=shareable_url,
     )
 
