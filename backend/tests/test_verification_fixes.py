@@ -408,6 +408,17 @@ def test_inventory_signature_forgery():
     assert "Only the tenant" in response.json()["detail"]
 
 
+import pytest
+
+from app.core.config import settings as _settings
+
+_agency_frozen = pytest.mark.skipif(
+    not _settings.ENABLE_AGENCY_TOOLING,
+    reason="bulk router unmounted while agency tooling is frozen (verdict 2026-07-04)",
+)
+
+
+@_agency_frozen
 def test_bulk_import_idor_prevention():
     """Verify that updating a property via bulk import checks landlord ownership."""
     landlord_a = make_mock_user("landlord")
@@ -444,6 +455,7 @@ def test_bulk_import_idor_prevention():
     assert "unauthorized" in data["errors"][0].lower()
 
 
+@_agency_frozen
 def test_bulk_import_compliance_degradation():
     """Verify active property with compliance errors degrades to draft during import."""
     landlord = make_mock_user("landlord")

@@ -257,7 +257,8 @@ from app.routers import (auth, credentials, location, onboarding, properties,
 
 fastapi_app.include_router(properties.router)
 fastapi_app.include_router(auth.router)
-fastapi_app.include_router(property_manager.router)
+if settings.ENABLE_AGENCY_TOOLING:  # FREEZE 2026-07-04: agency tooling
+    fastapi_app.include_router(property_manager.router)
 fastapi_app.include_router(onboarding.router)
 fastapi_app.include_router(verification.router)
 fastapi_app.include_router(location.router)
@@ -273,14 +274,20 @@ from app.routers import messages
 fastapi_app.include_router(messages.router)
 
 from app.routers import team
-fastapi_app.include_router(team.router)
+
+if settings.ENABLE_AGENCY_TOOLING:  # FREEZE 2026-07-04: agency tooling
+    fastapi_app.include_router(team.router)
 
 from app.routers import bulk, stats
-fastapi_app.include_router(bulk.router)
+
+if settings.ENABLE_AGENCY_TOOLING:  # FREEZE 2026-07-04: agency tooling
+    fastapi_app.include_router(bulk.router)
 fastapi_app.include_router(stats.router)
 
 from app.routers import erp_webhooks
-fastapi_app.include_router(erp_webhooks.router)
+
+if settings.ENABLE_AGENCY_TOOLING:  # FREEZE 2026-07-04: agency tooling
+    fastapi_app.include_router(erp_webhooks.router)
 
 from app.routers import documents
 fastapi_app.include_router(documents.router)
