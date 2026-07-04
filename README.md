@@ -1,146 +1,96 @@
 # Roomivo
 
-AI-powered rental platform serving 6 market segments with intelligent verification, matching, and lease generation.
+**A rental marketplace with a built-in trust layer for the French rental market.**
 
-## 🚀 Quick Start
+Roomivo does two things with one engine:
 
-### Prerequisites
-- Node.js 18+
-- Python 3.11+
-- PostgreSQL 14+
+1. **Marketplace** — landlords publish listings, tenants search and apply. Roomivo is a
+   *passive publisher*: it never matches, recommends, or brokers counterparties, never
+   touches funds, and never acts on a party's behalf (Loi Hoguet boundaries, enforced
+   in code and CI).
+2. **Trust layer** — either side verifies identity, solvency, and property control
+   against free French state cryptography, and receives a **signed, expiring, portable
+   credential** plus a watermarked evidence document. Credentials are verifiable by
+   anyone at `roomivo.app` (no account) — usable inside Roomivo *and* on open
+   classifieds (Leboncoin, PAP, Facebook Marketplace). Source documents are discarded
+   after verification: **no PII at rest**.
 
-### Backend Setup
+The wedge: **deposit-theft prevention**. Both strangers become provable before any
+money changes hands — and the money never moves through Roomivo.
+
+## How verification works
+
+| Check | Mechanism | Assurance |
+|---|---|---|
+| FR identity | OCR + selfie face-match (+ avis 2D-Doc name cross-check) | MEDIUM |
+| FR solvency | Avis d'imposition 2D-Doc — DGFiP ECDSA signature verified offline | HIGH (banded, never raw figures) |
+| INTL identity | MRZ OCR + ICAO checksums + selfie | MEDIUM |
+| INTL solvency | Funds-coverage documents, FX-normalised, banded | MEDIUM |
+| Property | Taxe foncière document + ADEME DPE open data | "control, not ownership-attested" |
+| Insurance (MRH) | Attestation parsing — verification only, never sold | — |
+
+Credentials are Ed25519-signed JSON with banded claims and a short TTL. Assurance
+tiers are never inflated; MEDIUM is always labelled MEDIUM.
+
+Leases: generated from the official Décret 2015-587 model only (no custom wording,
+loi 1971) or uploaded and legality-screened; e-signature is in-house Ed25519
+(eIDAS simple), lawyer-cleared 2026-06-24.
+
+## Stack
+
+- **Backend:** FastAPI · SQLAlchemy/AsyncPG · PostgreSQL · Redis (transient doc
+  store, 10-min TTL) · Celery
+- **Frontend:** Next.js 14 (App Router) · TypeScript · Tailwind
+- **Verification:** betagouv/2ddoc-parser · Tesseract · Ed25519 (cryptography)
+- **Infra:** Render (backend + worker + Postgres), Upstash Redis, Cloudflare R2
+- Philosophy: open-source + free state APIs, minimal third-party dependence, low OPEX.
+
+## Quick start
 
 ```bash
+# Backend
 cd backend
-
-# Create virtual environment
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
+python3 -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
-
-# Set up environment variables
-cp .env.example .env
-# Edit .env with your database URL and API keys
-
-# Run migrations
+cp .env.example .env      # set DATABASE_URL etc.
 alembic upgrade head
+uvicorn app.main:app --reload --port 8000   # docs at :8000/docs
 
-# Start server
-uvicorn app.main:app --reload --port 8000
-```
-
-Backend will be available at http://localhost:8000
-API docs at http://localhost:8000/docs
-
-### Frontend Setup
-
-```bash
+# Frontend
 cd frontend
-
-# Install dependencies
 npm install
-
-# Set up environment variables
 cp .env.example .env.local
-# Edit .env.local with API URL
-
-# Start development server
-npm run dev
+npm run dev               # :3000
 ```
 
-Frontend will be available at http://localhost:3000
-
-## 📁 Project Structure
-
-```
-rental-platform/
-├── backend/               # FastAPI backend
-│   ├── app/
-│   │   ├── core/         # Config, database, security
-│   │   ├── models/       # SQLAlchemy models & schemas
-│   │   ├── routers/      # API endpoints
-│   │   └── services/     # Business logic & external APIs
-│   ├── alembic/          # Database migrations
-│   └── tests/            # Backend tests
-│
-├── frontend/             # Next.js frontend
-│   ├── app/              # App router pages
-│   ├── components/       # React components
-│   └── lib/              # Utilities & API client
-│
-└── README.md
-```
-
-## 🔑 Features
-
-### Phase 1: Foundation (Current)
-- ✅ User authentication (register, login, JWT)
-- ✅ Password reset flow
-- ✅ Database schema with migrations
-- 🚧 Identity verification (eIDV)
-- 🚧 Employment verification
-- 🚧 Dynamic lease generation
-
-### Phase 2: Trust & Matching
-- ⏳ Real-time risk scoring
-- ⏳ Tenant-property matching algorithm
-
-### Phase 3: Landlord Intelligence
-- ⏳ Market comps intelligence
-- ⏳ Churn prediction
-
-## 🛠️ Tech Stack
-
-**Frontend:**
-- Next.js 14 (App Router)
-- TypeScript
-- Tailwind CSS
-- Axios
-
-**Backend:**
-- FastAPI
-- SQLAlchemy + AsyncPG
-- PostgreSQL
-- Anthropic Claude AI
-- JWT Authentication
-
-**Infrastructure:**
-- Vercel (Frontend)
-- Railway (Backend + Database)
-- DocuSign (Lease signing)
-- Fourthline (Identity verification)
-
-## 📚 API Documentation
-
-Start the backend server and visit http://localhost:8000/docs for interactive API documentation.
-
-## 🧪 Testing
+## Testing
 
 ```bash
-# Backend tests
-cd backend
-pytest
-
-# Frontend tests
-cd frontend
-npm test
+make test-unit           # backend unit tests (no DB)
+make test-integration    # backend integration tests (needs Postgres)
+cd frontend && npx tsc --noEmit && npx playwright test
 ```
 
-## 🚢 Deployment
+## Project docs
 
-### Platform (Render)
-1. The platform is deployed as a monorepo on Render.
-2. The `render.yaml` blueprint manages the Backend and PostgreSQL database.
-3. The Frontend is deployed as a separate Web Service on Render.
-4. All services are configured for **Auto-deploy on Push** to the `master` branch.
+- `CLAUDE.md` — condensed working context + regulatory red lines (read first)
+- `PRD-TrustLayer-v2.md` — full product spec
+- `docs/features/trust-layer/DOSSIER.md` — feature dossier, edge-case matrix, roadmap
+- `docs/legal/` — lawyer opinions and counsel briefs
+- `docs/business/` — pitch dossier (EN/FR)
 
-## 📝 License
+## Deployment
+
+Monorepo on Render via `render.yaml` (backend, Celery worker, Postgres); frontend as
+a separate Render Web Service; auto-deploy on push to `master`.
+
+## Legal posture (non-negotiable)
+
+Pure SaaS. No carte professionnelle activities: no counterparty matching or
+recommendation, no mandate, no fund handling, no success fees, no custom lease
+drafting, no insurance distribution, no nationality-based routing. See the red-line
+table in `CLAUDE.md` — every feature is checked against it before merge.
+
+## License
 
 MIT
-
-## 👥 Contacts
-
-For questions or support, contact the development team.

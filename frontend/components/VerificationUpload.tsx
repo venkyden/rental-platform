@@ -7,6 +7,7 @@ import { apiClient } from '@/lib/api';
 import { QRCodeSVG } from 'qrcode.react';
 import { motion, Variants } from 'framer-motion';
 import { useLanguage } from '@/lib/LanguageContext';
+import BiometricConsentScreen from '@/components/BiometricConsentScreen';
 
 const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -97,6 +98,8 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
     const [error, setError] = useState('');
     const [consent, setConsent] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
+    // GDPR Art. 9 — selfie face-match requires recorded explicit consent
+    const [bioConsented, setBioConsented] = useState<boolean | null>(null);
 
     // Identity mobile selfie-with-ID flow
     const [idStep, setIdStep] = useState<'select' | 'guide' | 'preview' | null>(null);
@@ -117,6 +120,13 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
     const [loadingProps, setLoadingProps] = useState(false);
 
     useEffect(() => { setIsMobile(isMobileDevice()); }, []);
+
+    useEffect(() => {
+        if (verificationType !== 'identity') return;
+        apiClient.client.get('/verification/biometric-consent')
+            .then(res => setBioConsented(!!res.data.consented))
+            .catch(() => setBioConsented(false));
+    }, [verificationType]);
 
     useEffect(() => {
         if (verificationType === 'property' && !propertyId) {
@@ -397,6 +407,16 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
     // ════════════════════════════════════════════════════════════════════════
     // RENDER — desktop identity: QR code
     // ════════════════════════════════════════════════════════════════════════
+
+    // GDPR Art. 9 gate — no selfie UI (QR or direct capture) before consent
+    if (verificationType === 'identity' && bioConsented !== true) {
+        return (
+            <BiometricConsentScreen
+                loading={bioConsented === null}
+                onConsentedAction={() => setBioConsented(true)}
+            />
+        );
+    }
 
     if (verificationType === 'identity' && !isMobile) {
         return (

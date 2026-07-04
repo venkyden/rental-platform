@@ -81,7 +81,7 @@ Les deux parties se font face sans aucun moyen fiable de se vérifier mutuelleme
 | **Vol de dépôt de garantie** | Faux propriétaire (souvent annonce fantôme) encaisse la caution, disparaît | Locataire | Vérification identité + contrôle du bien côté propriétaire → preuve avant tout paiement |
 | **Faux dossier locataire** | Avis d'imposition / fiches de paie falsifiés | Propriétaire | Lecture de la **charge signée** du 2D-Doc (DGFiP) → la falsification du texte imprimé devient sans effet |
 | **Annonce fantôme** | Bien qui n'existe pas / n'appartient pas à l'annonceur | Locataire | Contrôle taxe foncière + DPE ADEME → « contrôle, non-propriété attestée » (limite divulguée) |
-| **Usurpation d'identité** | Pièce d'identité empruntée / volée | Les deux | Identité d'État (France Identité, signée par le MoI) → niveau HIGH |
+| **Usurpation d'identité** | Pièce d'identité empruntée / volée | Les deux | Phase 1 : OCR + liveness → **MEDIUM, labellisé comme tel** ; HIGH via FranceConnect (OIDC d'État) après immatriculation — le niveau d'assurance n'est jamais gonflé |
 | **Hameçonnage (phishing)** | Faux lien de « vérification » envoyé dans la messagerie | Les deux | Modèle *verify-by-ID* : « ne fais pas confiance au lien, tape le code sur roomivo.app » |
 
 **Pourquoi le marché ne se corrige pas seul** : la plateforme d'annonces ne peut pas
@@ -96,11 +96,17 @@ utilisable hors de leur silo.
 
 Plusieurs déblocages convergent en 2025–2026 :
 
-- **France Identité** est désormais un service d'État opérationnel : un *justificatif*
-  signé par le Ministère de l'Intérieur, vérifiable en ligne et nommant le destinataire.
-  Cela rend une **identité de niveau HIGH gratuite**, sans selfie ni liveness.
+- **Les rails d'identité d'État s'ouvrent.** Le *justificatif* France Identité signé par le
+  Ministère de l'Intérieur existe, mais a été évalué puis **écarté pour la v1** (son portail
+  de vérification s'adresse à un humain, pas à une API, et la friction est prohibitive). Le
+  vrai déblocage est **FranceConnect** (OIDC d'État) : une **identité HIGH gratuite**,
+  conditionnée à l'immatriculation (SIRET + DataPass). La Phase 1 livre du **MEDIUM**
+  (OCR + liveness), labellisé comme tel — jamais gonflé.
 - **Avis d'imposition 2D-Doc (DGFiP)** : la charge signée ECDSA est lisible et vérifiable
-  via l'open-source d'État `betagouv/2ddoc-parser`. La solvabilité HIGH devient gratuite.
+  via l'open-source d'État `betagouv/2ddoc-parser`. La donnée de solvabilité signée par
+  l'État devient gratuite. La signature prouve le **document**, pas le présentateur : le
+  recoupement du nom ajoute un signal anti-fraude, et l'attribution à la personne reste
+  plafonnée par le niveau d'identité (MEDIUM jusqu'à FranceConnect).
 - **Réforme DPE (loi Climat, depuis 2025 ; recalibrage du coefficient janv. 2026)** : la
   classe énergétique conditionne désormais la mise en location (classe G bloquée). La
   donnée ADEME ouverte rend le contrôle du bien possible à coût nul.
@@ -109,6 +115,10 @@ Plusieurs déblocages convergent en 2025–2026 :
   changé ; il manque la **preuve portable et bilatérale**.
 - **Fraude aux annonces en hausse** : la médiatisation des arnaques au logement crée une
   demande de confiance que personne n'adresse côté open-classifieds.
+- **Une fenêtre qui se referme, dite honnêtement :** eIDAS 2.0 / le portefeuille EUDI
+  (déploiement 2026–27) permettra à terme à l'État d'assembler lui-même ces briques en
+  attestations portables. La douve est une **fenêtre d'exécution de 2–3 ans** — le meilleur
+  argument pour avancer maintenant, pas pour attendre.
 
 **En résumé** : l'État a, ces deux dernières années, ouvert gratuitement toutes les briques
 cryptographiques nécessaires. Roomivo est la première à les **assembler en une preuve
@@ -118,15 +128,20 @@ portable bilatérale anti-arnaque**.
 
 ## 04 — Traction & Projections Financières
 
-> **Statut réel** : phase d'amorçage, dossier technique complet rédigé, aucune ligne de
-> production déployée à ce jour (cf. §17). Pas de revenus. Les projections ci-dessous sont
-> un **modèle d'hypothèses** destiné à montrer la mécanique économique.
+> **Statut réel** : phase d'amorçage ; dossier technique complet rédigé et backend
+> implémenté (FastAPI, 300+ tests automatisés), en pré-production (cf. §17). Pas de
+> lancement public, pas de revenus. Les projections ci-dessous sont un **modèle
+> d'hypothèses** destiné à montrer la mécanique économique.
 
 **Hypothèses-socle `[Hypothèse]` :**
 - Coût marginal d'une vérification ≈ **0 €** (services d'État gratuits + OSS auto-hébergé).
 - Prix moyen Roomivo (à l'acte, mix identité/dossier/pack) ≈ **6,90 €**.
 - Prix moyen Credential Layer (API, dégressif au volume) ≈ **1,20 €** / vérification.
 - Cycle de vente B2B (Credential Layer) : **6–9 mois** par contrat pilote.
+- **L'immatriculation est sur le chemin critique de l'An 1** `[Hypothèse — visée mi-An 1]` :
+  le SIRET débloque la capacité contractuelle (aucun revenu B2B signable sans lui) et la
+  demande DataPass/FranceConnect (identité HIGH). D'ici là : identité MEDIUM uniquement,
+  pilotes en lettres d'intention.
 
 **Projection base-case `[Hypothèse]` (5 ans) :**
 
@@ -150,9 +165,11 @@ budget marketing nul — la croissance vient des **intégrations B2B2C**, pas de
 Pour un jury / incubateur, le ROI se lit sur **trois plans** :
 
 **1. Efficience du capital.** La pile technique est **100 % open-source + services d'État
-gratuits** : le coût marginal d'une vérification est quasi nul. Chaque euro d'amorçage
-finance de la **R&D et de la mise en relation B2B**, pas du COGS. Marge brute cible
-> **85 %** sur le Credential Layer `[Hypothèse]`.
+gratuits** : le coût marginal d'une vérification est quasi nul **à l'échelle**. Le vrai COGS
+d'une activité de vérification à faible volume, c'est la revue humaine des échecs OCR, les
+litiges fraude et le support — les projections l'absorbent en An 1–2. Chaque euro d'amorçage
+finance de la **R&D et de la mise en relation B2B**, pas des licences. Marge brute cible
+> **85 %** sur le Credential Layer `[Hypothèse — à l'échelle]`.
 
 **2. ROI sociétal.** Chaque arnaque au dépôt évitée épargne à une victime
 **~700 € `[Hypothèse — un mois de loyer moyen]`** et désengorge police/justice. À l'échelle
@@ -246,9 +263,10 @@ Usage des **30–50 k€** d'amorçage (`[Hypothèse]`, base-case 40 k€) :
 | Poste | Montant | Justification |
 |---|---|---|
 | **Conseil juridique — droit immobilier** | 3–5 k€ | Franchir le *gate légal* (positionnement self-service bail / e-signature vs loi 1971 / Hoguet). **Bloquant et bon marché.** |
-| **Revue GDPR / DPO** | 2–3 k€ | Confirmer base légale + preuve de non-rétention (traitement transitoire). |
+| **Revue GDPR / DPO** | 2–3 k€ | Confirmer base légale + preuve de non-rétention (traitement transitoire) ; base Art. 9 + AIPD pour l'étape de comparaison faciale. |
+| **Immatriculation + DataPass** | 1–2 k€ | SIRET → capacité contractuelle B2B + demande FranceConnect (identité HIGH). **Sur le chemin critique de l'An 1.** |
 | **Infrastructure & sécurité** | 2–4 k€/an | Hébergement, infra de signature (Ed25519), audit de sécurité. Coût marginal par vérif ≈ 0 €. |
-| **R&D Credential core + rails FR** | (temps fondateurs) | Modèle credential, France Identité, 2D-Doc, contrôle du bien ADEME. |
+| **R&D Credential core + rails FR** | (temps fondateurs) | Modèle credential, OCR+liveness (MEDIUM), FranceConnect (post-immatriculation), 2D-Doc, contrôle du bien ADEME. |
 | **R&D rail INTL HIGH (Phase 2)** | à provisionner | Lecture NFC passeport (JMRTD / NFCPassportReader) ; **gap opérationnel : liste maîtresse CSCA via ICAO PKD**. |
 | **Amorçage fondateurs / stipend** | solde | Permettre le plein-temps sur la phase critique. |
 
@@ -264,10 +282,17 @@ Recherche / Innovation `[Hypothèse — à valider avec un expert-comptable]`.
 1. Retrait du module GLI (contradiction réglementaire ORIAS/IDD) — fait avant de construire.
 2. **Credential core** : modèle, signature Ed25519, endpoints émission/vérification, clé
    publique, export du document-preuve filigrané.
-3. **Rail identité FR HIGH** (France Identité) — sert locataire *et* propriétaire.
-4. **Rail solvabilité FR HIGH** (avis 2D-Doc → ratio bandé `>=3.0`).
+3. **Rail identité FR** — OCR + liveness → **MEDIUM, labellisé** ; HIGH différé à
+   **FranceConnect** (OIDC, conditionné à l'immatriculation + DataPass) — sert les deux côtés.
+4. **Rail solvabilité FR** (avis 2D-Doc signé DGFiP → ratio bandé `>=3.0` ;
+   authenticité du document cryptographique, rattachement au présentateur via signal de
+   recoupement du nom).
 5. **Contrôle du bien** (DPE ADEME + taxe foncière) — le levier anti-vol-de-dépôt.
 6. **Câblage bilatéral** + page anti-hameçonnage *verify-by-ID* + endossement institutionnel.
+
+> Jalon transverse An 1 : **immatriculation** (SIRET → DataPass → FranceConnect ; les quatre
+> rôles de gouvernance exigés par le décret du 8 nov. 2018) — elle conditionne l'identité
+> HIGH **et** toute signature de contrat B2B.
 
 **Phase 2+ (An 2–3) — derrière le gate légal pour bail/e-sign :**
 7. Profondeur DPE (blocage classe G, zone tendue, réforme en direct).
@@ -326,11 +351,12 @@ l'économie unitaire fait le reste.
 
 | Offre | Contenu | Prix indicatif |
 |---|---|---|
-| **Identité seule** | Vérification d'identité (FR HIGH ou MEDIUM labellisé) + attestation signée | **2,90 €** |
+| **Identité seule** | Vérification d'identité (MEDIUM aujourd'hui, labellisé ; HIGH via FranceConnect post-immatriculation) + attestation signée | **2,90 €** |
 | **Dossier vérifié** | Identité + solvabilité bandée + document-preuve filigrané | **6,90 €** |
 | **Pack bilatéral (anti-dépôt)** | Vérification des deux côtés + contrôle du bien + document-preuve opposable | **9,90 €** |
 
-Coût marginal ≈ 0 € → marge quasi intégrale. Pas de frais au succès, jamais.
+Coût marginal ≈ 0 € à l'échelle (le support et la revue manuelle dominent à faible
+volume) → marge élevée. Pas de frais au succès, jamais.
 
 ---
 
@@ -384,7 +410,9 @@ remplace des milliers de micro-paiements B2C.
 - DossierFacile (service public) — volumétrie des dossiers vérifiés.
 
 **Briques techniques (gratuites / open-source) :**
-- **France Identité** — `idp.france-identite.gouv.fr/valider-attest` (justificatif signé MoI).
+- **FranceConnect** (OIDC d'État, via DataPass — post-immatriculation) : le rail identité
+  HIGH. Le justificatif France Identité (`valider-attest`) a été évalué puis écarté pour la
+  v1 (portail de vérification humain, pas une API).
 - **betagouv/2ddoc-parser** — lecture & vérification ECDSA de l'avis d'imposition 2D-Doc.
 - **ADEME** — API DPE open-data (classe A–G, pas de H ; réforme coefficient janv. 2026).
 - **JMRTD** (Android, LGPL) / **AndyQ/NFCPassportReader** (iOS, MIT) — lecture puce passeport.
@@ -418,10 +446,11 @@ remplace des milliers de micro-paiements B2C.
   "rail": "FR",
   "claims": {
     "identity_verified": true,
-    "identity_assurance": "HIGH",
-    "identity_source": "france_identite_justificatif",
+    "identity_assurance": "MEDIUM",
+    "identity_source": "ocr_liveness",
     "solvency_ratio": ">=3.0",
-    "solvency_assurance": "HIGH"
+    "solvency_assurance": "HIGH",
+    "solvency_presenter_binding": "name_crosscheck_flag"
   },
   "disclaimer": "Certifies verification of the stated facts only. Does not warrant future conduct or good faith.",
   "signature": "..."
@@ -436,8 +465,8 @@ recipient-scoping quand la source le permet ; TTL court + révocation ; aucune P
 
 | Étape | Rail FR | Rail INTL |
 |---|---|---|
-| Identité | France Identité (HIGH) → OCR+liveness (MEDIUM) | Puce NFC passeport (HIGH) → MRZ-OCR web (MEDIUM) |
-| Solvabilité | Avis 2D-Doc (HIGH) | Docs étrangers (MEDIUM) + normalisation FX |
+| Identité | OCR+liveness (MEDIUM, aujourd'hui) → FranceConnect (HIGH, post-immatriculation) | Puce NFC passeport (HIGH) → MRZ-OCR web (MEDIUM) |
+| Solvabilité | Avis 2D-Doc (authenticité du document HIGH ; présentateur via recoupement du nom) | Docs étrangers (MEDIUM) + normalisation FX |
 | Bien | DPE ADEME + contrôle taxe foncière | idem |
 
 **Frontières légales gravées dans le code** (jamais : entremise, mandat, maniement de fonds,
