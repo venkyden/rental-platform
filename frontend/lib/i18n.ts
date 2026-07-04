@@ -2,6 +2,16 @@ export type Language = 'en' | 'fr';
 
 export const translations = {
     en: {
+        tenant: {
+            features: {
+                trust: {
+                    badge: "Trust Layer",
+                    title: "Verified Profile",
+                    desc: "Verify your identity and solvency once — get a signed, expiring proof any landlord can check, here or on any classifieds site.",
+                    cta: "Get Verified"
+                }
+            }
+        },
         esign: {
             title: "Electronic signature",
             subtitle: "Both verified parties sign the landlord-provided lease. Roomivo did not draft the wording and does not certify its legal compliance; it attests verified identities, document integrity, and timestamps.",
@@ -73,9 +83,9 @@ export const translations = {
                 title: "Why Choose Roomivo?",
                 subtitle: "The most secure and transparent way to rent in France.",
                 dossier: { title: "Digital Dossier", desc: "No more paper. Your verified identity and documents in one secure place." },
-                matching: { title: "AI-Powered Matching", desc: "Find properties matching your profile. Note: Suggestions are recommendations; final decisions are subject to human oversight." },
+                proof: { title: "Signed Proof", desc: "Every verification issues a cryptographically signed, expiring credential — anyone can check it on roomivo.app, no account needed." },
                 legal: { title: "French Law Compliant", desc: "Digital leases generated according to the latest French regulations." },
-                payments: { title: "Secure Payments", desc: "Pay your rent and deposits through our integrated secure gateway." }
+                funds: { title: "Your Money Stays Yours", desc: "Roomivo never touches rent or deposits. You pay the other party directly — with signed proof of who they really are." }
             },
             howItWorks: {
                 title: "How it Works",
@@ -864,17 +874,10 @@ export const translations = {
                     visits: "Scheduled Visits",
                     favorites: "Favorites",
                     activeDisputes: "Active Disputes",
-                    premiumTitle: "Premium Services",
-                    premiumDesc: "Take advantage of our relocation services for your professional mobility",
                     discover: "Discover",
                     recentSearches: "Recent Searches",
                     noSearches: "You haven't made any searches yet.",
-                    searchButton: "Search for a property",
-                    smartMatches: "Smart Matches",
-                    smartMatchesDesc: "Top properties perfectly matching your profile",
-                    matchScore: "{{score}}% Match",
-                    loadingMatches: "Finding your perfect home...",
-                    noMatches: "Complete your onboarding to see personalized matches"
+                    searchButton: "Search for a property"
                 },
                 landlord: {
                     welcome: "Welcome, {{name}}",
@@ -1921,7 +1924,6 @@ export const translations = {
             },
             status: {
                 loading: "Initializing Discovery...",
-                compatibilityIndex: "Compatibility Index",
                 error: "Impossible to load listings.",
                 noResults: "Market Vacant",
                 noResultsDesc: "Try expanding your search parameters to discover hidden gems."
@@ -2345,6 +2347,16 @@ export const translations = {
         }
     },
     fr: {
+        tenant: {
+            features: {
+                trust: {
+                    badge: "Couche de Confiance",
+                    title: "Profil Vérifié",
+                    desc: "Vérifiez votre identité et votre solvabilité une seule fois — obtenez une preuve signée et à durée limitée, vérifiable par tout bailleur, ici ou sur n'importe quel site d'annonces.",
+                    cta: "Se faire vérifier"
+                }
+            }
+        },
         esign: {
             title: "Signature électronique",
             subtitle: "Les deux parties vérifiées signent le bail fourni par le bailleur. Roomivo n'en a pas rédigé les clauses et n'atteste pas de sa conformité légale ; il atteste l'identité vérifiée des signataires, l'intégrité du document et l'horodatage.",
@@ -2570,9 +2582,9 @@ export const translations = {
                 title: "Pourquoi Choisir Roomivo ?",
                 subtitle: "La façon la plus sécurisée et transparente de louer en France.",
                 dossier: { title: "Dossier Numérique", desc: "Plus de papier. Votre identité et vos documents vérifiés en un seul lieu sûr." },
-                matching: { title: "Matching IA", desc: "Trouvez des biens correspondant à votre profil. Remarque : les suggestions sont des recommandations ; les décisions finales sont soumises à un contrôle humain." },
+                proof: { title: "Preuve Signée", desc: "Chaque vérification émet une attestation signée cryptographiquement et à durée limitée — vérifiable par tous sur roomivo.app, sans compte." },
                 legal: { title: "Conforme à la Loi Française", desc: "Baux numériques générés selon les dernières réglementations françaises." },
-                payments: { title: "Paiements Sécurisés", desc: "Payez votre loyer et vos dépôts via notre passerelle sécurisée intégrée." }
+                funds: { title: "Votre Argent Reste le Vôtre", desc: "Roomivo ne touche jamais au loyer ni au dépôt de garantie. Vous payez directement l'autre partie — avec la preuve signée de son identité." }
             },
             howItWorks: {
                 title: "Comment ça marche",
@@ -3245,17 +3257,10 @@ export const translations = {
                     visits: "Visites prévues",
                     favorites: "Favoris",
                     activeDisputes: "Litiges en cours",
-                    premiumTitle: "Services Premium",
-                    premiumDesc: "Profitez de nos services de relocation pour votre mobilité professionnelle",
                     discover: "Découvrir",
                     recentSearches: "Recherches récentes",
                     noSearches: "Vous n'avez pas encore effectué de recherche.",
-                    searchButton: "Rechercher un bien",
-                    smartMatches: "Matchs Intelligents",
-                    smartMatchesDesc: "Les meilleurs biens correspondant à votre profil",
-                    matchScore: "{{score}}% de Match",
-                    loadingMatches: "Recherche de votre foyer idéal...",
-                    noMatches: "Complétez votre onboarding pour voir vos matchs personnalisés"
+                    searchButton: "Rechercher un bien"
                 },
                 landlord: {
                     welcome: "Bienvenue, {{name}}",
@@ -4322,7 +4327,6 @@ export const translations = {
             },
             status: {
                 loading: "Initialisation de la découverte...",
-                compatibilityIndex: "Indice de compatibilité",
                 error: "Impossible de charger les annonces.",
                 noResults: "Marché Vacant",
                 noResultsDesc: "Essayez d'élargir vos paramètres de recherche pour découvrir des pépites."
@@ -4333,12 +4337,6 @@ export const translations = {
                     bedrooms: "Chambres",
                     bathrooms: "Salles de bain",
                     floor: "Étage"
-                },
-                match: {
-                    title: "Indice de Compatibilité",
-                    reason1: "Correspond à votre budget",
-                    reason2: "Proximité idéale des pôles d'activité",
-                    reason3: "Équipements premium inclus"
                 }
             }
         },

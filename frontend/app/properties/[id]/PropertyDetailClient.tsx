@@ -17,7 +17,7 @@ import StaticMapView from '@/components/StaticMapView';
 import Image from 'next/image';
 import { 
     MapPin, Share2, Shield, Zap, Wind, Check, LayoutGrid, Info, 
-    Sparkles, TrendingUp, Heart, Navigation, Building2, Flame, AlertTriangle, Calendar 
+    TrendingUp, Heart, Navigation, Building2, Flame, AlertTriangle, Calendar
 } from 'lucide-react';
 
 interface Property {
@@ -63,7 +63,6 @@ interface Property {
     guarantor_required?: boolean;
     accepted_guarantor_types?: string[];
     caf_eligible?: boolean;
-    match_score?: number;
     loyer_reference?: number;
     loyer_reference_majore?: number;
     complement_de_loyer?: number;
@@ -118,7 +117,7 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
         }
     };
 
-    // Re-load property when user logs in so we can fetch dynamic fields like is_saved and match_score
+    // Re-load property when user logs in so we can fetch dynamic fields like is_saved
     useEffect(() => {
         if (user) {
             loadProperty();
@@ -217,13 +216,6 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
     const photos = Array.isArray(property.photos) ? property.photos : property.photos?.urls ? property.photos.urls.map((url: string) => ({ url })) : [];
 
     const activePhoto = photos[activePhotoIdx];
-
-    const matchScore = user?.role === 'tenant' ? (property.match_score ?? null) : null;
-    const matchReasons = [
-        t('search.detail.match.reason1', undefined, 'Matches your budget protocol'),
-        t('search.detail.match.reason2', undefined, 'Ideal proximity to work hubs'),
-        t('search.detail.match.reason3', undefined, 'Premium amenities included')
-    ];
 
     return (
         <PremiumLayout withNavbar={true}>
@@ -644,46 +636,7 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
 
                         {/* Right Column - Transaction Center */}
                         <div className="lg:col-span-4 space-y-10">
-                            {/* Match Score Compatibility */}
-                            {matchScore !== null && matchScore !== undefined && (
-                                <motion.div 
-                                    initial={{ scale: 0.9, opacity: 0 }}
-                                    animate={{ scale: 1, opacity: 1 }}
-                                    className="glass-card !p-10 rounded-[3rem] border-zinc-900/20 bg-zinc-900/5 relative overflow-hidden"
-                                >
-                                    <div className="absolute top-0 right-0 p-4">
-                                        <Sparkles className="w-6 h-6 text-zinc-900 animate-pulse" />
-                                    </div>
-                                    <h3 className="text-xl font-black uppercase tracking-tighter mb-6 flex items-center gap-3">
-                                        {t('search.detail.match.title', undefined, 'Compatibility Index')}
-                                    </h3>
-                                    
-                                    <div className="flex items-center gap-6 mb-8">
-                                        <div className="text-6xl font-black text-zinc-900 tracking-tighter">{matchScore}%</div>
-                                        <div className="flex-1">
-                                            <div className="h-3 w-full bg-zinc-200 rounded-full overflow-hidden">
-                                                <motion.div 
-                                                    initial={{ width: 0 }}
-                                                    animate={{ width: `${matchScore}%` }}
-                                                    transition={{ duration: 1.5, ease: "easeOut" }}
-                                                    className="h-full bg-zinc-900"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-3">
-                                        {matchReasons.map((reason, i) => (
-                                            <div key={i} className="flex items-center gap-3">
-                                                <Check className="w-4 h-4 text-zinc-900" />
-                                                <span className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">{reason}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </motion.div>
-                            )}
-
-                            <motion.div 
+                            <motion.div
                                 initial={{ y: 40, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
                                 transition={{ delay: 0.3 }}

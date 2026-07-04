@@ -29,7 +29,6 @@ from app.models.property_schemas import (MediaSessionCreate,
                                          PropertyMatchResponse, DescriptionGenerationRequest)
 from app.models.user import User
 from app.routers.auth import get_current_user, get_current_user_optional
-from app.services.matching_service import matching_service
 
 # Rate limiting
 from slowapi import Limiter
@@ -357,44 +356,25 @@ async def list_saved_properties(
     for prop in properties:
         prop_dict = PropertyResponse.model_validate(prop).model_dump()
         prop_dict["is_saved"] = True
-        
-        # Calculate match score if tenant
-        if current_user.role == "tenant":
-            match_data = matching_service.calculate_match_details(current_user, prop)
-            prop_dict["match_score"] = match_data["score"]
-            prop_dict["match_breakdown"] = match_data["breakdown"]
-            
         response.append(prop_dict)
         
     return response
 
 
-@router.get("/recommendations", response_model=List[PropertyMatchResponse])
+@router.get("/recommendations", response_model=List[PropertyMatchResponse], deprecated=True)
 async def get_recommendations(
     limit: int = 10,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Get personalized property recommendations for the current tenant.
+    Deprecated — always returns empty list.
+
+    Personalized counterparty recommendation is entremise under Loi Hoguet;
+    Roomivo operates without carte professionnelle and must never perform it.
+    Stub retained so existing clients don't break.
     """
-    if current_user.role != "tenant":
-        return []
-
-    query = select(Property).where(Property.status == "active").limit(100)
-    result = await db.execute(query)
-    all_properties = result.scalars().all()
-
-    scored_properties = []
-    for prop in all_properties:
-        match_data = matching_service.calculate_match_details(current_user, prop)
-        prop_dict = PropertyMatchResponse.model_validate(prop).model_dump()
-        prop_dict["match_score"] = match_data["score"]
-        prop_dict["match_breakdown"] = match_data["breakdown"]
-        scored_properties.append(prop_dict)
-
-    scored_properties.sort(key=lambda x: x["match_score"], reverse=True)
-    return scored_properties[:limit]
+    return []
 
 
 @router.get("", response_model=List[PropertyResponse])
@@ -447,18 +427,6 @@ async def list_properties(
     for prop in properties:
         prop_dict = PropertyResponse.model_validate(prop).model_dump()
         prop_dict["is_saved"] = prop.id in saved_property_ids
-        
-        # Calculate match score if authenticated tenant
-        if current_user and current_user.role == "tenant":
-            try:
-                match_data = matching_service.calculate_match_details(current_user, prop)
-                prop_dict["match_score"] = match_data["score"]
-                prop_dict["match_breakdown"] = match_data["breakdown"]
-            except Exception as e:
-                logger.warning(f"Match calculation failed for property {prop.id}: {e}")
-                prop_dict["match_score"] = None
-                prop_dict["match_breakdown"] = None
-            
         response.append(prop_dict)
         
     return response
@@ -616,17 +584,6 @@ async def get_property(
         if saved_result.scalar_one_or_none():
             is_saved = True
     prop_dict["is_saved"] = is_saved
-
-    # Calculate match score if authenticated tenant
-    if current_user and current_user.role == "tenant":
-        try:
-            match_data = matching_service.calculate_match_details(current_user, property_obj)
-            prop_dict["match_score"] = match_data["score"]
-            prop_dict["match_breakdown"] = match_data["breakdown"]
-        except Exception as e:
-            logger.warning(f"Error calculating match details: {e}")
-            pass
-
     return prop_dict
 
 
