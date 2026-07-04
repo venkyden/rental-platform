@@ -1,18 +1,30 @@
-# CLAUDE.md — Trust Layer Project Context
+# CLAUDE.md — Roomivo Project Context
 
 This file is the persistent memory for this project. Read it before every task.
 The full PRD is in `PRD-TrustLayer-v2.md`. This file is the condensed working context.
 
 ---
 
-## What this product is
+## What this product is (positioning settled 2026-07-04)
 
-A **stateless verification and document layer** for open rental classifieds (Leboncoin,
-Facebook Marketplace, PAP). Users verify identity, solvency, and property, generate or
-validate a lease, and e-sign — all without the platform ever brokering the deal.
+**One product, two faces, one verification engine:**
+
+1. **Rental marketplace** — landlords publish, tenants search and apply. Roomivo is a
+   **passive publisher** (Leboncoin's legal basis): it never matches, recommends, or
+   brokers counterparties. Counterparty matching was removed 2026-07-04 (PR #29);
+   `matching_service.py` is DISABLED and no router may import it without a lawyer
+   opinion blessing a *support publicitaire* framing.
+2. **Trust layer** — a **stateless verification and document layer**, used internally
+   (verified profiles/listings on the marketplace) and externally (portable signed
+   credentials for users of Leboncoin, Facebook Marketplace, PAP). Verify identity,
+   solvency, property → issue a signed, short-lived credential → discard the source.
+
+The trust layer is NOT a separate entity or product — it is Roomivo's core.
 
 We sell **verified facts that enable protection**, not protection itself.
 Revenue: flat per-verification or subscription fee. Never success-based.
+Status: no SIRET yet (SNEE student-entrepreneurs, PÉPITE Pays de la Loire / Audencia)
+→ free beta until SAS incorporation; charging is gated on it.
 
 ---
 
@@ -112,9 +124,15 @@ Common:
    supérieur et de la Recherche) — logos subject to usage authorization.
 8. Shareable link/QR per side.
 
-Do NOT build lease, e-sign, or insurance yet (lease + e-sign also behind the legal gate).
-Note: broader than the original cheapest-slice plan — accepted trade to deliver the
-deposit-theft use case. Full rationale + edge cases: docs/features/trust-layer/DOSSIER.md.
+**Status 2026-07-04: Phase 1 shipped** (2026-06-13) plus, since then: statelessness
+retrofit (verify-and-forget, Redis 10-min TTL), MRH insurance verification, INTL
+MEDIUM rails (identity + funds-coverage solvency — backend only, UI pending),
+**e-sign Path B live** (upload + legality screen + in-house Ed25519 signature),
+lease Path A generator on branch `feat/path-a-lease-generation` (unmerged).
+Insurance remains verification-only, never sold. Next build order: see the feature
+audit program in `docs/superpowers/plans/2026-07-02-stress-test-remediation-master.md`
+(INTL solvency UI tab is the chosen next feature).
+Full rationale + edge cases: docs/features/trust-layer/DOSSIER.md.
 
 ---
 
@@ -127,12 +145,18 @@ Consumer classified badge (Leboncoin "Vérifié") is phase 2.
 
 ---
 
-## Legal gate — do NOT build past this
+## Legal gate — ✅ CLEARED for lease + e-sign (2026-06-24)
 
-The lease-generation and e-sign modules have a genuine legal gray zone (loi 1971 / Hoguet
-boundary on self-service contract generation). Get a French *droit immobilier* lawyer to
-bless the framing before building or launching those modules. This is cheap and gating.
-Reference: PRD §7.6.
+The loi 1971 / Hoguet gray zone on self-service lease generation and e-sign was
+resolved: written opinion on file (2026-06-20, Mathieu Galand, Avocat au Barreau de
+Paris — `docs/legal/2026-06-20-avis-avocat-esign-lease-galand.md`) green-lights both
+paths, **subject to**: official model wording only (no custom clauses), mandatory
+provisions + annexes enforced (gating for Path A), verified-identity signers,
+auditable signing record, GDPR. No success fee; funds never flow.
+
+Still requiring lawyer input before build/enable: counterparty matching re-enable
+(support publicitaire framing), EU AI Act classification memo, biometric Art. 9
+DPIA (see master plan WS-2).
 
 ---
 

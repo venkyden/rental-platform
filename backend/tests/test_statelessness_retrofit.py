@@ -23,6 +23,22 @@ from app.routers.auth import get_current_user
 from tests.conftest import make_mock_user, mock_get_db
 
 
+import pytest
+
+
+@pytest.fixture(autouse=True)
+def _biometric_consent_granted():
+    """These flows predate the Art. 9 gate — run them as a consented user;
+    the gate itself is covered in tests/test_biometric_consent.py."""
+    from unittest.mock import AsyncMock, patch as _patch
+    with _patch(
+        "app.routers.verification._has_biometric_consent",
+        new=AsyncMock(return_value=True),
+    ):
+        yield
+
+
+
 def make_client(mock_user):
     target_app = app.app if hasattr(app, "app") else app
     target_app.dependency_overrides[get_current_user] = lambda: mock_user

@@ -1,7 +1,12 @@
 """
-Matching Service.
+Matching Service — DISABLED (decision 2026-07-03, see docs/features/trust-layer/DOSSIER.md §1).
+
+Personalized counterparty matching/recommendation is entremise under Loi Hoguet,
+which Roomivo (unlicensed pure SaaS) must never perform. No router may import this
+module. Retained for reference only, pending explicit lawyer opinion.
+
 Calculates compatibility scores between Tenants and Properties.
-Implements "Soft Scoring" logic (Weighted Preferences) as per Differentiation Strategy.
+Implements "Soft Scoring" logic (Weighted Preferences).
 """
 
 from datetime import datetime

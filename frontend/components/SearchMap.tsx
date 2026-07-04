@@ -16,7 +16,6 @@ interface Property {
     latitude?: number;
     longitude?: number;
     photos: { url: string }[];
-    match_score?: number;
 }
 
 interface SearchMapProps {
@@ -52,17 +51,15 @@ export default function SearchMap({ properties, center = [48.8566, 2.3522] }: Se
     }, []);
 
     // Industry Grade: Custom Price Marker
-    const createPriceIcon = (price: number, matchScore?: number) => {
+    const createPriceIcon = (price: number) => {
         if (!L) return null;
-        const isHighMatch = matchScore && matchScore >= 85;
         return L.divIcon({
             className: 'custom-div-icon',
             html: `
                 <div class="group relative flex items-center justify-center">
-                    <div class="px-3 py-1.5 rounded-full ${isHighMatch ? 'bg-zinc-900' : 'bg-zinc-900/50'} text-white text-[10px] font-black shadow-2xl border-2 border-white/20 transition-all group-hover:scale-110 group-hover:-translate-y-1">
+                    <div class="px-3 py-1.5 rounded-full bg-zinc-900 text-white text-[10px] font-black shadow-2xl border-2 border-white/20 transition-all group-hover:scale-110 group-hover:-translate-y-1">
                         €${price}
                     </div>
-                    ${isHighMatch ? '<div class="absolute -top-1 -right-1 w-2 h-2 bg-zinc-400 rounded-full animate-ping"></div>' : ''}
                 </div>
             `,
             iconSize: [60, 30],
@@ -103,8 +100,7 @@ export default function SearchMap({ properties, center = [48.8566, 2.3522] }: Se
                 {properties.map(property => {
                     if (!property.latitude || !property.longitude) return null;
                     
-                    const isHighMatch = (property.match_score || 0) >= 85;
-                    const priceIcon = createPriceIcon(property.monthly_rent, property.match_score);
+                    const priceIcon = createPriceIcon(property.monthly_rent);
 
                     return (
                         <Marker 
@@ -132,20 +128,7 @@ export default function SearchMap({ properties, center = [48.8566, 2.3522] }: Se
                                         </h4>
                                         <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mb-3">{property.city}</p>
                                         
-                                        <div className="flex items-center justify-between gap-4 mb-4">
-                                            {property.match_score && (
-                                                <div className="flex items-center gap-1.5">
-                                                    <div className="h-1.5 w-16 bg-zinc-100 rounded-full overflow-hidden">
-                                                        <div className="h-full bg-zinc-900" style={{ width: `${property.match_score}%` }} />
-                                                    </div>
-                                                    <span className="text-[9px] font-black text-zinc-900 italic">
-                                                        {Math.round(property.match_score)}%
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        <button 
+                                        <button
                                             onClick={() => router.push(`/properties/${property.id}`)}
                                             className="w-full py-4 bg-zinc-900 text-white text-[9px] font-black uppercase tracking-[0.3em] rounded-xl hover:bg-zinc-800 transition-all active:scale-95 shadow-xl"
                                         >
