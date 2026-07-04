@@ -65,6 +65,7 @@ async def export_user_data(
     from app.models.document import Document
     from app.models.visits_and_leases import Lease
     from app.models.dispute import Dispute
+    from app.models.biometric_consent import BiometricConsent
 
     async def _collect(label: str, stmt, mapper):
         try:
@@ -147,6 +148,15 @@ async def export_user_data(
         },
     )
 
+    biometric_consents_data = await _collect(
+        "biometric_consents",
+        select(BiometricConsent).where(BiometricConsent.user_id == user.id),
+        lambda c: {
+            "consent_version": c.consent_version,
+            "consented_at": str(c.consented_at),
+        },
+    )
+
     # Build export payload
     export = {
         "export_date": datetime.now(timezone.utc).isoformat(),
@@ -189,6 +199,7 @@ async def export_user_data(
         "documents": documents_data,
         "leases": leases_data,
         "disputes": disputes_data,
+        "biometric_consents": biometric_consents_data,
     }
 
     return export
@@ -213,6 +224,7 @@ async def delete_user_data(
 
     # Delete verification documents (using new folder structure)
     await storage.delete_files_by_prefix(f"verification/identity/{current_user.id}")
+    await storage.delete_files_by_prefix(f"verification/intl/identity/{current_user.id}")
     await storage.delete_files_by_prefix(f"verification/employment/{current_user.id}")
     await storage.delete_files_by_prefix(f"verification/guarantor/{current_user.id}")
     await storage.delete_files_by_prefix(f"verification/property/{current_user.id}")

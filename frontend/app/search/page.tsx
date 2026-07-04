@@ -35,8 +35,6 @@ interface Property {
     status: string;
     dpe_rating?: string;
     guarantor_required?: boolean;
-    match_score?: number;
-    match_breakdown?: Record<string, any>;
     is_saved?: boolean;
     ownership_verified?: boolean;
 }
@@ -422,35 +420,6 @@ function SearchContent() {
                                                         <Heart className={`w-5 h-5 ${property.is_saved ? 'fill-current' : ''}`} />
                                                     </motion.button>
                                                 </div>
-
-                                                {/* Match Score Gamification */}
-                                                {isAuthenticated && property.match_score !== undefined && (
-                                                    <div className="absolute top-28 right-8 z-20 group/match">
-                                                        <motion.div 
-                                                            initial={{ scale: 0.5, opacity: 0 }}
-                                                            animate={{ scale: 1, opacity: 1 }}
-                                                            whileHover={{ scale: 1.1 }}
-                                                            className={`px-4 py-4 rounded-full backdrop-blur-2xl border flex flex-col items-center justify-center shadow-2xl cursor-help transition-all ${
-                                                                property.match_score >= 85 
-                                                                ? 'bg-zinc-900 border-zinc-800 text-white shadow-zinc-900/40' 
-                                                                : 'bg-white/90 border-white/20 text-zinc-900'
-                                                            }`}
-                                                        >
-                                                            <span className="text-[8px] font-black uppercase tracking-tighter mb-0.5 opacity-80">Match</span>
-                                                            <span className="text-xl font-black leading-none">{Math.round(property.match_score)}%</span>
-                                                            
-                                                            {/* Tooltip on Hover */}
-                                                            <div className="absolute bottom-full right-0 mb-4 opacity-0 group-hover/match:opacity-100 transition-opacity pointer-events-none">
-                                                                <div className="bg-zinc-900 text-white text-[10px] font-black uppercase tracking-widest p-4 rounded-2xl shadow-2xl whitespace-nowrap border border-zinc-800">
-                                                                    {t('search.status.compatibilityIndex', undefined, 'Compatibility Index')}
-                                                                    <div className="mt-2 h-1 w-full bg-zinc-800 rounded-full overflow-hidden">
-                                                                        <div className="h-full bg-white" style={{ width: `${property.match_score}%` }} />
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </motion.div>
-                                                    </div>
-                                                )}
 
                                                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80" />
                                                 

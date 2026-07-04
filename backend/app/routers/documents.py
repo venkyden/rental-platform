@@ -2,6 +2,7 @@
 API endpoints for Document Management and Verification.
 """
 
+import logging
 import os
 import secrets
 from datetime import datetime
@@ -16,6 +17,8 @@ from app.core.database import get_db
 from app.models.document import Document, DocumentType, VerificationStatus
 from app.models.user import User
 from app.routers.auth import get_current_user
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/documents", tags=["Documents"])
 
@@ -142,6 +145,14 @@ async def delete_document(
 
     if doc.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not your document")
+
+    # Purge the stored file before dropping its last DB reference (GDPR erasure
+    # must remove both the record and the object)
+    from app.services.storage import storage
+
+    storage_key = (doc.extra_data or {}).get("storage_key")
+    if storage_key:
+        await storage.purge_object(storage_key, "delete_document")
 
     await db.delete(doc)
     await db.commit()

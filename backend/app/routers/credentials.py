@@ -12,9 +12,11 @@ import io
 import logging
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import Response, StreamingResponse
 from pydantic import BaseModel
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
@@ -27,6 +29,11 @@ from app.models.user import User
 from app.services.credential import credential_service
 
 logger = logging.getLogger(__name__)
+
+# Per-IP rate limiting on the PUBLIC endpoints (verify page, evidence PDF):
+# credential IDs are 128-bit so enumeration is hopeless, but the limits stop
+# scraping and unauthenticated DB hammering (anti-phishing dossier, WS-6).
+limiter = Limiter(key_func=get_remote_address)
 
 router = APIRouter(prefix="/credentials", tags=["Credentials"])
 
@@ -53,6 +60,7 @@ class CredentialResponse(BaseModel):
     claims: dict
     disclaimer: str
     signature: str
+    kid: Optional[str] = None    # id of the signing key (see /credentials/public-keys)
     revoked: bool
 
 
@@ -69,6 +77,7 @@ class VerifyResponse(BaseModel):
     rail: str
     claims: dict
     disclaimer: str
+    kid: Optional[str] = None    # id of the signing key (see /credentials/public-keys)
     assurance_summary: str       # human-readable summary for the verify page
 
 
@@ -102,6 +111,29 @@ async def get_public_key():
         content=credential_service.public_key_pem(),
         media_type="application/x-pem-file",
     )
+
+
+class KeyHistoryEntry(BaseModel):
+    kid: str
+    public_key_pem: str
+    status: str  # active | retired
+
+
+class PublicKeysResponse(BaseModel):
+    keys: list[KeyHistoryEntry]
+
+
+@router.get("/public-keys", summary="Verification key history (JSON)", response_model=PublicKeysResponse)
+async def get_public_keys():
+    """
+    All verification keys: active signing key first, then retired keys kept
+    verify-only until credentials they signed expire.
+
+    Each entry: {kid, public_key_pem, status: active|retired}. Credential
+    `kid` names its signing key; verifiers should reject unknown kids.
+    Rotation runbook: docs/features/trust-layer/KEY-LIFECYCLE.md
+    """
+    return PublicKeysResponse(keys=credential_service.key_history())
 
 
 @router.post("/issue", response_model=CredentialResponse, status_code=status.HTTP_201_CREATED)
@@ -144,6 +176,7 @@ async def issue_credential(
         claims=payload["claims"],
         disclaimer=payload["disclaimer"],
         signature=payload["signature"],
+        kid=payload.get("kid"),
         revoked=False,
     )
     db.add(row)
@@ -159,12 +192,18 @@ async def issue_credential(
         claims=row.claims,
         disclaimer=row.disclaimer,
         signature=row.signature,
+        kid=row.kid,
         revoked=row.revoked,
     )
 
 
 @router.get("/{credential_id}", response_model=VerifyResponse, summary="Verify credential (public)")
+# shared_limit + fixed scope: the default limit buckets per URL PATH, so an
+# enumerator rotating credential IDs would get a fresh allowance per guess.
+# A shared scope buckets per IP across the whole endpoint.
+@limiter.shared_limit("30/minute", scope="credentials-verify")
 async def verify_credential(
+    request: Request,  # noqa: ARG001 — consumed by @limiter
     credential_id: str,
     db: AsyncSession = Depends(get_db),
 ):
@@ -198,6 +237,9 @@ async def verify_credential(
         "signature": row.signature,
         "subject_display_name": row.subject_display_name,
     }
+    # Legacy rows have no kid — omit the field so key-trial verification applies
+    if row.kid:
+        record["kid"] = row.kid
     sig_valid = credential_service.verify_signature(record)
     valid = sig_valid and not expired and not revoked
 
@@ -214,6 +256,7 @@ async def verify_credential(
         rail=row.rail,
         claims=row.claims,
         disclaimer=row.disclaimer,
+        kid=row.kid,
         assurance_summary=_assurance_summary(row.claims),
     )
 
@@ -223,7 +266,9 @@ async def verify_credential(
     summary="Download watermarked evidence document (public)",
     response_class=Response,
 )
+@limiter.shared_limit("10/minute", scope="credentials-evidence")  # PDF generation is expensive; see scope note above
 async def get_evidence_pdf(
+    request: Request,  # noqa: ARG001 — consumed by @limiter
     credential_id: str,
     db: AsyncSession = Depends(get_db),
 ):
@@ -280,6 +325,7 @@ class IssueMineResponse(BaseModel):
     claims: dict
     disclaimer: str
     signature: str
+    kid: Optional[str] = None
     shareable_url: str
 
 
@@ -369,6 +415,7 @@ async def issue_mine(
         claims=payload["claims"],
         disclaimer=payload["disclaimer"],
         signature=payload["signature"],
+        kid=payload.get("kid"),
         revoked=False,
     )
     db.add(row)
@@ -385,6 +432,7 @@ async def issue_mine(
         claims=row.claims,
         disclaimer=row.disclaimer,
         signature=row.signature,
+        kid=row.kid,
         shareable_url=shareable_url,
     )
 

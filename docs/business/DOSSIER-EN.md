@@ -78,7 +78,7 @@ sides face each other with no reliable way to verify one another.
 | **Deposit theft** | Fake landlord (often a ghost listing) collects the deposit, disappears | Tenant | Landlord identity + property control → proof before any payment |
 | **Forged tenant dossier** | Faked tax notice / payslips | Landlord | Read the **signed payload** of the 2D-Doc (DGFiP) → tampering with printed text becomes moot |
 | **Ghost listing** | Property that doesn't exist / isn't the lister's | Tenant | Taxe foncière check + ADEME DPE → "control, not ownership-attested" (limit disclosed) |
-| **Identity fraud** | Borrowed / stolen ID | Both | State identity (France Identité, MoI-signed) → HIGH assurance |
+| **Identity fraud** | Borrowed / stolen ID | Both | Phase 1: OCR + liveness → **MEDIUM, labeled as such**; HIGH via FranceConnect (state OIDC) after incorporation — assurance is never inflated |
 | **Phishing** | Fake "verification" link sent in chat | Both | *Verify-by-ID*: "don't trust the link — type the code on roomivo.app" |
 
 **Why the market won't self-correct:** the classifieds platform can't become the trusted
@@ -92,11 +92,16 @@ and produce no **portable, two-sided** proof usable outside their silo.
 
 Several unlocks converge in 2025–2026:
 
-- **France Identité** is now a live state service: an MoI-signed *justificatif*, verifiable
-  online and naming its recipient. This makes a **HIGH-assurance identity free**, with no
-  selfie or liveness.
+- **State identity rails are opening.** France Identité's MoI-signed *justificatif* exists
+  but was assessed and **rejected for v1** (its verification portal is human-facing, not an
+  API, and the user friction is prohibitive). The real unlock is **FranceConnect** (state
+  OIDC): a free **HIGH-assurance identity**, gated behind incorporation (SIRET + DataPass).
+  Phase 1 ships **MEDIUM** (OCR + liveness), labeled as such — never inflated.
 - **2D-Doc tax notice (DGFiP):** the ECDSA-signed payload is readable and verifiable via the
-  state's open-source `betagouv/2ddoc-parser`. HIGH-assurance solvency becomes free.
+  state's open-source `betagouv/2ddoc-parser`. State-signed solvency data becomes free. The
+  signature proves the **document**, not the presenter: a name cross-check adds an anti-fraud
+  flag, and attribution to the person in front of you is capped by the identity tier
+  (MEDIUM until FranceConnect).
 - **DPE reform (Climat law, since 2025; coefficient recalibration Jan 2026):** energy class
   now gates lettability (class G blocked). Open ADEME data makes property control possible
   at zero cost.
@@ -105,6 +110,9 @@ Several unlocks converge in 2025–2026:
   what's missing is the **portable, two-sided proof**.
 - **Rising listing fraud:** media coverage of housing scams creates a demand for trust that
   no one addresses on the open-classifieds side.
+- **A closing window, honestly stated:** eIDAS 2.0 / the EUDI Wallet (2026–27 rollout) will
+  eventually let the state itself assemble these bricks into portable attestations. The moat
+  is a **2–3-year execution window** — the strongest argument for moving now, not waiting.
 
 **In short:** over the last two years the state has freely opened every cryptographic brick
 needed. Roomivo is the first to **assemble them into a portable, two-sided anti-scam proof**.
@@ -113,15 +121,20 @@ needed. Roomivo is the first to **assemble them into a portable, two-sided anti-
 
 ## 04 — Traction & Financial Projections
 
-> **Real status:** pre-seed; the full technical dossier is written; no production code is
-> deployed yet (see §17). No revenue. The projections below are an **assumption model**
-> meant to show the economic mechanics.
+> **Real status:** pre-seed; the full technical dossier is written and the backend is
+> implemented (FastAPI, 300+ automated tests), pre-production (see §17). No public launch,
+> no revenue. The projections below are an **assumption model** meant to show the economic
+> mechanics.
 
 **Core assumptions `[Assumption]`:**
 - Marginal cost per verification ≈ **€0** (free state services + self-hosted OSS).
 - Average Roomivo price (pay-per-use, mix of identity/dossier/pack) ≈ **€6.90**.
 - Average Credential Layer price (API, volume-tiered) ≈ **€1.20** / verification.
 - B2B sales cycle (Credential Layer): **6–9 months** per pilot contract.
+- **Incorporation is on the Y1 critical path** `[Assumption — targeted mid-Y1]`: a SIRET
+  unlocks contract capacity (no B2B revenue can be signed without it) and the
+  DataPass/FranceConnect application (HIGH identity). Until then: MEDIUM-only identity,
+  pilots as letters of intent only.
 
 **Base-case projection `[Assumption]` (5 years):**
 
@@ -145,8 +158,10 @@ growth comes from **B2B2C integrations**, not advertising.
 For a jury / incubator, ROI reads on **three levels**:
 
 **1. Capital efficiency.** The tech stack is **100% open-source + free state services**:
-marginal cost per verification is near zero. Every euro of seed funds **R&D and B2B
-introductions**, not COGS. Target gross margin > **85%** on the Credential Layer `[Assumption]`.
+marginal cost per verification is near zero **at scale**. The honest COGS of a verification
+business at low volume is human review of OCR failures, fraud disputes, and support — the
+projections absorb this in Y1–Y2. Every euro of seed funds **R&D and B2B introductions**,
+not licenses. Target gross margin > **85%** on the Credential Layer `[Assumption — at scale]`.
 
 **2. Societal ROI.** Each prevented deposit scam saves a victim
 **~€700 `[Assumption — one month's average rent]`** and unburdens police/courts. At Y5 scale,
@@ -236,9 +251,10 @@ Use of the **€30–50k** seed (`[Assumption]`, base case €40k):
 | Item | Amount | Rationale |
 |---|---|---|
 | **Legal counsel — real-estate law** | €3–5k | Clear the *legal gate* (self-service lease / e-sign positioning vs loi 1971 / Hoguet). **Blocking and cheap.** |
-| **GDPR / DPO review** | €2–3k | Confirm lawful basis + non-retention proof (transient processing). |
+| **GDPR / DPO review** | €2–3k | Confirm lawful basis + non-retention proof (transient processing); Art. 9 basis + DPIA for the face-match step. |
+| **Incorporation + DataPass** | €1–2k | SIRET → B2B contract capacity + FranceConnect application (HIGH identity). **On the Y1 critical path.** |
 | **Infrastructure & security** | €2–4k/yr | Hosting, signing infra (Ed25519), security audit. Marginal cost per verif ≈ €0. |
-| **R&D Credential core + FR rails** | (founder time) | Credential model, France Identité, 2D-Doc, ADEME property control. |
+| **R&D Credential core + FR rails** | (founder time) | Credential model, OCR+liveness (MEDIUM), FranceConnect (post-incorporation), 2D-Doc, ADEME property control. |
 | **R&D INTL HIGH rail (Phase 2)** | to provision | Passport NFC read (JMRTD / NFCPassportReader); **operational gap: CSCA master list via ICAO PKD**. |
 | **Founder seed / stipend** | balance | Enable full-time work through the critical phase. |
 
@@ -254,10 +270,16 @@ verification, normalization) may qualify for the French Research / Innovation ta
 1. Remove the GLI module (ORIAS/IDD regulatory contradiction) — done before building.
 2. **Credential core:** model, Ed25519 signing, issue/verify endpoints, public key,
    watermarked evidence-document export.
-3. **FR HIGH identity rail** (France Identité) — serves both tenant *and* landlord.
-4. **FR HIGH solvency rail** (2D-Doc tax notice → banded ratio `>=3.0`).
+3. **FR identity rail** — OCR + liveness → **MEDIUM, labeled**; HIGH deferred to
+   **FranceConnect** (OIDC, gated on incorporation + DataPass) — serves both sides.
+4. **FR solvency rail** (2D-Doc tax notice, DGFiP-signed → banded ratio `>=3.0`;
+   cryptographic document authenticity, presenter binding via name cross-check flag).
 5. **Property control** (ADEME DPE + taxe foncière) — the anti-deposit-theft lever.
 6. **Two-sided wiring** + anti-phishing *verify-by-ID* page + institutional endorsement.
+
+> Cross-cutting Y1 milestone: **incorporation** (SIRET → DataPass → FranceConnect; the four
+> governance roles required by the décret of 8 Nov 2018) — it gates HIGH identity **and**
+> any signed B2B contract.
 
 **Phase 2+ (Y2–3) — behind the legal gate for lease/e-sign:**
 7. DPE depth (class-G block, zone tendue, live reform handling).
@@ -315,11 +337,12 @@ money clears two gates — legal and commercial — after which unit economics d
 
 | Offer | Contents | Indicative price |
 |---|---|---|
-| **Identity only** | Identity verification (FR HIGH or labeled MEDIUM) + signed attestation | **€2.90** |
+| **Identity only** | Identity verification (MEDIUM today, labeled; HIGH via FranceConnect post-incorporation) + signed attestation | **€2.90** |
 | **Verified dossier** | Identity + banded solvency + watermarked evidence document | **€6.90** |
 | **Two-sided pack (anti-deposit)** | Both-sided verification + property control + dispute-grade evidence document | **€9.90** |
 
-Marginal cost ≈ €0 → near-full margin. No success fee, ever.
+Marginal cost ≈ €0 at scale (support and manual review dominate at low volume) → high
+margin. No success fee, ever.
 
 ---
 
@@ -373,7 +396,9 @@ thousands of B2C micro-payments.
 - DossierFacile (public service) — verified-dossier volume.
 
 **Technical bricks (free / open-source):**
-- **France Identité** — `idp.france-identite.gouv.fr/valider-attest` (MoI-signed justificatif).
+- **FranceConnect** (state OIDC, via DataPass — post-incorporation): the HIGH identity rail.
+  France Identité's `valider-attest` justificatif was assessed and rejected for v1 (human
+  verification portal, not an API).
 - **betagouv/2ddoc-parser** — read & verify ECDSA of the 2D-Doc tax notice.
 - **ADEME** — DPE open-data API (class A–G, no H; coefficient reform Jan 2026).
 - **JMRTD** (Android, LGPL) / **AndyQ/NFCPassportReader** (iOS, MIT) — passport chip read.
@@ -407,10 +432,11 @@ thousands of B2C micro-payments.
   "rail": "FR",
   "claims": {
     "identity_verified": true,
-    "identity_assurance": "HIGH",
-    "identity_source": "france_identite_justificatif",
+    "identity_assurance": "MEDIUM",
+    "identity_source": "ocr_liveness",
     "solvency_ratio": ">=3.0",
-    "solvency_assurance": "HIGH"
+    "solvency_assurance": "HIGH",
+    "solvency_presenter_binding": "name_crosscheck_flag"
   },
   "disclaimer": "Certifies verification of the stated facts only. Does not warrant future conduct or good faith.",
   "signature": "..."
@@ -425,8 +451,8 @@ short TTL + revocation; no PII at rest.
 
 | Step | FR rail | INTL rail |
 |---|---|---|
-| Identity | France Identité (HIGH) → OCR+liveness (MEDIUM) | Passport NFC chip (HIGH) → web MRZ-OCR (MEDIUM) |
-| Solvency | 2D-Doc tax notice (HIGH) | Foreign docs (MEDIUM) + FX normalization |
+| Identity | OCR+liveness (MEDIUM, today) → FranceConnect (HIGH, post-incorporation) | Passport NFC chip (HIGH) → web MRZ-OCR (MEDIUM) |
+| Solvency | 2D-Doc tax notice (document authenticity HIGH; presenter via name cross-check) | Foreign docs (MEDIUM) + FX normalization |
 | Property | ADEME DPE + taxe foncière control | same |
 
 **Legal boundaries enforced in code** (never: brokering, mandate, fund handling, success

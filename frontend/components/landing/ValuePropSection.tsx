@@ -38,8 +38,8 @@ export default function ValuePropSection() {
     },
     {
       icon: <Sparkles className="w-8 h-8" />,
-      title: t('landing.valueProp.matching.title', undefined, 'AI-Powered Matching'),
-      desc: t('landing.valueProp.matching.desc', undefined, 'Find properties matching your profile. Note: Suggestions are recommendations; final decisions are subject to human oversight.'),
+      title: t('landing.valueProp.proof.title', undefined, 'Signed Proof'),
+      desc: t('landing.valueProp.proof.desc', undefined, 'Every verification issues a cryptographically signed, expiring credential — anyone can check it on roomivo.app, no account needed.'),
       span: "md:col-span-1",
       bg: "bg-zinc-100",
       iconBg: "bg-white text-zinc-900"
@@ -54,8 +54,8 @@ export default function ValuePropSection() {
     },
     {
       icon: <ShieldCheck className="w-8 h-8" />,
-      title: t('landing.valueProp.payments.title', undefined, 'Secure Payments'),
-      desc: t('landing.valueProp.payments.desc', undefined, 'Pay your rent and deposits through our integrated secure gateway.'),
+      title: t('landing.valueProp.funds.title', undefined, 'Your Money Stays Yours'),
+      desc: t('landing.valueProp.funds.desc', undefined, 'Roomivo never touches rent or deposits. You pay the other party directly — with signed proof of who they really are.'),
       span: "md:col-span-2",
       bg: "bg-zinc-900 text-white",
       iconBg: "bg-white text-zinc-900",

@@ -44,7 +44,7 @@ services:
       - key: FRONTEND_URL
         value: "https://roomivo.eu"
       - key: FROM_EMAIL
-        value: "Roomivo <onboarding@resend.dev>"
+        value: "Roomivo <onboarding@roomivo.eu>"
 
       # SECRETS (sync: false → set manually in Render Dashboard)
       - key: DATABASE_URL
@@ -112,10 +112,14 @@ services:
         sync: false
       - key: SECRET_KEY
         sync: false
+      - key: MASTER_ENCRYPTION_KEY
+        sync: false
+      - key: CREDENTIAL_SIGNING_KEY
+        sync: false
       - key: RESEND_API_KEY
         sync: false
       - key: FROM_EMAIL
-        value: "Roomivo <onboarding@resend.dev>"
+        value: "Roomivo <onboarding@roomivo.eu>"
       - key: ENVIRONMENT
         value: "production"
       - key: PYTHONPATH
