@@ -154,6 +154,7 @@ async def export_user_data(
         lambda c: {
             "consent_version": c.consent_version,
             "consented_at": str(c.consented_at),
+            "user_agent": c.user_agent,
         },
     )
 

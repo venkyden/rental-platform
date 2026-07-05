@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import { ShieldCheck, Trash2, XCircle } from 'lucide-react';
 import { apiClient } from '@/lib/api';
@@ -9,14 +10,17 @@ import { useLanguage } from '@/lib/LanguageContext';
 interface BiometricConsentScreenProps {
     loading?: boolean;
     onConsentedAction: () => void;
+    /** Explicit exit for refusal — defaults to dashboard (history.back() is inert on direct entry) */
+    onRefuseAction?: () => void;
 }
 
 /**
- * GDPR Art. 9 explicit-consent screen. Must be shown BEFORE any selfie
- * capture UI — the backend refuses selfie uploads without a recorded consent.
+ * GDPR Art. 9 explicit-consent screen. Show BEFORE any selfie capture UI —
+ * backend refuses selfie uploads without recorded consent.
  */
-export default function BiometricConsentScreen({ loading, onConsentedAction }: BiometricConsentScreenProps) {
+export default function BiometricConsentScreen({ loading, onConsentedAction, onRefuseAction }: BiometricConsentScreenProps) {
     const { t } = useLanguage();
+    const router = useRouter();
     const [checked, setChecked] = useState(false);
     const [submitting, setSubmitting] = useState(false);
 
@@ -103,7 +107,7 @@ export default function BiometricConsentScreen({ loading, onConsentedAction }: B
                         : t('verify.biometricConsent.accept', undefined, 'I Consent — Continue')}
                 </button>
                 <button
-                    onClick={() => window.history.back()}
+                    onClick={onRefuseAction ?? (() => router.push('/dashboard'))}
                     className="py-5 px-8 text-zinc-500 hover:text-zinc-900 text-[10px] font-black uppercase tracking-[0.3em] transition-colors"
                 >
                     {t('verify.biometricConsent.refuse', undefined, 'Not now')}
