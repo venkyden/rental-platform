@@ -123,7 +123,7 @@ b) Montant récupérable par douzième : […].
 - paiement [à échoir / à terme échu] ;
 - date ou période de paiement : […] ;
 - le cas échéant, Lieu de paiement : […] ;
-- le cas échéant, Montant total dû à la première échéance de paiement pour une période complète de location : [Détailler la somme des montants relatifs au loyer, aux charges récupérable, à la contribution pour le partage des économies de charges et, en cas de colocation, à l'assurance récupérable pou le compte des colocataires].
+- le cas échéant, Montant total dû à la première échéance de paiement pour une période complète de location : [Détailler la somme des montants relatifs au loyer, aux charges récupérable, à la contribution pour le partage des économies de charges et, en cas de colocation, à l'assurance récupérable pour le compte des colocataires].
 
 ### E. Le cas échéant, exclusivement lors d'un renouvellement de contrat, Modalités de réévaluation d'un loyer manifestement sous évalué
 
