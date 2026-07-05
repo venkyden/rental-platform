@@ -465,7 +465,12 @@ async def upload_avatar(
         folder="avatars",
     )
 
+    # purge replaced avatar before dropping its last reference (GDPR purge parity)
+    if current_user.avatar_storage_key:
+        await storage.purge_object(current_user.avatar_storage_key, "avatar_reupload")
+
     current_user.profile_picture_url = result["url"]
+    current_user.avatar_storage_key = result.get("key")
     await db.commit()
     await db.refresh(current_user)
     

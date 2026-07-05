@@ -49,6 +49,9 @@ class User(Base):
     phone = Column(String, nullable=True)
     bio = Column(String, nullable=True)
     profile_picture_url = Column(String, nullable=True)
+    # storage key of current avatar — avatars/ keys are randomized, not per-user
+    # prefixable, so replace/erasure purge needs this (GDPR purge parity)
+    avatar_storage_key = Column(String, nullable=True)
 
     # Verification status
     email_verified = Column(Boolean, default=False)
