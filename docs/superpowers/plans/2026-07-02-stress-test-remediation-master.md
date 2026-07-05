@@ -274,7 +274,7 @@ Do not start WS-7 and WS-1 in overlapping worktrees touching `verification.py` /
 | properties/search/onboarding | KEEP+AUDIT (#3) | passive publisher; preferences → default search filters + objective per-criterion badges (no pairing scores); verified-listing badge tier |
 | applications + visits | KEEP+AUDIT (#4) | user-initiated = defensible; check no verification auto-gating |
 | messages | KEEP+AUDIT (#5) | needed for marketplace; DSA/moderation minimum + scam-pattern warnings |
-| leases + esign | KEEP+AUDIT (#6) | Path B live; Path A branch verdict vs Galand gating conditions |
+| leases + esign | KEEP+AUDIT (#6) | Path B live; Path A merged (PR #23, 2026-07-04) — owner confirmed legal-gate sign-off (Galand opinion 2026-06-20 on file); generation must stay within its gating conditions (official model wording only, mandatory provisions + annexes, verified signers) |
 | inventory (état des lieux) | KEEP+AUDIT (#6) | document tool, aligned |
 | disputes | KEEP+AUDIT (#7) | must be evidence tooling only — Roomivo never mediates/decides |
 | gdpr | KEEP+AUDIT (#8) | WS-1 remainder (guarantor/income purge-in-code, delete_document orphan) |

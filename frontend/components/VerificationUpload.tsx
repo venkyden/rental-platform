@@ -142,7 +142,9 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
     }, [verificationType, propertyId]);
 
     useEffect(() => {
-        if (verificationType === 'identity' && !isMobile && !qrSession) {
+        // QR session ships the selfie flow to the phone — do not bootstrap it
+        // (or open SSE/polling) before Art. 9 consent is loaded AND granted
+        if (verificationType === 'identity' && !isMobile && !qrSession && bioConsented === true) {
             createQrSession();
         }
         if (!documentType) {
@@ -154,7 +156,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
             if (pollRef.current) clearInterval(pollRef.current);
             if (eventSourceRef.current) eventSourceRef.current.close();
         };
-    }, [verificationType, isMobile, user]);
+    }, [verificationType, isMobile, user, bioConsented]);
 
     useEffect(() => {
         return () => { if (idPreviewUrl) URL.revokeObjectURL(idPreviewUrl); };

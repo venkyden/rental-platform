@@ -659,3 +659,28 @@ async def test_front_upload_ai_unavailable_returns_pending_review(client, sessio
 
     assert r.status_code == 200
     assert r.json()["status"] == "document_uploaded"
+
+
+@pytest.mark.asyncio
+async def test_biometric_consent_gate_403_without_consent(client, sessionmaker_):
+    """Real-DB proof of the Art. 9 gate: no consent row -> selfie upload 403."""
+    user = await make_user(sessionmaker_, role="tenant", biometric_consent=False)
+    r = await client.post(
+        "/verification/identity/upload?document_type=id_card",
+        headers=auth(user),
+        data={"side": "selfie_with_id"},
+        files={"file": ("id.jpg", b"\xff\xd8\xff fake-jpeg", "image/jpeg")},
+    )
+    assert r.status_code == 403, r.text
+    assert r.json()["detail"]["code"] == "BIOMETRIC_CONSENT_REQUIRED"
+
+    # Recording consent via the real endpoint clears the gate
+    r2 = await client.post("/verification/biometric-consent", headers=auth(user))
+    assert r2.status_code == 201, r2.text
+    r3 = await client.post(
+        "/verification/identity/upload?document_type=id_card",
+        headers=auth(user),
+        data={"side": "selfie_with_id"},
+        files={"file": ("id.jpg", b"\xff\xd8\xff fake-jpeg", "image/jpeg")},
+    )
+    assert r3.status_code != 403, r3.text

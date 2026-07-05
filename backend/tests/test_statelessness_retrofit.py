@@ -27,15 +27,9 @@ import pytest
 
 
 @pytest.fixture(autouse=True)
-def _biometric_consent_granted():
-    """These flows predate the Art. 9 gate — run them as a consented user;
-    the gate itself is covered in tests/test_biometric_consent.py."""
-    from unittest.mock import AsyncMock, patch as _patch
-    with _patch(
-        "app.routers.verification._has_biometric_consent",
-        new=AsyncMock(return_value=True),
-    ):
-        yield
+def _biometric_consent_granted(biometric_consent_granted):
+    """Flows predate Art. 9 gate — run as consented user (shared fixture in conftest)."""
+    yield
 
 
 

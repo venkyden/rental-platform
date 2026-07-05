@@ -362,6 +362,10 @@ test.describe('2. KYC — Identity (verify/identity)', () => {
         });
         await page.addInitScript(() => localStorage.setItem('app-language', 'en'));
         await mockAuthSession(page);
+        // Art. 9 consent gate renders before any selfie/QR UI — mock it as granted
+        await page.route('**/verification/biometric-consent', route =>
+            route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ consented: true, consent_version: 'e2e' }) }),
+        );
     });
 
     // A — QR session creation failure
