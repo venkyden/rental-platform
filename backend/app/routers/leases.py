@@ -272,6 +272,11 @@ async def download_lease_pdf(
                 "Content-Disposition": f"attachment; filename={filename}"
             },
         )
+    except ValueError as e:
+        # unsupported/blocked lease type (e.g. bail mobilité, art. 25-13) — client error
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         if os.path.exists(tmp_path):
             os.remove(tmp_path)

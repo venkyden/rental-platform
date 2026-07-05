@@ -72,6 +72,22 @@ class LeaseGenerator:
         },
     }
 
+    @staticmethod
+    def _reject_mobilite(lease_type: str) -> None:
+        """Art. 25-13 loi 89-462: generated bail mobilité must carry the
+        bail-mobilité statement, motif (8°) and no-deposit mention (11°) —
+        absent any of these the lease REQUALIFIES as ordinary meublé. This
+        legacy free-form generator emits none of them; the schema-driven path
+        (lease_generation + registry) keeps mobilité reference-only. Blocked
+        to match (see lease_models/2025-01-01/bail_mobilite_requirements.md)."""
+        if lease_type == "mobilite":
+            raise ValueError(
+                "bail mobilité generation is not wired: art. 25-13 mandatory "
+                "mentions (motif, no-deposit notice, bail-mobilité statement) "
+                "are not implemented — generating without them requalifies the "
+                "lease as an ordinary meublé"
+            )
+
     def generate_pdf(
         self,
         property: Property,
@@ -100,6 +116,7 @@ class LeaseGenerator:
             charges: Monthly charges (provisions sur charges)
             duration_months: Custom duration (for mobilité: 1-10 months)
         """
+        self._reject_mobilite(lease_type)
         config = self.LEASE_CONFIGS.get(lease_type, self.LEASE_CONFIGS["meuble"])
 
         # Calculate dates
@@ -188,6 +205,7 @@ class LeaseGenerator:
         guarantor_name: Optional[str] = None,
         landlord_signature: Optional[str] = None,
     ) -> str:
+        self._reject_mobilite(lease_type)
         config = self.LEASE_CONFIGS.get(lease_type, self.LEASE_CONFIGS["meuble"])
         start = datetime.strptime(start_date, "%Y-%m-%d")
         duration = duration_months or config["duration_months"]

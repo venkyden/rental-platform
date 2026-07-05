@@ -126,7 +126,7 @@ b) Date ou trimestre de référence de l'IRL : […].
 - paiement [à échoir / à terme échu] ;
 - date ou période de paiement : […] ;
 - le cas échéant, Lieu de paiement : […] ;
-- le cas échéant, Montant total dû à la première échéance de paiement pour une période complète de location : [détailler la somme des montants relatifs au loyer, aux charges récupérable, à la contribution pour le partage des économies de charges et, en cas de colocation, à l'assurance récupérable pou le compte des colocataires].
+- le cas échéant, Montant total dû à la première échéance de paiement pour une période complète de location : [détailler la somme des montants relatifs au loyer, aux charges récupérable, à la contribution pour le partage des économies de charges et, en cas de colocation, à l'assurance récupérable pour le compte des colocataires].
 
 ### F. Le cas échéant, exclusivement lors d'un renouvellement de contrat, modalités de réévaluation d'un loyer manifestement sous-évalué
 
