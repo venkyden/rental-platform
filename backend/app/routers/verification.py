@@ -165,11 +165,15 @@ async def record_biometric_consent(
     )
     try:
         await db.commit()
-    except IntegrityError:
-        # concurrent double-submit lost the race against
-        # uq_biometric_consents_user_version — consent already on record
+    except IntegrityError as exc:
         await db.rollback()
-        return {"status": "already_recorded", "consent_version": BIOMETRIC_CONSENT_VERSION}
+        # Only the unique-constraint race means "consent already on record";
+        # any other integrity failure must not report a false success on a
+        # legal consent record. String match: asyncpg's constraint_name sits
+        # behind driver wrappers (exc.orig.__cause__) and is version-brittle.
+        if "uq_biometric_consents_user_version" in str(exc.orig):
+            return {"status": "already_recorded", "consent_version": BIOMETRIC_CONSENT_VERSION}
+        raise
     return {"status": "recorded", "consent_version": BIOMETRIC_CONSENT_VERSION}
 
 
