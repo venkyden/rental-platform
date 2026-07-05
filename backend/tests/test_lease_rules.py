@@ -141,3 +141,34 @@ def test_finalisation_advisory_does_not_block():
     )
     assert res.ok is True
     assert res.advisory and "zone tendue" in res.advisory[0].lower()
+
+
+# ── LG-7: DPE décence (loi Climat — class G barred from new leases) ───────────
+
+def test_lg7_dpe_g_blocked_case_insensitive():
+    assert lr.validate_dpe("G") != []
+    assert lr.validate_dpe("g") != []
+
+
+def test_lg7_dpe_valid_classes_ok():
+    for c in "ABCDEF":
+        assert lr.validate_dpe(c) == [], c
+
+
+def test_lg7_dpe_invalid_class_rejected():
+    errs = lr.validate_dpe("H")
+    assert errs and "invalide" in errs[0].lower()
+
+
+def test_lg7_dpe_empty_not_blocked():
+    assert lr.validate_dpe("") == []
+    assert lr.validate_dpe(None) == []
+
+
+def test_finalisation_blocks_dpe_g():
+    res = lr.validate_lease_finalisation(
+        lease_type="vide", deposit=800, monthly_rent_hc=800,
+        present_annexes=ALL_ANNEXES, dpe_class="G",
+    )
+    assert res.ok is False
+    assert any("loi Climat" in b for b in res.blocking)

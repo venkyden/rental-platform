@@ -428,6 +428,20 @@ the LG-1..LG-6 finalisation legality gate, **independent of lease wording**. NOT
 generation finaliser: Path A generation itself stays **gated** on the validated Décret 2015-587 model
 text + the lawyer's mandatory-provisions checklist (the existing `lease_templates.py` is custom-drafted
 prose, not the official model — must be replaced/blessed before generation ships).
+**Official model assets fetched (branch `feat/path-a-lease-generation`, ⏳ pending lawyer sign-off):**
+verbatim Décret 2015-587 **Annexe 1 (vide)** + **Annexe 2 (meublé, serves meublé + étudiant 9-mois)**,
+each with its official footnotes, version-stamped under `app/services/lease_models/2025-01-01/` and
+exposed via `registry.py` (`CURRENT_TEMPLATE_VERSION="2025.01"`; a generated lease will stamp
+`template_version` into the e-sign manifest). **Bail mobilité** has **no decree contrat-type** —
+stored as a legal-requirement *reference* (`bail_mobilite_requirements.md`, verbatim loi 89 art.
+25-12/13/14): reuses the meublé body + art. 25-13 mandatory mentions, no deposit, 1–10 mois
+non-renouvelable, no solidarity clause. **Model set complete; all ⏳ pending lawyer sign-off.**
+**Generator v0.1** (`lease_generation.py`, ⏳ gated): fills the tokenized fillable model
+(`annexe1_vide.fill.md`) blanks with validated values, runs the LG-1..LG-6 gate first, and
+refuses to finalise while any blank remains. **Safety invariant test**: the fillable's
+non-blank text is byte-identical to the verbatim model → generation never alters blessed
+wording (LG-6). v0.1 = `vide` + `meublé`/`étudiant` core fields tokenized (safety invariant covers all 3); optional "le cas échéant" sections,
+meublé/mobilité fillables, PDF + e-sign wiring (stamping `template_version`) are next.
 | # | Edge case | Expected | Now |
 |---|---|---|---|
 | LG-1 | Deposit over cap for type | **block** w/ specific legal cap | ✅ `validate_deposit` (vide 1 / meublé·étudiant 2 mois HC; loi 89 art. 22) |
@@ -436,6 +450,7 @@ prose, not the official model — must be replaced/blessed before generation shi
 | LG-4 | Missing mandatory annex (DPE/ERP/diagnostics/notice) | **block** finalisation; auto-stitch notice | 🟡 `validate_annexes` blocks on missing DPE/ERP/notice; auto-stitch + property-specific diagnostics deferred to the generator |
 | LG-5 | Zone tendue / complément de loyer | carry advisory flag into lease | ✅ `zone_tendue_advisory` (advisory, never blocks) |
 | LG-6 | Only Décret 2015-587 model wording (no custom) | enforce — avoids loi 1971 | ✅ `reject_custom_wording` blocks any custom-clause input |
+| LG-7 | DPE class G (décence, loi Climat since Jan 2025) | **block** new-lease generation | ✅ `validate_dpe` blocks G + out-of-scale (A–G, no H); wired into the generator via `logement_dpe_classe` |
 
 ### 5.6 Lease — uploaded & legality-checked (PRD §6.5) — **all NEW**
 Two acceptance tiers: **VALIDATED** (passed red-line) vs **ATTACHED / NOT

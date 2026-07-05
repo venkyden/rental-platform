@@ -1,0 +1,217 @@
+<!--
+OFFICIAL MODEL — DO NOT EDIT THE LEGAL TEXT.
+
+Source: Décret n°2015-587 du 29 mai 2015, Annexe 1 (logement nu / location vide),
+contrat type de location — reproduced VERBATIM from Légifrance, version en vigueur
+depuis le 01/01/2025.
+https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000043842254
+
+Status: ⏳ PENDING LAWYER SIGN-OFF before it is wired into generation (Path A).
+This file is the canonical wording asset. The generator fills the [...] placeholders
+with field values only — it MUST NOT alter the standardized clause text (loi 1971 / LG-6).
+Bracketed [...] = fillable field. (n) = official footnote marker, preserved as published.
+-->
+
+# Contrat de location — logement nu (Décret n°2015-587, Annexe 1)
+
+## I. Désignation des parties
+
+Le présent contrat est conclu entre les soussignés :
+
+- [nom et prénom, ou dénomination du bailleur / domicile ou siège social / qualité du bailleur (personne physique, personne morale (1)) / adresse électronique (facultatif)] (2) désigné(s) ci-après le bailleur ;
+- le cas échéant, représenté par le mandataire :
+- [nom ou raison sociale et adresse du mandataire ainsi que l'activité exercée] ;
+- le cas échéant, [numéro et lieu de délivrance de la carte professionnelle / nom et adresse du garant] (3).
+- [nom et prénom du ou des locataires ou, en cas de colocation, des colocataires, adresse électronique (facultatif)] désigné(s) ci-après le locataire
+
+Il a été convenu ce qui suit :
+
+## II. Objet du contrat
+
+Le présent contrat a pour objet la location d'un logement ainsi déterminé :
+
+### A. Consistance du logement
+
+- localisation du logement : [exemples : adresse / bâtiment / étage / porte etc.] ;
+- identifiant fiscal du logement : [Numéro Identifiant Fiscal du logement] ;
+- type d'habitat : [immeuble collectif ou individuel] ;
+- régime juridique de l'immeuble : [mono propriété ou copropriété] ;
+- période de construction : [exemples : avant 1949, de 1949 à 1974, de 1975 à 1989, de 1989 à 2005, depuis 2005] ;
+- surface habitable : […] m2 ;
+- nombre de pièces principales : […] ;
+- le cas échéant, Autres parties du logement : [exemples : grenier, comble aménagé ou non, terrasse, balcon, loggia, jardin etc.] ;
+- le cas échéant, Eléments d'équipements du logement : [exemples : cuisine équipée, détail des installations sanitaires etc.] ;
+- modalité de production de chauffage : [individuel ou collectif] (4) ;
+- modalité de production d'eau chaude sanitaire : [individuelle ou collective] (5).
+
+- rappel : un logement décent doit respecter les critères minimaux de performance suivants :
+
+a) En France métropolitaine :
+
+i) A compter du 1er janvier 2025, le niveau de performance minimal du logement correspond à la classe F du DPE ;
+
+ii) A compter du 1er janvier 2028, le niveau de performance minimal du logement correspond à la classe E du DPE ;
+
+iii) A compter du 1er janvier 2034, le niveau de performance minimal du logement correspond à la classe D du DPE.
+
+b) En Guadeloupe, en Martinique, en Guyane, à La Réunion et à Mayotte :
+
+i) A compter du 1er janvier 2028, le niveau de performance minimal du logement correspond à la classe F du DPE ;
+
+ii) A compter du 1er janvier 2031, le niveau de performance minimal du logement correspond à la classe E du DPE.
+
+La consommation d'énergie finale et le niveau de performance du logement sont déterminés selon la méthode du diagnostic de performance énergétique mentionné à l'article L. 126-26 du code de la construction et de l'habitation.
+
+- niveau de performance du logement : [classe du diagnostic de performance énergétique].
+
+### B. Destination des locaux : [usage d'habitation ou usage mixte professionnel et d'habitation]
+
+### C. Le cas échéant, Désignation des locaux et équipements accessoires de l'immeuble à usage privatif du locataire : [exemples : cave, parking, garage etc.]
+
+### D. Le cas échéant, Enumération des locaux, parties, équipements et accessoires de l'immeuble à usage commun : [Garage à vélo, ascenseur, espaces verts, aires et équipements de jeux, laverie, local poubelle, gardiennage, autres prestations et services collectifs etc.]
+
+### E. Le cas échéant, Equipement d'accès aux technologies de l'information et de la communication : [exemples : modalités de réception de la télévision dans l'immeuble, modalités de raccordement internet etc.]
+
+## III. Date de prise d'effet et durée du contrat
+
+La durée du contrat et sa date de prise d'effet sont ainsi définies :
+
+A. Date de prise d'effet du contrat : […]
+
+B. Durée du contrat : [durée minimale de trois ou six ans selon la qualité du bailleur] ou [durée réduite et minimale d'un an lorsqu'un événement précis (6) le justifie]
+
+C. Le cas échéant, Evénement et raison justifiant la durée réduite du contrat de location : […]
+
+En l'absence de proposition de renouvellement du contrat, celui-ci est, à son terme, reconduit tacitement pour 3 ou 6 ans et dans les mêmes conditions. Le locataire peut mettre fin au bail à tout moment, après avoir donné congé. Le bailleur, quant à lui, peut mettre fin au bail à son échéance et après avoir donné congé, soit pour reprendre le logement en vue de l'occuper lui-même ou une personne de sa famille, soit pour le vendre, soit pour un motif sérieux et légitime.
+
+## IV. Conditions financières
+
+Les parties conviennent des conditions financières suivantes :
+
+### A. Loyer
+
+1° Fixation du loyer initial :
+a) Montant du loyer mensuel : […] (7) ;
+b) Le cas échéant, Modalités particulières de fixation initiale du loyer applicables dans certaines zones tendues (8) :
+
+- le loyer du logement objet du présent contrat est soumis au décret fixant annuellement le montant maximum d'évolution des loyers à la relocation : [Oui / Non].
+- le loyer du logement objet du présent contrat est soumis au loyer de référence majoré fixé par arrêté préfectoral : [Oui / Non].
+- montant du loyer de référence : […] €/m2 / Montant du loyer de référence majoré : […] €/m2 ;
+- le cas échéant Complément de loyer : [si un complément de loyer est prévu, indiquer le montant du loyer de base, nécessairement égal au loyer de référence majoré, le montant du complément de loyer et les caractéristiques du logement justifiant le complément de loyer].
+
+c) Le cas échéant, informations relatives au loyer du dernier locataire : [montant du dernier loyer acquitté par le précédent locataire, date de versement et date de la dernière révision du loyer] (9).
+2° Le cas échéant, Modalités de révision :
+a) Date de révision : […].
+b) Date ou trimestre de référence de l'IRL : […].
+
+### B. Charges récupérables
+
+1. Modalité de règlement des charges récupérables : [Provisions sur charges avec régularisation annuelle ou paiement périodique des charges sans provision / En cas de colocation, les parties peuvent convenir de la récupération des charges par le bailleur sous la forme d'un forfait].
+2. Le cas échéant, Montant des provisions sur charges ou, en cas de colocation, du forfait de charge : […].
+3. Le cas échéant, En cas de colocation et si les parties en conviennent, modalités de révision du forfait de charges : […] (10).
+
+### C. Le cas échéant, contribution pour le partage des économies de charges : (11)
+
+1. Montant et durée de la participation du locataire restant à courir au jour de la signature du contrat : […].
+2. Eléments propres à justifier les travaux réalisés donnant lieu à cette contribution : […].
+
+### D. Le cas échéant, En cas de colocation souscription par le bailleur d'une assurance pour le compte des colocataires (12) : [Oui / Non]
+
+1. Montant total annuel récupérable au titre de l'assurance pour compte des colocataires : […] (13).
+2. Montant récupérable par douzième : […].
+
+### E. Modalités de paiement
+
+- périodicité du paiement : [… (14)] ;
+- paiement [à échoir / à terme échu] ;
+- date ou période de paiement : […] ;
+- le cas échéant, Lieu de paiement : […] ;
+- le cas échéant, Montant total dû à la première échéance de paiement pour une période complète de location : [détailler la somme des montants relatifs au loyer, aux charges récupérable, à la contribution pour le partage des économies de charges et, en cas de colocation, à l'assurance récupérable pou le compte des colocataires].
+
+### F. Le cas échéant, exclusivement lors d'un renouvellement de contrat, modalités de réévaluation d'un loyer manifestement sous-évalué
+
+1. Montant de la hausse ou de la baisse de loyer mensuelle : […].
+2. Modalité d'application annuelle de la hausse : [par tiers ou par sixième selon la durée du contrat et le montant de la hausse de loyer].
+
+### G. Dépenses énergétiques (pour information)
+
+Montant estimé des dépenses annuelles d'énergie pour un usage standard de l'ensemble des usages énumérés dans le diagnostic de performance énergétique (chauffage, refroidissement, production d'eau chaude sanitaire, éclairage et auxiliaires de chauffage, de refroidissement, d'eau chaude sanitaire et de ventilation) mentionné à l'article L. 126-26 du code de la construction et de l'habitation : [montant ou fourchette inscrit dans le diagnostic de performance énergétique] (estimation réalisée à partir des prix énergétiques de référence de l'année : [année de référence des prix énergétiques du diagnostic énergétique à l'origine de l'estimation]).
+
+## V. Travaux
+
+A. Le cas échéant, Montant et nature des travaux d'amélioration ou de mise en conformité avec les caractéristiques de décence effectués depuis la fin du dernier contrat de location ou depuis le dernier renouvellement : […] (15)
+
+B. Le cas échéant, Majoration du loyer en cours de bail consécutive à des travaux d'amélioration entrepris par le bailleur : [nature des travaux, modalités d'exécution, délai de réalisation ainsi que montant de la majoration du loyer] (16)
+
+C. Le cas échéant, Diminution de loyer en cours de bail consécutive à des travaux entrepris par le locataire : [durée de cette diminution et, en cas de départ anticipé du locataire, modalités de son dédommagement sur justification des dépenses effectuées]
+
+## VI. Garanties
+
+Le cas échéant, Montant du dépôt de garantie de l'exécution des obligations du locataire / Garantie autonome : [inférieur ou égal à un mois de loyers hors charges].
+
+## VII. Le cas échéant, Clause de solidarité
+
+Modalités particulières des obligations en cas de pluralité de locataires : [clause prévoyant la solidarité des locataires et l'indivisibilité de leurs obligations en cas de pluralité de locataires].
+
+## VIII. Le cas échéant, Clause résolutoire
+
+Modalités de résiliation de plein droit du contrat : [clause prévoyant la résiliation de plein droit du contrat de location pour un défaut de paiement du loyer ou des charges aux termes convenus, le non versement du dépôt de garantie, la non-souscription d'une assurance des risques locatifs ou le non-respect de l'obligation d'user paisiblement des locaux loués, résultant de troubles de voisinage constatés par une décision de justice passée en force de chose jugée].
+
+## IX. Le cas échéant, Honoraires de location (17)
+
+### A. Dispositions applicables
+
+Il est rappelé les dispositions du I de l'article 5 (I) de la loi du 6 juillet 1989, alinéas 1 à 3 : "La rémunération des personnes mandatées pour se livrer ou prêter leur concours à l'entremise ou à la négociation d'une mise en location d'un logement, tel que défini aux articles 2 et 25-3, est à la charge exclusive du bailleur, à l'exception des honoraires liés aux prestations mentionnées aux deuxième et troisième alinéas du présent I."
+
+"Les honoraires des personnes mandatées pour effectuer la visite du preneur, constituer son dossier et rédiger un bail sont partagés entre le bailleur et le preneur." Le montant toutes taxes comprises imputé au preneur pour ces prestations ne peut excéder celui imputé au bailleur et demeure inférieur ou égal à un plafond par mètre carré de surface habitable de la chose louée fixé par voie réglementaire et révisable chaque année, dans des conditions définies par décret. Ces honoraires sont dus à la signature du bail.
+
+"Les honoraires des personnes mandatées pour réaliser un état des lieux sont partagés entre le bailleur et le preneur." Le montant toutes taxes comprises imputé au locataire pour cette prestation ne peut excéder celui imputé au bailleur et demeure inférieur ou égal à un plafond par mètre carré de surface habitable de la chose louée fixé par voie réglementaire et révisable chaque année, dans des conditions définies par décret. Ces honoraires sont dus à compter de la réalisation de la prestation.
+
+Plafonds applicables :
+
+- montant du plafond des honoraires imputables aux locataires en matière de prestation de visite du preneur, de constitution de son dossier et de rédaction de bail : […] €/m2 de surface habitable ;
+- montant du plafond des honoraires imputables aux locataires en matière d'établissement de l'état des lieux d'entrée : […] €/m2 de surface habitable.
+
+### B. Détail et répartition des honoraires
+
+1. Honoraires à la charge du bailleur :
+
+- prestations de visite du preneur, de constitution de son dossier et de rédaction de bail : [détail des prestations effectivement réalisées et montant des honoraires toutes taxes comprises dus à la signature du bail] ;
+- le cas échéant, Prestation de réalisation de l'état des lieux d'entrée : [montant des honoraires toutes taxes comprises dus à compter de la réalisation de la prestation] ;
+- autres prestations : [détail des prestations et conditions de rémunération].
+
+2. Honoraires à la charge du locataire :
+
+- prestations de visite du preneur, de constitution de son dossier et de rédaction de bail : [détail des prestations effectivement réalisées et montant des honoraires toutes taxes comprises dus à la signature du bail] ;
+- le cas échéant, Prestation de réalisation de l'état des lieux d'entrée : [montant des honoraires toutes taxes comprises dus à compter de la réalisation de la prestation].
+
+## X. Autres conditions particulières
+
+[A définir par les parties]
+
+## XI. Annexes
+
+Sont annexées et jointes au contrat de location les pièces suivantes :
+
+A. Le cas échéant, un extrait du règlement concernant la destination de l'immeuble, la jouissance et l'usage des parties privatives et communes, et précisant la quote-part afférente au lot loué dans chacune des catégories de charges
+
+B. Un dossier de diagnostic technique comprenant
+
+- un diagnostic de performance énergétique ;
+- un constat de risque d'exposition au plomb pour les immeubles construits avant le 1er janvier 1949 ;
+- une copie d'un état mentionnant l'absence ou la présence de matériaux ou de produits de la construction contenant de l'amiante (18) ;
+- un état de l'installation intérieure d'électricité et de gaz, dont l'objet est d'évaluer les risques pouvant porter atteinte à la sécurité des personnes (19) ;
+- le cas échéant, un état des risques naturels et technologiques pour les zones couvertes par un plan de prévention des risques technologiques ou par un plan de prévention des risques naturels prévisibles, prescrit ou approuvé, ou dans des zones de sismicité (20).
+
+C. Une notice d'information relative aux droits et obligations des locataires et des bailleurs
+
+D. Un état des lieux (21)
+
+E. Le cas échéant, Une autorisation préalable de mise en location (22)
+
+F. Le cas échéant, Les références aux loyers habituellement constatés dans le voisinage pour des logements comparables (23)
+
+---
+
+Le [date], à [lieu],
+Signature du bailleur [ou de son mandataire, le cas échéant]     Signature du locataire
