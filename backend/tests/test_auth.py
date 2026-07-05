@@ -193,6 +193,15 @@ class TestAuthAuditHardening:
     """2026-07-04 auth audit: session revocation on password change,
     Google-only email-change refusal, property_manager auto-unlock removal."""
 
+    @pytest.fixture(autouse=True)
+    def _clear_overrides(self):
+        """Clear dependency_overrides after each test — _client_for installs
+        them on the shared app; without teardown they leak into later tests."""
+        yield
+        from app.main import app
+        target_app = app.app if hasattr(app, "app") else app
+        target_app.dependency_overrides.clear()
+
     def _client_for(self, user):
         from fastapi.testclient import TestClient
         from app.main import app
