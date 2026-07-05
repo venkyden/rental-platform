@@ -58,6 +58,7 @@ def make_mock_user(role: str = "tenant", email: str = "test@example.com"):
     user.income_status = "unverified"
     user.income_data = None
     user.solvency_verified = False  # real User has a @property; mocks need a bool default
+    user.avatar_storage_key = None  # real column defaults NULL; truthy MagicMock would trip purge branches
     user.guarantor_type = None
     user.guarantor_status = "unverified"
     user.guarantor_data = None

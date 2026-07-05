@@ -230,6 +230,11 @@ async def delete_user_data(
     await storage.delete_files_by_prefix(f"verification/guarantor/{current_user.id}")
     await storage.delete_files_by_prefix(f"verification/property/{current_user.id}")
 
+    # Avatar lives under shared avatars/ folder (randomized name, no per-user
+    # prefix) — delete by stored key
+    if current_user.avatar_storage_key:
+        await storage.purge_object(current_user.avatar_storage_key, "gdpr_erasure_avatar")
+
     # Fallback: Delete specific keys if they exist in JSONB (for older uploads)
     if current_user.identity_data and isinstance(current_user.identity_data, dict):
         key = current_user.identity_data.get("storage_key")
