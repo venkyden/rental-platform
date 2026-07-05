@@ -20,6 +20,20 @@ depends_on = None
 
 
 def upgrade() -> None:
+    # Dedup first: keep the earliest consent per (user_id, consent_version) —
+    # the constraint creation fails outright if race-produced duplicates exist.
+    # No-op on clean databases; environments that already applied this
+    # revision never re-run it.
+    op.execute(
+        """
+        DELETE FROM biometric_consents a
+        USING biometric_consents b
+        WHERE a.user_id = b.user_id
+          AND a.consent_version = b.consent_version
+          AND (a.consented_at > b.consented_at
+               OR (a.consented_at = b.consented_at AND a.id > b.id))
+        """
+    )
     op.create_unique_constraint(
         "uq_biometric_consents_user_version",
         "biometric_consents",

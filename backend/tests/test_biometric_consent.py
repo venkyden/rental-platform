@@ -166,3 +166,46 @@ class TestConsentEnforcement:
             )
         assert response.status_code == 400
         assert "document" in response.json()["detail"].lower()
+
+
+class TestConsentIntegrityHandling:
+    """PR #39 follow-up: only the unique-constraint race maps to
+    already_recorded; other integrity failures must not fake success."""
+
+    def _client_with_commit_error(self, user, orig_message):
+        from sqlalchemy.exc import IntegrityError as SAIntegrityError
+        from fastapi.testclient import TestClient
+        from app.main import app
+        from app.core.database import get_db
+        from app.routers.auth import get_current_user
+
+        target_app = app.app if hasattr(app, "app") else app
+        target_app.dependency_overrides[get_current_user] = lambda: user
+
+        def failing_session():
+            s = MagicMock()
+            s.execute = AsyncMock(return_value=MagicMock(scalar_one_or_none=MagicMock(return_value=None)))
+            s.add = MagicMock()
+            s.commit = AsyncMock(side_effect=SAIntegrityError("stmt", {}, Exception(orig_message)))
+            s.rollback = AsyncMock()
+            yield s
+
+        target_app.dependency_overrides[get_db] = failing_session
+        return TestClient(app, raise_server_exceptions=False)
+
+    def test_unique_race_returns_already_recorded(self):
+        user = make_mock_user("tenant")
+        client = self._client_with_commit_error(
+            user, 'duplicate key value violates unique constraint "uq_biometric_consents_user_version"'
+        )
+        resp = client.post("/verification/biometric-consent")
+        assert resp.status_code == 201
+        assert resp.json()["status"] == "already_recorded"
+
+    def test_other_integrity_error_is_not_swallowed(self):
+        user = make_mock_user("tenant")
+        client = self._client_with_commit_error(
+            user, 'insert violates foreign key constraint "biometric_consents_user_id_fkey"'
+        )
+        resp = client.post("/verification/biometric-consent")
+        assert resp.status_code == 500  # surfaced, not a fake "already_recorded"
