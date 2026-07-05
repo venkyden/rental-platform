@@ -286,16 +286,39 @@ SEGMENT_CONFIGS: Dict[str, SegmentConfig] = {
 }
 
 
+# Agency tooling FREEZE (feature-audit verdict 2026-07-04): features and nav
+# entries stripped from served segment configs while ENABLE_AGENCY_TOOLING is
+# False. Backing routers are unmounted in main.py behind the same flag.
+FROZEN_AGENCY_FEATURES = {"team", "bulk_import", "webhooks", "api_access", "white_label"}
+FROZEN_AGENCY_ACTION_IDS = {"team", "bulk", "webhooks"}
+
+
+def _apply_agency_freeze(config: SegmentConfig) -> SegmentConfig:
+    from app.core.config import settings
+
+    if settings.ENABLE_AGENCY_TOOLING:
+        return config
+    frozen_touch = FROZEN_AGENCY_FEATURES.intersection(config.features) or any(
+        a.get("id") in FROZEN_AGENCY_ACTION_IDS for a in config.quick_actions
+    )
+    if not frozen_touch:
+        return config
+    return config.model_copy(update={
+        "features": [f for f in config.features if f not in FROZEN_AGENCY_FEATURES],
+        "quick_actions": [a for a in config.quick_actions if a.get("id") not in FROZEN_AGENCY_ACTION_IDS],
+    })
+
+
 def get_segment_config(segment: Optional[str], role: Optional[str] = None) -> SegmentConfig:
     """Get configuration for a user segment, with fallback based on role to D1/S1"""
     if segment and segment in SEGMENT_CONFIGS:
-        return SEGMENT_CONFIGS[segment]
+        return _apply_agency_freeze(SEGMENT_CONFIGS[segment])
         
     # Default based on role
     if role in ["landlord", "property_manager"]:
-        return SEGMENT_CONFIGS["S1"]
+        return _apply_agency_freeze(SEGMENT_CONFIGS["S1"])
         
-    return SEGMENT_CONFIGS["D1"]
+    return _apply_agency_freeze(SEGMENT_CONFIGS["D1"])
 
 
 def get_redirect_path(segment: Optional[str], role: str) -> str:

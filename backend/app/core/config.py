@@ -56,6 +56,11 @@ class Settings(BaseSettings):
     # retired key expires. Runbook: docs/features/trust-layer/KEY-LIFECYCLE.md
     CREDENTIAL_RETIRED_VERIFY_KEYS: Optional[str] = None
 
+    # Agency tooling FREEZE (feature-audit verdict 2026-07-04): property_manager,
+    # team, bulk, erp_webhooks routers unmounted + segment nav hidden while False.
+    # Revisit at B2B demand — code retained, not deleted.
+    ENABLE_AGENCY_TOOLING: bool = False
+
     # CORS
     FRONTEND_URL: str = "http://localhost:3000"
     

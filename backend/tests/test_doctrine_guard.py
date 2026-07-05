@@ -64,7 +64,7 @@ class TestRouteSurfaceManifest:
 # A new entry REQUIRES a purge/erasure story (WS-1 invariant: dropping the
 # last reference to a stored object must delete the object).
 STORAGE_WRITE_ALLOWLIST = {
-    "app/routers/auth.py",          # avatar — ⚠ known gap: replace/erasure orphan (WS-1 follow-up)
+    "app/routers/auth.py",          # avatar — replace + erasure purge via users.avatar_storage_key
     "app/routers/documents.py",     # Document rows; delete purges via storage_key (WS-1)
     "app/routers/esign.py",         # signed lease PDF; lifecycle tied to lease (legal-gate module)
     "app/routers/media.py",         # generic upload — ⚠ no reference tracking (feature-audit program)

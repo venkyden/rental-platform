@@ -16,6 +16,7 @@ Sources:
 - art. 25-12 https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000037649115/
 - art. 25-13 https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000037649090/
 - art. 25-14 https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000037649092/
+- art. 25-17 https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000037649098/
 -->
 
 # Bail mobilité — exigences légales (loi n°89-462, titre Ier ter)
@@ -97,3 +98,7 @@ Par dérogation au premier alinéa, le bail mobilité peut être conclu pour une
 La durée du contrat de location prévue au 4° du I de l'article 25-13 de la présente loi peut être modifiée une fois par avenant sans que la durée totale du contrat dépasse dix mois, ou dix-huit mois si le logement fait partie d'une résidence à vocation d'emploi définie à l'article L. 631-16-1 du code de la construction et de l'habitation.
 
 Si, au terme du contrat, les parties concluent un nouveau bail portant sur le même logement meublé, ce nouveau bail est soumis aux dispositions du titre Ier bis de la présente loi.
+
+## Art. 25-17 (verbatim, en vigueur 25 nov. 2018)
+
+Aucun dépôt de garantie ne peut être exigé par le bailleur.
