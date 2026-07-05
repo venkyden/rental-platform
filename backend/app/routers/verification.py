@@ -15,6 +15,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Reques
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy import func, select, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -43,8 +44,8 @@ async def _has_biometric_consent(user_id, db: AsyncSession) -> bool:
 
 
 async def _require_biometric_consent(user_id, db: AsyncSession) -> None:
-    """GDPR Art. 9: block any selfie/face-match processing without a recorded
-    explicit consent at the current wording version."""
+    """GDPR Art. 9: block selfie/face-match processing without recorded
+    explicit consent at current wording version."""
     if not await _has_biometric_consent(user_id, db):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -53,7 +54,7 @@ async def _require_biometric_consent(user_id, db: AsyncSession) -> None:
                 "message": (
                     "Explicit consent to the selfie face-match is required before "
                     "any biometric processing. Record it via POST "
-                    "/api/v1/verification/biometric-consent, or use a "
+                    "/verification/biometric-consent, or use a "
                     "document-only verification instead."
                 ),
                 "consent_version": BIOMETRIC_CONSENT_VERSION,
@@ -162,7 +163,13 @@ async def record_biometric_consent(
             user_agent=(request.headers.get("user-agent") or "")[:400] or None,
         )
     )
-    await db.commit()
+    try:
+        await db.commit()
+    except IntegrityError:
+        # concurrent double-submit lost the race against
+        # uq_biometric_consents_user_version — consent already on record
+        await db.rollback()
+        return {"status": "already_recorded", "consent_version": BIOMETRIC_CONSENT_VERSION}
     return {"status": "recorded", "consent_version": BIOMETRIC_CONSENT_VERSION}
 
 

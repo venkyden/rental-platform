@@ -182,3 +182,14 @@ def pm_client():
     with TestClient(main_app) as c:
         yield c
     target_app.dependency_overrides.clear()
+
+@pytest.fixture
+def biometric_consent_granted():
+    """Patch Art. 9 consent gate open. NOT autouse — real gate behavior is
+    covered in tests/test_biometric_consent.py; opt in via thin autouse shim."""
+    from unittest.mock import AsyncMock, patch as _patch
+    with _patch(
+        "app.routers.verification._has_biometric_consent",
+        new=AsyncMock(return_value=True),
+    ):
+        yield
