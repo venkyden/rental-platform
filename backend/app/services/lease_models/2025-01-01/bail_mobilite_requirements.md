@@ -11,7 +11,13 @@ mandatory mentions below — there is no separate verbatim contrat-type to repro
 file records the authoritative legal requirements (art. 25-12/13/14, verbatim from
 Légifrance, en vigueur) + a generation checklist.
 
-Status: ⏳ PENDING LAWYER SIGN-OFF before any bail-mobilité generation is wired.
+Status: ⚠️ GENERATION ENABLED under explicit OWNER RISK-ACCEPTANCE (2026-07-05),
+AHEAD of lawyer sign-off. The fillable template `bail_mobilite.fill.md` is a DERIVED
+assembly (official meublé body minus tacit-renewal + verbatim art. 25-12/13/14
+mandatory mentions), NOT a decree contrat-type. The requalification shield (statement
++ 4° durée + 8° motif, all mandatory) is enforced in code, but the wording assembly is
+founder-authored and NOT counsel-verified. Counsel review of the derived wording remains
+outstanding and SHOULD precede production exposure to real users.
 Sources:
 - art. 25-12 https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000037649115/
 - art. 25-13 https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000037649090/

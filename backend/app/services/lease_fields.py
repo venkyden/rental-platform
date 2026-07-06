@@ -51,6 +51,17 @@ FIELDS: dict[str, Field] = {
     # III. Durée
     "date_prise_effet": Field(required=True, type="date", label="Date de prise d'effet", source="Annexe III"),
     "duree_contrat": Field(required=True, label="Durée du contrat", source="Annexe III"),
+    # Bail mobilité only — motif (art. 25-12), mandatory mention 8° (art. 25-13 I).
+    # Required: absent it, the lease requalifies as ordinary meublé (art. 25-13 al. 2).
+    "motif_mobilite": Field(required=True, type="enum", enum=(
+        "formation professionnelle",
+        "études supérieures",
+        "contrat d'apprentissage",
+        "stage",
+        "engagement volontaire dans le cadre d'un service civique",
+        "mutation professionnelle",
+        "mission temporaire dans le cadre de son activité professionnelle",
+    ), label="Motif du bail mobilité (art. 25-12)", source="Loi 89-462 art. 25-12/25-13 I 8°"),
     # IV / VI. Financier
     "loyer_mensuel": Field(required=True, type="number", label="Loyer mensuel (€)", source="Annexe IV.A"),
     "depot_garantie": Field(required=True, type="number", label="Dépôt de garantie (€)", source="Annexe VI"),
