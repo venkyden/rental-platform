@@ -47,6 +47,9 @@ TEMPLATE_VERSIONS: dict[str, dict] = {
             "vide": "annexe1_vide.fill.md",
             "meuble": "annexe2_meuble.fill.md",
             "etudiant": "annexe2_meuble.fill.md",
+            # DERIVED template (no decree contrat-type) — owner risk-accepted 2026-07-05,
+            # pending counsel verification. See bail_mobilite.fill.md provenance header.
+            "mobilite": "bail_mobilite.fill.md",
         },
     },
 }
