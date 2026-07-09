@@ -77,3 +77,46 @@ def test_one_cent_tolerance_not_rejected():
     err = validate_rent_control(20 * 30, 30, 20, None, None)
     # Assert
     assert err is None
+
+
+# ── Deposit cap: hors charges (loi 1989 Art. 22) ──────────────────────────
+
+from types import SimpleNamespace
+from app.services.french_compliance import validate_property_compliance
+
+
+def _prop(**kw):
+    """Minimal property stub; only the fields the compliance check reads."""
+    base = dict(
+        deposit=None, monthly_rent=None, charges=None, charges_included=False,
+        furnished=False, size_sqm=30,
+        loyer_reference_majore=None, complement_de_loyer=None,
+        complement_de_loyer_justification=None, dpe_rating="D",
+    )
+    base.update(kw)
+    return SimpleNamespace(**base)
+
+
+def test_deposit_cap_uses_rent_hors_charges_when_charges_included():
+    # 1000€ CC incl. 100€ charges -> 900€ HC -> unfurnished cap = 900€.
+    # A 1000€ deposit is over the legal max and must be rejected.
+    errors = validate_property_compliance(
+        _prop(deposit=1000, monthly_rent=1000, charges=100, charges_included=True)
+    )
+    assert any("hors charges" in e for e in errors), errors
+
+
+def test_deposit_at_hors_charges_cap_is_compliant():
+    # Same listing, deposit exactly 900€ (1 month HC) -> compliant.
+    errors = validate_property_compliance(
+        _prop(deposit=900, monthly_rent=1000, charges=100, charges_included=True)
+    )
+    assert errors == []
+
+
+def test_deposit_cap_ignores_charges_when_rent_is_hors_charges():
+    # charges_included=False -> monthly_rent is already HC; full amount is the base.
+    errors = validate_property_compliance(
+        _prop(deposit=1000, monthly_rent=1000, charges=100, charges_included=False)
+    )
+    assert errors == []
