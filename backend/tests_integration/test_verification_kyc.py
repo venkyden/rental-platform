@@ -415,16 +415,21 @@ async def test_selfie_with_id_auth_ai_rejected(client, sessionmaker_):
 
 
 @pytest.mark.asyncio
-async def test_selfie_with_id_auth_ai_unavailable_accepts(client, sessionmaker_):
-    """AI down → pending_review → upload succeeds (no hard block on user)."""
+async def test_selfie_with_id_auth_ai_unavailable_fails_closed(client, sessionmaker_):
+    """AI down → status='error' → 503, user NOT marked verified.
+
+    A trust product must never fabricate a verified fact when its verifier is
+    down (fail closed; audit 2026-07-05). The old contract returned verified=True
+    on failure, which could mint a MEDIUM identity credential with no face-match.
+    """
     user = await make_user(sessionmaker_, role="tenant")
 
     with patch("app.services.identity.identity_service") as mock_svc, \
          patch("app.services.storage.storage", _fake_storage()), \
          patch("app.routers.verification.apply_watermark", return_value=b"wm"):
         mock_svc.verify_selfie_with_id = AsyncMock(return_value={
-            "verified": True, "status": "pending_review",
-            "data": None, "validation_checks": [], "rejection_reason": None,
+            "verified": False, "status": "error",
+            "data": None, "validation_checks": [], "rejection_reason": "verification_service_unavailable",
         })
         r = await client.post(
             "/verification/identity/upload?document_type=passport",
@@ -433,8 +438,12 @@ async def test_selfie_with_id_auth_ai_unavailable_accepts(client, sessionmaker_)
             headers=auth(user),
         )
 
-    assert r.status_code == 200
-    assert r.json()["verified"] is True
+    assert r.status_code == 503
+    async with sessionmaker_() as s:
+        from app.models.user import User as U
+        refreshed = await s.get(U, user.id)
+        assert refreshed.identity_verified is False
+        assert refreshed.identity_status != "verified"
 
 
 @pytest.mark.asyncio

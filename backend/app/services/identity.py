@@ -448,12 +448,14 @@ Return ONLY the JSON."""
         Combines OCR, liveness check, and face-match in one AI call.
         """
         if not self.ai_client:
+            # Fail CLOSED: never mark verified without a real face-match. A trust
+            # product must not fabricate a verified fact when its verifier is down.
             return {
-                "verified": True,
-                "status": "pending_review",
+                "verified": False,
+                "status": "error",
                 "data": None,
                 "validation_checks": [],
-                "rejection_reason": None,
+                "rejection_reason": "verification_service_unavailable",
             }
 
         from app.core.gemini_quota import check_quota
@@ -634,10 +636,12 @@ Rules:
                     elif "404" in err or "NOT_FOUND" in err:
                         break
                     logger.error(f"Selfie+ID verification failed: {e}", exc_info=True)
-                    return {"verified": True, "status": "pending_review", "data": None, "validation_checks": [], "rejection_reason": None}
+                    # Fail CLOSED — service error must not become a verified fact.
+                    return {"verified": False, "status": "error", "data": None, "validation_checks": [], "rejection_reason": "verification_service_unavailable"}
 
         logger.error(f"All models failed for selfie+ID verification. Last error: {last_error}")
-        return {"verified": True, "status": "pending_review", "data": None, "validation_checks": [], "rejection_reason": None}
+        # Fail CLOSED — exhausted retries must not become a verified fact.
+        return {"verified": False, "status": "error", "data": None, "validation_checks": [], "rejection_reason": "verification_service_unavailable"}
 
     async def compare_faces(
         self,
