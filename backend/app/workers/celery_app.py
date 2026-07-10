@@ -13,7 +13,7 @@ if redis_url.startswith("rediss://") and "ssl_cert_reqs=" not in redis_url:
 celery_app = Celery(
     "rental_platform_worker",
     broker=redis_url,
-    backend=redis_url,
+    backend=None, # Disable result backend to save Redis requests
 )
 
 # Optional configuration
@@ -28,6 +28,16 @@ celery_app.conf.update(
     # Crashed worker flips Render state, fires notifyOnFail. ~3 min vs ~50.
     broker_connection_retry_on_startup=True,
     broker_connection_max_retries=10,
+    
+    # Upstash/Serverless Redis Optimization: Reduce chatter and limits
+    worker_send_task_events=False,
+    task_send_sent_event=False,
+    worker_prefetch_multiplier=1,
+    broker_transport_options={
+        "visibility_timeout": 3600,
+        "max_connections": 5,
+        "socket_timeout": 5,
+    },
 )
 
 # Discover tasks automatically (you can add tasks later)
