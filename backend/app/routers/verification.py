@@ -233,7 +233,15 @@ async def upload_identity_document(
             document_type=document_type,
             expected_name=current_user.full_name,
         )
-        if not result["verified"] and result["status"] == "rejected":
+        if not result["verified"]:
+            # Fail closed: a service error (AI down) is a retryable 503, a genuine
+            # face/OCR mismatch is a 400. Neither may mark the user verified.
+            if result["status"] == "error":
+                logger.error(f"Selfie+ID verification unavailable for user {current_user.id}")
+                raise HTTPException(
+                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                    detail="Identity verification is temporarily unavailable. Please try again in a moment.",
+                )
             logger.warning(f"Selfie+ID rejected for user {current_user.id}: {result.get('rejection_reason')}")
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -496,7 +504,11 @@ async def upload_identity_mobile(
             document_type=document_type,
             expected_name=user.full_name,
         )
-        if not doc_result["verified"] and doc_result["status"] == "rejected":
+        if not doc_result["verified"]:
+            # Fail closed (see the authenticated path above): AI-down → 503, mismatch → 400.
+            if doc_result["status"] == "error":
+                logger.error(f"Selfie+ID verification unavailable for session {verification_code}")
+                raise HTTPException(status_code=503, detail="Identity verification is temporarily unavailable. Please try again in a moment.")
             logger.warning(f"Selfie+ID rejected for session {verification_code}: {doc_result.get('rejection_reason')}")
             raise HTTPException(status_code=400, detail=f"Verification failed: {doc_result.get('rejection_reason')}")
 
