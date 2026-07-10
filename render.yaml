@@ -100,7 +100,7 @@ services:
     branch: master
     rootDir: backend
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "python -m celery -A app.workers.celery_app worker --loglevel=info --concurrency=2"
+    startCommand: "python -m celery -A app.workers.celery_app worker --loglevel=info --concurrency=2 --without-gossip --without-mingle --without-heartbeat"
     envVars:
       - key: PYTHON_VERSION
         value: "3.13"
