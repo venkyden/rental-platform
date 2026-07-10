@@ -207,7 +207,7 @@ async def get_tenant_stats(
     from app.models.dispute import Dispute
     result_disputes = await db.execute(
         select(func.count(Dispute.id)).where(
-            and_(Dispute.user_id == current_user.id, Dispute.status != "resolved")
+            and_(Dispute.raised_by_id == current_user.id, Dispute.status != "resolved")
         )
     )
     active_disputes = result_disputes.scalar_one_or_none() or 0
