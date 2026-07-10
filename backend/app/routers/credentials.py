@@ -26,7 +26,7 @@ from app.core.timeutils import naive_utcnow
 from app.models.credential import Credential
 from app.routers.auth import get_current_user
 from app.models.user import User
-from app.services.credential import credential_service
+from app.services.credential import credential_service, TRUST_DISCLOSURE_POINTS
 
 logger = logging.getLogger(__name__)
 
@@ -79,6 +79,7 @@ class VerifyResponse(BaseModel):
     disclaimer: str
     kid: Optional[str] = None    # id of the signing key (see /credentials/public-keys)
     assurance_summary: str       # human-readable summary for the verify page
+    does_not_prove: list[str]    # F5: explicit limits the verify page must show prominently
 
 
 def _assurance_summary(claims: dict) -> str:
@@ -258,6 +259,7 @@ async def verify_credential(
         disclaimer=row.disclaimer,
         kid=row.kid,
         assurance_summary=_assurance_summary(row.claims),
+        does_not_prove=list(TRUST_DISCLOSURE_POINTS),
     )
 
 
