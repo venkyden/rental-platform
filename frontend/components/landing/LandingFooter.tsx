@@ -95,10 +95,20 @@ export default function LandingFooter() {
               <ul className="space-y-5">
                 {section.links.map((link, j) => (
                   <li key={j}>
-                    <Link href={link.href} className="text-zinc-500 hover:text-zinc-900 font-medium transition-all duration-300 flex items-center group">
-                      <span className="w-0 group-hover:w-2 h-px bg-zinc-900 mr-0 group-hover:mr-2 transition-all duration-300"></span>
-                      {link.label}
-                    </Link>
+                    {link.href.startsWith('mailto:') ? (
+                      <a
+                        href={link.href}
+                        className="text-zinc-500 hover:text-zinc-900 font-medium transition-all duration-300 flex items-center group"
+                      >
+                        <span className="w-0 group-hover:w-2 h-px bg-zinc-900 mr-0 group-hover:mr-2 transition-all duration-300"></span>
+                        {link.label}
+                      </a>
+                    ) : (
+                      <Link href={link.href} className="text-zinc-500 hover:text-zinc-900 font-medium transition-all duration-300 flex items-center group">
+                        <span className="w-0 group-hover:w-2 h-px bg-zinc-900 mr-0 group-hover:mr-2 transition-all duration-300"></span>
+                        {link.label}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>
