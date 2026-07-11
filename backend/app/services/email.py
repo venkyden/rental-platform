@@ -35,9 +35,9 @@ def _render(body_html: str, preview_text: str = "") -> str:
   <style>
     body,html{{margin:0;padding:0;background:#f4f4f4;font-family:'Inter','Helvetica Neue',Arial,sans-serif;color:#111;-webkit-font-smoothing:antialiased}}
     .wrapper{{background:#f4f4f4;padding:40px 16px}}
-    .card{background:#ffffff;border-radius:16px;overflow:hidden;max-width:600px;margin:0 auto;box-shadow:0 2px 8px rgba(0,0,0,.06)}
-    .header{background-color:#000000;background-image:url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=');background-repeat:repeat;padding:28px 40px;text-align:left}
-    .header img{height:32px;width:auto;display:block}
+    .card{{background:#ffffff;border-radius:16px;overflow:hidden;max-width:600px;margin:0 auto;box-shadow:0 2px 8px rgba(0,0,0,.06)}}
+    .header{{background-color:#000000;background-image:url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=');background-repeat:repeat;padding:28px 40px;text-align:left}}
+    .header img{{height:32px;width:auto;display:block}}
     .body{{padding:40px 40px 32px}}
     h1{{font-size:22px;font-weight:700;margin:0 0 16px;letter-spacing:-.4px;color:#111}}
     p{{font-size:15px;line-height:1.65;color:#444;margin:0 0 16px}}
