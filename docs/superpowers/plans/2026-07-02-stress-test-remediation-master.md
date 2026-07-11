@@ -77,7 +77,17 @@ Demote the two-sided consumer wedge to demo status; lead B2B with 2D-Doc
 dossier-fraud detection (the check that survives PVID objections)? Affects pitch
 dossier structure, pricing pages §13–15, and Phase-1 build order.
 
-### DG-2 — Anti-filtering stance (gates the F4 slice of WS-5)
+### DG-2 — Anti-filtering stance (gates the F4 slice of WS-5) — ✅ RESOLVED 2026-07-05
+
+> **Owner decision (2026-07-05): non-gating + active warning.** Tier stays
+> honestly visible (it is the core B2B signal), BUT Roomivo's own marketplace
+> never lets a landlord filter/sort/auto-reject candidates by assurance tier,
+> and shows a 225-1 discrimination warning if they try to require HIGH; consumer
+> copy frames MEDIUM as the standard, sufficient tier. WS-5 backend implements
+> the F5 disclosures + the non-gating guard (tier off the candidate-listing
+> surface); the landlord-facing 225-1 warning + verify-page redesign are the
+> frontend follow-up.
+
 What friction does the product add against relying parties demanding HIGH?
 (e.g., verification responses never expose tier as a filterable field to bulk/API
 consumers; consumer-facing copy states MEDIUM is the standard tier.) Decide the

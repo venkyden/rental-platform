@@ -44,6 +44,24 @@ CANONICAL_DOMAIN_STATEMENT = (
     "frauduleuse. La clé publique de vérification est publiée sur le site officiel."
 )
 
+# What the credential does NOT prove (WS-5, stress-test finding F5). An official-
+# looking evidence document can AMPLIFY a scam if the reader over-trusts it: a
+# MEDIUM identity can be passed with a stolen ID, and property control is a
+# document check, never an ownership proof. Stated plainly so no reader treats a
+# MEDIUM/property-control credential as a guarantee.
+TRUST_DISCLOSURE_TITLE = "Ce que ce document NE prouve PAS"
+TRUST_DISCLOSURE_POINTS = [
+    "Une vérification d'identité MEDIUM (OCR + selfie) n'exclut pas une usurpation : "
+    "une pièce d'identité volée ou empruntée peut passer ce niveau. Seul le niveau "
+    "HIGH (FranceConnect / puce NFC de passeport) lie fortement le document à la personne.",
+    "Le « contrôle du bien » (taxe foncière, DPE ADEME) est un contrôle DOCUMENTAIRE, "
+    "non cryptographique, et n'atteste PAS la propriété : il ne prouve pas que le "
+    "signataire est le propriétaire ni qu'il a le droit de louer.",
+    "Aucune vérification n'atteste la bonne foi future ni ne garantit le paiement.",
+    "⚠️ Ne versez JAMAIS de dépôt de garantie sur la seule foi d'une vérification MEDIUM "
+    "ou d'un contrôle de bien. Exigez un niveau HIGH et recoupez par vous-même.",
+]
+
 # Valid assurance levels — order matters for the "never inflate" check
 ASSURANCE_LEVELS = {"HIGH", "MEDIUM", "UNVERIFIED"}
 
@@ -163,7 +181,11 @@ def _evidence_claim_rows(claims: dict) -> list:
         else:
             prop_value = "Oui" if claims.get("property_control") else "Non"
         prop_assur = claims.get("property_control_assurance") or claims.get("property_assurance", "UNVERIFIED")
-        rows.append(("Contrôle du bien (non-attestation de propriété)", prop_value, phrase(prop_assur)))
+        rows.append((
+            "Contrôle du bien (documentaire — n'atteste PAS la propriété)",
+            prop_value,
+            phrase(prop_assur),
+        ))
 
     if "mrh_insurance_assurance" in claims:
         mrh_ok = claims.get("mrh_insurance_verified")
@@ -516,6 +538,13 @@ class CredentialService:
         sig_hex = record.get("signature", "")
         sig_display = sig_hex[:32] + "..." if len(sig_hex) > 32 else sig_hex
         story.append(Paragraph(f"Signature Ed25519 : <font name='Courier'>{sig_display}</font>", small))
+        story.append(Spacer(1, 0.3 * cm))
+
+        # ── what this does NOT prove (F5 anti-amplification) ──────────────────
+        story.append(HRFlowable(width="100%", thickness=1.2, color=blue, spaceAfter=6))
+        story.append(Paragraph(TRUST_DISCLOSURE_TITLE, h2))
+        for _point in TRUST_DISCLOSURE_POINTS:
+            story.append(Paragraph(f"• {_point}", small))
         story.append(Spacer(1, 0.3 * cm))
 
         # ── disclaimer ───────────────────────────────────────────────────────

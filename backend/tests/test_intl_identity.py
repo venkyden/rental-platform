@@ -818,7 +818,7 @@ class TestEvidencePdfRows:
         })
         labels = self._labels(rows)
         assert "Identité vérifiée" in labels          # was silently dropped before the fix
-        assert "Contrôle du bien (non-attestation de propriété)" in labels
+        assert "Contrôle du bien (documentaire — n'atteste PAS la propriété)" in labels
         assert "Capacité fiscale (fonds)" in labels
         # property value cell uses the qualification label, not Oui/Non
         prop = next(r for r in rows if r[0].startswith("Contrôle du bien"))
@@ -835,7 +835,7 @@ class TestEvidencePdfRows:
         })
         labels = self._labels(rows)
         assert "Identité vérifiée" in labels
-        assert "Contrôle du bien (non-attestation de propriété)" in labels
+        assert "Contrôle du bien (documentaire — n'atteste PAS la propriété)" in labels
         ident = next(r for r in rows if r[0] == "Identité vérifiée")
         assert ident[1] == "Oui"
 
