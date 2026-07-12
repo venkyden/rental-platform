@@ -66,6 +66,7 @@
  "GET /verification/status",
  "GET /visits/slots/{property_id}",
  "GET /visits/slots/{property_id}/by-room",
+ "GET /visits/slots/{slot_id}/meeting",
  "GET /webhooks/health",
  "OPTIONS /users/me",
  "PATCH /applications/{application_id}",

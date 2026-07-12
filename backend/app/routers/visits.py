@@ -201,7 +201,9 @@ async def get_slots_by_room(
             "start_time": slot.start_time.isoformat(),
             "end_time": slot.end_time.isoformat(),
             "is_booked": slot.is_booked,
-            "meeting_link": slot.meeting_link,
+            # meeting_link intentionally omitted: this endpoint is unauthenticated
+            # and returns booked slots too — the private video-call URL must never
+            # leak. The booking tenant receives it in the POST /visits/book response.
         })
 
     return list(grouped.values())
@@ -229,11 +231,40 @@ async def book_visit(
 
     slot.is_booked = True
     slot.tenant_id = current_user.id
-    slot.meeting_link = (
-        f"https://meet.jit.si/rental-{slot.id}"  # Generate instant meeting link
-    )
+    # Derive the room from an unguessable secret, NOT slot.id: the slot id is
+    # exposed in public slot listings, so a rental-{slot.id} room could be joined
+    # by anyone who saw the listing. A random token keeps the visit private.
+    import secrets
+    slot.meeting_link = f"https://meet.jit.si/rental-{secrets.token_urlsafe(12)}"
 
     await db.commit()
     await db.refresh(slot)
 
     return {"message": "Visit booked successfully", "meeting_link": slot.meeting_link}
+
+
+@router.get("/visits/slots/{slot_id}/meeting")
+async def get_visit_meeting_link(
+    slot_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return the private meeting link for a booked visit.
+
+    Authorized to the booking tenant or the property landlord only — the link is
+    NOT derivable from public data (see book_visit) and is never exposed by the
+    unauthenticated slot listings. This is how the landlord (and the tenant, on
+    return) retrieves the room to join.
+    """
+    slot = (
+        await db.execute(select(VisitSlot).where(VisitSlot.id == slot_id))
+    ).scalar_one_or_none()
+    if not slot or not slot.is_booked:
+        raise HTTPException(status_code=404, detail="Booked visit not found")
+    if current_user.id not in (slot.tenant_id, slot.landlord_id):
+        raise HTTPException(status_code=403, detail="Not authorized to access this visit")
+    return {
+        "meeting_link": slot.meeting_link,
+        "start_time": slot.start_time.isoformat(),
+        "end_time": slot.end_time.isoformat(),
+    }
