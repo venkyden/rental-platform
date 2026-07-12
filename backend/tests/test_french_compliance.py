@@ -120,3 +120,35 @@ def test_deposit_cap_ignores_charges_when_rent_is_hors_charges():
         _prop(deposit=1000, monthly_rent=1000, charges=100, charges_included=False)
     )
     assert errors == []
+
+
+def test_deposit_cap_furnished_uses_2_months_hors_charges():
+    # 1000€ CC incl. 100€ charges -> 900€ HC -> furnished cap = 1800€; 1801€ rejected.
+    errors = validate_property_compliance(
+        _prop(deposit=1801, monthly_rent=1000, charges=100,
+              charges_included=True, furnished=True)
+    )
+    assert any("2 months" in e for e in errors), errors
+
+
+def test_deposit_cap_furnished_within_2_months_is_compliant():
+    # Same listing, deposit exactly 1800€ (2 months HC) -> compliant.
+    errors = validate_property_compliance(
+        _prop(deposit=1800, monthly_rent=1000, charges=100,
+              charges_included=True, furnished=True)
+    )
+    assert errors == []
+
+
+def test_charges_none_with_charges_included_makes_no_reduction():
+    # charges_included=True but charges unknown (None): no figure to strip, so the
+    # full rent is the HC base — never fabricate a reduction. Deposit == 1 month
+    # rent is compliant; above it is rejected. (Corrects CodeRabbit's `assert
+    # errors` example, which wrongly expected an error at deposit == rent.)
+    assert validate_property_compliance(
+        _prop(deposit=1000, monthly_rent=1000, charges=None, charges_included=True)
+    ) == []
+    over = validate_property_compliance(
+        _prop(deposit=1001, monthly_rent=1000, charges=None, charges_included=True)
+    )
+    assert any("hors charges" in e for e in over), over

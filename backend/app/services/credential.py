@@ -544,7 +544,12 @@ class CredentialService:
         story.append(HRFlowable(width="100%", thickness=1.2, color=blue, spaceAfter=6))
         story.append(Paragraph(TRUST_DISCLOSURE_TITLE, h2))
         for _point in TRUST_DISCLOSURE_POINTS:
-            story.append(Paragraph(f"• {_point}", small))
+            # ReportLab's built-in Helvetica (WinAnsi) has no glyph for the ⚠️
+            # warning sign (U+26A0) — it renders as a blank box, gutting the
+            # deposit warning (the doc's most important line). Swap to a text
+            # marker in the PDF only; the JSON/web verify surface keeps the emoji.
+            pdf_point = _point.replace("⚠️ ", "ATTENTION — ").replace("⚠️", "ATTENTION —")
+            story.append(Paragraph(f"• {pdf_point}", small))
         story.append(Spacer(1, 0.3 * cm))
 
         # ── disclaimer ───────────────────────────────────────────────────────
