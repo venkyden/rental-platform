@@ -49,18 +49,32 @@ chaque partie est réelle et solvable — **sans jamais jouer l'intermédiaire, 
 aux fonds, sans stocker de documents**. On vérifie, on émet une attestation cryptographique,
 on oublie la source. On vend des **faits vérifiés**, jamais une protection.
 
-**Le coin d'entrée (wedge)** : la prévention de l'arnaque au dépôt de garantie. Chaque
-partie vérifie l'autre et repart avec un **document-preuve filigrané, horodaté et signé**,
-opposable en cas de litige.
+**La motion phare (B2B) : la détection de fraude au dossier.** La capacité la plus
+défendable est la vérification de la **signature cryptographique DGFiP d'un avis d'imposition
+(2D-Doc)** — un avis falsifié est détecté car la signature de l'État ne valide pas. C'est ce
+que l'on vend en premier, aux **assureurs GLI et gestionnaires immobiliers** : ROI chiffrable
+(sinistralité réduite), un budget, et — surtout — cela vérifie une *signature de document*,
+pas une personne, ce qui contourne le mur de certification ANSSI-PVID qui bloque la
+vérification d'identité open-source. Une intégration pèse plus que des milliers de micro-frais
+grand public pour une équipe sans budget marketing.
 
-**Deux modèles de revenus distincts, un même moteur de vérification :**
-- **A. Roomivo (natif)** — produit propre, vendu à nos propres utilisateurs (à l'acte + abonnement Pro).
-- **B. Credential Layer (Vérification-as-a-Service)** — le même moteur exposé en API/badge
-  à des **plateformes tierces et leurs utilisateurs** (Leboncoin, Facebook Marketplace, PAP),
-  ainsi qu'aux assureurs GLI et gestionnaires immobiliers.
+**La marketplace grand public est la démo qui tourne, pas le coin de revenu.** La marketplace
+de Roomivo fait tourner le moteur de vérification de bout en bout sur de vrais utilisateurs —
+c'est la preuve de concept vivante montrée aux assureurs (« voici le contrôle anti-fraude qui
+fonctionne, branchez-le sur votre souscription ») et la surface d'acquisition/crédibilité. Ce
+n'est délibérément **pas** le pari de revenu principal : le flux bilatéral grand public exige
+que le *propriétaire* — qui a tout le levier en marché tendu — se vérifie lui-même, ce qu'il
+ne fera pas.
+
+**Deux modèles de revenus, une motion phare :**
+- **B. Credential Layer (Vérification-as-a-Service) — LA PHARE.** Le moteur exposé en API/badge
+  aux **assureurs GLI, gestionnaires**, puis plateformes tierces (Leboncoin, FB Marketplace,
+  PAP). Moteur de marge et cible de revenu de la Phase 1.
+- **A. Roomivo (natif)** — la marketplace (à l'acte + Pro) : acquisition, démo et preuve de
+  valeur ; une motion de soutien, pas le coin d'entrée.
 
 **Chiffres clés `[Hypothèse]`** : marché locatif privé français ≈ 7 M de ménages ; coût
-marginal d'une vérification ≈ 0 € (services d'État gratuits + briques open-source) ;
+marginal d'une vérification ≈ 0 € à l'échelle (services d'État gratuits + briques open-source) ;
 marge brute cible > 85 % sur le Credential Layer.
 
 **La demande** : **30–50 k€ d'amorçage + accompagnement** (mentorat, mise en relation B2B
@@ -226,33 +240,38 @@ contrainte.
 
 ---
 
-## 08 — Modèle Économique : deux modèles de revenus distincts
+## 08 — Modèle Économique : deux modèles de revenus, une motion phare
 
 Règle d'or, non-négociable : revenu **forfaitaire / à l'acte, jamais au succès**. Les fonds
 ne transitent jamais par Roomivo. L'assurance est **vérifiée**, jamais vendue (pas d'ORIAS).
 
-### Modèle A — Roomivo (natif / exclusif)
-Revenu issu de **nos propres utilisateurs**, sur **notre** produit.
-- **À l'acte** (particuliers) : micro-paiement par vérification + document-preuve filigrané.
-- **Abonnement Pro** (propriétaires récurrents, petites agences) : forfait mensuel incluant
-  un volume de vérifications + des liens de demande-de-preuve.
-- Économie : ARPU plus élevé, marge brute forte, mais acquisition diffuse (B2C).
-
-### Modèle B — Credential Layer (Vérification-as-a-Service)
-Le **même moteur**, exposé en **API / badge** à des **plateformes tierces et leurs
-utilisateurs** : Leboncoin, Facebook Marketplace, PAP — ainsi qu'aux **assureurs GLI** et
-**gestionnaires immobiliers**.
+### Modèle B — Credential Layer (Vérification-as-a-Service) — **LA PHARE**
+Le moteur de vérification exposé en **API / badge** aux **assureurs GLI** et **gestionnaires
+immobiliers** d'abord, puis aux plateformes tierces (Leboncoin, FB Marketplace, PAP). En
+tête d'affiche : la **détection de fraude au dossier via 2D-Doc** — vérifier la signature
+DGFiP d'un avis d'imposition, qui (a) a un ROI acheteur chiffrable (sinistralité réduite),
+(b) se vend à une partie qui a un budget, et (c) vérifie une *signature de document*, pas
+une personne, franchissant ainsi le mur de certification ANSSI-PVID qui bloque la
+vérification d'identité open-source.
 - **API à l'usage**, tarif **dégressif au volume** (cf. §15).
 - **Frais d'intégration / licence annuelle** selon le client.
 - **Pack-preuve post-incident** : l'attestation d'audit signée vendue à la partie lésée
   pour son dossier juridique/assurance.
-- Économie : **marge > 85 %**, contrats concentrés, effet d'échelle. **C'est le moteur de
-  marge.**
+- Économie : **marge > 85 %** à l'échelle, contrats concentrés. **C'est le moteur de marge
+  et la cible de revenu de la Phase 1.**
 
-> Pourquoi deux modèles **distincts** et non un seul : clients différents (nos utilisateurs
-> vs. plateformes tierces), économie unitaire différente (ARPU élevé/diffus vs. prix
-> bas/volume), et cycle de vente différent (self-service vs. B2B 6–9 mois). Les présenter
-> séparément clarifie la stratégie et la valorisation.
+### Modèle A — Roomivo (marketplace native) — motion de soutien
+Revenu issu de **nos propres utilisateurs** — mais positionné comme acquisition, démo et
+preuve de concept vivante derrière le pitch B2B, **pas** comme le pari de revenu principal.
+- **À l'acte** (particuliers) : micro-paiement par vérification + document-preuve filigrané.
+- **Abonnement Pro** (propriétaires récurrents, petites agences) : forfait mensuel.
+- Rappel : le flux bilatéral grand public exige que le propriétaire — qui a le levier en
+  marché tendu — se vérifie lui-même, ce qu'il ne fera pas. D'où : soutien, pas phare.
+
+> Pourquoi mener en B2B : l'acheteur a un budget et un ROI chiffrable, le contrôle 2D-Doc
+> résiste au PVID, et il ne dépend d'**aucune** question non tranchée (rail d'identité,
+> géographie d'immatriculation) — il vérifie un document, pas une personne. La marketplace
+> rend la démo crédible ; le Credential Layer fait l'argent.
 
 ---
 
@@ -264,7 +283,7 @@ Usage des **30–50 k€** d'amorçage (`[Hypothèse]`, base-case 40 k€) :
 |---|---|---|
 | **Conseil juridique — droit immobilier** | 3–5 k€ | Franchir le *gate légal* (positionnement self-service bail / e-signature vs loi 1971 / Hoguet). **Bloquant et bon marché.** |
 | **Revue GDPR / DPO** | 2–3 k€ | Confirmer base légale + preuve de non-rétention (traitement transitoire) ; base Art. 9 + AIPD pour l'étape de comparaison faciale. |
-| **Immatriculation + DataPass** | 1–2 k€ | SIRET → capacité contractuelle B2B + demande FranceConnect (identité HIGH). **Sur le chemin critique de l'An 1.** |
+| **Immatriculation** | 1–2 k€ | Création de société → capacité contractuelle B2B. Structure : **Roomivo Technologies Pvt. Ltd. (Inde)** maintenant ; **entité UE ajoutée plus tard** (juridiction à définir — le seul avantage propre de la France ici est l'accès FranceConnect, qui exige un SIRET français ; une base UE non-française atteint l'identité HIGH via eIDAS 2.0 / portefeuille UE). **Sur le chemin critique B2B de l'An 1.** |
 | **Infrastructure & sécurité** | 2–4 k€/an | Hébergement, infra de signature (Ed25519), audit de sécurité. Coût marginal par vérif ≈ 0 €. |
 | **R&D Credential core + rails FR** | (temps fondateurs) | Modèle credential, OCR+liveness (MEDIUM), FranceConnect (post-immatriculation), 2D-Doc, contrôle du bien ADEME. |
 | **R&D rail INTL HIGH (Phase 2)** | à provisionner | Lecture NFC passeport (JMRTD / NFCPassportReader) ; **gap opérationnel : liste maîtresse CSCA via ICAO PKD**. |
@@ -278,21 +297,22 @@ Recherche / Innovation `[Hypothèse — à valider avec un expert-comptable]`.
 
 ## 10 — Plan Opérationnel — 5 ans
 
-**Phase 1 (An 1) — preuve bilatérale + document-preuve.** *(Périmètre figé, cf. §17)*
-1. Retrait du module GLI (contradiction réglementaire ORIAS/IDD) — fait avant de construire.
+**Phase 1 (An 1) — phare : détection de fraude 2D-Doc B2B ; marketplace en démo.** *(cf. §17)*
+1. **API solvabilité / anti-fraude 2D-Doc** (avis signé DGFiP → vérif ECDSA hors-ligne →
+   ratio bandé `>=3.0`) : l'actif B2B vendable, résistant au PVID, indépendant du rail
+   d'identité. Productiser derrière l'API + décrocher le premier pilote assureur / gestionnaire.
 2. **Credential core** : modèle, signature Ed25519, endpoints émission/vérification, clé
-   publique, export du document-preuve filigrané.
-3. **Rail identité FR** — OCR + liveness → **MEDIUM, labellisé** ; HIGH différé à
-   **FranceConnect** (OIDC, conditionné à l'immatriculation + DataPass) — sert les deux côtés.
-4. **Rail solvabilité FR** (avis 2D-Doc signé DGFiP → ratio bandé `>=3.0` ;
-   authenticité du document cryptographique, rattachement au présentateur via signal de
-   recoupement du nom).
-5. **Contrôle du bien** (DPE ADEME + taxe foncière) — le levier anti-vol-de-dépôt.
-6. **Câblage bilatéral** + page anti-hameçonnage *verify-by-ID* + endossement institutionnel.
+   publique, export du document-preuve filigrané — le moteur partagé par les deux motions.
+3. **Marketplace en démo vivante** : faire tourner le moteur de bout en bout sur de vrais
+   utilisateurs (identité OCR + liveness → **MEDIUM, labellisé** ; contrôle du bien DPE ADEME
+   + taxe foncière) — la surface de crédibilité montrée aux assureurs, pas le coin de revenu.
+4. Page anti-hameçonnage *verify-by-ID* + endossement institutionnel.
 
-> Jalon transverse An 1 : **immatriculation** (SIRET → DataPass → FranceConnect ; les quatre
-> rôles de gouvernance exigés par le décret du 8 nov. 2018) — elle conditionne l'identité
-> HIGH **et** toute signature de contrat B2B.
+> Jalon transverse An 1 : **immatriculation.** La Pvt Ltd indienne (en cours) donne la
+> capacité contractuelle B2B maintenant ; l'**entité UE (ajoutée juste-à-temps avant le
+> premier pilote traitant des données UE)** conditionne l'identité HIGH et la posture GDPR
+> côté utilisateurs UE. Rail identité HIGH = FranceConnect *si* l'entité UE est française,
+> sinon eIDAS 2.0 / portefeuille UE — décidé avec le choix du pays UE.
 
 **Phase 2+ (An 2–3) — derrière le gate légal pour bail/e-sign :**
 7. Profondeur DPE (blocage classe G, zone tendue, réforme en direct).

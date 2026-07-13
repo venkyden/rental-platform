@@ -72,7 +72,20 @@ Options:
 Per-router decision needed; note CLAUDE.md already marks lease + e-sign as behind the
 legal gate ("do NOT build yet") — they are built and mounted.
 
-### DG-1 — Wedge repositioning (gates WS-9)
+### DG-1 — Wedge repositioning (gates WS-9) — ✅ RESOLVED 2026-07-05
+
+> **Owner decision (2026-07-05): lead B2B (2D-Doc dossier-fraud detection for
+> insurers / property managers); the consumer marketplace continues as the
+> working demo + credibility surface, NOT the revenue wedge; EU entity stood up
+> just-in-time before the first data-processing pilot.** Rationale compounded
+> the council's F8/F9/F10 with the incorporation reality (see memory
+> [[roomivo-incorporation-india]]): the 2D-Doc B2B play verifies a document
+> signature, not a person, so it depends on no identity rail and no settled
+> incorporation geography — first revenue doesn't wait on those. WS-9 implements
+> the doc reconciliation: DOSSIER-EN/FR §01/§08/§09/§10 + CLAUDE.md GTM reframed
+> B2B-lead. HELD pending EU-country choice: the FranceConnect→eIDAS/EUDI HIGH-rail
+> rewrite (only France unlocks FranceConnect).
+
 Demote the two-sided consumer wedge to demo status; lead B2B with 2D-Doc
 dossier-fraud detection (the check that survives PVID objections)? Affects pitch
 dossier structure, pricing pages §13–15, and Phase-1 build order.
