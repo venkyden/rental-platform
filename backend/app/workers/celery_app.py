@@ -33,6 +33,8 @@ celery_app.conf.update(
     worker_send_task_events=False,
     task_send_sent_event=False,
     worker_prefetch_multiplier=1,
+    worker_enable_remote_control=False,
+    broker_pool_limit=1,
     broker_transport_options={
         "visibility_timeout": 3600,
         "max_connections": 5,
