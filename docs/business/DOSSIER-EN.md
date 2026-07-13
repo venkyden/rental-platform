@@ -47,18 +47,32 @@ solvent — **without ever brokering the deal, touching funds, or storing docume
 verify, emit a cryptographic attestation, and discard the source. We sell **verified facts**,
 never protection.
 
-**The wedge:** deposit-theft prevention. Each side vets the other and walks away with a
-**watermarked, timestamped, signed evidence document**, usable in a dispute.
+**The lead motion (B2B): dossier-fraud detection.** The sharpest, most defensible
+capability is verifying the **DGFiP cryptographic signature on a tax notice (2D-Doc)** —
+a forged *avis d'imposition* is caught because the state's own signature won't validate.
+This is what we sell first, to **GLI insurers and property managers**: quantifiable ROI
+(lower loss ratio), a budget, and — critically — it verifies a *document signature*, not a
+person, so it sidesteps the ANSSI-PVID certification wall that blocks OSS identity
+verification. One integration outweighs thousands of consumer micro-fees for a zero-
+marketing-budget team.
 
-**Two distinct revenue models, one verification engine:**
-- **A. Roomivo (native)** — our own product, sold to our own users (pay-per-use + Pro subscription).
-- **B. Credential Layer (Verification-as-a-Service)** — the same engine exposed via API/badge
-  to **third-party platforms and their users** (Leboncoin, Facebook Marketplace, PAP), plus
-  GLI insurers and property managers.
+**The consumer marketplace is the working demo, not the revenue wedge.** Roomivo's own
+rental marketplace runs the verification engine end-to-end on real users — it is the live
+proof-of-concept shown to insurers ("here is the fraud-check working, plug it into your
+underwriting"), and the acquisition/credibility surface. It is deliberately **not** the
+primary revenue bet: the two-sided consumer flow needs the landlord — who holds all the
+leverage in a tight market — to verify himself, which he won't.
+
+**Two revenue models, one verification engine:**
+- **B. Credential Layer (Verification-as-a-Service) — LEAD.** The engine exposed via API/badge
+  to **GLI insurers, property managers**, and third-party platforms (Leboncoin, Facebook
+  Marketplace, PAP). This is the margin engine and the Phase-1 revenue focus.
+- **A. Roomivo (native)** — the marketplace product (pay-per-use + Pro): acquisition, demo,
+  and proof of value; a supporting motion, not the wedge.
 
 **Key figures `[Assumption]`:** French private rental market ≈ 7M households; marginal cost
-per verification ≈ €0 (free state services + open-source); target gross margin > 85% on the
-Credential Layer.
+per verification ≈ €0 at scale (free state services + open-source); target gross margin
+> 85% on the Credential Layer.
 
 **The ask:** **€30–50k seed + support** (mentorship, a B2B introduction to a pilot GLI
 insurer / property manager, hosting, and real-estate-law counsel to clear the lease/e-sign
@@ -214,33 +228,37 @@ account, against a public key), **two-sided**, **anti-scam first**, and decidedl
 
 ---
 
-## 08 — Business Model: two distinct revenue models
+## 08 — Business Model: two revenue models, one lead
 
 Golden rule, non-negotiable: **flat / per-verification revenue, never success-based**. Funds
 never flow through Roomivo. Insurance is **verified**, never sold (no ORIAS).
 
-### Model A — Roomivo (native / exclusive)
-Revenue from **our own users**, on **our** product.
-- **Pay-per-use** (consumers): micro-fee per verification + watermarked evidence document.
-- **Pro subscription** (recurring landlords, small agencies): monthly plan including a
-  volume of verifications + proof-request links.
-- Economics: higher ARPU, strong gross margin, but diffuse (B2C) acquisition.
-
-### Model B — Credential Layer (Verification-as-a-Service)
-The **same engine**, exposed via **API / badge** to **third-party platforms and their
-users**: Leboncoin, Facebook Marketplace, PAP — plus **GLI insurers** and **property
-managers**.
+### Model B — Credential Layer (Verification-as-a-Service) — **THE LEAD**
+The verification engine exposed via **API / badge** to **GLI insurers** and **property
+managers** first, then third-party platforms (Leboncoin, Facebook Marketplace, PAP).
+Headlined by **2D-Doc dossier-fraud detection** — verifying the DGFiP signature on a tax
+notice, which (a) has quantifiable buyer ROI (lower loss ratio), (b) is sold to a party
+with a budget, and (c) verifies a *document signature*, not a person, so it clears the
+ANSSI-PVID certification wall that blocks OSS identity verification.
 - **Usage-based API**, **volume-tiered** pricing (see §15).
 - **Integration fee / annual license** depending on the client.
 - **Post-incident evidence pack:** the signed audit trail sold to the injured party for
   their legal/insurance claim.
-- Economics: **> 85% margin**, concentrated contracts, scale effects. **This is the margin
-  engine.**
+- Economics: **> 85% margin** at scale, concentrated contracts. **This is the margin engine
+  and the Phase-1 revenue focus.**
 
-> Why two **distinct** models, not one: different customers (our users vs. third-party
-> platforms), different unit economics (high/diffuse ARPU vs. low-price/volume), and
-> different sales cycles (self-service vs. 6–9-month B2B). Presenting them separately
-> clarifies the strategy and the valuation.
+### Model A — Roomivo (native marketplace) — supporting motion
+Revenue from **our own users**, on **our** product — but positioned as acquisition, demo,
+and the live proof-of-concept behind the B2B pitch, **not** the primary revenue bet.
+- **Pay-per-use** (consumers): micro-fee per verification + watermarked evidence document.
+- **Pro subscription** (recurring landlords, small agencies): monthly plan.
+- Reality check: the two-sided consumer flow needs the landlord — who holds the leverage in
+  a tight market — to verify himself, which he won't. Hence it supports, not leads.
+
+> Why lead B2B: the buyer has budget and quantifiable ROI, the 2D-Doc check is PVID-proof,
+> and it depends on **no** unsettled question (identity rail, incorporation geography) — it
+> verifies a document, not a person. The marketplace makes the demo credible; the Credential
+> Layer makes the money.
 
 ---
 
@@ -252,7 +270,7 @@ Use of the **€30–50k** seed (`[Assumption]`, base case €40k):
 |---|---|---|
 | **Legal counsel — real-estate law** | €3–5k | Clear the *legal gate* (self-service lease / e-sign positioning vs loi 1971 / Hoguet). **Blocking and cheap.** |
 | **GDPR / DPO review** | €2–3k | Confirm lawful basis + non-retention proof (transient processing); Art. 9 basis + DPIA for the face-match step. |
-| **Incorporation + DataPass** | €1–2k | SIRET → B2B contract capacity + FranceConnect application (HIGH identity). **On the Y1 critical path.** |
+| **Incorporation** | €1–2k | Company formation → B2B contract capacity. Structure: **Roomivo Technologies Pvt. Ltd. (India)** now; **EU entity added later** (jurisdiction TBD — France's only unique edge here is FranceConnect access, which requires a French SIRET; a non-France EU base reaches HIGH identity via the eIDAS 2.0 / EU wallet instead). **On the Y1 critical path for B2B.** |
 | **Infrastructure & security** | €2–4k/yr | Hosting, signing infra (Ed25519), security audit. Marginal cost per verif ≈ €0. |
 | **R&D Credential core + FR rails** | (founder time) | Credential model, OCR+liveness (MEDIUM), FranceConnect (post-incorporation), 2D-Doc, ADEME property control. |
 | **R&D INTL HIGH rail (Phase 2)** | to provision | Passport NFC read (JMRTD / NFCPassportReader); **operational gap: CSCA master list via ICAO PKD**. |
@@ -266,20 +284,22 @@ verification, normalization) may qualify for the French Research / Innovation ta
 
 ## 10 — Operational Plan — 5 years
 
-**Phase 1 (Y1) — two-sided proof + evidence document.** *(Scope frozen, see §17)*
-1. Remove the GLI module (ORIAS/IDD regulatory contradiction) — done before building.
+**Phase 1 (Y1) — lead: B2B 2D-Doc dossier-fraud detection; marketplace as demo.** *(see §17)*
+1. **2D-Doc solvency / fraud-detection API** (DGFiP-signed tax notice → offline ECDSA verify
+   → banded ratio `>=3.0`): the sellable B2B asset, PVID-proof, depends on no identity rail.
+   Productize behind the API + land the first insurer / property-manager pilot.
 2. **Credential core:** model, Ed25519 signing, issue/verify endpoints, public key,
-   watermarked evidence-document export.
-3. **FR identity rail** — OCR + liveness → **MEDIUM, labeled**; HIGH deferred to
-   **FranceConnect** (OIDC, gated on incorporation + DataPass) — serves both sides.
-4. **FR solvency rail** (2D-Doc tax notice, DGFiP-signed → banded ratio `>=3.0`;
-   cryptographic document authenticity, presenter binding via name cross-check flag).
-5. **Property control** (ADEME DPE + taxe foncière) — the anti-deposit-theft lever.
-6. **Two-sided wiring** + anti-phishing *verify-by-ID* page + institutional endorsement.
+   watermarked evidence-document export — the engine both motions share.
+3. **Marketplace as live demo:** run the engine end-to-end on real users (identity via
+   OCR + liveness → **MEDIUM, labeled**; property control via ADEME DPE + taxe foncière) —
+   the credibility surface shown to insurers, not the revenue wedge.
+4. Anti-phishing *verify-by-ID* page + institutional endorsement.
 
-> Cross-cutting Y1 milestone: **incorporation** (SIRET → DataPass → FranceConnect; the four
-> governance roles required by the décret of 8 Nov 2018) — it gates HIGH identity **and**
-> any signed B2B contract.
+> Cross-cutting Y1 milestone: **incorporation.** India Pvt Ltd (in progress) gives B2B
+> contract capacity now; the **EU entity (added just-in-time before the first live pilot that
+> processes EU data)** gates HIGH identity and the EU-user GDPR posture. HIGH identity rail =
+> FranceConnect *if* the EU entity is French, else the eIDAS 2.0 / EU wallet — decided with
+> the EU-country choice.
 
 **Phase 2+ (Y2–3) — behind the legal gate for lease/e-sign:**
 7. DPE depth (class-G block, zone tendue, live reform handling).

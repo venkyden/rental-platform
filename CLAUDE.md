@@ -23,8 +23,13 @@ The trust layer is NOT a separate entity or product — it is Roomivo's core.
 
 We sell **verified facts that enable protection**, not protection itself.
 Revenue: flat per-verification or subscription fee. Never success-based.
-Status: no SIRET yet (SNEE student-entrepreneurs, PÉPITE Pays de la Loire / Audencia)
-→ free beta until SAS incorporation; charging is gated on it.
+Status: incorporating as **Roomivo Technologies Pvt. Ltd. (India)** (started 2026-07-05);
+**EU entity added later, just-in-time before the first live pilot processing EU data**
+(country TBD — France's only unique edge is FranceConnect, which needs a French SIRET; a
+non-France EU base reaches HIGH identity via eIDAS 2.0 / EU wallet instead). Founders remain
+SNEE student-entrepreneurs (PÉPITE Pays de la Loire / Audencia) personally. Free beta until
+charging is live. NB: this supersedes the earlier "French SAS" assumption; GDPR needs an EU
+Art. 27 representative + India-transfer SCCs. See memory [[roomivo-incorporation-india]].
 
 ---
 
@@ -136,12 +141,19 @@ Full rationale + edge cases: docs/features/trust-layer/DOSSIER.md.
 
 ---
 
-## GTM / revenue approach
+## GTM / revenue approach — DG-1 SETTLED (2026-07-05)
 
-Lead B2B2C: pitch the verified-dossier API to a GLI insurer or property manager first.
-They have quantifiable ROI (lower loss ratio) and a budget. One integration > thousands of
-consumer micro-fees for a solo, zero-marketing-budget founder.
-Consumer classified badge (Leboncoin "Vérifié") is phase 2.
+**Lead B2B with 2D-Doc dossier-fraud detection.** Pitch and first revenue lead with the
+Credential Layer sold to GLI insurers / property managers, headlined by verifying the DGFiP
+signature on a tax notice: quantifiable buyer ROI (lower loss ratio), a budget, PVID-proof
+(it verifies a document signature, not a person), and dependent on **no** unsettled question
+(identity rail, incorporation geography). One integration > thousands of consumer micro-fees.
+
+**The consumer marketplace is the working demo, not the revenue wedge.** It runs the engine
+end-to-end on real users — the live proof-of-concept shown to insurers and the acquisition/
+credibility surface. Deliberately not the primary revenue bet: the two-sided flow needs the
+landlord (all the leverage in a tight market) to verify himself, which he won't (finding F8).
+Consumer classified badge (Leboncoin "Vérifié") stays phase 2.
 
 ---
 
