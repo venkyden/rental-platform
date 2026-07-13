@@ -183,6 +183,13 @@ async def export_user_data(
                 "email_verified": user.email_verified,
                 "identity_verified": user.identity_verified,
                 "employment_verified": user.employment_verified,
+                # Deposit-binding (items 15/16): already stored masked (masked IBAN +
+                # name-match verdict only, never the raw IBAN/holder name), so it is
+                # safe to surface verbatim in the Art. 20 portability export.
+                "deposit_binding": (user.deposit_binding_data or {}).get("binding")
+                if isinstance(user.deposit_binding_data, dict) else None,
+                "landlord_entity": (user.deposit_binding_data or {}).get("landlord_entity")
+                if isinstance(user.deposit_binding_data, dict) else None,
             },
             "trust_score": user.trust_score,
             "risk_tier": user.risk_tier,
@@ -282,6 +289,7 @@ async def delete_user_data(
             employment_status="deleted",
             ownership_data=None,
             ownership_status="deleted",
+            deposit_binding_data=None,
             preferences=None,
             contact_preferences=None,
             segment=None,

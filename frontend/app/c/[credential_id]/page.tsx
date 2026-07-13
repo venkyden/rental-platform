@@ -20,6 +20,16 @@ import {
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://roomivo.app';
 
+interface DepositBinding {
+    deposit_amount: number;
+    lease_type: string;
+    payee_iban_masked: string;
+    payee_name_match: 'MATCH' | 'MISMATCH';
+    payee_match_target?: string;
+    bank_ownership_confirmed: boolean;
+    bound_at?: string;
+}
+
 interface VerifyResponse {
     credential_id: string;
     valid: boolean;
@@ -31,7 +41,13 @@ interface VerifyResponse {
     issued_at: string;
     expires_at: string;
     rail: string;
-    claims: Record<string, string>;
+    // Most claims are plain strings; deposit_binding (item 15) + entity_verified
+    // (item 16) are nested objects.
+    claims: Record<string, string> & {
+        deposit_binding?: DepositBinding;
+        landlord_type?: string;
+        entity_verified?: { denomination: string; gerant_match: boolean };
+    };
     disclaimer: string;
     assurance_summary: string;
 }
@@ -215,13 +231,21 @@ export default function CredentialVerifyPage() {
                     <p className="text-xs text-zinc-400 uppercase tracking-wide font-medium">Titulaire</p>
                     <p className="text-lg font-semibold text-zinc-900">{data.subject_display_name ?? '—'}</p>
                     <p className="text-sm text-zinc-500">{roleLabel} · Rail {data.rail}</p>
+                    {data.claims.entity_verified && (
+                        <p className="text-sm text-zinc-700 pt-1">
+                            Bailleur : <span className="font-semibold">{data.claims.entity_verified.denomination}</span>
+                            {data.claims.entity_verified.gerant_match
+                                ? <span className="text-emerald-600"> — gérant vérifié ✓</span>
+                                : <span className="text-amber-600"> — lien gérant non confirmé</span>}
+                        </p>
+                    )}
                 </div>
 
                 {/* Claims table — plain-language, no tier words */}
                 <div className="bg-white rounded-2xl border border-zinc-200 divide-y divide-zinc-100">
                     {(() => {
                         const rows = claimEntries
-                            .map(([key, value]) => claimSentence(key, String(value), data.claims))
+                            .map(([key, value]) => claimSentence(key, String(value), data.claims as Record<string, string>))
                             .filter((s): s is string => Boolean(s));
                         if (rows.length === 0) {
                             return <div className="p-5 text-sm text-zinc-400">Aucune vérification enregistrée.</div>;
@@ -234,6 +258,36 @@ export default function CredentialVerifyPage() {
                         ));
                     })()}
                 </div>
+
+                {/* Deposit-binding (item 15) — MATCH = reassurance, MISMATCH = warning */}
+                {(() => {
+                    const db = data.claims.deposit_binding;
+                    if (!db) return null;
+                    const match = db.payee_name_match === 'MATCH';
+                    return (
+                        <div className={`rounded-2xl border p-5 space-y-2 ${match ? 'bg-white border-zinc-200' : 'bg-amber-50 border-amber-300'}`}>
+                            <div className="flex items-center gap-2">
+                                {match
+                                    ? <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
+                                    : <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />}
+                                <p className="font-semibold text-zinc-900">Dépôt de garantie — engagement de paiement</p>
+                            </div>
+                            <p className="text-sm text-zinc-800">
+                                <span className="font-semibold">{db.deposit_amount} €</span> à verser sur{' '}
+                                <span className="font-mono">{db.payee_iban_masked}</span>
+                            </p>
+                            <p className={`text-sm font-medium ${match ? 'text-emerald-700' : 'text-amber-800'}`}>
+                                {match
+                                    ? 'Le titulaire du compte correspond au bailleur vérifié ✓'
+                                    : '⚠ Le titulaire du compte ne correspond pas au bailleur vérifié — n’envoyez rien.'}
+                            </p>
+                            <p className="text-xs text-zinc-400 leading-relaxed">
+                                Roomivo n&apos;est pas dans le flux financier : ceci prouve à qui vous deviez payer,
+                                pas que les fonds ont circulé. La propriété du compte n&apos;a pas été confirmée auprès de la banque.
+                            </p>
+                        </div>
+                    );
+                })()}
 
                 {/* Assurance summary */}
                 <p className="text-sm text-zinc-500 text-center">{data.assurance_summary}</p>

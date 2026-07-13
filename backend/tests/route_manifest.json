@@ -142,6 +142,8 @@
  "POST /verification/insurance/upload",
  "POST /verification/intl/funds",
  "POST /verification/intl/identity/selfie",
+ "POST /verification/deposit/bind",
+ "POST /verification/landlord-entity/verify",
  "POST /verification/intl/identity/upload",
  "POST /verification/intl/solvency",
  "POST /verification/property/upload",

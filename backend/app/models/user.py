@@ -81,6 +81,10 @@ class User(Base):
     insurance_verified = Column(Boolean, default=False)
     insurance_status = Column(String, default="unverified")
     insurance_data = Column(EncryptedJSON, nullable=True)
+    # Deposit-binding (item 15) + entity/SCI landlord verification (item 16).
+    # Own column, NOT ownership_data: the property/control endpoint reassigns
+    # ownership_data wholesale, which would clobber a nested binding.
+    deposit_binding_data = Column(EncryptedJSON, nullable=True)
 
     @property
     def solvency_verified(self) -> bool:

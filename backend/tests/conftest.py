@@ -66,6 +66,7 @@ def make_mock_user(role: str = "tenant", email: str = "test@example.com"):
     user.garantme_ref = None
     user.ownership_verified = False
     user.ownership_data = None
+    user.deposit_binding_data = None
     user.kbis_verified = False
     user.carte_g_verified = False
     user.trust_score = 50
