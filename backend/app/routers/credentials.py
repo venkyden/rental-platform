@@ -371,6 +371,28 @@ def _build_claims_for_user(current_user) -> dict:
         if insurance_data.get("flags"):
             claims["mrh_insurance_flags"] = insurance_data["flags"]
 
+    # Deposit-binding (item 15) + entity/SCI (item 16) — landlord-side evidence.
+    deposit_binding_data = current_user.deposit_binding_data or {}
+    binding = deposit_binding_data.get("binding") if isinstance(deposit_binding_data, dict) else None
+    if isinstance(binding, dict):
+        claims["deposit_binding"] = {
+            "deposit_amount": binding.get("deposit_amount"),
+            "lease_type": binding.get("lease_type"),
+            "payee_iban_masked": binding.get("payee_iban_masked"),
+            "payee_name_match": binding.get("payee_name_match"),
+            "payee_match_target": binding.get("payee_match_target"),
+            "bank_ownership_confirmed": False,
+            "bound_at": binding.get("bound_at"),
+        }
+    entity = deposit_binding_data.get("landlord_entity") if isinstance(deposit_binding_data, dict) else None
+    if isinstance(entity, dict) and entity.get("type"):
+        claims["landlord_type"] = entity["type"]
+        if entity.get("denomination"):
+            claims["entity_verified"] = {
+                "denomination": entity["denomination"],
+                "gerant_match": entity.get("gerant_match", False),
+            }
+
     return claims
 
 

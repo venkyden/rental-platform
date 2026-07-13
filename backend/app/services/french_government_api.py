@@ -60,6 +60,53 @@ class FrenchGovernmentService:
             logger.error(f"SIRET verification failed: {e}")
             return {"valid": False, "error": "Internal verification error"}
 
+    async def verify_entity(self, siren: str) -> Dict[str, Any]:
+        """
+        Verify a legal entity (SCI / société) by its 9-digit SIREN against the free
+        public register (item 16). Returns the denomination, active status, legal form,
+        and the list of dirigeants (used to chain a verified gérant → SCI).
+
+        Only public register data is surfaced; the caller stores just the denomination
+        + match booleans, never the raw dirigeant roster.
+        """
+        siren = re.sub(r"\s", "", siren or "")
+        if not siren.isdigit() or len(siren) != 9:
+            return {"valid": False, "error": "Invalid SIREN format (9 digits expected)"}
+
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    self.public_siren_url, params={"q": siren}, timeout=5.0
+                )
+                if response.status_code != 200:
+                    return {"valid": False, "error": f"API error: {response.status_code}"}
+
+                results = response.json().get("results", [])
+                company = next((c for c in results if c.get("siren") == siren), None)
+                if company is None:
+                    return {"valid": False, "error": "SIREN not found in national register"}
+
+                dirigeants = [
+                    {
+                        "nom": d.get("nom", ""),
+                        "prenoms": d.get("prenoms", ""),
+                        "qualite": d.get("qualite", ""),
+                    }
+                    for d in (company.get("dirigeants") or [])
+                    if d.get("type_dirigeant") == "personne physique"
+                ]
+                return {
+                    "valid": True,
+                    "denomination": company.get("nom_complet") or company.get("nom_raison_sociale", ""),
+                    "is_active": company.get("etat_administratif") == "A",
+                    "legal_form": company.get("nature_juridique", ""),
+                    "dirigeants": dirigeants,
+                    "location": company.get("siege", {}).get("libelle_commune", ""),
+                }
+        except Exception as e:
+            logger.error(f"SIREN verification failed: {e}")
+            return {"valid": False, "error": "Internal verification error"}
+
     async def verify_tax_notice(self, num_fiscal: str, ref_avis: str) -> Dict[str, Any]:
         """
         Verify a French tax notice (Avis d'imposition) via DGFIP API.

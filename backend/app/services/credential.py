@@ -198,6 +198,24 @@ def _evidence_claim_rows(claims: dict) -> list:
             phrase(claims.get("mrh_insurance_assurance", "UNVERIFIED")),
         ))
 
+    # Deposit-binding (item 15) — agreed deposit bound to a specific payee. The match
+    # verdict is the anti-scam signal; a MISMATCH is rendered as an explicit warning,
+    # never silently omitted. Assurance column carries the disclosed non-attestation.
+    deposit = claims.get("deposit_binding")
+    if isinstance(deposit, dict):
+        amount = deposit.get("deposit_amount")
+        masked = deposit.get("payee_iban_masked", "")
+        match = deposit.get("payee_name_match")
+        verdict = (
+            "titulaire = bailleur vérifié ✓" if match == "MATCH"
+            else "⚠ titulaire ≠ bailleur vérifié — n'envoyez rien"
+        )
+        rows.append((
+            "Dépôt de garantie — engagement de paiement",
+            f"{amount} € → {masked} ({verdict})",
+            "Contrôle structurel — propriété du compte non confirmée",
+        ))
+
     return rows
 
 

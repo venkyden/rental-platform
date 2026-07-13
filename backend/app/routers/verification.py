@@ -1773,6 +1773,205 @@ async def upload_property_document(
         ),
     }
 
+
+# ── Deposit-binding evidence layer (item 15) ────────────────────────────────────
+
+class DepositBindRequest(BaseModel):
+    property_id: str
+    lease_type: str  # vide | meuble | etudiant | mobilite
+    monthly_rent_hors_charges: float
+    deposit_amount: float
+    payee_iban: str
+    payee_holder_name: str
+    tenant_credential_id: Optional[str] = None
+    consent: bool = False
+
+
+@router.post("/deposit/bind")
+async def bind_deposit(
+    body: DepositBindRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Bind an agreed deposit to a specific payee (item 15 — the deposit-safety wedge).
+
+    Records verified landlord ↔ property ↔ deposit amount ↔ payee IBAN + name-match ↔
+    date into the user's signed evidence layer so a deposit-theft victim (the tenant)
+    can prove exactly who they were told to pay.
+
+    Roomivo is NEVER in the money flow (DOSSIER §0.15): the deposit flows directly
+    tenant→landlord off-platform. This endpoint neither initiates nor confirms any
+    payment, and does NOT prove the IBAN belongs to the landlord's account at the bank
+    (disclosed limit — bank-side Verification of Payee runs in the payer's bank).
+
+    GDPR: the payee IBAN is the landlord's personal data → emit-and-forget. Only the
+    masked IBAN + the name-match verdict are stored; the raw IBAN and the declared
+    holder name are never persisted.
+    """
+    from app.models.property import Property
+    from app.services.iban import validate_iban
+    from app.services.lease_rules import validate_deposit
+    from app.services.fr_2ddoc import name_matches_any
+    import uuid
+
+    # 1. Explicit consent — IBAN is landlord PII.
+    if not body.consent:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Consent is required to bind a payee IBAN (landlord personal data).",
+        )
+
+    # 2. Identity must be verified (MEDIUM+) — a binding by an unverified party is worthless.
+    if not current_user.identity_verified:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Identity must be verified before binding a deposit.",
+        )
+
+    # 3. Property must belong to this landlord.
+    try:
+        prop_uuid = uuid.UUID(body.property_id)
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid property_id.")
+    prop_result = await db.execute(
+        select(Property).where(Property.id == prop_uuid, Property.landlord_id == current_user.id)
+    )
+    property_obj = prop_result.scalar_one_or_none()
+    if property_obj is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Property not found.")
+
+    # 4. IBAN structural validation (offline mod-97; NOT a bank/ownership check).
+    iban_result = validate_iban(body.payee_iban)
+    if not iban_result["valid"]:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=iban_result["error"])
+
+    # 5. Deposit cap (LG-1) + bail mobilité must be 0 (LG-2) — reuse lease_rules.
+    cap_errors = validate_deposit(body.lease_type, body.deposit_amount, body.monthly_rent_hors_charges)
+    if cap_errors:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=cap_errors[0])
+
+    # 6. Payee-name ↔ verified-landlord name-match. For an SCI (item 16) the target is
+    # the verified entity denomination; otherwise the landlord's verified personal name.
+    existing = current_user.deposit_binding_data if isinstance(current_user.deposit_binding_data, dict) else {}
+    entity = existing.get("landlord_entity") or {}
+    if entity.get("type") == "sci" and entity.get("denomination"):
+        match_target, target_label = entity["denomination"], "sci"
+    else:
+        match_target, target_label = (current_user.full_name or ""), "individual"
+    name_match = "MATCH" if name_matches_any(body.payee_holder_name, [match_target]) else "MISMATCH"
+
+    # 7. Persist emit-and-forget: masked IBAN + verdict only, NEVER the raw IBAN/name.
+    binding = {
+        "deposit_amount": body.deposit_amount,
+        "lease_type": body.lease_type,
+        "payee_iban_masked": iban_result["masked"],
+        "iban_country": iban_result["country"],
+        "payee_name_match": name_match,
+        "payee_match_target": target_label,
+        "bank_ownership_confirmed": False,  # disclosed limit — never confirmed at the bank
+        "property_id": body.property_id,
+        "tenant_credential_id": body.tenant_credential_id,
+        "consent_at": naive_utcnow().isoformat(),
+        "bound_at": naive_utcnow().isoformat(),
+    }
+    current_user.deposit_binding_data = {**existing, "binding": binding}
+    await db.commit()
+    await db.refresh(current_user)
+
+    return {
+        **binding,
+        "note": (
+            "Deposit binding recorded. Roomivo is not in the money flow — this proves "
+            "who you were told to pay, not that funds moved. The IBAN was checked for "
+            "structural validity only; ownership of the account was not confirmed."
+        ),
+    }
+
+
+# ── Entity / SCI landlord verification (item 16) ────────────────────────────────
+
+class LandlordEntityRequest(BaseModel):
+    landlord_type: str  # individual | sci | manager
+    siren: Optional[str] = None
+
+
+@router.post("/landlord-entity/verify")
+async def verify_landlord_entity(
+    body: LandlordEntityRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Record the landlord type and, for an SCI, chain the verified gérant → SCI → payee
+    (item 16). When the lessor is an entity the account/lease are in the entity name,
+    so the item-15 payee name-match must target the SCI denomination, not the gérant's
+    personal name.
+
+    Verify-only. The `manager` (Hoguet carte G mandataire) branch records the type but
+    builds NO mandate/brokering flow — that would cross the entremise red line.
+    Only the public entity denomination + match booleans are stored at rest.
+    """
+    from app.services.french_government_api import french_gov_service
+    from app.services.fr_2ddoc import name_matches_any
+
+    if body.landlord_type not in ("individual", "sci", "manager"):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid landlord_type.")
+
+    if not current_user.identity_verified:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Identity must be verified before verifying a landlord entity.",
+        )
+
+    existing = current_user.deposit_binding_data if isinstance(current_user.deposit_binding_data, dict) else {}
+    entity: dict = {"type": body.landlord_type, "verified_at": naive_utcnow().isoformat()}
+
+    if body.landlord_type == "sci":
+        if not body.siren:
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="SIREN is required for an SCI.")
+        result = await french_gov_service.verify_entity(body.siren)
+        if not result.get("valid"):
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=result.get("error", "SIREN verification failed."))
+        if not result.get("is_active"):
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Entity is not active in the national register.")
+
+        # Chain: does this verified user appear as a gérant of the SCI?
+        gerants = [d for d in result["dirigeants"] if "gérant" in (d.get("qualite", "").lower())] or result["dirigeants"]
+        candidates = [f"{d.get('prenoms', '')} {d.get('nom', '')}".strip() for d in gerants]
+        gerant_match = name_matches_any(current_user.full_name or "", candidates)
+
+        entity.update({
+            "siren": body.siren,
+            "denomination": result["denomination"],
+            "legal_form": result["legal_form"],
+            "gerant_match": gerant_match,
+        })
+        # Only mark the entity verified when the CHAIN succeeds (entity real AND this
+        # user is a gérant of it). Setting it on a gérant mismatch would let anyone
+        # claim a real SCI's SIREN and read as a "verified entity landlord".
+        current_user.kbis_verified = gerant_match
+
+    elif body.landlord_type == "manager":
+        # Carte G mandataire scaffolding only — no mandate/brokering surface (Hoguet).
+        current_user.carte_g_verified = True
+
+    current_user.deposit_binding_data = {**existing, "landlord_entity": entity}
+    await db.commit()
+    await db.refresh(current_user)
+
+    return {
+        "landlord_type": entity["type"],
+        "denomination": entity.get("denomination"),
+        "gerant_match": entity.get("gerant_match"),
+        "note": (
+            "Landlord type recorded. For an SCI, the deposit-binding payee name-match "
+            "now targets the verified entity denomination. Verification only — Roomivo "
+            "holds no mandate and brokers nothing."
+        ),
+    }
+
+
 # ── INTL rails ─────────────────────────────────────────────────────────────────
 
 async def _ai_extract_intl_income(
