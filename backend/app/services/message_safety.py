@@ -16,8 +16,11 @@ import re
 
 # Untraceable / high-risk money rails (deposit-theft loves these).
 _PAYMENT_RAIL = re.compile(
-    r"\b(western\s?union|moneygram|mandat\s?cash|pcs|paysafe|transcash|neosurf|"
-    r"gift\s?card|carte\s?cadeau|bitcoin|crypto|usdt|ethereum|paypal\s?friends)\b",
+    # Prepaid brands only match as "<brand> card" / "carte <brand>": a bare
+    # \bpcs\b collides with "pcs" = pièces/pieces in listing copy ("4 pcs").
+    r"\b(western\s?union|moneygram|mandat\s?cash|(pcs|paysafe|transcash|neosurf)\s?card|"
+    r"carte\s?(pcs|paysafe|transcash|neosurf)|gift\s?card|carte\s?cadeau|bitcoin|crypto|"
+    r"usdt|ethereum|paypal\s?friends)\b",
     re.IGNORECASE,
 )
 # Deposit / money terms.
@@ -32,8 +35,10 @@ _BEFORE_VISIT = re.compile(
     r"(visit|viewing|seeing)|without\s+(a\s+)?(visit|viewing)|reserve\s+before|réserver\s+avant)",
     re.IGNORECASE,
 )
-# Pushing off-platform.
-_OFF_PLATFORM = re.compile(r"\b(whatsapp|telegram|signal|viber)\b", re.IGNORECASE)
+# Pushing off-platform. "signal" deliberately excluded: as a bare word it is far
+# too common in ordinary rental chat ("signal me when you arrive", FR "signaler")
+# to be a usable signal — the false positives would drown the real ones.
+_OFF_PLATFORM = re.compile(r"\b(whatsapp|telegram|viber)\b", re.IGNORECASE)
 
 
 def scan_message(content: str) -> list[str]:

@@ -48,3 +48,20 @@ def test_advisories_deduped_and_stable_order():
         "Pay the deposit by Western Union before visiting, then message me on Telegram"
     )
     assert codes == ["off_platform_payment", "pay_before_visit", "off_platform_contact"]
+
+
+# ── False-positive regressions (self-review of PR #56) ────────────────────────
+
+def test_pcs_as_pieces_is_not_a_payment_rail():
+    """'pcs' = pièces/pieces in listing copy — must not flag a scam rail."""
+    assert scan_message("Nice flat, 4 pcs, available from June.") == []
+
+
+def test_pcs_card_still_flagged():
+    assert "off_platform_payment" in scan_message("Pay with a PCS card please")
+
+
+def test_signal_as_ordinary_word_is_not_off_platform_contact():
+    """'signal' is far too common in ordinary chat to be a usable signal."""
+    assert scan_message("Just signal me when you arrive at the building.") == []
+    assert scan_message("Merci de me signaler tout problème.") == []
