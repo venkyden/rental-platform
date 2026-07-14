@@ -2007,8 +2007,8 @@ export const translations = {
                     },
                     backend: {
                         title: 'Data Region',
-                        company: 'European Union — Frankfurt, Germany',
-                        address: 'Personal data is hosted within the EU (GDPR-compliant region).'
+                        company: 'EU compute — Frankfurt, Germany (Render)',
+                        address: 'Application servers run in the EU (Frankfurt). Document analysis uses Google as a sub-processor, and file/cache storage (Cloudflare R2, Upstash) may process data outside the EU; source documents are processed transiently under verify-and-forget and not retained.'
                     }
                 }
             },
@@ -4430,8 +4430,8 @@ export const translations = {
                     },
                     backend: {
                         title: 'Région des Données',
-                        company: 'Union Européenne — Francfort, Allemagne',
-                        address: 'Les données personnelles sont hébergées dans l\'UE (région conforme au RGPD).'
+                        company: 'Calcul UE — Francfort, Allemagne (Render)',
+                        address: 'Les serveurs applicatifs sont situés dans l\'UE (Francfort). L\'analyse des documents recourt à Google comme sous-traitant, et le stockage fichiers/cache (Cloudflare R2, Upstash) peut traiter des données hors UE ; les documents source sont traités de façon transitoire selon le principe verify-and-forget et ne sont pas conservés.'
                     }
                 }
             },
