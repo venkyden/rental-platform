@@ -408,17 +408,19 @@ export default function LeaseWizard() {
                                                 onChange={(e) => setLeaseType(e.target.value)}
                                                 className="w-full px-5 py-4 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-zinc-950"
                                             >
-                                                {/* vide / mobilité / étudiant are disabled: the generator has no
-                                                    template for them. It previously emitted the *meublé* contract for
-                                                    vide/étudiant (wrong legal regime) and raised on mobilité; the
-                                                    backend now refuses (422). Re-enable per type only when the
-                                                    official Décret 2015-587 model ships (Path A). */}
+                                                {/* Only `meuble` generates today; the backend refuses (422) the rest.
+                                                    vide/étudiant: official Décret 2015-587 model exists but isn't
+                                                    wired to this generator yet (Path A). mobilité: art. 25-13
+                                                    mandatory mentions unimplemented → would requalify as meublé.
+                                                    colocation/code_civil: NO contrat-type published on Legifrance, so
+                                                    emitting one means authoring the wording (loi 1971). Re-enable a
+                                                    type only once its official model is wired. */}
                                                 <option value="meuble">{t('lease.meuble.name')} (Loi 1989)</option>
                                                 <option value="vide" disabled>{t('lease.vide.name')} (Loi 1989) — {t('lease.type.unavailable', undefined, 'bientôt disponible')}</option>
                                                 <option value="mobilite" disabled>{t('lease.mobilite.name')} — {t('lease.type.unavailable', undefined, 'bientôt disponible')}</option>
                                                 <option value="etudiant" disabled>{t('lease.etudiant.name')} — {t('lease.type.unavailable', undefined, 'bientôt disponible')}</option>
-                                                <option value="colocation">Colocation Meublée</option>
-                                                <option value="code_civil">Bail Code Civil</option>
+                                                <option value="colocation" disabled>Colocation Meublée — {t('lease.type.unavailable', undefined, 'bientôt disponible')}</option>
+                                                <option value="code_civil" disabled>Bail Code Civil — {t('lease.type.unavailable', undefined, 'bientôt disponible')}</option>
                                             </select>
                                         </div>
 

@@ -53,17 +53,54 @@ class TestNoSilentTemplateFallback:
         with pytest.raises(ValueError, match="no lease template"):
             lease_generator.generate_html(**self._args(lease_type))
 
-    @pytest.mark.parametrize("lease_type,expected_title", [
-        ("meuble", "Contrat de Location Meublée"),
-        ("colocation", "Contrat de Colocation Meublée"),
-    ])
-    def test_mapped_types_still_render(self, lease_type, expected_title):
-        html = lease_generator.generate_html(**self._args(lease_type))
-        assert f"<title>{expected_title}</title>" in html
+    def test_meuble_renders(self):
+        # Only type with BOTH an official Décret model and a wired template.
+        html = lease_generator.generate_html(**self._args("meuble"))
+        assert "<title>Contrat de Location Meublée</title>" in html
 
     def test_mobilite_still_blocked(self):
         with pytest.raises(ValueError, match="art. 25-13"):
             lease_generator.generate_html(**self._args("mobilite"))
+
+
+# ── No official Legifrance contrat-type → refuse (loi 1971) ──────────────────
+
+class TestOfficialModelRequired:
+    """Roomivo may fill an official model's blanks, never author a lease.
+
+    Décret n°2015-587 publishes contrat-types for vide / meublé (+ the meublé model
+    serves the 9-month étudiant variant). `colocation`, `code_civil` and `simple` have
+    NO published model — a document emitted for them is wording we invented, which is
+    exactly the loi-1971 (rédaction d'actes) red line.
+    """
+
+    def _args(self, lease_type):
+        return dict(
+            property=_mk(address_line1="12 rue de la Paix", address_line2=None,
+                         postal_code="44000", city="Nantes", charges=50,
+                         furnished=True, description="T2"),
+            landlord=_mk(full_name="Jean Dupont"),
+            tenant=_mk(full_name="Marie Martin"),
+            start_date="2026-09-01", rent=800.0, lease_type=lease_type,
+        )
+
+    @pytest.mark.parametrize("lease_type", ["colocation", "code_civil", "simple"])
+    def test_html_refuses_types_with_no_published_model(self, lease_type):
+        with pytest.raises(ValueError, match="no official contrat-type published"):
+            lease_generator.generate_html(**self._args(lease_type))
+
+    @pytest.mark.parametrize("lease_type", ["colocation", "code_civil", "simple"])
+    def test_pdf_refuses_types_with_no_published_model(self, lease_type, tmp_path):
+        # /leases/{id}/download regenerates via generate_pdf — same gate applies.
+        with pytest.raises(ValueError, match="no official contrat-type published"):
+            lease_generator.generate_pdf(
+                **self._args(lease_type), output_path=str(tmp_path / "l.pdf"))
+
+    def test_gate_tracks_the_registry_not_a_hardcoded_list(self):
+        # The allow-list must come from the official-model registry, so adding a
+        # verbatim model is what unlocks a type — not editing the generator.
+        from app.services.lease_models.registry import supported_types
+        assert set(supported_types()) == {"vide", "meuble", "etudiant"}
 
 
 # ── Bug 2: deposit ceiling on POST /leases/create ────────────────────────────

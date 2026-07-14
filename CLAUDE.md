@@ -138,9 +138,15 @@ MEDIUM rails (identity + funds-coverage solvency — backend only, UI pending),
 model *assets* + registry and a v0.1 filler (`lease_generation.py`), but that path is
 **gated** pending verbatim counsel sign-off and no router calls it. What IS live is the
 **legacy free-form generator** (`lease_generator.py`, `POST /leases/generate`), which
-uses custom templates and never runs the `lease_rules` legality gate — `vide`/`etudiant`
-/`mobilite` are refused (no official model), so only `meuble`/`colocation`/`code_civil`
-generate. Replacing that legacy path with Path A is the open work.
+uses custom templates and never runs the `lease_rules` legality gate. It now refuses any
+type without an official contrat-type published on Legifrance (`supported_types()` in
+`lease_models/registry.py` is the oracle — Décret 2015-587 publishes vide/meublé only,
+the meublé model also serving étudiant): `colocation`/`code_civil`/`simple` are refused
+outright (authoring wording = loi 1971), `mobilite` for missing art. 25-13 mentions, and
+`vide`/`etudiant` because their official model isn't wired to this generator yet — so
+**only `meuble` generates today**. Wiring Path A (verbatim model, counsel-verified) is
+the open work; note `meuble` still renders CUSTOM wording despite its official model
+existing, which remains an open doctrine question.
 Insurance remains verification-only, never sold. Next build order: see the feature
 audit program in `docs/superpowers/plans/2026-07-02-stress-test-remediation-master.md`
 (INTL solvency UI tab is the chosen next feature).
