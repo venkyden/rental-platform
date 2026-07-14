@@ -283,7 +283,7 @@ Usage des **30–50 k€** d'amorçage (`[Hypothèse]`, base-case 40 k€) :
 |---|---|---|
 | **Conseil juridique — droit immobilier** | 3–5 k€ | Franchir le *gate légal* (positionnement self-service bail / e-signature vs loi 1971 / Hoguet). **Bloquant et bon marché.** |
 | **Revue GDPR / DPO** | 2–3 k€ | Confirmer base légale + preuve de non-rétention (traitement transitoire) ; base Art. 9 + AIPD pour l'étape de comparaison faciale. |
-| **Immatriculation** | 1–2 k€ | Création de société → capacité contractuelle B2B. Structure : **Roomivo Technologies Pvt. Ltd. (Inde)** maintenant ; **entité UE ajoutée plus tard** (juridiction à définir — le seul avantage propre de la France ici est l'accès FranceConnect, qui exige un SIRET français ; une base UE non-française atteint l'identité HIGH via eIDAS 2.0 / portefeuille UE). **Sur le chemin critique B2B de l'An 1.** |
+| **Immatriculation** | 1–2 k€ | Création de société → capacité contractuelle B2B. Structure : **une entité indienne** maintenant (immatriculation en cours) ; **entité UE ajoutée plus tard** (juridiction à définir — le seul avantage propre de la France ici est l'accès FranceConnect, qui exige un SIRET français ; une base UE non-française atteint l'identité HIGH via eIDAS 2.0 / portefeuille UE). **Sur le chemin critique B2B de l'An 1.** |
 | **Infrastructure & sécurité** | 2–4 k€/an | Hébergement, infra de signature (Ed25519), audit de sécurité. Coût marginal par vérif ≈ 0 €. |
 | **R&D Credential core + rails FR** | (temps fondateurs) | Modèle credential, OCR+liveness (MEDIUM), FranceConnect (post-immatriculation), 2D-Doc, contrôle du bien ADEME. |
 | **R&D rail INTL HIGH (Phase 2)** | à provisionner | Lecture NFC passeport (JMRTD / NFCPassportReader) ; **gap opérationnel : liste maîtresse CSCA via ICAO PKD**. |
@@ -308,7 +308,7 @@ Recherche / Innovation `[Hypothèse — à valider avec un expert-comptable]`.
    + taxe foncière) — la surface de crédibilité montrée aux assureurs, pas le coin de revenu.
 4. Page anti-hameçonnage *verify-by-ID* + endossement institutionnel.
 
-> Jalon transverse An 1 : **immatriculation.** La Pvt Ltd indienne (en cours) donne la
+> Jalon transverse An 1 : **immatriculation.** L'entité indienne (en cours) donne la
 > capacité contractuelle B2B maintenant ; l'**entité UE (ajoutée juste-à-temps avant le
 > premier pilote traitant des données UE)** conditionne l'identité HIGH et la posture GDPR
 > côté utilisateurs UE. Rail identité HIGH = FranceConnect *si* l'entité UE est française,
