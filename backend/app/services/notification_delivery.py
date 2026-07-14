@@ -32,7 +32,7 @@ class NotificationDelivery:
         # Email config
         self.sendgrid_key = os.getenv("SENDGRID_API_KEY")
         self.resend_key = os.getenv("RESEND_API_KEY")
-        self.from_email = os.getenv("FROM_EMAIL", "noreply@roomivo.com")
+        self.from_email = os.getenv("FROM_EMAIL", "noreply@roomivo.eu")
 
         # Twilio config (SMS + WhatsApp)
         self.twilio_sid = os.getenv("TWILIO_ACCOUNT_SID")

@@ -88,10 +88,10 @@ export default function GDPRPage() {
                                 {t('legal.gdpr.sections.contact.title', undefined, 'Exercise Your Rights')}
                             </h2>
                             <p className="text-zinc-600 leading-relaxed text-lg max-w-2xl mx-auto mb-8">
-                                {t('legal.gdpr.sections.contact.content', undefined, 'Most rights can be exercised directly via your dashboard. For manual requests, contact our Data Protection Officer.')}
+                                {t('legal.gdpr.sections.contact.content', undefined, 'Most rights can be exercised directly via your dashboard. For manual requests, contact us at the address below.')}
                             </p>
                             <div className="inline-block px-8 py-4 bg-zinc-900 text-white rounded-2xl font-mono text-sm tracking-widest shadow-2xl">
-                                dpo@roomivo.eu
+                                contact@roomivo.eu
                             </div>
                         </motion.section>
                     </div>
