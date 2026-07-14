@@ -303,7 +303,7 @@ async def delete_user_data(
         "status": "deleted",
         "message": "Your personal data has been anonymised and your account deactivated. "
         "A minimal anonymised record is retained for legal compliance (invoicing, fraud prevention). "
-        "If you believe any data remains, contact dpo@roomivo.com.",
+        "If you believe any data remains, contact contact@roomivo.eu.",
         "deleted_at": datetime.now(timezone.utc).isoformat(),
         "data_retention_note": "Anonymised records retained per GDPR Art. 17(3)(b)(e) for legal obligations.",
     }
