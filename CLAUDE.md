@@ -23,7 +23,8 @@ The trust layer is NOT a separate entity or product — it is Roomivo's core.
 
 We sell **verified facts that enable protection**, not protection itself.
 Revenue: flat per-verification or subscription fee. Never success-based.
-Status: incorporating as **Roomivo Technologies Pvt. Ltd. (India)** (started 2026-07-05);
+Status: **incorporating in India** (registration in progress, started 2026-07-05; entity
+name not final — do NOT publish it until registration lands);
 **EU entity added later, just-in-time before the first live pilot processing EU data**
 (country TBD — France's only unique edge is FranceConnect, which needs a French SIRET; a
 non-France EU base reaches HIGH identity via eIDAS 2.0 / EU wallet instead). Founders remain

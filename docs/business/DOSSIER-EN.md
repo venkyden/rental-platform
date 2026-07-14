@@ -270,7 +270,7 @@ Use of the **€30–50k** seed (`[Assumption]`, base case €40k):
 |---|---|---|
 | **Legal counsel — real-estate law** | €3–5k | Clear the *legal gate* (self-service lease / e-sign positioning vs loi 1971 / Hoguet). **Blocking and cheap.** |
 | **GDPR / DPO review** | €2–3k | Confirm lawful basis + non-retention proof (transient processing); Art. 9 basis + DPIA for the face-match step. |
-| **Incorporation** | €1–2k | Company formation → B2B contract capacity. Structure: **Roomivo Technologies Pvt. Ltd. (India)** now; **EU entity added later** (jurisdiction TBD — France's only unique edge here is FranceConnect access, which requires a French SIRET; a non-France EU base reaches HIGH identity via the eIDAS 2.0 / EU wallet instead). **On the Y1 critical path for B2B.** |
+| **Incorporation** | €1–2k | Company formation → B2B contract capacity. Structure: **an Indian entity** now (registration in progress); **EU entity added later** (jurisdiction TBD — France's only unique edge here is FranceConnect access, which requires a French SIRET; a non-France EU base reaches HIGH identity via the eIDAS 2.0 / EU wallet instead). **On the Y1 critical path for B2B.** |
 | **Infrastructure & security** | €2–4k/yr | Hosting, signing infra (Ed25519), security audit. Marginal cost per verif ≈ €0. |
 | **R&D Credential core + FR rails** | (founder time) | Credential model, OCR+liveness (MEDIUM), FranceConnect (post-incorporation), 2D-Doc, ADEME property control. |
 | **R&D INTL HIGH rail (Phase 2)** | to provision | Passport NFC read (JMRTD / NFCPassportReader); **operational gap: CSCA master list via ICAO PKD**. |
@@ -295,7 +295,7 @@ verification, normalization) may qualify for the French Research / Innovation ta
    the credibility surface shown to insurers, not the revenue wedge.
 4. Anti-phishing *verify-by-ID* page + institutional endorsement.
 
-> Cross-cutting Y1 milestone: **incorporation.** India Pvt Ltd (in progress) gives B2B
+> Cross-cutting Y1 milestone: **incorporation.** The Indian entity (in progress) gives B2B
 > contract capacity now; the **EU entity (added just-in-time before the first live pilot that
 > processes EU data)** gates HIGH identity and the EU-user GDPR posture. HIGH identity rail =
 > FranceConnect *if* the EU entity is French, else the eIDAS 2.0 / EU wallet — decided with
