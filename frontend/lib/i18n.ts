@@ -2007,8 +2007,8 @@ export const translations = {
                     },
                     backend: {
                         title: 'Data Region',
-                        company: 'EU compute — Frankfurt, Germany (Render)',
-                        address: 'Application servers run in the EU (Frankfurt). Document analysis uses Google as a sub-processor, and file/cache storage (Cloudflare R2, Upstash) may process data outside the EU; source documents are processed transiently under verify-and-forget and not retained.'
+                        company: 'EU compute & cache — Frankfurt, Germany (Render, Upstash EU)',
+                        address: 'Application servers (Render) and cache (Upstash) run in the EU. Document analysis uses Google as a sub-processor, which may process data outside the EU; file storage uses Cloudflare R2. Source documents are processed transiently under verify-and-forget and not retained.'
                     }
                 }
             },
@@ -4430,8 +4430,8 @@ export const translations = {
                     },
                     backend: {
                         title: 'Région des Données',
-                        company: 'Calcul UE — Francfort, Allemagne (Render)',
-                        address: 'Les serveurs applicatifs sont situés dans l\'UE (Francfort). L\'analyse des documents recourt à Google comme sous-traitant, et le stockage fichiers/cache (Cloudflare R2, Upstash) peut traiter des données hors UE ; les documents source sont traités de façon transitoire selon le principe verify-and-forget et ne sont pas conservés.'
+                        company: 'Calcul & cache UE — Francfort, Allemagne (Render, Upstash UE)',
+                        address: 'Les serveurs applicatifs (Render) et le cache (Upstash) sont situés dans l\'UE. L\'analyse des documents recourt à Google comme sous-traitant, qui peut traiter des données hors UE ; le stockage fichiers utilise Cloudflare R2. Les documents source sont traités de façon transitoire selon le principe verify-and-forget et ne sont pas conservés.'
                     }
                 }
             },
