@@ -57,6 +57,21 @@ async def test_meeting_link_readable_by_tenant_and_landlord_only(client):
     rs = await client.get(f"/visits/slots/{slot.id}/meeting", headers=auth(stranger))
     assert rs.status_code == 403
 
+    # Nor can an unauthenticated caller
+    ru = await client.get(f"/visits/slots/{slot.id}/meeting")
+    assert ru.status_code in (401, 403)
+
+
+@pytest.mark.asyncio
+async def test_public_slot_listing_schema_cannot_carry_meeting_link(client):
+    """Public listing uses a schema without meeting_link, so no filter change
+    can ever leak the private URL from an unauthenticated endpoint."""
+    _, _, prop, _, link = await _book(client, client._sessionmaker)
+    r = await client.get(f"/visits/slots/{prop.id}")
+    assert r.status_code == 200
+    assert "meeting_link" not in r.text
+    assert link not in r.text
+
 
 @pytest.mark.asyncio
 async def test_meeting_link_404_for_unbooked_slot(client):
