@@ -133,8 +133,14 @@ Common:
 **Status 2026-07-04: Phase 1 shipped** (2026-06-13) plus, since then: statelessness
 retrofit (verify-and-forget, Redis 10-min TTL), MRH insurance verification, INTL
 MEDIUM rails (identity + funds-coverage solvency — backend only, UI pending),
-**e-sign Path B live** (upload + legality screen + in-house Ed25519 signature),
-lease Path A generator on branch `feat/path-a-lease-generation` (unmerged).
+**e-sign Path B live** (upload + legality screen + in-house Ed25519 signature).
+**Path A (Décret 2015-587 generation) is NOT shipped**: PR #23 merged the official
+model *assets* + registry and a v0.1 filler (`lease_generation.py`), but that path is
+**gated** pending verbatim counsel sign-off and no router calls it. What IS live is the
+**legacy free-form generator** (`lease_generator.py`, `POST /leases/generate`), which
+uses custom templates and never runs the `lease_rules` legality gate — `vide`/`etudiant`
+/`mobilite` are refused (no official model), so only `meuble`/`colocation`/`code_civil`
+generate. Replacing that legacy path with Path A is the open work.
 Insurance remains verification-only, never sold. Next build order: see the feature
 audit program in `docs/superpowers/plans/2026-07-02-stress-test-remediation-master.md`
 (INTL solvency UI tab is the chosen next feature).

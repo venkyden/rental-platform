@@ -214,14 +214,28 @@ class LeaseGenerator:
         duration = duration_months or config["duration_months"]
         end = start + relativedelta(months=duration) - timedelta(days=1)
 
-        # Determine the right template
+        # Determine the right template.
+        # NO silent fallback: this dict is keyed on the template vocabulary
+        # (meuble/colocation/code_civil/simple), which does NOT cover the loi-89
+        # vocabulary the API accepts (vide/etudiant/mobilite). Defaulting to the
+        # meublé template emitted a "Contrat de Location Meublée" for an unfurnished
+        # (`vide`) request — a different legal regime (loi 89 titre Ier vs titre Ier
+        # bis: 3 yrs vs 1, 1 vs 2 months' deposit, décret 2015-981 furnished
+        # inventory). Refuse rather than emit the wrong contract type, the same way
+        # `_reject_mobilite` refuses rather than requalify.
         templates = {
             "meuble": LEASE_MEUBLE_HTML,
             "colocation": LEASE_COLOCATION_HTML,
             "code_civil": LEASE_CODE_CIVIL_HTML,
             "simple": LEASE_SIMPLE_HTML,
         }
-        template_str = templates.get(lease_type, LEASE_MEUBLE_HTML)
+        template_str = templates.get(lease_type)
+        if template_str is None:
+            raise ValueError(
+                f"no lease template for type '{lease_type}': this generator only "
+                f"provides {sorted(templates)}. Emitting the meublé model for a "
+                f"'{lease_type}' lease would produce the wrong contract type."
+            )
         template = Template(template_str)
 
         max_deposit = rent * config["max_deposit_months"]
