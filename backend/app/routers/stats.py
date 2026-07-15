@@ -195,29 +195,42 @@ async def get_tenant_stats(
     current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
 ):
     """Get high-level stats for tenant dashboard."""
-    # 1. Total Applications
-    result_apps = await db.execute(
-        select(func.count(Application.id)).where(Application.tenant_id == current_user.id)
-    )
-    total_applications = result_apps.scalar_one_or_none() or 0
+    import logging
+    _log = logging.getLogger(__name__)
 
-    # 2. Scheduled Visits (Mocked to 0 for now as visits model might be in transition)
-    scheduled_visits = 0 
-
-    # 3. Active Disputes (all non-closed disputes raised by this tenant)
-    result_disputes = await db.execute(
-        select(func.count(Dispute.id)).where(
-            and_(Dispute.raised_by_id == current_user.id, Dispute.status != DisputeStatus.CLOSED)
+    try:
+        # 1. Total Applications
+        result_apps = await db.execute(
+            select(func.count(Application.id)).where(Application.tenant_id == current_user.id)
         )
-    )
-    active_disputes = result_disputes.scalar_one_or_none() or 0
+        total_applications = result_apps.scalar_one_or_none() or 0
 
-    return TenantStats(
-        total_applications=total_applications,
-        scheduled_visits=scheduled_visits,
-        active_disputes=active_disputes,
-        trust_score=current_user.trust_score or 0
-    )
+        # 2. Scheduled Visits (Mocked to 0 for now as visits model might be in transition)
+        scheduled_visits = 0
+
+        # 3. Active Disputes (all non-closed disputes raised by this tenant)
+        result_disputes = await db.execute(
+            select(func.count(Dispute.id)).where(
+                and_(Dispute.raised_by_id == current_user.id, Dispute.status != DisputeStatus.CLOSED)
+            )
+        )
+        active_disputes = result_disputes.scalar_one_or_none() or 0
+
+        return TenantStats(
+            total_applications=total_applications,
+            scheduled_visits=scheduled_visits,
+            active_disputes=active_disputes,
+            trust_score=current_user.trust_score or 0
+        )
+    except Exception as e:
+        _log.error("CRITICAL ERROR in get_tenant_stats user=%s: %s", current_user.id, e, exc_info=True)
+        # Return safe zeros — never 500 the dashboard
+        return TenantStats(
+            total_applications=0,
+            scheduled_visits=0,
+            active_disputes=0,
+            trust_score=current_user.trust_score or 0,
+        )
 
 
 # ──────────────────────────────────────────────

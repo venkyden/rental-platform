@@ -264,14 +264,17 @@ async def login(
     )
 
     # Set refresh token cookie
+    # SameSite=None is required for cross-origin POST (frontend and backend on
+    # different subdomains of onrender.com). SameSite=Lax blocks cookies on
+    # cross-site non-navigation requests. SameSite=None requires Secure=True.
     response.set_cookie(
         key="refresh_token",
         value=refresh_token,
         httponly=True,
         max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
         expires=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
-        samesite="lax",
-        secure=settings.ENVIRONMENT == "production",
+        samesite="none",
+        secure=True,
         domain=settings.COOKIE_DOMAIN if settings.ENVIRONMENT == "production" else None,
     )
 
@@ -348,15 +351,15 @@ async def refresh_token(
         data={"sub": user.email, "version": user.refresh_token_version}
     )
 
-    # Set new refresh token cookie
+    # Set new refresh token cookie (SameSite=None for cross-origin frontend↔backend)
     response.set_cookie(
         key="refresh_token",
         value=new_refresh_token,
         httponly=True,
         max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
         expires=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
-        samesite="lax",
-        secure=settings.ENVIRONMENT == "production",
+        samesite="none",
+        secure=True,
         domain=settings.COOKIE_DOMAIN if settings.ENVIRONMENT == "production" else None,
     )
     
@@ -391,8 +394,8 @@ async def logout(
     response.delete_cookie(
         key="refresh_token",
         httponly=True,
-        samesite="lax",
-        secure=settings.ENVIRONMENT == "production",
+        samesite="none",
+        secure=True,
         domain=settings.COOKIE_DOMAIN if settings.ENVIRONMENT == "production" else None,
     )
     return {"message": "Successfully logged out"}
@@ -513,8 +516,8 @@ async def change_password(
         httponly=True,
         max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
         expires=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
-        samesite="lax",
-        secure=settings.ENVIRONMENT == "production",
+        samesite="none",
+        secure=True,
         domain=settings.COOKIE_DOMAIN if settings.ENVIRONMENT == "production" else None,
     )
     audit_logger.info(f"PASSWORD_CHANGE email={current_user.email} sessions_revoked=true")
@@ -759,15 +762,15 @@ async def google_auth(
             data={"sub": user.email, "version": user.refresh_token_version}
         )
 
-        # Set refresh token cookie
+        # Set refresh token cookie (SameSite=None for cross-origin frontend↔backend)
         response.set_cookie(
             key="refresh_token",
             value=refresh_token,
             httponly=True,
             max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
             expires=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
-            samesite="lax",
-            secure=settings.ENVIRONMENT == "production",
+            samesite="none",
+            secure=True,
             domain=settings.COOKIE_DOMAIN if settings.ENVIRONMENT == "production" else None,
         )
 
