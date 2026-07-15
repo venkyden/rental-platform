@@ -130,7 +130,7 @@ export function useGoogleSignIn({
     script.addEventListener('error', () => {
       console.warn('Failed to load Google Sign-In script');
       onErrorRef.current?.('Failed to load Google Sign-In script');
-    };
+    });
     document.body.appendChild(script);
   }, [clientId, buttonId, buttonText, locale]);
 
