@@ -66,6 +66,7 @@ async def export_user_data(
     from app.models.visits_and_leases import Lease
     from app.models.dispute import Dispute
     from app.models.biometric_consent import BiometricConsent
+    from app.models.visits_and_leases import VisitSlot
 
     async def _collect(label: str, stmt, mapper):
         try:
@@ -158,6 +159,20 @@ async def export_user_data(
         },
     )
 
+    # Visits the user booked (tenant) or hosts (landlord) — their personal data.
+    visits_data = await _collect(
+        "visits",
+        select(VisitSlot).where((VisitSlot.tenant_id == user.id) | (VisitSlot.landlord_id == user.id)),
+        lambda v: {
+            "id": str(v.id),
+            "property_id": str(getattr(v, "property_id", "")),
+            "role": "visitor" if getattr(v, "tenant_id", None) == user.id else "host",
+            "start_time": str(getattr(v, "start_time", "")),
+            "is_booked": getattr(v, "is_booked", None),
+            "room_label": getattr(v, "room_label", None),
+        },
+    )
+
     # Build export payload
     export = {
         "export_date": datetime.now(timezone.utc).isoformat(),
@@ -183,6 +198,11 @@ async def export_user_data(
                 "email_verified": user.email_verified,
                 "identity_verified": user.identity_verified,
                 "employment_verified": user.employment_verified,
+                "income_status": getattr(user, "income_status", None),
+                "guarantor_status": getattr(user, "guarantor_status", None),
+                "guarantor_type": getattr(user, "guarantor_type", None),
+                "visale_id": getattr(user, "visale_id", None),
+                "garantme_ref": getattr(user, "garantme_ref", None),
                 # Deposit-binding (items 15/16): already stored masked (masked IBAN +
                 # name-match verdict only, never the raw IBAN/holder name), so it is
                 # safe to surface verbatim in the Art. 20 portability export.
@@ -208,6 +228,7 @@ async def export_user_data(
         "leases": leases_data,
         "disputes": disputes_data,
         "biometric_consents": biometric_consents_data,
+        "visits": visits_data,
     }
 
     return export
@@ -289,6 +310,16 @@ async def delete_user_data(
             employment_status="deleted",
             ownership_data=None,
             ownership_status="deleted",
+            # income/guarantor/insurance were omitted from erasure — they hold the
+            # user's verification PII, and guarantor_data holds THIRD-PARTY (the
+            # guarantor's) name/metadata. Encryption at rest is not erasure.
+            income_data=None,
+            income_status="deleted",
+            guarantor_data=None,
+            guarantor_status="deleted",
+            visale_id=None,
+            garantme_ref=None,
+            insurance_data=None,
             deposit_binding_data=None,
             preferences=None,
             contact_preferences=None,
