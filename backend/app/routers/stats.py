@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.models.application import Application
+from app.models.dispute import Dispute, DisputeStatus
 from app.models.messages import Conversation
 from app.models.property import Property
 from app.models.user import User, UserRole
@@ -203,11 +204,10 @@ async def get_tenant_stats(
     # 2. Scheduled Visits (Mocked to 0 for now as visits model might be in transition)
     scheduled_visits = 0 
 
-    # 3. Active Disputes
-    from app.models.dispute import Dispute
+    # 3. Active Disputes (all non-closed disputes raised by this tenant)
     result_disputes = await db.execute(
         select(func.count(Dispute.id)).where(
-            and_(Dispute.raised_by_id == current_user.id, Dispute.status != "resolved")
+            and_(Dispute.raised_by_id == current_user.id, Dispute.status != DisputeStatus.CLOSED)
         )
     )
     active_disputes = result_disputes.scalar_one_or_none() or 0
