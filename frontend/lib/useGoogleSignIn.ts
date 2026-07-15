@@ -117,11 +117,7 @@ export function useGoogleSignIn({
         initializeGSI();
       } else {
         const script = document.querySelector('script[src="https://accounts.google.com/gsi/client"]') as HTMLScriptElement;
-        const existingOnload = script.onload;
-        script.onload = (e) => {
-          if (existingOnload) (existingOnload as EventListener)(e as Event);
-          initializeGSI();
-        };
+        script.addEventListener('load', initializeGSI);
       }
       return;
     }
@@ -130,8 +126,8 @@ export function useGoogleSignIn({
     script.src = 'https://accounts.google.com/gsi/client';
     script.async = true;
     script.defer = true;
-    script.onload = initializeGSI;
-    script.onerror = () => {
+    script.addEventListener('load', initializeGSI);
+    script.addEventListener('error', () => {
       console.warn('Failed to load Google Sign-In script');
       onErrorRef.current?.('Failed to load Google Sign-In script');
     };

@@ -108,11 +108,6 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: jsonLdString }}
         />
-        {/* Load Google Identity Services script once */}
-        <Script 
-          src="https://accounts.google.com/gsi/client" 
-          strategy="afterInteractive"
-        />
       </head>
       <body
         className="antialiased bg-zinc-50 text-zinc-900 min-h-screen selection:bg-zinc-900 selection:text-white"
