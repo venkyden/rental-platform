@@ -139,14 +139,20 @@ model *assets* + registry and a v0.1 filler (`lease_generation.py`), but that pa
 **gated** pending verbatim counsel sign-off and no router calls it. What IS live is the
 **legacy free-form generator** (`lease_generator.py`, `POST /leases/generate`), which
 uses custom templates and never runs the `lease_rules` legality gate. It now refuses any
-type without an official contrat-type published on Legifrance (`supported_types()` in
-`lease_models/registry.py` is the oracle — Décret 2015-587 publishes vide/meublé only,
-the meublé model also serving étudiant): `colocation`/`code_civil`/`simple` are refused
-outright (authoring wording = loi 1971), `mobilite` for missing art. 25-13 mentions, and
-`vide`/`etudiant` because their official model isn't wired to this generator yet — so
-**only `meuble` generates today**. Wiring Path A (verbatim model, counsel-verified) is
-the open work; note `meuble` still renders CUSTOM wording despite its official model
-existing, which remains an open doctrine question.
+type without a verbatim Décret model **wired** in `lease_models/registry.py`
+(`supported_types()` is the oracle → vide/meublé/étudiant). **Only `meuble` generates
+today.** Why each is refused differs — don't conflate them:
+- `vide`/`etudiant`/`colocation` — an official model EXISTS (the annexes are titled
+  "CONTRAT TYPE DE LOCATION **OU DE COLOCATION**…", so colocation is covered too) but
+  isn't wired to this generator yet → Path A work.
+- `mobilite` — no décret contrat-type; art. 25-13 mandatory mentions unimplemented.
+- `code_civil` (outside loi 89) / `simple` — no published contrat-type at all.
+
+Open work: wire Path A (verbatim model + counsel-verified transcription). Two known
+gaps: (1) `meuble` still renders CUSTOM wording despite its official model existing, and
+the PDF stamps "conforme … au décret 2015-587"; (2) the model assets omit the published
+preamble (official title, "Champ du contrat type", "Modalités d'application") — found
+2026-07-13, so they are NOT yet a complete reproduction; they stay PENDING SIGN-OFF.
 Insurance remains verification-only, never sold. Next build order: see the feature
 audit program in `docs/superpowers/plans/2026-07-02-stress-test-remediation-master.md`
 (INTL solvency UI tab is the chosen next feature).

@@ -6,6 +6,16 @@ contrat type de location — reproduced VERBATIM from Légifrance, version en vi
 depuis le 01/01/2025.
 https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000043842254
 
+The published title is "…OU DE COLOCATION…", so this annexe also covers colocation of an
+unfurnished dwelling under a single contract (excluded: colocations formalisées par
+plusieurs contrats).
+
+⚠️ KNOWN INCOMPLETE (found 2026-07-13) — "VERBATIM" above holds for the BODY only.
+This file starts at section I and OMITS the published preamble: the official title, the
+"(Soumis au titre Ier…)" subtitle, "Champ du contrat type" (scope + exclusions) and
+"Modalités d'application du contrat type" (ordre public, clauses essentielles). The
+markdown heading below is OURS, not the decree's. Reproduce the preamble before wiring.
+
 Status: ⏳ PENDING LAWYER SIGN-OFF before it is wired into generation (Path A).
 This file is the canonical wording asset. The generator fills the [...] placeholders
 with field values only — it MUST NOT alter the standardized clause text (loi 1971 / LG-6).

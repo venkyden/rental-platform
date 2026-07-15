@@ -284,9 +284,9 @@ export default function LeaseGeneratorPage() {
                                         className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-zinc-950 text-sm font-semibold"
                                     >
                                         {/* Only `meuble` generates today — backend refuses (422) the rest:
-                                            vide/étudiant await the official model wiring (Path A); mobilité
-                                            lacks art. 25-13 mentions; colocation/code_civil have NO
-                                            contrat-type published on Legifrance (loi 1971).
+                                            vide/étudiant/colocation await the official model wiring (Path A —
+                                            the annexes cover colocation); mobilité lacks art. 25-13 mentions;
+                                            code_civil is outside loi 89 (no contrat-type published).
                                             See app/services/lease_generator.py. */}
                                         <option value="meuble">{t('lease.meuble.name')} (Loi 89)</option>
                                         <option value="vide" disabled>{t('lease.vide.name')} (Loi 89) — {t('lease.type.unavailable', undefined, 'bientôt disponible')}</option>

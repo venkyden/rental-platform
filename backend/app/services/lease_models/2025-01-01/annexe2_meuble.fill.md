@@ -6,7 +6,17 @@ location — reproduced VERBATIM from Légifrance, version en vigueur depuis le 
 https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000043842249
 
 Serves both lease types `meuble` and `etudiant`: section III carries the furnished
-1-year tacit-renewal rule AND the 9-month student variant (no tacit renewal).
+1-year tacit-renewal rule AND the 9-month student variant (no tacit renewal). The
+published title is "…OU DE COLOCATION…", so this annexe also covers colocation under a
+single contract (excluded: colocations formalisées par plusieurs contrats).
+
+⚠️ KNOWN INCOMPLETE (found 2026-07-13) — "VERBATIM" above holds for the BODY only.
+This file starts at section I and OMITS the published preamble: the official title
+("CONTRAT TYPE DE LOCATION OU DE COLOCATION DE LOGEMENT MEUBLÉ"), the subtitle
+"(Soumis au titre Ier bis de la loi du 6 juillet 1989…)", "Champ du contrat type"
+(scope + exclusions) and "Modalités d'application du contrat type" (ordre public,
+clauses essentielles). The "# Contrat de location — logement meublé" heading below is
+OURS, not the decree's. Reproduce the preamble before wiring.
 
 Status: ⏳ PENDING LAWYER SIGN-OFF before it is wired into generation (Path A).
 The generator fills the [...] placeholders only — it MUST NOT alter the standardized

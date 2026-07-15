@@ -94,22 +94,29 @@ class LeaseGenerator:
 
     @staticmethod
     def _reject_without_official_model(lease_type: str) -> None:
-        """Refuse any type with no official contrat-type published on Legifrance.
+        """Refuse any type with no official Décret model wired in the registry.
 
         Loi 1971 (rédaction d'actes) + the counsel opinion's "official model wording
         only" condition: Roomivo may fill an official model's blanks, never author a
-        lease. The registry is the oracle — `supported_types()` lists the types with a
-        verbatim Décret n°2015-587 annexe (vide / meublé / étudiant). Types absent from
-        it (colocation, code_civil, simple) have NO published contrat-type, so any
-        document we emit for them is wording we invented.
+        lease. The registry is the oracle — `supported_types()` lists the types wired
+        to a verbatim Décret n°2015-587 annexe (vide / meublé / étudiant).
+
+        This says nothing about whether a model exists upstream, only whether one is
+        wired here — the two differ per type:
+        - `colocation` IS covered by the official annexes ("CONTRAT TYPE DE LOCATION
+          **OU DE COLOCATION**…", single contract with several colocataires); it simply
+          isn't mapped in the registry yet, same bucket as vide/étudiant.
+        - `code_civil` (outside loi 89 — e.g. résidence secondaire) and `simple` have
+          no published contrat-type at all; the décret only covers résidence principale.
+        Either way the legacy free-form wording is not the official model, so refuse.
         """
-        official = supported_types()
-        if lease_type not in official:
+        wired = supported_types()
+        if lease_type not in wired:
             raise ValueError(
-                f"no official contrat-type published for lease type '{lease_type}': "
-                f"Legifrance/Décret n°2015-587 provides models for {official} only. "
-                f"Generating a '{lease_type}' lease would mean authoring the wording "
-                f"ourselves (loi 1971 — rédaction d'actes)."
+                f"no official Décret model wired for lease type '{lease_type}': this "
+                f"generator may only fill an official contrat-type (loi 1971 — "
+                f"rédaction d'actes), and only {wired} are wired. Emitting a "
+                f"'{lease_type}' lease would mean using wording we authored ourselves."
             )
 
     def generate_pdf(

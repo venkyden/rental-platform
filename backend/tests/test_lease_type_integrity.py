@@ -68,10 +68,12 @@ class TestNoSilentTemplateFallback:
 class TestOfficialModelRequired:
     """Roomivo may fill an official model's blanks, never author a lease.
 
-    Décret n°2015-587 publishes contrat-types for vide / meublé (+ the meublé model
-    serves the 9-month étudiant variant). `colocation`, `code_civil` and `simple` have
-    NO published model — a document emitted for them is wording we invented, which is
-    exactly the loi-1971 (rédaction d'actes) red line.
+    The gate is "is a verbatim Décret model wired for this type?", NOT a claim about
+    what Legifrance publishes — the two differ:
+    - `colocation` IS covered by the official annexes ("CONTRAT TYPE DE LOCATION OU DE
+      COLOCATION…"), just not mapped in the registry yet — same bucket as vide/étudiant.
+    - `code_civil` (outside loi 89) and `simple` have no published contrat-type at all.
+    Either way the legacy wording is ours, not the model's, so generation is refused.
     """
 
     def _args(self, lease_type):
@@ -86,13 +88,13 @@ class TestOfficialModelRequired:
 
     @pytest.mark.parametrize("lease_type", ["colocation", "code_civil", "simple"])
     def test_html_refuses_types_with_no_published_model(self, lease_type):
-        with pytest.raises(ValueError, match="no official contrat-type published"):
+        with pytest.raises(ValueError, match="no official Décret model wired"):
             lease_generator.generate_html(**self._args(lease_type))
 
     @pytest.mark.parametrize("lease_type", ["colocation", "code_civil", "simple"])
     def test_pdf_refuses_types_with_no_published_model(self, lease_type, tmp_path):
         # /leases/{id}/download regenerates via generate_pdf — same gate applies.
-        with pytest.raises(ValueError, match="no official contrat-type published"):
+        with pytest.raises(ValueError, match="no official Décret model wired"):
             lease_generator.generate_pdf(
                 **self._args(lease_type), output_path=str(tmp_path / "l.pdf"))
 
