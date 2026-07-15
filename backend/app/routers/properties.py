@@ -106,23 +106,24 @@ async def generate_property_description(
     payload: DescriptionGenerationRequest,
     current_user: User = Depends(get_current_user),
 ):
-    """Generate a property description using Gemini based on property parameters"""
-    from app.core.config import settings
-    from google import genai
-    import google.genai.errors
+    """Generate a property description using Gemini based on property parameters.
 
-    if not settings.GEMINI_API_KEY:
-        # Generate a high-quality dynamic fallback since Gemini is not configured
+    Falls back to a template-based description if Gemini is not configured or
+    if the API call fails (quota exceeded, network error, etc.).
+    """
+    from app.core.config import settings
+
+    def _build_fallback_description() -> str:
+        """Template-based description when Gemini is unavailable."""
         is_fr = payload.language == "fr"
-        city = payload.city or "the city"
-        prop_type = payload.property_type or "property"
+        city = payload.city or ("la ville" if is_fr else "the city")
+        prop_type = payload.property_type or ("bien" if is_fr else "property")
         sqm = payload.size_sqm or ""
         beds = payload.bedrooms or 0
-        
+
         if is_fr:
             desc = f"Magnifique {prop_type} situé au coeur de {city}. "
-            if sqm: desc += f"Cette propriété spacieuse de {sqm}m² "
-            else: desc += "Cette superbe propriété "
+            desc += f"Cette propriété spacieuse de {sqm}m² " if sqm else "Cette superbe propriété "
             desc += f"comprend {beds} chambre(s) et des équipements modernes. "
             if payload.monthly_rent:
                 desc += f"Disponible pour un loyer mensuel de {payload.monthly_rent} EUR. "
@@ -133,8 +134,7 @@ async def generate_property_description(
             desc += "Idéal pour ceux qui recherchent le confort et la commodité."
         else:
             desc = f"Magnificent {prop_type} located in the heart of {city}. "
-            if sqm: desc += f"This spacious {sqm}m² property "
-            else: desc += "This beautiful property "
+            desc += f"This spacious {sqm}m² property " if sqm else "This beautiful property "
             desc += f"features {beds} bedroom(s) and modern amenities. "
             if payload.monthly_rent:
                 desc += f"Available for a monthly rent of {payload.monthly_rent} EUR. "
@@ -143,15 +143,18 @@ async def generate_property_description(
             if payload.amenities:
                 desc += f"Included amenities: {', '.join(payload.amenities)}. "
             desc += "Ideal for those seeking comfort and convenience."
-            
-        return {"description": desc}
+        return desc
+
+    if not settings.GEMINI_API_KEY:
+        return {"description": _build_fallback_description()}
 
     try:
+        from google import genai
+
         client = genai.Client(api_key=settings.GEMINI_API_KEY)
-        
-        # Build prompt based on requested language
+
         lang_name = "French" if payload.language == "fr" else "English"
-        
+
         prompt = (
             f"Write a beautiful, engaging, professional real estate rental listing description in {lang_name} "
             f"for a {payload.property_type}. "
@@ -183,7 +186,7 @@ async def generate_property_description(
             prompt += f"Nearby Public Transport: {', '.join(payload.public_transport)}. "
         if payload.nearby_landmarks:
             prompt += f"Nearby Landmarks: {', '.join(payload.nearby_landmarks)}. "
-            
+
         prompt += (
             f"\nMake the description appealing to potential tenants, highlight convenience, and structure it with brief paragraphs or bullet points. "
             f"Write the entire description ONLY in {lang_name}. Do not include any translation or notes. "
@@ -196,12 +199,11 @@ async def generate_property_description(
         )
 
         return {"description": (response.text or "").strip()}
+
     except Exception as e:
-        logger.error(f"Failed to generate description with Gemini: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to generate description using AI.",
-        )
+        # Log the real error for debugging but degrade gracefully — never 500 the user
+        logger.error(f"Gemini generate-description failed, using fallback: {e}", exc_info=True)
+        return {"description": _build_fallback_description()}
 
 
 
