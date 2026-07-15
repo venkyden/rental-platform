@@ -66,7 +66,10 @@ class LeaseGenerator:
             "duration_months": 9,
             "renewable": False,
             "tenant_notice_months": 1,
-            "landlord_notice_months": 0,
+            # Fixed-term: landlord CANNOT terminate early; notice is inapplicable
+            # (not the same as bail mobilité where 0 also means no early termination).
+            # Do NOT add renewable=True without reviewing notice/deposit logic.
+            "landlord_notice_months": None,
             "max_deposit_months": 2,
             "law_reference": "Loi n° 89-462 du 6 juillet 1989, art. 25-7",
         },
@@ -678,7 +681,9 @@ class LeaseGenerator:
         c.drawString(
             2.5 * cm,
             y,
-            "Après un commandement de payer resté infructueux pendant 2 mois.",
+            # Loi du 27 juillet 2023 (art. 24 loi 89-462): délai réduit de 2 mois à six semaines.
+            "Après un commandement de payer resté infructueux pendant six semaines "
+            "(loi du 27 juillet 2023, art. 24).",
         )
 
         return y - 1 * cm

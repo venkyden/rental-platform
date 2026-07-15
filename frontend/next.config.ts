@@ -22,7 +22,7 @@ const httpApi = API_URL.startsWith('http://');
 const csp = [
   `default-src 'self'`,
   `script-src 'self' 'unsafe-inline'${isProd ? '' : " 'unsafe-eval'"} https://accounts.google.com`,
-  `style-src 'self' 'unsafe-inline'`,
+  `style-src 'self' 'unsafe-inline' https://accounts.google.com`,
   `img-src 'self' data: blob: https://*.googleapis.com https://*.gstatic.com http://localhost:* http://127.0.0.1:*${isProd ? ' https:' : ''}`,
   `font-src 'self' data:`,
   `connect-src 'self' https://accounts.google.com https://oauth2.googleapis.com https://*.googleapis.com https://photon.komoot.io${isProd && !httpApi ? ` https://${apiHostname}` : ` http://localhost:* http://127.0.0.1:*`}`,

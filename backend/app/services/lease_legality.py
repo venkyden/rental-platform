@@ -130,6 +130,12 @@ _PROHIBITED_CLAUSES = {
                                    "renonc(e|iation) a tout maintien dans les lieux"),
     "art4_quittance": ("art. 4 e) — frais de délivrance de quittance à la charge du locataire interdits",
                        "frais (de|d envoi|d edition) (de )?quittance"),
+    # art. 4 b) — loi 89-462 : interdiction d’imposer l’assureur choisi par le bailleur.
+    # Matches: "assurance (obligatoirement )? souscrite auprès de [bailleur/société/X]".
+    "art4_assurance_imposee": (
+        "art. 4 b) — imposition d'un assureur choisi par le bailleur interdite",
+        r"assurance\s+(obligatoirement\s+)?souscrit[e]?\s+aupr[eè]s\s+de",
+    ),
 }
 
 # LU-5 — a residential lease that opts OUT of the protective loi 89 regime. Largely
@@ -144,16 +150,45 @@ _EXCLUDES_LOI_89_RE = re.compile(
 
 # LU-2 — clause résolutoire delay possibly outdated: the loi du 27 juillet 2023 reduced
 # the commandement-de-payer delay from two months to **six weeks** for unpaid rent.
-# Scoped to a *payment* commandement so unrelated commandements (e.g. de quitter les
-# lieux) don't wrongly force ATTACHED. Bounded quantifier → no ReDoS.
+# Two patterns:
+#   (a) canonical form: "deux mois ... commandement (de payer)"
+#   (b) Roomivo-generated form: "infructueux pendant 2 mois" (number before keyword)
+# Both are stale since 2023-07-27. Bounded quantifiers → no ReDoS.
 _STALE_COMMANDEMENT_RE = re.compile(
     r"deux mois (apres|suivant)?\s*(un )?commandement"
     r"(?: de payer|[\s\S]{0,80}defaut de paiement)"
+    r"|infructueux pendant 2 mois",
+    re.IGNORECASE,
+)
+
+# LU-6 — bail mobilité IRL revision clause prohibited.
+# A bail mobilité may not include an IRL (Indice de Référence des Loyers) rent-revision
+# clause (loi ELAN art. 25-13 / loi 89 art. 25-12). Only checked when lease_type is known.
+_MOBILITE_IRL_RE = re.compile(
+    r"(revision|révision|actualisation)\s+(du\s+)?loyer\s+(base|selon|d.après|suivant)\s+l.?irl"
+    r"|indice\s+de\s+référence\s+des\s+loyers",
+    re.IGNORECASE,
+)
+
+# LU-7 — zone-tendue leases must cite both loyer de référence AND loyer de référence majoré
+# (loi ALUR/ELAN Art. 140 + Arrêté préfectoral). We detect their presence heuristically.
+_ZONE_TENDUE_REF_LOYER_RE = re.compile(
+    r"loyer\s+de\s+référence\s+majoré|loyer\s+de\s+reference\s+majore",
+    re.IGNORECASE,
 )
 
 
-def screen_lease_text(text: str) -> LegalityResult:
-    """Run the deterministic red-line checks; return the tier + flags."""
+def screen_lease_text(text: str, lease_type: str | None = None, in_zone_tendue: bool = False) -> LegalityResult:
+    """Run the deterministic red-line checks; return the tier + flags.
+
+    Args:
+        text: Extracted text layer from the lease PDF.
+        lease_type: Optional lease type ("vide", "meuble", "mobilite", "etudiant"). When
+            provided, type-specific checks are applied (e.g. IRL revision prohibition for
+            bail mobilité).
+        in_zone_tendue: When True, checks that the lease cites both loyer de référence
+            and loyer de référence majoré as required by loi ALUR/ELAN Art. 140.
+    """
     if not text or len(text.strip()) < _MIN_TEXT_CHARS:
         return LegalityResult(
             status=ATTACHED,
@@ -188,7 +223,7 @@ def screen_lease_text(text: str) -> LegalityResult:
     # LU-2 — possibly outdated commandement-de-payer delay (loi 2023 → six semaines).
     if _STALE_COMMANDEMENT_RE.search(norm):
         flags.append("LU2_stale_commandement_delay")
-        notes.append("Délai de commandement de payer de deux mois possiblement obsolète "
+        notes.append("Délai de commandement de payer de deux mois possiblement obsolete "
                      "(depuis la loi du 27 juillet 2023, le délai est de six semaines).")
 
     # LU-4 — mandatory annexes referenced
@@ -197,15 +232,41 @@ def screen_lease_text(text: str) -> LegalityResult:
             flags.append(f"LU4_missing_{code}")
             notes.append(note + ".")
 
+    # LU-6 — bail mobilité: IRL revision clause prohibited (loi ELAN art. 25-13).
+    if lease_type == "mobilite" and _MOBILITE_IRL_RE.search(norm):
+        flags.append("LU6_mobilite_irl_revision_prohibited")
+        notes.append(
+            "Clause de révision à l'IRL détectée dans un bail mobilité — "
+            "la révision du loyer est interdite en cours de bail mobilité (loi ELAN art. 25-13)."
+        )
+
+    # LU-7 — zone-tendue: bail must cite loyer de référence majoré (loi ALUR/ELAN Art. 140).
+    if in_zone_tendue and not _ZONE_TENDUE_REF_LOYER_RE.search(norm):
+        flags.append("LU7_zone_tendue_missing_ref_loyer")
+        notes.append(
+            "Ce bien est en zone d'encadrement des loyers mais le bail ne mentionne pas "
+            "le loyer de référence majoré (loi ALUR/ELAN Art. 140 — obligatoire)."
+        )
+
     status = VALIDATED if not flags else ATTACHED
     return LegalityResult(status=status, flags=flags, notes=notes)
 
 
-def screen_lease_pdf(pdf_bytes: bytes) -> LegalityResult:
+def screen_lease_pdf(
+    pdf_bytes: bytes,
+    lease_type: str | None = None,
+    in_zone_tendue: bool = False,
+) -> LegalityResult:
     """
     Extract the text layer then screen it. An extraction failure (corrupt file or
     missing extractor) yields ATTACHED with an honest `LU1_extract_failed` flag —
     never a false "scanned document" verdict, and never VALIDATED.
+
+    Args:
+        pdf_bytes: Raw PDF bytes.
+        lease_type: Optional — pass "mobilite" to enable IRL-revision detection.
+        in_zone_tendue: Pass True when the property is in a rent-control zone to
+            enable the ref-loyer citation check (LU-7).
     """
     try:
         text = extract_pdf_text(pdf_bytes)
@@ -215,4 +276,4 @@ def screen_lease_pdf(pdf_bytes: bytes) -> LegalityResult:
             flags=["LU1_extract_failed"],
             notes=["Le contenu du document n'a pas pu être analysé (fichier illisible ou corrompu)."],
         )
-    return screen_lease_text(text)
+    return screen_lease_text(text, lease_type=lease_type, in_zone_tendue=in_zone_tendue)

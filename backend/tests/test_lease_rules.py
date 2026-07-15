@@ -130,8 +130,8 @@ def test_finalisation_accumulates_all_violations():
         custom_clauses=["clause libre"],
     )
     assert res.ok is False
-    # deposit (mobilité≠0) + furnished incomplete + 3 missing annexes + custom wording
-    assert len(res.blocking) == 1 + 1 + 3 + 1
+    # deposit (mobilité≠0) + furnished incomplete + 3 missing annexes + custom wording + LG-8 eligibility
+    assert len(res.blocking) == 1 + 1 + 3 + 1 + 1
 
 
 def test_finalisation_advisory_does_not_block():

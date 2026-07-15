@@ -61,11 +61,13 @@ export function useGoogleSignIn({
   }, []);
 
   useEffect(() => {
-    if (!clientId) return;
+    console.log('[useGoogleSignIn] Hook mounted with clientId:', clientId ? 'PRESENT' : 'MISSING', 'buttonId:', buttonId);
+    
+    if (!clientId) {
+      console.error('[useGoogleSignIn] Missing Google Client ID. Button will not render.');
+      return;
+    }
 
-    // Install a stable trampoline on the window once. All GSI credentials are
-    // routed through it, so the latest onSuccess/onError is always called
-    // regardless of which page initialized GSI.
     if (!window.__GSI_CALLBACK__) {
       window.__GSI_CALLBACK__ = (response: { credential?: string }) => {
         if (response.credential) {
@@ -77,58 +79,91 @@ export function useGoogleSignIn({
     }
 
     const renderButton = () => {
-      if (!buttonId || !window.google) return;
+      if (!buttonId || !window.google) {
+        console.error('[useGoogleSignIn] Cannot render: missing buttonId or window.google', { buttonId, hasGoogle: !!window.google });
+        return;
+      }
+      
       const buttonDiv = document.getElementById(buttonId);
-      if (!buttonDiv) return;
+      if (!buttonDiv) {
+        console.error('[useGoogleSignIn] Cannot find DOM element with id:', buttonId);
+        return;
+      }
+      
       const containerWidth = buttonDiv.parentElement?.clientWidth || 300;
       const buttonWidth = Math.max(200, Math.min(400, Math.floor(containerWidth)));
-      window.google.accounts.id.renderButton(buttonDiv, {
-        theme: 'outline',
-        size: 'large',
-        width: buttonWidth,
-        text: buttonText,
-        shape: 'pill',
-      });
+      
+      console.log('[useGoogleSignIn] Rendering Google button into', buttonId, 'with width', buttonWidth);
+      
+      try {
+        window.google.accounts.id.renderButton(buttonDiv, {
+          theme: 'outline',
+          size: 'large',
+          width: buttonWidth,
+          text: buttonText,
+          shape: 'pill',
+        });
+        console.log('[useGoogleSignIn] Render successful');
+      } catch (err) {
+        console.error('[useGoogleSignIn] Error rendering button:', err);
+      }
     };
 
     const initializeGSI = () => {
-      if (!window.google) return;
+      console.log('[useGoogleSignIn] initializeGSI called');
+      if (!window.google) {
+        console.error('[useGoogleSignIn] window.google is undefined during initializeGSI');
+        return;
+      }
 
       if (!window.__GSI_INITIALIZED__) {
-        window.google.accounts.id.initialize({
-          client_id: clientId,
-          // Route all credentials through the stable trampoline.
-          callback: (response: { credential?: string }) => window.__GSI_CALLBACK__?.(response),
-          auto_select: false,
-          cancel_on_tap_outside: true,
-          ux_mode: 'popup',
-          itp_support: true,
-          use_fedcm_for_prompt: true,
-          locale: locale || undefined,
-        });
-        window.__GSI_INITIALIZED__ = true;
+        console.log('[useGoogleSignIn] Initializing Google Identity Services');
+        try {
+          window.google.accounts.id.initialize({
+            client_id: clientId,
+            callback: (response: { credential?: string }) => window.__GSI_CALLBACK__?.(response),
+            auto_select: false,
+            cancel_on_tap_outside: true,
+            ux_mode: 'popup',
+            itp_support: true,
+            use_fedcm_for_prompt: true,
+            locale: locale || undefined,
+          });
+          window.__GSI_INITIALIZED__ = true;
+        } catch (err) {
+          console.error('[useGoogleSignIn] Error initializing GSI:', err);
+        }
+      } else {
+        console.log('[useGoogleSignIn] GSI already initialized');
       }
 
       renderButton();
     };
 
-    if (document.querySelector('script[src="https://accounts.google.com/gsi/client"]')) {
+    const existingScript = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
+    if (existingScript) {
+      console.log('[useGoogleSignIn] Script already in DOM');
       if (window.google) {
+        console.log('[useGoogleSignIn] window.google available, initializing immediately');
         initializeGSI();
       } else {
-        const script = document.querySelector('script[src="https://accounts.google.com/gsi/client"]') as HTMLScriptElement;
-        script.addEventListener('load', initializeGSI);
+        console.log('[useGoogleSignIn] window.google not ready, adding load listener');
+        existingScript.addEventListener('load', initializeGSI);
       }
       return;
     }
 
+    console.log('[useGoogleSignIn] Injecting GSI script');
     const script = document.createElement('script');
     script.src = 'https://accounts.google.com/gsi/client';
     script.async = true;
     script.defer = true;
-    script.addEventListener('load', initializeGSI);
+    script.addEventListener('load', () => {
+      console.log('[useGoogleSignIn] Script loaded from network');
+      initializeGSI();
+    });
     script.addEventListener('error', () => {
-      console.warn('Failed to load Google Sign-In script');
+      console.error('[useGoogleSignIn] Failed to load Google Sign-In script');
       onErrorRef.current?.('Failed to load Google Sign-In script');
     });
     document.body.appendChild(script);
@@ -136,3 +171,4 @@ export function useGoogleSignIn({
 
   return { revoke };
 }
+

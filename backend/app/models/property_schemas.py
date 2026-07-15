@@ -77,6 +77,9 @@ class PropertyCreate(BaseModel):
     loyer_reference_majore: Optional[Decimal] = Field(None, ge=Decimal("0"))  # Max reference rent €/m²
     complement_de_loyer: Optional[Decimal] = Field(None, ge=Decimal("0"))  # Justified supplement
     complement_de_loyer_justification: Optional[str] = None  # Why supplement is charged
+    # DPE F/G rent freeze — loi Climat (since 24/08/2022 mainland, 01/07/2024 DOM)
+    previous_tenant_rent: Optional[Decimal] = Field(None, ge=Decimal("0"))  # Last tenant’s rent HC
+    is_overseas_dom: bool = False  # True for Guadeloupe, Martinique, Guyane, La Réunion, Mayotte
     # Natural risks
     natural_risks_compliant: bool = False  # ERP/ERNMT report provided
 
@@ -154,6 +157,9 @@ class PropertyUpdate(BaseModel):
     complement_de_loyer: Optional[Decimal] = Field(None, ge=Decimal("0"))
     complement_de_loyer_justification: Optional[str] = None
     natural_risks_compliant: Optional[bool] = None
+    # DPE F/G rent freeze
+    previous_tenant_rent: Optional[Decimal] = Field(None, ge=Decimal("0"))
+    is_overseas_dom: Optional[bool] = None
 
     @field_validator("title", "description", "charges_description", mode="before")
     @classmethod
@@ -235,6 +241,9 @@ class PropertyResponse(BaseModel):
     complement_de_loyer: Optional[Decimal] = None
     complement_de_loyer_justification: Optional[str] = None
     natural_risks_compliant: bool = False
+    # DPE F/G rent freeze
+    previous_tenant_rent: Optional[Decimal] = None
+    is_overseas_dom: bool = False
 
     photos: Optional[list] = []
     is_saved: bool = False

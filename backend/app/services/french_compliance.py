@@ -10,8 +10,14 @@ Legal basis: Loi ALUR (2014) / Loi ELAN (2018), Art. 140 — in designated
 majored reference rent (`loyer de référence majoré`) unless a justified rent
 supplement (`complément de loyer`) applies, which requires a written
 justification of the property's exceptional characteristics.
+
+Also enforces:
+- DPE F/G rent freeze (loi Climat, décret 2021-19): dwellings classified F or G
+  may not have their rent increased vs. the previous tenant for any new or renewed
+  lease signed since 24 August 2022 (mainland + Corsica). Overseas DOM: 1 July 2024.
 """
 
+from datetime import date
 from decimal import Decimal
 from typing import Optional, Union, List
 
@@ -85,6 +91,58 @@ def validate_rent_control(
     return None
 
 
+# DPE F/G rent freeze (loi Climat, décret 2021-19).
+# Since 24 August 2022 (mainland + Corsica), a new or renewed lease on a class F or G
+# dwelling cannot have a higher rent than the rent paid by the previous tenant.
+# Overseas DOM threshold: 1 July 2024.
+_DPE_FREEZE_DATE_MAINLAND = date(2022, 8, 24)
+_DPE_FREEZE_CLASSES = frozenset("FG")
+
+
+def validate_fg_rent_freeze(
+    dpe_class: Optional[str],
+    monthly_rent: Optional[Number],
+    previous_tenant_rent: Optional[Number],
+    lease_start_date: Optional[date] = None,
+    is_overseas: bool = False,
+) -> Optional[str]:
+    """Return an error message if the F/G rent freeze is breached, else None.
+
+    Args:
+        dpe_class: DPE energy class (A–G).
+        monthly_rent: Proposed monthly rent HC (€).
+        previous_tenant_rent: Last rent HC paid by the departing tenant (€).
+            If None, the check is skipped (no previous tenant on record).
+        lease_start_date: Date the new lease is signed/starts. Defaults to today.
+        is_overseas: True for DOM (Guadeloupe, Martinique, Guyane, La Réunion,
+            Mayotte) where the freeze took effect from 1 July 2024.
+    """
+    cls = (dpe_class or "").strip().upper()
+    if cls not in _DPE_FREEZE_CLASSES:
+        return None  # Only F/G are subject to the freeze
+
+    effective_date = date(2024, 7, 1) if is_overseas else _DPE_FREEZE_DATE_MAINLAND
+    check_date = lease_start_date or date.today()
+    if check_date < effective_date:
+        return None  # Freeze not yet in effect at that date
+
+    rent = _to_float(monthly_rent)
+    prev = _to_float(previous_tenant_rent)
+    if rent is None or prev is None:
+        return None  # Cannot assess without both figures
+
+    if rent > prev + 0.01:  # cent tolerance for float noise
+        return (
+            f"Logement classé {cls} au DPE : le loyer ({rent:.2f}€ HC) ne peut pas dépasser "
+            f"le loyer du précédent locataire ({prev:.2f}€ HC) pour un bail conclu depuis le "
+            f"{effective_date.strftime('%d/%m/%Y')} (loi Climat, décret 2021-19). — "
+            f"DPE class {cls}: rent ({rent:.2f}€ HC) cannot exceed the previous tenant's "
+            f"rent ({prev:.2f}€ HC) for a lease signed after "
+            f"{effective_date.isoformat()} (loi Climat)."
+        )
+    return None
+
+
 def validate_property_compliance(property_obj) -> List[str]:
     """
     Validates a property against French legal compliance requirements (Rent Caps, Surface).
@@ -139,6 +197,16 @@ def validate_property_compliance(property_obj) -> List[str]:
     )
     if rent_error:
         errors.append(rent_error)
+
+    # DPE F/G rent freeze (loi Climat, since 24/08/2022)
+    fg_error = validate_fg_rent_freeze(
+        dpe_class=getattr(property_obj, "dpe_rating", None),
+        monthly_rent=property_obj.monthly_rent,
+        previous_tenant_rent=getattr(property_obj, "previous_tenant_rent", None),
+        is_overseas=getattr(property_obj, "is_overseas_dom", False),
+    )
+    if fg_error:
+        errors.append(fg_error)
 
     return errors
 

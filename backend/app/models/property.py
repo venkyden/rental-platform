@@ -88,6 +88,13 @@ class Property(Base):
     complement_de_loyer = Column(DECIMAL(10, 2))  # Justified supplement
     complement_de_loyer_justification = Column(Text)
 
+    # DPE F/G rent freeze (loi Climat / décret 2021-19)
+    # Rent paid by the departing tenant (HC) used to cap the next lease rent for F/G DPE.
+    previous_tenant_rent = Column(DECIMAL(10, 2))  # €/month HC, NULL = first tenant or unknown
+    # True if the property is in an overseas DOM (Guadeloupe, Martinique, Guyane,
+    # La Réunion, Mayotte) where the F/G freeze took effect from 1 July 2024 (not 24/08/2022).
+    is_overseas_dom = Column(Boolean, default=False)
+
     # Natural Risks (ERP/ERNMT)
     natural_risks_compliant = Column(Boolean, default=False)
 

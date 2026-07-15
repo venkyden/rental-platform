@@ -24,11 +24,32 @@ from dataclasses import dataclass, field
 
 # Lease type → deposit cap (months of rent HORS CHARGES) and whether it must be furnished.
 LEASE_TYPES: dict[str, dict] = {
-    "vide":     {"deposit_max_months": 1, "furnished_required": False, "label": "bail vide (non meublé)"},
-    "meuble":   {"deposit_max_months": 2, "furnished_required": True,  "label": "bail meublé"},
-    "etudiant": {"deposit_max_months": 2, "furnished_required": True,  "label": "bail étudiant meublé"},
-    "mobilite": {"deposit_max_months": 0, "furnished_required": True,  "label": "bail mobilité"},
+    "vide":     {"deposit_max_months": 1, "furnished_required": False, "label": "bail vide (non meublee)"},
+    "meuble":   {"deposit_max_months": 2, "furnished_required": True,  "label": "bail meuble"},
+    "etudiant": {"deposit_max_months": 2, "furnished_required": True,  "label": "bail etudiant meuble"},
+    "mobilite": {"deposit_max_months": 0, "furnished_required": True,  "label": "bail mobilite"},
 }
+
+# Bail vide durations (months) by landlord entity type — loi 89 art. 10.
+# Particulier/SCI familiale: 3 ans. Personne morale (société, institutionnel): 6 ans.
+VIDE_DURATION_MONTHS: dict[str, int] = {
+    "particulier":    36,  # 3 years
+    "sci_familiale":  36,  # 3 years (SCI whose members are all natural persons)
+    "personne_morale": 72, # 6 years (any other legal entity)
+}
+
+# Bail mobilité eligible tenant situations (loi ELAN art. 25-12, exhaustive list).
+# The tenant MUST justify one of these at lease signature; absence requalifies
+# the lease as an ordinary bail meuble (12-month, renewable).
+MOBILITE_ELIGIBLE_SITUATIONS: frozenset[str] = frozenset({
+    "formation_professionnelle",
+    "etudes_superieures",
+    "apprentissage",
+    "stage",
+    "service_civique",
+    "mutation_professionnelle",
+    "mission_temporaire",
+})
 
 # Décret n°2015-981 — 11 mandatory equipment categories for a furnished lease.
 FURNISHED_REQUIRED_ITEMS: dict[str, str] = {
@@ -143,6 +164,48 @@ VALID_DPE_CLASSES = frozenset("ABCDEFG")
 BLOCKED_DPE_CLASSES = frozenset("G")  # loi Climat, depuis le 1er janvier 2025
 
 
+def get_vide_duration_months(landlord_entity_type: str | None) -> int:
+    """LG-9 — Return the minimum bail vide duration (months) based on landlord entity type.
+
+    Loi 89 art. 10: 36 months for particuliers / SCI familiales,
+    72 months for any other personne morale.
+    Defaults to 36 when entity type is unknown (conservative — does not generate
+    an illegally short lease for company landlords but may under-enforce for them).
+    """
+    return VIDE_DURATION_MONTHS.get(landlord_entity_type or "particulier", 36)
+
+
+def validate_mobilite_eligibility(
+    lease_type: str,
+    tenant_situation: str | None,
+) -> list[str]:
+    """LG-8 — Bail mobilité requires the tenant to justify an eligible situation.
+
+    Loi ELAN art. 25-12 (exhaustive list): formation professionnelle, études
+    supérieures, apprentissage, stage, service civique, mutation professionnelle,
+    mission temporaire professionnelle.
+
+    Without a valid justification the lease requalifies as an ordinary bail meuble
+    (12-month, renewable) by operation of law.
+    """
+    if lease_type != "mobilite":
+        return []
+    if not tenant_situation:
+        return [
+            "Le bail mobilité exige que le locataire justifie l'une des situations "
+            "prévues par la loi ELAN (art. 25-12) : formation professionnelle, études "
+            "supérieures, apprentissage, stage, service civique, mutation ou mission "
+            "professionnelle temporaire. Aucune situation déclarée — bail non finalisable."
+        ]
+    if tenant_situation not in MOBILITE_ELIGIBLE_SITUATIONS:
+        return [
+            f"La situation « {tenant_situation} » ne figure pas dans la liste exhaustive des "
+            "situations éligibles au bail mobilité (loi ELAN art. 25-12). Le bail "
+            "requalifierait en bail meuble ordinaire (12 mois renouvelable)."
+        ]
+    return []
+
+
 def validate_dpe(dpe_class: str | None) -> list[str]:
     """LG-7 — a class-G dwelling cannot be let under a new lease (loi Climat 2025).
 
@@ -172,13 +235,26 @@ def validate_lease_finalisation(
     complement_justification: str | None = None,
     custom_clauses=None,
     dpe_class: str | None = None,
+    # LG-8: bail mobilité tenant eligibility
+    tenant_situation: str | None = None,
+    # LG-9: landlord entity type for bail vide duration advisory
+    landlord_entity_type: str | None = None,
 ) -> LeaseRuleResult:
-    """Run all LG-1..LG-7 checks. `blocking` must be empty to finalise."""
+    """Run all LG-1..LG-9 checks. `blocking` must be empty to finalise."""
     blocking: list[str] = []
     blocking += validate_deposit(lease_type, deposit, monthly_rent_hc)
     blocking += validate_furnished_inventory(lease_type, furnished_items)
     blocking += validate_annexes(present_annexes)
     blocking += reject_custom_wording(custom_clauses)
     blocking += validate_dpe(dpe_class)
+    blocking += validate_mobilite_eligibility(lease_type, tenant_situation)  # LG-8
     advisory = zone_tendue_advisory(in_zone_tendue, complement_de_loyer, complement_justification)
+
+    # LG-9 — advisory: warn when bail vide duration does not match entity-type minimum.
+    if lease_type == "vide" and landlord_entity_type == "personne_morale":
+        advisory.append(
+            "Bailleur personne morale détecté : la durée minimale du bail vide est de "
+            "6 ans (72 mois), et non 3 ans (loi 89 art. 10). Vérifiez la durée du bail."
+        )
+
     return LeaseRuleResult(blocking=blocking, advisory=advisory)

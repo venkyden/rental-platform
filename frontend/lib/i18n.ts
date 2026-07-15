@@ -1296,7 +1296,7 @@ export const translations = {
                 signUp: "Create one now",
                 createAccount: "Create an account",
                 connectingGoogle: "Connecting to Google...",
-                divider: "or sign in with email",
+                divider: "Secured Access",
                 signIn: "Sign in securely",
                 error: {
                     google: "Google sign-in did not return a credential. Please try again.",
@@ -1341,7 +1341,7 @@ export const translations = {
                 submit: "Create my account",
                 loading: "Creating account...",
                 connectingGoogle: "Creating account with Google...",
-                divider: "or create with email",
+                divider: "Secured Access",
                 role: {
                     label: "I am a",
                     question: "I am a",
@@ -3690,7 +3690,7 @@ export const translations = {
                 signUp: "Créez-en un maintenant",
                 createAccount: "Créer un compte",
                 connectingGoogle: "Connexion à Google...",
-                divider: "ou connectez-vous par e-mail",
+                divider: "Accès Sécurisé",
                 signIn: "Se connecter en toute sécurité",
                 error: {
                     google: "La connexion Google n'a pas retourné de justificatif. Veuillez réessayer.",
@@ -3735,7 +3735,7 @@ export const translations = {
                 submit: "Créer mon compte",
                 loading: "Création...",
                 connectingGoogle: "Création du compte avec Google...",
-                divider: "ou créez-en un par e-mail",
+                divider: "Accès Sécurisé",
                 role: {
                     label: "Je suis un",
                     question: "Je suis un",
