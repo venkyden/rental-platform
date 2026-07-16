@@ -87,6 +87,8 @@ services:
         value: "production"
       - key: NEXT_PUBLIC_SENTRY_DSN
         sync: false
+      - key: NEXT_PUBLIC_GOOGLE_CLIENT_ID
+        sync: false
     buildFilter:
       paths:
         - frontend/**

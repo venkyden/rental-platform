@@ -76,12 +76,12 @@ export const translations = {
                 searchPlaceholder: "Where do you want to live?",
                 searchButton: "Search"
             },
-            subtitle: "The most secure and transparent way to rent in France. Verified listings, automated contracts, and end-to-end protection.",
+            subtitle: "A secure, transparent way to rent in France. Verified identities, verified listings, and legally compliant leases.",
             getStarted: "Get Started",
             signIn: "Sign In",
             valueProp: {
                 title: "Why Choose Roomivo?",
-                subtitle: "The most secure and transparent way to rent in France.",
+                subtitle: "A secure, transparent way to rent in France.",
                 dossier: { title: "Digital Dossier", desc: "No more paper. Your verified identity and documents in one secure place." },
                 proof: { title: "Signed Proof", desc: "Every verification issues a cryptographically signed, expiring credential — anyone can check it on roomivo.app, no account needed." },
                 legal: { title: "French Law Compliant", desc: "Digital leases generated according to the latest French regulations." },
@@ -92,7 +92,7 @@ export const translations = {
                 subtitle: "Three steps to your next home in France",
                 steps: {
                     profile: { title: "Create Profile", desc: "Build your verified digital rental identity." },
-                    matching: { title: "Smart Matching", desc: "Connect with compatible listings instantly." },
+                    matching: { title: "Search & Apply", desc: "Browse verified listings and apply directly with your dossier." },
                     lease: { title: "Automated Lease", desc: "Sign standard contracts digitally. Leases conform to the French regulatory model (contrat-type réglementaire). Note: Generated drafts do not constitute immediate binding leases without mutual consent." }
                 }
             },
@@ -124,10 +124,15 @@ export const translations = {
                 }
             },
             featured: {
-                badge: "Handpicked Select",
-                title: "Featured Listings",
-                subtitle: "Hand-selected and fully verified residential properties in France.",
-                view: "View",
+                badge: "Explore",
+                title: "Find a home in your city",
+                subtitle: "Browse listings across France — every landlord and property goes through our verification checks.",
+                view: "Browse listings",
+                cities: {
+                    paris: "Haussmannian apartments, studios and flatshares",
+                    lyon: "Lofts and apartments from Presqu’île to Part-Dieu",
+                    bordeaux: "Classic residences in the city centre and Chartrons"
+                },
                 mo: "mo",
                 tags: {
                     verified: "GPS Verified",
@@ -1192,7 +1197,7 @@ export const translations = {
             },
             layout: {
                 trustBadge: {
-                    security: "Bank-Grade Security",
+                    security: "Encrypted Connection",
                     verified: "Verified Profiles",
                     privacy: "Privacy Protected"
                 }
@@ -1296,7 +1301,7 @@ export const translations = {
                 signUp: "Create one now",
                 createAccount: "Create an account",
                 connectingGoogle: "Connecting to Google...",
-                divider: "Secured Access",
+                divider: "or continue with",
                 signIn: "Sign in securely",
                 error: {
                     google: "Google sign-in did not return a credential. Please try again.",
@@ -1341,7 +1346,7 @@ export const translations = {
                 submit: "Create my account",
                 loading: "Creating account...",
                 connectingGoogle: "Creating account with Google...",
-                divider: "Secured Access",
+                divider: "or continue with",
                 role: {
                     label: "I am a",
                     question: "I am a",
@@ -1976,8 +1981,8 @@ export const translations = {
                         content: 'We collect identity, income, and employment data strictly for rental verification purposes.'
                     },
                     encryption: {
-                        title: 'Military-Grade Encryption',
-                        content: 'All PII is encrypted at rest using industry-standard protocols. Your documents are only visible to authorized parties.'
+                        title: 'Encryption & Data Minimisation',
+                        content: 'Data is encrypted in transit and at rest using industry-standard protocols (TLS, AES-256). Verification source documents are processed transiently and deleted after verification — we keep the signed result, not your documents.'
                     }
                 }
             },
@@ -2332,8 +2337,8 @@ export const translations = {
                             content: 'We collect identity, income, and employment data strictly for rental verification purposes.'
                         },
                         encryption: {
-                            title: 'Military-Grade Encryption',
-                            content: 'All PII is encrypted at rest using industry-standard protocols. Your documents are only visible to authorized parties.'
+                            title: 'Encryption & Data Minimisation',
+                            content: 'Data is encrypted in transit and at rest using industry-standard protocols (TLS, AES-256). Verification source documents are processed transiently and deleted after verification — we keep the signed result, not your documents.'
                         }
                     }
                 },
@@ -2587,12 +2592,12 @@ export const translations = {
                 searchPlaceholder: "Où voulez-vous vivre ?",
                 searchButton: "Rechercher"
             },
-            subtitle: "La plateforme de location la plus sécurisée et transparente de France. Annonces vérifiées, contrats automatisés et protection de bout en bout.",
+            subtitle: "Une façon sûre et transparente de louer en France. Identités vérifiées, annonces vérifiées et baux conformes à la loi.",
             getStarted: "Commencer",
             signIn: "Se connecter",
             valueProp: {
                 title: "Pourquoi Choisir Roomivo ?",
-                subtitle: "La façon la plus sécurisée et transparente de louer en France.",
+                subtitle: "Une façon sûre et transparente de louer en France.",
                 dossier: { title: "Dossier Numérique", desc: "Plus de papier. Votre identité et vos documents vérifiés en un seul lieu sûr." },
                 proof: { title: "Preuve Signée", desc: "Chaque vérification émet une attestation signée cryptographiquement et à durée limitée — vérifiable par tous sur roomivo.app, sans compte." },
                 legal: { title: "Conforme à la Loi Française", desc: "Baux numériques générés selon les dernières réglementations françaises." },
@@ -2603,7 +2608,7 @@ export const translations = {
                 subtitle: "Trois étapes vers votre futur logement en France",
                 steps: {
                     profile: { title: "Profil Vérifié", desc: "Créez votre identité numérique locative sécurisée." },
-                    matching: { title: "Matching Intelligent", desc: "Connectez-vous instantanément aux meilleures annonces." },
+                    matching: { title: "Recherchez et postulez", desc: "Parcourez des annonces vérifiées et postulez directement avec votre dossier." },
                     lease: { title: "Bail Automatisé", desc: "Signez vos contrats numériquement. Les baux sont conformes au contrat-type réglementaire. Remarque : les brouillons générés ne constituent pas un bail exécutoire sans accord mutuel." }
                 }
             },
@@ -2635,10 +2640,15 @@ export const translations = {
                 }
             },
             featured: {
-                badge: "Sélection Exclusive",
-                title: "Annonces à la Une",
-                subtitle: "Propriétés résidentielles triées sur le volet et entièrement vérifiées en France.",
-                view: "Découvrir",
+                badge: "Explorer",
+                title: "Trouvez un logement dans votre ville",
+                subtitle: "Parcourez les annonces partout en France — chaque propriétaire et chaque bien passe par nos vérifications.",
+                view: "Voir les annonces",
+                cities: {
+                    paris: "Appartements haussmanniens, studios et colocations",
+                    lyon: "Lofts et appartements de la Presqu’île à la Part-Dieu",
+                    bordeaux: "Résidences classiques au centre-ville et aux Chartrons"
+                },
                 mo: "mois",
                 tags: {
                     verified: "Vérifié GPS",
@@ -3586,7 +3596,7 @@ export const translations = {
             },
             layout: {
                 trustBadge: {
-                    security: "Sécurité de Niveau Bancaire",
+                    security: "Connexion chiffrée",
                     verified: "Profils Vérifiés",
                     privacy: "Confidentialité Protégée"
                 }
@@ -3690,7 +3700,7 @@ export const translations = {
                 signUp: "Créez-en un maintenant",
                 createAccount: "Créer un compte",
                 connectingGoogle: "Connexion à Google...",
-                divider: "Accès Sécurisé",
+                divider: "ou continuer avec",
                 signIn: "Se connecter en toute sécurité",
                 error: {
                     google: "La connexion Google n'a pas retourné de justificatif. Veuillez réessayer.",
@@ -3735,7 +3745,7 @@ export const translations = {
                 submit: "Créer mon compte",
                 loading: "Création...",
                 connectingGoogle: "Création du compte avec Google...",
-                divider: "Accès Sécurisé",
+                divider: "ou continuer avec",
                 role: {
                     label: "Je suis un",
                     question: "Je suis un",
@@ -4399,8 +4409,8 @@ export const translations = {
                         content: 'Nous collectons des données d\'identité, de revenus et d\'emploi strictement à des fins de vérification locative.'
                     },
                     encryption: {
-                        title: 'Cryptage de Niveau Militaire',
-                        content: 'Toutes les données personnelles sont cryptées au repos selon les protocoles standards. Vos documents ne sont visibles que par les parties autorisées.'
+                        title: 'Chiffrement et minimisation des données',
+                        content: 'Les données sont chiffrées en transit et au repos selon les protocoles standards (TLS, AES-256). Les documents sources de vérification sont traités de manière transitoire puis supprimés — nous conservons le résultat signé, pas vos documents.'
                     }
                 }
             },
@@ -4755,8 +4765,8 @@ export const translations = {
                             content: 'Nous collectons des données d\'identité, de revenus et d\'emploi strictement à des fins de vérification locative.'
                         },
                         encryption: {
-                            title: 'Cryptage de Niveau Militaire',
-                            content: 'Toutes les données personnelles sont cryptées au repos selon les protocoles standards. Vos documents ne sont visibles que par les parties autorisées.'
+                            title: 'Chiffrement et minimisation des données',
+                            content: 'Les données sont chiffrées en transit et au repos selon les protocoles standards (TLS, AES-256). Les documents sources de vérification sont traités de manière transitoire puis supprimés — nous conservons le résultat signé, pas vos documents.'
                         }
                     }
                 },

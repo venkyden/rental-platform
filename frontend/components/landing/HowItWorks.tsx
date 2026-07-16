@@ -17,8 +17,8 @@ export default function HowItWorks() {
     {
       step: '02',
       icon: <Zap className="w-8 h-8" />,
-      title: t('landing.howItWorks.steps.matching.title', undefined, 'Smart Matching'),
-      description: t('landing.howItWorks.steps.matching.desc', undefined, 'Connect with compatible listings instantly based on your profile.'),
+      title: t('landing.howItWorks.steps.matching.title', undefined, 'Search & Apply'),
+      description: t('landing.howItWorks.steps.matching.desc', undefined, 'Browse verified listings and apply directly with your dossier.'),
     },
     {
       step: '03',
@@ -40,7 +40,7 @@ export default function HowItWorks() {
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="inline-flex items-center gap-3 px-4 py-2 bg-zinc-900 text-white rounded-full text-[10px] font-black uppercase tracking-[0.4em] mb-8"
+              className="inline-flex items-center gap-3 px-4 py-2 bg-zinc-900 text-white rounded-full text-xs font-bold uppercase tracking-wider mb-8"
             >
               <CheckCircle2 className="w-3 h-3" />
               {t('landing.howItWorks.pipeline', undefined, 'Direct Pipeline')}
@@ -50,7 +50,7 @@ export default function HowItWorks() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-              className="text-5xl sm:text-7xl font-black tracking-tighter text-zinc-900 uppercase italic leading-[0.9]"
+              className="text-4xl sm:text-6xl font-black tracking-tight text-zinc-900 leading-tight"
             >
               {t('landing.howItWorks.title', undefined, 'Three steps to home')}
             </motion.h2>
@@ -60,7 +60,7 @@ export default function HowItWorks() {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ delay: 0.3 }}
-            className="text-zinc-400 text-[12px] font-black uppercase tracking-[0.5em] max-w-sm lg:text-right"
+            className="text-zinc-500 text-base leading-relaxed max-w-sm lg:text-right"
           >
             {t('landing.howItWorks.subtitle', undefined, 'The smart way to rent in France')}
           </motion.p>
@@ -86,10 +86,10 @@ export default function HowItWorks() {
                   </div>
                 </div>
 
-                <h3 className="text-3xl font-black mb-8 text-zinc-900 uppercase tracking-tight group-hover:translate-x-2 transition-transform duration-500">
+                <h3 className="text-2xl font-black mb-6 text-zinc-900 tracking-tight group-hover:translate-x-2 transition-transform duration-500">
                   {item.title}
                 </h3>
-                <p className="text-zinc-400 leading-relaxed font-black uppercase text-[11px] tracking-widest opacity-80 group-hover:opacity-100 transition-opacity">
+                <p className="text-zinc-500 leading-relaxed font-medium text-base">
                   {item.description}
                 </p>
 

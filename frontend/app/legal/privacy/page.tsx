@@ -83,10 +83,10 @@ export default function PrivacyPage() {
                         className="p-12 bg-zinc-900 rounded-[3rem] text-center space-y-4"
                     >
                         <h3 className="text-2xl font-black text-white uppercase tracking-tight">
-                            {t('legal.privacy.sections.encryption.title', undefined, 'Military-Grade Security')}
+                            {t('legal.privacy.sections.encryption.title', undefined, 'Encryption & Data Minimisation')}
                         </h3>
                         <p className="text-zinc-400 max-w-lg mx-auto">
-                            {t('legal.privacy.sections.encryption.content', undefined, 'Roomivo uses 256-bit AES encryption for all personal data. Your privacy is not just a policy; it is our architecture.')}
+                            {t('legal.privacy.sections.encryption.content', undefined, 'Data is encrypted in transit and at rest. Verification documents are processed transiently and deleted after verification — privacy by architecture.')}
                         </p>
                     </motion.div>
                 </motion.div>

@@ -89,7 +89,7 @@ export default function Step9Success({ formData, t, language, propertyId, mediaS
             <div className="glass-card !p-12 rounded-[4rem] inline-block shadow-2xl">
                 <QRCodeDisplay
                     verificationCode={mediaSession?.verification_code || ''}
-                    captureUrl={`${typeof window !== 'undefined' ? window.location.origin : ''}/capture/${mediaSession?.id}`}
+                    captureUrl={`${typeof window !== 'undefined' ? window.location.origin : ''}/capture/${mediaSession?.verification_code}`}
                     expiresAt={mediaSession?.expires_at || new Date().toISOString()}
                 />
             </div>
@@ -167,7 +167,7 @@ export default function Step9Success({ formData, t, language, propertyId, mediaS
                         </div>
                         <ul className="list-disc pl-5 space-y-2 text-xs font-bold text-red-600">
                             {isDpeGBanned && (
-                                <li>{t('property.create.errors.dpeGBan', undefined, 'Properties with DPE G rating are banned from rental since January 2023.')}</li>
+                                <li>{t('property.create.errors.dpeGBan', undefined, 'Properties with DPE class G are banned from new leases since January 2025 (loi Climat).')}</li>
                             )}
                             {isSizeTooSmall && (
                                 <li>{t('properties.new.steps.pricing.decencyWarning')} (Min 9m²)</li>

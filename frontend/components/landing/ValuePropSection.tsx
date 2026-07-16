@@ -2,7 +2,7 @@
 
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useLanguage } from '@/lib/LanguageContext';
-import { FileCheck, Sparkles, Scale, ShieldCheck, ChevronRight } from 'lucide-react';
+import { FileCheck, Sparkles, Scale, ShieldCheck } from 'lucide-react';
 import { useRef } from 'react';
 
 export default function ValuePropSection() {
@@ -83,7 +83,7 @@ export default function ValuePropSection() {
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="inline-block px-4 py-1.5 bg-zinc-900 text-white rounded-full text-[10px] font-black uppercase tracking-[0.3em] mb-6"
+              className="inline-block px-4 py-1.5 bg-zinc-900 text-white rounded-full text-xs font-bold uppercase tracking-wider mb-6"
             >
               {t('landing.valueProp.title', undefined, 'Why Choose Roomivo?')}
             </motion.div>
@@ -91,7 +91,7 @@ export default function ValuePropSection() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-7xl md:text-8xl font-black tracking-tighter text-zinc-900 leading-[0.9] uppercase"
+              className="text-4xl sm:text-6xl font-black tracking-tight text-zinc-900 leading-tight"
             >
               {t('landing.valueProp.subtitle', undefined, 'Secure. Transparent. Seamless.')}
             </motion.h2>
@@ -101,7 +101,7 @@ export default function ValuePropSection() {
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            className="text-[12px] font-black text-zinc-400 uppercase tracking-[0.4em] max-w-sm mb-2"
+            className="text-base text-zinc-500 leading-relaxed max-w-sm mb-2"
           >
             {t('landing.valueProp.desc', undefined, 'We bridge the gap between landlords and tenants with technology that builds trust.')}
           </motion.p>
@@ -124,16 +124,12 @@ export default function ValuePropSection() {
                   {feature.icon}
                 </div>
                 
-                <h3 className={`text-3xl font-black mb-4 tracking-tighter uppercase ${feature.titleColor || 'text-zinc-900'}`}>
+                <h3 className={`text-2xl font-black mb-4 tracking-tight ${feature.titleColor || 'text-zinc-900'}`}>
                   {feature.title}
                 </h3>
-                <p className={`font-bold leading-tight ${feature.textColor || 'text-zinc-500'}`}>
+                <p className={`text-base font-medium leading-relaxed ${feature.textColor || 'text-zinc-500'}`}>
                   {feature.desc}
                 </p>
-                
-                <div className={`mt-auto pt-10 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest ${feature.bg.includes('zinc-900') ? 'text-zinc-400' : 'text-zinc-300'} group-hover:text-zinc-900 transition-colors`}>
-                  {t('common.learnMore', undefined, 'Learn more')} <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </div>
               </div>
 
               {/* Sophisticated Overlay for white cards */}

@@ -41,7 +41,7 @@ export default function SearchHero() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-            className="text-6xl sm:text-8xl md:text-9xl font-black tracking-tighter mb-8 text-zinc-900 leading-[0.85] uppercase italic"
+            className="text-5xl sm:text-7xl font-black tracking-tight mb-8 text-zinc-900 leading-[1.05]"
           >
             {parts[0]}
             {title.includes(highlight) && (
@@ -62,9 +62,9 @@ export default function SearchHero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-            className="text-lg sm:text-xl text-zinc-400 max-w-2xl mx-auto mb-20 font-black uppercase tracking-[0.4em] leading-relaxed"
+            className="text-lg sm:text-xl text-zinc-500 max-w-2xl mx-auto mb-16 font-medium leading-relaxed"
           >
-            {t('landing.subtitle', undefined, 'The most secure and transparent way to rent in France.')}
+            {t('landing.subtitle', undefined, 'A secure, transparent way to rent in France.')}
           </motion.p>
 
           {/* ─── Advanced Search Bar ─── */}
@@ -88,7 +88,7 @@ export default function SearchHero() {
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder={t('landing.hero.searchPlaceholder', undefined, 'Where do you want to live?')}
                   aria-label={t('landing.hero.searchPlaceholder', undefined, 'Where do you want to live?')}
-                  className="w-full bg-transparent border-none focus:ring-0 text-2xl font-black text-zinc-900 placeholder:text-zinc-200 uppercase tracking-tight"
+                  className="w-full bg-transparent border-none focus:ring-0 text-lg sm:text-xl font-semibold text-zinc-900 placeholder:text-zinc-400"
                 />
               </div>
               
@@ -97,11 +97,11 @@ export default function SearchHero() {
               <MagneticButton>
                 <button 
                   type="submit"
-                  aria-label={t('landing.hero.searchButton', undefined, 'Execute')}
-                  className="w-full sm:w-auto bg-zinc-900 text-white px-16 py-7 rounded-[2.2rem] font-black uppercase tracking-[0.3em] text-[11px] flex items-center justify-center gap-4 hover:scale-[1.02] active:scale-[0.98] transition-all duration-500 shadow-2xl shadow-zinc-900/20 group/btn"
+                  aria-label={t('landing.hero.searchButton', undefined, 'Search')}
+                  className="w-full sm:w-auto bg-zinc-900 text-white px-12 py-6 rounded-[2.2rem] font-bold uppercase tracking-wider text-sm flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] transition-all duration-500 shadow-2xl shadow-zinc-900/20 group/btn"
                 >
                   <Search className="w-4 h-4 group-hover/btn:scale-125 transition-transform" strokeWidth={3} aria-hidden="true" />
-                  <span>{t('landing.hero.searchButton', undefined, 'Execute')}</span>
+                  <span>{t('landing.hero.searchButton', undefined, 'Search')}</span>
                 </button>
               </MagneticButton>
             </form>
@@ -112,7 +112,7 @@ export default function SearchHero() {
                 <button
                   key={city}
                   onClick={() => setQuery(city)}
-                  className="px-8 py-3 rounded-full bg-zinc-50 hover:bg-zinc-900 hover:text-white text-zinc-400 text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 border border-zinc-100 hover:border-zinc-900"
+                  className="px-6 py-3 rounded-full bg-zinc-50 hover:bg-zinc-900 hover:text-white text-zinc-500 text-sm font-semibold transition-all duration-500 border border-zinc-100 hover:border-zinc-900"
                 >
                   {city}
                 </button>
