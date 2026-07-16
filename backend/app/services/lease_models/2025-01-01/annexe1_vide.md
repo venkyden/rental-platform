@@ -10,11 +10,16 @@ The published title is "…OU DE COLOCATION…", so this annexe also covers colo
 unfurnished dwelling under a single contract (excluded: colocations formalisées par
 plusieurs contrats).
 
-⚠️ KNOWN INCOMPLETE (found 2026-07-13) — "VERBATIM" above holds for the BODY only.
-This file starts at section I and OMITS the published preamble: the official title, the
-"(Soumis au titre Ier…)" subtitle, "Champ du contrat type" (scope + exclusions) and
-"Modalités d'application du contrat type" (ordre public, clauses essentielles). The
-markdown heading below is OURS, not the decree's. Reproduce the preamble before wiring.
+✅ 2026-07-15: preamble reproduced (F1), the "identifiant fiscal du logement" line removed
+(F2 — confirmed to have NO basis anywhere in the official text; the schema entry in
+`lease_fields.py` is corrected, not deleted, pending an owner decision on whether to
+reinstate it under a real, cited legal basis), the décence cross-reference clause
+restored verbatim + footnote (5 bis) reinstated (F3), and inserted quotation marks
+around the loi 89 art. 5 citation (section IX) removed — the official text is
+continuous unquoted prose there (F4). All verified word-for-word against the Légifrance
+API (LEGIARTI000043842254, direct JSON `texte` field, not a web render) — see
+docs/legal/2026-07-15-model-transcription-verification.md for the diff method,
+evidence, and the F2 owner-decision flag.
 
 Status: ⏳ PENDING LAWYER SIGN-OFF before it is wired into generation (Path A).
 This file is the canonical wording asset. The generator fills the [...] placeholders
@@ -23,6 +28,24 @@ Bracketed [...] = fillable field. (n) = official footnote marker, preserved as p
 -->
 
 # Contrat de location — logement nu (Décret n°2015-587, Annexe 1)
+
+CONTRAT TYPE DE LOCATION OU DE COLOCATION DE LOGEMENT NU
+
+(Soumis au titre Ier de la loi du 6 juillet 1989 tendant à améliorer les rapports locatifs et portant modification de la loi n° 86-1290 du 23 décembre 1986)
+
+**Champ du contrat type :** le présent contrat type de location est applicable aux locations et aux colocations de logement nu et qui constitue la résidence principale du preneur, à l'exception :
+
+- des colocations formalisées par la conclusion de plusieurs contrats entre les colocataires et le bailleur ;
+- des locations de logements faisant l'objet d'une convention passée en application de l'article L. 351-2 ou de l'article L. 321-8 du code de la construction et de l'habitation ;
+- des locations de logement appartenant à un organisme d'habitation à loyer modéré ne faisant pas l'objet d'une convention passée en application de l'article L. 351-2 précité.
+
+**Modalités d'application du contrat type :** le régime de droit commun en matière de baux d'habitation est défini principalement par la loi du 6 juillet 1989 modifiée. L'ensemble de ces dispositions étant d'ordre public, elles s'imposent aux parties qui, en principe, ne peuvent pas y renoncer. En conséquence :
+
+- le présent contrat type de location contient uniquement les clauses essentielles du contrat dont la législation et la réglementation en vigueur au jour de sa publication imposent la mention par les parties dans le contrat. Il appartient cependant aux parties de s'assurer des dispositions applicables au jour de la conclusion du contrat ;
+- au-delà de ces clauses, les parties sont également soumises à l'ensemble des dispositions légales et réglementaires d'ordre public applicables aux baux d'habitation sans qu'il soit nécessaire de les faire figurer dans le contrat et qui sont rappelées utilement dans la notice d'information qui doit être jointe à chaque contrat ;
+- les parties sont libres de prévoir dans le contrat d'autres clauses particulières, propres à chaque location, dans la mesure où celles-ci sont conformes aux dispositions législatives et réglementaires en vigueur. Les parties peuvent également convenir de l'utilisation de tout autre support pour établir leur contrat, dans le respect du présent contrat type.
+
+Le contrat type de location ou de colocation contient les éléments suivants :
 
 ## I. Désignation des parties
 
@@ -43,7 +66,6 @@ Le présent contrat a pour objet la location d'un logement ainsi déterminé :
 ### A. Consistance du logement
 
 - localisation du logement : [exemples : adresse / bâtiment / étage / porte etc.] ;
-- identifiant fiscal du logement : [Numéro Identifiant Fiscal du logement] ;
 - type d'habitat : [immeuble collectif ou individuel] ;
 - régime juridique de l'immeuble : [mono propriété ou copropriété] ;
 - période de construction : [exemples : avant 1949, de 1949 à 1974, de 1975 à 1989, de 1989 à 2005, depuis 2005] ;
@@ -53,26 +75,7 @@ Le présent contrat a pour objet la location d'un logement ainsi déterminé :
 - le cas échéant, Eléments d'équipements du logement : [exemples : cuisine équipée, détail des installations sanitaires etc.] ;
 - modalité de production de chauffage : [individuel ou collectif] (4) ;
 - modalité de production d'eau chaude sanitaire : [individuelle ou collective] (5).
-
-- rappel : un logement décent doit respecter les critères minimaux de performance suivants :
-
-a) En France métropolitaine :
-
-i) A compter du 1er janvier 2025, le niveau de performance minimal du logement correspond à la classe F du DPE ;
-
-ii) A compter du 1er janvier 2028, le niveau de performance minimal du logement correspond à la classe E du DPE ;
-
-iii) A compter du 1er janvier 2034, le niveau de performance minimal du logement correspond à la classe D du DPE.
-
-b) En Guadeloupe, en Martinique, en Guyane, à La Réunion et à Mayotte :
-
-i) A compter du 1er janvier 2028, le niveau de performance minimal du logement correspond à la classe F du DPE ;
-
-ii) A compter du 1er janvier 2031, le niveau de performance minimal du logement correspond à la classe E du DPE.
-
-La consommation d'énergie finale et le niveau de performance du logement sont déterminés selon la méthode du diagnostic de performance énergétique mentionné à l'article L. 126-26 du code de la construction et de l'habitation.
-
-- niveau de performance du logement : [classe du diagnostic de performance énergétique].
+- le cas échéant, La consommation énergétique du logement, déterminée selon la méthode du diagnostic de performance énergétique mentionné à l'article L. 126-26 du code de la construction et de l'habitation, ne doit pas excéder, à compter du 1er janvier 2028, le seuil fixé au I de l'article L. 173-2 du même code (5 bis).
 
 ### B. Destination des locaux : [usage d'habitation ou usage mixte professionnel et d'habitation]
 
@@ -171,11 +174,11 @@ Modalités de résiliation de plein droit du contrat : [clause prévoyant la ré
 
 ### A. Dispositions applicables
 
-Il est rappelé les dispositions du I de l'article 5 (I) de la loi du 6 juillet 1989, alinéas 1 à 3 : "La rémunération des personnes mandatées pour se livrer ou prêter leur concours à l'entremise ou à la négociation d'une mise en location d'un logement, tel que défini aux articles 2 et 25-3, est à la charge exclusive du bailleur, à l'exception des honoraires liés aux prestations mentionnées aux deuxième et troisième alinéas du présent I."
+Il est rappelé les dispositions du I de l'article 5 (I) de la loi du 6 juillet 1989, alinéas 1 à 3 : La rémunération des personnes mandatées pour se livrer ou prêter leur concours à l'entremise ou à la négociation d'une mise en location d'un logement, tel que défini aux articles 2 et 25-3, est à la charge exclusive du bailleur, à l'exception des honoraires liés aux prestations mentionnées aux deuxième et troisième alinéas du présent I.
 
-"Les honoraires des personnes mandatées pour effectuer la visite du preneur, constituer son dossier et rédiger un bail sont partagés entre le bailleur et le preneur." Le montant toutes taxes comprises imputé au preneur pour ces prestations ne peut excéder celui imputé au bailleur et demeure inférieur ou égal à un plafond par mètre carré de surface habitable de la chose louée fixé par voie réglementaire et révisable chaque année, dans des conditions définies par décret. Ces honoraires sont dus à la signature du bail.
+Les honoraires des personnes mandatées pour effectuer la visite du preneur, constituer son dossier et rédiger un bail sont partagés entre le bailleur et le preneur. Le montant toutes taxes comprises imputé au preneur pour ces prestations ne peut excéder celui imputé au bailleur et demeure inférieur ou égal à un plafond par mètre carré de surface habitable de la chose louée fixé par voie réglementaire et révisable chaque année, dans des conditions définies par décret. Ces honoraires sont dus à la signature du bail.
 
-"Les honoraires des personnes mandatées pour réaliser un état des lieux sont partagés entre le bailleur et le preneur." Le montant toutes taxes comprises imputé au locataire pour cette prestation ne peut excéder celui imputé au bailleur et demeure inférieur ou égal à un plafond par mètre carré de surface habitable de la chose louée fixé par voie réglementaire et révisable chaque année, dans des conditions définies par décret. Ces honoraires sont dus à compter de la réalisation de la prestation.
+Les honoraires des personnes mandatées pour réaliser un état des lieux sont partagés entre le bailleur et le preneur. Le montant toutes taxes comprises imputé au locataire pour cette prestation ne peut excéder celui imputé au bailleur et demeure inférieur ou égal à un plafond par mètre carré de surface habitable de la chose louée fixé par voie réglementaire et révisable chaque année, dans des conditions définies par décret. Ces honoraires sont dus à compter de la réalisation de la prestation.
 
 Plafonds applicables :
 
