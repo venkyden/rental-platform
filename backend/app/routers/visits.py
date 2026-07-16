@@ -39,6 +39,23 @@ class VisitSlotResponse(BaseModel):
     room_label: Optional[str] = None
 
 
+class PublicVisitSlotResponse(BaseModel):
+    """Slot shape for the UNAUTHENTICATED listing.
+
+    Structurally cannot carry meeting_link, so the private booking URL can never
+    leak from a public endpoint — the guarantee no longer depends on a
+    (distant) is_booked filter staying correct. Defence in depth after the
+    by-room leak (audit #4).
+    """
+    id: UUID
+    property_id: UUID
+    start_time: datetime
+    end_time: datetime
+    is_booked: bool
+    room_index: Optional[int] = None
+    room_label: Optional[str] = None
+
+
 class DirectLeaseGenerateRequest(BaseModel):
     tenant_email: str
     rent_amount: float
@@ -145,7 +162,7 @@ async def create_visit_slots(
     return created_slots
 
 
-@router.get("/visits/slots/{property_id}", response_model=List[VisitSlotResponse])
+@router.get("/visits/slots/{property_id}", response_model=List[PublicVisitSlotResponse])
 async def get_property_visit_slots(
     property_id: UUID,
     room_index: Optional[int] = None,
