@@ -71,12 +71,38 @@ export const translations = {
         // Landing Page
         landing: {
             hero: {
-                title: "Find your perfect home with confidence",
-                highlight: "perfect home",
+                title: "Rent with proof, not promises",
+                highlight: "proof",
                 searchPlaceholder: "Where do you want to live?",
-                searchButton: "Search"
+                searchButton: "Search",
+                chips: {
+                    identity: "Verified identities",
+                    documents: "State-signed document checks",
+                    media: "GPS-verified photos"
+                }
             },
             subtitle: "A secure, transparent way to rent in France. Verified identities, verified listings, and legally compliant leases.",
+            endorsement: {
+                label: "Backed by",
+                note: "Founded by Audencia student-entrepreneurs under the Statut National Étudiant-Entrepreneur (SNEE), PÉPITE Pays de la Loire."
+            },
+            credential: {
+                badge: "The Trust Layer",
+                title: "One verification. Portable, signed proof.",
+                subtitle: "Every check issues a cryptographically signed, short-lived credential. Your documents are verified, then deleted — the proof travels, your data doesn't.",
+                steps: {
+                    verify: { title: "Verify", desc: "Identity, solvency and property documents are checked — tax notices against the DGFiP's own signature." },
+                    issue: { title: "Get signed proof", desc: "You receive a signed credential with banded claims (\"solvency ≥ 3.0\") — never your raw data." },
+                    forget: { title: "We forget", desc: "Source documents are deleted after verification. No dossier sits on our servers." }
+                },
+                portable: "Your credential works anywhere — share the link or code on any listing site.",
+                verifyBox: {
+                    title: "Verify a credential",
+                    desc: "Someone sent you a Roomivo credential? Don't trust the link — type its code here yourself.",
+                    placeholder: "Credential code",
+                    button: "Check"
+                }
+            },
             getStarted: "Get Started",
             signIn: "Sign In",
             valueProp: {
@@ -1166,8 +1192,13 @@ export const translations = {
                     success: {
                         title: "Draft Created",
                         description: "Your listing is saved as a draft. Finish by adding photos from your phone.",
-                        forcePublish: "Publish now",
+                        forcePublish: "Publish listing",
                         synchronizing: "Publishing...",
+                        mediaRequired: "Photos or videos are required before publishing — at least one per room.",
+                        scanPrompt: "Scan the QR code with your phone to capture photos and videos",
+                        gpsTrust: "Photos captured with your phone through this QR code are GPS-verified on site. GPS-verified listings display a trust badge and get more applications.",
+                        published: "Your listing is now live.",
+                        publishFailed: "Publishing failed. Please try again.",
                         return: "Back to dashboard"
                     }
                 },
@@ -2587,12 +2618,38 @@ export const translations = {
         // Landing Page
         landing: {
             hero: {
-                title: "Trouvez votre foyer idéal avec confiance",
-                highlight: "foyer idéal",
+                title: "Louez avec des preuves, pas des promesses",
+                highlight: "des preuves",
                 searchPlaceholder: "Où voulez-vous vivre ?",
-                searchButton: "Rechercher"
+                searchButton: "Rechercher",
+                chips: {
+                    identity: "Identités vérifiées",
+                    documents: "Documents à signature d'État vérifiés",
+                    media: "Photos géolocalisées vérifiées"
+                }
             },
             subtitle: "Une façon sûre et transparente de louer en France. Identités vérifiées, annonces vérifiées et baux conformes à la loi.",
+            endorsement: {
+                label: "Soutenu par",
+                note: "Fondé par des étudiants-entrepreneurs d'Audencia sous le Statut National Étudiant-Entrepreneur (SNEE), PÉPITE Pays de la Loire."
+            },
+            credential: {
+                badge: "La Couche de Confiance",
+                title: "Une vérification. Une preuve signée et portable.",
+                subtitle: "Chaque contrôle émet un justificatif signé cryptographiquement, à durée limitée. Vos documents sont vérifiés puis supprimés — la preuve circule, pas vos données.",
+                steps: {
+                    verify: { title: "Vérifier", desc: "Identité, solvabilité et documents du bien sont contrôlés — l'avis d'imposition via la signature de la DGFiP elle-même." },
+                    issue: { title: "Recevoir la preuve signée", desc: "Vous recevez un justificatif signé avec des tranches (\"solvabilité ≥ 3,0\") — jamais vos données brutes." },
+                    forget: { title: "Nous oublions", desc: "Les documents sources sont supprimés après vérification. Aucun dossier ne reste sur nos serveurs." }
+                },
+                portable: "Votre justificatif fonctionne partout — partagez le lien ou le code sur n'importe quel site d'annonces.",
+                verifyBox: {
+                    title: "Vérifier un justificatif",
+                    desc: "On vous a envoyé un justificatif Roomivo ? Ne cliquez pas le lien — saisissez son code ici vous-même.",
+                    placeholder: "Code du justificatif",
+                    button: "Vérifier"
+                }
+            },
             getStarted: "Commencer",
             signIn: "Se connecter",
             valueProp: {
@@ -3565,8 +3622,13 @@ export const translations = {
                     success: {
                         title: "Brouillon créé",
                         description: "Votre annonce est enregistrée comme brouillon. Terminez en ajoutant des photos depuis votre téléphone.",
-                        forcePublish: "Publier maintenant",
+                        forcePublish: "Publier l'annonce",
                         synchronizing: "Publication...",
+                        mediaRequired: "Des photos ou vidéos sont requises avant publication — au moins une par pièce.",
+                        scanPrompt: "Scannez le QR code avec votre téléphone pour capturer photos et vidéos",
+                        gpsTrust: "Les photos prises avec votre téléphone via ce QR code sont vérifiées par GPS sur place. Les annonces vérifiées GPS affichent un badge de confiance et reçoivent plus de candidatures.",
+                        published: "Votre annonce est en ligne.",
+                        publishFailed: "La publication a échoué. Veuillez réessayer.",
                         return: "Retour au tableau de bord"
                     }
                 },

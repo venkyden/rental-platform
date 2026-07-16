@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ChevronRight, Search, MapPin } from 'lucide-react';
+import { Search, MapPin, ShieldCheck } from 'lucide-react';
 import { useLanguage } from '@/lib/LanguageContext';
 import { useRouter } from 'next/navigation';
 import { useState, useRef } from 'react';
@@ -21,12 +21,12 @@ export default function SearchHero() {
     }
   };
 
-  const title = t('landing.hero.title', undefined, 'Find your perfect home with confidence');
-  const highlight = t('landing.hero.highlight', undefined, 'perfect home');
+  const title = t('landing.hero.title', undefined, 'Rent with proof, not promises');
+  const highlight = t('landing.hero.highlight', undefined, 'proof');
   const parts = title.includes(highlight) ? title.split(highlight) : [title, ''];
 
   return (
-    <section className="relative pt-24 sm:pt-32 pb-16 sm:pb-24 overflow-hidden">
+    <section className="relative pt-36 sm:pt-40 pb-16 sm:pb-24 overflow-hidden">
       {/* Background Subtle Gradient */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-zinc-100/50 rounded-full blur-[120px] opacity-30" />
@@ -45,7 +45,7 @@ export default function SearchHero() {
           >
             {parts[0]}
             {title.includes(highlight) && (
-              <span className="relative inline-block px-4">
+              <span className="relative inline-block px-1">
                 {highlight}
                 <motion.div 
                   className="absolute bottom-2 left-0 w-full h-4 bg-zinc-900/5 -rotate-1 -z-10 rounded-lg"
@@ -106,6 +106,20 @@ export default function SearchHero() {
               </MagneticButton>
             </form>
             
+            {/* ─── Trust Chips ─── */}
+            <div className="mt-10 flex flex-wrap justify-center gap-x-8 gap-y-3">
+              {[
+                t('landing.hero.chips.identity', undefined, 'Verified identities'),
+                t('landing.hero.chips.documents', undefined, 'State-signed document checks'),
+                t('landing.hero.chips.media', undefined, 'GPS-verified photos'),
+              ].map((chip) => (
+                <div key={chip} className="flex items-center gap-2 text-zinc-500">
+                  <ShieldCheck className="w-4 h-4 text-zinc-900" aria-hidden="true" />
+                  <span className="text-sm font-semibold">{chip}</span>
+                </div>
+              ))}
+            </div>
+
             {/* ─── Trending Cities ─── */}
             <div className="mt-10 flex flex-wrap justify-center gap-4">
               {['Paris', 'Lyon', 'Bordeaux', 'Nice', 'Lille'].map((city) => (

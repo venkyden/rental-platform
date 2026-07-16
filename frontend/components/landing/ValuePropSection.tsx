@@ -33,7 +33,7 @@ export default function ValuePropSection() {
       title: t('landing.valueProp.dossier.title', undefined, 'Digital Dossier'),
       desc: t('landing.valueProp.dossier.desc', undefined, 'No more paper. Your verified identity and documents in one secure place.'),
       span: "md:col-span-2",
-      bg: "bg-zinc-900/5",
+      bg: "bg-zinc-50",
       iconBg: "bg-zinc-900 text-white"
     },
     {
