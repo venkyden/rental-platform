@@ -26,18 +26,18 @@ export default function CredentialLayerSection() {
   const steps = [
     {
       icon: <ScanSearch className="w-7 h-7" />,
-      title: t('landing.credential.steps.verify.title', undefined, 'Verify'),
-      desc: t('landing.credential.steps.verify.desc', undefined, "Identity, solvency and property documents are checked — tax notices against the DGFiP's own signature."),
+      title: t('landing.credential.steps.verify.title', undefined, 'Both sides verified'),
+      desc: t('landing.credential.steps.verify.desc', undefined, 'Tenants prove they can pay. Landlords prove the home is theirs to rent. Before anyone commits.'),
     },
     {
       icon: <FileSignature className="w-7 h-7" />,
-      title: t('landing.credential.steps.issue.title', undefined, 'Get signed proof'),
-      desc: t('landing.credential.steps.issue.desc', undefined, 'You receive a signed credential with banded claims ("solvency ≥ 3.0") — never your raw data.'),
+      title: t('landing.credential.steps.issue.title', undefined, 'Proof that travels'),
+      desc: t('landing.credential.steps.issue.desc', undefined, 'You get signed, tamper-evident proof you can share anywhere — even outside Roomivo.'),
     },
     {
       icon: <EyeOff className="w-7 h-7" />,
-      title: t('landing.credential.steps.forget.title', undefined, 'We forget'),
-      desc: t('landing.credential.steps.forget.desc', undefined, 'Source documents are deleted after verification. No dossier sits on our servers.'),
+      title: t('landing.credential.steps.forget.title', undefined, 'Nothing left to leak'),
+      desc: t('landing.credential.steps.forget.desc', undefined, 'Once checked, your documents are deleted. You share results — never paperwork.'),
     },
   ];
 
@@ -73,7 +73,7 @@ export default function CredentialLayerSection() {
             viewport={{ once: true }}
             className="text-zinc-400 text-lg leading-relaxed"
           >
-            {t('landing.credential.subtitle', undefined, 'Every check issues a cryptographically signed, short-lived credential. Your documents are verified, then deleted — the proof travels, your data doesn’t.')}
+            {t('landing.credential.subtitle', undefined, "Verification that protects both sides — without your paperwork ending up in a stranger's inbox.")}
           </motion.p>
         </div>
 

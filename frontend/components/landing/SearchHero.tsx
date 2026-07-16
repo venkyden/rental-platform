@@ -64,7 +64,7 @@ export default function SearchHero() {
             transition={{ delay: 0.3, duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
             className="text-lg sm:text-xl text-zinc-500 max-w-2xl mx-auto mb-16 font-medium leading-relaxed"
           >
-            {t('landing.subtitle', undefined, 'A secure, transparent way to rent in France.')}
+            {t('landing.subtitle', undefined, "Tenants prove they can pay. Landlords prove they're real. No one hands over documents — or a deposit — blind.")}
           </motion.p>
 
           {/* ─── Advanced Search Bar ─── */}

@@ -81,7 +81,7 @@ export const translations = {
                     media: "GPS-verified photos"
                 }
             },
-            subtitle: "A secure, transparent way to rent in France. Verified identities, verified listings, and legally compliant leases.",
+            subtitle: "Tenants prove they can pay. Landlords prove they're real. No one hands over documents — or a deposit — blind.",
             endorsement: {
                 label: "Backed by",
                 note: "Founded by Audencia student-entrepreneurs under the Statut National Étudiant-Entrepreneur (SNEE), PÉPITE Pays de la Loire."
@@ -89,11 +89,11 @@ export const translations = {
             credential: {
                 badge: "The Trust Layer",
                 title: "One verification. Portable, signed proof.",
-                subtitle: "Every check issues a cryptographically signed, short-lived credential. Your documents are verified, then deleted — the proof travels, your data doesn't.",
+                subtitle: "Verification that protects both sides — without your paperwork ending up in a stranger's inbox.",
                 steps: {
-                    verify: { title: "Verify", desc: "Identity, solvency and property documents are checked — tax notices against the DGFiP's own signature." },
-                    issue: { title: "Get signed proof", desc: "You receive a signed credential with banded claims (\"solvency ≥ 3.0\") — never your raw data." },
-                    forget: { title: "We forget", desc: "Source documents are deleted after verification. No dossier sits on our servers." }
+                    verify: { title: "Both sides verified", desc: "Tenants prove they can pay. Landlords prove the home is theirs to rent. Before anyone commits." },
+                    issue: { title: "Proof that travels", desc: "You get signed, tamper-evident proof you can share anywhere — even outside Roomivo." },
+                    forget: { title: "Nothing left to leak", desc: "Once checked, your documents are deleted. You share results — never paperwork." }
                 },
                 portable: "Your credential works anywhere — share the link or code on any listing site.",
                 verifyBox: {
@@ -106,12 +106,12 @@ export const translations = {
             getStarted: "Get Started",
             signIn: "Sign In",
             valueProp: {
-                title: "Why Choose Roomivo?",
-                subtitle: "A secure, transparent way to rent in France.",
-                dossier: { title: "Digital Dossier", desc: "No more paper. Your verified identity and documents in one secure place." },
-                proof: { title: "Signed Proof", desc: "Every verification issues a cryptographically signed, expiring credential — anyone can check it on roomivo.app, no account needed." },
-                legal: { title: "French Law Compliant", desc: "Digital leases generated according to the latest French regulations." },
-                funds: { title: "Your Money Stays Yours", desc: "Roomivo never touches rent or deposits. You pay the other party directly — with signed proof of who they really are." }
+                title: "Why Roomivo?",
+                subtitle: "Built for the renters French housing leaves behind.",
+                dossier: { title: "No French guarantor? Rent anyway.", desc: "International students and newcomers can prove they can pay — without French payslips, a French guarantor, or years of tax history." },
+                proof: { title: "Landlords are verified too", desc: "The person behind the listing proves who they are before you visit. Know who you're paying before a single euro moves." },
+                legal: { title: "French law, built in", desc: "Deposit caps, energy rules, compliant lease templates — enforced automatically, so you don't have to be a lawyer." },
+                funds: { title: "Your Money Stays Yours", desc: "Roomivo never touches rent or deposits. You pay the other party directly — knowing exactly who they are." }
             },
             howItWorks: {
                 title: "How it Works",
@@ -2628,7 +2628,7 @@ export const translations = {
                     media: "Photos géolocalisées vérifiées"
                 }
             },
-            subtitle: "Une façon sûre et transparente de louer en France. Identités vérifiées, annonces vérifiées et baux conformes à la loi.",
+            subtitle: "Les locataires prouvent qu'ils peuvent payer. Les propriétaires prouvent qu'ils sont réels. Personne ne remet ses documents — ni sa caution — à l'aveugle.",
             endorsement: {
                 label: "Soutenu par",
                 note: "Fondé par des étudiants-entrepreneurs d'Audencia sous le Statut National Étudiant-Entrepreneur (SNEE), PÉPITE Pays de la Loire."
@@ -2636,11 +2636,11 @@ export const translations = {
             credential: {
                 badge: "La Couche de Confiance",
                 title: "Une vérification. Une preuve signée et portable.",
-                subtitle: "Chaque contrôle émet un justificatif signé cryptographiquement, à durée limitée. Vos documents sont vérifiés puis supprimés — la preuve circule, pas vos données.",
+                subtitle: "Une vérification qui protège les deux parties — sans que vos documents finissent dans la boîte mail d'un inconnu.",
                 steps: {
-                    verify: { title: "Vérifier", desc: "Identité, solvabilité et documents du bien sont contrôlés — l'avis d'imposition via la signature de la DGFiP elle-même." },
-                    issue: { title: "Recevoir la preuve signée", desc: "Vous recevez un justificatif signé avec des tranches (\"solvabilité ≥ 3,0\") — jamais vos données brutes." },
-                    forget: { title: "Nous oublions", desc: "Les documents sources sont supprimés après vérification. Aucun dossier ne reste sur nos serveurs." }
+                    verify: { title: "Les deux parties vérifiées", desc: "Les locataires prouvent qu'ils peuvent payer. Les propriétaires prouvent que le logement est bien à louer. Avant tout engagement." },
+                    issue: { title: "Une preuve qui circule", desc: "Vous recevez une preuve signée et infalsifiable, partageable partout — même en dehors de Roomivo." },
+                    forget: { title: "Rien à divulguer", desc: "Une fois vérifiés, vos documents sont supprimés. Vous partagez des résultats — jamais des papiers." }
                 },
                 portable: "Votre justificatif fonctionne partout — partagez le lien ou le code sur n'importe quel site d'annonces.",
                 verifyBox: {
@@ -2653,12 +2653,12 @@ export const translations = {
             getStarted: "Commencer",
             signIn: "Se connecter",
             valueProp: {
-                title: "Pourquoi Choisir Roomivo ?",
-                subtitle: "Une façon sûre et transparente de louer en France.",
-                dossier: { title: "Dossier Numérique", desc: "Plus de papier. Votre identité et vos documents vérifiés en un seul lieu sûr." },
-                proof: { title: "Preuve Signée", desc: "Chaque vérification émet une attestation signée cryptographiquement et à durée limitée — vérifiable par tous sur roomivo.app, sans compte." },
-                legal: { title: "Conforme à la Loi Française", desc: "Baux numériques générés selon les dernières réglementations françaises." },
-                funds: { title: "Votre Argent Reste le Vôtre", desc: "Roomivo ne touche jamais au loyer ni au dépôt de garantie. Vous payez directement l'autre partie — avec la preuve signée de son identité." }
+                title: "Pourquoi Roomivo ?",
+                subtitle: "Conçu pour ceux que la location française laisse de côté.",
+                dossier: { title: "Pas de garant français ? Louez quand même.", desc: "Étudiants internationaux et nouveaux arrivants peuvent prouver leur solvabilité — sans fiches de paie françaises, sans garant français, sans historique fiscal." },
+                proof: { title: "Les propriétaires aussi sont vérifiés", desc: "La personne derrière l'annonce prouve son identité avant votre visite. Sachez qui vous payez avant qu'un seul euro ne parte." },
+                legal: { title: "La loi française, intégrée", desc: "Plafonds de dépôt, règles énergétiques, baux conformes — appliqués automatiquement, sans être juriste." },
+                funds: { title: "Votre Argent Reste le Vôtre", desc: "Roomivo ne touche jamais au loyer ni au dépôt de garantie. Vous payez directement l'autre partie — en sachant exactement qui elle est." }
             },
             howItWorks: {
                 title: "Comment ça marche",

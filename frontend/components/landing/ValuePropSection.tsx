@@ -30,24 +30,24 @@ export default function ValuePropSection() {
   const features: Feature[] = [
     {
       icon: <FileCheck className="w-8 h-8" />,
-      title: t('landing.valueProp.dossier.title', undefined, 'Digital Dossier'),
-      desc: t('landing.valueProp.dossier.desc', undefined, 'No more paper. Your verified identity and documents in one secure place.'),
+      title: t('landing.valueProp.dossier.title', undefined, 'No French guarantor? Rent anyway.'),
+      desc: t('landing.valueProp.dossier.desc', undefined, 'International students and newcomers can prove they can pay — without French payslips, a French guarantor, or years of tax history.'),
       span: "md:col-span-2",
       bg: "bg-zinc-50",
       iconBg: "bg-zinc-900 text-white"
     },
     {
       icon: <Sparkles className="w-8 h-8" />,
-      title: t('landing.valueProp.proof.title', undefined, 'Signed Proof'),
-      desc: t('landing.valueProp.proof.desc', undefined, 'Every verification issues a cryptographically signed, expiring credential — anyone can check it on roomivo.app, no account needed.'),
+      title: t('landing.valueProp.proof.title', undefined, 'Landlords are verified too'),
+      desc: t('landing.valueProp.proof.desc', undefined, "The person behind the listing proves who they are before you visit. Know who you're paying before a single euro moves."),
       span: "md:col-span-1",
       bg: "bg-zinc-100",
       iconBg: "bg-white text-zinc-900"
     },
     {
       icon: <Scale className="w-8 h-8" />,
-      title: t('landing.valueProp.legal.title', undefined, 'French Law Compliant'),
-      desc: t('landing.valueProp.legal.desc', undefined, 'Digital leases generated according to the latest regulations.'),
+      title: t('landing.valueProp.legal.title', undefined, 'French law, built in'),
+      desc: t('landing.valueProp.legal.desc', undefined, "Deposit caps, energy rules, compliant lease templates — enforced automatically, so you don't have to be a lawyer."),
       span: "md:col-span-1",
       bg: "bg-zinc-50",
       iconBg: "bg-zinc-900 text-white"
@@ -55,7 +55,7 @@ export default function ValuePropSection() {
     {
       icon: <ShieldCheck className="w-8 h-8" />,
       title: t('landing.valueProp.funds.title', undefined, 'Your Money Stays Yours'),
-      desc: t('landing.valueProp.funds.desc', undefined, 'Roomivo never touches rent or deposits. You pay the other party directly — with signed proof of who they really are.'),
+      desc: t('landing.valueProp.funds.desc', undefined, 'Roomivo never touches rent or deposits. You pay the other party directly — knowing exactly who they are.'),
       span: "md:col-span-2",
       bg: "bg-zinc-900 text-white",
       iconBg: "bg-white text-zinc-900",
@@ -85,7 +85,7 @@ export default function ValuePropSection() {
               viewport={{ once: true }}
               className="inline-block px-4 py-1.5 bg-zinc-900 text-white rounded-full text-xs font-bold uppercase tracking-wider mb-6"
             >
-              {t('landing.valueProp.title', undefined, 'Why Choose Roomivo?')}
+              {t('landing.valueProp.title', undefined, 'Why Roomivo?')}
             </motion.div>
             <motion.h2 
               initial={{ opacity: 0, y: 20 }}
@@ -93,7 +93,7 @@ export default function ValuePropSection() {
               viewport={{ once: true }}
               className="text-4xl sm:text-6xl font-black tracking-tight text-zinc-900 leading-tight"
             >
-              {t('landing.valueProp.subtitle', undefined, 'Secure. Transparent. Seamless.')}
+              {t('landing.valueProp.subtitle', undefined, 'Built for the renters French housing leaves behind.')}
             </motion.h2>
           </div>
           
