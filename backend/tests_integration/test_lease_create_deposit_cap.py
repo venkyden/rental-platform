@@ -68,7 +68,7 @@ async def test_mobilite_rejects_any_deposit_override(client):
     landlord, app_ = await _setup(client, client._sessionmaker)
     r = await client.post("/leases/create", headers=auth(landlord),
                           json=_payload(app_.id, "mobilite", deposit_override=500))
-    assert r.status_code == 400
+    assert r.status_code == 422
     assert "mobilité" in r.json()["detail"].lower()
 
 
@@ -77,7 +77,7 @@ async def test_vide_rejects_over_cap_override(client):
     landlord, app_ = await _setup(client, client._sessionmaker)
     r = await client.post("/leases/create", headers=auth(landlord),
                           json=_payload(app_.id, "vide", deposit_override=1800))
-    assert r.status_code == 400
+    assert r.status_code == 422
     assert "dépôt de garantie" in r.json()["detail"].lower()
 
 
@@ -91,9 +91,12 @@ async def test_meuble_two_months_still_allowed(client):
 
 
 @pytest.mark.asyncio
-async def test_unmapped_type_requires_explicit_deposit(client):
-    """No legal cap defined (e.g. colocation) -> no default can be justified."""
+async def test_unmapped_type_is_rejected(client):
+    """Colocation has no entry in lease_rules.LEASE_TYPES: validate_deposit()
+    catches it as an unknown type rather than silently accepting a 1-month
+    default deposit that has no legal basis for this type."""
     landlord, app_ = await _setup(client, client._sessionmaker)
     r = await client.post("/leases/create", headers=auth(landlord),
                           json=_payload(app_.id, "colocation"))
-    assert r.status_code == 400
+    assert r.status_code == 422
+    assert "type de bail inconnu" in r.json()["detail"].lower()
