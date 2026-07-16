@@ -22,6 +22,7 @@ from app.models.user import User
 from app.models.visits_and_leases import Lease
 from app.routers.auth import get_current_user, get_current_user_optional
 from app.services.lease_generator import lease_generator
+from app.services.lease_rules import LEASE_TYPES, max_deposit, validate_deposit
 
 router = APIRouter(prefix="/leases", tags=["leases"])
 
@@ -170,13 +171,33 @@ async def create_lease(
     rent = request.rent_override or float(property_obj.monthly_rent or 0)
     charges = request.charges_override or float(property_obj.charges or 0)
 
+    # Deposit — loi 89 art. 22 / loi ELAN art. 25-12. The previous default of
+    # `rent * 2` applied a meublé cap to EVERY type: illegal for a bail vide
+    # (1 month max) and for a bail mobilité (deposit must be 0). Default from the
+    # legal cap for the type, and validate an explicit override against it.
+    # `rent` is the hors-charges base (charges are a separate lease column).
+    if request.deposit_override is not None:
+        deposit = float(request.deposit_override)
+        cap_errors = validate_deposit(request.lease_type, deposit, rent)
+        if cap_errors:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=" ".join(cap_errors))
+    elif request.lease_type in LEASE_TYPES:
+        deposit = max_deposit(request.lease_type, rent)
+    else:
+        # Type outside the legal rule-set (e.g. colocation): no cap is defined,
+        # so no default can be justified — require an explicit amount.
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Un dépôt de garantie explicite est requis pour le type de bail « {request.lease_type} ».",
+        )
+
     lease = Lease(
         property_id=application.property_id,
         landlord_id=property_obj.landlord_id,
         tenant_id=application.tenant_id,
         start_date=datetime.strptime(request.start_date, "%Y-%m-%d").date(),
         rent_amount=rent,
-        deposit_amount=request.deposit_override or (rent * 2),
+        deposit_amount=deposit,
         charges_amount=charges,
         lease_type=request.lease_type,
         status="generated",
