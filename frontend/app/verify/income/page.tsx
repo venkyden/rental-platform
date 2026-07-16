@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Briefcase, ChevronLeft } from 'lucide-react';
@@ -7,12 +8,14 @@ import PremiumLayout from '@/components/PremiumLayout';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useLanguage } from '@/lib/LanguageContext';
 import VerificationUpload from '@/components/VerificationUpload';
+import IntlSolvencyUpload from '@/components/IntlSolvencyUpload';
 import { useAuth } from '@/lib/useAuth';
 
 export default function IncomeVerifyPage() {
     const router = useRouter();
     const { t } = useLanguage();
     const { user } = useAuth();
+    const [intlIncome, setIntlIncome] = useState(false);
 
     const handleSuccess = () => {
         router.push('/dashboard');
@@ -58,12 +61,32 @@ export default function IncomeVerifyPage() {
                                 </p>
                             </div>
 
-                            <div className="mb-16">
-                                <VerificationUpload 
-                                    verificationType="employment" 
-                                    onSuccessAction={handleSuccess} 
-                                    user={user}
-                                />
+                            <div className="mb-16 space-y-8">
+                                {/* Document-origin toggle — same tiers for everyone, self-selected by documents held */}
+                                <div className="flex items-center justify-center gap-2 text-xs">
+                                    <button
+                                        onClick={() => setIntlIncome(false)}
+                                        className={`px-5 py-2.5 rounded-full font-bold text-sm transition-all ${!intlIncome ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:text-zinc-900'}`}
+                                    >
+                                        {t('verification.intl.toggle.french', undefined, 'French documents')}
+                                    </button>
+                                    <button
+                                        onClick={() => setIntlIncome(true)}
+                                        className={`px-5 py-2.5 rounded-full font-bold text-sm transition-all ${intlIncome ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:text-zinc-900'}`}
+                                    >
+                                        {t('verification.intl.toggle.international', undefined, 'International documents')}
+                                    </button>
+                                </div>
+
+                                {intlIncome ? (
+                                    <IntlSolvencyUpload onSuccessAction={handleSuccess} />
+                                ) : (
+                                    <VerificationUpload
+                                        verificationType="employment"
+                                        onSuccessAction={handleSuccess}
+                                        user={user}
+                                    />
+                                )}
                             </div>
 
                             <div className="text-center pt-8 border-t border-zinc-100">

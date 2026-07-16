@@ -108,18 +108,18 @@ export const translations = {
             valueProp: {
                 title: "Why Roomivo?",
                 subtitle: "Built for the renters French housing leaves behind.",
-                dossier: { title: "No French guarantor? Rent anyway.", desc: "International students and newcomers can prove they can pay — without French payslips, a French guarantor, or years of tax history." },
+                dossier: { title: "Evidence you can keep", desc: "Every verification ends in a watermarked, timestamped proof document — yours to download, and yours to use if a deal ever turns into a dispute." },
                 proof: { title: "Landlords are verified too", desc: "The person behind the listing proves who they are before you visit. Know who you're paying before a single euro moves." },
                 legal: { title: "French law, built in", desc: "Deposit caps, energy rules, compliant lease templates — enforced automatically, so you don't have to be a lawyer." },
                 funds: { title: "Your Money Stays Yours", desc: "Roomivo never touches rent or deposits. You pay the other party directly — knowing exactly who they are." }
             },
             howItWorks: {
                 title: "How it Works",
-                subtitle: "Three steps to your next home in France",
+                subtitle: "From stranger to signed lease — every step verified",
                 steps: {
-                    profile: { title: "Create Profile", desc: "Build your verified digital rental identity." },
-                    matching: { title: "Search & Apply", desc: "Browse verified listings and apply directly with your dossier." },
-                    lease: { title: "Automated Lease", desc: "Sign standard contracts digitally. Leases conform to the French regulatory model (contrat-type réglementaire). Note: Generated drafts do not constitute immediate binding leases without mutual consent." }
+                    profile: { title: "Get verified", desc: "A few minutes with your documents — then they're deleted. You keep the proof, whichever side of the lease you're on." },
+                    matching: { title: "Search & apply", desc: "Tenants browse verified homes and apply with their proof. Landlords receive applications they can actually trust — no document emailing either way." },
+                    lease: { title: "Sign & move in", desc: "Generate a lease that conforms to the official French model and sign it digitally. Both sides walk away with signed evidence." }
                 }
             },
             stats: {
@@ -233,6 +233,44 @@ export const translations = {
                 toComplete: "To complete"
             },
             verification: {
+                intl: {
+                    toggle: { french: "French documents", international: "International documents" },
+                    title: "International solvency",
+                    subtitle: "Use documents from outside France — foreign income, savings, scholarship, sponsorship or a student loan.",
+                    paths: { funds: "Funds / sponsorship", income: "Foreign income" },
+                    docTypeLabel: "Document type",
+                    docTypes: {
+                        bank_statement: "Bank statement (personal or sponsor)",
+                        scholarship_letter: "Scholarship award letter",
+                        sponsorship_letter: "Sponsorship letter",
+                        loan_approval: "Education loan approval"
+                    },
+                    fundsSourceLabel: "Whose funds?",
+                    fundsSource: { self: "Mine", sponsor: "Sponsor / parent" },
+                    rentLabel: "Monthly rent (€) — optional",
+                    rentPlaceholder: "e.g. 700",
+                    rentHint: "Lets us show how many months your funds cover.",
+                    fileSelect: "Select document",
+                    fileFormats: "PDF, JPG or PNG, max 10MB",
+                    errors: {
+                        noFile: "Please select a document",
+                        noConsent: "Please consent to automated document analysis to continue",
+                        fundsCurrency: "Could not verify funds — currency unsupported. Try a EUR document.",
+                        incomeCurrency: "Could not verify income — currency unsupported. Try a EUR document.",
+                        generic: "Verification failed. Please try again."
+                    },
+                    bands: {
+                        covers_12m_plus: "Funds verified — covers 12+ months of rent",
+                        covers_6m: "Funds verified — covers 6–11 months of rent",
+                        covers_3m: "Funds verified — covers 3–5 months of rent",
+                        covers_under_3m: "Funds verified — covers under 3 months of rent",
+                        amount_only: "Funds verified"
+                    },
+                    incomeVerified: "Income verified (fiscal capacity)",
+                    successNote: "Your document was analysed and discarded — only the verified band is kept.",
+                    submit: "Submit for verification",
+                    submitting: "Verifying…"
+                },
                 title: "Profile Verification",
                 email: "Email",
                 questionnaire: "Questionnaire",
@@ -2514,6 +2552,44 @@ export const translations = {
                 toComplete: "À compléter"
             },
             verification: {
+                intl: {
+                    toggle: { french: "Documents français", international: "Documents internationaux" },
+                    title: "Solvabilité internationale",
+                    subtitle: "Utilisez des documents hors de France — revenus étrangers, épargne, bourse, prise en charge ou prêt étudiant.",
+                    paths: { funds: "Fonds / prise en charge", income: "Revenus étrangers" },
+                    docTypeLabel: "Type de document",
+                    docTypes: {
+                        bank_statement: "Relevé bancaire (personnel ou du garant financier)",
+                        scholarship_letter: "Attestation de bourse",
+                        sponsorship_letter: "Lettre de prise en charge",
+                        loan_approval: "Accord de prêt étudiant"
+                    },
+                    fundsSourceLabel: "À qui appartiennent les fonds ?",
+                    fundsSource: { self: "À moi", sponsor: "Parent / prise en charge" },
+                    rentLabel: "Loyer mensuel (€) — facultatif",
+                    rentPlaceholder: "ex. 700",
+                    rentHint: "Permet d'indiquer combien de mois vos fonds couvrent.",
+                    fileSelect: "Sélectionner un document",
+                    fileFormats: "PDF, JPG ou PNG, 10 Mo max",
+                    errors: {
+                        noFile: "Veuillez sélectionner un document",
+                        noConsent: "Veuillez consentir à l'analyse automatisée du document pour continuer",
+                        fundsCurrency: "Fonds non vérifiables — devise non prise en charge. Essayez un document en EUR.",
+                        incomeCurrency: "Revenus non vérifiables — devise non prise en charge. Essayez un document en EUR.",
+                        generic: "La vérification a échoué. Veuillez réessayer."
+                    },
+                    bands: {
+                        covers_12m_plus: "Fonds vérifiés — couvrent 12 mois de loyer ou plus",
+                        covers_6m: "Fonds vérifiés — couvrent 6 à 11 mois de loyer",
+                        covers_3m: "Fonds vérifiés — couvrent 3 à 5 mois de loyer",
+                        covers_under_3m: "Fonds vérifiés — couvrent moins de 3 mois de loyer",
+                        amount_only: "Fonds vérifiés"
+                    },
+                    incomeVerified: "Revenus vérifiés (capacité fiscale)",
+                    successNote: "Votre document a été analysé puis supprimé — seule la tranche vérifiée est conservée.",
+                    submit: "Soumettre pour vérification",
+                    submitting: "Vérification…"
+                },
                 title: "Vérification du Profil",
                 email: "Email",
                 questionnaire: "Questionnaire",
@@ -2655,18 +2731,18 @@ export const translations = {
             valueProp: {
                 title: "Pourquoi Roomivo ?",
                 subtitle: "Conçu pour ceux que la location française laisse de côté.",
-                dossier: { title: "Pas de garant français ? Louez quand même.", desc: "Étudiants internationaux et nouveaux arrivants peuvent prouver leur solvabilité — sans fiches de paie françaises, sans garant français, sans historique fiscal." },
+                dossier: { title: "Une preuve que vous gardez", desc: "Chaque vérification se conclut par un document horodaté et filigrané — à télécharger, et à produire si une transaction tourne mal." },
                 proof: { title: "Les propriétaires aussi sont vérifiés", desc: "La personne derrière l'annonce prouve son identité avant votre visite. Sachez qui vous payez avant qu'un seul euro ne parte." },
                 legal: { title: "La loi française, intégrée", desc: "Plafonds de dépôt, règles énergétiques, baux conformes — appliqués automatiquement, sans être juriste." },
                 funds: { title: "Votre Argent Reste le Vôtre", desc: "Roomivo ne touche jamais au loyer ni au dépôt de garantie. Vous payez directement l'autre partie — en sachant exactement qui elle est." }
             },
             howItWorks: {
                 title: "Comment ça marche",
-                subtitle: "Trois étapes vers votre futur logement en France",
+                subtitle: "D'inconnus à bail signé — chaque étape vérifiée",
                 steps: {
-                    profile: { title: "Profil Vérifié", desc: "Créez votre identité numérique locative sécurisée." },
-                    matching: { title: "Recherchez et postulez", desc: "Parcourez des annonces vérifiées et postulez directement avec votre dossier." },
-                    lease: { title: "Bail Automatisé", desc: "Signez vos contrats numériquement. Les baux sont conformes au contrat-type réglementaire. Remarque : les brouillons générés ne constituent pas un bail exécutoire sans accord mutuel." }
+                    profile: { title: "Faites-vous vérifier", desc: "Quelques minutes avec vos documents — puis ils sont supprimés. Vous gardez la preuve, quel que soit votre côté du bail." },
+                    matching: { title: "Cherchez et postulez", desc: "Les locataires parcourent des logements vérifiés et postulent avec leur preuve. Les propriétaires reçoivent des candidatures fiables — sans échange de documents par e-mail." },
+                    lease: { title: "Signez et emménagez", desc: "Générez un bail conforme au modèle réglementaire français et signez-le numériquement. Chaque partie repart avec une preuve signée." }
                 }
             },
             stats: {

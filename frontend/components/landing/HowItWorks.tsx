@@ -11,8 +11,8 @@ export default function HowItWorks() {
     {
       step: '01',
       icon: <Users className="w-8 h-8" />,
-      title: t('landing.howItWorks.steps.profile.title', undefined, 'Create Profile'),
-      description: t('landing.howItWorks.steps.profile.desc', undefined, 'Build your verified digital rental identity with a complete dossier.'),
+      title: t('landing.howItWorks.steps.profile.title', undefined, 'Get verified'),
+      description: t('landing.howItWorks.steps.profile.desc', undefined, "A few minutes with your documents — then they're deleted. You keep the proof, whichever side of the lease you're on."),
     },
     {
       step: '02',
@@ -23,8 +23,8 @@ export default function HowItWorks() {
     {
       step: '03',
       icon: <FileText className="w-8 h-8" />,
-      title: t('landing.howItWorks.steps.lease.title', undefined, 'Automated Lease'),
-      description: t('landing.howItWorks.steps.lease.desc', undefined, 'Sign legal contracts digitally and securely with automated generation.'),
+      title: t('landing.howItWorks.steps.lease.title', undefined, 'Sign & move in'),
+      description: t('landing.howItWorks.steps.lease.desc', undefined, 'Generate a lease that conforms to the official French model and sign it digitally. Both sides walk away with signed evidence.'),
     }
   ];
 
@@ -62,7 +62,7 @@ export default function HowItWorks() {
             transition={{ delay: 0.3 }}
             className="text-zinc-500 text-base leading-relaxed max-w-sm lg:text-right"
           >
-            {t('landing.howItWorks.subtitle', undefined, 'The smart way to rent in France')}
+            {t('landing.howItWorks.subtitle', undefined, 'From stranger to signed lease — every step verified')}
           </motion.p>
         </div>
 

@@ -30,8 +30,8 @@ export default function ValuePropSection() {
   const features: Feature[] = [
     {
       icon: <FileCheck className="w-8 h-8" />,
-      title: t('landing.valueProp.dossier.title', undefined, 'No French guarantor? Rent anyway.'),
-      desc: t('landing.valueProp.dossier.desc', undefined, 'International students and newcomers can prove they can pay — without French payslips, a French guarantor, or years of tax history.'),
+      title: t('landing.valueProp.dossier.title', undefined, 'Evidence you can keep'),
+      desc: t('landing.valueProp.dossier.desc', undefined, 'Every verification ends in a watermarked, timestamped proof document — yours to download, and yours to use if a deal ever turns into a dispute.'),
       span: "md:col-span-2",
       bg: "bg-zinc-50",
       iconBg: "bg-zinc-900 text-white"
