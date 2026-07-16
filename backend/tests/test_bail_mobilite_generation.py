@@ -64,7 +64,11 @@ def test_mobilite_missing_motif_blocks_generation():
 def test_mobilite_rejects_invalid_motif():
     r = _gen({**BASE_FIELDS, "motif_mobilite": "vacances"})
     assert not r.ok
-    assert any("Motif" in b or "motif" in b for b in r.blocking)
+    # LG-8 (lease_rules.validate_mobilite_eligibility) enforces this; it reports
+    # the actual invalid situation rather than "nothing declared" since the
+    # generator passes unrecognised motif values through untranslated.
+    assert any("situation" in b.lower() for b in r.blocking)
+    assert any("vacances" in b for b in r.blocking)
 
 
 def test_mobilite_deposit_must_be_zero():

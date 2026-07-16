@@ -231,6 +231,12 @@ class TestPropertyCompliance:
         mock_prop.id = property_id
         mock_prop.landlord_id = MOCK_LANDLORD.id
         mock_prop.dpe_rating = "G"
+        # New nullable columns (rent-freeze feature): MagicMock(spec=Property) auto-
+        # vivifies unset attrs as truthy MagicMocks whose __float__ returns 1.0, which
+        # made validate_fg_rent_freeze spuriously fire (1000 > 1.0). Real unpopulated
+        # columns are NULL/False; match that explicitly.
+        mock_prop.previous_tenant_rent = None
+        mock_prop.is_overseas_dom = False
         mock_prop.ownership_data = None
         mock_prop.deposit = None
         mock_prop.monthly_rent = 1000
