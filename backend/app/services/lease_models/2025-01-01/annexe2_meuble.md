@@ -19,7 +19,14 @@ the Légifrance API (LEGIARTI000043842249, direct JSON `texte` field, not a web 
 see docs/legal/2026-07-15-model-transcription-verification.md for the diff method,
 evidence, and the F2 owner-decision flag.
 
-Status: ⏳ PENDING LAWYER SIGN-OFF before it is wired into generation (Path A).
+Status: ✅ Owner risk-accepted (2026-07-15) — transcription verified 99.17% against the
+Légifrance API (docs/legal/2026-07-15-model-transcription-verification.md). Enabled for
+wiring into Path A generation ahead of a separate formal counsel confirmation of this
+specific text — same pattern as bail_mobilite.fill.md's 2026-07-05 risk-acceptance.
+Note: Galand's 2026-06-20 opinion (docs/legal/2026-06-20-avis-avocat-esign-lease-galand.md)
+clears the generation/e-sign APPROACH being lawful (its condition 3); it does not itself
+confirm this transcription's accuracy — that is what this risk-acceptance covers, pending
+final counsel sign-off on the text itself.
 The generator fills the [...] placeholders only — it MUST NOT alter the standardized
 clause text (loi 1971 / LG-6). Bracketed [...] = fillable field. (n) = official footnote
 marker, preserved; texts in annexe2_meuble_footnotes.md (markers 24–44).

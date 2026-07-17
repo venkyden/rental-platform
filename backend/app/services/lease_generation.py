@@ -1,9 +1,18 @@
 """
 Path A lease generation — fill the OFFICIAL model's blanks with validated values.
 
-⏳ GATED: the underlying model wording is pending lawyer sign-off (see
-`lease_models/`), so this must not be exposed in production until the texts are
-verbatim-verified. Status: v0.1 — `vide` core fields.
+✅ 2026-07-15: the underlying model wording (`vide`/`meuble`/`etudiant` in
+`lease_models/2025-01-01/`) is owner risk-accepted after mechanical verification
+against the Légifrance API (99.17%/99.30% match; see
+docs/legal/2026-07-15-model-transcription-verification.md) — same pattern as the
+2026-07-05 bail mobilité risk-acceptance. Formal counsel sign-off on this specific
+text is still pending (distinct from Galand's 2026-06-20 opinion, which clears the
+generation/e-sign workflow's legal permissibility, not this transcription).
+⏳ SEPARATELY STILL GATED: this module is not wired into any router — `POST
+/leases/generate` still runs the legacy free-form generator
+(`services/lease_generator.py`). Wiring this in (replacing that legacy path) is an
+unmade product decision, not something the model-text risk-acceptance implies.
+Status: v0.1 — `vide` core fields.
 
 Safety design (why this can't produce an illegal/altered lease):
 1. It NEVER edits standardized clause text — it only substitutes `{{token}}` blanks

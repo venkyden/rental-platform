@@ -14,8 +14,11 @@ PDF they appear as end-notes, presented as the decree's notes, NOT as terms the 
 cross-reference was rewritten into an inline table; both fixed together, verified against
 the Légifrance API JSON. See docs/legal/2026-07-15-model-transcription-verification.md.
 
-Status: ⏳ PENDING LAWYER SIGN-OFF. NB: fetched via web extraction — the lawyer must
-confirm the text verbatim against the official source before use.
+Status: ✅ Owner risk-accepted (2026-07-15) — verified against the Légifrance API JSON
+(docs/legal/2026-07-15-model-transcription-verification.md), same pattern as
+bail_mobilite.fill.md's 2026-07-05 risk-acceptance. Formal counsel confirmation of the
+verbatim text (distinct from Galand's 2026-06-20 workflow-permissibility opinion) still
+pending.
 -->
 
 # Notes du modèle — contrat de location logement meublé (Décret n°2015-587, Annexe 2)
