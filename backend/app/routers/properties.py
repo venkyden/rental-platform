@@ -219,6 +219,8 @@ def _apply_property_filters(
     min_rent = params.get("min_rent")
     max_rent = params.get("max_rent")
     bedrooms = params.get("bedrooms")
+    rooms_count = params.get("rooms_count")
+    rooms_count_min = params.get("rooms_count_min")
     property_type = params.get("property_type")
     furnished = params.get("furnished")
     caf_eligible = params.get("caf_eligible")
@@ -270,6 +272,18 @@ def _apply_property_filters(
     if bedrooms and bedrooms != "":
         try:
             query = query.where(Property.bedrooms >= int(bedrooms))
+        except (ValueError, TypeError):
+            pass
+
+    if rooms_count and rooms_count != "":
+        try:
+            query = query.where(Property.rooms_count == int(rooms_count))
+        except (ValueError, TypeError):
+            pass
+
+    if rooms_count_min and rooms_count_min != "":
+        try:
+            query = query.where(Property.rooms_count >= int(rooms_count_min))
         except (ValueError, TypeError):
             pass
 
