@@ -9,7 +9,7 @@ from typing import List, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import and_, desc, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -18,15 +18,21 @@ from app.models.messages import Conversation, Message
 from app.models.property import Property
 from app.models.user import User
 from app.routers.auth import get_current_user
+from app.services.message_safety import scan_message
 
 router = APIRouter(tags=["Messaging"])
+
+# Bound message bodies: the DB column is unbounded Text, so without this an
+# arbitrarily large payload is a storage/DoS vector. 5000 chars is generous
+# for a rental enquiry.
+_MAX_MESSAGE_LEN = 5000
 
 
 # --- Schemas ---
 
 
 class MessageCreate(BaseModel):
-    content: str
+    content: str = Field(min_length=1, max_length=_MAX_MESSAGE_LEN)
     message_type: str = "text"
     metadata: dict = {}
 
@@ -41,6 +47,9 @@ class MessageResponse(BaseModel):
     metadata: dict
     is_read: bool
     created_at: datetime
+    # Non-blocking anti-scam advisories (deposit-theft patterns). Advisory only —
+    # Roomivo states facts, the reader decides (never gates the message).
+    safety_advisories: List[str] = []
 
     class Config:
         from_attributes = True
@@ -50,7 +59,7 @@ class ConversationCreate(BaseModel):
     property_id: UUID
     tenant_email: str
     subject: Optional[str] = None
-    initial_message: str
+    initial_message: str = Field(min_length=1, max_length=_MAX_MESSAGE_LEN)
 
 
 class ConversationSummary(BaseModel):
@@ -267,6 +276,7 @@ async def get_conversation(
                 metadata=msg.extra_data or {},
                 is_read=msg.is_read,
                 created_at=msg.created_at,
+                safety_advisories=scan_message(msg.content),
             )
         )
 
@@ -419,6 +429,7 @@ async def send_message(
         metadata=msg.extra_data or {},
         is_read=msg.is_read,
         created_at=msg.created_at,
+        safety_advisories=scan_message(msg.content),
     )
 
 

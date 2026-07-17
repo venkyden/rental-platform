@@ -92,7 +92,7 @@ services:
       - NEXT_PUBLIC_API_URL=http://localhost:8000 # Map to localhost when accessing from browser
       - NODE_ENV=development
     ports:
-      - "3000:3000"
+      - "3001:3000"
     command: npm run dev
     depends_on:
       - api
