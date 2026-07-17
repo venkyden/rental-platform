@@ -36,8 +36,8 @@ test.describe('Page 2: Search Marketplace', () => {
     });
 
     test('should toggle filters and update UI', async ({ page }) => {
-        // Check for "Furnished" filter button
-        const furnishedBtn = page.locator('button:has-text("Furnished")');
+        // Check for "Furnished" filter button (exact: "Unfurnished" also exists since WP1)
+        const furnishedBtn = page.getByRole('button', { name: 'Furnished', exact: true });
         await expect(furnishedBtn).toBeVisible();
         
         // Click to toggle

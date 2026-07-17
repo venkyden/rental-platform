@@ -53,10 +53,18 @@ test.describe('Landing Page E2E Tests', () => {
         await expect(page.getByText('Right to Erasure')).toBeVisible();
     });
 
-    test('featured listings section renders', async ({ page }) => {
+    test('featured listings section renders real content or honest empty state', async ({ page }) => {
         await expect(page.getByText('Featured Listings')).toBeVisible();
-        await expect(page.getByText('Haussmannian Luxury Apartment')).toBeVisible();
-        await expect(page.getByText('Chic Industrial Loft')).toBeVisible();
+        // Either ≥3 real listing cards (article elements) or the landlord empty-state CTA —
+        // never the old hardcoded fake cards.
+        const cards = page.locator('section').filter({ hasText: 'Featured Listings' }).locator('article');
+        const emptyCta = page.getByText('Publish the first verified listing in your city');
+        await expect(async () => {
+            const cardCount = await cards.count();
+            const emptyVisible = await emptyCta.isVisible().catch(() => false);
+            expect(cardCount >= 3 || emptyVisible).toBeTruthy();
+        }).toPass({ timeout: 15_000 });
+        await expect(page.getByText('Haussmannian Luxury Apartment')).toHaveCount(0);
     });
 
     test('language switcher changes text', async ({ page }) => {
@@ -80,6 +88,35 @@ test.describe('Landing Page E2E Tests', () => {
 
         // Verify back to English
         await expect(page.getByText(/Browse Listings/i)).toBeVisible();
+    });
+});
+
+test.describe('Landing truth (WP1)', () => {
+    test.beforeEach(async ({ page }) => {
+        await page.goto('/');
+        await page.evaluate(() => localStorage.setItem('app-language', 'en'));
+        await page.reload();
+    });
+
+    test('no dead placeholder listing links', async ({ page }) => {
+        for (const fakeId of ['1', '2', '3']) {
+            await expect(page.locator(`a[href="/properties/${fakeId}"]`)).toHaveCount(0);
+        }
+    });
+
+    test('typology chip deep-links into search', async ({ page }) => {
+        await page.getByRole('link', { name: 'T2', exact: true }).click();
+        await expect(page).toHaveURL(/\/search\?typology=t2/);
+    });
+
+    test('colocation chip deep-links into search', async ({ page }) => {
+        await page.getByRole('link', { name: /^colocation$/i }).first().click();
+        await expect(page).toHaveURL(/\/search\?colocation=1/);
+    });
+
+    test('furnished chip deep-links into search', async ({ page }) => {
+        await page.getByRole('link', { name: /^(meublé|furnished)$/i }).first().click();
+        await expect(page).toHaveURL(/\/search\?furnished=true/);
     });
 });
 
