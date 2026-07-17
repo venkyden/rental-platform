@@ -33,20 +33,6 @@ from app.services.lease_models import registry
 _TOKEN_RE = re.compile(r"\{\{(\w+)\}\}")
 _BLANK_RE = re.compile(r"\[[^\]]*\]")
 
-# Bridges the schema's motif_mobilite field (French phrases, lease_fields.py) to
-# lease_rules' LG-8 tenant_situation vocabulary (snake_case, loi ELAN art. 25-12).
-# An unrecognised value passes through unchanged so LG-8 reports the actual
-# invalid situation rather than conflating it with "nothing declared".
-_MOTIF_TO_SITUATION: dict[str, str] = {
-    "formation professionnelle": "formation_professionnelle",
-    "études supérieures": "etudes_superieures",
-    "contrat d'apprentissage": "apprentissage",
-    "stage": "stage",
-    "engagement volontaire dans le cadre d'un service civique": "service_civique",
-    "mutation professionnelle": "mutation_professionnelle",
-    "mission temporaire dans le cadre de son activité professionnelle": "mission_temporaire",
-}
-
 
 @dataclass
 class GenerationResult:
@@ -96,7 +82,6 @@ def generate(
     GenerationResult; `text` is filled only when the LG gate passes, and `finalisable`
     is True only when no blank remains.
     """
-    motif = fields.get("motif_mobilite")
     rules = lease_rules.validate_lease_finalisation(
         lease_type=lease_type,
         deposit=deposit,
@@ -108,7 +93,7 @@ def generate(
         complement_justification=complement_justification,
         custom_clauses=custom_clauses,
         dpe_class=fields.get("logement_dpe_classe"),  # LG-7: block class G
-        tenant_situation=_MOTIF_TO_SITUATION.get(motif, motif) if motif else None,  # LG-8
+        tenant_situation=fields.get("motif_mobilite"),  # LG-8: bail mobilité eligibility
     )
     if not rules.ok:
         return GenerationResult(
