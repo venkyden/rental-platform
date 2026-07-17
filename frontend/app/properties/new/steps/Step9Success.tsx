@@ -64,6 +64,8 @@ export default function Step9Success({ formData, t, language, propertyId, mediaS
         }
     }, [publishing]);
 
+    const hasMedia = capturedPhotos.length > 0;
+
     const isDepositLimitExceeded =
         formData.deposit !== undefined &&
         formData.monthly_rent > 0 &&
@@ -89,7 +91,7 @@ export default function Step9Success({ formData, t, language, propertyId, mediaS
             <div className="glass-card !p-12 rounded-[4rem] inline-block shadow-2xl">
                 <QRCodeDisplay
                     verificationCode={mediaSession?.verification_code || ''}
-                    captureUrl={`${typeof window !== 'undefined' ? window.location.origin : ''}/capture/${mediaSession?.id}`}
+                    captureUrl={`${typeof window !== 'undefined' ? window.location.origin : ''}/capture/${mediaSession?.verification_code}`}
                     expiresAt={mediaSession?.expires_at || new Date().toISOString()}
                 />
             </div>
@@ -121,13 +123,13 @@ export default function Step9Success({ formData, t, language, propertyId, mediaS
                 </div>
 
                 {capturedPhotos.length === 0 ? (
-                    <div className="border-2 border-dashed border-zinc-100 rounded-[2rem] p-10 text-center">
-                        <Camera className="w-8 h-8 text-zinc-200 mx-auto mb-3" />
-                        <p className="text-xs font-black uppercase tracking-widest text-zinc-300">
-                            Scan QR code on your phone to capture photos
+                    <div className="border-2 border-dashed border-zinc-200 rounded-[2rem] p-10 text-center">
+                        <Camera className="w-8 h-8 text-zinc-300 mx-auto mb-3" />
+                        <p className="text-sm font-bold text-zinc-600">
+                            {t('properties.new.steps.success.scanPrompt', undefined, 'Scan the QR code with your phone to capture photos and videos')}
                         </p>
-                        <p className="text-[10px] text-zinc-200 mt-2 font-medium">
-                            Photos will appear here automatically
+                        <p className="text-xs text-zinc-400 mt-2 font-medium">
+                            {t('properties.new.steps.success.mediaRequired', undefined, 'Photos or videos are required before publishing — at least one per room.')}
                         </p>
                     </div>
                 ) : (
@@ -155,6 +157,14 @@ export default function Step9Success({ formData, t, language, propertyId, mediaS
                 )}
             </div>
 
+            {/* GPS trust explainer */}
+            <div className="w-full max-w-md mx-auto flex items-start gap-3 p-5 bg-zinc-50 border border-zinc-100 rounded-2xl text-left">
+                <Shield className="w-5 h-5 text-zinc-900 shrink-0 mt-0.5" />
+                <p className="text-xs text-zinc-600 font-medium leading-relaxed">
+                    {t('properties.new.steps.success.gpsTrust', undefined, 'Photos captured with your phone through this QR code are GPS-verified on site. GPS-verified listings display a trust badge and get more applications.')}
+                </p>
+            </div>
+
             <div className="pt-12 flex flex-col gap-6">
                 {hasHardComplianceErrors && (
                     <div
@@ -167,7 +177,7 @@ export default function Step9Success({ formData, t, language, propertyId, mediaS
                         </div>
                         <ul className="list-disc pl-5 space-y-2 text-xs font-bold text-red-600">
                             {isDpeGBanned && (
-                                <li>{t('property.create.errors.dpeGBan', undefined, 'Properties with DPE G rating are banned from rental since January 2023.')}</li>
+                                <li>{t('property.create.errors.dpeGBan', undefined, 'Properties with DPE class G are banned from new leases since January 2025 (loi Climat).')}</li>
                             )}
                             {isSizeTooSmall && (
                                 <li>{t('properties.new.steps.pricing.decencyWarning')} (Min 9m²)</li>
@@ -182,14 +192,19 @@ export default function Step9Success({ formData, t, language, propertyId, mediaS
                         </ul>
                     </div>
                 )}
+                {!hasMedia && !hasHardComplianceErrors && (
+                    <p className="text-xs font-bold text-zinc-500 max-w-md mx-auto">
+                        {t('properties.new.steps.success.mediaRequired', undefined, 'Photos or videos are required before publishing — at least one per room.')}
+                    </p>
+                )}
                 <button
                     onClick={onPublish}
-                    disabled={publishing || hasHardComplianceErrors}
+                    disabled={publishing || hasHardComplianceErrors || !hasMedia}
                     className="px-16 py-6 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.4em] rounded-[2rem] shadow-2xl hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
                     {publishing
                         ? t('properties.new.steps.success.synchronizing')
-                        : t('properties.new.steps.success.forcePublish')}
+                        : t('properties.new.steps.success.forcePublish', undefined, 'Publish listing')}
                 </button>
                 <button
                     onClick={onReturn}

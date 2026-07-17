@@ -60,7 +60,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                     >
                         <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4">
                             {[
-                                { label: t('auth.layout.trustBadge.security', undefined, 'Bank-Grade Security'), icon: 'SHIELD' },
+                                { label: t('auth.layout.trustBadge.security', undefined, 'Encrypted Connection'), icon: 'SHIELD' },
                                 { label: t('auth.layout.trustBadge.verified', undefined, 'Verified Profiles'), icon: 'CHECK' },
                                 { label: t('auth.layout.trustBadge.privacy', undefined, 'Privacy Protected'), icon: 'LOCK' }
                             ].map((item, i) => (

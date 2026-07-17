@@ -24,11 +24,11 @@ export default function RoomivoBrand({
     /* ── Size presets ── */
     const sizes = {
         sm: {
-            iconSize: 48,
-            iconClass: 'w-[48px] h-[48px]',
-            textSize: 'text-2xl sm:text-3xl',
+            iconSize: 56,
+            iconClass: 'w-[44px] h-[44px] sm:w-[56px] sm:h-[56px]',
+            textSize: 'text-2xl sm:text-4xl',
             taglineSize: 'text-[10px]',
-            gap: 'gap-3'
+            gap: 'gap-2 sm:gap-3'
         },
         md: {
             iconSize: 72,

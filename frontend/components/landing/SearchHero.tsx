@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ChevronRight, Search, MapPin } from 'lucide-react';
+import { Search, MapPin, ShieldCheck } from 'lucide-react';
 import { useLanguage } from '@/lib/LanguageContext';
 import { useRouter } from 'next/navigation';
 import { useState, useRef } from 'react';
@@ -21,12 +21,12 @@ export default function SearchHero() {
     }
   };
 
-  const title = t('landing.hero.title', undefined, 'Find your perfect home with confidence');
-  const highlight = t('landing.hero.highlight', undefined, 'perfect home');
+  const title = t('landing.hero.title', undefined, 'Rent with proof, not promises');
+  const highlight = t('landing.hero.highlight', undefined, 'proof');
   const parts = title.includes(highlight) ? title.split(highlight) : [title, ''];
 
   return (
-    <section className="relative pt-24 sm:pt-32 pb-16 sm:pb-24 overflow-hidden">
+    <section className="relative pt-36 sm:pt-40 pb-16 sm:pb-24 overflow-hidden">
       {/* Background Subtle Gradient */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-zinc-100/50 rounded-full blur-[120px] opacity-30" />
@@ -41,11 +41,11 @@ export default function SearchHero() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-            className="text-6xl sm:text-8xl md:text-9xl font-black tracking-tighter mb-8 text-zinc-900 leading-[0.85] uppercase italic"
+            className="text-5xl sm:text-7xl font-black tracking-tight mb-8 text-zinc-900 leading-[1.05]"
           >
             {parts[0]}
             {title.includes(highlight) && (
-              <span className="relative inline-block px-4">
+              <span className="relative inline-block px-1">
                 {highlight}
                 <motion.div 
                   className="absolute bottom-2 left-0 w-full h-4 bg-zinc-900/5 -rotate-1 -z-10 rounded-lg"
@@ -62,9 +62,9 @@ export default function SearchHero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-            className="text-lg sm:text-xl text-zinc-400 max-w-2xl mx-auto mb-20 font-black uppercase tracking-[0.4em] leading-relaxed"
+            className="text-lg sm:text-xl text-zinc-500 max-w-2xl mx-auto mb-16 font-medium leading-relaxed"
           >
-            {t('landing.subtitle', undefined, 'The most secure and transparent way to rent in France.')}
+            {t('landing.subtitle', undefined, "Tenants prove they can pay. Landlords prove they're real. No one hands over documents — or a deposit — blind.")}
           </motion.p>
 
           {/* ─── Advanced Search Bar ─── */}
@@ -88,7 +88,7 @@ export default function SearchHero() {
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder={t('landing.hero.searchPlaceholder', undefined, 'Where do you want to live?')}
                   aria-label={t('landing.hero.searchPlaceholder', undefined, 'Where do you want to live?')}
-                  className="w-full bg-transparent border-none focus:ring-0 text-2xl font-black text-zinc-900 placeholder:text-zinc-200 uppercase tracking-tight"
+                  className="w-full bg-transparent border-none focus:ring-0 text-lg sm:text-xl font-semibold text-zinc-900 placeholder:text-zinc-400"
                 />
               </div>
               
@@ -97,22 +97,36 @@ export default function SearchHero() {
               <MagneticButton>
                 <button 
                   type="submit"
-                  aria-label={t('landing.hero.searchButton', undefined, 'Execute')}
-                  className="w-full sm:w-auto bg-zinc-900 text-white px-16 py-7 rounded-[2.2rem] font-black uppercase tracking-[0.3em] text-[11px] flex items-center justify-center gap-4 hover:scale-[1.02] active:scale-[0.98] transition-all duration-500 shadow-2xl shadow-zinc-900/20 group/btn"
+                  aria-label={t('landing.hero.searchButton', undefined, 'Search')}
+                  className="w-full sm:w-auto bg-zinc-900 text-white px-12 py-6 rounded-[2.2rem] font-bold uppercase tracking-wider text-sm flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] transition-all duration-500 shadow-2xl shadow-zinc-900/20 group/btn"
                 >
                   <Search className="w-4 h-4 group-hover/btn:scale-125 transition-transform" strokeWidth={3} aria-hidden="true" />
-                  <span>{t('landing.hero.searchButton', undefined, 'Execute')}</span>
+                  <span>{t('landing.hero.searchButton', undefined, 'Search')}</span>
                 </button>
               </MagneticButton>
             </form>
             
+            {/* ─── Trust Chips ─── */}
+            <div className="mt-10 flex flex-wrap justify-center gap-x-8 gap-y-3">
+              {[
+                t('landing.hero.chips.identity', undefined, 'Verified identities'),
+                t('landing.hero.chips.documents', undefined, 'State-signed document checks'),
+                t('landing.hero.chips.media', undefined, 'GPS-verified photos'),
+              ].map((chip) => (
+                <div key={chip} className="flex items-center gap-2 text-zinc-500">
+                  <ShieldCheck className="w-4 h-4 text-zinc-900" aria-hidden="true" />
+                  <span className="text-sm font-semibold">{chip}</span>
+                </div>
+              ))}
+            </div>
+
             {/* ─── Trending Cities ─── */}
             <div className="mt-10 flex flex-wrap justify-center gap-4">
               {['Paris', 'Lyon', 'Bordeaux', 'Nice', 'Lille'].map((city) => (
                 <button
                   key={city}
                   onClick={() => setQuery(city)}
-                  className="px-8 py-3 rounded-full bg-zinc-50 hover:bg-zinc-900 hover:text-white text-zinc-400 text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 border border-zinc-100 hover:border-zinc-900"
+                  className="px-6 py-3 rounded-full bg-zinc-50 hover:bg-zinc-900 hover:text-white text-zinc-500 text-sm font-semibold transition-all duration-500 border border-zinc-100 hover:border-zinc-900"
                 >
                   {city}
                 </button>
@@ -133,7 +147,7 @@ export default function SearchHero() {
                 <Link
                   key={chip.label}
                   href={query.trim() ? `${chip.href}&q=${encodeURIComponent(query.trim())}` : chip.href}
-                  className="px-6 py-2.5 rounded-full bg-white text-zinc-600 text-[10px] font-black uppercase tracking-[0.2em] border border-zinc-200 hover:bg-zinc-900 hover:text-white hover:border-zinc-900 transition-all duration-300"
+                  className="px-5 py-2.5 rounded-full bg-white text-zinc-600 text-sm font-semibold border border-zinc-200 hover:bg-zinc-900 hover:text-white hover:border-zinc-900 transition-all duration-300"
                 >
                   {chip.label}
                 </Link>

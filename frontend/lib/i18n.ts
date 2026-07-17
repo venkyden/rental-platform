@@ -95,29 +95,55 @@ export const translations = {
         // Landing Page
         landing: {
             hero: {
-                title: "Find your perfect home with confidence",
-                highlight: "perfect home",
+                title: "Rent with proof, not promises",
+                highlight: "proof",
                 searchPlaceholder: "Where do you want to live?",
-                searchButton: "Search"
+                searchButton: "Search",
+                chips: {
+                    identity: "Verified identities",
+                    documents: "State-signed document checks",
+                    media: "GPS-verified photos"
+                }
             },
-            subtitle: "The most secure and transparent way to rent in France. Verified listings, automated contracts, and end-to-end protection.",
+            subtitle: "Tenants prove they can pay. Landlords prove they're real. No one hands over documents — or a deposit — blind.",
+            endorsement: {
+                label: "Backed by",
+                note: "Founded by Audencia student-entrepreneurs under the Statut National Étudiant-Entrepreneur (SNEE), PÉPITE Pays de la Loire."
+            },
+            credential: {
+                badge: "The Trust Layer",
+                title: "One verification. Portable, signed proof.",
+                subtitle: "Verification that protects both sides — without your paperwork ending up in a stranger's inbox.",
+                steps: {
+                    verify: { title: "Both sides verified", desc: "Tenants prove they can pay. Landlords prove the home is theirs to rent. Before anyone commits." },
+                    issue: { title: "Proof that travels", desc: "You get signed, tamper-evident proof you can share anywhere — even outside Roomivo." },
+                    forget: { title: "Nothing left to leak", desc: "Once checked, your documents are deleted. You share results — never paperwork." }
+                },
+                portable: "Your credential works anywhere — share the link or code on any listing site.",
+                verifyBox: {
+                    title: "Verify a credential",
+                    desc: "Someone sent you a Roomivo credential? Don't trust the link — type its code here yourself.",
+                    placeholder: "Credential code",
+                    button: "Check"
+                }
+            },
             getStarted: "Get Started",
             signIn: "Sign In",
             valueProp: {
-                title: "Why Choose Roomivo?",
-                subtitle: "The most secure and transparent way to rent in France.",
-                dossier: { title: "Digital Dossier", desc: "No more paper. Your verified identity and documents in one secure place." },
-                proof: { title: "Signed Proof", desc: "Every verification issues a cryptographically signed, expiring credential — anyone can check it on roomivo.app, no account needed." },
-                legal: { title: "French Law Compliant", desc: "Digital leases generated according to the latest French regulations." },
-                funds: { title: "Your Money Stays Yours", desc: "Roomivo never touches rent or deposits. You pay the other party directly — with signed proof of who they really are." }
+                title: "Why Roomivo?",
+                subtitle: "Built for the renters French housing leaves behind.",
+                dossier: { title: "Evidence you can keep", desc: "Every verification ends in a watermarked, timestamped proof document — yours to download, and yours to use if a deal ever turns into a dispute." },
+                proof: { title: "Landlords are verified too", desc: "The person behind the listing proves who they are before you visit. Know who you're paying before a single euro moves." },
+                legal: { title: "French law, built in", desc: "Deposit caps, energy rules, compliant lease templates — enforced automatically, so you don't have to be a lawyer." },
+                funds: { title: "Your Money Stays Yours", desc: "Roomivo never touches rent or deposits. You pay the other party directly — knowing exactly who they are." }
             },
             howItWorks: {
                 title: "How it Works",
-                subtitle: "Three steps to your next home in France",
+                subtitle: "From stranger to signed lease — every step verified",
                 steps: {
-                    profile: { title: "Create Profile", desc: "Build your verified digital rental identity." },
-                    matching: { title: "Smart Matching", desc: "Connect with compatible listings instantly." },
-                    lease: { title: "Automated Lease", desc: "Sign standard contracts digitally. Leases conform to the French regulatory model (contrat-type réglementaire). Note: Generated drafts do not constitute immediate binding leases without mutual consent." }
+                    profile: { title: "Get verified", desc: "A few minutes with your documents — then they're deleted. You keep the proof, whichever side of the lease you're on." },
+                    matching: { title: "Search & apply", desc: "Tenants browse verified homes and apply with their proof. Landlords receive applications they can actually trust — no document emailing either way." },
+                    lease: { title: "Sign & move in", desc: "Generate a lease that conforms to the official French model and sign it digitally. Both sides walk away with signed evidence." }
                 }
             },
             stats: {
@@ -148,13 +174,15 @@ export const translations = {
                 }
             },
             featured: {
-                emptyTitle: "Publish the first verified listing in your city",
-                emptySubtitle: "GPS-verified photos, verified identity, certified tenant file — publish for free.",
-                emptyCta: "Publish a listing",
-                badge: "Handpicked Select",
-                title: "Featured Listings",
-                subtitle: "Hand-selected and fully verified residential properties in France.",
-                view: "View",
+                badge: "Explore",
+                title: "Find a home in your city",
+                subtitle: "Browse listings across France — every landlord and property goes through our verification checks.",
+                view: "Browse listings",
+                cities: {
+                    paris: "Haussmannian apartments, studios and flatshares",
+                    lyon: "Lofts and apartments from Presqu’île to Part-Dieu",
+                    bordeaux: "Classic residences in the city centre and Chartrons"
+                },
                 mo: "mo",
                 tags: {
                     verified: "GPS Verified",
@@ -229,6 +257,44 @@ export const translations = {
                 toComplete: "To complete"
             },
             verification: {
+                intl: {
+                    toggle: { french: "French documents", international: "International documents" },
+                    title: "International solvency",
+                    subtitle: "Use documents from outside France — foreign income, savings, scholarship, sponsorship or a student loan.",
+                    paths: { funds: "Funds / sponsorship", income: "Foreign income" },
+                    docTypeLabel: "Document type",
+                    docTypes: {
+                        bank_statement: "Bank statement (personal or sponsor)",
+                        scholarship_letter: "Scholarship award letter",
+                        sponsorship_letter: "Sponsorship letter",
+                        loan_approval: "Education loan approval"
+                    },
+                    fundsSourceLabel: "Whose funds?",
+                    fundsSource: { self: "Mine", sponsor: "Sponsor / parent" },
+                    rentLabel: "Monthly rent (€) — optional",
+                    rentPlaceholder: "e.g. 700",
+                    rentHint: "Lets us show how many months your funds cover.",
+                    fileSelect: "Select document",
+                    fileFormats: "PDF, JPG or PNG, max 10MB",
+                    errors: {
+                        noFile: "Please select a document",
+                        noConsent: "Please consent to automated document analysis to continue",
+                        fundsCurrency: "Could not verify funds — currency unsupported. Try a EUR document.",
+                        incomeCurrency: "Could not verify income — currency unsupported. Try a EUR document.",
+                        generic: "Verification failed. Please try again."
+                    },
+                    bands: {
+                        covers_12m_plus: "Funds verified — covers 12+ months of rent",
+                        covers_6m: "Funds verified — covers 6–11 months of rent",
+                        covers_3m: "Funds verified — covers 3–5 months of rent",
+                        covers_under_3m: "Funds verified — covers under 3 months of rent",
+                        amount_only: "Funds verified"
+                    },
+                    incomeVerified: "Income verified (fiscal capacity)",
+                    successNote: "Your document was analysed and discarded — only the verified band is kept.",
+                    submit: "Submit for verification",
+                    submitting: "Verifying…"
+                },
                 title: "Profile Verification",
                 email: "Email",
                 questionnaire: "Questionnaire",
@@ -1188,8 +1254,13 @@ export const translations = {
                     success: {
                         title: "Draft Created",
                         description: "Your listing is saved as a draft. Finish by adding photos from your phone.",
-                        forcePublish: "Publish now",
+                        forcePublish: "Publish listing",
                         synchronizing: "Publishing...",
+                        mediaRequired: "Photos or videos are required before publishing — at least one per room.",
+                        scanPrompt: "Scan the QR code with your phone to capture photos and videos",
+                        gpsTrust: "Photos captured with your phone through this QR code are GPS-verified on site. GPS-verified listings display a trust badge and get more applications.",
+                        published: "Your listing is now live.",
+                        publishFailed: "Publishing failed. Please try again.",
                         return: "Back to dashboard"
                     }
                 },
@@ -1219,7 +1290,7 @@ export const translations = {
             },
             layout: {
                 trustBadge: {
-                    security: "Bank-Grade Security",
+                    security: "Encrypted Connection",
                     verified: "Verified Profiles",
                     privacy: "Privacy Protected"
                 }
@@ -1323,7 +1394,7 @@ export const translations = {
                 signUp: "Create one now",
                 createAccount: "Create an account",
                 connectingGoogle: "Connecting to Google...",
-                divider: "Secured Access",
+                divider: "or continue with",
                 signIn: "Sign in securely",
                 error: {
                     google: "Google sign-in did not return a credential. Please try again.",
@@ -1368,7 +1439,7 @@ export const translations = {
                 submit: "Create my account",
                 loading: "Creating account...",
                 connectingGoogle: "Creating account with Google...",
-                divider: "Secured Access",
+                divider: "or continue with",
                 role: {
                     label: "I am a",
                     question: "I am a",
@@ -2003,8 +2074,8 @@ export const translations = {
                         content: 'We collect identity, income, and employment data strictly for rental verification purposes.'
                     },
                     encryption: {
-                        title: 'Military-Grade Encryption',
-                        content: 'All PII is encrypted at rest using industry-standard protocols. Your documents are only visible to authorized parties.'
+                        title: 'Encryption & Data Minimisation',
+                        content: 'Data is encrypted in transit and at rest using industry-standard protocols (TLS, AES-256). Verification source documents are processed transiently and deleted after verification — we keep the signed result, not your documents.'
                     }
                 }
             },
@@ -2359,8 +2430,8 @@ export const translations = {
                             content: 'We collect identity, income, and employment data strictly for rental verification purposes.'
                         },
                         encryption: {
-                            title: 'Military-Grade Encryption',
-                            content: 'All PII is encrypted at rest using industry-standard protocols. Your documents are only visible to authorized parties.'
+                            title: 'Encryption & Data Minimisation',
+                            content: 'Data is encrypted in transit and at rest using industry-standard protocols (TLS, AES-256). Verification source documents are processed transiently and deleted after verification — we keep the signed result, not your documents.'
                         }
                     }
                 },
@@ -2505,6 +2576,44 @@ export const translations = {
                 toComplete: "À compléter"
             },
             verification: {
+                intl: {
+                    toggle: { french: "Documents français", international: "Documents internationaux" },
+                    title: "Solvabilité internationale",
+                    subtitle: "Utilisez des documents hors de France — revenus étrangers, épargne, bourse, prise en charge ou prêt étudiant.",
+                    paths: { funds: "Fonds / prise en charge", income: "Revenus étrangers" },
+                    docTypeLabel: "Type de document",
+                    docTypes: {
+                        bank_statement: "Relevé bancaire (personnel ou du garant financier)",
+                        scholarship_letter: "Attestation de bourse",
+                        sponsorship_letter: "Lettre de prise en charge",
+                        loan_approval: "Accord de prêt étudiant"
+                    },
+                    fundsSourceLabel: "À qui appartiennent les fonds ?",
+                    fundsSource: { self: "À moi", sponsor: "Parent / prise en charge" },
+                    rentLabel: "Loyer mensuel (€) — facultatif",
+                    rentPlaceholder: "ex. 700",
+                    rentHint: "Permet d'indiquer combien de mois vos fonds couvrent.",
+                    fileSelect: "Sélectionner un document",
+                    fileFormats: "PDF, JPG ou PNG, 10 Mo max",
+                    errors: {
+                        noFile: "Veuillez sélectionner un document",
+                        noConsent: "Veuillez consentir à l'analyse automatisée du document pour continuer",
+                        fundsCurrency: "Fonds non vérifiables — devise non prise en charge. Essayez un document en EUR.",
+                        incomeCurrency: "Revenus non vérifiables — devise non prise en charge. Essayez un document en EUR.",
+                        generic: "La vérification a échoué. Veuillez réessayer."
+                    },
+                    bands: {
+                        covers_12m_plus: "Fonds vérifiés — couvrent 12 mois de loyer ou plus",
+                        covers_6m: "Fonds vérifiés — couvrent 6 à 11 mois de loyer",
+                        covers_3m: "Fonds vérifiés — couvrent 3 à 5 mois de loyer",
+                        covers_under_3m: "Fonds vérifiés — couvrent moins de 3 mois de loyer",
+                        amount_only: "Fonds vérifiés"
+                    },
+                    incomeVerified: "Revenus vérifiés (capacité fiscale)",
+                    successNote: "Votre document a été analysé puis supprimé — seule la tranche vérifiée est conservée.",
+                    submit: "Soumettre pour vérification",
+                    submitting: "Vérification…"
+                },
                 title: "Vérification du Profil",
                 email: "Email",
                 questionnaire: "Questionnaire",
@@ -2633,29 +2742,55 @@ export const translations = {
         // Landing Page
         landing: {
             hero: {
-                title: "Trouvez votre foyer idéal avec confiance",
-                highlight: "foyer idéal",
+                title: "Louez avec des preuves, pas des promesses",
+                highlight: "des preuves",
                 searchPlaceholder: "Où voulez-vous vivre ?",
-                searchButton: "Rechercher"
+                searchButton: "Rechercher",
+                chips: {
+                    identity: "Identités vérifiées",
+                    documents: "Documents à signature d'État vérifiés",
+                    media: "Photos géolocalisées vérifiées"
+                }
             },
-            subtitle: "La plateforme de location la plus sécurisée et transparente de France. Annonces vérifiées, contrats automatisés et protection de bout en bout.",
+            subtitle: "Les locataires prouvent qu'ils peuvent payer. Les propriétaires prouvent qu'ils sont réels. Personne ne remet ses documents — ni sa caution — à l'aveugle.",
+            endorsement: {
+                label: "Soutenu par",
+                note: "Fondé par des étudiants-entrepreneurs d'Audencia sous le Statut National Étudiant-Entrepreneur (SNEE), PÉPITE Pays de la Loire."
+            },
+            credential: {
+                badge: "La Couche de Confiance",
+                title: "Une vérification. Une preuve signée et portable.",
+                subtitle: "Une vérification qui protège les deux parties — sans que vos documents finissent dans la boîte mail d'un inconnu.",
+                steps: {
+                    verify: { title: "Les deux parties vérifiées", desc: "Les locataires prouvent qu'ils peuvent payer. Les propriétaires prouvent que le logement est bien à louer. Avant tout engagement." },
+                    issue: { title: "Une preuve qui circule", desc: "Vous recevez une preuve signée et infalsifiable, partageable partout — même en dehors de Roomivo." },
+                    forget: { title: "Rien à divulguer", desc: "Une fois vérifiés, vos documents sont supprimés. Vous partagez des résultats — jamais des papiers." }
+                },
+                portable: "Votre justificatif fonctionne partout — partagez le lien ou le code sur n'importe quel site d'annonces.",
+                verifyBox: {
+                    title: "Vérifier un justificatif",
+                    desc: "On vous a envoyé un justificatif Roomivo ? Ne cliquez pas le lien — saisissez son code ici vous-même.",
+                    placeholder: "Code du justificatif",
+                    button: "Vérifier"
+                }
+            },
             getStarted: "Commencer",
             signIn: "Se connecter",
             valueProp: {
-                title: "Pourquoi Choisir Roomivo ?",
-                subtitle: "La façon la plus sécurisée et transparente de louer en France.",
-                dossier: { title: "Dossier Numérique", desc: "Plus de papier. Votre identité et vos documents vérifiés en un seul lieu sûr." },
-                proof: { title: "Preuve Signée", desc: "Chaque vérification émet une attestation signée cryptographiquement et à durée limitée — vérifiable par tous sur roomivo.app, sans compte." },
-                legal: { title: "Conforme à la Loi Française", desc: "Baux numériques générés selon les dernières réglementations françaises." },
-                funds: { title: "Votre Argent Reste le Vôtre", desc: "Roomivo ne touche jamais au loyer ni au dépôt de garantie. Vous payez directement l'autre partie — avec la preuve signée de son identité." }
+                title: "Pourquoi Roomivo ?",
+                subtitle: "Conçu pour ceux que la location française laisse de côté.",
+                dossier: { title: "Une preuve que vous gardez", desc: "Chaque vérification se conclut par un document horodaté et filigrané — à télécharger, et à produire si une transaction tourne mal." },
+                proof: { title: "Les propriétaires aussi sont vérifiés", desc: "La personne derrière l'annonce prouve son identité avant votre visite. Sachez qui vous payez avant qu'un seul euro ne parte." },
+                legal: { title: "La loi française, intégrée", desc: "Plafonds de dépôt, règles énergétiques, baux conformes — appliqués automatiquement, sans être juriste." },
+                funds: { title: "Votre Argent Reste le Vôtre", desc: "Roomivo ne touche jamais au loyer ni au dépôt de garantie. Vous payez directement l'autre partie — en sachant exactement qui elle est." }
             },
             howItWorks: {
                 title: "Comment ça marche",
-                subtitle: "Trois étapes vers votre futur logement en France",
+                subtitle: "D'inconnus à bail signé — chaque étape vérifiée",
                 steps: {
-                    profile: { title: "Profil Vérifié", desc: "Créez votre identité numérique locative sécurisée." },
-                    matching: { title: "Matching Intelligent", desc: "Connectez-vous instantanément aux meilleures annonces." },
-                    lease: { title: "Bail Automatisé", desc: "Signez vos contrats numériquement. Les baux sont conformes au contrat-type réglementaire. Remarque : les brouillons générés ne constituent pas un bail exécutoire sans accord mutuel." }
+                    profile: { title: "Faites-vous vérifier", desc: "Quelques minutes avec vos documents — puis ils sont supprimés. Vous gardez la preuve, quel que soit votre côté du bail." },
+                    matching: { title: "Cherchez et postulez", desc: "Les locataires parcourent des logements vérifiés et postulent avec leur preuve. Les propriétaires reçoivent des candidatures fiables — sans échange de documents par e-mail." },
+                    lease: { title: "Signez et emménagez", desc: "Générez un bail conforme au modèle réglementaire français et signez-le numériquement. Chaque partie repart avec une preuve signée." }
                 }
             },
             stats: {
@@ -2686,13 +2821,15 @@ export const translations = {
                 }
             },
             featured: {
-                emptyTitle: "Publiez la première annonce vérifiée de votre ville",
-                emptySubtitle: "Photos vérifiées par GPS, identité vérifiée, dossier locataire certifié — publiez gratuitement.",
-                emptyCta: "Publier une annonce",
-                badge: "Sélection Exclusive",
-                title: "Annonces à la Une",
-                subtitle: "Propriétés résidentielles triées sur le volet et entièrement vérifiées en France.",
-                view: "Découvrir",
+                badge: "Explorer",
+                title: "Trouvez un logement dans votre ville",
+                subtitle: "Parcourez les annonces partout en France — chaque propriétaire et chaque bien passe par nos vérifications.",
+                view: "Voir les annonces",
+                cities: {
+                    paris: "Appartements haussmanniens, studios et colocations",
+                    lyon: "Lofts et appartements de la Presqu’île à la Part-Dieu",
+                    bordeaux: "Résidences classiques au centre-ville et aux Chartrons"
+                },
                 mo: "mois",
                 tags: {
                     verified: "Vérifié GPS",
@@ -3609,8 +3746,13 @@ export const translations = {
                     success: {
                         title: "Brouillon créé",
                         description: "Votre annonce est enregistrée comme brouillon. Terminez en ajoutant des photos depuis votre téléphone.",
-                        forcePublish: "Publier maintenant",
+                        forcePublish: "Publier l'annonce",
                         synchronizing: "Publication...",
+                        mediaRequired: "Des photos ou vidéos sont requises avant publication — au moins une par pièce.",
+                        scanPrompt: "Scannez le QR code avec votre téléphone pour capturer photos et vidéos",
+                        gpsTrust: "Les photos prises avec votre téléphone via ce QR code sont vérifiées par GPS sur place. Les annonces vérifiées GPS affichent un badge de confiance et reçoivent plus de candidatures.",
+                        published: "Votre annonce est en ligne.",
+                        publishFailed: "La publication a échoué. Veuillez réessayer.",
                         return: "Retour au tableau de bord"
                     }
                 },
@@ -3640,7 +3782,7 @@ export const translations = {
             },
             layout: {
                 trustBadge: {
-                    security: "Sécurité de Niveau Bancaire",
+                    security: "Connexion chiffrée",
                     verified: "Profils Vérifiés",
                     privacy: "Confidentialité Protégée"
                 }
@@ -3744,7 +3886,7 @@ export const translations = {
                 signUp: "Créez-en un maintenant",
                 createAccount: "Créer un compte",
                 connectingGoogle: "Connexion à Google...",
-                divider: "Accès Sécurisé",
+                divider: "ou continuer avec",
                 signIn: "Se connecter en toute sécurité",
                 error: {
                     google: "La connexion Google n'a pas retourné de justificatif. Veuillez réessayer.",
@@ -3789,7 +3931,7 @@ export const translations = {
                 submit: "Créer mon compte",
                 loading: "Création...",
                 connectingGoogle: "Création du compte avec Google...",
-                divider: "Accès Sécurisé",
+                divider: "ou continuer avec",
                 role: {
                     label: "Je suis un",
                     question: "Je suis un",
@@ -4453,8 +4595,8 @@ export const translations = {
                         content: 'Nous collectons des données d\'identité, de revenus et d\'emploi strictement à des fins de vérification locative.'
                     },
                     encryption: {
-                        title: 'Cryptage de Niveau Militaire',
-                        content: 'Toutes les données personnelles sont cryptées au repos selon les protocoles standards. Vos documents ne sont visibles que par les parties autorisées.'
+                        title: 'Chiffrement et minimisation des données',
+                        content: 'Les données sont chiffrées en transit et au repos selon les protocoles standards (TLS, AES-256). Les documents sources de vérification sont traités de manière transitoire puis supprimés — nous conservons le résultat signé, pas vos documents.'
                     }
                 }
             },
@@ -4809,8 +4951,8 @@ export const translations = {
                             content: 'Nous collectons des données d\'identité, de revenus et d\'emploi strictement à des fins de vérification locative.'
                         },
                         encryption: {
-                            title: 'Cryptage de Niveau Militaire',
-                            content: 'Toutes les données personnelles sont cryptées au repos selon les protocoles standards. Vos documents ne sont visibles que par les parties autorisées.'
+                            title: 'Chiffrement et minimisation des données',
+                            content: 'Les données sont chiffrées en transit et au repos selon les protocoles standards (TLS, AES-256). Les documents sources de vérification sont traités de manière transitoire puis supprimés — nous conservons le résultat signé, pas vos documents.'
                         }
                     }
                 },

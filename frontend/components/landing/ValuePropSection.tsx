@@ -2,7 +2,7 @@
 
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useLanguage } from '@/lib/LanguageContext';
-import { FileCheck, Sparkles, Scale, ShieldCheck, ChevronRight } from 'lucide-react';
+import { FileCheck, Sparkles, Scale, ShieldCheck } from 'lucide-react';
 import { useRef } from 'react';
 
 export default function ValuePropSection() {
@@ -30,24 +30,24 @@ export default function ValuePropSection() {
   const features: Feature[] = [
     {
       icon: <FileCheck className="w-8 h-8" />,
-      title: t('landing.valueProp.dossier.title', undefined, 'Digital Dossier'),
-      desc: t('landing.valueProp.dossier.desc', undefined, 'No more paper. Your verified identity and documents in one secure place.'),
+      title: t('landing.valueProp.dossier.title', undefined, 'Evidence you can keep'),
+      desc: t('landing.valueProp.dossier.desc', undefined, 'Every verification ends in a watermarked, timestamped proof document — yours to download, and yours to use if a deal ever turns into a dispute.'),
       span: "md:col-span-2",
-      bg: "bg-zinc-900/5",
+      bg: "bg-zinc-50",
       iconBg: "bg-zinc-900 text-white"
     },
     {
       icon: <Sparkles className="w-8 h-8" />,
-      title: t('landing.valueProp.proof.title', undefined, 'Signed Proof'),
-      desc: t('landing.valueProp.proof.desc', undefined, 'Every verification issues a cryptographically signed, expiring credential — anyone can check it on roomivo.app, no account needed.'),
+      title: t('landing.valueProp.proof.title', undefined, 'Landlords are verified too'),
+      desc: t('landing.valueProp.proof.desc', undefined, "The person behind the listing proves who they are before you visit. Know who you're paying before a single euro moves."),
       span: "md:col-span-1",
       bg: "bg-zinc-100",
       iconBg: "bg-white text-zinc-900"
     },
     {
       icon: <Scale className="w-8 h-8" />,
-      title: t('landing.valueProp.legal.title', undefined, 'French Law Compliant'),
-      desc: t('landing.valueProp.legal.desc', undefined, 'Digital leases generated according to the latest regulations.'),
+      title: t('landing.valueProp.legal.title', undefined, 'French law, built in'),
+      desc: t('landing.valueProp.legal.desc', undefined, "Deposit caps, energy rules, compliant lease templates — enforced automatically, so you don't have to be a lawyer."),
       span: "md:col-span-1",
       bg: "bg-zinc-50",
       iconBg: "bg-zinc-900 text-white"
@@ -55,7 +55,7 @@ export default function ValuePropSection() {
     {
       icon: <ShieldCheck className="w-8 h-8" />,
       title: t('landing.valueProp.funds.title', undefined, 'Your Money Stays Yours'),
-      desc: t('landing.valueProp.funds.desc', undefined, 'Roomivo never touches rent or deposits. You pay the other party directly — with signed proof of who they really are.'),
+      desc: t('landing.valueProp.funds.desc', undefined, 'Roomivo never touches rent or deposits. You pay the other party directly — knowing exactly who they are.'),
       span: "md:col-span-2",
       bg: "bg-zinc-900 text-white",
       iconBg: "bg-white text-zinc-900",
@@ -83,17 +83,17 @@ export default function ValuePropSection() {
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="inline-block px-4 py-1.5 bg-zinc-900 text-white rounded-full text-[10px] font-black uppercase tracking-[0.3em] mb-6"
+              className="inline-block px-4 py-1.5 bg-zinc-900 text-white rounded-full text-xs font-bold uppercase tracking-wider mb-6"
             >
-              {t('landing.valueProp.title', undefined, 'Why Choose Roomivo?')}
+              {t('landing.valueProp.title', undefined, 'Why Roomivo?')}
             </motion.div>
             <motion.h2 
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-7xl md:text-8xl font-black tracking-tighter text-zinc-900 leading-[0.9] uppercase"
+              className="text-4xl sm:text-6xl font-black tracking-tight text-zinc-900 leading-tight"
             >
-              {t('landing.valueProp.subtitle', undefined, 'Secure. Transparent. Seamless.')}
+              {t('landing.valueProp.subtitle', undefined, 'Built for the renters French housing leaves behind.')}
             </motion.h2>
           </div>
           
@@ -101,7 +101,7 @@ export default function ValuePropSection() {
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            className="text-[12px] font-black text-zinc-400 uppercase tracking-[0.4em] max-w-sm mb-2"
+            className="text-base text-zinc-500 leading-relaxed max-w-sm mb-2"
           >
             {t('landing.valueProp.desc', undefined, 'We bridge the gap between landlords and tenants with technology that builds trust.')}
           </motion.p>
@@ -124,16 +124,12 @@ export default function ValuePropSection() {
                   {feature.icon}
                 </div>
                 
-                <h3 className={`text-3xl font-black mb-4 tracking-tighter uppercase ${feature.titleColor || 'text-zinc-900'}`}>
+                <h3 className={`text-2xl font-black mb-4 tracking-tight ${feature.titleColor || 'text-zinc-900'}`}>
                   {feature.title}
                 </h3>
-                <p className={`font-bold leading-tight ${feature.textColor || 'text-zinc-500'}`}>
+                <p className={`text-base font-medium leading-relaxed ${feature.textColor || 'text-zinc-500'}`}>
                   {feature.desc}
                 </p>
-                
-                <div className={`mt-auto pt-10 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest ${feature.bg.includes('zinc-900') ? 'text-zinc-400' : 'text-zinc-300'} group-hover:text-zinc-900 transition-colors`}>
-                  {t('common.learnMore', undefined, 'Learn more')} <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </div>
               </div>
 
               {/* Sophisticated Overlay for white cards */}

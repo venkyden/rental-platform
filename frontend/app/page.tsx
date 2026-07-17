@@ -2,6 +2,8 @@ import { Metadata } from 'next';
 import { BRAND, SITE_URL } from '@/lib/constants';
 import Navbar from '@/components/Navbar';
 import SearchHero from '@/components/landing/SearchHero';
+import EndorsementStrip from '@/components/landing/EndorsementStrip';
+import CredentialLayerSection from '@/components/landing/CredentialLayerSection';
 import ValuePropSection from '@/components/landing/ValuePropSection';
 import HowItWorks from '@/components/landing/HowItWorks';
 import DualCTA from '@/components/landing/DualCTA';
@@ -60,6 +62,12 @@ export default function HomePage() {
       <main>
         {/* ─── Hero Section with Search ─── */}
         <SearchHero />
+
+        {/* ─── Institutional Endorsement ─── */}
+        <EndorsementStrip />
+
+        {/* ─── Credential / Trust Layer ─── */}
+        <CredentialLayerSection />
 
         {/* ─── Core Value Proposition ─── */}
         <ValuePropSection />

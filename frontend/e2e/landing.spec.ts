@@ -12,27 +12,36 @@ test.describe('Landing Page E2E Tests', () => {
         await expect(page.locator('h1').first()).toBeVisible();
         // Check for the search input
         await expect(page.locator('input[type="text"][placeholder*="Where do you want to live"]')).toBeVisible();
-        // Check for the Search button
-        await expect(page.locator('button[type="submit"]')).toBeVisible();
+        // Check for the Search button (the credential verify box also has a submit button)
+        await expect(page.getByRole('button', { name: 'Search', exact: true })).toBeVisible();
         // Check for Trending Cities
         await expect(page.getByRole('button', { name: 'Paris', exact: true })).toBeVisible();
         await expect(page.getByRole('button', { name: 'Lyon', exact: true })).toBeVisible();
     });
 
     test('value proposition bento grid renders', async ({ page }) => {
-        // Check for Value Props
-        await expect(page.getByText('Digital Dossier')).toBeVisible();
-        // exact: the funds-card copy contains the substring "signed proof"
-        await expect(page.getByText('Signed Proof', { exact: true })).toBeVisible();
-        await expect(page.getByText('French Law Compliant')).toBeVisible();
-        await expect(page.getByText('Your Money Stays Yours')).toBeVisible();
+        // Check for Value Props ("Why Roomivo?" is a badge chip, not a heading)
+        await expect(page.getByText('Why Roomivo?')).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Evidence you can keep' })).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Landlords are verified too' })).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'French law, built in' })).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Your Money Stays Yours' })).toBeVisible();
     });
 
     test('how it works progressive steps render', async ({ page }) => {
         // Check for Steps
-        await expect(page.getByText('Create Profile')).toBeVisible();
-        await expect(page.getByText('Smart Matching')).toBeVisible();
-        await expect(page.getByRole('heading', { name: 'Automated Lease', exact: true })).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Get verified', exact: true })).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Search & apply' })).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Sign & move in' })).toBeVisible();
+    });
+
+    test('credential layer section renders', async ({ page }) => {
+        await expect(page.getByRole('heading', { name: 'One verification. Portable, signed proof.' })).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Both sides verified' })).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Nothing left to leak' })).toBeVisible();
+        // Verify-by-code box (anti-phishing: type the code, don't trust the link)
+        await expect(page.getByPlaceholder('Credential code')).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Check' })).toBeVisible();
     });
 
     test('dual cta section renders with correct buttons', async ({ page }) => {
@@ -53,23 +62,26 @@ test.describe('Landing Page E2E Tests', () => {
         await expect(page.getByText('Right to Erasure')).toBeVisible();
     });
 
-    test('featured listings section renders real content or honest empty state', async ({ page }) => {
-        await expect(page.getByText('Featured Listings')).toBeVisible();
-        // Either ≥3 real listing cards (article elements) or the landlord empty-state CTA —
-        // never the old hardcoded fake cards.
-        const cards = page.locator('section').filter({ hasText: 'Featured Listings' }).locator('article');
-        const emptyCta = page.getByText('Publish the first verified listing in your city');
+    test('featured section renders real listings or the city grid', async ({ page }) => {
+        await expect(page.getByRole('heading', { name: 'Find a home in your city' })).toBeVisible();
+        // Either ≥3 real listing cards (article elements) or the honest city-exploration
+        // grid — never fake property cards.
+        const cards = page.locator('article');
+        const cityGrid = page.getByText('Haussmannian apartments, studios and flatshares');
         await expect(async () => {
             const cardCount = await cards.count();
-            const emptyVisible = await emptyCta.isVisible().catch(() => false);
-            expect(cardCount >= 3 || emptyVisible).toBeTruthy();
+            const cityVisible = await cityGrid.isVisible().catch(() => false);
+            expect(cardCount >= 3 || cityVisible).toBeTruthy();
         }).toPass({ timeout: 15_000 });
         await expect(page.getByText('Haussmannian Luxury Apartment')).toHaveCount(0);
     });
 
     test('language switcher changes text', async ({ page }) => {
-        // Verify default english text (case-insensitive for CSS uppercase)
-        await expect(page.getByText(/Browse Listings/i)).toBeVisible();
+        // "Browse Listings"/"Browse listings" appears in several sections — anchor on the tenant CTA
+        const tenantBtn = page.locator('a[href="/auth/register?role=tenant"]');
+
+        // Verify default english text
+        await expect(tenantBtn).toContainText(/Browse Listings/i);
 
         // Click FR button using test-id
         await page.getByTestId('lang-switch-fr').click();
@@ -77,9 +89,9 @@ test.describe('Landing Page E2E Tests', () => {
         // Wait for potential hydration/translation update
         await page.waitForTimeout(500);
 
-        // Check if text changed to French (case-insensitive)
-        await expect(page.getByText(/Parcourir les annonces/i)).toBeVisible();
-        
+        // Check if text changed to French
+        await expect(tenantBtn).toContainText(/Parcourir les annonces/i);
+
         // Click EN button to revert using test-id
         await page.getByTestId('lang-switch-en').click();
 
@@ -87,7 +99,7 @@ test.describe('Landing Page E2E Tests', () => {
         await page.waitForTimeout(500);
 
         // Verify back to English
-        await expect(page.getByText(/Browse Listings/i)).toBeVisible();
+        await expect(tenantBtn).toContainText(/Browse Listings/i);
     });
 });
 
@@ -119,4 +131,3 @@ test.describe('Landing truth (WP1)', () => {
         await expect(page).toHaveURL(/\/search\?furnished=true/);
     });
 });
-

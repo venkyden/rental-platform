@@ -195,8 +195,12 @@ export default function NewPropertyPage() {
         setPublishing(true);
         try {
             await apiClient.client.post(`/properties/${propertyId}/publish`);
-        } catch (e) {
+            toast.success(t('properties.new.steps.success.published', undefined, 'Your listing is now live.'));
+            router.push('/properties');
+        } catch (e: any) {
             console.error('Publish error:', e);
+            const detail = e.response?.data?.detail;
+            toast.error(typeof detail === 'string' ? detail : t('properties.new.steps.success.publishFailed', undefined, 'Publishing failed. Please try again.'));
         } finally {
             setPublishing(false);
         }
@@ -205,27 +209,41 @@ export default function NewPropertyPage() {
     // ── Step validation ────────────────────────────────────────────────
     const validateStep = (step: number): boolean => {
         switch (step) {
-            case 1: return !!formData.title;
-            case 2: return !!(formData.address_line1 && formData.city && formData.postal_code);
+            case 1: {
+                const ok = !!formData.title;
+                if (!ok) toast.error(t('properties.new.steps.identity.missingTitle', undefined, 'Please give your listing a title before continuing.'));
+                return ok;
+            }
+            case 2: {
+                const ok = !!(formData.address_line1 && formData.city && formData.postal_code);
+                if (!ok) toast.error(t('properties.new.steps.location.missingAddress', undefined, 'Please fill in the address, city and postal code.'));
+                return ok;
+            }
             case 3: {
                 const ok = formData.bedrooms >= 0 && formData.size_sqm > 0 && !!formData.dpe_rating && formData.dpe_value !== undefined && formData.dpe_value >= 0 && formData.ges_value !== undefined && formData.ges_value >= 0;
                 if (ok && formData.size_sqm < 9 * formData.accommodation_capacity)
                     toast.warning(t('properties.new.steps.pricing.decencyWarning'));
                 if (!ok) {
-                    if (formData.dpe_value === undefined || formData.ges_value === undefined) {
+                    if (!formData.dpe_rating) {
+                        toast.error(t('properties.new.steps.details.missingDpeRating', undefined, 'Please select a DPE rating.'));
+                    } else if (formData.dpe_value === undefined || formData.ges_value === undefined) {
                         toast.error(t('properties.new.steps.details.missingDpeValues', undefined, 'Please enter exact DPE and GES values.'));
+                    } else {
+                        toast.error(t('properties.new.steps.details.missingDetails', undefined, 'Please complete the property details (size, bedrooms).'));
                     }
                 }
                 return ok;
             }
             case 4: {
                 const ok = formData.accommodation_capacity > 0;
+                if (!ok) toast.error(t('properties.new.steps.capacity.missingCapacity', undefined, 'Please set the accommodation capacity.'));
                 if (ok && formData.size_sqm < 9 * formData.accommodation_capacity)
                     toast.warning(t('properties.new.steps.pricing.decencyWarning'));
                 return ok;
             }
             case 5: {
                 const ok = formData.monthly_rent > 0;
+                if (!ok) toast.error(t('properties.new.steps.pricing.missingRent', undefined, 'Please enter the monthly rent.'));
                 if (formData.complement_de_loyer && formData.complement_de_loyer > 0 && !formData.complement_de_loyer_justification?.trim()) {
                     toast.error(t('properties.new.steps.pricing.missingJustification', undefined, 'A written justification is required for rent supplements.'));
                     return false;
@@ -239,7 +257,11 @@ export default function NewPropertyPage() {
                 }
                 return ok;
             }
-            case 7: return !!(descriptionEn.trim() || descriptionFr.trim());
+            case 7: {
+                const ok = !!(descriptionEn.trim() || descriptionFr.trim());
+                if (!ok) toast.error(t('properties.new.steps.narrative.missingDescription', undefined, 'Please write or generate a description.'));
+                return ok;
+            }
             default: return true;
         }
     };

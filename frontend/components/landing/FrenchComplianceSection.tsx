@@ -37,7 +37,7 @@ export default function FrenchComplianceSection() {
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="inline-flex items-center gap-2.5 px-4 py-2 bg-zinc-900 text-white rounded-full text-[10px] font-black uppercase tracking-[0.3em] mb-8"
+            className="inline-flex items-center gap-2.5 px-4 py-2 bg-zinc-900 text-white rounded-full text-xs font-bold uppercase tracking-wider mb-8"
           >
             <ShieldCheck className="w-3.5 h-3.5" />
             <span>{t('landing.footer.legal', undefined, 'Legal Compliance')}</span>
@@ -48,7 +48,7 @@ export default function FrenchComplianceSection() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-4xl sm:text-6xl font-black tracking-tighter text-zinc-900 uppercase italic leading-[0.9] mb-6"
+            className="text-3xl sm:text-5xl font-black tracking-tight text-zinc-900 leading-tight mb-6"
           >
             {t('landing.compliance.title', undefined, 'French Data & Rental Law Compliance')}
           </motion.h2>
@@ -57,7 +57,7 @@ export default function FrenchComplianceSection() {
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            className="text-zinc-500 font-bold uppercase text-[11px] tracking-widest leading-relaxed max-w-xl"
+            className="text-zinc-500 text-base leading-relaxed max-w-xl"
           >
             {t('landing.compliance.subtitle', undefined, 'Your data is managed in strict accordance with French regulations and European standards.')}
           </motion.p>
@@ -81,11 +81,11 @@ export default function FrenchComplianceSection() {
                 </div>
               </div>
 
-              <h3 className="text-2xl font-black mb-4 text-zinc-900 tracking-tight uppercase group-hover:translate-x-1 transition-transform duration-500">
+              <h3 className="text-xl font-black mb-4 text-zinc-900 tracking-tight group-hover:translate-x-1 transition-transform duration-500">
                 {rule.title}
               </h3>
-              
-              <p className="text-zinc-400 font-bold uppercase text-[10px] tracking-widest leading-relaxed opacity-90 group-hover:opacity-100 transition-opacity">
+
+              <p className="text-zinc-500 text-sm font-medium leading-relaxed">
                 {rule.desc}
               </p>
             </motion.div>
