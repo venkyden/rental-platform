@@ -212,6 +212,37 @@ to find F1–F4 was re-run against the fixed files: 85%/84% → 99.17%/99.30% cl
 similarity, with the residual gap fully accounted for (harmless additions / pre-existing
 API-artifact, not new divergences).
 
+## Independent third-party corroboration (2026-07-16)
+
+Owner supplied two real-world production templates (Studapart, a student-housing
+platform) — one meublé, one non-meublé/vide — for cross-check. Both are the same
+Décret 2015-587 contrat-type, independently sourced (not derived from our transcription
+or from Légifrance's API in this session). Findings:
+
+- **F2 confirmed**: neither Studapart template contains an "identifiant fiscal du
+  logement" field anywhere. Independent support for its removal — a real production
+  platform's own model omits it too.
+- **F4 confirmed**: both Studapart templates render the loi 89 art. 5 honoraires
+  citation as continuous **unquoted** prose, matching what was restored (F4 was
+  vide-only; the meublé counterpart shows the same citation was never quoted there
+  either — consistent, not contradictory).
+- **F3 — not contradicted**: both Studapart templates omit the décence-threshold
+  clause entirely (no cross-reference sentence, no expanded table, no footnote) rather
+  than either form we found in our own asset. Most likely explanation: their template
+  predates the décret's January 2025 revision (the clause's own text is explicit that
+  the threshold "ne doit pas excéder, à compter du 1er janvier 2028…", i.e. tied to that
+  revision) — the *same* omission appearing identically in both their meublé and vide
+  templates supports "older vintage" over "editorial choice made per-document."
+- **Bonus confirmations** (no prior finding, just fidelity checks that passed): vide's
+  3-year/6-year duration split by landlord entity type (personne physique vs personne
+  morale) matches `lease_rules.VIDE_DURATION_MONTHS` exactly; the "forfait de charges
+  possible uniquement en cas de colocation" conditioning in Studapart's vide template
+  matches our restored `annexe1_vide.md` wording precisely; the vide/meublé deposit-cap
+  footnotes (1 month / 2 months hors charges) match `lease_rules.LEASE_TYPES` exactly.
+
+No code or model-text changes resulted from this cross-check — it corroborates fixes
+already applied, it doesn't introduce new ones.
+
 ## Recommendation (non-binding — owner/counsel decision)
 
 Original items (a)–(d) below are **done** (see "Fixes applied"). What's still open:
