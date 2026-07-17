@@ -11,20 +11,20 @@ export default function HowItWorks() {
     {
       step: '01',
       icon: <Users className="w-8 h-8" />,
-      title: t('landing.howItWorks.steps.profile.title', undefined, 'Create Profile'),
-      description: t('landing.howItWorks.steps.profile.desc', undefined, 'Build your verified digital rental identity with a complete dossier.'),
+      title: t('landing.howItWorks.steps.profile.title', undefined, 'Get verified'),
+      description: t('landing.howItWorks.steps.profile.desc', undefined, "A few minutes with your documents — then they're deleted. You keep the proof, whichever side of the lease you're on."),
     },
     {
       step: '02',
       icon: <Zap className="w-8 h-8" />,
-      title: t('landing.howItWorks.steps.matching.title', undefined, 'Smart Matching'),
-      description: t('landing.howItWorks.steps.matching.desc', undefined, 'Connect with compatible listings instantly based on your profile.'),
+      title: t('landing.howItWorks.steps.matching.title', undefined, 'Search & Apply'),
+      description: t('landing.howItWorks.steps.matching.desc', undefined, 'Browse verified listings and apply directly with your dossier.'),
     },
     {
       step: '03',
       icon: <FileText className="w-8 h-8" />,
-      title: t('landing.howItWorks.steps.lease.title', undefined, 'Automated Lease'),
-      description: t('landing.howItWorks.steps.lease.desc', undefined, 'Sign legal contracts digitally and securely with automated generation.'),
+      title: t('landing.howItWorks.steps.lease.title', undefined, 'Sign & move in'),
+      description: t('landing.howItWorks.steps.lease.desc', undefined, 'Generate a lease that conforms to the official French model and sign it digitally. Both sides walk away with signed evidence.'),
     }
   ];
 
@@ -40,7 +40,7 @@ export default function HowItWorks() {
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="inline-flex items-center gap-3 px-4 py-2 bg-zinc-900 text-white rounded-full text-[10px] font-black uppercase tracking-[0.4em] mb-8"
+              className="inline-flex items-center gap-3 px-4 py-2 bg-zinc-900 text-white rounded-full text-xs font-bold uppercase tracking-wider mb-8"
             >
               <CheckCircle2 className="w-3 h-3" />
               {t('landing.howItWorks.pipeline', undefined, 'Direct Pipeline')}
@@ -50,7 +50,7 @@ export default function HowItWorks() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-              className="text-5xl sm:text-7xl font-black tracking-tighter text-zinc-900 uppercase italic leading-[0.9]"
+              className="text-4xl sm:text-6xl font-black tracking-tight text-zinc-900 leading-tight"
             >
               {t('landing.howItWorks.title', undefined, 'Three steps to home')}
             </motion.h2>
@@ -60,9 +60,9 @@ export default function HowItWorks() {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ delay: 0.3 }}
-            className="text-zinc-400 text-[12px] font-black uppercase tracking-[0.5em] max-w-sm lg:text-right"
+            className="text-zinc-500 text-base leading-relaxed max-w-sm lg:text-right"
           >
-            {t('landing.howItWorks.subtitle', undefined, 'The smart way to rent in France')}
+            {t('landing.howItWorks.subtitle', undefined, 'From stranger to signed lease — every step verified')}
           </motion.p>
         </div>
 
@@ -86,10 +86,10 @@ export default function HowItWorks() {
                   </div>
                 </div>
 
-                <h3 className="text-3xl font-black mb-8 text-zinc-900 uppercase tracking-tight group-hover:translate-x-2 transition-transform duration-500">
+                <h3 className="text-2xl font-black mb-6 text-zinc-900 tracking-tight group-hover:translate-x-2 transition-transform duration-500">
                   {item.title}
                 </h3>
-                <p className="text-zinc-400 leading-relaxed font-black uppercase text-[11px] tracking-widest opacity-80 group-hover:opacity-100 transition-opacity">
+                <p className="text-zinc-500 leading-relaxed font-medium text-base">
                   {item.description}
                 </p>
 

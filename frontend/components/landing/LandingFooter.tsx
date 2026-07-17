@@ -43,7 +43,7 @@ export default function LandingFooter() {
         <div className="grid grid-cols-2 lg:grid-cols-6 gap-12 mb-24">
           <div className="col-span-2 lg:col-span-3">
             <div className="mb-10">
-              <RoomivoBrand variant="wordmark" size="sm" animate={false} />
+              <RoomivoBrand variant="wordmark" size="md" animate={false} />
             </div>
             <p className="text-zinc-500 font-medium leading-relaxed max-w-sm mb-12 text-lg">
               {t('landing.footer.slogan', undefined, 'The next generation of rental transparency in France.')}
@@ -70,20 +70,20 @@ export default function LandingFooter() {
               <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-4">
                 {t('landing.footer.backedBy', undefined, 'Soutenu par')}
               </p>
-              <div className="flex flex-wrap items-center gap-6">
-                <Image
-                  src="/images/pepite-snee.jpg"
-                  alt="PÉPITE Pays de la Loire — Statut National Étudiant-Entrepreneur (SNEE)"
-                  width={150}
-                  height={56}
-                  className="h-12 w-auto object-contain opacity-90"
-                />
+              <div className="flex flex-wrap items-center gap-8">
                 <Image
                   src="/images/ministere-esr.png"
                   alt="Ministère de l'Enseignement supérieur et de la Recherche"
-                  width={120}
-                  height={56}
-                  className="h-14 w-auto object-contain opacity-90"
+                  width={220}
+                  height={154}
+                  className="h-20 sm:h-24 w-auto object-contain"
+                />
+                <Image
+                  src="/images/pepite-snee.jpg"
+                  alt="PÉPITE France — Statut National Étudiant-Entrepreneur (SNEE)"
+                  width={280}
+                  height={158}
+                  className="h-20 sm:h-24 w-auto object-contain"
                 />
               </div>
             </div>

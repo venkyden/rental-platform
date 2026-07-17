@@ -258,13 +258,13 @@ export default function Navbar() {
                             </button>
                         </div>
                     ) : (
-                        <div className="flex items-center gap-3">
-                            <Link href="/auth/login" className="px-6 py-2.5 text-sm font-bold text-zinc-600 hover:text-zinc-900 transition-all uppercase tracking-widest">
+                        <div className="flex items-center gap-2 sm:gap-3">
+                            <Link href="/auth/login" className="hidden sm:block px-6 py-2.5 text-sm font-bold text-zinc-600 hover:text-zinc-900 transition-all uppercase tracking-widest whitespace-nowrap">
                                 {t('landing.signIn', undefined, 'Sign In')}
                             </Link>
                             <Link
                                 href="/auth/register"
-                                className="btn-primary !py-2.5 !px-6 text-sm !rounded-2xl shadow-zinc-900/10"
+                                className="btn-primary !py-2.5 !px-4 sm:!px-6 text-sm !rounded-2xl shadow-zinc-900/10 whitespace-nowrap"
                             >
                                 {t('landing.getStarted', undefined, 'Get Started')}
                             </Link>

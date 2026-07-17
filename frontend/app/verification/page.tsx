@@ -383,13 +383,13 @@ export default function VerificationPage() {
                                                         onClick={() => setIntlIncome(false)}
                                                         className={`px-4 py-2 rounded-full font-black uppercase tracking-widest text-[10px] transition-all ${!intlIncome ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500'}`}
                                                     >
-                                                        French documents
+                                                        {t('verification.intl.toggle.french', undefined, 'French documents')}
                                                     </button>
                                                     <button
                                                         onClick={() => setIntlIncome(true)}
                                                         className={`px-4 py-2 rounded-full font-black uppercase tracking-widest text-[10px] transition-all ${intlIncome ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500'}`}
                                                     >
-                                                        International documents
+                                                        {t('verification.intl.toggle.international', undefined, 'International documents')}
                                                     </button>
                                                 </div>
                                                 {intlIncome ? (

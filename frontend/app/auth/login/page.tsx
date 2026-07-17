@@ -287,21 +287,25 @@ function LoginContent() {
             </motion.div>
 
             {/* Google Divider */}
-            <motion.div variants={itemVariants} className="relative my-12">
-                <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-zinc-100" />
-                </div>
-                <div className="relative flex justify-center text-[9px] font-black uppercase tracking-[0.5em]">
-                    <span className="bg-white px-6 text-zinc-300">{t('auth.login.divider', undefined, 'Secured Access')}</span>
-                </div>
-            </motion.div>
+            {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
+                <motion.div variants={itemVariants} className="relative my-12">
+                    <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-zinc-100" />
+                    </div>
+                    <div className="relative flex justify-center text-xs font-semibold">
+                        <span className="bg-white px-6 text-zinc-400">{t('auth.login.divider', undefined, 'or continue with')}</span>
+                    </div>
+                </motion.div>
+            )}
 
             {/* Google Button */}
             <motion.div variants={itemVariants} className="space-y-6">
-                <div className="flex justify-center transform scale-110">
-                    <div id="google-signin-btn" />
-                </div>
-                
+                {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
+                    <div className="flex justify-center transform scale-110">
+                        <div id="google-signin-btn" />
+                    </div>
+                )}
+
                 {googleLoading && (
                     <p className="text-[9px] font-black text-zinc-900 text-center animate-pulse uppercase tracking-widest">
                         {t('auth.login.connectingGoogle', undefined, 'Connecting to Google…')}
