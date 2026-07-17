@@ -118,6 +118,27 @@ export default function SearchHero() {
                 </button>
               ))}
             </div>
+
+            {/* ─── Typology quick entry ─── */}
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              {[
+                { label: 'Studio', href: '/search?typology=studio' },
+                { label: 'T1', href: '/search?typology=t1' },
+                { label: 'T2', href: '/search?typology=t2' },
+                { label: 'T3+', href: '/search?typology=t3plus' },
+                { label: t('landing.hero.colocation', undefined, 'Colocation'), href: '/search?colocation=1' },
+                { label: t('listing.furnished', undefined, 'Meublé'), href: '/search?furnished=true' },
+                { label: t('listing.unfurnished', undefined, 'Vide'), href: '/search?furnished=false' },
+              ].map((chip) => (
+                <Link
+                  key={chip.label}
+                  href={query.trim() ? `${chip.href}&q=${encodeURIComponent(query.trim())}` : chip.href}
+                  className="px-6 py-2.5 rounded-full bg-white text-zinc-600 text-[10px] font-black uppercase tracking-[0.2em] border border-zinc-200 hover:bg-zinc-900 hover:text-white hover:border-zinc-900 transition-all duration-300"
+                >
+                  {chip.label}
+                </Link>
+              ))}
+            </div>
           </motion.div>
         </div>
       </div>
