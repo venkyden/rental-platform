@@ -68,6 +68,30 @@ export const translations = {
                 evidence: "Could not download the evidence pack",
             },
         },
+        // Listing cards (shared landing + search)
+        listing: {
+            perMonth: "/ month",
+            cc: "incl. charges",
+            hc: "excl. charges",
+            furnished: "Furnished",
+            unfurnished: "Unfurnished",
+            bedroom: "bedroom",
+            bedrooms: "bedrooms",
+            availableNow: "Available now",
+            availableFrom: "Available from",
+            publishedBy: "Listed by",
+            identityVerified: "verified identity",
+            gpsVerified: "GPS-verified photos",
+            noPhotos: "Photos coming soon",
+            type: { apartment: "Apartment", house: "House", studio: "Studio", room: "Room" },
+            diff: {
+                privateBathroom: "Private bathroom",
+                balcony: "Balcony",
+                terrace: "Terrace",
+                parking: "Parking",
+                elevator: "Elevator",
+            },
+        },
         // Landing Page
         landing: {
             hero: {
@@ -2578,6 +2602,30 @@ export const translations = {
                     }
                 }
             }
+        },
+        // Listing cards (shared landing + search)
+        listing: {
+            perMonth: "/ mois",
+            cc: "cc",
+            hc: "hc",
+            furnished: "Meublé",
+            unfurnished: "Vide",
+            bedroom: "chambre",
+            bedrooms: "chambres",
+            availableNow: "Disponible immédiatement",
+            availableFrom: "Disponible à partir du",
+            publishedBy: "Publié par",
+            identityVerified: "identité vérifiée",
+            gpsVerified: "Photos vérifiées GPS",
+            noPhotos: "Photos en cours d'ajout",
+            type: { apartment: "Appartement", house: "Maison", studio: "Studio", room: "Chambre" },
+            diff: {
+                privateBathroom: "Salle de bain privée",
+                balcony: "Balcon",
+                terrace: "Terrasse",
+                parking: "Parking",
+                elevator: "Ascenseur",
+            },
         },
         // Landing Page
         landing: {
