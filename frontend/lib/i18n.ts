@@ -148,6 +148,9 @@ export const translations = {
                 }
             },
             featured: {
+                emptyTitle: "Publish the first verified listing in your city",
+                emptySubtitle: "GPS-verified photos, verified identity, certified tenant file — publish for free.",
+                emptyCta: "Publish a listing",
                 badge: "Handpicked Select",
                 title: "Featured Listings",
                 subtitle: "Hand-selected and fully verified residential properties in France.",
@@ -2683,6 +2686,9 @@ export const translations = {
                 }
             },
             featured: {
+                emptyTitle: "Publiez la première annonce vérifiée de votre ville",
+                emptySubtitle: "Photos vérifiées par GPS, identité vérifiée, dossier locataire certifié — publiez gratuitement.",
+                emptyCta: "Publier une annonce",
                 badge: "Sélection Exclusive",
                 title: "Annonces à la Une",
                 subtitle: "Propriétés résidentielles triées sur le volet et entièrement vérifiées en France.",

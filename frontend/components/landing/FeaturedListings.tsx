@@ -1,43 +1,46 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/lib/LanguageContext';
-import { Sparkles, MapPin, Eye, ShieldAlert } from 'lucide-react';
+import { Sparkles, Building2, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
+import { apiClient } from '@/lib/api';
+import ListingCard from '@/components/ListingCard';
+import type { ListingSummary } from '@/lib/listingDisplay';
+import { PropertyCardSkeleton } from '@/components/SkeletonLoaders';
 
 export default function FeaturedListings() {
   const { t } = useLanguage();
+  const [listings, setListings] = useState<ListingSummary[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const listings = [
-    {
-      id: '1',
-      title: 'Haussmannian Luxury Apartment',
-      city: 'Paris 8e',
-      price: 2400,
-      specs: '2 beds • 1 bath • 75 m²',
-      image: '/apartment_1.png',
-      tag: t('landing.featured.tags.verified', undefined, 'GPS Verified'),
-    },
-    {
-      id: '2',
-      title: 'Chic Industrial Loft',
-      city: 'Lyon 2e',
-      price: 1850,
-      specs: '1 bed • 1 bath • 52 m²',
-      image: '/apartment_2.png',
-      tag: t('landing.featured.tags.popular', undefined, 'Trending'),
-    },
-    {
-      id: '3',
-      title: 'Elegant Classic Residence',
-      city: 'Bordeaux Centre',
-      price: 1600,
-      specs: '2 beds • 1 bath • 68 m²',
-      image: '/apartment_3.png',
-      tag: t('landing.featured.tags.verified', undefined, 'GPS Verified'),
-    }
-  ];
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const response = await apiClient.getProperties({
+          status: 'active',
+          limit: 12,
+          sort_by: 'created_at',
+          order_direction: 'desc',
+        });
+        if (cancelled) return;
+        const score = (p: ListingSummary) =>
+          (p.photos?.length ? 2 : 0) + (p.ownership_verified ? 1 : 0);
+        const ranked = [...response].sort((a: ListingSummary, b: ListingSummary) => score(b) - score(a));
+        setListings(ranked.slice(0, 6));
+      } catch {
+        if (!cancelled) setListings([]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Fewer than 3 real listings → honest landlord CTA instead of thin/fake content
+  const showListings = listings.length >= 3;
 
   return (
     <section className="py-24 sm:py-36 bg-white relative overflow-hidden">
@@ -76,70 +79,39 @@ export default function FeaturedListings() {
           </motion.p>
         </div>
 
-        {/* 3-card Showcase grid */}
-        <div className="grid md:grid-cols-3 gap-10">
-          {listings.map((listing, i) => (
-            <motion.div
-              key={listing.id}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1, duration: 1, ease: [0.16, 1, 0.3, 1] }}
-              whileHover={{ y: -10 }}
-              className="group bg-zinc-50 rounded-[2.5rem] overflow-hidden border border-zinc-100 hover:border-zinc-200 transition-all duration-500 hover:shadow-2xl hover:shadow-zinc-900/5 flex flex-col h-full"
+        {loading ? (
+          <div className="grid md:grid-cols-3 gap-10">
+            {[0, 1, 2].map((i) => <PropertyCardSkeleton key={i} />)}
+          </div>
+        ) : showListings ? (
+          <div className="grid md:grid-cols-3 gap-10">
+            {listings.map((listing, i) => (
+              <ListingCard key={listing.id} property={listing} index={i} />
+            ))}
+          </div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="rounded-[2.5rem] border border-zinc-100 bg-zinc-50 p-12 sm:p-20 text-center"
+          >
+            <Building2 className="w-8 h-8 mx-auto mb-6 text-zinc-400" />
+            <h3 className="text-2xl sm:text-3xl font-black tracking-tight text-zinc-900 uppercase mb-4">
+              {t('landing.featured.emptyTitle', undefined, 'Publiez la première annonce vérifiée de votre ville')}
+            </h3>
+            <p className="text-zinc-500 max-w-xl mx-auto mb-8">
+              {t('landing.featured.emptySubtitle', undefined, 'Photos vérifiées par GPS, identité vérifiée, dossier locataire certifié — publiez gratuitement.')}
+            </p>
+            <Link
+              href="/properties/new"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-zinc-900 text-white rounded-full text-[11px] font-black uppercase tracking-[0.2em] hover:bg-zinc-800 transition-colors"
             >
-              {/* Image container */}
-              <div className="relative aspect-[4/3] w-full overflow-hidden bg-zinc-100">
-                <Image
-                  src={listing.image}
-                  alt={listing.title}
-                  fill
-                  sizes="(max-w-768px) 100vw, 33vw"
-                  className="object-cover group-hover:scale-110 transition-transform duration-[1200ms] ease-[0.16, 1, 0.3, 1]"
-                />
-                
-                {/* Badge Overlay */}
-                <div className="absolute top-6 left-6 z-10">
-                  <span className="px-4 py-2 bg-zinc-900/90 backdrop-blur-md text-white text-[9px] font-black uppercase tracking-widest rounded-full shadow-lg">
-                    {listing.tag}
-                  </span>
-                </div>
-              </div>
-
-              {/* Card content */}
-              <div className="p-8 flex flex-col flex-grow">
-                <div className="flex items-center gap-2 text-zinc-400 text-[10px] font-black uppercase tracking-wider mb-3">
-                  <MapPin className="w-3.5 h-3.5 text-zinc-900" />
-                  <span>{listing.city}</span>
-                </div>
-
-                <h3 className="text-xl sm:text-2xl font-black text-zinc-900 tracking-tight uppercase group-hover:text-zinc-700 transition-colors mb-2">
-                  {listing.title}
-                </h3>
-
-                <p className="text-zinc-500 font-bold uppercase text-[10px] tracking-widest mb-6">
-                  {listing.specs}
-                </p>
-
-                {/* Pricing and Link */}
-                <div className="mt-auto pt-6 border-t border-zinc-200/50 flex items-center justify-between">
-                  <div>
-                    <span className="text-2xl font-black text-zinc-900 tracking-tight">€{listing.price}</span>
-                    <span className="text-zinc-400 font-bold text-[10px] tracking-wider uppercase ml-1">/ {t('landing.featured.mo', undefined, 'mo')}</span>
-                  </div>
-
-                  <Link
-                    href={`/properties/${listing.id}`}
-                    className="inline-flex items-center gap-2 px-5 py-3 bg-zinc-900 hover:bg-zinc-800 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-md transition-all active:scale-95 group/btn"
-                  >
-                    <span>{t('landing.featured.view', undefined, 'View')}</span>
-                    <Eye className="w-3.5 h-3.5 group-hover/btn:scale-125 transition-transform" />
-                  </Link>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+              {t('landing.featured.emptyCta', undefined, 'Publier une annonce')}
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </motion.div>
+        )}
       </div>
     </section>
   );
