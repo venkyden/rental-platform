@@ -208,6 +208,17 @@ async def generate_property_description(
 
 
 
+def _landlord_trust_fields(landlord) -> dict:
+    """First name + identity flag for the listing trust line. Never exposes full name."""
+    if landlord is None:
+        return {"landlord_first_name": None, "landlord_identity_verified": False}
+    first = (landlord.full_name or "").strip().split(" ")[0]
+    return {
+        "landlord_first_name": first or None,
+        "landlord_identity_verified": bool(landlord.identity_verified),
+    }
+
+
 def _apply_property_filters(
     query,
     params: dict,
@@ -407,7 +418,8 @@ async def list_properties(
     skip = params.get("skip", "0")
     limit = params.get("limit", "20")
 
-    query = select(Property)
+    from sqlalchemy.orm import selectinload
+    query = select(Property).options(selectinload(Property.landlord))
     query = _apply_property_filters(
         query=query,
         params=params,
@@ -443,6 +455,7 @@ async def list_properties(
     for prop in properties:
         prop_dict = PropertyResponse.model_validate(prop).model_dump()
         prop_dict["is_saved"] = prop.id in saved_property_ids
+        prop_dict.update(_landlord_trust_fields(prop.landlord))
         response.append(prop_dict)
         
     return response
@@ -515,7 +528,12 @@ async def get_property(
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid property ID format")
 
-    result = await db.execute(select(Property).where(Property.id == prop_uuid))
+    from sqlalchemy.orm import selectinload
+    result = await db.execute(
+        select(Property)
+        .options(selectinload(Property.landlord))
+        .where(Property.id == prop_uuid)
+    )
     property_obj = result.scalar_one_or_none()
 
     if not property_obj:
@@ -585,7 +603,8 @@ async def get_property(
         await db.commit()
 
     prop_dict = PropertyResponse.model_validate(property_obj).model_dump()
-    
+    prop_dict.update(_landlord_trust_fields(property_obj.landlord))
+
     # Calculate is_saved
     is_saved = False
     if current_user is not None:

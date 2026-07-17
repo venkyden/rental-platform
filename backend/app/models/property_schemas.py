@@ -249,6 +249,10 @@ class PropertyResponse(BaseModel):
     is_saved: bool = False
     ownership_verified: bool = False
 
+    # Trust line (WP1): first name only + identity verification state — never full PII
+    landlord_first_name: Optional[str] = None
+    landlord_identity_verified: bool = False
+
     status: str = "draft"
     views_count: int = 0
     lease_duration_months: Optional[int] = None

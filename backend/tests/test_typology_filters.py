@@ -3,7 +3,8 @@
 from sqlalchemy import select
 
 from app.models.property import Property
-from app.routers.properties import _apply_property_filters
+from app.models.property_schemas import PropertyResponse
+from app.routers.properties import _apply_property_filters, _landlord_trust_fields
 
 
 def _where_sql(query) -> str:
@@ -47,3 +48,33 @@ class TestTypologyEndpoint:
     def test_list_properties_accepts_rooms_count_min(self, client):
         resp = client.get("/properties?rooms_count_min=3")
         assert resp.status_code == 200
+
+
+class TestLandlordTrustFields:
+    def test_response_schema_has_trust_fields(self):
+        fields = PropertyResponse.model_fields
+        assert "landlord_first_name" in fields
+        assert "landlord_identity_verified" in fields
+
+    def test_trust_fields_default_safe(self):
+        assert _landlord_trust_fields(None) == {
+            "landlord_first_name": None,
+            "landlord_identity_verified": False,
+        }
+
+    def test_trust_fields_first_name_only(self):
+        class FakeLandlord:
+            full_name = "Marc Dupont"
+            identity_verified = True
+
+        result = _landlord_trust_fields(FakeLandlord())
+        assert result["landlord_first_name"] == "Marc"  # never the full name
+        assert result["landlord_identity_verified"] is True
+
+    def test_trust_fields_empty_name(self):
+        class FakeLandlord:
+            full_name = "   "
+            identity_verified = False
+
+        result = _landlord_trust_fields(FakeLandlord())
+        assert result["landlord_first_name"] is None
