@@ -15,7 +15,7 @@ interface Property {
     monthly_rent: number;
     latitude?: number;
     longitude?: number;
-    photos: { url: string }[];
+    photos?: { url: string }[] | null;
 }
 
 interface SearchMapProps {

@@ -6,38 +6,23 @@ import { useSegment } from '@/lib/SegmentContext';
 import { useAuth } from '@/lib/useAuth';
 import { apiClient } from '@/lib/api';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import Image from 'next/image';
 import PremiumLayout from '@/components/PremiumLayout';
 import { useLanguage } from '@/lib/LanguageContext';
-import { resolveMediaUrl } from '@/lib/mediaUrl';
 import { PropertyCardSkeleton } from '@/components/SkeletonLoaders';
-import { Search, MapPin, Maximize, Filter, X, ChevronDown, Sparkles, Map as MapIcon, Grid, Check, ShieldCheck, Heart } from 'lucide-react';
+import { Search, Filter, X, ChevronDown, Sparkles, Map as MapIcon, Grid, Check, Heart } from 'lucide-react';
 import SearchMap from '@/components/SearchMap';
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
+import ListingCard from '@/components/ListingCard';
+import type { ListingSummary } from '@/lib/listingDisplay';
 
-interface Property {
-    id: string;
-    title: string;
-    city: string;
-    monthly_rent: number;
-    charges?: number;
-    charges_included?: boolean;
-    deposit?: number;
-    bedrooms: number;
-    property_type: string;
-    furnished: boolean;
-    size_sqm: number;
+type Property = ListingSummary & {
     latitude?: number;
     longitude?: number;
-    photos: { url: string }[];
-    amenities: string[];
-    status: string;
-    dpe_rating?: string;
+    status?: string;
+    deposit?: number;
     guarantor_required?: boolean;
-    is_saved?: boolean;
-    ownership_verified?: boolean;
-}
+};
 
 function SearchContent() {
     const { config, loading: segmentLoading } = useSegment();
@@ -47,6 +32,9 @@ function SearchContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const initialQuery = searchParams.get('q') || '';
+    const initialTypology = searchParams.get('typology') || '';
+    const initialFurnishedParam = searchParams.get('furnished'); // 'true' | 'false' | null
+    const initialColocation = searchParams.get('colocation') === '1';
     const shouldReduceMotion = useReducedMotion();
 
     // Data State
@@ -57,8 +45,11 @@ function SearchContent() {
     // Filter States
     const [priceRange, setPriceRange] = useState<number>(3000);
     const [location, setLocation] = useState(initialQuery);
-    const [furnished, setFurnished] = useState(false);
-    const [colocation, setColocation] = useState(false);
+    const [furnishedMode, setFurnishedMode] = useState<'' | 'furnished' | 'unfurnished'>(
+        initialFurnishedParam === 'true' ? 'furnished' : initialFurnishedParam === 'false' ? 'unfurnished' : ''
+    );
+    const [typology, setTypology] = useState<string>(initialTypology);
+    const [colocation, setColocation] = useState(initialColocation);
     const [cafOnly, setCafOnly] = useState(false);
     const [propertyType, setPropertyType] = useState<string>('');
     const [sortBy, setSortBy] = useState<string>('created_at');
@@ -69,6 +60,8 @@ function SearchContent() {
 
     useEffect(() => {
         if (!config) return;
+        // Deep-link params take precedence over segment defaults
+        if (initialTypology || initialFurnishedParam || initialColocation) return;
         const mode = config.settings.default_filter_mode;
         if (mode === 'budget') {
             setPriceRange(800);
@@ -76,9 +69,10 @@ function SearchContent() {
         } else if (mode === 'location') {
             setPriceRange(2500);
         } else if (mode === 'term') {
-            setFurnished(true);
+            setFurnishedMode('furnished');
             setPriceRange(3000);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [config]);
 
     const fetchProperties = async (isLoadMore = false, currentCount = 0) => {
@@ -97,9 +91,14 @@ function SearchContent() {
                 order_direction: orderDir
             };
             if (location.length > 2) params.city = location;
-            if (furnished) params.furnished = true;
+            if (furnishedMode === 'furnished') params.furnished = true;
+            if (furnishedMode === 'unfurnished') params.furnished = false;
+            if (typology === 'studio') params.property_type = 'studio';
+            else if (typology === 't1') params.rooms_count = 1;
+            else if (typology === 't2') params.rooms_count = 2;
+            else if (typology === 't3plus') params.rooms_count_min = 3;
             if (cafOnly) params.caf_eligible = true;
-            if (propertyType) params.property_type = propertyType;
+            if (propertyType && !(typology === 'studio')) params.property_type = propertyType;
             if (colocation) params.amenities = ['colocation'];
             
             const response = savedOnly 
@@ -121,7 +120,7 @@ function SearchContent() {
     useEffect(() => {
         const timeoutId = setTimeout(() => fetchProperties(false), 500);
         return () => clearTimeout(timeoutId);
-    }, [priceRange, location, furnished, colocation, cafOnly, propertyType, sortBy, orderDir, savedOnly]);
+    }, [priceRange, location, furnishedMode, typology, colocation, cafOnly, propertyType, sortBy, orderDir, savedOnly]);
 
     const toggleSaveProperty = async (propertyId: string) => {
         if (!isAuthenticated) {
@@ -277,14 +276,32 @@ function SearchContent() {
 
                     <div className="flex flex-wrap items-center gap-3 px-4 pb-2">
                         {[
-                            { state: furnished, setter: setFurnished, label: t('search.filters.furnished', undefined, 'Furnished') },
-                            { state: colocation, setter: setColocation, label: t('search.filters.colocation', undefined, 'Colocation') },
-                            { state: cafOnly, setter: setCafOnly, label: t('search.filters.caf', undefined, 'CAF') },
-                            { state: savedOnly, setter: setSavedOnly, label: t('search.filters.wishlist', undefined, 'Wishlist'), icon: Heart }
+                            { key: 'studio', label: 'Studio' },
+                            { key: 't1', label: 'T1' },
+                            { key: 't2', label: 'T2' },
+                            { key: 't3plus', label: 'T3+' },
+                        ].map((c) => (
+                            <button
+                                key={c.key}
+                                onClick={() => setTypology(typology === c.key ? '' : c.key)}
+                                className={`px-6 py-2 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] transition-all duration-700 ${typology === c.key ? 'bg-zinc-900 text-white shadow-lg' : 'bg-zinc-50 text-zinc-400 hover:text-zinc-600'}`}
+                            >
+                                {c.label}
+                            </button>
+                        ))}
+
+                        <div className="h-6 w-px bg-zinc-200 mx-2 hidden sm:block" />
+
+                        {[
+                            { state: furnishedMode === 'furnished', setter: () => setFurnishedMode(furnishedMode === 'furnished' ? '' : 'furnished'), label: t('listing.furnished', undefined, 'Meublé') },
+                            { state: furnishedMode === 'unfurnished', setter: () => setFurnishedMode(furnishedMode === 'unfurnished' ? '' : 'unfurnished'), label: t('listing.unfurnished', undefined, 'Vide') },
+                            { state: colocation, setter: () => setColocation(!colocation), label: t('search.filters.colocation', undefined, 'Colocation') },
+                            { state: cafOnly, setter: () => setCafOnly(!cafOnly), label: t('search.filters.caf', undefined, 'CAF') },
+                            { state: savedOnly, setter: () => setSavedOnly(!savedOnly), label: t('search.filters.wishlist', undefined, 'Wishlist'), icon: Heart }
                         ].map((filter, i) => (
-                            <button 
+                            <button
                                 key={i}
-                                onClick={() => filter.setter(!filter.state)}
+                                onClick={() => filter.setter()}
                                 className={`px-6 py-2 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] flex items-center gap-2 transition-all duration-700 ${filter.state ? 'bg-zinc-900 text-white shadow-lg' : 'bg-zinc-50 text-zinc-400 hover:text-zinc-600'}`}
                             >
                                 {filter.icon && <filter.icon className="w-3 h-3" />}
@@ -297,12 +314,13 @@ function SearchContent() {
                         <div className="flex bg-zinc-100 p-1 rounded-2xl ml-auto">
                             <button 
                                 onClick={() => { 
-                                    setLocation(''); 
-                                    setPriceRange(3000); 
-                                    setPropertyType(''); 
-                                    setFurnished(false); 
-                                    setCafOnly(false); 
-                                    setColocation(false); 
+                                    setLocation('');
+                                    setPriceRange(3000);
+                                    setPropertyType('');
+                                    setFurnishedMode('');
+                                    setTypology('');
+                                    setCafOnly(false);
+                                    setColocation(false);
                                     setSavedOnly(false);
                                 }}
                                 className="px-5 py-3 rounded-xl text-zinc-400 hover:text-zinc-900 hover:bg-zinc-200/50 transition-all flex items-center gap-2 group"
@@ -376,131 +394,12 @@ function SearchContent() {
                             {viewMode === 'grid' ? (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-16">
                                     {properties.map((property, idx) => (
-                                        <motion.div 
-                                            key={property.id} 
-                                            initial={{ opacity: 0, y: 40 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            whileHover={{ y: -20, rotateX: 2, rotateY: -2 }}
-                                            transition={{ 
-                                                delay: idx * 0.05,
-                                                duration: 0.4,
-                                                ease: [0.23, 1, 0.32, 1]
-                                            }}
-                                            style={{ perspective: 1000 }}
-                                            className="group glass-card !p-0 overflow-hidden flex flex-col border-zinc-100 hover:shadow-[0_80px_160px_-20px_rgba(0,0,0,0.3)] transition-all duration-700 rounded-[3.5rem] relative"
-                                        >
-                                            <div className="aspect-[16/12] bg-zinc-100 relative overflow-hidden">
-                                                {property.photos?.[0] ? (
-                                                    <Image 
-                                                        src={resolveMediaUrl(property.photos[0].url)} 
-                                                        alt={property.title} 
-                                                        fill
-                                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                                        className="object-cover group-hover:scale-110 transition-transform duration-1000" 
-                                                    />
-                                                ) : (
-                                                    <div className="w-full h-full flex items-center justify-center text-zinc-300 font-black text-3xl italic tracking-tighter">ROOMIVO</div>
-                                                )}
-                                                
-                                                {/* Heart / Save Button */}
-                                                <div className="absolute top-8 right-8 z-30">
-                                                    <motion.button
-                                                        whileHover={{ scale: 1.2 }}
-                                                        whileTap={{ scale: 0.8 }}
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            toggleSaveProperty(property.id);
-                                                        }}
-                                                        className={`p-4 rounded-full backdrop-blur-3xl border transition-all duration-500 shadow-2xl ${
-                                                            property.is_saved 
-                                                            ? 'bg-white border-white text-zinc-900 shadow-white/40' 
-                                                            : 'bg-white/20 border-white/20 text-white hover:bg-white/40'
-                                                        }`}
-                                                    >
-                                                        <Heart className={`w-5 h-5 ${property.is_saved ? 'fill-current' : ''}`} />
-                                                    </motion.button>
-                                                </div>
-
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80" />
-                                                
-                                                {/* Top Badges */}
-                                                <div className="absolute top-8 left-8 flex flex-col gap-3">
-                                                    {property.ownership_verified && (
-                                                        <div className="px-5 py-2 bg-zinc-900 text-white text-[10px] font-black rounded-2xl border border-zinc-800 shadow-2xl uppercase tracking-widest flex items-center gap-2">
-                                                            <ShieldCheck className="w-3 h-3" />
-                                                            {t('search.filters.verified', undefined, 'Verified')}
-                                                        </div>
-                                                    )}
-                                                    {property.dpe_rating && (
-                                                        <div className={`px-5 py-2 backdrop-blur-3xl text-white text-[10px] font-black rounded-2xl border border-white/20 shadow-2xl uppercase tracking-widest ${
-                                                            property.dpe_rating === 'A' ? 'bg-zinc-900/80' : 
-                                                            property.dpe_rating === 'B' ? 'bg-zinc-800/80' : 
-                                                            'bg-zinc-950/80'
-                                                        }`}>
-                                                            DPE {property.dpe_rating}
-                                                        </div>
-                                                    )}
-                                                </div>
-
-                                                {/* Price Tag Overlay */}
-                                                <div className="absolute bottom-8 left-10">
-                                                    <div className="flex items-baseline gap-1">
-                                                        <span className="text-5xl font-black text-white tracking-tighter">€{property.monthly_rent}</span>
-                                                        <span className="text-xs font-black text-white/60 uppercase tracking-[0.3em] ml-2">{t('search.property.mo', undefined, '/ Month')}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div className="p-10 md:p-14 flex flex-col flex-1">
-                                                <h3 className="text-3xl font-black text-zinc-900 mb-4 truncate tracking-tighter uppercase group-hover:text-zinc-600 transition-colors duration-500">
-                                                    {property.title}
-                                                </h3>
-                                                
-                                                <div className="flex items-center gap-4 mb-12">
-                                                    <div className="flex items-center gap-3 px-4 py-2 bg-zinc-100 rounded-2xl border border-zinc-200/50">
-                                                        <MapPin className="w-4 h-4 text-zinc-400" />
-                                                        <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{property.city}</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-3 px-4 py-2 bg-zinc-100 rounded-2xl border border-zinc-200/50">
-                                                        <Maximize className="w-4 h-4 text-zinc-400" />
-                                                        <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{property.size_sqm}m²</span>
-                                                    </div>
-                                                </div>
-                                                
-                                                <div className="mt-auto pt-10 border-t border-zinc-100 flex items-center justify-between">
-                                                    <div className="flex -space-x-4">
-                                                        {(property.amenities || []).slice(0, 4).map((amenity: any, i: number) => (
-                                                            <div 
-                                                                key={i} 
-                                                                className="w-12 h-12 rounded-full bg-white border-[3px] border-zinc-50 flex items-center justify-center shadow-xl group-hover:scale-110 transition-all duration-500 cursor-help relative z-[10]"
-                                                                title={amenity}
-                                                            >
-                                                                <div className="w-6 h-6 text-zinc-900 flex items-center justify-center font-black text-[11px] italic">
-                                                                    {amenity.charAt(0).toUpperCase()}
-                                                                </div>
-                                                            </div>
-                                                        ))}
-                                                        {(property.amenities || []).length > 4 && (
-                                                            <div className="w-12 h-12 rounded-full bg-zinc-900 border-[3px] border-zinc-50 flex items-center justify-center shadow-xl relative z-[5]">
-                                                                <span className="text-[10px] font-black text-white">
-                                                                    +{(property.amenities || []).length - 4}
-                                                                </span>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                    
-                                                    <button 
-                                                        onClick={() => router.push(`/properties/${property.id}`)}
-                                                        className="group/btn relative px-10 py-5 bg-zinc-900 text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] transition-all duration-700 hover:scale-105 active:scale-95 shadow-2xl shadow-zinc-900/20 overflow-hidden"
-                                                    >
-                                                        <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-700" />
-                                                        <span className="relative z-10 group-hover/btn:text-white transition-colors">
-                                                            {t('search.property.viewDetails', undefined, 'Explore')} →
-                                                        </span>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </motion.div>
+                                        <ListingCard
+                                            key={property.id}
+                                            property={property}
+                                            index={idx}
+                                            onToggleSave={toggleSaveProperty}
+                                        />
                                     ))}
                                 </div>
                             ) : (
