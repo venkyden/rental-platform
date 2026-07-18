@@ -211,21 +211,19 @@ async def generate_property_description(
 def _landlord_trust_fields(landlord) -> dict:
     """First name + identity flag for the listing trust line. Never exposes full name.
 
-    full_name is free text: a single token may be a bare surname, and the French
-    "NOM Prénom" convention puts an all-caps surname first. Emit a token only when
-    it plausibly is a given name; otherwise degrade to None rather than leak.
+    full_name is free text: a single token may be a bare surname, and casing can't
+    disambiguate "DUPONT Marc" (NOM Prénom) from "MARC Dupont" (caps given name) —
+    same shape, opposite meaning. Any all-caps token therefore makes the name
+    ambiguous: degrade to None rather than guess and leak a surname. Only the plain
+    "Prénom Nom" shape emits its first token. Real fix is a dedicated first_name
+    column (planned with the WP3 profile work).
     """
     if landlord is None:
         return {"landlord_first_name": None, "landlord_identity_verified": False}
     tokens = (landlord.full_name or "").split()
     first = None
-    if len(tokens) >= 2:
-        candidate = tokens[0]
-        if candidate.isupper() and len(candidate) > 1:
-            candidate = next(
-                (t for t in tokens[1:] if not (t.isupper() and len(t) > 1)), None
-            )
-        first = candidate
+    if len(tokens) >= 2 and not any(t.isupper() and len(t) > 1 for t in tokens):
+        first = tokens[0]
     return {
         "landlord_first_name": first or None,
         "landlord_identity_verified": bool(landlord.identity_verified),

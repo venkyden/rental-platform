@@ -88,14 +88,24 @@ class TestLandlordTrustFields:
         result = _landlord_trust_fields(FakeLandlord())
         assert result["landlord_first_name"] is None
 
-    def test_trust_fields_nom_prenom_convention(self):
-        # French "NOM Prénom": all-caps leading token is the surname.
+    def test_trust_fields_nom_prenom_convention_ambiguous(self):
+        # "DUPONT Marc" (NOM Prénom) and "MARC Dupont" (caps given name) share the
+        # same shape — casing can't tell them apart, so neither may emit anything.
         class FakeLandlord:
             full_name = "DUPONT Marc"
             identity_verified = True
 
         result = _landlord_trust_fields(FakeLandlord())
-        assert result["landlord_first_name"] == "Marc"
+        assert result["landlord_first_name"] is None
+
+    def test_trust_fields_caps_given_name_never_leaks_surname(self):
+        # Regression (security sweep): the previous casing swap emitted "Dupont".
+        class FakeLandlord:
+            full_name = "MARC Dupont"
+            identity_verified = True
+
+        result = _landlord_trust_fields(FakeLandlord())
+        assert result["landlord_first_name"] is None
 
     def test_trust_fields_all_caps_only_never_emitted(self):
         class FakeLandlord:
