@@ -50,7 +50,7 @@ export default function PropertiesPage() {
     const toast = useToast();
     const [properties, setProperties] = useState<Property[]>([]);
     const [loading, setLoading] = useState(true);
-    const [filter, setFilter] = useState<'all' | 'draft' | 'active'>('all');
+    const [filter, setFilter] = useState<'all' | 'draft' | 'active' | 'archived'>('all');
     const ITEMS_PER_PAGE = 12;
     const [hasMore, setHasMore] = useState(false);
     
@@ -103,11 +103,33 @@ export default function PropertiesPage() {
         if (!confirm(t('property.landlord.deleteConfirm', undefined, 'Are you sure you want to delete this property?'))) return;
 
         try {
-            await apiClient.client.delete(`/properties/${id}`);
+            await apiClient.deleteProperty(id);
             loadProperties(false);
             toast.success(t('property.error.deleteSuccess', undefined, 'Property deleted successfully'));
         } catch (error) {
             toast.error('Error deleting property');
+        }
+    };
+
+    const handleArchive = async (id: string) => {
+        if (!confirm(t('property.landlord.archiveConfirm', undefined, 'Are you sure you want to archive this property?'))) return;
+
+        try {
+            await apiClient.archiveProperty(id);
+            loadProperties(false);
+            toast.success(t('property.success.archive', undefined, 'Property archived successfully'));
+        } catch (error) {
+            toast.error('Error archiving property');
+        }
+    };
+
+    const handleUnarchive = async (id: string) => {
+        try {
+            await apiClient.unarchiveProperty(id);
+            loadProperties(false);
+            toast.success(t('property.success.unarchive', undefined, 'Property unarchived successfully'));
+        } catch (error) {
+            toast.error('Error unarchiving property');
         }
     };
 
@@ -142,7 +164,7 @@ export default function PropertiesPage() {
                     {/* Filters - High Fidelity */}
                     <div className="flex items-center justify-between mb-16 px-2">
                         <div className="flex p-2 bg-zinc-100/50 backdrop-blur-2xl rounded-[2.5rem] border border-zinc-200/50 shadow-inner">
-                            {['all', 'draft', 'active'].map((status) => (
+                            {['all', 'draft', 'active', 'archived'].map((status) => (
                                 <button
                                     key={status}
                                     onClick={() => setFilter(status as any)}
@@ -253,19 +275,44 @@ export default function PropertiesPage() {
                                             )}
                                         </div>
 
-                                        <div className="mt-auto grid grid-cols-2 gap-4">
-                                            <button
-                                                onClick={() => router.push(`/properties/${property.id}/edit`)}
-                                                className="py-4 bg-zinc-50 text-zinc-900 rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.3em] hover:bg-zinc-900 hover:text-white transition-all duration-500 shadow-sm"
-                                            >
-                                                {t('property.actions.edit', undefined, 'Edit')}
-                                            </button>
-                                            <button
-                                                onClick={() => router.push(`/properties/${property.id}`)}
-                                                className="py-4 bg-zinc-900 text-white rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.3em] hover:scale-105 active:scale-95 transition-all shadow-xl shadow-zinc-900/20"
-                                            >
-                                                {t('property.actions.preview', undefined, 'Preview')}
-                                            </button>
+                                        <div className="mt-auto flex flex-col gap-2">
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <button
+                                                    onClick={() => router.push(`/properties/${property.id}/edit`)}
+                                                    className="py-4 bg-zinc-50 text-zinc-900 rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.3em] hover:bg-zinc-900 hover:text-white transition-all duration-500 shadow-sm"
+                                                >
+                                                    {t('property.actions.edit', undefined, 'Edit')}
+                                                </button>
+                                                <button
+                                                    onClick={() => router.push(`/properties/${property.id}`)}
+                                                    className="py-4 bg-zinc-900 text-white rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.3em] hover:scale-105 active:scale-95 transition-all shadow-xl shadow-zinc-900/20"
+                                                >
+                                                    {t('property.actions.preview', undefined, 'Preview')}
+                                                </button>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                {property.status === 'archived' ? (
+                                                    <button
+                                                        onClick={() => handleUnarchive(property.id)}
+                                                        className="py-3 bg-zinc-50 text-zinc-600 rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.3em] hover:bg-zinc-200 transition-all duration-500 shadow-sm"
+                                                    >
+                                                        {t('property.actions.unarchive', undefined, 'Unarchive')}
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => handleArchive(property.id)}
+                                                        className="py-3 bg-zinc-50 text-zinc-600 rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.3em] hover:bg-zinc-200 transition-all duration-500 shadow-sm"
+                                                    >
+                                                        {t('property.actions.archive', undefined, 'Archive')}
+                                                    </button>
+                                                )}
+                                                <button
+                                                    onClick={() => handleDelete(property.id)}
+                                                    className="py-3 bg-red-50 text-red-600 rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.3em] hover:bg-red-600 hover:text-white transition-all duration-500 shadow-sm"
+                                                >
+                                                    {t('property.actions.delete', undefined, 'Delete')}
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </motion.div>

@@ -300,6 +300,21 @@ class ApiClient {
         const response = await this.client.get('/properties/wishlist', { params });
         return response.data;
     }
+
+    async deleteProperty(propertyId: string) {
+        const response = await this.client.delete(`/properties/${propertyId}`);
+        return response.data;
+    }
+
+    async archiveProperty(propertyId: string) {
+        const response = await this.client.put(`/properties/${propertyId}/archive`);
+        return response.data;
+    }
+
+    async unarchiveProperty(propertyId: string) {
+        const response = await this.client.put(`/properties/${propertyId}/unarchive`);
+        return response.data;
+    }
 }
 
 export const apiClient = new ApiClient();

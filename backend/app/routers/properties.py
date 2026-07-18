@@ -262,7 +262,9 @@ def _apply_property_filters(
         if landlord_id and str(current_user.id) == str(landlord_id):
             if requested_status != "all":
                 query = query.where(Property.status == requested_status)
-            # If "all", no status filter is applied
+            else:
+                # If "all", exclude deleted
+                query = query.where(Property.status != "deleted")
         else:
             query = query.where(Property.status == "active")
 
@@ -741,11 +743,75 @@ async def delete_property(
             detail="You can only delete your own properties",
         )
 
-    # Use SQLAlchemy ORM delete to trigger all configured 'cascade="all, delete-orphan"' relationships
-    await db.delete(property_obj)
+    # Use soft delete to preserve historical data (leases, applications) without cascading FK errors
+    property_obj.status = "deleted"
     await db.commit()
 
     return
+
+@router.put("/{property_id}/archive", response_model=PropertyResponse)
+async def archive_property(
+    property_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Archive property"""
+    try:
+        prop_uuid = UUID(property_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid property ID format")
+
+    result = await db.execute(select(Property).where(Property.id == prop_uuid))
+    property_obj = result.scalar_one_or_none()
+
+    if not property_obj:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Property not found"
+        )
+
+    if property_obj.landlord_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only archive your own properties",
+        )
+
+    property_obj.status = "archived"
+    await db.commit()
+    await db.refresh(property_obj)
+    
+    return property_obj
+
+@router.put("/{property_id}/unarchive", response_model=PropertyResponse)
+async def unarchive_property(
+    property_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Unarchive property (returns to draft)"""
+    try:
+        prop_uuid = UUID(property_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid property ID format")
+
+    result = await db.execute(select(Property).where(Property.id == prop_uuid))
+    property_obj = result.scalar_one_or_none()
+
+    if not property_obj:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Property not found"
+        )
+
+    if property_obj.landlord_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only unarchive your own properties",
+        )
+
+    property_obj.status = "draft"
+    await db.commit()
+    await db.refresh(property_obj)
+    
+    return property_obj
 
 
 @router.post("/{property_id}/publish", response_model=PropertyResponse)
