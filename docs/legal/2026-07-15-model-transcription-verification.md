@@ -79,7 +79,7 @@ DE COLOCATION DE LOGEMENT NU (Soumis au titre Ier…)"* + the same two preamble 
 
 ### F2 — NEW: inserted field with no basis in the décret
 `annexe2_meuble.md`, section "A. Consistance du logement":
-```
+```text
 - identifiant fiscal du logement : [Numéro Identifiant Fiscal du logement] ;
 ```
 **This line does not exist in the official annexe.** It sits between "localisation du
