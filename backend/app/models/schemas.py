@@ -52,6 +52,7 @@ class UserResponse(BaseModel):
     id: UUID
     email: str
     full_name: Optional[str]
+    first_name: Optional[str] = None
     bio: Optional[str] = None
     profile_picture_url: Optional[str] = None
     role: str
@@ -92,7 +93,27 @@ class SwitchRoleRequest(BaseModel):
 
 class UserUpdate(BaseModel):
     full_name: Optional[str] = Field(None, max_length=100)
+    first_name: Optional[str] = Field(None, max_length=100)
     bio: Optional[str] = Field(None, max_length=500)
+
+    @field_validator("bio")
+    @classmethod
+    def validate_bio(cls, v: Optional[str]) -> Optional[str]:
+        """40–300 chars when set; no contact details (anti-bypass of the platform
+        + GDPR minimization). Empty string clears the bio."""
+        if v is None:
+            return v
+        v = v.strip()
+        if not v:
+            return ""
+        if len(v) < 40 or len(v) > 300:
+            raise ValueError("bio must be between 40 and 300 characters")
+        import re
+        if re.search(r"\S+@\S+\.\S+", v):
+            raise ValueError("bio must not contain contact details")
+        if re.search(r"\+?\d[\d .\-]{8,}", v):
+            raise ValueError("bio must not contain contact details")
+        return v
 
 
 class ContactPreferencesUpdate(BaseModel):
@@ -169,6 +190,7 @@ class TenantSummary(BaseModel):
     """Minimal tenant profile exposed in application responses."""
     id: UUID
     full_name: Optional[str] = None
+    bio: Optional[str] = None
     email: str
     profile_picture_url: Optional[str] = None
     trust_score: int = 0

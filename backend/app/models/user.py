@@ -46,6 +46,9 @@ class User(Base):
 
     # Profile fields
     full_name = Column(String, nullable=True)
+    # Dedicated given name — trust lines must never parse full_name (surname leak,
+    # see 830556e). Nullable: captured at profile/onboarding, never backfilled by guess.
+    first_name = Column(String, nullable=True)
     phone = Column(String, nullable=True)
     bio = Column(String, nullable=True)
     profile_picture_url = Column(String, nullable=True)

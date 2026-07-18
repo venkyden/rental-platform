@@ -415,8 +415,10 @@ async def update_me(
     """Update current user profile (name, bio)"""
     if user_update.full_name is not None:
         current_user.full_name = user_update.full_name.strip()
+    if user_update.first_name is not None:
+        current_user.first_name = user_update.first_name.strip() or None
     if user_update.bio is not None:
-        current_user.bio = user_update.bio
+        current_user.bio = user_update.bio or None
         
     await db.commit()
     await db.refresh(current_user)

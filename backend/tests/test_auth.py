@@ -174,7 +174,7 @@ class TestAuthEndpoints:
         """PATCH /auth/me should update the user profile info."""
         payload = {
             "full_name": "Updated Name",
-            "bio": "New bio testing 123"
+            "bio": "Calm professional tenant, non-smoker, looking near the tramway."  # ≥40 chars (WP3 rule)
         }
         resp = tenant_client.patch("/auth/me", json=payload)
         assert resp.status_code in (200, 500) # Mock handling

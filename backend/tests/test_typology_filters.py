@@ -114,3 +114,22 @@ class TestLandlordTrustFields:
 
         result = _landlord_trust_fields(FakeLandlord())
         assert result["landlord_first_name"] is None
+
+    def test_trust_fields_first_name_column_wins(self):
+        # Dedicated column is authoritative — even over an ambiguous full_name.
+        class FakeLandlord:
+            first_name = "Marc"
+            full_name = "DUPONT Marc"
+            identity_verified = True
+
+        result = _landlord_trust_fields(FakeLandlord())
+        assert result["landlord_first_name"] == "Marc"
+
+    def test_trust_fields_blank_first_name_falls_back(self):
+        class FakeLandlord:
+            first_name = "   "
+            full_name = "Marc Dupont"
+            identity_verified = True
+
+        result = _landlord_trust_fields(FakeLandlord())
+        assert result["landlord_first_name"] == "Marc"

@@ -252,6 +252,9 @@ class PropertyResponse(BaseModel):
     # Trust line (WP1): first name only + identity verification state — never full PII
     landlord_first_name: Optional[str] = None
     landlord_identity_verified: bool = False
+    # Landlord card (WP3): populated on the detail endpoint only
+    landlord_bio: Optional[str] = None
+    landlord_member_since: Optional[datetime] = None
 
     status: str = "draft"
     views_count: int = 0

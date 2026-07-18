@@ -79,6 +79,7 @@ def make_mock_user(role: str = "tenant", email: str = "test@example.com"):
     user.gender = None
     user.birth_date = None
     user.bio = None
+    user.first_name = None  # real column defaults NULL; MagicMock attr fails response validation
     user.profile_picture_url = None
     user.created_at = datetime.utcnow()
     user.preferences = {}

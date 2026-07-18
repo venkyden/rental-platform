@@ -215,15 +215,16 @@ def _landlord_trust_fields(landlord) -> dict:
     disambiguate "DUPONT Marc" (NOM Prénom) from "MARC Dupont" (caps given name) —
     same shape, opposite meaning. Any all-caps token therefore makes the name
     ambiguous: degrade to None rather than guess and leak a surname. Only the plain
-    "Prénom Nom" shape emits its first token. Real fix is a dedicated first_name
-    column (planned with the WP3 profile work).
+    "Prénom Nom" shape emits its first token. The dedicated first_name column is
+    authoritative when set; the heuristic is the fallback for legacy profiles.
     """
     if landlord is None:
         return {"landlord_first_name": None, "landlord_identity_verified": False}
-    tokens = (landlord.full_name or "").split()
-    first = None
-    if len(tokens) >= 2 and not any(t.isupper() and len(t) > 1 for t in tokens):
-        first = tokens[0]
+    first = (getattr(landlord, "first_name", None) or "").strip() or None
+    if first is None:
+        tokens = (landlord.full_name or "").split()
+        if len(tokens) >= 2 and not any(t.isupper() and len(t) > 1 for t in tokens):
+            first = tokens[0]
     return {
         "landlord_first_name": first or None,
         "landlord_identity_verified": bool(landlord.identity_verified),
@@ -615,6 +616,9 @@ async def get_property(
 
     prop_dict = PropertyResponse.model_validate(property_obj).model_dump()
     prop_dict.update(_landlord_trust_fields(property_obj.landlord))
+    if property_obj.landlord:
+        prop_dict["landlord_bio"] = property_obj.landlord.bio
+        prop_dict["landlord_member_since"] = property_obj.landlord.created_at
 
     # Calculate is_saved
     is_saved = False
@@ -756,7 +760,12 @@ async def publish_property(
     """Publish a draft property"""
 
     # Get property
-    result = await db.execute(select(Property).where(Property.id == property_id))
+    from sqlalchemy.orm import selectinload
+    result = await db.execute(
+        select(Property)
+        .options(selectinload(Property.landlord))
+        .where(Property.id == property_id)
+    )
     property_obj = result.scalar_one_or_none()
 
     if not property_obj:
@@ -792,6 +801,14 @@ async def publish_property(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You do not have permission to publish this property",
+        )
+
+    # WP3 gate: a listing without a landlord bio ships an anonymous counterparty —
+    # the owner (not the publishing team member) must have completed their bio.
+    if not ((property_obj.landlord.bio if property_obj.landlord else "") or "").strip():
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="landlord_bio_required",
         )
 
     # Check per-room media coverage

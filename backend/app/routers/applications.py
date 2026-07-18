@@ -35,6 +35,13 @@ async def create_application(
 ):
     """Submit a new application for a property"""
 
+    # WP3 gate: applications without a bio read as anonymous to the landlord.
+    if not (current_user.bio or "").strip():
+        raise HTTPException(
+            status_code=422,
+            detail="tenant_bio_required",
+        )
+
     # 1. Check if property exists
     result = await db.execute(
         select(Property).where(Property.id == application_in.property_id)
