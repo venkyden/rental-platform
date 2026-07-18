@@ -78,3 +78,29 @@ class TestLandlordTrustFields:
 
         result = _landlord_trust_fields(FakeLandlord())
         assert result["landlord_first_name"] is None
+
+    def test_trust_fields_single_token_never_emitted(self):
+        # A lone token may be a bare surname — degrade to None, don't leak.
+        class FakeLandlord:
+            full_name = "Dupont"
+            identity_verified = True
+
+        result = _landlord_trust_fields(FakeLandlord())
+        assert result["landlord_first_name"] is None
+
+    def test_trust_fields_nom_prenom_convention(self):
+        # French "NOM Prénom": all-caps leading token is the surname.
+        class FakeLandlord:
+            full_name = "DUPONT Marc"
+            identity_verified = True
+
+        result = _landlord_trust_fields(FakeLandlord())
+        assert result["landlord_first_name"] == "Marc"
+
+    def test_trust_fields_all_caps_only_never_emitted(self):
+        class FakeLandlord:
+            full_name = "DUPONT MARTIN"
+            identity_verified = True
+
+        result = _landlord_trust_fields(FakeLandlord())
+        assert result["landlord_first_name"] is None
