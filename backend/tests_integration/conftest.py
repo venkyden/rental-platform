@@ -103,6 +103,7 @@ async def make_user(sm, role="tenant", email=None, biometric_consent=True) -> Us
             hashed_password=get_password_hash("Passw0rd!23"),
             role=role,
             full_name=f"{role.title()} User",
+            bio=f"A default bio for the {role} test user.",
             is_active=True,
             email_verified=True,
             trust_score=50,
