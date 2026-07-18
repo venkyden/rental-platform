@@ -502,9 +502,9 @@ Rules:
 - has_live_face: a real human face is clearly visible in the photo (not a printout/screen)
 - has_id_document: a government ID is clearly present and its text is legible
 - id_has_face_photo: the ID itself contains a portrait/face photo
-- face_comparison_reasoning: MUST carefully compare facial structure before scoring.
-- face_match_confidence: strictly evaluate facial features based on your reasoning. 1.0 for perfect match, 0.0 for completely different people.
-- is_same_person: strictly true ONLY IF face_match_confidence > 0.8. If they are different people, this MUST be false.
+- face_comparison_reasoning: YOU ARE AUDITING FOR FRAUD. Assume they are DIFFERENT people. Look for mismatched jawline, nose shape, eyes, and eyebrows. Briefly describe any mismatches.
+- face_match_confidence: strictly evaluate facial features based on reasoning. 1.0 for perfect match, 0.0 for completely different people. If ANY feature explicitly mismatches, this MUST be 0.1 or lower.
+- is_same_person: strictly true ONLY IF face_match_confidence >= 0.8. If they are different people, this MUST be false.
 - confidence_score below 0.4 if: blurry, poorly lit, ID text unreadable, or face obscured"""
 
         models_to_try = ["gemini-2.5-flash"]
@@ -546,9 +546,9 @@ Rules:
                         {
                             "name": "same_person",
                             "description": "Live face matches face on ID",
-                            "passed": bool(data.get("is_same_person", False)) and float(data.get("face_match_confidence", 1.0)) > 0.8,
+                            "passed": bool(data.get("is_same_person", False)) and float(data.get("face_match_confidence", 0.0)) >= 0.8,
                             "critical": True,
-                            "details": "Identity confirmed" if bool(data.get("is_same_person", False)) and float(data.get("face_match_confidence", 1.0)) > 0.8 else "Live face does not match the face on the ID",
+                            "details": "Identity confirmed" if bool(data.get("is_same_person", False)) and float(data.get("face_match_confidence", 0.0)) >= 0.8 else "Live face does not match the face on the ID",
                         },
                         {
                             "name": "image_quality",
