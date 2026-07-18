@@ -637,11 +637,11 @@ Rules:
                         break
                     logger.error(f"Selfie+ID verification failed: {e}", exc_info=True)
                     # Fail CLOSED — service error must not become a verified fact.
-                    return {"verified": False, "status": "error", "data": None, "validation_checks": [], "rejection_reason": "verification_service_unavailable"}
+                    return {"verified": False, "status": "error", "data": None, "validation_checks": [], "rejection_reason": f"AI Error: {e}"}
 
         logger.error(f"All models failed for selfie+ID verification. Last error: {last_error}")
         # Fail CLOSED — exhausted retries must not become a verified fact.
-        return {"verified": False, "status": "error", "data": None, "validation_checks": [], "rejection_reason": "verification_service_unavailable"}
+        return {"verified": False, "status": "error", "data": None, "validation_checks": [], "rejection_reason": f"AI Error exhausted: {last_error}"}
 
     async def compare_faces(
         self,
