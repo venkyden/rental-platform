@@ -49,13 +49,21 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
         setIsOffline(!navigator.onLine);
         loadSessionDetails();
         requestLocation();
-        const { backgroundSyncManager } = require('@/lib/backgroundSync');
-        const unsubscribe = backgroundSyncManager.subscribe((count: number) => {
-            setPendingCount(count);
-        });
+
+        let unsubscribe: (() => void) | null = null;
+        import('@/lib/backgroundSync')
+            .then(({ backgroundSyncManager }) => {
+                unsubscribe = backgroundSyncManager.subscribe((count: number) => {
+                    setPendingCount(count);
+                });
+            })
+            .catch(() => {
+                // IndexedDB unavailable (e.g. mobile private browsing) — offline queue disabled
+                console.warn('Offline queue unavailable — uploads will not be queued for retry.');
+            });
 
         return () => {
-            unsubscribe();
+            unsubscribe?.();
             window.removeEventListener('online', handleOnline);
             window.removeEventListener('offline', handleOffline);
         };
@@ -118,14 +126,18 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
             };
 
             if (isOffline) {
-                const { backgroundSyncManager } = await import('@/lib/backgroundSync');
-                await backgroundSyncManager.enqueueAndSync(
-                    file,
-                    JSON.stringify(metadataObj),
-                    code,
-                    file.type.startsWith('video') ? 'video' : 'photo'
-                );
-                successCount++;
+                try {
+                    const { backgroundSyncManager } = await import('@/lib/backgroundSync');
+                    await backgroundSyncManager.enqueueAndSync(
+                        file,
+                        JSON.stringify(metadataObj),
+                        code,
+                        file.type.startsWith('video') ? 'video' : 'photo'
+                    );
+                    successCount++;
+                } catch {
+                    showToast('Offline queueing unavailable. Please try again when online.', 'error');
+                }
                 continue;
             }
 
@@ -136,14 +148,18 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
             } catch (err: any) {
                 const msg = err?.response?.data?.detail || 'Upload failed. Saving for retry when online.';
                 showToast(msg, 'error');
-                // Queue for offline retry
-                const { backgroundSyncManager } = await import('@/lib/backgroundSync');
-                await backgroundSyncManager.enqueueAndSync(
-                    file,
-                    JSON.stringify(metadataObj),
-                    code,
-                    file.type.startsWith('video') ? 'video' : 'photo'
-                );
+                // Queue for offline retry — best-effort, never crash on queue failure
+                try {
+                    const { backgroundSyncManager } = await import('@/lib/backgroundSync');
+                    await backgroundSyncManager.enqueueAndSync(
+                        file,
+                        JSON.stringify(metadataObj),
+                        code,
+                        file.type.startsWith('video') ? 'video' : 'photo'
+                    );
+                } catch {
+                    // IndexedDB unavailable — skip offline queueing silently
+                }
             }
         }
 
