@@ -146,7 +146,10 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                 if (response.gps_verified) setIsSessionVerified(true);
                 successCount++;
             } catch (err: any) {
-                const msg = err?.response?.data?.detail || 'Upload failed. Saving for retry when online.';
+                const detail = err?.response?.data?.detail;
+                const msg = Array.isArray(detail)
+                    ? detail.map((d: any) => d.msg || JSON.stringify(d)).join(', ')
+                    : (typeof detail === 'string' ? detail : 'Upload failed. Saving for retry when online.');
                 showToast(msg, 'error');
                 // Queue for offline retry — best-effort, never crash on queue failure
                 try {
