@@ -15,9 +15,9 @@ import { useLanguage } from '@/lib/LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import StaticMapView from '@/components/StaticMapView';
 import Image from 'next/image';
-import { 
-    MapPin, Share2, Shield, Zap, Wind, Check, LayoutGrid, Info, 
-    TrendingUp, Heart, Navigation, Building2, Flame, AlertTriangle, Calendar
+import {
+    MapPin, Share2, Shield, Zap, Wind, Check, LayoutGrid, Info,
+    TrendingUp, Heart, Navigation, Building2, Flame, AlertTriangle, Calendar, BadgeCheck
 } from 'lucide-react';
 
 interface Property {
@@ -50,6 +50,10 @@ interface Property {
     nearby_landmarks: any;
     photos: any;
     room_details?: any[];
+    landlord_first_name?: string | null;
+    landlord_identity_verified?: boolean;
+    landlord_bio?: string | null;
+    landlord_member_since?: string | null;
     status: string;
     views_count: number;
     created_at: string;
@@ -80,7 +84,7 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
     const params = useParams();
     const { user } = useAuth();
     const toast = useToast();
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
     
     const [property, setProperty] = useState<Property>(initialProperty);
     const [loading, setLoading] = useState(false);
@@ -143,7 +147,13 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
             toast.success(t('property.error.publishSuccess', undefined, 'Property published successfully'));
             loadProperty();
         } catch (error: any) {
-            toast.error(error.response?.data?.detail || t('property.error.publishFail', undefined, 'Failed to publish property'));
+            const detail = error.response?.data?.detail;
+            if (detail === 'landlord_bio_required') {
+                toast.error(t('bio.landlordRequired', undefined, 'Add a short bio to your profile before publishing — tenants need to know who they are dealing with.'));
+                router.push('/profile');
+            } else {
+                toast.error(detail || t('property.error.publishFail', undefined, 'Failed to publish property'));
+            }
         } finally {
             setPublishing(false);
         }
@@ -160,8 +170,13 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
             setIsApplying(false);
             setCoverLetter('');
         } catch (error: any) {
-            const msg = error.response?.data?.detail || t('property.apply.error', undefined, 'Failed to submit application');
-            toast.error(msg);
+            const detail = error.response?.data?.detail;
+            if (detail === 'tenant_bio_required') {
+                toast.error(t('bio.tenantRequired', undefined, 'Add a short bio to your profile before applying — landlords need to know who they are dealing with.'));
+                router.push('/profile');
+            } else {
+                toast.error(detail || t('property.apply.error', undefined, 'Failed to submit application'));
+            }
         } finally {
             setSubmittingApp(false);
         }
@@ -396,6 +411,45 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                     </motion.div>
                                 ))}
                             </div>
+
+                            {/* Landlord card (WP3) — who is behind this listing */}
+                            {property.landlord_bio && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true }}
+                                    className="glass-card !p-10 rounded-[3rem] border-zinc-100"
+                                >
+                                    <h2 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.4em] mb-6">
+                                        {t('bio.landlordCard.title', undefined, 'Qui propose ce logement')}
+                                    </h2>
+                                    <div className="flex items-start gap-5">
+                                        <div className="w-14 h-14 bg-zinc-900 rounded-2xl flex items-center justify-center text-xl text-white font-black shrink-0">
+                                            {(property.landlord_first_name || '?').charAt(0)}
+                                        </div>
+                                        <div className="min-w-0">
+                                            <div className="flex items-center gap-2 flex-wrap mb-1">
+                                                {property.landlord_first_name && (
+                                                    <span className="text-lg font-black text-zinc-900">{property.landlord_first_name}</span>
+                                                )}
+                                                {property.landlord_identity_verified && (
+                                                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-zinc-900 text-white text-[9px] font-black uppercase tracking-widest rounded-full">
+                                                        <BadgeCheck className="w-3 h-3" />
+                                                        {t('bio.landlordCard.identityVerified', undefined, 'Identité vérifiée')}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            {property.landlord_member_since && (
+                                                <p className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest mb-3">
+                                                    {t('bio.landlordCard.memberSince', undefined, 'Membre depuis')}{' '}
+                                                    {new Intl.DateTimeFormat(language === 'fr' ? 'fr-FR' : 'en-GB', { month: 'long', year: 'numeric' }).format(new Date(property.landlord_member_since))}
+                                                </p>
+                                            )}
+                                            <p className="text-sm text-zinc-600 leading-relaxed">{property.landlord_bio}</p>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            )}
 
                             {/* Rent Control breakdown (ALUR / ELAN) */}
                             {property.loyer_reference !== undefined && property.loyer_reference !== null && (

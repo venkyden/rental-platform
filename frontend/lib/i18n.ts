@@ -68,6 +68,25 @@ export const translations = {
                 evidence: "Could not download the evidence pack",
             },
         },
+        // Bios (WP3): required on both sides
+        bio: {
+            sectionTitle: "Public presentation",
+            firstName: "First name (shown on your listings and applications)",
+            firstNamePlaceholder: "Marc",
+            label: "Short bio",
+            placeholder: "Your situation (student, employed…), your rhythm of life, why this city. 40–300 characters.",
+            guidance: "Required to publish a listing or apply. Do not include origin, religion, family status, health, or contact details.",
+            saved: "Profile updated",
+            saveFailed: "Could not save your profile. Bio must be 40–300 characters.",
+            noContactDetails: "Your bio must not contain an email address or phone number.",
+            landlordRequired: "Add a short bio to your profile before publishing — tenants need to know who they are dealing with.",
+            tenantRequired: "Add a short bio to your profile before applying — landlords need to know who they are dealing with.",
+            landlordCard: {
+                title: "Who offers this home",
+                identityVerified: "Verified identity",
+                memberSince: "Member since",
+            },
+        },
         // Listing cards (shared landing + search)
         listing: {
             perMonth: "/ month",
@@ -2714,6 +2733,25 @@ export const translations = {
                     }
                 }
             }
+        },
+        // Bios (WP3): required on both sides
+        bio: {
+            sectionTitle: "Présentation publique",
+            firstName: "Prénom (affiché sur vos annonces et candidatures)",
+            firstNamePlaceholder: "Marc",
+            label: "Courte bio",
+            placeholder: "Votre situation (étudiant·e, en poste…), votre rythme de vie, pourquoi cette ville. 40 à 300 caractères.",
+            guidance: "Obligatoire pour publier une annonce ou candidater. N'indiquez ni origine, ni religion, ni situation familiale, ni santé, ni coordonnées.",
+            saved: "Profil mis à jour",
+            saveFailed: "Impossible d'enregistrer. La bio doit faire entre 40 et 300 caractères.",
+            noContactDetails: "Votre bio ne doit pas contenir d'email ni de numéro de téléphone.",
+            landlordRequired: "Ajoutez une courte bio à votre profil avant de publier — les locataires doivent savoir à qui ils ont affaire.",
+            tenantRequired: "Ajoutez une courte bio à votre profil avant de candidater — les propriétaires doivent savoir à qui ils ont affaire.",
+            landlordCard: {
+                title: "Qui propose ce logement",
+                identityVerified: "Identité vérifiée",
+                memberSince: "Membre depuis",
+            },
         },
         // Listing cards (shared landing + search)
         listing: {

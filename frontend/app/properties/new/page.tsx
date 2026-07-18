@@ -200,7 +200,12 @@ export default function NewPropertyPage() {
         } catch (e: any) {
             console.error('Publish error:', e);
             const detail = e.response?.data?.detail;
-            toast.error(typeof detail === 'string' ? detail : t('properties.new.steps.success.publishFailed', undefined, 'Publishing failed. Please try again.'));
+            if (detail === 'landlord_bio_required') {
+                toast.error(t('bio.landlordRequired', undefined, 'Add a short bio to your profile before publishing — tenants need to know who they are dealing with.'));
+                router.push('/profile');
+            } else {
+                toast.error(typeof detail === 'string' ? detail : t('properties.new.steps.success.publishFailed', undefined, 'Publishing failed. Please try again.'));
+            }
         } finally {
             setPublishing(false);
         }

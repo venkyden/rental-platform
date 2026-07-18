@@ -14,6 +14,7 @@ import { useLanguage } from '@/lib/LanguageContext';
 interface TenantSummary {
     id: string;
     full_name?: string;
+    bio?: string | null;
     email: string;
     profile_picture_url?: string;
     trust_score: number;
@@ -328,6 +329,13 @@ export default function ReceivedApplicationsPage() {
                                                                         </span>
                                                                     )}
                                                                 </div>
+                                                            )}
+
+                                                            {/* Tenant bio (WP3) — next to the verification summary */}
+                                                            {tenant?.bio && (
+                                                                <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">
+                                                                    {tenant.bio}
+                                                                </p>
                                                             )}
                                                         </div>
 

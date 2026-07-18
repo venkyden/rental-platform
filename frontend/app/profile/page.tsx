@@ -8,6 +8,99 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/useAuth';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { apiClient } from '@/lib/api';
+import { useToast } from '@/lib/ToastContext';
+
+function BioSection() {
+    const { user, checkAuth } = useAuth() as any;
+    const { t } = useLanguage();
+    const toast = useToast();
+    const [firstName, setFirstName] = useState('');
+    const [bio, setBio] = useState('');
+    const [saving, setSaving] = useState(false);
+
+    useEffect(() => {
+        setFirstName(user?.first_name || '');
+        setBio(user?.bio || '');
+    }, [user?.first_name, user?.bio]);
+
+    const bioLength = bio.trim().length;
+    const bioValid = bioLength === 0 || (bioLength >= 40 && bioLength <= 300);
+
+    const handleSave = async () => {
+        setSaving(true);
+        try {
+            await apiClient.client.patch('/auth/me', {
+                first_name: firstName,
+                bio: bio.trim(),
+            });
+            await checkAuth?.();
+            toast.success(t('bio.saved', undefined, 'Profile updated'));
+        } catch (e: any) {
+            const detail = e.response?.data?.detail;
+            const msg = Array.isArray(detail) ? detail[0]?.msg : detail;
+            toast.error(
+                typeof msg === 'string' && msg.includes('contact details')
+                    ? t('bio.noContactDetails', undefined, 'Your bio must not contain an email address or phone number.')
+                    : t('bio.saveFailed', undefined, 'Could not save your profile. Bio must be 40–300 characters.')
+            );
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    return (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass-card mb-8">
+            <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.4em] mb-6">
+                {t('bio.sectionTitle', undefined, 'Public presentation')}
+            </h3>
+            <div className="space-y-5">
+                <div>
+                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest block mb-2">
+                        {t('bio.firstName', undefined, 'First name (shown on your listings and applications)')}
+                    </label>
+                    <input
+                        type="text"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        maxLength={100}
+                        className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-2xl text-sm font-semibold focus:ring-2 focus:ring-zinc-900 outline-none"
+                        placeholder={t('bio.firstNamePlaceholder', undefined, 'Marc')}
+                    />
+                </div>
+                <div>
+                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest block mb-2">
+                        {t('bio.label', undefined, 'Short bio')}
+                    </label>
+                    <textarea
+                        value={bio}
+                        onChange={(e) => setBio(e.target.value)}
+                        rows={4}
+                        maxLength={300}
+                        className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-2xl text-sm focus:ring-2 focus:ring-zinc-900 outline-none resize-none"
+                        placeholder={t('bio.placeholder', undefined, 'Your situation (student, employed…), your rhythm of life, why this city. 40–300 characters.')}
+                    />
+                    <div className="flex justify-between mt-2">
+                        <p className="text-[11px] text-zinc-400 max-w-md">
+                            {t('bio.guidance', undefined, 'Required to publish a listing or apply. Do not include origin, religion, family status, health, or contact details.')}
+                        </p>
+                        <span className={`text-[11px] font-bold shrink-0 ${bioValid ? 'text-zinc-400' : 'text-red-500'}`}>
+                            {bioLength}/300
+                        </span>
+                    </div>
+                </div>
+                <button
+                    onClick={handleSave}
+                    disabled={saving || !bioValid}
+                    className="px-8 py-3 bg-zinc-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-40"
+                >
+                    {saving ? t('common.saving', undefined, 'Saving…') : t('common.save', undefined, 'Save')}
+                </button>
+            </div>
+        </motion.div>
+    );
+}
 
 export default function ProfilePage() {
     const router = useRouter();
@@ -27,7 +120,8 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="max-w-2xl mx-auto">
-                    <motion.div 
+                    <BioSection />
+                    <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         className="glass-card mb-8"
