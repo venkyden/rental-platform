@@ -294,6 +294,15 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
         }
     };
 
+    const requireConsent = () => {
+        if (!consent) {
+            setError(t('verification.upload.consentRequired', undefined,
+                'Please consent to automated document analysis to continue'));
+            return false;
+        }
+        return true;
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!files.length || !documentType) {
