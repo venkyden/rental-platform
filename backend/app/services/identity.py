@@ -492,9 +492,10 @@ Return ONLY this JSON — no markdown, no extra text:
     "face_match_confidence": 0.0 to 1.0,
     "is_same_person": true or false,
     "full_name": "full name from the ID or 'Unknown'",
+    "document_title": "read the main title or heading printed on the ID document (e.g. 'CARTE NATIONALE D'IDENTITÉ', 'PASSPORT', 'CARTE VITALE')",
     "document_number": "document/passport/license number from the ID or 'Unknown'",
     "expiry_date": "YYYY-MM-DD or null",
-    "detected_document_type": "passport, id_card, residence_permit, or drivers_license",
+    "detected_document_type": "passport, id_card, residence_permit, drivers_license, or other",
     "confidence_score": 0.0 to 1.0
 }}
 
@@ -559,7 +560,7 @@ Rules:
                         },
                     ]
 
-                    detected_type = data.get("detected_document_type", document_type)
+                    detected_type = data.get("detected_document_type", "")
                     french_mappings = {
                         "passport": {"passeport"},
                         "id_card": {"carte_d_identite", "carte_nationale_d_identite", "cni", "national_id", "national_id_card", "id"},
@@ -571,10 +572,8 @@ Rules:
                             return ""
                         import unicodedata
                         import re
-                        # Strip accents and lower-case
                         norm = ''.join(c for c in unicodedata.normalize('NFD', str(val).lower())
                                       if unicodedata.category(c) != 'Mn')
-                        # Replace any sequence of non-alphanumeric chars with a single underscore
                         norm = re.sub(r'[^a-z0-9]+', '_', norm).strip('_')
                         for canonical, synonyms in french_mappings.items():
                             if norm == canonical or norm in synonyms:
@@ -583,23 +582,27 @@ Rules:
 
                     expected_canonical = get_canonical_type(document_type)
                     detected_canonical = get_canonical_type(detected_type)
-                    type_matches = (expected_canonical == detected_canonical)
+                    
+                    # Strictly prohibit health insurance cards (e.g. Carte Vitale)
+                    document_title = data.get("document_title", "")
+                    is_health_card = any(keyword in str(detected_type).lower() or keyword in str(document_title).lower() for keyword in ["health", "vitale", "assurance", "maladie"])
+                    type_matches = (expected_canonical == detected_canonical) and not is_health_card and bool(detected_canonical)
 
                     checks.append({
                         "name": "document_type_match",
                         "description": "Document type matches the selected type",
                         "passed": type_matches,
                         "critical": True,
-                        "details": f"Expected: {document_type} | Detected: {detected_type}",
+                        "details": f"Expected: {document_type} | Detected: {detected_type or 'Unknown'}",
                     })
 
                     full_name = data.get("full_name", "Unknown")
-                    if full_name and full_name != "Unknown" and expected_name:
-                        match = self._fuzzy_name_match(full_name, expected_name)
+                    if expected_name:
+                        match = self._fuzzy_name_match(full_name, expected_name) if full_name != "Unknown" else 0.0
                         checks.append({
                             "name": "name_match",
                             "description": "Name on ID matches account name",
-                            "passed": match > 0.5,
+                            "passed": match > 0.5 and full_name != "Unknown",
                             "critical": True,
                             "details": f"ID: {full_name} | Account: {expected_name} | Match: {match:.0%}",
                         })
