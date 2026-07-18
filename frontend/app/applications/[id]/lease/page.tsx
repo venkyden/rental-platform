@@ -288,8 +288,8 @@ export default function LeaseGeneratorPage() {
                                             the annexes cover colocation); mobilité lacks art. 25-13 mentions;
                                             code_civil is outside loi 89 (no contrat-type published).
                                             See app/services/lease_generator.py. */}
-                                        <option value="meuble">{t('lease.meuble.name')} (Loi 89)</option>
-                                        <option value="vide" disabled>{t('lease.vide.name')} (Loi 89) — {t('lease.type.unavailable', undefined, 'bientôt disponible')}</option>
+                                        <option value="meuble">{t('lease.meuble.name')} (Loi 1989)</option>
+                                        <option value="vide" disabled>{t('lease.vide.name')} (Loi 1989) — {t('lease.type.unavailable', undefined, 'bientôt disponible')}</option>
                                         <option value="mobilite" disabled>{t('lease.mobilite.name')} — {t('lease.type.unavailable', undefined, 'bientôt disponible')}</option>
                                         <option value="etudiant" disabled>{t('lease.etudiant.name')} — {t('lease.type.unavailable', undefined, 'bientôt disponible')}</option>
                                         <option value="colocation" disabled>Colocation Meublée — {t('lease.type.unavailable', undefined, 'bientôt disponible')}</option>

@@ -114,7 +114,19 @@ async def generate_lease(
     # Generate HTML
     rent = request.rent_override or float(property_obj.monthly_rent or 0)
     charges = request.charges_override or float(property_obj.charges or 0)
-    deposit = request.deposit_override
+
+    # Same deposit rule as /create (loi 89 art. 22 caps per lease type): without
+    # this, generate_html silently capped an over-limit override, letting a user
+    # preview a lease that /create would then 422 on.
+    if request.deposit_override is not None:
+        deposit = request.deposit_override
+    else:
+        deposit = max_deposit(request.lease_type, rent)
+    deposit_errors = validate_deposit(request.lease_type, deposit, rent)
+    if deposit_errors:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=deposit_errors[0]
+        )
 
     # The generator refuses (ValueError) rather than emit a legally wrong contract:
     # bail mobilité (missing art. 25-13 mentions → requalification) and any lease

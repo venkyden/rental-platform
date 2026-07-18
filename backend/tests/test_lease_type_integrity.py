@@ -177,3 +177,51 @@ class TestCreateLeaseDepositCeiling:
         r, lease = _post_create("meuble", deposit_override=1200.0)
         assert r.status_code == 200, r.text
         assert lease.deposit_amount == 1200.0
+
+
+# ── Preview/create alignment: POST /leases/generate deposit ceiling ──────────
+
+def _post_generate(lease_type, deposit_override=None, rent=800.0):
+    landlord_id = uuid.uuid4()
+    landlord = _mk(id=landlord_id, identity_verified=True, full_name="Jean Dupont")
+    application = _mk(id=uuid.uuid4(), property_id=uuid.uuid4(),
+                      tenant_id=uuid.uuid4(), status="approved")
+    property_obj = _mk(id=application.property_id, landlord_id=landlord_id,
+                       monthly_rent=rent, charges=50,
+                       address_line1="12 rue de la Paix", address_line2=None,
+                       postal_code="44000", city="Nantes", furnished=True)
+    tenant = _mk(id=application.tenant_id, full_name="Marie Martin")
+    target = main_app.app if hasattr(main_app, "app") else main_app
+    sess = MagicMock()
+    # generate does three selects: Application, Property, tenant User.
+    sess.execute = AsyncMock(side_effect=[
+        MagicMock(scalar_one_or_none=MagicMock(return_value=application)),
+        MagicMock(scalar_one_or_none=MagicMock(return_value=property_obj)),
+        MagicMock(scalar_one_or_none=MagicMock(return_value=tenant)),
+    ])
+
+    def _get_db():
+        yield sess
+
+    target.dependency_overrides[get_db] = _get_db
+    target.dependency_overrides[get_current_user] = lambda: landlord
+    body = {"application_id": str(application.id), "start_date": "2026-09-01",
+            "lease_type": lease_type}
+    if deposit_override is not None:
+        body["deposit_override"] = deposit_override
+    try:
+        return TestClient(main_app).post("/leases/generate", json=body)
+    finally:
+        target.dependency_overrides.clear()
+
+
+class TestGenerateDepositAlignedWithCreate:
+    def test_preview_rejects_over_cap_deposit(self):
+        # generate_html silently capped an over-limit override while /create 422s —
+        # a user could preview a lease that /create would then refuse.
+        r = _post_generate("meuble", deposit_override=5000.0)
+        assert r.status_code == 422
+
+    def test_preview_accepts_within_cap(self):
+        r = _post_generate("meuble", deposit_override=1200.0)
+        assert r.status_code == 200, r.text
