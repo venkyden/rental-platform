@@ -7,95 +7,15 @@ import { Camera, CheckCircle2, AlertCircle, Shield, RefreshCcw, ArrowRight, Load
 import { apiClient } from '@/lib/api';
 import { useLanguage } from '@/lib/LanguageContext';
 
-type Step = 'loading' | 'select_doc' | 'guide' | 'capture' | 'preview' | 'uploading' | 'success' | 'error';
+type Step = 'loading' | 'select_doc' | 'guide' | 'preview' | 'uploading' | 'success' | 'error';
+type CaptureSide = 'front' | 'back' | 'selfie';
 
 const DOCUMENT_TYPES = [
-    {
-        value: 'passport',
-        labelEn: 'Passport',
-        labelFr: 'Passeport',
-        descEn: 'Bio page with photo',
-        descFr: 'Page biométrique avec photo',
-        icon: '🌍',
-    },
-    {
-        value: 'id_card',
-        labelEn: 'National ID Card',
-        labelFr: "Carte Nationale d'Identité",
-        descEn: 'Front side with photo',
-        descFr: 'Recto avec photo',
-        icon: '🆔',
-    },
-    {
-        value: 'drivers_license',
-        labelEn: "Driver's License",
-        labelFr: 'Permis de conduire',
-        descEn: 'Front side with photo',
-        descFr: 'Recto avec photo',
-        icon: '🚗',
-    },
-    {
-        value: 'residence_permit',
-        labelEn: 'Residence Permit',
-        labelFr: 'Titre de séjour',
-        descEn: 'Front side with photo',
-        descFr: 'Recto avec photo',
-        icon: '🏠',
-    },
+    { value: 'passport', labelEn: 'Passport', labelFr: 'Passeport', descEn: 'Bio page with photo', descFr: 'Page biométrique avec photo', icon: '🌍', hasBack: false },
+    { value: 'id_card', labelEn: 'National ID Card', labelFr: "Carte Nationale d'Identité", descEn: 'Front & back', descFr: 'Recto & verso', icon: '🆔', hasBack: true },
+    { value: 'drivers_license', labelEn: "Driver's License", labelFr: 'Permis de conduire', descEn: 'Front & back', descFr: 'Recto & verso', icon: '🚗', hasBack: true },
+    { value: 'residence_permit', labelEn: 'Residence Permit', labelFr: 'Titre de séjour', descEn: 'Front & back', descFr: 'Recto & verso', icon: '🏠', hasBack: true },
 ];
-
-function IdSelfieIllustration() {
-    return (
-        <div className="relative w-full aspect-video bg-zinc-900 rounded-3xl overflow-hidden flex items-center justify-center">
-            {/* Corner guides */}
-            <div className="absolute top-4 left-4 w-7 h-7 border-t-2 border-l-2 border-white/40 rounded-tl-md" />
-            <div className="absolute top-4 right-4 w-7 h-7 border-t-2 border-r-2 border-white/40 rounded-tr-md" />
-            <div className="absolute bottom-4 left-4 w-7 h-7 border-b-2 border-l-2 border-white/40 rounded-bl-md" />
-            <div className="absolute bottom-4 right-4 w-7 h-7 border-b-2 border-r-2 border-white/40 rounded-br-md" />
-
-            {/* Person + ID card illustration */}
-            <div className="flex items-center gap-5">
-                {/* Face silhouette */}
-                <div className="flex flex-col items-center gap-1">
-                    <div className="w-16 h-16 rounded-full bg-zinc-700 border-2 border-white/20 flex items-center justify-center overflow-hidden relative">
-                        {/* simple face */}
-                        <div className="absolute top-3 w-12 h-8 rounded-full bg-zinc-600" />
-                        <div className="absolute bottom-0 w-full h-7 rounded-t-[50%] bg-zinc-600" />
-                        <div className="absolute top-5 flex gap-3">
-                            <div className="w-2 h-2 rounded-full bg-white/50" />
-                            <div className="w-2 h-2 rounded-full bg-white/50" />
-                        </div>
-                    </div>
-                    <div className="w-20 h-4 rounded-t-full bg-zinc-700 border-t-2 border-x-2 border-white/20" />
-                </div>
-
-                {/* Plus / next-to indicator */}
-                <div className="text-white/30 text-xl font-black">+</div>
-
-                {/* ID card mockup */}
-                <div className="w-28 h-[4.5rem] bg-zinc-700 rounded-xl border-2 border-white/40 p-2 flex gap-2">
-                    {/* ID photo area */}
-                    <div className="w-10 h-full rounded-lg bg-zinc-600 border border-white/20 flex items-center justify-center shrink-0">
-                        <div className="w-5 h-5 rounded-full bg-white/20" />
-                    </div>
-                    {/* ID text lines */}
-                    <div className="flex-1 flex flex-col justify-center gap-1.5">
-                        <div className="h-1.5 bg-white/40 rounded-full w-full" />
-                        <div className="h-1.5 bg-white/25 rounded-full w-3/4" />
-                        <div className="h-1.5 bg-white/25 rounded-full w-full" />
-                        <div className="h-1 bg-white/15 rounded-full w-full mt-1" />
-                        <div className="h-1 bg-white/15 rounded-full w-full" />
-                    </div>
-                </div>
-            </div>
-
-            {/* Example label */}
-            <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full">
-                <span className="text-[8px] font-black text-white uppercase tracking-[0.25em]">Example</span>
-            </div>
-        </div>
-    );
-}
 
 export default function VerifyCapturePage() {
     const params = useParams();
@@ -105,7 +25,8 @@ export default function VerifyCapturePage() {
 
     const [step, setStep] = useState<Step>('loading');
     const [documentType, setDocumentType] = useState('id_card');
-    const [file, setFile] = useState<File | Blob | null>(null);
+    const [currentSide, setCurrentSide] = useState<CaptureSide>('front');
+    const [images, setImages] = useState<{ front: Blob | null, back: Blob | null, selfie: Blob | null }>({ front: null, back: null, selfie: null });
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [errorMessage, setErrorMessage] = useState('');
@@ -161,12 +82,12 @@ export default function VerifyCapturePage() {
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const raw = e.target.files?.[0];
-        if (!raw) { setStep('guide'); return; }
+        if (!raw) return;
         const isHeic = /\.heic|\.heif$/i.test(raw.name);
         setStep('loading');
         try {
             const processed = isHeic ? raw : await compressImage(raw);
-            setFile(processed);
+            setImages(prev => ({ ...prev, [currentSide]: processed }));
             setPreviewUrl(URL.createObjectURL(processed));
             setStep('preview');
         } catch {
@@ -176,16 +97,41 @@ export default function VerifyCapturePage() {
         if (e.target) e.target.value = '';
     };
 
-    const handleUpload = async () => {
-        if (!file) return;
+    const handleNextCapture = () => {
+        setPreviewUrl(null);
+        setErrorMessage('');
+        const doc = DOCUMENT_TYPES.find(d => d.value === documentType);
+        
+        if (currentSide === 'front') {
+            if (doc?.hasBack) {
+                setCurrentSide('back');
+                setStep('guide');
+            } else {
+                setCurrentSide('selfie');
+                setStep('guide');
+            }
+        } else if (currentSide === 'back') {
+            setCurrentSide('selfie');
+            setStep('guide');
+        } else if (currentSide === 'selfie') {
+            handleFinalUpload();
+        }
+    };
+
+    const handleFinalUpload = async () => {
+        if (!images.front || !images.selfie) return;
         setStep('uploading');
         setUploadProgress(0);
         try {
             const formData = new FormData();
-            formData.append('file', file, 'selfie_with_id.jpg');
-            await apiClient.client.post('/verification/identity/upload-mobile', formData, {
+            formData.append('document_type', documentType);
+            formData.append('verification_code', code);
+            formData.append('front', images.front, 'front.jpg');
+            if (images.back) formData.append('back', images.back, 'back.jpg');
+            formData.append('selfie', images.selfie, 'selfie.jpg');
+
+            await apiClient.client.post('/verification/identity/upload-multi-mobile', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
-                params: { verification_code: code, document_type: documentType, side: 'selfie_with_id' },
                 onUploadProgress: ev => setUploadProgress(Math.round((ev.loaded * 100) / (ev.total || 1))),
             });
             setStep('success');
@@ -193,8 +139,8 @@ export default function VerifyCapturePage() {
             const detail = err.response?.data?.detail;
             if (detail?.code === 'BIOMETRIC_CONSENT_REQUIRED') {
                 setErrorMessage(fr
-                    ? "Consentement biométrique requis : retournez sur votre ordinateur, acceptez l'écran de consentement, puis rescannez le QR code."
-                    : 'Biometric consent required: go back to your computer, accept the consent screen, then rescan the QR code.');
+                    ? "Consentement biométrique requis : retournez sur votre ordinateur."
+                    : 'Biometric consent required: go back to your computer.');
             } else {
                 setErrorMessage(typeof detail === 'string' && detail
                     ? detail
@@ -204,9 +150,30 @@ export default function VerifyCapturePage() {
         }
     };
 
+    const getGuideContent = () => {
+        if (currentSide === 'front') {
+            return {
+                title: fr ? 'Face Avant' : 'Front of ID',
+                desc: fr ? 'Prenez en photo le recto de votre document' : 'Take a clear photo of the front of your document',
+                tips: fr ? ['Évitez les reflets', 'Le texte doit être lisible', 'Placez sur une surface plane', 'Les 4 coins doivent être visibles'] : ['Avoid glare', 'Text must be clearly readable', 'Place on a flat surface', 'Ensure all 4 corners are visible']
+            };
+        } else if (currentSide === 'back') {
+            return {
+                title: fr ? 'Face Arrière' : 'Back of ID',
+                desc: fr ? 'Prenez en photo le verso de votre document' : 'Take a clear photo of the back of your document',
+                tips: fr ? ['Évitez les reflets', 'Le texte doit être lisible', 'Placez sur une surface plane', 'Les 4 coins doivent être visibles'] : ['Avoid glare', 'Text must be clearly readable', 'Place on a flat surface', 'Ensure all 4 corners are visible']
+            };
+        } else {
+            return {
+                title: fr ? 'Prenez un Selfie' : 'Take a Selfie',
+                desc: fr ? 'Regardez l\'objectif avec un éclairage clair' : 'Look at the camera with clear lighting',
+                tips: fr ? ['Retirez vos lunettes', 'Restez dans la lumière', 'Regardez droit devant'] : ['Remove glasses', 'Stay well lit', 'Look straight ahead']
+            };
+        }
+    };
+
     return (
         <div className="min-h-[100dvh] bg-white flex flex-col font-sans selection:bg-zinc-900/20 overflow-x-hidden">
-            {/* Background blobs */}
             <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
                 <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-zinc-900/5 rounded-full blur-[80px] animate-pulse" />
                 <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-zinc-900/5 rounded-full blur-[80px]" />
@@ -276,11 +243,15 @@ export default function VerifyCapturePage() {
                                     ? 'Votre identité a été confirmée. Vous pouvez fermer cette page.'
                                     : 'Your identity has been confirmed. You can close this page and return to your desktop.'}
                             </p>
-                            <div className="w-full p-6 rounded-3xl bg-zinc-900 text-white shadow-xl">
+                            <div className="w-full p-6 rounded-3xl bg-zinc-900 text-white shadow-xl mb-6">
                                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
                                     {fr ? 'Synchronisation bureau active' : 'Desktop sync active'}
                                 </p>
                             </div>
+                            <button onClick={() => window.location.href = '/dashboard'}
+                                className="w-full py-4 bg-zinc-100 text-zinc-900 font-black rounded-2xl text-[10px] uppercase tracking-[0.3em] active:scale-95 transition-transform">
+                                {fr ? 'Retourner au tableau de bord' : 'Return to Dashboard'}
+                            </button>
                         </motion.div>
                     )}
 
@@ -323,45 +294,41 @@ export default function VerifyCapturePage() {
                                 ))}
                             </div>
 
-                            <button onClick={() => setStep('guide')}
+                            <button onClick={() => { setCurrentSide('front'); setStep('guide'); }}
                                 className="w-full bg-zinc-900 text-white font-black py-6 rounded-[2rem] shadow-2xl active:scale-95 transition-transform flex items-center justify-center gap-4 text-xs uppercase tracking-[0.4em]">
                                 {fr ? 'Continuer' : 'Continue'} <ArrowRight className="w-5 h-5" />
                             </button>
                         </motion.div>
                     )}
 
-                    {/* Step 2 — Guide: show example */}
+                    {/* Guide: show example */}
                     {step === 'guide' && (
                         <motion.div key="guide" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
-                            className="w-full space-y-6">
+                            className="w-full space-y-6 flex-1 flex flex-col justify-center">
+                            
+                            {/* Step indicators */}
+                            <div className="flex justify-center gap-2 mb-8">
+                                <div className={`h-1.5 flex-1 rounded-full ${currentSide === 'front' ? 'bg-zinc-900' : 'bg-zinc-200'}`} />
+                                {DOCUMENT_TYPES.find(d => d.value === documentType)?.hasBack && (
+                                    <div className={`h-1.5 flex-1 rounded-full ${currentSide === 'back' ? 'bg-zinc-900' : 'bg-zinc-200'}`} />
+                                )}
+                                <div className={`h-1.5 flex-1 rounded-full ${currentSide === 'selfie' ? 'bg-zinc-900' : 'bg-zinc-200'}`} />
+                            </div>
+
                             <div>
                                 <h2 className="text-4xl font-black uppercase tracking-tighter mb-2 text-zinc-900 leading-none">
-                                    {fr ? 'Prêt ?' : 'Ready?'}
+                                    {getGuideContent().title}
                                 </h2>
-                                <p className="text-zinc-500 font-medium">
-                                    {fr
-                                        ? `Tenez votre ${DOCUMENT_TYPES.find(d => d.value === documentType)?.labelFr ?? 'document'} à côté de votre visage`
-                                        : `Hold your ${DOCUMENT_TYPES.find(d => d.value === documentType)?.labelEn ?? 'document'} next to your face`}
+                                <p className="text-zinc-500 font-medium text-lg">
+                                    {getGuideContent().desc}
                                 </p>
                             </div>
 
-                            <IdSelfieIllustration />
-
-                            <div className="p-5 rounded-2xl bg-zinc-50 border border-zinc-100 space-y-3">
+                            <div className="p-5 rounded-2xl bg-zinc-50 border border-zinc-100 space-y-3 mt-8">
                                 <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">
                                     {fr ? 'Conseils' : 'Tips'}
                                 </p>
-                                {(fr ? [
-                                    'Tenez le document bien visible à côté de votre visage',
-                                    'Bonne lumière — évitez les reflets sur le document',
-                                    'Les deux visages (le vôtre et celui du document) doivent être nets',
-                                    'Ne couvrez pas de texte ou de photo avec vos doigts',
-                                ] : [
-                                    'Hold the document clearly visible beside your face',
-                                    'Good lighting — avoid glare on the document',
-                                    'Both faces (yours and the one on the document) must be clear',
-                                    'Don\'t cover any text or photo with your fingers',
-                                ]).map((tip, i) => (
+                                {getGuideContent().tips.map((tip, i) => (
                                     <div key={i} className="flex items-start gap-3">
                                         <div className="w-1.5 h-1.5 rounded-full bg-zinc-400 mt-1.5 shrink-0" />
                                         <p className="text-sm font-medium text-zinc-600">{tip}</p>
@@ -369,13 +336,9 @@ export default function VerifyCapturePage() {
                                 ))}
                             </div>
 
-                            <div className="flex gap-3">
-                                <button onClick={() => setStep('select_doc')}
-                                    className="flex-1 py-5 bg-zinc-100 text-zinc-900 font-black rounded-2xl text-[10px] uppercase tracking-[0.3em] active:scale-95 transition-transform">
-                                    {fr ? 'Retour' : 'Back'}
-                                </button>
-                                <button onClick={() => { setStep('capture'); setTimeout(() => fileInputRef.current?.click(), 100); }}
-                                    className="flex-[2] bg-zinc-900 text-white font-black py-5 rounded-2xl shadow-2xl active:scale-95 transition-transform flex items-center justify-center gap-3 text-xs uppercase tracking-[0.4em]">
+                            <div className="mt-10">
+                                <button onClick={() => setTimeout(() => fileInputRef.current?.click(), 100)}
+                                    className="w-full bg-zinc-900 text-white font-black py-5 rounded-2xl shadow-2xl active:scale-95 transition-transform flex items-center justify-center gap-3 text-xs uppercase tracking-[0.4em]">
                                     <Camera className="w-5 h-5" />
                                     {fr ? 'Prendre la photo' : 'Take Photo'}
                                 </button>
@@ -391,7 +354,7 @@ export default function VerifyCapturePage() {
                                     {fr ? 'Vérifiez la photo' : 'Check the photo'}
                                 </h2>
                                 <p className="text-zinc-500 font-medium text-sm mt-1">
-                                    {fr ? 'Votre visage et votre document sont-ils nets ?' : 'Are both your face and document clear?'}
+                                    {fr ? 'La photo est-elle nette ?' : 'Is the photo clear?'}
                                 </p>
                             </div>
                             <div className="relative flex-1 bg-zinc-100 rounded-[2.5rem] overflow-hidden shadow-inner mb-6 border border-zinc-200">
@@ -403,14 +366,14 @@ export default function VerifyCapturePage() {
                                 </div>
                             )}
                             <div className="grid grid-cols-2 gap-4">
-                                <button onClick={() => { setFile(null); setPreviewUrl(null); setErrorMessage(''); setStep('guide'); setTimeout(() => fileInputRef.current?.click(), 100); }}
+                                <button onClick={() => { setPreviewUrl(null); setErrorMessage(''); setStep('guide'); setTimeout(() => fileInputRef.current?.click(), 100); }}
                                     className="flex items-center justify-center gap-3 bg-zinc-100 text-zinc-900 font-black py-5 rounded-2xl text-[10px] uppercase tracking-[0.3em] active:scale-95 transition-transform">
                                     <RefreshCcw className="w-4 h-4" />
                                     {fr ? 'Reprendre' : 'Retake'}
                                 </button>
-                                <button onClick={handleUpload}
+                                <button onClick={handleNextCapture}
                                     className="flex items-center justify-center gap-3 bg-zinc-900 text-white font-black py-5 rounded-2xl shadow-2xl text-[10px] uppercase tracking-[0.3em] active:scale-95 transition-transform">
-                                    {fr ? 'Envoyer' : 'Submit'} <ArrowRight className="w-4 h-4" />
+                                    {currentSide === 'selfie' ? (fr ? 'Envoyer' : 'Submit') : (fr ? 'Suivant' : 'Next')} <ArrowRight className="w-4 h-4" />
                                 </button>
                             </div>
                         </motion.div>
@@ -435,7 +398,7 @@ export default function VerifyCapturePage() {
                                 {fr ? 'Vérification...' : 'Verifying...'}
                             </h3>
                             <p className="text-zinc-500 font-medium">
-                                {fr ? 'Analyse en cours...' : 'Analysing your photo...'}
+                                {fr ? 'Analyse en cours...' : 'Analysing your identity...'}
                             </p>
                         </motion.div>
                     )}
@@ -447,7 +410,7 @@ export default function VerifyCapturePage() {
                     ref={fileInputRef}
                     onChange={handleFileChange}
                     accept="image/jpeg,image/png,image/heic,image/heif"
-                    capture="environment"
+                    capture={currentSide === 'selfie' ? 'user' : 'environment'}
                     className="hidden"
                 />
             </main>

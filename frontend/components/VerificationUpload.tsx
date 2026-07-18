@@ -101,12 +101,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
     // GDPR Art. 9 — selfie face-match requires recorded explicit consent
     const [bioConsented, setBioConsented] = useState<boolean | null>(null);
 
-    // Identity mobile selfie-with-ID flow
-    const [idStep, setIdStep] = useState<'select' | 'guide' | 'preview' | null>(null);
-    const [idFile, setIdFile] = useState<File | Blob | null>(null);
-    const [idPreviewUrl, setIdPreviewUrl] = useState<string | null>(null);
-    const [idUploading, setIdUploading] = useState(false);
-    const idFileInputRef = useRef<HTMLInputElement>(null);
+
 
     // QR code session (desktop identity)
     const [qrSession, setQrSession] = useState<{ code: string; captureUrl: string; expiresAt: string } | null>(null);
@@ -158,9 +153,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
         };
     }, [verificationType, isMobile, user, bioConsented]);
 
-    useEffect(() => {
-        return () => { if (idPreviewUrl) URL.revokeObjectURL(idPreviewUrl); };
-    }, [idPreviewUrl]);
+
 
     // ── QR session helpers ────────────────────────────────────────────────
 
@@ -169,11 +162,14 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
         try {
             const res = await apiClient.client.post('/verification/identity/session');
             const data = res.data;
+            if (isMobile) {
+                window.location.href = data.capture_url;
+                return;
+            }
             setQrSession({ code: data.verification_code, captureUrl: data.capture_url, expiresAt: data.expires_at });
             startSseConnection(data.verification_code);
         } catch {
             setError('Failed to create verification session');
-        } finally {
             setQrLoading(false);
         }
     };
@@ -208,77 +204,6 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
         toast.success('Link copied');
     };
 
-    // ── Identity mobile selfie-with-ID handlers ───────────────────────────
-
-    const handleIdFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const raw = e.target.files?.[0];
-        if (!raw) return;
-        const isHeic = /\.heic|\.heif$/i.test(raw.name);
-        try {
-            const processed: Blob = isHeic ? raw : await compressImage(raw);
-            setIdFile(processed);
-            setIdPreviewUrl(URL.createObjectURL(processed));
-            setIdStep('preview');
-        } catch {
-            toast.error('Failed to process image. Please try again.');
-        }
-        if (e.target) e.target.value = '';
-    }, []);
-
-    const compressImage = (f: File): Promise<Blob> =>
-        new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(f);
-            reader.onload = ev => {
-                const img = new Image();
-                img.src = ev.target?.result as string;
-                img.onload = () => {
-                    const MAX = 1800;
-                    let w = img.width, h = img.height;
-                    if (w > MAX || h > MAX) {
-                        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
-                        else       { w = Math.round(w * MAX / h); h = MAX; }
-                    }
-                    const canvas = document.createElement('canvas');
-                    canvas.width = w; canvas.height = h;
-                    canvas.getContext('2d', { willReadFrequently: true })?.drawImage(img, 0, 0, w, h);
-                    canvas.toBlob(b => b ? resolve(b) : reject(new Error('Compression failed')), 'image/jpeg', 0.88);
-                };
-            };
-            reader.onerror = reject;
-        });
-
-    const requireConsent = () => {
-        if (!consent) {
-            setError(t('verification.upload.consentRequired', undefined,
-                'Please consent to automated document analysis to continue'));
-            return false;
-        }
-        return true;
-    };
-
-    const handleIdUpload = async () => {
-        if (!idFile) return;
-        if (!requireConsent()) return;
-        setIdUploading(true);
-        setError('');
-        try {
-            const formData = new FormData();
-            formData.append('file', idFile, 'selfie_with_id.jpg');
-            formData.append('side', 'selfie_with_id');
-            await apiClient.client.post('/verification/identity/upload', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-                params: { document_type: documentType },
-            });
-            onSuccessAction();
-        } catch (err: any) {
-            const detail = err.response?.data?.detail;
-            setError(typeof detail === 'string' ? detail : 'Upload failed. Please try again.');
-            setIdStep('preview');
-        } finally {
-            setIdUploading(false);
-        }
-    };
 
     // ── Document type lists ───────────────────────────────────────────────
 
@@ -525,170 +450,32 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
     }
 
     // ════════════════════════════════════════════════════════════════════════
-    // RENDER — mobile identity: selfie-with-ID guided flow
+    // RENDER — mobile identity redirect
     // ════════════════════════════════════════════════════════════════════════
 
     if (verificationType === 'identity' && isMobile) {
-        // Guide step
-        if (idStep === 'guide') {
-            return (
-                <div className="w-full space-y-8">
-                    <div className="text-center">
-                        <h3 className="text-3xl font-black tracking-tighter uppercase leading-none mb-2">
-                            {t('dashboard.verification.verification.identityTitle', undefined, 'Identity Verification')}
-                        </h3>
-                        <p className="text-zinc-500 font-medium text-sm">
-                            Hold your <strong>{IDENTITY_DOC_TYPES.find(d => d.value === documentType)?.label ?? 'document'}</strong> next to your face
-                        </p>
-                    </div>
-
-                    <IdSelfieIllustration />
-
-                    <div className="p-5 rounded-2xl bg-zinc-50 border border-zinc-100 space-y-3">
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">Tips</p>
-                        {[
-                            'Hold your ID clearly visible beside your face',
-                            'Good lighting — avoid glare on the document',
-                            'Both your face and the ID face must be visible',
-                            "Don't cover text or photos with your fingers",
-                        ].map((tip, i) => (
-                            <div key={i} className="flex items-start gap-3">
-                                <div className="w-1.5 h-1.5 rounded-full bg-zinc-400 mt-1.5 shrink-0" />
-                                <p className="text-sm font-medium text-zinc-600">{tip}</p>
-                            </div>
-                        ))}
-                    </div>
-
-                    {error && (
-                        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-                            className="p-4 rounded-2xl bg-zinc-900 text-white text-center shadow-xl">
-                            <p className="text-[10px] font-black uppercase tracking-[0.3em]">{error}</p>
-                        </motion.div>
-                    )}
-
-                    <div className="flex gap-3">
-                        <button onClick={() => setIdStep('select')}
-                            className="flex-1 py-5 bg-zinc-100 text-zinc-900 font-black rounded-2xl text-[10px] uppercase tracking-[0.3em]">
-                            Back
-                        </button>
-                        <button
-                            onClick={() => { setError(''); idFileInputRef.current?.click(); }}
-                            className="flex-[2] bg-zinc-900 text-white font-black py-5 rounded-2xl shadow-2xl flex items-center justify-center gap-3 text-xs uppercase tracking-[0.4em]">
-                            <Camera className="w-5 h-5" /> Take Photo
-                        </button>
-                    </div>
-
-                    <input ref={idFileInputRef} type="file" accept="image/jpeg,image/png,image/heic,image/heif"
-                        capture="environment" onChange={handleIdFileChange} className="hidden" />
-                </div>
-            );
-        }
-
-        // Preview step
-        if (idStep === 'preview' && idPreviewUrl) {
-            return (
-                <div className="w-full space-y-6">
-                    <div>
-                        <h3 className="text-3xl font-black tracking-tighter uppercase leading-none mb-1">
-                            {t('dashboard.verification.verification.identityTitle', undefined, 'Identity Verification')}
-                        </h3>
-                        <p className="text-zinc-500 font-medium text-sm">Are both your face and ID clearly visible?</p>
-                    </div>
-
-                    <div className="relative w-full aspect-video bg-zinc-100 rounded-3xl overflow-hidden border border-zinc-200">
-                        <img src={idPreviewUrl} alt="Preview" className="w-full h-full object-contain" />
-                    </div>
-
-                    {error && (
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                            className="p-4 rounded-2xl bg-zinc-900 text-white text-center shadow-xl">
-                            <p className="text-[10px] font-black uppercase tracking-[0.3em]">{error}</p>
-                        </motion.div>
-                    )}
-
-                    {idUploading ? (
-                        <div className="flex flex-col items-center py-8 gap-4">
-                            <div className="w-12 h-12 border-4 border-zinc-900/20 border-t-zinc-900 rounded-full animate-spin" />
-                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">Verifying...</p>
-                        </div>
-                    ) : (
-                        <div className="space-y-4">
-                            {/* AI-processing consent (GDPR — ID analysed by Google Gemini, then discarded) */}
-                            <label className="flex items-start gap-3 cursor-pointer select-none">
-                                <input
-                                    type="checkbox"
-                                    checked={consent}
-                                    onChange={(e) => setConsent(e.target.checked)}
-                                    className="mt-0.5 h-4 w-4 shrink-0 accent-zinc-900"
-                                />
-                                <span className="text-xs text-zinc-500 leading-relaxed">
-                                    {t('verification.upload.consent', undefined,
-                                        'I consent to automated analysis of my document by Google Gemini to extract only the facts needed for verification. The document is not retained afterwards.')}{' '}
-                                    <a href="/legal/privacy" target="_blank" rel="noopener noreferrer" className="underline text-zinc-700 hover:text-zinc-900">
-                                        {t('verification.upload.consentLink', undefined, 'Privacy Policy')}
-                                    </a>
-                                </span>
-                            </label>
-                            <div className="grid grid-cols-2 gap-4">
-                                <button
-                                    onClick={() => { setIdFile(null); setIdPreviewUrl(null); setError(''); idFileInputRef.current?.click(); }}
-                                    className="flex items-center justify-center gap-2 bg-zinc-100 text-zinc-900 font-black py-5 rounded-2xl text-[10px] uppercase tracking-[0.3em]">
-                                    <RefreshCcw className="w-4 h-4" /> Retake
-                                </button>
-                                <button onClick={handleIdUpload} disabled={!consent}
-                                    className="flex items-center justify-center gap-2 bg-zinc-900 text-white font-black py-5 rounded-2xl shadow-xl text-[10px] uppercase tracking-[0.3em] disabled:opacity-50">
-                                    Submit <ArrowRight className="w-4 h-4" />
-                                </button>
-                            </div>
-                        </div>
-                    )}
-
-                    <input ref={idFileInputRef} type="file" accept="image/jpeg,image/png,image/heic,image/heif"
-                        capture="environment" onChange={handleIdFileChange} className="hidden" />
-                </div>
-            );
-        }
-
-        // Default: document type selection (idStep === 'select' or null)
         return (
-            <div className="w-full space-y-8">
-                <div className="text-center">
-                    <h3 className="text-3xl font-black tracking-tighter uppercase leading-none mb-2">
+            <div className="w-full flex flex-col items-center justify-center py-12">
+                <div className="text-center mb-8">
+                    <h3 className="text-4xl font-black tracking-tighter mb-4 uppercase leading-none">
                         {t('dashboard.verification.verification.identityTitle', undefined, 'Identity Verification')}
                     </h3>
-                    <p className="text-zinc-500 font-medium text-sm">
-                        Which document will you use?
+                    <p className="text-zinc-500 font-medium max-w-sm mx-auto text-lg leading-relaxed">
+                        Ready to securely capture your ID documents and face.
                     </p>
                 </div>
-
-                <div className="grid gap-3">
-                    {IDENTITY_DOC_TYPES.map(doc => (
-                        <button key={doc.value} onClick={() => setDocumentType(doc.value)}
-                            className={`p-5 rounded-[2rem] border-2 text-left transition-all flex items-center justify-between ${
-                                documentType === doc.value
-                                    ? 'border-zinc-900 bg-zinc-900 text-white'
-                                    : 'border-zinc-100 bg-white hover:border-zinc-300'
-                            }`}>
-                            <div className="flex items-center gap-4">
-                                <span className="text-2xl">{doc.icon}</span>
-                                <div className={`font-black text-[10px] uppercase tracking-widest ${documentType === doc.value ? 'text-white' : 'text-zinc-900'}`}>
-                                    {doc.label}
-                                </div>
-                            </div>
-                            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${documentType === doc.value ? 'border-white bg-white' : 'border-zinc-200'}`}>
-                                {documentType === doc.value && <div className="w-1.5 h-1.5 rounded-full bg-zinc-900" />}
-                            </div>
-                        </button>
-                    ))}
-                </div>
-
-                <motion.button
-                    whileHover={{ scale: 1.02, y: -4 }} whileTap={{ scale: 0.98 }}
-                    disabled={!documentType}
-                    onClick={() => setIdStep('guide')}
-                    className="w-full py-6 bg-zinc-900 text-white rounded-[2rem] text-xs font-black uppercase tracking-[0.4em] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] disabled:opacity-50 transition-all flex items-center justify-center gap-3">
-                    Continue <ArrowRight className="w-5 h-5" />
-                </motion.button>
+                {qrLoading ? (
+                    <div className="flex flex-col items-center gap-4">
+                        <div className="w-12 h-12 border-4 border-zinc-900/20 border-t-zinc-900 rounded-full animate-spin" />
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">Loading...</p>
+                    </div>
+                ) : (
+                    <button onClick={createQrSession}
+                        className="w-full py-6 bg-zinc-900 text-white rounded-[2rem] text-xs font-black uppercase tracking-[0.4em] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] hover:bg-zinc-800 transition-all active:scale-95">
+                        Start Verification
+                    </button>
+                )}
+                {error && <p className="text-[10px] font-black uppercase tracking-[0.3em] text-red-500 mt-6">{error}</p>}
             </div>
         );
     }

@@ -657,6 +657,243 @@ Rules:
         # Fail CLOSED — exhausted retries must not become a verified fact.
         return {"verified": False, "status": "error", "data": None, "validation_checks": [], "rejection_reason": f"AI Error exhausted: {last_error}"}
 
+    async def verify_three_step_kyc(
+        self,
+        front_img: bytes,
+        front_type: str,
+        back_img: Optional[bytes],
+        back_type: Optional[str],
+        selfie_img: bytes,
+        selfie_type: str,
+        document_type: str,
+        expected_name: str,
+    ) -> dict:
+        """
+        Verify an identity using a 3-step KYC flow (Front, Back, Selfie).
+        """
+        if not self.ai_client:
+            return {"verified": False, "status": "error", "data": None, "validation_checks": [], "rejection_reason": "verification_service_unavailable"}
+
+        from app.core.gemini_quota import check_quota
+        await check_quota()
+
+        start_time = time.time()
+
+        # Step 1: Document OCR
+        doc_parts = [types.Part.from_bytes(data=front_img, mime_type=front_type)]
+        if back_img and back_type:
+            doc_parts.append(types.Part.from_bytes(data=back_img, mime_type=back_type))
+            
+        doc_hint = {
+            "passport": "bio page with photo, full name, passport number, and MRZ visible",
+            "id_card": "front side with face photo, full name, and ID number visible",
+            "drivers_license": "front side with face photo, full name, and license number visible",
+            "residence_permit": "front side with face photo, full name, and permit number visible",
+        }.get(document_type, "government-issued photo ID")
+
+        doc_prompt = f"""You are a strict KYC identity verification system.
+The provided image(s) show the front (and possibly back) of an identity document.
+Claimed document type: '{document_type}' ({doc_hint}).
+
+Return ONLY this JSON:
+{{
+    "has_id_document": true or false,
+    "id_has_face_photo": true or false,
+    "full_name": "full name from the ID or 'Unknown'",
+    "document_title": "read the main title or heading printed on the ID document",
+    "document_number": "document/passport/license number from the ID or 'Unknown'",
+    "expiry_date": "YYYY-MM-DD or null",
+    "detected_document_type": "passport, id_card, residence_permit, drivers_license, or other",
+    "confidence_score": 0.0 to 1.0
+}}
+Rules:
+- has_id_document: a government ID is clearly present and legible. Health insurance cards (e.g. Carte Vitale) are NOT government IDs.
+- id_has_face_photo: the ID itself contains a portrait/face photo
+- detected_document_type: If the document is a health insurance card, medical card, or 'Carte Vitale', you MUST return "other".
+- confidence_score: below 0.4 if blurry or text unreadable
+"""
+        models_to_try = ["gemini-2.5-flash"]
+        doc_data = None
+        for model_name in models_to_try:
+            for attempt in range(3):
+                try:
+                    res = self.ai_client.models.generate_content(
+                        model=model_name,
+                        contents=doc_parts + [doc_prompt],
+                        config=types.GenerateContentConfig(response_mime_type="application/json"),
+                    )
+                    doc_data = json.loads(res.text)
+                    break
+                except Exception as e:
+                    if "503" in str(e) or "429" in str(e):
+                        await asyncio.sleep((attempt + 1) * 2)
+                        continue
+                    if "404" in str(e): break
+            if doc_data: break
+
+        if not doc_data:
+            return {"verified": False, "status": "error", "data": None, "validation_checks": [], "rejection_reason": "AI Document OCR failed"}
+
+        # Step 2: Face Match
+        face_parts = [
+            types.Part.from_bytes(data=front_img, mime_type=front_type),
+            types.Part.from_bytes(data=selfie_img, mime_type=selfie_type)
+        ]
+        face_prompt = """You are a strict fraud auditor.
+Image 1 is the front of a government ID.
+Image 2 is a live selfie.
+
+Return ONLY this JSON:
+{
+    "has_live_face": true or false,
+    "face_comparison_reasoning": "briefly describe similarities or differences in jawline, nose, and eyes",
+    "face_match_confidence": 0.0 to 1.0,
+    "is_same_person": true or false
+}
+Rules:
+- has_live_face: a real human face is clearly visible in the selfie
+- face_comparison_reasoning: assume they are DIFFERENT people. Look for mismatches.
+- face_match_confidence: 1.0 for perfect match, 0.0 for completely different. If ANY feature explicitly mismatches, MUST be 0.1 or lower.
+- is_same_person: strictly true ONLY IF face_match_confidence >= 0.8.
+"""
+        face_data = None
+        for model_name in models_to_try:
+            for attempt in range(3):
+                try:
+                    res = self.ai_client.models.generate_content(
+                        model=model_name,
+                        contents=face_parts + [face_prompt],
+                        config=types.GenerateContentConfig(response_mime_type="application/json"),
+                    )
+                    face_data = json.loads(res.text)
+                    break
+                except Exception as e:
+                    if "503" in str(e) or "429" in str(e):
+                        await asyncio.sleep((attempt + 1) * 2)
+                        continue
+                    if "404" in str(e): break
+            if face_data: break
+            
+        if not face_data:
+            return {"verified": False, "status": "error", "data": None, "validation_checks": [], "rejection_reason": "AI Face Comparison failed"}
+
+        logger.info(f"3-step KYC verification completed in {time.time()-start_time:.2f}s")
+        
+        checks = [
+            {
+                "name": "live_face_present",
+                "description": "Live face clearly visible in selfie",
+                "passed": bool(face_data.get("has_live_face", False)),
+                "critical": True,
+                "details": "Face detected" if face_data.get("has_live_face") else "No live face visible",
+            },
+            {
+                "name": "id_document_visible",
+                "description": "Government ID document visible and readable",
+                "passed": bool(doc_data.get("has_id_document", False)),
+                "critical": True,
+                "details": "ID detected" if doc_data.get("has_id_document") else "ID not clearly visible",
+            },
+            {
+                "name": "id_has_face_photo",
+                "description": "ID document contains a face photo",
+                "passed": bool(doc_data.get("id_has_face_photo", False)),
+                "critical": True,
+                "details": "Face photo found on ID" if doc_data.get("id_has_face_photo") else "No face photo visible on ID",
+            },
+            {
+                "name": "same_person",
+                "description": "Live selfie face matches face on ID",
+                "passed": bool(face_data.get("is_same_person", False)) and float(face_data.get("face_match_confidence", 0.0)) >= 0.8,
+                "critical": True,
+                "details": "Identity confirmed" if bool(face_data.get("is_same_person", False)) and float(face_data.get("face_match_confidence", 0.0)) >= 0.8 else "Selfie does not match the face on the ID",
+            },
+            {
+                "name": "image_quality",
+                "description": "Image quality sufficient for verification",
+                "passed": float(doc_data.get("confidence_score", 0)) >= 0.4,
+                "critical": True,
+                "details": f"Confidence: {float(doc_data.get('confidence_score', 0)):.0%}",
+            },
+        ]
+
+        detected_type = doc_data.get("detected_document_type", "")
+        french_mappings = {
+            "passport": {"passeport"},
+            "id_card": {"carte_d_identite", "carte_nationale_d_identite", "cni", "national_id", "national_id_card", "id"},
+            "residence_permit": {"titre_de_sejour", "carte_de_sejour", "residence_card", "permit", "french_residence_permit"},
+            "drivers_license": {"permis_de_conduire", "driver_license", "license"},
+        }
+        def get_canonical_type(val: Optional[str]) -> str:
+            if not val: return ""
+            import unicodedata
+            import re
+            norm = ''.join(c for c in unicodedata.normalize('NFD', str(val).lower()) if unicodedata.category(c) != 'Mn')
+            norm = re.sub(r'[^a-z0-9]+', '_', norm).strip('_')
+            for canonical, synonyms in french_mappings.items():
+                if norm == canonical or norm in synonyms: return canonical
+            return norm
+
+        expected_canonical = get_canonical_type(document_type)
+        detected_canonical = get_canonical_type(detected_type)
+        
+        document_title = doc_data.get("document_title", "")
+        is_health_card = any(keyword in str(detected_type).lower() or keyword in str(document_title).lower() for keyword in ["health", "vitale", "assurance", "maladie"])
+        type_matches = (expected_canonical == detected_canonical) and not is_health_card and bool(detected_canonical)
+
+        checks.append({
+            "name": "document_type_match",
+            "description": "Document type matches the selected type",
+            "passed": type_matches,
+            "critical": True,
+            "details": f"Expected: {document_type} | Detected: {detected_type or 'Unknown'}",
+        })
+
+        full_name = doc_data.get("full_name", "Unknown")
+        if expected_name:
+            match = self._fuzzy_name_match(full_name, expected_name) if full_name != "Unknown" else 0.0
+            checks.append({
+                "name": "name_match",
+                "description": "Name on ID matches account name",
+                "passed": match > 0.5 and full_name != "Unknown",
+                "critical": True,
+                "details": f"ID: {full_name} | Account: {expected_name} | Match: {match:.0%}",
+            })
+
+        expiry_date = doc_data.get("expiry_date")
+        if expiry_date:
+            try:
+                exp = datetime.fromisoformat(expiry_date)
+                is_expired = exp.date() < datetime.now().date()
+                checks.append({
+                    "name": "not_expired",
+                    "description": "Document is not expired",
+                    "passed": not is_expired,
+                    "critical": True,
+                    "details": f"Expired on {expiry_date}" if is_expired else f"Valid until {expiry_date}",
+                })
+            except ValueError:
+                pass
+
+        critical_failed = any(not c["passed"] and c["critical"] for c in checks)
+        verified = not critical_failed
+
+        return {
+            "verified": verified,
+            "status": "verified" if verified else "rejected",
+            "data": {
+                "full_name": full_name,
+                "document_number": doc_data.get("document_number", "Unknown"),
+                "expiry_date": expiry_date,
+                "document_type": doc_data.get("detected_document_type", document_type),
+                "confidence_score": float(doc_data.get("confidence_score", 0)),
+                "is_same_person": bool(face_data.get("is_same_person", False)),
+                "verification_method": "three_step_kyc",
+            },
+            "validation_checks": checks,
+            "rejection_reason": self._get_rejection_reason(checks) if not verified else None,
+        }
+
     async def compare_faces(
         self,
         id_image: bytes,
