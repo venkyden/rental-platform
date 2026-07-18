@@ -186,7 +186,7 @@ class IdentityVerificationService:
 
         start_time = time.time()
         
-        models_to_try = ["gemini-2.0-flash", "gemini-1.5-flash"]
+        models_to_try = ["gemini-2.5-flash"]
         max_retries = 2
 
         document_part = types.Part.from_bytes(
@@ -498,7 +498,7 @@ Rules:
 - is_same_person: the live face and the face on the ID appear to be the same person (allow for lighting/angle)
 - confidence_score below 0.4 if: blurry, poorly lit, ID text unreadable, or face obscured"""
 
-        models_to_try = ["gemini-2.0-flash", "gemini-1.5-flash"]
+        models_to_try = ["gemini-2.5-flash"]
         last_error = None
 
         for model_name in models_to_try:
@@ -683,7 +683,7 @@ Return ONLY this JSON:
     "reason": "one-sentence explanation"
 }"""
 
-        models_to_try = ["gemini-2.0-flash", "gemini-1.5-flash"]
+        models_to_try = ["gemini-2.5-flash"]
         for model_name in models_to_try:
             for attempt in range(3):
                 try:

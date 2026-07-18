@@ -208,7 +208,7 @@ class MrhInsuranceService:
                 mime_type=file_type,
             )
             response = self.ai_client.models.generate_content(
-                model="gemini-2.0-flash",
+                model="gemini-2.5-flash",
                 contents=[document_part, _EXTRACTION_PROMPT],
                 config=types.GenerateContentConfig(
                     temperature=0,

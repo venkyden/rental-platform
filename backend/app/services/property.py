@@ -92,7 +92,7 @@ class PropertyVerificationService:
         from app.core.gemini_quota import check_quota
         await check_quota()
 
-        models_to_try = ["gemini-2.5-flash", "gemini-2.0-flash"]
+        models_to_try = ["gemini-2.5-flash"]
         max_retries = 2
 
         document_part = types.Part.from_bytes(
