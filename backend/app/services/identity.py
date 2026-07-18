@@ -291,11 +291,13 @@ Return ONLY the JSON."""
                 "residence_permit": {"titre_de_sejour", "carte_de_sejour", "residence_card", "permit", "french_residence_permit"},
                 "drivers_license": {"permis_de_conduire", "driver_license", "license"},
             }
-            def get_canonical_type(val: str) -> str:
+            def get_canonical_type(val: Optional[str]) -> str:
+                if not val:
+                    return ""
                 import unicodedata
                 import re
                 # Strip accents and lower-case
-                norm = ''.join(c for c in unicodedata.normalize('NFD', val.lower())
+                norm = ''.join(c for c in unicodedata.normalize('NFD', str(val).lower())
                               if unicodedata.category(c) != 'Mn')
                 # Replace any sequence of non-alphanumeric chars with a single underscore
                 norm = re.sub(r'[^a-z0-9]+', '_', norm).strip('_')
@@ -335,7 +337,8 @@ Return ONLY the JSON."""
 
         # 2. CRITICAL: Document type must be a valid ID type (not 'other')
         valid_id_types = {"passport", "id_card", "residence_permit", "drivers_license"}
-        is_valid_type = data.document_type.lower().replace(" ", "_") in valid_id_types
+        doc_type_str = str(data.document_type or "").lower().replace(" ", "_")
+        is_valid_type = doc_type_str in valid_id_types
         checks.append(
             {
                 "name": "valid_document_type",
@@ -408,9 +411,11 @@ Return ONLY the JSON."""
         return checks
 
     def _fuzzy_name_match(self, name1: str, name2: str) -> float:
-        """Calculate fuzzy match score between two names"""
-        n1 = set(name1.lower().split())
-        n2 = set(name2.lower().split())
+        if not name1 or not name2:
+            return 0.0
+            
+        n1 = set(str(name1).lower().split())
+        n2 = set(str(name2).lower().split())
 
         if not n1 or not n2:
             return 0.0
@@ -557,11 +562,13 @@ Rules:
                         "residence_permit": {"titre_de_sejour", "carte_de_sejour", "residence_card", "permit", "french_residence_permit"},
                         "drivers_license": {"permis_de_conduire", "driver_license", "license"},
                     }
-                    def get_canonical_type(val: str) -> str:
+                    def get_canonical_type(val: Optional[str]) -> str:
+                        if not val:
+                            return ""
                         import unicodedata
                         import re
                         # Strip accents and lower-case
-                        norm = ''.join(c for c in unicodedata.normalize('NFD', val.lower())
+                        norm = ''.join(c for c in unicodedata.normalize('NFD', str(val).lower())
                                       if unicodedata.category(c) != 'Mn')
                         # Replace any sequence of non-alphanumeric chars with a single underscore
                         norm = re.sub(r'[^a-z0-9]+', '_', norm).strip('_')
