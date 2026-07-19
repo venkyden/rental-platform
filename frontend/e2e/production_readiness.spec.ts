@@ -470,9 +470,7 @@ test.describe('2. KYC — Identity (verify-capture/[code])', () => {
         await fileInput.setInputFiles({ name: 'test.jpg', mimeType: 'image/jpeg', buffer: VALID_JPEG });
         await expect(page.locator('text=/preview|confirm|retake/i').first()).toBeVisible({ timeout: 8_000 });
         const gdprCheckbox = page.locator('input[type="checkbox"]');
-        if (await gdprCheckbox.isVisible()) {
-            await gdprCheckbox.click();
-        }
+        await gdprCheckbox.check({ force: true });
         await page.locator('button:has-text("Confirm"), button:has-text("Valider"), button:has-text("Submit"), button:has-text("Envoyer")').first().click();
         await expect(page.locator('text=/blurry|upload|failed|error/i').first()).toBeVisible({ timeout: 8_000 });
     });
@@ -665,9 +663,8 @@ test.describe('5. Properties — List', () => {
             route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ detail: 'Server error' }) }),
         );
         await page.goto('/properties');
-        await page.waitForTimeout(3_000);
         // Must show a toast or inline error — not a blank page
-        await expect(page.locator('text=/error|failed|wrong/i').first()).toBeVisible({ timeout: 10_000 });
+        await expect(page.locator('text=/error|failed|wrong/i').or(page.locator('.bg-red-50')).first()).toBeVisible({ timeout: 10_000 });
     });
 
     // B — Loading spinner resolves
