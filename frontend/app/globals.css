@@ -127,10 +127,16 @@ body {
 }
 
 /* Safari Input Reset */
-input {
+input:not([type="checkbox"]):not([type="radio"]) {
   -webkit-appearance: none;
   appearance: none;
   border-radius: 0;
+}
+
+/* Explicitly restore checkbox/radio appearance */
+input[type="checkbox"], input[type="radio"] {
+  -webkit-appearance: auto;
+  appearance: auto;
 }
 
 /* ─── Custom Scrollbar (Desktop only) ─── */
