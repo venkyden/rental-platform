@@ -2,20 +2,10 @@
 
 import { useState, useRef, useEffect, use } from 'react';
 import { apiClient } from '@/lib/api';
-import { useRouter } from 'next/navigation';
 import { useToast } from '@/lib/ToastContext';
-import { motion, Variants, AnimatePresence } from 'framer-motion';
-import { Camera, CheckCircle2, Shield, Zap, Info, MapPin, ChevronRight, Upload, WifiOff, RefreshCw } from 'lucide-react';
-
-const containerVariants: Variants = {
-    hidden: { opacity: 0 },
-    show: {
-        opacity: 1,
-        transition: {
-            staggerChildren: 0.1
-        }
-    }
-};
+import { useLanguage } from '@/lib/LanguageContext';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Camera, CheckCircle2, Shield, MapPin, ChevronRight, WifiOff } from 'lucide-react';
 
 interface Room {
     index: number;
@@ -24,16 +14,16 @@ interface Room {
 
 export default function CapturePage({ params }: { params: Promise<{ code: string }> }) {
     const { code } = use(params);
-    const router = useRouter();
     const { showToast } = useToast();
-    const [step, setStep] = useState<'intro' | 'capturing' | 'ready_to_capture' | 'preview' | 'uploading' | 'success' | 'finished'>('intro');
+    const { language, setLanguage } = useLanguage();
+    const fr = language === 'fr';
+    const [step, setStep] = useState<'intro' | 'preview' | 'uploading' | 'success' | 'finished'>('intro');
     const [files, setFiles] = useState<File[]>([]);
     const [previewUrls, setPreviewUrls] = useState<string[]>([]);
     const [location, setLocation] = useState<{ lat: number; lng: number; accuracy: number } | null>(null);
     const [isSessionVerified, setIsSessionVerified] = useState(false);
     const [isOffline, setIsOffline] = useState(false);
     const [pendingCount, setPendingCount] = useState(0);
-    const [isSyncing, setIsSyncing] = useState(false);
     const [sessionDetails, setSessionDetails] = useState<any>(null);
     const [rooms, setRooms] = useState<Room[]>([]);
     const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
@@ -95,8 +85,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
         const { backgroundSyncManager } = await import('@/lib/backgroundSync');
         await backgroundSyncManager.sync();
         if (pendingCount > 0) {
-            // It will update via subscription, but we can show a toast
-            showToast('Sync triggered.', 'info');
+            showToast(fr ? 'Envoi des photos en attente…' : 'Sending your pending photos…', 'info');
         }
     };
 
@@ -136,7 +125,10 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                     );
                     successCount++;
                 } catch {
-                    showToast('Offline queueing unavailable. Please try again when online.', 'error');
+                    showToast(
+                        fr ? 'Impossible de mettre la photo en attente. Réessayez une fois reconnecté.' : 'Offline queueing unavailable. Please try again when online.',
+                        'error'
+                    );
                 }
                 continue;
             }
@@ -149,7 +141,8 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                 const detail = err?.response?.data?.detail;
                 const msg = Array.isArray(detail)
                     ? detail.map((d: any) => d.msg || JSON.stringify(d)).join(', ')
-                    : (typeof detail === 'string' ? detail : 'Upload failed. Saving for retry when online.');
+                    : (typeof detail === 'string' ? detail
+                        : (fr ? "L'envoi a échoué. La photo sera renvoyée automatiquement." : 'Upload failed. The photo will be retried automatically.'));
                 showToast(msg, 'error');
                 // Queue for offline retry — best-effort, never crash on queue failure
                 try {
@@ -167,19 +160,18 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
         }
 
         if (isOffline) {
-            showToast(`${successCount} photo${successCount !== 1 ? 's' : ''} queued — will upload when back online.`, 'info');
+            showToast(
+                fr
+                    ? `${successCount} photo${successCount !== 1 ? 's' : ''} en attente — envoi automatique dès le retour du réseau.`
+                    : `${successCount} photo${successCount !== 1 ? 's' : ''} queued — they will upload as soon as you're back online.`,
+                'info'
+            );
             setStep('success');
         } else if (successCount > 0) {
             setStep('success');
         } else {
             setStep('preview');
         }
-    };
-
-    const resetForNextCapture = () => {
-        setFiles([]);
-        setPreviewUrls([]);
-        setStep('intro');
     };
 
     return (
@@ -191,12 +183,20 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                     <div className="w-12 h-12 bg-zinc-900 flex items-center justify-center rounded-2xl">
                         <Camera className="text-white w-6 h-6" />
                     </div>
-                    {pendingCount > 0 && (
-                        <div className="flex items-center gap-2 px-4 py-2 bg-zinc-900 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">
-                            <WifiOff className="w-3 h-3" />
-                            {pendingCount} Pending
-                        </div>
-                    )}
+                    <div className="flex items-center gap-3">
+                        {pendingCount > 0 && (
+                            <div className="flex items-center gap-2 px-4 py-2 bg-zinc-900 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">
+                                <WifiOff className="w-3 h-3" />
+                                {pendingCount} {fr ? 'en attente' : 'pending'}
+                            </div>
+                        )}
+                        <button
+                            onClick={() => setLanguage(fr ? 'en' : 'fr')}
+                            className="px-3 py-1.5 rounded-full bg-zinc-100 hover:bg-zinc-200 text-[10px] font-black uppercase tracking-wider text-zinc-900 transition-colors"
+                        >
+                            {fr ? 'EN' : 'FR'}
+                        </button>
+                    </div>
                 </header>
 
                 <AnimatePresence mode="wait">
@@ -209,10 +209,13 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                             className="flex-1 flex flex-col items-center justify-center text-center space-y-8"
                         >
                             <div className="space-y-4">
-                                <div className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">Security Protocol</div>
-                                <h1 className="text-4xl font-black tracking-tighter uppercase leading-[0.9]">Invalid or expired link</h1>
+                                <h1 className="text-4xl font-black tracking-tighter uppercase leading-[0.9]">
+                                    {fr ? 'Lien invalide ou expiré' : 'Invalid or expired link'}
+                                </h1>
                                 <p className="text-lg text-zinc-500 font-medium leading-relaxed max-w-sm">
-                                    This capture session could not be found. The link may be invalid or expired — please request a new one.
+                                    {fr
+                                        ? 'Cette session de photos est introuvable. Le lien a peut-être expiré — demandez-en un nouveau depuis votre annonce.'
+                                        : 'This photo session could not be found. The link may have expired — please request a new one from your listing.'}
                                 </p>
                             </div>
                         </motion.div>
@@ -227,12 +230,16 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                             className="flex-1 flex flex-col"
                         >
                             <div className="space-y-6 mb-12">
-                                <div className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">Security Protocol</div>
+                                <div className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                                    {fr ? 'Photos du logement' : 'Property photos'}
+                                </div>
                                 <h1 className="text-5xl font-black tracking-tighter uppercase leading-[0.9]">
-                                    Visual <br /> Telemetry
+                                    {fr ? <>Photographiez<br />sur place</> : <>Photograph<br />on-site</>}
                                 </h1>
                                 <p className="text-xl text-zinc-500 font-medium leading-relaxed">
-                                    Authenticate this asset by capturing high-fidelity visual data from the verified location.
+                                    {fr
+                                        ? "Prenez des photos du logement depuis le logement lui-même. Votre position sert uniquement à confirmer qu'elles sont bien prises sur place."
+                                        : 'Take photos of the property while you are there. Your location is used only to confirm the photos were really taken at the property.'}
                                 </p>
                             </div>
 
@@ -242,7 +249,9 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                                         <MapPin className="text-zinc-500 w-5 h-5" />
                                     </div>
                                     <div>
-                                        <div className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-1">Target Registry</div>
+                                        <div className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-1">
+                                            {fr ? 'Adresse du bien' : 'Property address'}
+                                        </div>
                                         <div className="text-sm font-black uppercase truncate max-w-[200px]">{sessionDetails.target_address}</div>
                                     </div>
                                 </div>
@@ -250,7 +259,9 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
 
                             {rooms.length > 0 && (
                                 <div className="space-y-6 mb-12">
-                                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">Target Area</label>
+                                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                                        {fr ? 'Quelle pièce photographiez-vous ?' : 'Which room are you photographing?'}
+                                    </label>
                                     <div className="grid grid-cols-2 gap-4">
                                         {rooms.map(room => (
                                             <button
@@ -258,7 +269,9 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                                                 onClick={() => setSelectedRoom(room)}
                                                 className={`p-6 rounded-[2.5rem] border-2 text-left transition-all ${selectedRoom?.index === room.index ? 'bg-zinc-900 border-zinc-900 shadow-2xl' : 'border-zinc-100'}`}
                                             >
-                                                <div className={`text-[10px] font-black uppercase tracking-widest mb-1 ${selectedRoom?.index === room.index ? 'text-zinc-400' : 'text-zinc-500'}`}>Room</div>
+                                                <div className={`text-[10px] font-black uppercase tracking-widest mb-1 ${selectedRoom?.index === room.index ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                                                    {fr ? 'Pièce' : 'Room'}
+                                                </div>
                                                 <div className={`text-sm font-black uppercase ${selectedRoom?.index === room.index ? 'text-white' : 'text-zinc-900'}`}>{room.label}</div>
                                             </button>
                                         ))}
@@ -271,7 +284,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                                     onClick={() => fileInputRef.current?.click()}
                                     className="w-full py-8 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.4em] rounded-[2.5rem] shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-4"
                                 >
-                                    Initialize Camera
+                                    {fr ? "Ouvrir l'appareil photo" : 'Open camera'}
                                     <ChevronRight className="w-4 h-4" />
                                 </button>
                             </div>
@@ -286,18 +299,20 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                             className="flex-1 flex flex-col"
                         >
                             <div className="space-y-8 flex-1">
-                                <div className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">Telemetry Review</div>
+                                <div className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                                    {fr ? 'Vérifiez vos photos' : 'Check your photos'}
+                                </div>
                                 <div className="grid grid-cols-1 gap-6 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
                                     {previewUrls.map((url, i) => (
                                         <div key={i} className="aspect-[4/3] rounded-[3rem] overflow-hidden bg-zinc-100 relative">
                                             {files[i].type.startsWith('video') ? (
                                                 <video src={url} className="w-full h-full object-cover" controls playsInline muted />
                                             ) : (
-                                                <img src={url} className="w-full h-full object-cover" alt="Preview" />
+                                                <img src={url} className="w-full h-full object-cover" alt={fr ? 'Aperçu' : 'Preview'} />
                                             )}
                                             <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
                                             <div className="absolute bottom-6 left-6 text-white text-[10px] font-black uppercase tracking-widest pointer-events-none">
-                                                {files[i].type.startsWith('video') ? 'Stream' : 'Still'} &mdash; {i + 1}
+                                                {files[i].type.startsWith('video') ? (fr ? 'Vidéo' : 'Video') : 'Photo'} &mdash; {i + 1}
                                             </div>
                                         </div>
                                     ))}
@@ -309,13 +324,13 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                                     onClick={handleUpload}
                                     className="w-full py-8 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.4em] rounded-[2.5rem] shadow-2xl hover:scale-105 active:scale-95 transition-all"
                                 >
-                                    Transmit Telemetry
+                                    {fr ? 'Envoyer les photos' : 'Send photos'}
                                 </button>
                                 <button
                                     onClick={() => fileInputRef.current?.click()}
                                     className="w-full py-6 text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 hover:text-zinc-900 transition-all"
                                 >
-                                    Add More Channels
+                                    {fr ? "Ajouter d'autres photos" : 'Add more photos'}
                                 </button>
                             </div>
                         </motion.div>
@@ -330,8 +345,12 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                         >
                             <div className="w-24 h-24 border-4 border-zinc-100 border-t-zinc-900 rounded-full animate-spin" />
                             <div className="space-y-4">
-                                <h2 className="text-3xl font-black uppercase tracking-tighter">Transmitting</h2>
-                                <p className="text-zinc-500 font-medium">Encrypting data packets and synchronizing with global registry...</p>
+                                <h2 className="text-3xl font-black uppercase tracking-tighter">
+                                    {fr ? 'Envoi en cours' : 'Sending'}
+                                </h2>
+                                <p className="text-zinc-500 font-medium">
+                                    {fr ? 'Vos photos sont transmises de manière sécurisée…' : 'Your photos are being uploaded securely…'}
+                                </p>
                             </div>
                         </motion.div>
                     )}
@@ -347,23 +366,58 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                                 <CheckCircle2 className="w-16 h-16 text-white" />
                             </div>
                             <div className="space-y-4">
-                                <h2 className="text-5xl font-black tracking-tighter uppercase">Data Synced</h2>
-                                <p className="text-xl text-zinc-500 font-medium max-w-xs mx-auto">Visual telemetry successfully committed to the asset registry.</p>
+                                <h2 className="text-5xl font-black tracking-tighter uppercase">
+                                    {fr ? 'Photos bien reçues' : 'Photos received'}
+                                </h2>
+                                <p className="text-xl text-zinc-500 font-medium max-w-xs mx-auto">
+                                    {fr
+                                        ? 'Vos photos ont été ajoutées au dossier du logement.'
+                                        : 'Your photos have been added to the property file.'}
+                                </p>
                             </div>
                             <div className="pt-12 flex flex-col gap-6 w-full">
                                 <button
                                     onClick={() => { setFiles([]); setPreviewUrls([]); setStep('intro'); }}
                                     className="w-full py-8 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.4em] rounded-[2.5rem] shadow-2xl"
                                 >
-                                    Capture New Node
+                                    {fr ? "Prendre d'autres photos" : 'Take more photos'}
                                 </button>
                                 <button
                                     onClick={() => setStep('finished')}
                                     className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400"
                                 >
-                                    Terminate Session
+                                    {fr ? "J'ai terminé" : "I'm done"}
                                 </button>
                             </div>
+                        </motion.div>
+                    )}
+
+                    {step === 'finished' && (
+                        <motion.div
+                            key="finished"
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="flex-1 flex flex-col items-center justify-center text-center space-y-12"
+                        >
+                            <div className="w-32 h-32 bg-zinc-900 rounded-[3rem] flex items-center justify-center shadow-2xl shadow-zinc-900/20">
+                                <CheckCircle2 className="w-16 h-16 text-white" />
+                            </div>
+                            <div className="space-y-4">
+                                <h2 className="text-5xl font-black tracking-tighter uppercase">
+                                    {fr ? "C'est terminé" : 'All done'}
+                                </h2>
+                                <p className="text-xl text-zinc-500 font-medium max-w-xs mx-auto">
+                                    {fr
+                                        ? 'Merci ! Vous pouvez fermer cette page et reprendre sur votre ordinateur.'
+                                        : 'Thank you! You can close this page and continue on your computer.'}
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => { setFiles([]); setPreviewUrls([]); setStep('intro'); }}
+                                className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400"
+                            >
+                                {fr ? "Reprendre d'autres photos" : 'Take more photos'}
+                            </button>
                         </motion.div>
                     )}
                 </AnimatePresence>
@@ -382,7 +436,9 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                 <footer className="mt-20 pt-12 border-t border-zinc-100 flex flex-col items-center gap-6">
                     <div className="flex items-center gap-3">
                         <Shield className="w-4 h-4 text-zinc-300" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-300">Roomivo Encrypted Node</span>
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-300">
+                            {fr ? 'Roomivo — Capture sécurisée' : 'Roomivo — Secure capture'}
+                        </span>
                     </div>
                 </footer>
             </main>
