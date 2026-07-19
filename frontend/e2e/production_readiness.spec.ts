@@ -461,17 +461,26 @@ test.describe('2. KYC — Identity (verify-capture/[code])', () => {
         await page.route('**/verification/identity/session/**', route =>
             route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ completed: false }) }),
         );
-        await page.route('**/verification/identity/upload-mobile**', route =>
+        await page.route('**/verification/identity/upload-multi-mobile**', route =>
             route.fulfill({ status: 422, contentType: 'application/json', body: JSON.stringify({ detail: 'Image too blurry' }) }),
         );
         await page.goto('/verify-capture/TESTCODE123');
-        await expect(page.locator('text=/Identity|Select|passport|document/i').first()).toBeVisible({ timeout: 10_000 });
-        const fileInput = page.locator('input[type="file"]');
-        await fileInput.setInputFiles({ name: 'test.jpg', mimeType: 'image/jpeg', buffer: VALID_JPEG });
-        await expect(page.locator('text=/preview|confirm|retake/i').first()).toBeVisible({ timeout: 8_000 });
-        const gdprCheckbox = page.locator('input[type="checkbox"]');
-        await gdprCheckbox.check({ force: true });
-        await page.locator('button:has-text("Confirm"), button:has-text("Valider"), button:has-text("Submit"), button:has-text("Envoyer")').first().click();
+        await expect(page.locator('text=/Your document|Votre document/i').first()).toBeVisible({ timeout: 10_000 });
+        // Passport has no back side — shortest path through the multi-step flow
+        await page.locator('button:has-text("Passport"), button:has-text("Passeport")').first().click();
+        await page.locator('button:has-text("Continue"), button:has-text("Continuer")').first().click();
+        const takePhoto = page.locator('button:has-text("Take Photo"), button:has-text("Prendre la photo")').first();
+        await expect(takePhoto).toBeVisible({ timeout: 8_000 });
+        const [frontChooser] = await Promise.all([page.waitForEvent('filechooser'), takePhoto.click()]);
+        await frontChooser.setFiles({ name: 'front.jpg', mimeType: 'image/jpeg', buffer: VALID_JPEG });
+        await expect(page.locator('text=/Check the photo|Vérifiez la photo/i').first()).toBeVisible({ timeout: 8_000 });
+        await page.locator('button:has-text("Next"), button:has-text("Suivant")').first().click();
+        // Selfie
+        await expect(page.locator('text=/Take a Selfie|Prenez un Selfie/i').first()).toBeVisible({ timeout: 8_000 });
+        const [selfieChooser] = await Promise.all([page.waitForEvent('filechooser'), takePhoto.click()]);
+        await selfieChooser.setFiles({ name: 'selfie.jpg', mimeType: 'image/jpeg', buffer: VALID_JPEG });
+        await expect(page.locator('text=/Check the photo|Vérifiez la photo/i').first()).toBeVisible({ timeout: 8_000 });
+        await page.locator('button:has-text("Submit"), button:has-text("Envoyer")').first().click();
         await expect(page.locator('text=/blurry|upload|failed|error/i').first()).toBeVisible({ timeout: 8_000 });
     });
 });
