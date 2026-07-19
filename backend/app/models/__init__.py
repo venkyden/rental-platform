@@ -10,3 +10,4 @@ from app.models.team import TeamMember, TeamMemberProperty
 from app.models.inventory import Inventory, InventoryItem
 from app.models.dispute import Dispute
 from app.models.biometric_consent import BiometricConsent
+from app.models.dossier import TrustDossier, DossierShareLink

@@ -292,6 +292,9 @@ if settings.ENABLE_AGENCY_TOOLING:  # FREEZE 2026-07-04: agency tooling
 from app.routers import documents
 fastapi_app.include_router(documents.router)
 
+from app.api.v1.endpoints import dossiers
+fastapi_app.include_router(dossiers.router, prefix="/api/v1/dossiers", tags=["dossiers"])
+
 from app.routers import applications
 fastapi_app.include_router(applications.router)
 
