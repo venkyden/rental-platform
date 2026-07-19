@@ -520,9 +520,9 @@ export default function ProtectedRoute({
                                             <div className="flex items-center justify-between">
                                                 <div>
                                                     <h3 className="text-2xl font-black text-zinc-900 tracking-tight">
-                                                        {signupStep === 1 ? t('auth.register.title.step1', undefined, 'Choose Account Type') :
-                                                         signupStep === 2 ? t('auth.register.title.step2', undefined, 'Basics First') :
-                                                         t('auth.register.title.step3', undefined, 'Secure Account')}
+                                                        {signupStep === 1 ? t('auth.register.titles.step1', undefined, 'Choose Account Type') :
+                                                         signupStep === 2 ? t('auth.register.titles.step2', undefined, 'Basics First') :
+                                                         t('auth.register.titles.step3', undefined, 'Secure Account')}
                                                     </h3>
                                                     <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mt-1">
                                                         {t('auth.register.step', undefined, 'Step')} {signupStep} / 3
@@ -692,7 +692,7 @@ export default function ProtectedRoute({
                                                     {signupData.password && (
                                                         <div className="space-y-1.5 px-1">
                                                             <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-wider text-zinc-400">
-                                                                <span>{t('auth.register.strength', undefined, 'Strength')}:</span>
+                                                                <span>{t('auth.register.strength.label', undefined, 'Strength')}:</span>
                                                                 <span className="text-zinc-950">
                                                                     {strength < 40 ? t('auth.register.strength.weak', undefined, 'Weak') :
                                                                      strength < 80 ? t('auth.register.strength.medium', undefined, 'Medium') :

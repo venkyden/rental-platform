@@ -445,6 +445,116 @@ async def check_identity_session_status_stream(code: str):
 
 
 
+@router.post("/identity/upload-multi-mobile")
+async def upload_identity_multi_mobile(
+    verification_code: str = Form(...),
+    document_type: str = Form("passport"),
+    front: UploadFile = File(...),
+    back: Optional[UploadFile] = File(None),
+    selfie: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db),
+):
+    session = await _get_session(verification_code)
+    if not session:
+        raise HTTPException(status_code=404, detail="Invalid or expired verification code")
+    if session["completed"]:
+        raise HTTPException(status_code=400, detail="Session already completed")
+
+    import uuid
+    user_id = uuid.UUID(session["user_id"])
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    await _require_biometric_consent(user.id, db)
+    await _check_upload_rate_limit(str(user.id), "identity")
+
+    await _validate_file_size(front)
+    await _validate_file_size(selfie)
+    front_content = await front.read()
+    selfie_content = await selfie.read()
+    back_content = None
+    if back:
+        await _validate_file_size(back)
+        back_content = await back.read()
+
+    from app.services.identity import identity_service
+    doc_result = await identity_service.verify_three_step_kyc(
+        front_img=front_content,
+        front_type=front.content_type or "image/jpeg",
+        back_img=back_content,
+        back_type=back.content_type if back else None,
+        selfie_img=selfie_content,
+        selfie_type=selfie.content_type or "image/jpeg",
+        document_type=document_type,
+        expected_name=user.full_name,
+    )
+
+    if not doc_result["verified"]:
+        if doc_result["status"] == "error":
+            # Log internals; never surface raw AI errors to the client
+            logger.error(
+                f"3-step KYC verification unavailable for session {verification_code}: "
+                f"{doc_result.get('rejection_reason')}"
+            )
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail={
+                    "code": "VERIFICATION_UNAVAILABLE",
+                    "message": "Identity verification is temporarily unavailable. Please try again in a few minutes.",
+                },
+            )
+        failed_checks = [
+            c["name"]
+            for c in doc_result.get("validation_checks", [])
+            if isinstance(c, dict) and c.get("critical") and not c.get("passed")
+        ]
+        logger.warning(f"3-step KYC rejected for session {verification_code}: {doc_result.get('rejection_reason')}")
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "code": "VERIFICATION_FAILED",
+                "failed_checks": failed_checks,
+                "message": f"Verification failed: {doc_result.get('rejection_reason')}",
+            },
+        )
+
+    if not user.identity_verified:
+        await db.execute(
+            update(User).where(User.id == user.id)
+            .values(trust_score=func.least(100, User.trust_score + 30))
+        )
+        await db.refresh(user)
+
+    user.identity_verified = True
+    user.identity_status = "verified"
+    user.identity_data = {
+        "verified": True,
+        "verified_at": naive_utcnow().isoformat(),
+        "status": "verified",
+        "verification_method": "three_step_kyc",
+        # PII rule: store pass/fail booleans only — check "details" strings embed
+        # the extracted name, expiry date, and document type (never at rest)
+        "checks": [
+            {"name": c.get("name"), "passed": bool(c.get("passed")), "critical": bool(c.get("critical", False))}
+            for c in doc_result.get("validation_checks", [])
+            if isinstance(c, dict) and c.get("name")
+        ],
+        **OCR_LIVENESS_LABEL,
+    }
+    session["completed"] = True
+    await _update_session(verification_code, session)
+    await db.commit()
+    await db.refresh(user)
+    return {
+        "message": "Identity verified",
+        "verified": True,
+        "status": "verified",
+        "trust_score": user.trust_score,
+    }
+
+
 @router.post("/identity/upload-mobile")
 async def upload_identity_mobile(
     verification_code: str = Query(...),
@@ -1081,6 +1191,22 @@ async def upload_employment_document(
     return res
 
 
+def _strip_check_pii(data: Optional[dict]) -> Optional[dict]:
+    """Copy a *_data blob for API exposure, dropping PII the UI never reads:
+    check 'details' strings (extracted name, expiry date, document type) and
+    any legacy 'extracted_data' payload. Pass/fail booleans survive."""
+    if not data or not isinstance(data, dict):
+        return data
+    safe = {k: v for k, v in data.items() if k != "extracted_data"}
+    if isinstance(safe.get("checks"), list):
+        safe["checks"] = [
+            {k: c[k] for k in ("name", "description", "passed", "critical") if k in c}
+            for c in safe["checks"]
+            if isinstance(c, dict)
+        ]
+    return safe
+
+
 @router.get("/status", response_model=VerificationStatusResponse)
 async def get_verification_status(current_user: User = Depends(get_current_user)):
     """Get current verification status for user"""
@@ -1101,10 +1227,10 @@ async def get_verification_status(current_user: User = Depends(get_current_user)
         "ownership_verified": current_user.ownership_verified,
         "kbis_verified": current_user.kbis_verified,
         "carte_g_verified": current_user.carte_g_verified,
-        "identity_data": current_user.identity_data,
-        "employment_data": current_user.employment_data,
-        "ownership_data": current_user.ownership_data,
-        "income_data": current_user.income_data,
+        "identity_data": _strip_check_pii(current_user.identity_data),
+        "employment_data": _strip_check_pii(current_user.employment_data),
+        "ownership_data": _strip_check_pii(current_user.ownership_data),
+        "income_data": _strip_check_pii(current_user.income_data),
         "guarantor_type": current_user.guarantor_type,
         "guarantor_status": current_user.guarantor_status,
         "guarantor_assurance": (current_user.guarantor_data or {}).get("assurance"),

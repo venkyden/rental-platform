@@ -12,7 +12,10 @@ FROZEN_PREFIXES = ("/property-manager", "/team", "/bulk", "/webhooks/subscriptio
 def test_frozen_routers_not_mounted():
     from app.main import fastapi_app
 
-    mounted = {r.path for r in fastapi_app.routes if hasattr(r, "methods")}
+    # FastAPI ≥0.139 mounts included routers lazily (_IncludedRouter), so
+    # app.routes no longer exposes their paths — resolve via the OpenAPI schema.
+    mounted = set(fastapi_app.openapi()["paths"].keys())
+    assert mounted, "OpenAPI schema is empty — route introspection broken"
     offenders = {p for p in mounted if p.startswith(FROZEN_PREFIXES)}
     assert not offenders, f"frozen agency routes still mounted: {sorted(offenders)}"
     # general webhooks router (distinct from ERP /webhooks/subscriptions) stays

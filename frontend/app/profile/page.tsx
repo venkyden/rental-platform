@@ -226,7 +226,7 @@ export default function ProfilePage() {
                          className="w-full py-5 bg-zinc-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.4em] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 shadow-2xl"
                      >
                          <LogOut className="w-5 h-5" />
-                         {t('auth.logout', undefined, 'Logout')}
+                         {t('auth.logoutAction', undefined, 'Logout')}
                      </button>
                 </div>
             </PremiumLayout>

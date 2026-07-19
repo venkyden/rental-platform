@@ -107,7 +107,7 @@ export default function AccountSettingsPage() {
             setNewPassword('');
             setConfirmPassword('');
         } catch (error: any) {
-            let errorMsg = error.response?.data?.detail || t('settings.account.security.errors.default', undefined, 'Failed to change password');
+            let errorMsg = error.response?.data?.detail || t('settings.account.errors.passwordChange', undefined, 'Failed to change password');
             if (Array.isArray(errorMsg)) errorMsg = errorMsg[0].msg;
             setPasswordMessage({ text: errorMsg, type: 'error' });
         } finally {

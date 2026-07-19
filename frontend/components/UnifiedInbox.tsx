@@ -203,7 +203,7 @@ export default function UnifiedInbox({ onSelectConversation, selectedConversatio
                             {/* Property Header */}
                             <div className="px-6 py-4 bg-zinc-50/30 border-b border-zinc-100 sticky top-0 backdrop-blur-md z-10">
                                 <div className="font-black text-zinc-900 text-[10px] uppercase tracking-[0.2em] mb-1">
-                                     {group.property_title || t('search.property', undefined, 'Property')}
+                                     {group.property_title || t('inbox.propertyFallback', undefined, 'Property')}
                                 </div>
                                 <div className="text-[10px] font-bold text-zinc-400 truncate uppercase tracking-widest">
                                     {group.property_address}

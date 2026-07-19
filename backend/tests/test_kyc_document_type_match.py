@@ -96,6 +96,9 @@ async def test_verify_selfie_with_id_match():
         "has_id_document": True,
         "id_has_face_photo": True,
         "is_same_person": True,
+        # face_match_confidence defaults to 0.0 (fail-closed) when the AI omits
+        # it, so the happy-path mock must supply it explicitly.
+        "face_match_confidence": 0.95,
         "full_name": "Tenant User",
         "document_number": "AB123456",
         "expiry_date": "2030-01-01",
