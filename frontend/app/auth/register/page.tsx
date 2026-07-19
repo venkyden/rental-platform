@@ -198,9 +198,9 @@ export default function RegisterPage() {
                         transition={{ duration: 0.3 }}
                     >
                         <h2 className="text-4xl font-black text-zinc-900 tracking-tighter mb-2">
-                            {step === 1 ? t('auth.register.title.step1', undefined, 'Who are you?') :
-                             step === 2 ? t('auth.register.title.step2', undefined, 'Basics First') :
-                             t('auth.register.title.step3', undefined, 'Security')}
+                            {step === 1 ? t('auth.register.titles.step1', undefined, 'Who are you?') :
+                             step === 2 ? t('auth.register.titles.step2', undefined, 'Basics First') :
+                             t('auth.register.titles.step3', undefined, 'Security')}
                         </h2>
                         <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">
                             {t('auth.register.step', undefined, 'Step')} {step} / 3

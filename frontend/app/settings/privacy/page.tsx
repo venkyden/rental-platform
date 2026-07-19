@@ -35,7 +35,7 @@ function PrivacySettingsContent() {
 
     const handleDeleteAccount = async () => {
         if (deleteConfirmation.toUpperCase() !== deleteTarget.toUpperCase()) {
-            showError(t('auth.register.gdpr.error'));
+            showError(t('settings.privacy.deleteMismatch'));
             return;
         }
 
@@ -53,7 +53,7 @@ function PrivacySettingsContent() {
                 }
             }
 
-            success(t('auth.login.error.success'));
+            success(t('settings.privacy.deleteSuccess'));
             logout();
         } catch (error) {
             console.error('Failed to delete account:', error);

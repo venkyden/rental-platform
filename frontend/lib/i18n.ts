@@ -2,8 +2,92 @@ export type Language = 'en' | 'fr';
 
 export const translations = {
     en: {
+        inbox: {
+            title: "Inbox",
+            unread: "unread",
+            viewAll: "View all",
+            empty: "No messages yet",
+            emptyDesc: "Your conversation history will appear here.",
+            selectPrompt: "Select a conversation",
+            selectDesc: "Click a conversation to see its messages",
+            searchPlaceholder: "Search…",
+            filters: {
+                all: "All",
+                active: "Active",
+                archived: "Archived",
+            },
+            status: {
+                noConversations: "No conversations",
+                noConversationsDesc: "You don't have any messages yet. Tenant enquiries will appear here.",
+            },
+            time: {
+                yesterday: "Yesterday",
+            },
+            propertyFallback: "Property",
+        },
+        documents: {
+            description: "Your documents are encrypted and stored securely. Keep your profile up to date for faster application approvals.",
+            subtitle: "Your verified documents in one place",
+            title: "My documents",
+            updateButton: "Update my profile",
+            verification: "Verification status",
+        },
+        verification: {
+            buttons: {
+                ownership: "Verify ownership",
+            },
+            intl: {
+                bands: {
+                    amount_only: "Funds verified",
+                },
+                docTypeLabel: "Document type",
+                errors: {
+                    fundsCurrency: "We couldn't verify these funds — the currency isn't supported. Try a document in euros.",
+                    generic: "Verification failed. Please try again.",
+                    incomeCurrency: "We couldn't verify this income — the currency isn't supported. Try a document in euros.",
+                    noConsent: "Please consent to the automated document analysis to continue",
+                    noFile: "Please select a document",
+                },
+                fileFormats: "PDF, JPG or PNG, up to 10 MB",
+                fileSelect: "Choose a document",
+                fundsSource: {
+                    self: "My own",
+                    sponsor: "A sponsor / parent",
+                },
+                fundsSourceLabel: "Whose funds are these?",
+                incomeVerified: "Income verified (fiscal capacity)",
+                paths: {
+                    funds: "Savings / sponsorship",
+                    income: "Foreign income",
+                },
+                rentHint: "Lets us show how many months of rent your funds cover.",
+                rentLabel: "Monthly rent (€) — optional",
+                rentPlaceholder: "e.g. 700",
+                submit: "Submit for verification",
+                submitting: "Verifying…",
+                subtitle: "Use documents from outside France — foreign income, savings, scholarship, sponsorship or a student loan.",
+                successNote: "Your document was analysed then discarded — only the verified result is kept.",
+                title: "International solvency",
+                toggle: {
+                    french: "French documents",
+                    international: "International documents",
+                },
+            },
+            upload: {
+                consent: "I consent to the automated analysis of my document by Google Gemini, used only to extract the facts needed for verification. The document is not kept afterwards.",
+                consentLink: "Privacy policy",
+                consentRequired: "Please consent to the automated document analysis to continue",
+            },
+        },
         tenant: {
             features: {
+                activity: {
+                    apps: "Applications",
+                    review: "In review",
+                    title: "Your activity",
+                    tours: "Visits",
+                    upcoming: "Upcoming",
+                },
                 trust: {
                     badge: "Trust Layer",
                     title: "Verified Profile",
@@ -114,6 +198,8 @@ export const translations = {
         // Landing Page
         landing: {
             hero: {
+                badge: "Legal framework",
+                colocation: "Flatshare",
                 title: "Rent with proof, not promises",
                 highlight: "proof",
                 searchPlaceholder: "Where do you want to live?",
@@ -149,6 +235,7 @@ export const translations = {
             getStarted: "Get Started",
             signIn: "Sign In",
             valueProp: {
+                desc: "We connect landlords and tenants with verification technology that builds trust.",
                 title: "Why Roomivo?",
                 subtitle: "Built for the renters French housing leaves behind.",
                 dossier: { title: "Evidence you can keep", desc: "Every verification ends in a watermarked, timestamped proof document — yours to download, and yours to use if a deal ever turns into a dispute." },
@@ -157,6 +244,7 @@ export const translations = {
                 funds: { title: "Your Money Stays Yours", desc: "Roomivo never touches rent or deposits. You pay the other party directly — knowing exactly who they are." }
             },
             howItWorks: {
+                pipeline: "Direct contact",
                 title: "How it Works",
                 subtitle: "From stranger to signed lease — every step verified",
                 steps: {
@@ -209,6 +297,12 @@ export const translations = {
                 }
             },
             footer: {
+                aesEncrypted: "AES-256 encryption",
+                backedBy: "Backed by",
+                gdprCompliant: "GDPR compliant",
+                privacyLink: "Privacy",
+                secureConnection: "Secure connection",
+                termsLink: "Terms",
                 platform: "Platform",
                 legal: "Legal",
                 support: "Support",
@@ -220,9 +314,31 @@ export const translations = {
             }
         },
         navigation: {
+            mobile: "Mobile navigation",
+            primary: "Primary navigation",
             home: "Go Home"
         },
         cookies: {
+            badge: "Your privacy",
+            categories: {
+                analytics: {
+                    content: "Anonymised, privacy-friendly statistics that help us find problems and improve the product.",
+                    title: "Performance",
+                },
+                necessary: {
+                    content: "Needed for sign-in, security (CSRF) and load balancing. They cannot be turned off.",
+                    title: "Strictly necessary",
+                },
+            },
+            sections: {
+                categories: {
+                    title: "Essential vs. optional",
+                },
+                management: {
+                    content: "You stay in control. Most browsers let you block cookies, but blocking essential ones will end your Roomivo session.",
+                    title: "Managing your preferences",
+                },
+            },
             title: "Cookie Preferences",
             description: "Roomivo uses cookies to ensure essential functionality and, with your consent, for analytics to improve the platform. See our {{privacyLink}} for details.",
             privacyPolicy: "Privacy Policy",
@@ -246,6 +362,16 @@ export const translations = {
             }
         },
         common: {
+            confirm: "Confirm",
+            confirm_area: "Confirm search area",
+            continue: "Continue",
+            errors: {
+                failed: "The action could not be completed. Please try again.",
+                unknown: "An error occurred. Please try again.",
+            },
+            immediate: "Immediate",
+            language: "Language",
+            saving: "Saving…",
             locale: "en-GB",
             error: {
                 notFoundTitle: "Page Not Found",
@@ -269,6 +395,8 @@ export const translations = {
             requiredByLaw: "Required by Law",
             close: "Close",
             actions: {
+                back: "Back",
+                retry: "Try again",
                 profile: "My Profile",
                 verification: "ID Verification",
                 documents: "Documents",
@@ -321,6 +449,8 @@ export const translations = {
                 employment: "Employment"
             },
             placeholders: {
+                factualObservations: "Factual observations only — no opinions or accusations",
+                universityName: "School name",
                 fullName: "John Doe",
                 bio: "A bit about yourself...",
                 email: "name@company.com",
@@ -551,6 +681,7 @@ export const translations = {
         },
         // Onboarding
         onboarding: {
+            stepLabel: "Personalisation",
             roleDescriptions: {
                 tenant: "Looking for a home",
                 landlord: "Renting out property",
@@ -567,6 +698,7 @@ export const translations = {
             teamInvite: "Team Invitation",
             view: "View",
             error: {
+                resumeFailed: "We couldn't restore your previous answers. You may need to start again.",
                 enterName: "Please enter your full name to continue.",
                 savingName: "Failed to save name. Please try again.",
                 acceptTerms: "Please accept the Privacy Policy and Terms of Service to continue."
@@ -777,6 +909,59 @@ export const translations = {
 
         // Dashboard
         dashboard: {
+            agency: {
+                accessManagement: "Access management",
+                activeMandates: "Active mandates",
+                activeMandatesCount: "Managing {{count}} active mandates",
+                applications: "Pending applications",
+                avgRentalTime: "Avg. time to rent",
+                bulkImport: "Bulk import",
+                carteG: "Carte G licence",
+                carteGRequired: "French professional licence required",
+                compliance: "Company compliance",
+                csvXml: "CSV / XML",
+                daysSuffix: "d",
+                enterpriseActions: "Agency tools",
+                erpIntegration: "ERP integration",
+                export: "Export CSV",
+                kbisRegistration: "Kbis extract",
+                kbisRequired: "Extract less than 3 months old required",
+                leased: "Leased",
+                managedRevenue: "Managed revenue",
+                mandateManagement: "Mandate management",
+                overview: "Overview",
+                team: "Team",
+                title: "Agency dashboard",
+                uploadCarteG: "Upload",
+                uploadKbis: "Upload",
+                verifiedLicense: "Verified manager licence",
+                verifiedStatus: "Verified status",
+                viewAllProperties: "View all properties",
+                webhooksApi: "Webhooks API",
+                welcome: "Welcome back",
+            },
+            roles: {
+                landlord: "Landlord",
+                tenant: "Tenant",
+            },
+            sections: {
+                analytics: "Portfolio analytics",
+                facilitation: "Facilitation",
+            },
+            properties: {
+                portfolioManagement: "Property management",
+                yourProperties: "Your properties",
+                description: "Manage your listings and track how your properties perform.",
+                addProperty: "Add a property",
+                listingsCount: "{{count}} listings",
+                filters: {
+                    all: "All",
+                    draft: "Drafts",
+                    active: "Active",
+                },
+                emptyTitle: "No properties found",
+                emptyDescription: "You haven't added a property yet. Start now to find your future tenants.",
+            },
             title: "Dashboard",
             welcome: "Welcome",
             welcome_desc: "Here's what's happening with your rental journey today.",
@@ -786,10 +971,12 @@ export const translations = {
             complete: "Complete",
             pending: "Pending",
             role: {
+                title: "Active role",
                 landlord: "Landlord Mode",
                 tenant: "Tenant Mode"
             },
             roleSwitcher: {
+                title: "Roles",
                 currentSession: "Current Session",
                 switchTo: "Switch To",
                 unlockNew: "Unlock New Role",
@@ -801,6 +988,7 @@ export const translations = {
                 }
             },
             stats: {
+                unread: "Unread messages",
                 properties: "Properties",
                 propertiesDesc: "All your listings",
                 activeListings: "Active",
@@ -840,6 +1028,8 @@ export const translations = {
                 info: "Info"
             },
             quickActions: {
+                help: "Guides",
+                search: "Search",
                 title: "Quick Actions",
                 my_disputes: "My Disputes",
                 property_disputes: "Property Disputes",
@@ -854,6 +1044,7 @@ export const translations = {
                 analytics: { title: "Analytics", desc: "Portfolio performance" }
             },
             verification: {
+                title: "Verification",
                 email: "Email Verification",
                 identity: "Identity Verification",
                 employment: "Employment Verification",
@@ -970,6 +1161,7 @@ export const translations = {
                 }
             },
             inbox: {
+                subtitle: "All your rental conversations in one place",
                 title: "Inbox",
                 unread: "unread",
                 viewAll: "View all",
@@ -1071,6 +1263,15 @@ export const translations = {
                 rights: "All rights reserved."
             },
             landlord: {
+                addProperty: "Add a property",
+                collaborateDesc: "Invite collaborators to manage your properties together.",
+                gettingStarted: "Getting started",
+                gettingStartedDesc: "Add your first property to start receiving applications, in line with French rental law (ALUR).",
+                inviteMember: "Manage team",
+                myTeam: "Collaborators",
+                revenue: "Monthly revenue",
+                title: "Landlord dashboard",
+                visits: "Scheduled visits",
                 welcome: "Welcome, {{name}}",
                 subtitle: "Landlord Dashboard",
                 onboarding: {
@@ -1101,6 +1302,13 @@ export const translations = {
             }
         },
         analytics: {
+            applicationsTrend: "Applications trend",
+            conversionRate: "Applications",
+            periodSelection: "Select period",
+            trafficGrowth: "Traffic & visibility",
+            trend: {
+                vsPrevPeriod: "vs previous period",
+            },
             subtitle: "Track your property performance and financial growth.",
             totalViews: "Total Views",
             occupancy: "Occupancy Rate",
@@ -1183,7 +1391,37 @@ export const translations = {
             }
         },
         properties: {
+            addProperty: "Add a property",
+            description: "Manage your listings and track how they perform.",
+            edit: {
+                acceptedTenants: "Accepted tenant profiles",
+                backToProperty: "Back to property",
+                loading: "Loading property…",
+                mediaSection: {
+                    addMedia: "Add photos",
+                    count: "{{count}} files uploaded",
+                    manageMedia: "Manage photos",
+                    noMedia: "No photos yet",
+                    title: "Photos & videos",
+                },
+                notFound: "Property not found",
+                saveButton: "Save changes",
+                saveFailed: "The property could not be updated",
+                saveSuccess: "Property updated",
+                saving: "Saving…",
+                title: "Edit property",
+                unauthorized: "You don't have permission to edit this property.",
+            },
+            emptyDescription: "Add your first property to start receiving applications.",
+            emptyTitle: "No properties yet",
+            errorLoading: "Your properties could not be loaded",
+            listingsCount: "{{count}} listings",
+            yourProperties: "Your properties",
             new: {
+                details: {
+                    energyRatingTitle: "Energy performance (DPE)",
+                    gesLabel: "Greenhouse gas emissions (GES)",
+                },
                 title: "Create a listing",
                 stepStatus: "Step {{current}} of 8: {{status}}",
                 initializing: "Let's get started",
@@ -1209,7 +1447,14 @@ export const translations = {
                     room: "Room"
                 },
                 steps: {
+                    capacity: {
+                        missingCapacity: "Please set the accommodation capacity.",
+                    },
+                    location: {
+                        missingAddress: "Please fill in the address, city and postal code.",
+                    },
                     identity: {
+                        missingTitle: "Please give your listing a title before continuing.",
                         label: "01 // Identity",
                         titlePlaceholder: "Listing title (e.g., Haussmann Luxury Suite)",
                     },
@@ -1221,12 +1466,18 @@ export const translations = {
                         enriching: "Loading nearby data..."
                     },
                     details: {
+                        missingDetails: "Please complete the property details (size, bedrooms).",
+                        missingDpeRating: "Please select a DPE class.",
+                        missingDpeValues: "Please enter the exact DPE and GES values.",
                         label: "03 // Details",
                         bedrooms: "Bedrooms",
                         surface: "Surface (m²)",
                         energyProtocol: "Energy rating (DPE)"
                     },
                     pricing: {
+                        leaseDuration: "Lease duration (months)",
+                        missingJustification: "A written justification is required for a rent supplement.",
+                        missingRent: "Please enter the monthly rent.",
                         monthlyRent: "Monthly Rent",
                         chargesLabel: "Charges",
                         allInclusive: "All-Inclusive",
@@ -1249,6 +1500,7 @@ export const translations = {
                         decencyWarning: "Warning: The habitable surface is below the legal decency standard of 9m² per occupant."
                     },
                     narrative: {
+                        missingDescription: "Please write or generate a description.",
                         label: "07 // Description",
                         descriptionEnPlaceholder: "Describe the property and what it's like to live there, in English...",
                         descriptionFrPlaceholder: "Describe the property and what it's like to live there, in French...",
@@ -1298,6 +1550,7 @@ export const translations = {
             }
         },
         auth: {
+            logoutAction: "Log out",
             google_signin: "Sign in with Google",
             common: {
                 showPassword: "Show password",
@@ -1333,6 +1586,9 @@ export const translations = {
                 success: "Logged out successfully"
             },
             verifyEmail: {
+                errorSub: "We couldn't activate your account",
+                successSub: "Your account is now active",
+                verifyingSub: "Checking your link…",
                 title: "Email Verification",
                 verifying: "Verifying your email...",
                 success: "Success!",
@@ -1400,6 +1656,11 @@ export const translations = {
                 }
             },
             login: {
+                createOne: "Create one here",
+                emailLabel: "Email address",
+                or: "or",
+                passwordLabel: "Password",
+                sub: "Sign in to continue where you left off.",
                 title: "Welcome back",
                 subtitle: "Access your account",
                 email: "Email address",
@@ -1416,6 +1677,7 @@ export const translations = {
                 divider: "or continue with",
                 signIn: "Sign in securely",
                 error: {
+                    required: "All fields are required",
                     google: "Google sign-in did not return a credential. Please try again.",
                     googleFail: "Google sign-in failed. Please try again.",
                     googleScript: "Could not load Google Sign-In. Please use email login.",
@@ -1424,6 +1686,21 @@ export const translations = {
                 }
             },
             register: {
+                alreadyHaveAccount: "Already have an account?",
+                confirmPasswordLabel: "Confirm password",
+                continue: "Continue",
+                emailLabel: "Email address",
+                fullNameLabel: "Full name",
+                gdpr: "I accept the Terms of Use and the privacy policy (GDPR).",
+                marketing: "Send me occasional updates on the rental market and French rental law.",
+                passwordLabel: "Password",
+                phoneLabel: "Phone number",
+                step: "Step",
+                titles: {
+                    step1: "Who are you?",
+                    step2: "Your details",
+                    step3: "Secure your account",
+                },
                 title: "Create your account",
                 subtitle: "Join the platform",
                 hasAccount: "Already have an account?",
@@ -1470,12 +1747,15 @@ export const translations = {
                     managerDesc: "I manage properties"
                 },
                 strength: {
+                    info: "At least 8 characters, with an uppercase letter, a number and a symbol",
                     label: "Security Strength",
                     weak: "Weak",
                     medium: "Secure",
                     strong: "Very strong"
                 },
                 error: {
+                    emailInvalid: "Please enter a valid email address",
+                    required: "Name and email are required",
                     privacy: "You must accept the Privacy Policy to create an account",
                     mismatch: "Passwords do not match",
                     security: "Password does not meet security requirements",
@@ -1484,6 +1764,9 @@ export const translations = {
             }
         },
         profile: {
+            preferences: {
+                title: "Rental preferences",
+            },
             title: "My Profile",
             back: "Back",
             accountSettings: "Account Settings",
@@ -1492,6 +1775,28 @@ export const translations = {
             logout: "Logout"
         },
         property: {
+            amenitiesTitle: "Amenities & features",
+            landlord: {
+                archiveConfirm: "Archive this property?",
+                deleteConfirm: "Delete this property? This cannot be undone.",
+                portfolio: "Property management",
+            },
+            locationTitle: "Verified location",
+            media: {
+                noMedia: "No photos yet",
+            },
+            share: {
+                copied: "Link copied to clipboard",
+            },
+            success: {
+                archive: "Property archived",
+                unarchive: "Property restored",
+            },
+            wishlist: {
+                added: "Saved to favourites",
+                error: "Favourites could not be updated",
+                removed: "Removed from favourites",
+            },
             create: {
                 title: "Add New Property",
                 subtitle: "Setup your listing in a few simple steps.",
@@ -1537,6 +1842,8 @@ export const translations = {
                     foundLandmarks: "{{count}} landmarks found"
                 },
                 details: {
+                    dpeValue: "DPE value (kWh/m²/year)",
+                    gesValue: "GES value (kg CO₂/m²/year)",
                     title: "Property Details",
                     bedrooms: "Bedrooms",
                     bathrooms: "Bathrooms",
@@ -1573,6 +1880,8 @@ export const translations = {
                     amenityPlaceholder: "Add amenity..."
                 },
                 pricing: {
+                    flexibleDuration: "Flexible / open-ended",
+                    leaseDuration: "Lease duration",
                     title: "Rent & Charges",
                     monthlyRent: "Monthly Base Rent",
                     charges: "Monthly Charges",
@@ -1631,6 +1940,7 @@ export const translations = {
                     uploadAllToPublish: "Please upload media for all rooms to publish"
                 },
                 errors: {
+                    dpeGBan: "Class G properties can no longer be offered for rent since January 2025 (loi Climat).",
                     createFailed: "Failed to create property. Please check the form and try again.",
                     publishFailed: "Failed to publish. Make sure all rooms have at least 1 photo or video."
                 },
@@ -1652,6 +1962,9 @@ export const translations = {
                 publishFail: "Failed to publish property"
             },
             actions: {
+                archive: "Archive",
+                preview: "Preview",
+                unarchive: "Unarchive",
                 back: "Back to listings",
                 edit: "Edit Property",
                 publishing: "Publishing...",
@@ -1662,6 +1975,7 @@ export const translations = {
                 message: "Message Landlord"
             },
             status: {
+                verified: "Verified",
                 published: "Published",
                 draft: "Draft",
                 available: "Available From",
@@ -1710,6 +2024,7 @@ export const translations = {
             transport: "Public Transport",
             landmarks: "Nearby Landmarks",
             price: {
+                investment: "Investment",
                 perMonth: "per month",
                 total: "Total",
                 deposit: "Security Deposit",
@@ -1786,6 +2101,7 @@ export const translations = {
                 standard: "Standard"
             },
             pricing: {
+                cafEligible: "CAF eligible",
                 ccDesc: "Charges Included",
                 ccFull: "Rent CC",
                 chargesPlaceholder: "ex: 100",
@@ -1876,6 +2192,7 @@ export const translations = {
                 "frameTip": "Tip: Ensure your document is well-lit and all corners are visible within the blue frame."
         },
         "conversation": {
+            noSubject: "Conversation",
                 "notFound": "Conversation not found",
                 "archiveButton": "Archive",
                 "landlord": "Landlord",
@@ -1886,6 +2203,11 @@ export const translations = {
                 "archivedNotice": "This conversation is archived"
         },
         "lease": {
+            benefits: "Social / family benefits",
+            pension: "Pension statement",
+            payslip: "Last 3 payslips",
+            bank_statement: "Last 3 bank statements",
+            professional_card: "Professional card / proof of identity",
                 "meuble": {
                         "name": "Furnished Lease",
                         "desc": "Standard lease for furnished property",
@@ -2019,6 +2341,14 @@ export const translations = {
                 "management_mandate": "Management Mandate (for Agencies)"
         },
         search: {
+            detail: {
+                matrix: {
+                    surface: "Living area",
+                    bedrooms: "Bedrooms",
+                    bathrooms: "Bathrooms",
+                    floor: "Floor",
+                },
+            },
             discovery: "Marketplace Discovery",
             subtitle: "Find your next home",
             welcome_user: "Your Next Home, {{name}}",
@@ -2088,6 +2418,10 @@ export const translations = {
                 subtitle: 'Data Protection & Trust',
                 description: 'Your data is encrypted and managed with strict adherence to GDPR standards.',
                 sections: {
+                    ai_processing: {
+                        content: "To verify your identity, income and funds, Roomivo uses automated analysis powered by Google's Gemini AI. Documents you upload are transmitted to Google solely to extract the specific facts required for verification; Google acts as a data processor on Roomivo's behalf under a data-processing agreement. Roomivo applies a verify-and-forget model: your source document is processed transiently and is not retained after the verification result is produced — we keep only the banded result (for example \"funds cover ≥ 12 months of rent\"), never the original file. By uploading a document you consent to this automated processing, and you may contact us at any time to exercise your GDPR rights (access, erasure, objection).",
+                        title: "Automated document analysis",
+                    },
                     collection: {
                         title: 'Data Collection',
                         content: 'We collect identity, income, and employment data strictly for rental verification purposes.'
@@ -2130,16 +2464,43 @@ export const translations = {
                 }
             },
             gdpr: {
+                badge: "Your data, your rights",
+                rights: {
+                    access: {
+                        content: "Download a machine-readable archive of all personal data and verification proofs linked to your account.",
+                        title: "Access & portability",
+                    },
+                    forgotten: {
+                        content: "Permanent deletion of your account and files. Legal retention duties may apply temporarily for active leases.",
+                        title: "Right to erasure",
+                    },
+                    rectification: {
+                        content: "Correct inaccurate information at any time. Changing documents may trigger a re-verification.",
+                        title: "Rectification",
+                    },
+                },
+                sections: {
+                    contact: {
+                        content: "Most rights can be exercised directly from your dashboard. For any other request, contact us at the address below.",
+                        title: "Exercise your rights",
+                    },
+                    fundamental: {
+                        title: "Your fundamental rights",
+                    },
+                },
+                subtitle: "Your account data is hosted in the EU. Document analysis uses Google Gemini as a data processor — we keep only the verification result, never your documents.",
                 title: 'GDPR Rights'
             }
         },
         globalFooter: {
+            gdpr: "GDPR rights",
             help: "Help & Support",
             rights: "All rights reserved.",
             status: "System Operational"
         },
 
         disputes: {
+            back: "Back to incidents",
             title: "Incident Reports",
             subtitle: "Track and manage your property disputes",
             desc: "Log property issues",
@@ -2158,6 +2519,7 @@ export const translations = {
                 closed: "Closed"
             },
             detail: {
+                takePhoto: "Take photo",
                 back: "Back",
                 claimed: "claimed",
                 description: "Description",
@@ -2185,6 +2547,9 @@ export const translations = {
                 }
             },
             incident: {
+                messages: {
+                    success: "Incident reported",
+                },
                 title: "Report an Incident",
                 desc: "Provide details about the issue to notify your landlord and our facilitation team.",
                 lease: "Select Lease",
@@ -2285,6 +2650,9 @@ export const translations = {
                 preferences: "Preferences"
             },
             account: {
+                errors: {
+                    passwordChange: "The password could not be changed",
+                },
                 profileDetails: "Profile Details",
                 avatarFormat: "Avatar Format",
                 avatarDesc: "Allowed: JPG, PNG, WEBP. Max size: 2MB.",
@@ -2306,6 +2674,7 @@ export const translations = {
                 sending: "Sending...",
                 general: "General",
                 messages: {
+                    avatarError: "The photo could not be uploaded. Please try again.",
                     profileSuccess: "Profile updated successfully!",
                     profileError: "Failed to update profile",
                     passwordSuccess: "Password updated successfully",
@@ -2316,6 +2685,8 @@ export const translations = {
                 }
             },
             privacy: {
+                deleteMismatch: "Type the confirmation word exactly to delete your account.",
+                deleteSuccess: "Your account and your data have been deleted.",
                 dataTitle: "Data & Privacy",
                 dataDesc: "We take your privacy seriously. Your data is handled in accordance with the General Data Protection Regulation (GDPR). You have the right to access, rectify, or erase your personal data at any time.",
                 dangerTitle: "Danger Zone",
@@ -2327,6 +2698,11 @@ export const translations = {
                 gdprData: "GDPR & Data"
             },
             preferences: {
+                challenge: "Main challenge",
+                propertyCount: "Portfolio size",
+                tenantCriteria: "Ideal tenant",
+                urgency: "Urgency",
+                urgencyLevel: "Timeline",
                 title: "Matching Preferences",
                 matchingCriteria: "Matching Criteria",
                 identity: "Identity",
@@ -2355,6 +2731,13 @@ export const translations = {
                 updating: "Updating...",
                 notSet: "Not set",
                 options: {
+                    all: "All of the above",
+                    avoidingFraud: "Avoiding fraud",
+                    findingTenants: "Finding tenants",
+                    planning: "Just planning",
+                    regulations: "Understanding the rules",
+                    soon: "In the coming months",
+                    urgent: "Urgent",
                     furnished: "Furnished",
                     unfurnished: "Unfurnished",
                     noPreference: "No preference",
@@ -2476,8 +2859,69 @@ export const translations = {
         }
     },
     fr: {
+        documents: {
+            description: "Vos documents sont chiffrés et stockés en toute sécurité. Gardez votre profil à jour pour des candidatures validées plus vite.",
+            subtitle: "Vos documents vérifiés au même endroit",
+            title: "Mes documents",
+            updateButton: "Mettre à jour mon profil",
+            verification: "Statut de vérification",
+        },
+        verification: {
+            buttons: {
+                ownership: "Vérifier la propriété",
+            },
+            intl: {
+                bands: {
+                    amount_only: "Fonds vérifiés",
+                },
+                docTypeLabel: "Type de document",
+                errors: {
+                    fundsCurrency: "Impossible de vérifier ces fonds — devise non prise en charge. Essayez un document en euros.",
+                    generic: "La vérification a échoué. Réessayez.",
+                    incomeCurrency: "Impossible de vérifier ces revenus — devise non prise en charge. Essayez un document en euros.",
+                    noConsent: "Veuillez consentir à l'analyse automatisée du document pour continuer",
+                    noFile: "Sélectionnez un document",
+                },
+                fileFormats: "PDF, JPG ou PNG, 10 Mo max",
+                fileSelect: "Choisir un document",
+                fundsSource: {
+                    self: "Les miens",
+                    sponsor: "Un garant / parent",
+                },
+                fundsSourceLabel: "À qui appartiennent ces fonds ?",
+                incomeVerified: "Revenus vérifiés (capacité fiscale)",
+                paths: {
+                    funds: "Épargne / prise en charge",
+                    income: "Revenus étrangers",
+                },
+                rentHint: "Permet d'indiquer combien de mois de loyer vos fonds couvrent.",
+                rentLabel: "Loyer mensuel (€) — facultatif",
+                rentPlaceholder: "ex : 700",
+                submit: "Envoyer pour vérification",
+                submitting: "Vérification…",
+                subtitle: "Utilisez des documents hors de France — revenus étrangers, épargne, bourse, prise en charge ou prêt étudiant.",
+                successNote: "Votre document a été analysé puis supprimé — seul le résultat vérifié est conservé.",
+                title: "Solvabilité internationale",
+                toggle: {
+                    french: "Documents français",
+                    international: "Documents internationaux",
+                },
+            },
+            upload: {
+                consent: "Je consens à l'analyse automatisée de mon document par Google Gemini, utilisée uniquement pour extraire les informations nécessaires à la vérification. Le document n'est pas conservé ensuite.",
+                consentLink: "Politique de confidentialité",
+                consentRequired: "Veuillez consentir à l'analyse automatisée du document pour continuer",
+            },
+        },
         tenant: {
             features: {
+                activity: {
+                    apps: "Candidatures",
+                    review: "En cours d'examen",
+                    title: "Votre activité",
+                    tours: "Visites",
+                    upcoming: "À venir",
+                },
                 trust: {
                     badge: "Couche de Confiance",
                     title: "Profil Vérifié",
@@ -2543,6 +2987,7 @@ export const translations = {
             },
         },
         inbox: {
+            propertyFallback: "Bien",
             title: "Boîte de réception",
             unread: "non lu(s)",
             viewAll: "Voir tout",
@@ -2565,6 +3010,16 @@ export const translations = {
             }
         },
         common: {
+            confirm: "Confirmer",
+            confirm_area: "Valider la zone de recherche",
+            continue: "Continuer",
+            errors: {
+                failed: "L'action n'a pas pu aboutir. Réessayez.",
+                unknown: "Une erreur est survenue. Veuillez réessayer.",
+            },
+            immediate: "Immédiate",
+            language: "Langue",
+            saving: "Enregistrement…",
             locale: "fr-FR",
             error: {
                 notFoundTitle: "Page non trouvée",
@@ -2588,6 +3043,8 @@ export const translations = {
             requiredByLaw: "Obligatoire par la loi",
             close: "Fermer",
             actions: {
+                back: "Retour",
+                retry: "Réessayer",
                 profile: "Mon Profil",
                 verification: "Vérification d'identité",
                 documents: "Documents",
@@ -2640,6 +3097,8 @@ export const translations = {
                 employment: "Emploi"
             },
             placeholders: {
+                factualObservations: "Observations factuelles uniquement — sans opinion ni accusation",
+                universityName: "Nom de l'établissement",
                 fullName: "Jean Dupont",
                 bio: "Un peu sur vous...",
                 email: "nom@entreprise.com",
@@ -2780,6 +3239,8 @@ export const translations = {
         // Landing Page
         landing: {
             hero: {
+                badge: "Cadre légal",
+                colocation: "Colocation",
                 title: "Louez avec des preuves, pas des promesses",
                 highlight: "des preuves",
                 searchPlaceholder: "Où voulez-vous vivre ?",
@@ -2815,6 +3276,7 @@ export const translations = {
             getStarted: "Commencer",
             signIn: "Se connecter",
             valueProp: {
+                desc: "Nous relions bailleurs et locataires grâce à une technologie de vérification qui crée la confiance.",
                 title: "Pourquoi Roomivo ?",
                 subtitle: "Conçu pour ceux que la location française laisse de côté.",
                 dossier: { title: "Une preuve que vous gardez", desc: "Chaque vérification se conclut par un document horodaté et filigrané — à télécharger, et à produire si une transaction tourne mal." },
@@ -2823,6 +3285,7 @@ export const translations = {
                 funds: { title: "Votre Argent Reste le Vôtre", desc: "Roomivo ne touche jamais au loyer ni au dépôt de garantie. Vous payez directement l'autre partie — en sachant exactement qui elle est." }
             },
             howItWorks: {
+                pipeline: "Contact direct",
                 title: "Comment ça marche",
                 subtitle: "D'inconnus à bail signé — chaque étape vérifiée",
                 steps: {
@@ -2875,6 +3338,12 @@ export const translations = {
                 }
             },
             footer: {
+                aesEncrypted: "Chiffrement AES-256",
+                backedBy: "Soutenu par",
+                gdprCompliant: "Conforme RGPD",
+                privacyLink: "Confidentialité",
+                secureConnection: "Connexion sécurisée",
+                termsLink: "CGU",
                 platform: "Plateforme",
                 legal: "Légal",
                 support: "Support",
@@ -2886,9 +3355,31 @@ export const translations = {
             }
         },
         navigation: {
+            mobile: "Navigation mobile",
+            primary: "Navigation principale",
             home: "Retour à l'accueil"
         },
         cookies: {
+            badge: "Votre vie privée",
+            categories: {
+                analytics: {
+                    content: "Statistiques anonymisées et respectueuses de la vie privée, pour repérer les problèmes et améliorer le produit.",
+                    title: "Performance",
+                },
+                necessary: {
+                    content: "Nécessaires à la connexion, à la sécurité (CSRF) et à la répartition de charge. Ils ne peuvent pas être désactivés.",
+                    title: "Strictement nécessaires",
+                },
+            },
+            sections: {
+                categories: {
+                    title: "Essentiels et optionnels",
+                },
+                management: {
+                    content: "Vous gardez le contrôle. La plupart des navigateurs permettent de bloquer les cookies, mais bloquer les cookies essentiels mettra fin à votre session Roomivo.",
+                    title: "Gérer vos préférences",
+                },
+            },
             title: "Préférences des Cookies",
             description: "Roomivo utilise des cookies pour assurer les fonctionnalités essentielles et, avec votre consentement, pour des analyses afin d'améliorer la plateforme. Consultez notre {{privacyLink}} pour plus de détails.",
             privacyPolicy: "Politique de Confidentialité",
@@ -3047,6 +3538,7 @@ export const translations = {
         },
         // Onboarding
         onboarding: {
+            stepLabel: "Personnalisation",
             roleDescriptions: {
                 tenant: "Je recherche un logement",
                 landlord: "Je mets en location",
@@ -3063,6 +3555,7 @@ export const translations = {
             teamInvite: "Invitation d'équipe",
             view: "Voir",
             error: {
+                resumeFailed: "Impossible de récupérer vos réponses précédentes. Vous devrez peut-être recommencer.",
                 enterName: "Veuillez entrer votre nom complet pour continuer.",
                 savingName: "Échec de l'enregistrement du nom. Veuillez réessayer.",
                 acceptTerms: "Veuillez accepter la politique de confidentialité et les conditions d'utilisation pour continuer."
@@ -3270,6 +3763,41 @@ export const translations = {
         },
         // Dashboard
         dashboard: {
+            agency: {
+                accessManagement: "Gestion des accès",
+                activeMandates: "Mandats actifs",
+                activeMandatesCount: "{{count}} mandats actifs en gestion",
+                applications: "Candidatures en attente",
+                avgRentalTime: "Délai moyen de location",
+                bulkImport: "Import groupé",
+                carteG: "Carte G",
+                carteGRequired: "Carte professionnelle française requise",
+                compliance: "Conformité de la société",
+                csvXml: "CSV / XML",
+                daysSuffix: "j",
+                enterpriseActions: "Outils agence",
+                erpIntegration: "Intégration ERP",
+                export: "Exporter en CSV",
+                kbisRegistration: "Extrait Kbis",
+                kbisRequired: "Extrait de moins de 3 mois requis",
+                leased: "Loués",
+                managedRevenue: "Revenus gérés",
+                mandateManagement: "Gestion des mandats",
+                overview: "Vue d'ensemble",
+                team: "Équipe",
+                title: "Tableau de bord agence",
+                uploadCarteG: "Téléverser",
+                uploadKbis: "Téléverser",
+                verifiedLicense: "Carte professionnelle vérifiée",
+                verifiedStatus: "Statut vérifié",
+                viewAllProperties: "Voir tous les biens",
+                webhooksApi: "API Webhooks",
+                welcome: "Bon retour",
+            },
+            sections: {
+                analytics: "Statistiques du portefeuille",
+                facilitation: "Facilitation",
+            },
             title: "Tableau de bord",
             welcome: "Bienvenue",
             welcome_desc: "Voici ce qui se passe dans votre parcours locatif aujourd'hui.",
@@ -3279,10 +3807,12 @@ export const translations = {
             complete: "Terminé",
             pending: "En attente",
             role: {
+                title: "Rôle actif",
                 landlord: "Mode Propriétaire",
                 tenant: "Mode Locataire"
             },
             roleSwitcher: {
+                title: "Rôles",
                 currentSession: "Session Actuelle",
                 switchTo: "Changer pour",
                 unlockNew: "Débloquer un rôle",
@@ -3294,6 +3824,7 @@ export const translations = {
                 }
             },
             stats: {
+                unread: "Messages non lus",
                 properties: "Propriétés",
                 propertiesDesc: "Toutes vos annonces",
                 activeListings: "Actif",
@@ -3333,6 +3864,7 @@ export const translations = {
                 info: "Info"
             },
             quickActions: {
+                help: "Guides",
                 title: "Actions rapides",
                 my_disputes: "Mes Litiges",
                 property_disputes: "Litiges Immobiliers",
@@ -3348,6 +3880,7 @@ export const translations = {
                 analytics: { title: "Analyses", desc: "Performance du portefeuille" }
             },
             verification: {
+                title: "Vérification",
                 email: "Vérification E-mail",
                 identity: "Vérification d'Identité",
                 employment: "Vérification d'Emploi",
@@ -3482,6 +4015,7 @@ export const translations = {
                 landlord: "Bailleur"
             },
             inbox: {
+                subtitle: "Toutes vos conversations locatives au même endroit",
                 title: "Boîte de réception",
                 unread: "non lu(s)",
                 viewAll: "Voir tout",
@@ -3582,6 +4116,15 @@ export const translations = {
                 rights: "Tous droits réservés."
             },
             landlord: {
+                addProperty: "Ajouter un bien",
+                collaborateDesc: "Invitez des collaborateurs pour gérer vos biens ensemble.",
+                gettingStarted: "Premiers pas",
+                gettingStartedDesc: "Ajoutez votre premier bien pour recevoir des candidatures, dans le respect de la loi ALUR.",
+                inviteMember: "Gérer l'équipe",
+                myTeam: "Collaborateurs",
+                revenue: "Revenus mensuels",
+                title: "Tableau de bord bailleur",
+                visits: "Visites programmées",
                 welcome: "Bienvenue, {{name}}",
                 subtitle: "Espace Propriétaire",
                 onboarding: {
@@ -3612,6 +4155,13 @@ export const translations = {
             }
         },
         analytics: {
+            applicationsTrend: "Évolution des candidatures",
+            conversionRate: "Candidatures",
+            periodSelection: "Choisir la période",
+            trafficGrowth: "Trafic et visibilité",
+            trend: {
+                vsPrevPeriod: "vs période précédente",
+            },
             subtitle: "Suivez la performance de votre portefeuille et votre croissance financière.",
             totalViews: "Vues Totales",
             occupancy: "Taux d'Occupation",
@@ -3694,7 +4244,37 @@ export const translations = {
             }
         },
         properties: {
+            addProperty: "Ajouter un bien",
+            description: "Gérez vos annonces et suivez leurs performances.",
+            edit: {
+                acceptedTenants: "Profils de locataires acceptés",
+                backToProperty: "Retour au bien",
+                loading: "Chargement du bien…",
+                mediaSection: {
+                    addMedia: "Ajouter des photos",
+                    count: "{{count}} fichiers ajoutés",
+                    manageMedia: "Gérer les photos",
+                    noMedia: "Pas encore de photos",
+                    title: "Photos et vidéos",
+                },
+                notFound: "Bien introuvable",
+                saveButton: "Enregistrer les modifications",
+                saveFailed: "Le bien n'a pas pu être mis à jour",
+                saveSuccess: "Bien mis à jour",
+                saving: "Enregistrement…",
+                title: "Modifier le bien",
+                unauthorized: "Vous n'avez pas l'autorisation de modifier ce bien.",
+            },
+            emptyDescription: "Ajoutez votre premier bien pour commencer à recevoir des candidatures.",
+            emptyTitle: "Aucun bien pour l'instant",
+            errorLoading: "Impossible de charger vos biens",
+            listingsCount: "{{count}} annonces",
+            yourProperties: "Vos biens",
             new: {
+                details: {
+                    energyRatingTitle: "Performance énergétique (DPE)",
+                    gesLabel: "Émissions de gaz à effet de serre (GES)",
+                },
                 title: "Créer une annonce",
                 stepStatus: "Étape {{current}} sur 8 : {{status}}",
                 initializing: "Commençons",
@@ -3720,7 +4300,14 @@ export const translations = {
                     room: "Chambre"
                 },
                 steps: {
+                    capacity: {
+                        missingCapacity: "Indiquez la capacité d'accueil.",
+                    },
+                    location: {
+                        missingAddress: "Renseignez l'adresse, la ville et le code postal.",
+                    },
                     identity: {
+                        missingTitle: "Donnez un titre à votre annonce avant de continuer.",
                         label: "01 // Identité",
                         titlePlaceholder: "Titre de l'Annonce (ex : Suite de Luxe Haussmann)",
                     },
@@ -3732,12 +4319,18 @@ export const translations = {
                         enriching: "Chargement des données à proximité..."
                     },
                     details: {
+                        missingDetails: "Complétez les caractéristiques du bien (surface, chambres).",
+                        missingDpeRating: "Sélectionnez une classe DPE.",
+                        missingDpeValues: "Saisissez les valeurs exactes DPE et GES.",
                         label: "03 // Détails",
                         bedrooms: "Chambres",
                         surface: "Surface (m²)",
                         energyProtocol: "Diagnostic énergétique (DPE)"
                     },
                     pricing: {
+                        leaseDuration: "Durée du bail (mois)",
+                        missingJustification: "Un complément de loyer doit être justifié par écrit.",
+                        missingRent: "Indiquez le loyer mensuel.",
                         monthlyRent: "Loyer Mensuel",
                         chargesLabel: "Charges",
                         allInclusive: "Tout compris",
@@ -3760,6 +4353,7 @@ export const translations = {
                         decencyWarning: "Attention : La surface habitable est inférieure au critère de décence légal de 9m² par occupant."
                     },
                     narrative: {
+                        missingDescription: "Rédigez ou générez une description.",
                         label: "07 // Description",
                         descriptionEnPlaceholder: "Rédiger ou générer la description en anglais...",
                         descriptionFrPlaceholder: "Rédiger ou générer la description en français...",
@@ -3809,6 +4403,7 @@ export const translations = {
             }
         },
         auth: {
+            logoutAction: "Se déconnecter",
             google_signin: "Se connecter avec Google",
             common: {
                 showPassword: "Afficher le mot de passe",
@@ -3844,6 +4439,9 @@ export const translations = {
                 success: "Déconnexion réussie"
             },
             verifyEmail: {
+                errorSub: "Impossible d'activer votre compte",
+                successSub: "Votre compte est maintenant actif",
+                verifyingSub: "Vérification de votre lien…",
                 title: "Vérification de l'email",
                 verifying: "Vérification de votre email...",
                 success: "Succès !",
@@ -3911,6 +4509,11 @@ export const translations = {
                 }
             },
             login: {
+                createOne: "Créez-en un ici",
+                emailLabel: "Adresse e-mail",
+                or: "ou",
+                passwordLabel: "Mot de passe",
+                sub: "Connectez-vous pour continuer là où vous en étiez.",
                 title: "Bon retour parmi nous",
                 subtitle: "Accédez à votre compte",
                 email: "Adresse e-mail",
@@ -3927,6 +4530,7 @@ export const translations = {
                 divider: "ou continuer avec",
                 signIn: "Se connecter en toute sécurité",
                 error: {
+                    required: "Tous les champs sont obligatoires",
                     google: "La connexion Google n'a pas retourné de justificatif. Veuillez réessayer.",
                     googleFail: "La connexion Google a échoué. Veuillez réessayer.",
                     googleScript: "Impossible de charger la connexion Google. Veuillez utiliser la connexion par e-mail.",
@@ -3935,6 +4539,21 @@ export const translations = {
                 }
             },
             register: {
+                alreadyHaveAccount: "Vous avez déjà un compte ?",
+                confirmPasswordLabel: "Confirmez le mot de passe",
+                continue: "Continuer",
+                emailLabel: "Adresse e-mail",
+                fullNameLabel: "Nom complet",
+                gdpr: "J'accepte les conditions générales d'utilisation et la politique de confidentialité (RGPD).",
+                marketing: "Envoyez-moi de temps en temps des actualités sur le marché locatif et la législation française.",
+                passwordLabel: "Mot de passe",
+                phoneLabel: "Numéro de téléphone",
+                step: "Étape",
+                titles: {
+                    step1: "Qui êtes-vous ?",
+                    step2: "Vos coordonnées",
+                    step3: "Sécurisez votre compte",
+                },
                 title: "Créez votre compte",
                 subtitle: "Rejoignez la plateforme",
                 hasAccount: "Vous avez déjà un compte ?",
@@ -3981,12 +4600,15 @@ export const translations = {
                     managerDesc: "Je gère des biens"
                 },
                 strength: {
+                    info: "Au moins 8 caractères, avec une majuscule, un chiffre et un symbole",
                     label: "Force de sécurité",
                     weak: "Faible",
                     medium: "Sécurisé",
                     strong: "Très fort"
                 },
                 error: {
+                    emailInvalid: "Saisissez une adresse e-mail valide",
+                    required: "Le nom et l'e-mail sont obligatoires",
                     privacy: "Vous devez accepter la politique de confidentialité pour créer un compte",
                     mismatch: "Les mots de passe ne correspondent pas",
                     security: "Le mot de passe ne répond pas aux exigences de sécurité",
@@ -3995,6 +4617,9 @@ export const translations = {
             }
         },
         profile: {
+            preferences: {
+                title: "Préférences de location",
+            },
             title: "Mon Profil",
             back: "Retour",
             accountSettings: "Paramètres du Compte",
@@ -4003,6 +4628,25 @@ export const translations = {
             logout: "Déconnexion"
         },
         property: {
+            amenitiesTitle: "Équipements et prestations",
+            landlord: {
+                archiveConfirm: "Archiver ce bien ?",
+                deleteConfirm: "Supprimer ce bien ? Cette action est irréversible.",
+                portfolio: "Gestion de vos biens",
+            },
+            media: {
+                noMedia: "Pas encore de photos",
+            },
+            size: "Surface",
+            success: {
+                archive: "Bien archivé",
+                unarchive: "Bien désarchivé",
+            },
+            wishlist: {
+                added: "Ajouté aux favoris",
+                error: "Impossible de mettre à jour les favoris",
+                removed: "Retiré des favoris",
+            },
             create: {
                 title: "Ajouter un Nouveau Bien",
                 subtitle: "Configurez votre annonce en quelques étapes simples.",
@@ -4048,6 +4692,8 @@ export const translations = {
                     foundLandmarks: "{{count}} points d'intérêt trouvés"
                 },
                 details: {
+                    dpeValue: "Valeur DPE (kWh/m²/an)",
+                    gesValue: "Valeur GES (kg CO₂/m²/an)",
                     title: "Détails du Bien",
                     bedrooms: "Chambres",
                     bathrooms: "Salles de bain",
@@ -4084,6 +4730,26 @@ export const translations = {
                     amenityPlaceholder: "Ajouter un équipement..."
                 },
                 pricing: {
+                    ccFull: "Loyer CC",
+                    hcFull: "Loyer HC",
+                    ccDesc: "Charges comprises",
+                    hcDesc: "Hors charges",
+                    typeLabel: "Type de loyer",
+                    chargesPlaceholder: "ex : 100",
+                    depositLimit: "Maximum 1 mois de loyer (vide) ou 2 mois (meublé)",
+                    depositWarning: "La loi française plafonne le dépôt de garantie selon que le logement est loué vide ou meublé.",
+                    flexibleDuration: "Flexible / indéterminée",
+                    guarantor: {
+                        title: "Garant",
+                        typesLabel: "Garants acceptés",
+                        elanNotice: "Conforme à la loi ELAN",
+                    },
+                    leaseDuration: "Durée du bail",
+                    rentControl: {
+                        title: "Encadrement des loyers",
+                        desc: "Ce bien est situé en zone d'encadrement des loyers.",
+                        link: "Consulter la réglementation locale",
+                    },
                     title: "Loyer & Charges",
                     monthlyRent: "Loyer de base mensuel",
                     charges: "Charges mensuelles",
@@ -4124,6 +4790,7 @@ export const translations = {
                     uploadAllToPublish: "Veuillez télécharger des médias pour toutes les chambres pour publier"
                 },
                 errors: {
+                    dpeGBan: "Les logements classés G ne peuvent plus être mis en location depuis janvier 2025 (loi Climat).",
                     createFailed: "Échec de la création de la propriété. Veuillez vérifier le formulaire et réessayer.",
                     publishFailed: "Échec de la publication. Assurez-vous que toutes les chambres ont au moins 1 photo ou vidéo."
                 },
@@ -4145,6 +4812,9 @@ export const translations = {
                 publishFail: "Échec de la publication du bien"
             },
             actions: {
+                archive: "Archiver",
+                preview: "Aperçu",
+                unarchive: "Désarchiver",
                 back: "Retour aux annonces",
                 edit: "Modifier le Bien",
                 publishing: "Publication...",
@@ -4155,6 +4825,7 @@ export const translations = {
                 message: "Contacter le Propriétaire"
             },
             status: {
+                verified: "Vérifié",
                 published: "Publié",
                 draft: "Brouillon",
                 available: "Disponible à partir du",
@@ -4202,6 +4873,7 @@ export const translations = {
             transport: "Transports en Commun",
             landmarks: "Points d'Intérêt à Proximité",
             price: {
+                investment: "Investissement",
                 perMonth: "par mois",
                 total: "Total",
                 deposit: "Dépôt de Garantie",
@@ -4278,6 +4950,7 @@ export const translations = {
                 standard: "Standard"
             },
             pricing: {
+                cafEligible: "Éligible CAF",
                 ccDesc: "Charges Comprises",
                 ccFull: "Loyer CC",
                 chargesPlaceholder: "ex: 100",
@@ -4403,6 +5076,7 @@ export const translations = {
                 "frameTip": "Astuce : Assurez-vous que votre document est bien éclairé et que tous les coins sont visibles dans le cadre bleu."
         },
         "conversation": {
+            noSubject: "Conversation",
                 "notFound": "Conversation introuvable",
                 "archiveButton": "Archiver",
                 "landlord": "Propriétaire",
@@ -4628,6 +5302,10 @@ export const translations = {
                 subtitle: 'Protection des Données',
                 description: 'Vos données sont cryptées et gérées dans le strict respect des normes RGPD.',
                 sections: {
+                    ai_processing: {
+                        content: "Pour vérifier votre identité, vos revenus et vos fonds, Roomivo utilise une analyse automatisée reposant sur l'IA Gemini de Google. Les documents que vous téléversez sont transmis à Google uniquement pour en extraire les informations nécessaires à la vérification ; Google agit comme sous-traitant pour le compte de Roomivo dans le cadre d'un accord de traitement des données. Roomivo applique un modèle « vérifier puis oublier » : votre document source est traité de manière transitoire et n'est pas conservé une fois le résultat produit — nous ne gardons que le résultat en bande (par exemple « fonds couvrant ≥ 12 mois de loyer »), jamais le fichier d'origine. En téléversant un document, vous consentez à ce traitement automatisé et pouvez à tout moment exercer vos droits RGPD (accès, effacement, opposition).",
+                        title: "Analyse automatisée des documents",
+                    },
                     collection: {
                         title: 'Collecte des Données',
                         content: 'Nous collectons des données d\'identité, de revenus et d\'emploi strictement à des fins de vérification locative.'
@@ -4670,16 +5348,43 @@ export const translations = {
                 }
             },
             gdpr: {
+                badge: "Vos données, vos droits",
+                rights: {
+                    access: {
+                        content: "Téléchargez une archive lisible par machine de toutes les données personnelles et preuves de vérification liées à votre compte.",
+                        title: "Accès et portabilité",
+                    },
+                    forgotten: {
+                        content: "Suppression définitive de votre compte et de vos dossiers. Des obligations légales de conservation peuvent s'appliquer temporairement aux baux en cours.",
+                        title: "Droit à l'effacement",
+                    },
+                    rectification: {
+                        content: "Corrigez à tout moment une information inexacte. Modifier un document peut déclencher une nouvelle vérification.",
+                        title: "Rectification",
+                    },
+                },
+                sections: {
+                    contact: {
+                        content: "La plupart de vos droits s'exercent directement depuis votre tableau de bord. Pour toute autre demande, contactez-nous à l'adresse ci-dessous.",
+                        title: "Exercer vos droits",
+                    },
+                    fundamental: {
+                        title: "Vos droits fondamentaux",
+                    },
+                },
+                subtitle: "Vos données de compte sont hébergées dans l'UE. L'analyse des documents s'appuie sur Google Gemini en tant que sous-traitant — nous ne conservons que le résultat de la vérification, jamais vos documents.",
                 title: 'Droits RGPD'
             }
         },
         globalFooter: {
+            gdpr: "Droits RGPD",
             help: "Aide & Support",
             rights: "Tous droits réservés.",
             status: "Système Opérationnel"
         },
 
         disputes: {
+            back: "Retour aux incidents",
             title: "Signalements d'incidents",
             subtitle: "Suivez et gérez vos litiges immobiliers",
             desc: "Signalez les problèmes du logement",
@@ -4698,6 +5403,7 @@ export const translations = {
                 closed: "Clôturé"
             },
             detail: {
+                takePhoto: "Prendre une photo",
                 back: "Retour",
                 claimed: "réclamé",
                 description: "Description",
@@ -4725,6 +5431,9 @@ export const translations = {
                 }
             },
             incident: {
+                messages: {
+                    success: "Incident signalé",
+                },
                 title: "Signaler un incident",
                 desc: "Fournissez des détails sur le problème pour informer votre propriétaire et notre équipe de facilitation.",
                 lease: "Sélectionner le Bail",
@@ -4825,6 +5534,9 @@ export const translations = {
                 preferences: "Préférences"
             },
             account: {
+                errors: {
+                    passwordChange: "Le mot de passe n'a pas pu être modifié",
+                },
                 profileDetails: "Détails du profil",
                 avatarFormat: "Format d'avatar",
                 avatarDesc: "Autorisés : JPG, PNG, WEBP. Taille max : 2Mo.",
@@ -4846,6 +5558,7 @@ export const translations = {
                 sending: "Envoi en cours...",
                 general: "Général",
                 messages: {
+                    avatarError: "La photo n'a pas pu être envoyée. Réessayez.",
                     profileSuccess: "Profil mis à jour avec succès !",
                     profileError: "Échec de la mise à jour du profil",
                     passwordSuccess: "Mot de passe mis à jour avec succès",
@@ -4856,6 +5569,8 @@ export const translations = {
                 }
             },
             privacy: {
+                deleteMismatch: "Saisissez exactement le mot de confirmation pour supprimer votre compte.",
+                deleteSuccess: "Votre compte et vos données ont été supprimés.",
                 dataTitle: "Données & Confidentialité",
                 dataDesc: "Nous prenons votre vie privée au sérieux. Vos données sont traitées conformément au Règlement Général sur la Protection des Données (RGPD). Vous avez le droit d'accéder, de rectifier ou de supprimer vos données personnelles à tout moment.",
                 dangerTitle: "Zone de Danger",
@@ -4867,6 +5582,11 @@ export const translations = {
                 gdprData: "RGPD & Données"
             },
             preferences: {
+                challenge: "Principal défi",
+                propertyCount: "Taille du portefeuille",
+                tenantCriteria: "Locataire idéal",
+                urgency: "Urgence",
+                urgencyLevel: "Échéance",
                 title: "Préférences de Matching",
                 matchingCriteria: "Critères de Matching",
                 identity: "Identité",
@@ -4895,6 +5615,13 @@ export const translations = {
                 updating: "Mise à jour...",
                 notSet: "Non défini",
                 options: {
+                    all: "Tout ça à la fois",
+                    avoidingFraud: "Éviter les fraudes",
+                    findingTenants: "Trouver des locataires",
+                    planning: "J'anticipe",
+                    regulations: "Comprendre la réglementation",
+                    soon: "Dans les prochains mois",
+                    urgent: "Urgent",
                     furnished: "Meublé",
                     unfurnished: "Non meublé",
                     noPreference: "Pas de préférence",
