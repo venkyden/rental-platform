@@ -1191,6 +1191,22 @@ async def upload_employment_document(
     return res
 
 
+def _strip_check_pii(data: Optional[dict]) -> Optional[dict]:
+    """Copy a *_data blob for API exposure, dropping PII the UI never reads:
+    check 'details' strings (extracted name, expiry date, document type) and
+    any legacy 'extracted_data' payload. Pass/fail booleans survive."""
+    if not data or not isinstance(data, dict):
+        return data
+    safe = {k: v for k, v in data.items() if k != "extracted_data"}
+    if isinstance(safe.get("checks"), list):
+        safe["checks"] = [
+            {k: c[k] for k in ("name", "description", "passed", "critical") if k in c}
+            for c in safe["checks"]
+            if isinstance(c, dict)
+        ]
+    return safe
+
+
 @router.get("/status", response_model=VerificationStatusResponse)
 async def get_verification_status(current_user: User = Depends(get_current_user)):
     """Get current verification status for user"""
@@ -1211,10 +1227,10 @@ async def get_verification_status(current_user: User = Depends(get_current_user)
         "ownership_verified": current_user.ownership_verified,
         "kbis_verified": current_user.kbis_verified,
         "carte_g_verified": current_user.carte_g_verified,
-        "identity_data": current_user.identity_data,
-        "employment_data": current_user.employment_data,
-        "ownership_data": current_user.ownership_data,
-        "income_data": current_user.income_data,
+        "identity_data": _strip_check_pii(current_user.identity_data),
+        "employment_data": _strip_check_pii(current_user.employment_data),
+        "ownership_data": _strip_check_pii(current_user.ownership_data),
+        "income_data": _strip_check_pii(current_user.income_data),
         "guarantor_type": current_user.guarantor_type,
         "guarantor_status": current_user.guarantor_status,
         "guarantor_assurance": (current_user.guarantor_data or {}).get("assurance"),
