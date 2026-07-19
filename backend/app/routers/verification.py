@@ -1103,6 +1103,14 @@ async def upload_income_document(
     """
     Upload income/resource document for verification.
     """
+    # The name-match check is critical: without an account name every document
+    # would be rejected (full_name is nullable — e.g. Google sign-in accounts).
+    if not current_user.full_name:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Add your full name to your profile first — we match the name on the document against your account.",
+        )
+
     # Rate limiting
     await _check_upload_rate_limit(str(current_user.id), document_type)
 
