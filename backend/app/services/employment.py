@@ -424,8 +424,14 @@ Return ONLY the JSON, no explanation."""
 
         return checks
 
-    def _fuzzy_name_match(self, name1: str, name2: str) -> float:
+    def _fuzzy_name_match(self, name1: Optional[str], name2: Optional[str]) -> float:
         """Calculate fuzzy match score between two names"""
+        # Either side can be None: full_name is nullable on the account, and the
+        # AI can return an explicit null for employee_name (same guard as
+        # identity.py's _fuzzy_name_match).
+        if not name1 or not name2:
+            return 0.0
+
         # Normalize names
         n1 = set(name1.lower().split())
         n2 = set(name2.lower().split())
