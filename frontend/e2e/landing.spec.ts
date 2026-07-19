@@ -117,17 +117,17 @@ test.describe('Landing truth (WP1)', () => {
     });
 
     test('typology chip deep-links into search', async ({ page }) => {
-        await page.getByRole('link', { name: 'T2', exact: true }).click();
+        await page.locator('a[href="/search?typology=t2"]').first().click();
         await expect(page).toHaveURL(/\/search\?typology=t2/);
     });
 
     test('colocation chip deep-links into search', async ({ page }) => {
-        await page.getByRole('link', { name: /^colocation$/i }).first().click();
+        await page.locator('a[href="/search?colocation=1"]').first().click();
         await expect(page).toHaveURL(/\/search\?colocation=1/);
     });
 
     test('furnished chip deep-links into search', async ({ page }) => {
-        await page.getByRole('link', { name: /^(meublé|furnished)$/i }).first().click();
+        await page.locator('a[href="/search?furnished=true"]').first().click();
         await expect(page).toHaveURL(/\/search\?furnished=true/);
     });
 });

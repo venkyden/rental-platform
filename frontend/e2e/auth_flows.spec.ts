@@ -133,8 +133,8 @@ test.describe('Password visibility toggle', () => {
         await expect(pwInput).toBeVisible();
         await expect(pwInput).toHaveAttribute('type', 'password');
 
-        const toggle = page.locator('button[aria-label="Toggle password visibility"], button[aria-label*="password"], button[data-testid*="toggle"]').first();
-        if (await toggle.isVisible({ timeout: 3_000 })) {
+        const toggle = page.locator('button[aria-label="Show password"], button[aria-label="Hide password"], button[data-testid*="toggle"]').first();
+        if (await toggle.isVisible()) {
             await toggle.click();
             await expect(pwInput).toHaveAttribute('type', 'text');
             await toggle.click();
