@@ -445,6 +445,116 @@ async def check_identity_session_status_stream(code: str):
 
 
 
+@router.post("/identity/upload-multi-mobile")
+async def upload_identity_multi_mobile(
+    verification_code: str = Form(...),
+    document_type: str = Form("passport"),
+    front: UploadFile = File(...),
+    back: Optional[UploadFile] = File(None),
+    selfie: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db),
+):
+    session = await _get_session(verification_code)
+    if not session:
+        raise HTTPException(status_code=404, detail="Invalid or expired verification code")
+    if session["completed"]:
+        raise HTTPException(status_code=400, detail="Session already completed")
+
+    import uuid
+    user_id = uuid.UUID(session["user_id"])
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    await _require_biometric_consent(user.id, db)
+    await _check_upload_rate_limit(str(user.id), "identity")
+
+    await _validate_file_size(front)
+    await _validate_file_size(selfie)
+    front_content = await front.read()
+    selfie_content = await selfie.read()
+    back_content = None
+    if back:
+        await _validate_file_size(back)
+        back_content = await back.read()
+
+    from app.services.identity import identity_service
+    doc_result = await identity_service.verify_three_step_kyc(
+        front_img=front_content,
+        front_type=front.content_type or "image/jpeg",
+        back_img=back_content,
+        back_type=back.content_type if back else None,
+        selfie_img=selfie_content,
+        selfie_type=selfie.content_type or "image/jpeg",
+        document_type=document_type,
+        expected_name=user.full_name,
+    )
+
+    if not doc_result["verified"]:
+        if doc_result["status"] == "error":
+            # Log internals; never surface raw AI errors to the client
+            logger.error(
+                f"3-step KYC verification unavailable for session {verification_code}: "
+                f"{doc_result.get('rejection_reason')}"
+            )
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail={
+                    "code": "VERIFICATION_UNAVAILABLE",
+                    "message": "Identity verification is temporarily unavailable. Please try again in a few minutes.",
+                },
+            )
+        failed_checks = [
+            c["name"]
+            for c in doc_result.get("validation_checks", [])
+            if isinstance(c, dict) and c.get("critical") and not c.get("passed")
+        ]
+        logger.warning(f"3-step KYC rejected for session {verification_code}: {doc_result.get('rejection_reason')}")
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "code": "VERIFICATION_FAILED",
+                "failed_checks": failed_checks,
+                "message": f"Verification failed: {doc_result.get('rejection_reason')}",
+            },
+        )
+
+    if not user.identity_verified:
+        await db.execute(
+            update(User).where(User.id == user.id)
+            .values(trust_score=func.least(100, User.trust_score + 30))
+        )
+        await db.refresh(user)
+
+    user.identity_verified = True
+    user.identity_status = "verified"
+    user.identity_data = {
+        "verified": True,
+        "verified_at": naive_utcnow().isoformat(),
+        "status": "verified",
+        "verification_method": "three_step_kyc",
+        # PII rule: store pass/fail booleans only — check "details" strings embed
+        # the extracted name, expiry date, and document type (never at rest)
+        "checks": [
+            {"name": c.get("name"), "passed": bool(c.get("passed")), "critical": bool(c.get("critical", False))}
+            for c in doc_result.get("validation_checks", [])
+            if isinstance(c, dict) and c.get("name")
+        ],
+        **OCR_LIVENESS_LABEL,
+    }
+    session["completed"] = True
+    await _update_session(verification_code, session)
+    await db.commit()
+    await db.refresh(user)
+    return {
+        "message": "Identity verified",
+        "verified": True,
+        "status": "verified",
+        "trust_score": user.trust_score,
+    }
+
+
 @router.post("/identity/upload-mobile")
 async def upload_identity_mobile(
     verification_code: str = Query(...),

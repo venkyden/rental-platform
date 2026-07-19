@@ -17,6 +17,42 @@ const DOCUMENT_TYPES = [
     { value: 'residence_permit', labelEn: 'Residence Permit', labelFr: 'Titre de séjour', descEn: 'Front & back', descFr: 'Recto & verso', icon: '🏠', hasBack: true },
 ];
 
+// Human-readable reasons for each failed backend check (VERIFICATION_FAILED.failed_checks)
+const CHECK_MESSAGES: Record<string, { en: string; fr: string }> = {
+    live_face_present: {
+        en: "We couldn't see your face clearly in the selfie. Retake it in good lighting.",
+        fr: "Votre visage n'est pas clairement visible sur le selfie. Reprenez-le dans un endroit bien éclairé.",
+    },
+    id_document_visible: {
+        en: "We couldn't read your document. Retake the photo without glare, with all four corners visible.",
+        fr: "Le document n'est pas lisible. Reprenez la photo sans reflets, avec les quatre coins visibles.",
+    },
+    id_has_face_photo: {
+        en: "The photo on your document isn't visible. Make sure you photograph the side with your picture.",
+        fr: "La photo de votre document n'est pas visible. Photographiez bien la face qui porte votre photo.",
+    },
+    same_person: {
+        en: "Your selfie doesn't match the photo on the document. Try again with better lighting, without glasses or a hat.",
+        fr: "Le selfie ne correspond pas à la photo du document. Réessayez avec un meilleur éclairage, sans lunettes ni chapeau.",
+    },
+    image_quality: {
+        en: 'The photos are too blurry. Retake them with more light and a steady hand.',
+        fr: 'Les photos sont trop floues. Reprenez-les avec plus de lumière, sans bouger.',
+    },
+    document_type_match: {
+        en: "This doesn't look like the document type you selected. Check your selection and try again.",
+        fr: 'Le document ne correspond pas au type sélectionné. Vérifiez votre choix et réessayez.',
+    },
+    name_match: {
+        en: "The name on the document doesn't match the name on your account.",
+        fr: 'Le nom sur le document ne correspond pas à celui de votre compte.',
+    },
+    not_expired: {
+        en: 'This document has expired. Please use a document that is still valid.',
+        fr: 'Ce document est expiré. Utilisez une pièce en cours de validité.',
+    },
+};
+
 export default function VerifyCapturePage() {
     const params = useParams();
     const { language, setLanguage } = useLanguage();
@@ -48,6 +84,9 @@ export default function VerifyCapturePage() {
     const validateSession = async () => {
         setStep('loading');
         setErrorMessage('');
+        setImages({ front: null, back: null, selfie: null });
+        setPreviewUrl(null);
+        setCurrentSide('front');
         try {
             const res = await apiClient.client.get(`/verification/identity/session/${code}`);
             setStep(res.data.completed ? 'success' : 'select_doc');
@@ -139,14 +178,30 @@ export default function VerifyCapturePage() {
             const detail = err.response?.data?.detail;
             if (detail?.code === 'BIOMETRIC_CONSENT_REQUIRED') {
                 setErrorMessage(fr
-                    ? "Consentement biométrique requis : retournez sur votre ordinateur."
-                    : 'Biometric consent required: go back to your computer.');
+                    ? 'Il manque votre consentement au traitement biométrique. Donnez-le depuis votre ordinateur, puis réessayez ici.'
+                    : 'We still need your consent for biometric processing. Please give it on your computer, then try again here.');
+                setStep('preview');
+            } else if (detail?.code === 'VERIFICATION_FAILED') {
+                const reasons = (detail.failed_checks || [])
+                    .map((name: string) => CHECK_MESSAGES[name]?.[fr ? 'fr' : 'en'])
+                    .filter(Boolean);
+                setErrorMessage(reasons.length > 0
+                    ? reasons.join(' ')
+                    : (fr
+                        ? "Nous n'avons pas pu vérifier votre identité avec ces photos. Réessayez avec des photos nettes et bien éclairées."
+                        : "We couldn't verify your identity with these photos. Please try again with clear, well-lit photos."));
+                setStep('error');
+            } else if (detail?.code === 'VERIFICATION_UNAVAILABLE') {
+                setErrorMessage(fr
+                    ? 'La vérification est momentanément indisponible. Réessayez dans quelques minutes.'
+                    : 'Verification is temporarily unavailable. Please try again in a few minutes.');
+                setStep('preview');
             } else {
                 setErrorMessage(typeof detail === 'string' && detail
                     ? detail
-                    : (fr ? 'Envoi échoué. Vérifiez votre connexion.' : 'Upload failed. Check your connection.'));
+                    : (fr ? "L'envoi a échoué. Vérifiez votre connexion et réessayez." : 'Upload failed. Check your connection and try again.'));
+                setStep('preview');
             }
-            setStep('preview');
         }
     };
 
