@@ -598,7 +598,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                         </motion.div>
                     )}
 
-                    {/* AI-processing consent (GDPR — documents analysed by Google Gemini, then discarded) */}
+                    {/* AI-processing consent (GDPR — documents analysed transiently, then discarded) */}
                     <label className="flex items-start gap-3 px-2 cursor-pointer select-none">
                         <input
                             type="checkbox"
@@ -608,7 +608,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                         />
                         <span className="text-xs text-zinc-500 leading-relaxed">
                             {t('verification.upload.consent', undefined,
-                                'I consent to automated analysis of my document by Google Gemini to extract only the facts needed for verification. The document is not retained afterwards.')}{' '}
+                                'I consent to secure, automated analysis of my uploaded document to extract only the information required for verification. Documents are processed transiently and permanently deleted immediately after — they are never stored.')}{' '}
                             <a href="/legal/privacy" target="_blank" rel="noopener noreferrer" className="underline text-zinc-700 hover:text-zinc-900">
                                 {t('verification.upload.consentLink', undefined, 'Privacy Policy')}
                             </a>

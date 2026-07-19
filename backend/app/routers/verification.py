@@ -1142,28 +1142,50 @@ async def upload_income_document(
             detail=f"Verification processing error: {str(e)}",
         )
 
-    if not result["verified"] and result["status"] == "rejected":
+    if result["status"] == "rejected":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Verification failed: {result.get('rejection_reason')}",
         )
 
-    # Update user verification status
-    current_user.income_verified = result["verified"]
-    current_user.income_status = result["status"]
-    if result["verified"]:
-        # Add trust score points (+20 for verified income)
+    is_verified = result["verified"]
+    final_status = result["status"]
+
+    if result["status"] == "pending_review":
+        failed_checks = [c["name"] for c in result.get("validation_checks", []) if isinstance(c, dict) and not c.get("passed")]
+        
+        # French Law/KYC: A CDD contract is a legal employment type, so 'stable_employment' can fail.
+        # However, poor OCR, invalid salary data, or SIRET mismatch imply poor document quality or fraud.
+        allowed_soft_failures = {"stable_employment"}
+        unauthorized_failures = set(failed_checks) - allowed_soft_failures
+        
+        if unauthorized_failures:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Verification failed: Document quality too low or data invalid ({', '.join(unauthorized_failures)})"
+            )
+            
+        # If only allowed soft failures occurred, it's legally authentic.
+        is_verified = True
+        final_status = "verified"
+
+    # Trust score: +20 for first income verification (idempotent guard)
+    if is_verified and not current_user.income_verified:
         await db.execute(
             update(User).where(User.id == current_user.id)
             .values(trust_score=func.least(100, User.trust_score + 20))
         )
         await db.refresh(current_user)
 
+    # ORM attributes AFTER refresh to avoid clobbering by the SELECT
+    current_user.income_verified = is_verified
+    current_user.income_status = final_status
+
     # Source document processed transiently — never stored (GDPR)
     current_user.income_data = {
-        "verified": result["verified"],
+        "verified": is_verified,
         "verified_at": naive_utcnow().isoformat(),
-        "status": result["status"],
+        "status": final_status,
         "checks": result["validation_checks"],
     }
 
@@ -1172,8 +1194,8 @@ async def upload_income_document(
 
     return {
         "message": "Income document processed",
-        "verified": result["verified"],
-        "status": result["status"],
+        "verified": is_verified,
+        "status": final_status,
         "trust_score": current_user.trust_score,
         "details": result.get("rejection_reason") or "Verification successful",
     }
@@ -1332,13 +1354,14 @@ async def verify_visale(
         )
 
     # Certificate processed transiently — extracted claims stored, source doc discarded (GDPR)
-    current_user.guarantor_type = "visale"
     if current_user.guarantor_status != "verified":
         await db.execute(
             update(User).where(User.id == current_user.id)
             .values(trust_score=func.least(100, User.trust_score + 15))
         )
         await db.refresh(current_user)
+    # ORM attributes AFTER refresh to avoid clobbering by the SELECT
+    current_user.guarantor_type = "visale"
     current_user.guarantor_status = "verified"
     if assessment.cert_ref:
         current_user.visale_id = assessment.cert_ref
@@ -1408,13 +1431,14 @@ async def verify_garantme(
         )
 
     # Certificate processed transiently — extracted claims stored, source doc discarded (GDPR)
-    current_user.guarantor_type = "garantme"
     if current_user.guarantor_status != "verified":
         await db.execute(
             update(User).where(User.id == current_user.id)
             .values(trust_score=func.least(100, User.trust_score + 15))
         )
         await db.refresh(current_user)
+    # ORM attributes AFTER refresh to avoid clobbering by the SELECT
+    current_user.guarantor_type = "garantme"
     current_user.guarantor_status = "verified"
     if assessment.cert_ref:
         current_user.garantme_ref = assessment.cert_ref

@@ -7,7 +7,7 @@
  *  - Foreign income  → POST /verification/intl/solvency  (FX-normalised income ratio)
  *  - Funds / sponsor → POST /verification/intl/funds      (banded funds coverage)
  *
- * Both are MEDIUM assurance. Documents are analysed by Google Gemini then discarded
+ * Both are MEDIUM assurance. Documents are analysed transiently then discarded
  * (verify-and-forget); only the banded claim is kept. Consent is required.
  */
 
@@ -176,7 +176,7 @@ export default function IntlSolvencyUpload({ onSuccessAction }: Props) {
                     className="mt-0.5 h-4 w-4 shrink-0 accent-zinc-900" />
                 <span className="text-xs text-zinc-500 leading-relaxed">
                     {t('verification.upload.consent', undefined,
-                        'I consent to automated analysis of my document by Google Gemini to extract only the facts needed for verification. The document is not retained afterwards.')}{' '}
+                        'I consent to secure, automated analysis of my uploaded document to extract only the information required for verification. Documents are processed transiently and permanently deleted immediately after — they are never stored.')}{' '}
                     <a href="/legal/privacy" target="_blank" rel="noopener noreferrer" className="underline text-zinc-700 hover:text-zinc-900">
                         {t('verification.upload.consentLink', undefined, 'Privacy Policy')}
                     </a>
