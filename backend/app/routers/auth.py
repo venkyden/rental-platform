@@ -290,10 +290,11 @@ async def login(
     segment_config = get_segment_config(user.segment, role=role_value)
 
     # Redirect users who haven't completed onboarding for their active role
-    onboarding_status = user.onboarding_status or {}
-    role_onboarded = onboarding_status.get(role_value, False)
-    if not role_onboarded:
-        redirect_path = "/onboarding"
+    # Bypassed temporarily as requested by user
+    # onboarding_status = user.onboarding_status or {}
+    # role_onboarded = onboarding_status.get(role_value, False)
+    # if not role_onboarded:
+    #     redirect_path = "/onboarding"
 
     audit_logger.info(f"LOGIN_SUCCESS email={user.email} segment={user.segment}")
     return {
@@ -784,10 +785,11 @@ async def google_auth(
         segment_config = get_segment_config(user.segment, role=role_value)
 
         # Redirect users who haven't completed onboarding for their active role
-        onboarding_status = user.onboarding_status or {}
-        role_onboarded = onboarding_status.get(role_value, False)
-        if not role_onboarded:
-            redirect_path = "/onboarding"
+        # Bypassed temporarily as requested by user
+        # onboarding_status = user.onboarding_status or {}
+        # role_onboarded = onboarding_status.get(role_value, False)
+        # if not role_onboarded:
+        #     redirect_path = "/onboarding"
 
         return {
             "access_token": access_token,
@@ -1077,14 +1079,15 @@ async def switch_role(
     )
 
     # Compute redirect path based on onboarding status for the new role
-    onboarding_status = current_user.onboarding_status or {}
-    role_onboarded = onboarding_status.get(target_role_str, False)
-
-    if not role_onboarded:
-        redirect_path = "/onboarding"
-    else:
-        role_value = current_user.role.value if hasattr(current_user.role, "value") else current_user.role
-        redirect_path = get_redirect_path(current_user.segment, role_value)
+    # Bypassed temporarily as requested by user
+    # onboarding_status = current_user.onboarding_status or {}
+    # role_onboarded = onboarding_status.get(target_role_str, False)
+    #
+    # if not role_onboarded:
+    #     redirect_path = "/onboarding"
+    # else:
+    role_value = current_user.role.value if hasattr(current_user.role, "value") else current_user.role
+    redirect_path = get_redirect_path(current_user.segment, role_value)
 
     segment_config = get_segment_config(current_user.segment, role=target_role_str)
 
