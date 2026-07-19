@@ -28,13 +28,22 @@ MANIFEST = Path(__file__).resolve().parent / "route_manifest.json"
 def _mounted_routes() -> set:
     from app.main import fastapi_app
 
-    return {
+    # Directly-decorated routes (docs, health, compatibility) are plain APIRoutes…
+    mounted = {
         f"{m} {r.path}"
         for r in fastapi_app.routes
         if hasattr(r, "methods") and r.methods
         for m in r.methods
         if m != "HEAD"
     }
+    # …but FastAPI ≥0.139 mounts included routers lazily (_IncludedRouter), so
+    # their paths only surface through the resolved OpenAPI schema. No route in
+    # this app sets include_in_schema=False, so the union is the full surface.
+    for path, ops in fastapi_app.openapi()["paths"].items():
+        for method in ops:
+            if method.upper() != "HEAD":
+                mounted.add(f"{method.upper()} {path}")
+    return mounted
 
 
 class TestRouteSurfaceManifest:
