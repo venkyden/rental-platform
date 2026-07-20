@@ -230,6 +230,7 @@ export default function VerifyCapturePage() {
         }
     };
 
+    console.log('RENDER -> step:', step, 'previewUrl:', !!previewUrl, 'errorMessage:', errorMessage);
     return (
         <div className="min-h-[100dvh] bg-white flex flex-col font-sans selection:bg-zinc-900/20 overflow-x-hidden">
             <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
@@ -406,7 +407,7 @@ export default function VerifyCapturePage() {
 
                     {/* Preview */}
                     {step === 'preview' && previewUrl && (
-                        <motion.div key="preview" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex-1 flex flex-col">
+                        <motion.div key={`preview-${errorMessage ? 'err' : 'ok'}`} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex-1 flex flex-col">
                             <div className="mb-4">
                                 <h2 className="text-3xl font-black uppercase tracking-tighter text-zinc-900 leading-none">
                                     {fr ? 'Vérifiez la photo' : 'Check the photo'}

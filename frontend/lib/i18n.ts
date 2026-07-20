@@ -2,30 +2,6 @@ export type Language = 'en' | 'fr';
 
 export const translations = {
     en: {
-        dossier: {
-            hub: {
-                title: "My Trust Dossier",
-                subtitle: "Your verified rental passport",
-                desc: "Compile your verified credentials into a secure, shareable proof.",
-                compileBtn: "Generate My Dossier",
-                compiling: "Compiling...",
-                shareTitle: "Share with Landlords",
-                shareDesc: "Generate a secure, expiring link to your dossier. You stay in control of who sees it.",
-                generateLinkBtn: "Create Share Link",
-                generating: "Creating...",
-                copyLinkBtn: "Copy Link",
-                copied: "Copied!",
-                empty: "You haven't generated a dossier yet.",
-                viewBtn: "View PDF",
-            },
-            viewer: {
-                title: "Verified Trust Dossier",
-                desc: "This document is verified and secured by Roomivo. It contains checked facts only.",
-                expired: "This link has expired.",
-                notFound: "Dossier not found or you do not have permission.",
-                downloadBtn: "Download PDF",
-            }
-        },
         inbox: {
             title: "Inbox",
             unread: "unread",
@@ -2161,6 +2137,30 @@ export const translations = {
             loginToView: "Log in to View Details"
         },
         "dossier": {
+                "hub": {
+                    "title": "My Trust Dossier",
+                    "subtitle": "Your verified rental passport",
+                    "desc": "Compile your verified credentials into a secure, shareable proof.",
+                    "compileBtn": "Generate My Dossier",
+                    "compiling": "Compiling...",
+                    "shareTitle": "Share with Landlords",
+                    "shareDesc": "Generate a secure, expiring link to your dossier. You stay in control of who sees it.",
+                    "generateLinkBtn": "Create Share Link",
+                    "generating": "Creating...",
+                    "copyLinkBtn": "Copy Link",
+                    "copied": "Copied!",
+                    "empty": "You haven't generated a dossier yet.",
+                    "viewBtn": "View PDF",
+                    "shareSuccess": "Link copied to clipboard",
+                    "shareError": "Failed to generate share link"
+                },
+                "viewer": {
+                    "title": "Verified Trust Dossier",
+                    "desc": "This document is verified and secured by Roomivo. It contains checked facts only.",
+                    "expired": "This link has expired.",
+                    "notFound": "Dossier not found or you do not have permission.",
+                    "downloadBtn": "Download PDF"
+                },
                 "category": {
                         "identity": "Identity",
                         "address": "Address",
@@ -2887,30 +2887,6 @@ export const translations = {
         }
     },
     fr: {
-        dossier: {
-            hub: {
-                title: "Mon Dossier de Confiance",
-                subtitle: "Votre passeport locatif vérifié",
-                desc: "Compilez vos attestations vérifiées en un document sécurisé et partageable.",
-                compileBtn: "Générer mon dossier",
-                compiling: "Génération en cours...",
-                shareTitle: "Partager avec un propriétaire",
-                shareDesc: "Créez un lien sécurisé et temporaire vers votre dossier. Vous gardez le contrôle.",
-                generateLinkBtn: "Créer un lien de partage",
-                generating: "Création...",
-                copyLinkBtn: "Copier le lien",
-                copied: "Copié !",
-                empty: "Vous n'avez pas encore généré de dossier.",
-                viewBtn: "Voir le PDF",
-            },
-            viewer: {
-                title: "Dossier de Confiance Vérifié",
-                desc: "Ce document est vérifié et sécurisé par Roomivo. Il ne contient que des faits validés.",
-                expired: "Ce lien a expiré.",
-                notFound: "Dossier introuvable ou vous n'avez pas la permission.",
-                downloadBtn: "Télécharger le PDF",
-            }
-        },
         documents: {
             description: "Vos documents sont chiffrés et stockés en toute sécurité. Gardez votre profil à jour pour des candidatures validées plus vite.",
             subtitle: "Vos documents vérifiés au même endroit",
@@ -5073,6 +5049,30 @@ export const translations = {
 //             }
         },
         "dossier": {
+                "hub": {
+                    "title": "Mon Dossier de Confiance",
+                    "subtitle": "Votre passeport locatif vérifié",
+                    "desc": "Compilez vos attestations vérifiées en un document sécurisé et partageable.",
+                    "compileBtn": "Générer mon dossier",
+                    "compiling": "Génération en cours...",
+                    "shareTitle": "Partager avec un propriétaire",
+                    "shareDesc": "Créez un lien sécurisé et temporaire vers votre dossier. Vous gardez le contrôle.",
+                    "generateLinkBtn": "Créer un lien de partage",
+                    "generating": "Création...",
+                    "copyLinkBtn": "Copier le lien",
+                    "copied": "Copié !",
+                    "empty": "Vous n'avez pas encore généré de dossier.",
+                    "viewBtn": "Voir le PDF",
+                    "shareSuccess": "Lien copié dans le presse-papiers",
+                    "shareError": "Échec de la création du lien"
+                },
+                "viewer": {
+                    "title": "Dossier de Confiance Vérifié",
+                    "desc": "Ce document est vérifié et sécurisé par Roomivo. Il ne contient que des faits validés.",
+                    "expired": "Ce lien a expiré.",
+                    "notFound": "Dossier introuvable ou vous n'avez pas la permission.",
+                    "downloadBtn": "Télécharger le PDF"
+                },
                 "category": {
                         "identity": "Identité",
                         "address": "Adresse",
