@@ -145,3 +145,46 @@ test.describe('Credential layer — guarantor selection page', () => {
         await expect(page.locator('a:has-text("Generate my certificate")').first()).toBeVisible();
     });
 });
+
+test.describe('Credential layer — public verify page (/c)', () => {
+    const CRED = {
+        credential_id: 'cred-public-987',
+        valid: true,
+        expired: false,
+        revoked: false,
+        signature_valid: true,
+        subject_role: 'tenant',
+        subject_display_name: 'Test Tenant',
+        issued_at: '2026-07-19T12:00:00Z',
+        expires_at: '2026-08-18T12:00:00Z',
+        rail: 'FR',
+        claims: { identity_assurance: 'MEDIUM' },
+        disclaimer: 'Attestation informative.',
+        assurance_summary: 'Identity verified at standard level.',
+        does_not_prove: ['Solvency beyond the stated band', 'Ongoing employment'],
+    };
+
+    test('renders in English and switches to French', async ({ page }) => {
+        await page.addInitScript(() => localStorage.setItem('app-language', 'en'));
+        await page.route('**/credentials/cred-public-987', route =>
+            route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(CRED) }),
+        );
+        await page.goto('/c/cred-public-987');
+        await expect(page.locator('text=/Certificate valid/i').first()).toBeVisible({ timeout: 10_000 });
+        await expect(page.locator('text=/matching selfie/i').first()).toBeVisible();
+        await expect(page.locator('text=/What this certificate does not prove/i').first()).toBeVisible();
+        // Switch to French
+        await page.locator('button:has-text("FR")').first().click();
+        await expect(page.locator('text=/Attestation valide/i').first()).toBeVisible();
+        await expect(page.locator("text=/Pièce d'identité vérifiée/i").first()).toBeVisible();
+    });
+
+    test('revoked credential shows the revoked banner', async ({ page }) => {
+        await page.addInitScript(() => localStorage.setItem('app-language', 'en'));
+        await page.route('**/credentials/cred-public-987', route =>
+            route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ...CRED, valid: false, revoked: true }) }),
+        );
+        await page.goto('/c/cred-public-987');
+        await expect(page.locator('text=/Certificate revoked/i').first()).toBeVisible({ timeout: 10_000 });
+    });
+});
