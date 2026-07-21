@@ -22,7 +22,10 @@ services:
       - key: PYTHON_VERSION
         value: "3.13"
       - key: REDIS_URL
-        sync: false
+        fromService:
+          type: redis
+          name: roomivo-redis
+          property: connectionString
       - key: STORAGE_ENDPOINT
         value: "https://e9e4f279f640445e67f1070fea6e8c6c.r2.cloudflarestorage.com"
       - key: STORAGE_BUCKET
@@ -111,7 +114,10 @@ services:
           name: roomivo-db
           property: connectionString
       - key: REDIS_URL
-        sync: false
+        fromService:
+          type: redis
+          name: roomivo-redis
+          property: connectionString
       - key: SECRET_KEY
         sync: false
       - key: MASTER_ENCRYPTION_KEY
@@ -134,3 +140,11 @@ services:
         sync: false
       - key: STORAGE_SECRET_KEY
         sync: false
+
+  # ── Redis Cache / Broker ─────────────────────────────────────────────
+  - type: redis
+    name: roomivo-redis
+    region: frankfurt
+    plan: starter # $7/mo plan with no command limits
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: [] # Restricts access to internal Render network only
