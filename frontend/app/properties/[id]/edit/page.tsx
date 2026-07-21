@@ -507,7 +507,7 @@ export default function EditPropertyPage() {
                                     key={idx}
                                     onClick={() => setCurrentStep(idx + 1)}
                                     aria-label={t(`properties.new.wizard.${step}`, undefined, step)}
-                                    className={`text-[9px] font-black uppercase tracking-widest transition-colors cursor-pointer hover:text-zinc-600 ${currentStep === idx + 1 ? 'text-zinc-900' : 'text-zinc-300'}`}
+                                    className={`text-xs font-black uppercase tracking-widest transition-colors cursor-pointer hover:text-zinc-600 ${currentStep === idx + 1 ? 'text-zinc-900' : 'text-zinc-300'}`}
                                 >
                                     <span className="hidden sm:inline">{t(`properties.new.wizard.${step}`)}</span>
                                     <span className="sm:hidden">{idx + 1}</span>
@@ -539,7 +539,7 @@ export default function EditPropertyPage() {
                                     {currentStep === 1 && (
                                         <div className="space-y-10">
                                             <div className="space-y-6">
-                                                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                                                <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                                                     {t('properties.new.steps.identity.label', undefined, '01 // Identity')}
                                                 </label>
                                                 <input
@@ -559,7 +559,7 @@ export default function EditPropertyPage() {
                                                         aria-label={t(`properties.new.types.${type}`, undefined, type)}
                                                         className={`p-8 rounded-[2.5rem] border-2 transition-all text-left group ${formData.property_type === type ? 'bg-zinc-900 border-zinc-900 shadow-2xl' : 'border-zinc-100 hover:border-zinc-300'}`}
                                                     >
-                                                        <div className={`text-[10px] font-black uppercase tracking-[0.2em] mb-2 ${formData.property_type === type ? 'text-zinc-400' : 'text-zinc-500'}`}>{type}</div>
+                                                        <div className={`text-xs font-black uppercase tracking-[0.2em] mb-2 ${formData.property_type === type ? 'text-zinc-400' : 'text-zinc-500'}`}>{type}</div>
                                                         <div className={`text-xl font-black ${formData.property_type === type ? 'text-white' : 'text-zinc-900'}`}>
                                                             {t(`properties.new.types.${type}`, undefined, type)}
                                                         </div>
@@ -573,7 +573,7 @@ export default function EditPropertyPage() {
                                     {currentStep === 2 && (
                                         <div className="space-y-10">
                                             <div className="space-y-6">
-                                                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                                                <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                                                     {t('properties.new.steps.geolocation.label', undefined, '03 // Geolocation')}
                                                 </label>
                                                 <div className="glass-card !p-8 rounded-[3rem] border-zinc-100">
@@ -594,7 +594,7 @@ export default function EditPropertyPage() {
                                                 </div>
                                             </div>
                                             <div className="space-y-4">
-                                                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                                                <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                                                     {t('property.create.location.addressLine2', undefined, 'Building, Floor, Suite')}
                                                 </label>
                                                 <input
@@ -608,7 +608,7 @@ export default function EditPropertyPage() {
                                             </div>
                                             <div className="grid grid-cols-2 gap-8">
                                                 <div className="space-y-4">
-                                                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                                                    <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                                                         {t('properties.new.steps.geolocation.city', undefined, 'City')}
                                                     </label>
                                                     <input
@@ -620,7 +620,7 @@ export default function EditPropertyPage() {
                                                     />
                                                 </div>
                                                 <div className="space-y-4">
-                                                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                                                    <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                                                         {t('properties.new.steps.geolocation.zip', undefined, 'Zip')}
                                                     </label>
                                                     <input
@@ -636,7 +636,7 @@ export default function EditPropertyPage() {
                                                 onClick={handleEnrichLocation}
                                                 disabled={enriching}
                                                 aria-label={t('properties.new.steps.geolocation.enrichButton', undefined, 'Verify Connectivity & POIs')}
-                                                className="w-full py-6 bg-zinc-900 text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] shadow-2xl hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
+                                                className="w-full py-6 bg-zinc-900 text-white rounded-[2rem] text-xs font-black uppercase tracking-[0.4em] shadow-2xl hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
                                             >
                                                 {enriching ? t('properties.new.steps.geolocation.enriching', undefined, 'Enriching Data...') : t('properties.new.steps.geolocation.enrichButton', undefined, 'Verify Connectivity & POIs')}
                                             </button>
@@ -648,7 +648,7 @@ export default function EditPropertyPage() {
                                         <div className="space-y-12">
                                             <div className="grid grid-cols-2 gap-12">
                                                 <div className="space-y-6">
-                                                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                                                    <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                                                         {t('properties.new.steps.details.bedrooms', undefined, 'Bedrooms')}
                                                     </label>
                                                     <div className="flex items-center gap-8">
@@ -657,7 +657,7 @@ export default function EditPropertyPage() {
                                                             aria-label={t('property.create.details.bedrooms', undefined, 'Decrease bedrooms')}
                                                             className="w-16 h-16 rounded-full bg-zinc-100 flex items-center justify-center text-2xl font-black"
                                                         >-</button>
-                                                        <span className="text-6xl font-black tracking-tighter">{formData.bedrooms}</span>
+                                                        <span className="text-4xl sm:text-6xl font-black tracking-tighter">{formData.bedrooms}</span>
                                                         <button
                                                             onClick={() => updateFormData({ bedrooms: formData.bedrooms + 1 })}
                                                             aria-label={t('property.create.details.bedrooms', undefined, 'Increase bedrooms')}
@@ -666,7 +666,7 @@ export default function EditPropertyPage() {
                                                     </div>
                                                 </div>
                                                 <div className="space-y-6">
-                                                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                                                    <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                                                         {t('property.create.details.bathrooms', undefined, 'Bathrooms')}
                                                     </label>
                                                     <div className="flex items-center gap-8">
@@ -675,7 +675,7 @@ export default function EditPropertyPage() {
                                                             aria-label={t('property.create.details.bathrooms', undefined, 'Decrease bathrooms')}
                                                             className="w-16 h-16 rounded-full bg-zinc-100 flex items-center justify-center text-2xl font-black"
                                                         >-</button>
-                                                        <span className="text-6xl font-black tracking-tighter">{formData.bathrooms}</span>
+                                                        <span className="text-4xl sm:text-6xl font-black tracking-tighter">{formData.bathrooms}</span>
                                                         <button
                                                             onClick={() => updateFormData({ bathrooms: formData.bathrooms + 1 })}
                                                             aria-label={t('property.create.details.bathrooms', undefined, 'Increase bathrooms')}
@@ -687,7 +687,7 @@ export default function EditPropertyPage() {
 
                                             <div className="grid grid-cols-2 gap-12">
                                                 <div className="space-y-6">
-                                                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                                                    <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                                                         {t('properties.new.steps.details.surface', undefined, 'Surface (m²)')}
                                                     </label>
                                                     <input
@@ -695,7 +695,7 @@ export default function EditPropertyPage() {
                                                         value={isNaN(formData.size_sqm) ? '' : formData.size_sqm}
                                                         onChange={(e) => updateFormData({ size_sqm: e.target.value === '' ? 0 : parseInt(e.target.value) || 0 })}
                                                         aria-label={t('property.create.details.size', undefined, 'Living Area')}
-                                                        className="w-full bg-transparent text-6xl font-black tracking-tighter border-none focus:ring-0"
+                                                        className="w-full bg-transparent text-4xl sm:text-6xl font-black tracking-tighter border-none focus:ring-0"
                                                     />
                                                     {formData.size_sqm > 0 && formData.size_sqm < 9 * formData.accommodation_capacity && (
                                                         <p className="text-amber-500 text-xs font-bold" role="alert">
@@ -704,7 +704,7 @@ export default function EditPropertyPage() {
                                                     )}
                                                 </div>
                                                 <div className="space-y-6">
-                                                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                                                    <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                                                         {t('property.create.details.floor', undefined, 'Floor Number')}
                                                     </label>
                                                     <input
@@ -712,7 +712,7 @@ export default function EditPropertyPage() {
                                                         value={formData.floor_number ?? ''}
                                                         onChange={(e) => updateFormData({ floor_number: e.target.value === '' ? undefined : parseInt(e.target.value) })}
                                                         aria-label={t('property.create.details.floor', undefined, 'Floor Number')}
-                                                        className="w-full bg-transparent text-6xl font-black tracking-tighter border-none focus:ring-0"
+                                                        className="w-full bg-transparent text-4xl sm:text-6xl font-black tracking-tighter border-none focus:ring-0"
                                                     />
                                                 </div>
                                             </div>
@@ -723,7 +723,7 @@ export default function EditPropertyPage() {
                                                 aria-label={t('property.create.details.furnished', undefined, 'Furnished Property')}
                                                 className={`w-full p-8 rounded-[3rem] border-2 text-left transition-all ${formData.furnished ? 'bg-zinc-900 border-zinc-900 text-white shadow-2xl' : 'border-zinc-100'}`}
                                             >
-                                                <div className={`text-[10px] font-black uppercase tracking-[0.2em] mb-2 ${formData.furnished ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                                                <div className={`text-xs font-black uppercase tracking-[0.2em] mb-2 ${formData.furnished ? 'text-zinc-400' : 'text-zinc-500'}`}>
                                                     {t('property.create.details.furnished', undefined, 'Furnished')}
                                                 </div>
                                                 <div className="text-xl font-black">
@@ -733,7 +733,7 @@ export default function EditPropertyPage() {
 
                                             {/* DPE Rating */}
                                             <div className="space-y-6">
-                                                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                                                <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                                                     {t('property.create.details.dpeLabel', undefined, 'Energy Rating (DPE)')}
                                                 </label>
                                                 <p className="text-xs text-zinc-400 font-medium">
@@ -760,7 +760,7 @@ export default function EditPropertyPage() {
 
                                             {/* GES Rating */}
                                             <div className="space-y-6">
-                                                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                                                <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                                                     {t('property.create.details.gesLabel', undefined, 'GHG Emission (GES)')}
                                                 </label>
                                                 <div className="flex flex-wrap gap-4">
@@ -780,7 +780,7 @@ export default function EditPropertyPage() {
                                             {/* Surface Type */}
                                             <div className="grid grid-cols-2 gap-8">
                                                 <div className="space-y-4">
-                                                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                                                    <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                                                         {t('property.create.details.surfaceType', undefined, 'Surface Measurement Type')}
                                                     </label>
                                                     <div className="flex gap-4">
@@ -797,7 +797,7 @@ export default function EditPropertyPage() {
                                                     </div>
                                                 </div>
                                                 <div className="space-y-4">
-                                                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                                                    <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                                                         {t('property.create.details.constructionYear', undefined, 'Year of Construction')}
                                                     </label>
                                                     <input
@@ -824,7 +824,7 @@ export default function EditPropertyPage() {
 
                                             <div className="grid grid-cols-2 gap-8">
                                                 <div className="space-y-4">
-                                                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                                                    <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                                                         {t('property.create.layout.capacity', undefined, 'Total Occupancy')}
                                                     </label>
                                                     <div className="flex items-center gap-6">
@@ -842,7 +842,7 @@ export default function EditPropertyPage() {
                                                     </div>
                                                 </div>
                                                 <div className="space-y-4">
-                                                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                                                    <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                                                         {t('property.create.layout.pieces', undefined, 'Total Rooms (Pièces)')}
                                                     </label>
                                                     <div className="flex items-center gap-6">
@@ -864,7 +864,7 @@ export default function EditPropertyPage() {
                                             {/* Living Room & Kitchen Type */}
                                             <div className="grid grid-cols-2 gap-8">
                                                 <div className="space-y-4">
-                                                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                                                    <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                                                         {t('property.create.layout.livingRoom', undefined, 'Living Room')}
                                                     </label>
                                                     <div className="flex flex-col gap-3">
@@ -881,7 +881,7 @@ export default function EditPropertyPage() {
                                                     </div>
                                                 </div>
                                                 <div className="space-y-4">
-                                                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                                                    <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                                                         {t('property.create.layout.kitchen', undefined, 'Kitchen Type')}
                                                     </label>
                                                     <div className="flex flex-col gap-3">
@@ -912,7 +912,7 @@ export default function EditPropertyPage() {
                                                             </h4>
                                                             <div className="grid grid-cols-3 gap-6">
                                                                 <div className="space-y-2">
-                                                                    <label className="text-[9px] font-black uppercase tracking-widest text-zinc-400">
+                                                                    <label className="text-xs font-black uppercase tracking-widest text-zinc-400">
                                                                         {t('property.create.layout.surface', undefined, 'Surface (m²)')}
                                                                     </label>
                                                                     <input
@@ -928,7 +928,7 @@ export default function EditPropertyPage() {
                                                                     />
                                                                 </div>
                                                                 <div className="space-y-2">
-                                                                    <label className="text-[9px] font-black uppercase tracking-widest text-zinc-400">
+                                                                    <label className="text-xs font-black uppercase tracking-widest text-zinc-400">
                                                                         {t('property.create.layout.roomCapacity', undefined, 'Occupancy')}
                                                                     </label>
                                                                     <input
@@ -944,7 +944,7 @@ export default function EditPropertyPage() {
                                                                     />
                                                                 </div>
                                                                 <div className="space-y-2">
-                                                                    <label className="text-[9px] font-black uppercase tracking-widest text-zinc-400">
+                                                                    <label className="text-xs font-black uppercase tracking-widest text-zinc-400">
                                                                         {t('property.create.layout.bedding', undefined, 'Bed Type')}
                                                                     </label>
                                                                     <select
@@ -964,7 +964,7 @@ export default function EditPropertyPage() {
                                                                 </div>
                                                             </div>
                                                             <div className="space-y-2">
-                                                                <label className="text-[9px] font-black uppercase tracking-widest text-zinc-400">
+                                                                <label className="text-xs font-black uppercase tracking-widest text-zinc-400">
                                                                     {t('property.create.layout.roomDescLabel', undefined, 'Notes (Optional)')}
                                                                 </label>
                                                                 <input
@@ -982,12 +982,12 @@ export default function EditPropertyPage() {
                                                             </div>
                                                             {/* Room amenities */}
                                                             <div className="space-y-2">
-                                                                <label className="text-[9px] font-black uppercase tracking-widest text-zinc-400">
+                                                                <label className="text-xs font-black uppercase tracking-widest text-zinc-400">
                                                                     {t('property.create.layout.amenities', undefined, 'Room Amenities')}
                                                                 </label>
                                                                 <div className="flex flex-wrap gap-2 mb-2">
                                                                     {(room.custom_amenities || []).map((a: string, ai: number) => (
-                                                                        <span key={ai} className="px-3 py-1 bg-zinc-900 text-white rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                                                                        <span key={ai} className="px-3 py-1 bg-zinc-900 text-white rounded-full text-xs font-black uppercase tracking-widest flex items-center gap-2">
                                                                             {a}
                                                                             <button
                                                                                 onClick={() => {
@@ -1043,7 +1043,7 @@ export default function EditPropertyPage() {
                                                     ⚠️ {t('properties.new.steps.pricing.decencyWarning', undefined, 'Decency warning: Surface area is below 9m² per occupant.')}
                                                 </p>
                                             ) : (
-                                                <p className="text-[10px] text-zinc-400 font-medium italic mt-2">
+                                                <p className="text-xs text-zinc-400 font-medium italic mt-2">
                                                     {t('property.create.layout.decencyNotice', undefined, 'Roomivo enforces French decency standards (min 9m² per occupant).')}
                                                 </p>
                                             )}
@@ -1054,7 +1054,7 @@ export default function EditPropertyPage() {
                                     {currentStep === 5 && (
                                         <div className="space-y-12">
                                             <div className="space-y-6">
-                                                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                                                <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                                                     {t('property.create.pricing.monthlyRent', undefined, 'Monthly Base Rent')}
                                                 </label>
                                                 <div className="flex items-baseline gap-4">
@@ -1064,14 +1064,14 @@ export default function EditPropertyPage() {
                                                         value={isNaN(formData.monthly_rent) ? '' : formData.monthly_rent}
                                                         onChange={(e) => updateFormData({ monthly_rent: e.target.value === '' ? 0 : parseInt(e.target.value) || 0 })}
                                                         aria-label={t('property.create.pricing.monthlyRent', undefined, 'Monthly Base Rent')}
-                                                        className="bg-transparent text-8xl font-black tracking-tighter border-none focus:ring-0 w-full"
+                                                        className="bg-transparent text-5xl sm:text-8xl font-black tracking-tighter border-none focus:ring-0 w-full"
                                                     />
                                                 </div>
                                             </div>
 
                                             <div className="grid grid-cols-2 gap-8">
                                                 <div className="space-y-4">
-                                                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                                                    <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                                                         {t('property.create.pricing.charges', undefined, 'Monthly Charges')}
                                                     </label>
                                                     <div className="flex items-baseline gap-2">
@@ -1088,7 +1088,7 @@ export default function EditPropertyPage() {
                                                     <p className="text-xs text-zinc-400">{t('property.create.pricing.chargesDesc', undefined, 'Maintenance, water, etc.')}</p>
                                                 </div>
                                                 <div className="space-y-4">
-                                                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                                                    <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                                                         {t('property.create.pricing.deposit', undefined, 'Security Deposit')}
                                                     </label>
                                                     <div className="flex items-baseline gap-2">
@@ -1103,7 +1103,7 @@ export default function EditPropertyPage() {
                                                     </div>
                                                     <p className="text-xs text-zinc-400">{t('property.create.pricing.depositLimit', undefined, 'Max 1 month rent (Unfurnished) or 2 months (Furnished)')}</p>
                                                     {formData.deposit !== undefined && formData.monthly_rent > 0 && formData.deposit > formData.monthly_rent * (formData.furnished ? 2 : 1) && (
-                                                        <p className="text-amber-500 text-[10px] font-bold mt-1" role="alert">
+                                                        <p className="text-amber-500 text-xs font-bold mt-1" role="alert">
                                                             ⚠️ {t(formData.furnished ? 'properties.new.steps.pricing.depositWarningFurnished' : 'properties.new.steps.pricing.depositWarningUnfurnished', undefined, `Deposit exceeds the legal limit of ${formData.furnished ? '2 months' : '1 month'} rent.`)}
                                                         </p>
                                                     )}
@@ -1117,7 +1117,7 @@ export default function EditPropertyPage() {
                                                     aria-label={t('properties.new.steps.pricing.allInclusive', undefined, 'All-Inclusive')}
                                                     className={`p-8 rounded-[3rem] border-2 text-left transition-all ${formData.charges_included ? 'bg-zinc-900 border-zinc-900 text-white shadow-2xl' : 'border-zinc-100'}`}
                                                 >
-                                                    <div className={`text-[10px] font-black uppercase tracking-[0.2em] mb-2 ${formData.charges_included ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                                                    <div className={`text-xs font-black uppercase tracking-[0.2em] mb-2 ${formData.charges_included ? 'text-zinc-400' : 'text-zinc-500'}`}>
                                                         {t('properties.new.steps.pricing.chargesLabel', undefined, 'Charges')}
                                                     </div>
                                                     <div className="text-xl font-black">{t('properties.new.steps.pricing.allInclusive', undefined, 'All-Inclusive')}</div>
@@ -1127,7 +1127,7 @@ export default function EditPropertyPage() {
                                                     aria-label={t('properties.new.steps.pricing.cafEligible', undefined, 'CAF Eligible')}
                                                     className={`p-8 rounded-[3rem] border-2 text-left transition-all ${formData.caf_eligible ? 'bg-zinc-900 border-zinc-900 text-white shadow-2xl' : 'border-zinc-100'}`}
                                                 >
-                                                    <div className={`text-[10px] font-black uppercase tracking-[0.2em] mb-2 ${formData.caf_eligible ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                                                    <div className={`text-xs font-black uppercase tracking-[0.2em] mb-2 ${formData.caf_eligible ? 'text-zinc-400' : 'text-zinc-500'}`}>
                                                         {t('properties.new.steps.pricing.complianceLabel', undefined, 'Compliance')}
                                                     </div>
                                                     <div className="text-xl font-black">{t('properties.new.steps.pricing.cafEligible', undefined, 'CAF Eligible')}</div>
@@ -1136,7 +1136,7 @@ export default function EditPropertyPage() {
 
                                             {/* Available from */}
                                             <div className="space-y-4">
-                                                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                                                <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                                                     {t('property.create.pricing.availableFrom', undefined, 'Available From')}
                                                 </label>
                                                 <input
@@ -1155,7 +1155,7 @@ export default function EditPropertyPage() {
                                                     aria-label={t('property.create.pricing.guarantor.title', undefined, 'Guarantor Information')}
                                                     className={`w-full p-8 rounded-[3rem] border-2 text-left transition-all ${formData.guarantor_required ? 'bg-zinc-900 border-zinc-900 text-white shadow-2xl' : 'border-zinc-100'}`}
                                                 >
-                                                    <div className={`text-[10px] font-black uppercase tracking-[0.2em] mb-2 ${formData.guarantor_required ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                                                    <div className={`text-xs font-black uppercase tracking-[0.2em] mb-2 ${formData.guarantor_required ? 'text-zinc-400' : 'text-zinc-500'}`}>
                                                         {t('property.create.pricing.guarantor.title', undefined, 'Guarantor Information')}
                                                     </div>
                                                     <div className="text-xl font-black">
@@ -1165,7 +1165,7 @@ export default function EditPropertyPage() {
 
                                                 {formData.guarantor_required && (
                                                     <div className="space-y-4">
-                                                        <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                                                        <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                                                             {t('property.create.pricing.guarantor.typesLabel', undefined, 'Accepted Guarantors')}
                                                         </label>
                                                         <div className="flex flex-wrap gap-3">
@@ -1193,7 +1193,7 @@ export default function EditPropertyPage() {
 
                                             {/* Rent Control */}
                                             <div className="space-y-6">
-                                                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                                                <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                                                     {t('properties.new.steps.pricing.rentControlTitle', undefined, 'Rent Control (Loi ELAN)')}
                                                 </label>
                                                 <button 
@@ -1215,7 +1215,7 @@ export default function EditPropertyPage() {
                                                     }`}
                                                     aria-pressed={showRentControl}
                                                 >
-                                                    <div className="text-[10px] font-black uppercase tracking-[0.2em] mb-1">
+                                                    <div className="text-xs font-black uppercase tracking-[0.2em] mb-1">
                                                         {t('properties.new.steps.pricing.rentControlToggle', undefined, 'Apply Rent Control')}
                                                     </div>
                                                     <div className={`text-xs ${showRentControl ? 'text-zinc-300' : 'text-zinc-500'}`}>
@@ -1231,7 +1231,7 @@ export default function EditPropertyPage() {
                                                     >
                                                         <div className="grid grid-cols-2 gap-8">
                                                             <div className="space-y-4">
-                                                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
+                                                                <label className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400">
                                                                     {t('properties.new.steps.pricing.loyerReferenceLabel', undefined, 'Reference Rent (€/m²)')}
                                                                 </label>
                                                                 <input
@@ -1245,7 +1245,7 @@ export default function EditPropertyPage() {
                                                                 />
                                                             </div>
                                                             <div className="space-y-4">
-                                                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
+                                                                <label className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400">
                                                                     {t('properties.new.steps.pricing.loyerReferenceMajoreLabel', undefined, 'Max Reference Rent (€/m²)')}
                                                                 </label>
                                                                 <input
@@ -1273,7 +1273,7 @@ export default function EditPropertyPage() {
 
                                                                 <div className="grid grid-cols-1 gap-6">
                                                                     <div className="space-y-4">
-                                                                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
+                                                                        <label className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400">
                                                                             {t('properties.new.steps.pricing.complementLoyerLabel', undefined, 'Rent Supplement')}
                                                                         </label>
                                                                         <div className="flex items-baseline gap-2">
@@ -1289,7 +1289,7 @@ export default function EditPropertyPage() {
                                                                         </div>
                                                                     </div>
                                                                     <div className="space-y-4">
-                                                                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
+                                                                        <label className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400">
                                                                             {t('properties.new.steps.pricing.complementLoyerJustificationLabel', undefined, 'Justification for Rent Supplement')}
                                                                         </label>
                                                                         <textarea
@@ -1309,7 +1309,7 @@ export default function EditPropertyPage() {
 
                                             {/* Natural Risks (ERP) */}
                                             <div className="space-y-6">
-                                                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                                                <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                                                     {t('properties.new.steps.pricing.naturalRisksTitle', undefined, 'Natural Risks (ERP)')}
                                                 </label>
                                                 <button 
@@ -1320,7 +1320,7 @@ export default function EditPropertyPage() {
                                                     }`}
                                                     aria-pressed={formData.natural_risks_compliant}
                                                 >
-                                                    <div className="text-[10px] font-black uppercase tracking-[0.2em] mb-1">
+                                                    <div className="text-xs font-black uppercase tracking-[0.2em] mb-1">
                                                         {t('properties.new.steps.pricing.naturalRisksLabel', undefined, 'I certify providing the ERP report')}
                                                     </div>
                                                     <div className={`text-xs ${formData.natural_risks_compliant ? 'text-zinc-300' : 'text-zinc-500'}`}>
@@ -1342,7 +1342,7 @@ export default function EditPropertyPage() {
 
                                             {/* Standard amenities */}
                                             <div className="space-y-4">
-                                                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                                                <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                                                     {t('property.create.features.amenities', undefined, 'General Amenities')}
                                                 </label>
                                                 <div className="flex flex-wrap gap-3">
@@ -1365,12 +1365,12 @@ export default function EditPropertyPage() {
 
                                             {/* Custom amenities */}
                                             <div className="space-y-4">
-                                                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                                                <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                                                     {t('property.create.features.customAmenities', undefined, 'Custom Amenities')}
                                                 </label>
                                                 <div className="flex flex-wrap gap-2 mb-2">
                                                     {formData.custom_amenities.map((a, i) => (
-                                                        <span key={i} className="px-4 py-2 bg-zinc-900 text-white rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                                                        <span key={i} className="px-4 py-2 bg-zinc-900 text-white rounded-full text-xs font-black uppercase tracking-widest flex items-center gap-2">
                                                             {a}
                                                             <button
                                                                 onClick={() => updateFormData({ custom_amenities: formData.custom_amenities.filter((_, idx) => idx !== i) })}
@@ -1412,12 +1412,12 @@ export default function EditPropertyPage() {
 
                                             {/* Public Transport */}
                                             <div className="space-y-4">
-                                                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                                                <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                                                     {t('property.create.features.transport', undefined, 'Nearby Transport')}
                                                 </label>
                                                 <div className="flex flex-wrap gap-2 mb-2">
                                                     {formData.public_transport.map((t_item, i) => (
-                                                        <span key={i} className="px-4 py-2 bg-zinc-100 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                                                        <span key={i} className="px-4 py-2 bg-zinc-100 rounded-full text-xs font-black uppercase tracking-widest flex items-center gap-2">
                                                             {t_item}
                                                             <button
                                                                 onClick={() => updateFormData({ public_transport: formData.public_transport.filter((_, idx) => idx !== i) })}
@@ -1459,12 +1459,12 @@ export default function EditPropertyPage() {
 
                                             {/* Nearby Landmarks */}
                                             <div className="space-y-4">
-                                                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                                                <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                                                     {t('property.create.features.landmarks', undefined, 'Surroundings & Landmarks')}
                                                 </label>
                                                 <div className="flex flex-wrap gap-2 mb-2">
                                                     {formData.nearby_landmarks.map((l, i) => (
-                                                        <span key={i} className="px-4 py-2 bg-zinc-100 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                                                        <span key={i} className="px-4 py-2 bg-zinc-100 rounded-full text-xs font-black uppercase tracking-widest flex items-center gap-2">
                                                             {l}
                                                             <button
                                                                 onClick={() => updateFormData({ nearby_landmarks: formData.nearby_landmarks.filter((_, idx) => idx !== i) })}
@@ -1506,7 +1506,7 @@ export default function EditPropertyPage() {
 
                                             {/* Utilities included */}
                                             <div className="space-y-4">
-                                                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                                                <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                                                     {t('property.utilitiesTitle', undefined, 'Utilities & Services')}
                                                 </label>
                                                 <div className="flex flex-wrap gap-3">
@@ -1529,7 +1529,7 @@ export default function EditPropertyPage() {
 
                                             {/* Accepted tenant types */}
                                             <div className="space-y-4">
-                                                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                                                <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                                                     {t('properties.edit.acceptedTenants', undefined, 'Accepted Tenant Types')}
                                                 </label>
                                                 <div className="flex flex-wrap gap-3">
@@ -1571,7 +1571,7 @@ export default function EditPropertyPage() {
                                                 <button
                                                     onClick={handleManageMedia}
                                                     aria-label={t('properties.edit.mediaSection.manageMedia', undefined, 'Manage Media')}
-                                                    className="w-full py-4 border-2 border-zinc-200 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] hover:border-zinc-900 transition-all"
+                                                    className="w-full py-4 border-2 border-zinc-200 rounded-2xl text-xs font-black uppercase tracking-[0.3em] hover:border-zinc-900 transition-all"
                                                 >
                                                     {t('properties.edit.mediaSection.manageMedia', undefined, 'Manage Media')}
                                                 </button>
@@ -1584,7 +1584,7 @@ export default function EditPropertyPage() {
                                          <div className="space-y-10 animate-fade-in">
                                              <div className="space-y-6">
                                                  <div className="flex justify-between items-center">
-                                                     <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                                                     <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                                                          {t('properties.new.steps.narrative.label')}
                                                      </label>
                                                      
@@ -1654,13 +1654,13 @@ export default function EditPropertyPage() {
                                                 </h3>
                                                 <div className="space-y-4">
                                                     <div className="flex justify-between items-center py-4 border-b border-zinc-100">
-                                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+                                                        <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">
                                                             {t('properties.new.steps.review.asset', undefined, 'Asset')}
                                                         </span>
                                                         <span className="text-sm font-black uppercase">{formData.title}</span>
                                                     </div>
                                                     <div className="flex justify-between items-center py-4 border-b border-zinc-100">
-                                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+                                                        <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">
                                                             {t('property.create.basic.propertyType', undefined, 'Type')}
                                                         </span>
                                                         <span className="text-sm font-black uppercase">
@@ -1668,51 +1668,51 @@ export default function EditPropertyPage() {
                                                         </span>
                                                     </div>
                                                     <div className="flex justify-between items-center py-4 border-b border-zinc-100">
-                                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+                                                        <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">
                                                             {t('properties.new.steps.review.location', undefined, 'Location')}
                                                         </span>
                                                         <span className="text-sm font-black uppercase">{formData.city}</span>
                                                     </div>
                                                     <div className="flex justify-between items-center py-4 border-b border-zinc-100">
-                                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+                                                        <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">
                                                             {t('properties.new.steps.details.surface', undefined, 'Surface')}
                                                         </span>
                                                         <span className="text-sm font-black uppercase">{formData.size_sqm}m²</span>
                                                     </div>
                                                     <div className="flex justify-between items-center py-4 border-b border-zinc-100">
-                                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+                                                        <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">
                                                             {t('properties.new.steps.details.bedrooms', undefined, 'Bedrooms')}
                                                         </span>
                                                         <span className="text-sm font-black uppercase">{formData.bedrooms}</span>
                                                     </div>
                                                     <div className="flex justify-between items-center py-4 border-b border-zinc-100">
-                                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+                                                        <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">
                                                             {t('property.create.details.dpeLabel', undefined, 'DPE')}
                                                         </span>
                                                         <span className="text-sm font-black uppercase">{formData.dpe_rating || 'N/A'}</span>
                                                     </div>
                                                     <div className="flex justify-between items-center py-4 border-b border-zinc-100">
-                                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+                                                        <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">
                                                             {t('property.create.details.gesLabel', undefined, 'GES')}
                                                         </span>
                                                         <span className="text-sm font-black uppercase">{formData.ges_rating || 'N/A'}</span>
                                                     </div>
                                                     <div className="flex justify-between items-center py-4 border-b border-zinc-100">
-                                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+                                                        <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">
                                                             {t('properties.new.steps.review.pricing', undefined, 'Pricing')}
                                                         </span>
                                                         <span className="text-sm font-black uppercase">€{formData.monthly_rent}/{t('properties.new.steps.review.perMonth', undefined, 'mo')}</span>
                                                     </div>
                                                     {formData.deposit && (
                                                         <div className="flex justify-between items-center py-4 border-b border-zinc-100">
-                                                            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+                                                            <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">
                                                                 {t('property.create.pricing.deposit', undefined, 'Deposit')}
                                                             </span>
                                                             <span className="text-sm font-black uppercase">€{formData.deposit}</span>
                                                         </div>
                                                     )}
                                                     <div className="flex justify-between items-center py-4 border-b border-zinc-100">
-                                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+                                                        <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">
                                                             {t('property.create.details.furnished', undefined, 'Furnished')}
                                                         </span>
                                                         <span className="text-sm font-black uppercase">
@@ -1720,7 +1720,7 @@ export default function EditPropertyPage() {
                                                         </span>
                                                     </div>
                                                     <div className="flex justify-between items-center py-4">
-                                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+                                                        <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">
                                                             {t('property.create.features.amenities', undefined, 'Amenities')}
                                                         </span>
                                                         <span className="text-sm font-black uppercase">
@@ -1825,7 +1825,7 @@ export default function EditPropertyPage() {
                                         <button
                                             onClick={prevStep}
                                             aria-label={t('properties.new.navigation.back', undefined, 'Back')}
-                                            className="px-12 py-6 bg-zinc-100 text-zinc-500 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] hover:bg-zinc-200 transition-all"
+                                            className="px-12 py-6 bg-zinc-100 text-zinc-500 rounded-[2rem] text-xs font-black uppercase tracking-[0.4em] hover:bg-zinc-200 transition-all"
                                         >
                                             {t('properties.new.navigation.back', undefined, 'Back')}
                                         </button>
@@ -1833,7 +1833,7 @@ export default function EditPropertyPage() {
                                     <button
                                         onClick={nextStep}
                                         aria-label={t('properties.new.navigation.next', undefined, 'Next Protocol')}
-                                        className="flex-1 py-6 bg-zinc-900 text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] shadow-2xl hover:scale-[1.02] active:scale-95 transition-all"
+                                        className="flex-1 py-6 bg-zinc-900 text-white rounded-[2rem] text-xs font-black uppercase tracking-[0.4em] shadow-2xl hover:scale-[1.02] active:scale-95 transition-all"
                                     >
                                         {t('properties.new.navigation.next', undefined, 'Next Protocol')}
                                     </button>

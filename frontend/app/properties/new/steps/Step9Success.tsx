@@ -101,11 +101,11 @@ export default function Step9Success({ formData, t, language, propertyId, mediaS
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
                         <Camera className="w-4 h-4 text-zinc-500" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">
+                        <span className="text-xs font-black uppercase tracking-[0.3em] text-zinc-500">
                             Captured Media
                         </span>
                         {capturedPhotos.length > 0 && (
-                            <span className="px-3 py-1 bg-zinc-900 text-white rounded-full text-[9px] font-black uppercase tracking-wider">
+                            <span className="px-3 py-1 bg-zinc-900 text-white rounded-full text-xs font-black uppercase tracking-wider">
                                 {capturedPhotos.length}
                             </span>
                         )}
@@ -115,7 +115,7 @@ export default function Step9Success({ formData, t, language, propertyId, mediaS
                             <RefreshCw className="w-3 h-3 text-zinc-300 animate-spin" />
                         )}
                         {lastRefreshed && (
-                            <span className="text-[9px] text-zinc-300 font-medium">
+                            <span className="text-xs text-zinc-300 font-medium">
                                 Live
                             </span>
                         )}
@@ -146,7 +146,7 @@ export default function Step9Success({ formData, t, language, propertyId, mediaS
                                 />
                                 {photo.room_label && (
                                     <div className="absolute bottom-0 inset-x-0 bg-black/50 px-2 py-1">
-                                        <span className="text-[8px] font-black uppercase tracking-wider text-white truncate block">
+                                        <span className="text-xs font-black uppercase tracking-wider text-white truncate block">
                                             {photo.room_label}
                                         </span>
                                     </div>
@@ -208,7 +208,7 @@ export default function Step9Success({ formData, t, language, propertyId, mediaS
                 </button>
                 <button
                     onClick={onReturn}
-                    className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 hover:text-zinc-900 transition-colors"
+                    className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400 hover:text-zinc-900 transition-colors"
                 >
                     {t('properties.new.steps.success.return')}
                 </button>

@@ -108,7 +108,7 @@ export default function AlertCenter() {
     return (
         <div className="glass-card !p-8 rounded-[2.5rem] border-zinc-100 shadow-xl relative overflow-hidden">
             <div className="flex justify-between items-center mb-8 px-2">
-                <h2 className="text-xl font-black text-zinc-950 tracking-tight flex items-center gap-3 uppercase text-[10px] tracking-[0.4em] text-zinc-400">
+                <h2 className="text-xl font-black text-zinc-950 tracking-tight flex items-center gap-3 uppercase text-xs tracking-[0.4em] text-zinc-400">
                     <Bell className="w-4 h-4 text-zinc-950" />
                     {t('dashboard.alerts.title', undefined, 'Landlord Action Center')}
                 </h2>
@@ -144,7 +144,7 @@ export default function AlertCenter() {
                                                 <h3 className="font-black text-zinc-950 text-base tracking-tight uppercase leading-none">
                                                     {alert.title}
                                                 </h3>
-                                                <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border ${styles.badge}`}>
+                                                <span className={`px-2 py-0.5 rounded-full text-xs font-black uppercase tracking-widest border ${styles.badge}`}>
                                                     {styles.label}
                                                 </span>
                                             </div>

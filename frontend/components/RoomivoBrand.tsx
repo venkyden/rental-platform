@@ -27,29 +27,29 @@ export default function RoomivoBrand({
             iconSize: 56,
             iconClass: 'w-[44px] h-[44px] sm:w-[56px] sm:h-[56px]',
             textSize: 'text-2xl sm:text-4xl',
-            taglineSize: 'text-[10px]',
+            taglineSize: 'text-xs',
             gap: 'gap-2 sm:gap-3'
         },
         md: {
             iconSize: 72,
-            iconClass: 'w-[72px] h-[72px]',
-            textSize: 'text-4xl',
-            taglineSize: 'text-sm',
-            gap: 'gap-4'
+            iconClass: 'w-[56px] h-[56px] md:w-[72px] md:h-[72px]',
+            textSize: 'text-3xl md:text-4xl',
+            taglineSize: 'text-xs md:text-sm',
+            gap: 'gap-3 md:gap-4'
         },
         lg: {
             iconSize: 104,
-            iconClass: 'w-[104px] h-[104px]',
-            textSize: 'text-5xl',
-            taglineSize: 'text-base',
-            gap: 'gap-5'
+            iconClass: 'w-[72px] h-[72px] md:w-[104px] md:h-[104px]',
+            textSize: 'text-4xl md:text-5xl',
+            taglineSize: 'text-sm md:text-base',
+            gap: 'gap-4 md:gap-5'
         },
         xl: {
             iconSize: 160,
-            iconClass: 'w-[160px] h-[160px]',
-            textSize: 'text-7xl',
-            taglineSize: 'text-xl',
-            gap: 'gap-6'
+            iconClass: 'w-[80px] h-[80px] sm:w-[120px] sm:h-[120px] md:w-[160px] md:h-[160px]',
+            textSize: 'text-5xl sm:text-6xl md:text-7xl',
+            taglineSize: 'text-sm sm:text-lg md:text-xl',
+            gap: 'gap-3 sm:gap-4 md:gap-6'
         }
     };
 

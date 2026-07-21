@@ -95,7 +95,7 @@ export default function LandlordDashboard() {
                     </h1>
                     <div className="flex items-center gap-3 mt-4">
                         <SegmentBadge />
-                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">
+                        <span className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em]">
                             {t('dashboard.landlord.title', undefined, 'Landlord Command Center')}
                         </span>
                     </div>
@@ -195,7 +195,7 @@ export default function LandlordDashboard() {
                         <div className="glass-card !p-10 rounded-[2.5rem] border-zinc-100 shadow-xl relative overflow-hidden text-left">
                             <div className="flex justify-between items-center mb-8 px-2">
                                 <div>
-                                    <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 mb-2">
+                                    <h3 className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400 mb-2">
                                         {t('dashboard.landlord.sections.analytics', undefined, 'Portfolio Traffic')}
                                     </h3>
                                     <h2 className="text-3xl font-black text-zinc-950 tracking-tight">
@@ -233,7 +233,7 @@ export default function LandlordDashboard() {
                     <FeatureGate feature="team">
                         <div className="glass-card !p-10 shadow-2xl border-white/40 rounded-[2.5rem] relative overflow-hidden text-left">
                             <div className="absolute top-0 left-0 w-full h-1 bg-zinc-950" />
-                            <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 mb-6 flex items-center gap-3">
+                            <h3 className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400 mb-6 flex items-center gap-3">
                                 <Users className="w-4 h-4 text-zinc-950" />
                                 {t('dashboard.landlord.myTeam', undefined, 'Collaborators')}
                             </h3>

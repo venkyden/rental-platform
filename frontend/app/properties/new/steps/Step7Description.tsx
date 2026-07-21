@@ -29,7 +29,7 @@ export default function Step7Description({
         <div className="space-y-10 animate-fade-in">
             <div className="space-y-6">
                 <div className="flex justify-between items-center">
-                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                    <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                         {t('properties.new.steps.narrative.label')}
                     </label>
                     <button

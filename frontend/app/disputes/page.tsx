@@ -111,7 +111,7 @@ function MyDisputesContent() {
                             <button
                                 key={f}
                                 onClick={() => setFilter(f)}
-                                className={`px-4 py-2 rounded-xl text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
+                                className={`px-4 py-2 rounded-xl text-xs sm:text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
                                     filter === f 
                                     ? 'bg-zinc-900 text-white shadow-md' 
                                     : 'text-zinc-500 hover:text-zinc-900'
@@ -158,10 +158,10 @@ function MyDisputesContent() {
                                 {/* Center: Info */}
                                 <div className="flex-grow min-w-0">
                                     <div className="flex items-center gap-2 mb-1">
-                                        <span className={`text-[10px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded-md border ${getStatusStyles(dispute.status)}`}>
+                                        <span className={`text-xs font-extrabold uppercase tracking-widest px-2 py-0.5 rounded-md border ${getStatusStyles(dispute.status)}`}>
                                             {getStatusLabel(dispute.status)}
                                         </span>
-                                        <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+                                        <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest">
                                             {new Date(dispute.created_at).toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US', { month: 'short', day: '2-digit', year: 'numeric' })}
                                         </span>
                                     </div>
@@ -172,7 +172,7 @@ function MyDisputesContent() {
                                         {dispute.description}
                                     </p>
                                     
-                                    <div className="flex items-center gap-4 mt-4 text-[10px] font-bold uppercase tracking-tighter text-zinc-400">
+                                    <div className="flex items-center gap-4 mt-4 text-xs font-bold uppercase tracking-tighter text-zinc-400">
                                         <div className="flex items-center gap-1">
                                             <ImageIcon className="w-3.5 h-3.5" />
                                             <span>{dispute.evidence_urls.length} {t('disputes.evidence', undefined, undefined)}</span>

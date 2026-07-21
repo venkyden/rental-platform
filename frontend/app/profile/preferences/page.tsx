@@ -83,7 +83,7 @@ export default function EditPreferencesPage() {
                 {isSaving && (
                     <div className="fixed inset-0 bg-white/50 backdrop-blur-md z-[100] flex flex-col justify-center items-center">
                         <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-zinc-900 mb-6"></div>
-                        <p className="text-[10px] font-black text-zinc-900 uppercase tracking-[0.4em] animate-pulse">Synchronizing Preferences...</p>
+                        <p className="text-xs font-black text-zinc-900 uppercase tracking-[0.4em] animate-pulse">Synchronizing Preferences...</p>
                     </div>
                 )}
             </div>

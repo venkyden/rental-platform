@@ -16,7 +16,7 @@ export default function TeamPage() {
                          <div className="flex items-center gap-8">
                             <button
                                 onClick={() => router.push('/dashboard')}
-                                className="text-[10px] font-black text-zinc-400 hover:text-zinc-900 uppercase tracking-widest transition-colors"
+                                className="text-xs font-black text-zinc-400 hover:text-zinc-900 uppercase tracking-widest transition-colors"
                             >
                                 ← Dashboard
                             </button>

@@ -39,7 +39,7 @@ export default function NotFound() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.8 }}
-          className="text-zinc-400 font-bold uppercase text-[10px] tracking-widest leading-relaxed max-w-md mx-auto mb-16"
+          className="text-zinc-400 font-bold uppercase text-xs tracking-widest leading-relaxed max-w-md mx-auto mb-16"
         >
           {t('common.error.notFoundDesc', undefined, 'The page you are looking for does not exist, has been moved, or is temporarily unavailable.')}
         </motion.p>
@@ -53,7 +53,7 @@ export default function NotFound() {
         >
           <Link
             href="/"
-            className="inline-flex items-center justify-center gap-3 px-8 py-5 bg-zinc-900 hover:bg-zinc-800 text-white font-black rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all uppercase tracking-widest text-[10px]"
+            className="inline-flex items-center justify-center gap-3 px-8 py-5 bg-zinc-900 hover:bg-zinc-800 text-white font-black rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all uppercase tracking-widest text-xs"
           >
             <Home className="w-4 h-4" />
             <span>{t('navigation.home', undefined, 'Go Home')}</span>
@@ -61,7 +61,7 @@ export default function NotFound() {
           
           <Link
             href="/search"
-            className="inline-flex items-center justify-center gap-3 px-8 py-5 bg-zinc-50 border border-zinc-200 hover:border-zinc-300 text-zinc-900 font-black rounded-full shadow-sm hover:scale-105 active:scale-95 transition-all uppercase tracking-widest text-[10px]"
+            className="inline-flex items-center justify-center gap-3 px-8 py-5 bg-zinc-50 border border-zinc-200 hover:border-zinc-300 text-zinc-900 font-black rounded-full shadow-sm hover:scale-105 active:scale-95 transition-all uppercase tracking-widest text-xs"
           >
             <Search className="w-4 h-4" />
             <span>{t('dashboard.quickActions.browse.title', undefined, 'Browse Listings')}</span>

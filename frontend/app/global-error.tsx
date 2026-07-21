@@ -29,7 +29,7 @@ export default function GlobalError({
           </h1>
 
           {/* Description */}
-          <p className="text-zinc-400 font-bold uppercase text-[10px] tracking-widest leading-relaxed max-w-md mx-auto mb-16">
+          <p className="text-zinc-400 font-bold uppercase text-xs tracking-widest leading-relaxed max-w-md mx-auto mb-16">
             A critical system error has occurred. The application is attempting to recover. Please try again or refresh your browser.
           </p>
 
@@ -37,7 +37,7 @@ export default function GlobalError({
           <div className="flex justify-center">
             <button
               onClick={() => reset()}
-              className="inline-flex items-center justify-center gap-3 px-8 py-5 bg-zinc-900 hover:bg-zinc-800 text-white font-black rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all uppercase tracking-widest text-[10px]"
+              className="inline-flex items-center justify-center gap-3 px-8 py-5 bg-zinc-900 hover:bg-zinc-800 text-white font-black rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all uppercase tracking-widest text-xs"
             >
               <RefreshCw className="w-4 h-4" />
               <span>Try Again</span>
@@ -48,10 +48,10 @@ export default function GlobalError({
           {process.env.NODE_ENV === 'development' && (
             <div className="mt-16 text-left max-w-lg mx-auto">
               <details className="group cursor-pointer">
-                <summary className="text-[9px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 transition-colors select-none">
+                <summary className="text-xs font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 transition-colors select-none">
                   Critical Error Stack Trace
                 </summary>
-                <pre className="mt-4 p-6 bg-zinc-950 border border-zinc-900 text-red-400 font-mono text-[10px] rounded-3xl overflow-auto max-h-48 leading-relaxed">
+                <pre className="mt-4 p-6 bg-zinc-950 border border-zinc-900 text-red-400 font-mono text-xs rounded-3xl overflow-auto max-h-48 leading-relaxed">
                   {error.message}
                   {error.stack && `\n\n${error.stack}`}
                 </pre>

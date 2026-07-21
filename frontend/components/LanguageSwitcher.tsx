@@ -13,7 +13,7 @@ export default function LanguageSwitcher() {
                     key={lang}
                     data-testid={`lang-switch-${lang}`}
                     onClick={() => setLanguage(lang as 'en' | 'fr')}
-                    className={`relative px-6 py-2.5 rounded-full text-[10px] font-black tracking-[0.2em] uppercase transition-all duration-500 active:scale-95
+                    className={`relative px-6 py-2.5 rounded-full text-xs font-black tracking-[0.2em] uppercase transition-all duration-500 active:scale-95
                         ${language === lang ? 'text-zinc-900' : 'text-zinc-400 active:text-zinc-600'}`}
                 >
                     {language === lang && (

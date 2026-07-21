@@ -180,12 +180,12 @@ export default function IncidentReportingPage() {
                             <div className="relative z-10 space-y-2">
                                 <div className="flex items-center gap-2 text-emerald-400">
                                     <Shield className="w-5 h-5" />
-                                    <span className="text-[10px] font-extrabold uppercase tracking-widest">{t('disputes.incident.dutyTitle') || 'Obligation de Signalement'}</span>
+                                    <span className="text-xs font-extrabold uppercase tracking-widest">{t('disputes.incident.dutyTitle') || 'Obligation de Signalement'}</span>
                                 </div>
                                 <p className="text-sm text-zinc-300 leading-relaxed font-medium">
                                     {t('disputes.incident.dutyDesc') || 'As a tenant, you are legally required to report any property damage or failures promptly to preserve your guarantee and prevent further degradation.'}
                                 </p>
-                                <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider pt-2 border-t border-zinc-800">
+                                <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider pt-2 border-t border-zinc-800">
                                     Loi ALUR (Article L.7-1 du décret n°87-712 du 26 août 1987) compliance protocol
                                 </p>
                             </div>
@@ -223,7 +223,7 @@ export default function IncidentReportingPage() {
                             
                             <div className="space-y-4">
                                 <div>
-                                    <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-2 block px-1">{t('disputes.incident.form.title') || 'Issue Title'}</label>
+                                    <label className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-2 block px-1">{t('disputes.incident.form.title') || 'Issue Title'}</label>
                                     <input 
                                         type="text"
                                         className="w-full bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 font-bold outline-none focus:ring-2 focus:ring-zinc-950 dark:focus:ring-white transition-all shadow-sm text-zinc-900 dark:text-white"
@@ -234,7 +234,7 @@ export default function IncidentReportingPage() {
                                 </div>
 
                                 <div>
-                                    <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-2 block px-1">{t('disputes.incident.form.desc') || 'Detailed Description'}</label>
+                                    <label className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-2 block px-1">{t('disputes.incident.form.desc') || 'Detailed Description'}</label>
                                     <textarea 
                                         className="w-full bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 font-medium outline-none focus:ring-2 focus:ring-zinc-950 dark:focus:ring-white transition-all shadow-sm min-h-[120px] text-zinc-900 dark:text-white"
                                         placeholder={t('disputes.incident.descPlaceholder') || 'Explain what happened in detail...'}
@@ -244,7 +244,7 @@ export default function IncidentReportingPage() {
                                 </div>
 
                                 <div>
-                                    <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-2 block px-1">Estimated Cost (€)</label>
+                                    <label className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-2 block px-1">Estimated Cost (€)</label>
                                     <div className="relative">
                                         <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-zinc-400">€</span>
                                         <input 
@@ -287,7 +287,7 @@ export default function IncidentReportingPage() {
                                             <div className="w-10 h-10 rounded-full bg-zinc-150 dark:bg-zinc-800 flex items-center justify-center">
                                                 <Camera className="w-5 h-5" />
                                             </div>
-                                            <span className="text-[10px] font-bold uppercase">{t('disputes.detail.addPhoto') || 'Upload Photo'}</span>
+                                            <span className="text-xs font-bold uppercase">{t('disputes.detail.addPhoto') || 'Upload Photo'}</span>
                                         </button>
                                         
                                         <button 
@@ -299,7 +299,7 @@ export default function IncidentReportingPage() {
                                             <div className="w-10 h-10 rounded-full bg-zinc-150 dark:bg-zinc-800 flex items-center justify-center">
                                                 <Camera className="w-5 h-5 animate-pulse" />
                                             </div>
-                                            <span className="text-[10px] font-bold uppercase">{t('disputes.detail.takePhoto') || 'Take Photo'}</span>
+                                            <span className="text-xs font-bold uppercase">{t('disputes.detail.takePhoto') || 'Take Photo'}</span>
                                         </button>
                                     </>
                                 )}
@@ -349,7 +349,7 @@ export default function IncidentReportingPage() {
                                     </>
                                 )}
                             </button>
-                            <p className="text-[10px] text-zinc-400 text-center mt-4 font-bold uppercase tracking-widest">
+                            <p className="text-xs text-zinc-400 text-center mt-4 font-bold uppercase tracking-widest">
                                 Report is legally watermarked, timestamped and shared with the landlord.
                             </p>
                         </div>

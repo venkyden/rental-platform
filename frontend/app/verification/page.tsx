@@ -163,7 +163,7 @@ export default function VerificationPage() {
                                     {t('dashboard.verification.verification.pageTitle', undefined, 'Verification')}
                                 </h1>
                                 <div className="flex items-center gap-3">
-                                    <div className="px-4 py-1.5 rounded-full bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl">
+                                    <div className="px-4 py-1.5 rounded-full bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.2em] shadow-2xl">
                                         {t('dashboard.verification.secureSubtitle', undefined, 'Secure Identity & Document Verification')}
                                     </div>
                                 </div>
@@ -179,7 +179,7 @@ export default function VerificationPage() {
                                 <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center mb-8 shadow-xl transition-all duration-500 group-hover:scale-110 ${statusData?.identity_verified ? 'bg-emerald-950 text-white' : 'bg-zinc-100 text-zinc-400'}`}>
                                     {statusData?.identity_verified ? <UserCheck className="w-8 h-8" /> : <Lock className="w-6 h-6" />}
                                 </div>
-                                <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] mb-3">
+                                <h3 className="text-xs font-black text-zinc-400 uppercase tracking-[0.3em] mb-3">
                                     {t('dashboard.verification.verification.progress.identity', undefined, 'Identity')}
                                 </h3>
                                 <p className={`text-lg font-black uppercase tracking-tight ${statusData?.identity_verified ? 'text-zinc-950' : 'text-zinc-400'}`}>
@@ -193,7 +193,7 @@ export default function VerificationPage() {
                                     <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center mb-8 shadow-xl transition-all duration-500 group-hover:scale-110 ${statusData?.solvency_verified ? 'bg-emerald-950 text-white' : 'bg-zinc-100 text-zinc-400'}`}>
                                         {statusData?.solvency_verified ? <Briefcase className="w-8 h-8" /> : <Clock className="w-8 h-8" />}
                                     </div>
-                                    <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] mb-3">
+                                    <h3 className="text-xs font-black text-zinc-400 uppercase tracking-[0.3em] mb-3">
                                         {t('dashboard.verification.verification.tabs.income', undefined, 'Income')}
                                     </h3>
                                     <p className={`text-lg font-black uppercase tracking-tight ${statusData?.solvency_verified ? 'text-zinc-950' : 'text-zinc-400'}`}>
@@ -208,7 +208,7 @@ export default function VerificationPage() {
                                     <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center mb-8 shadow-xl transition-all duration-500 group-hover:scale-110 ${statusData?.guarantor_status === 'verified' ? 'bg-emerald-950 text-white' : statusData?.guarantor_status === 'submitted' ? 'bg-blue-950 text-white' : 'bg-zinc-100 text-zinc-400'}`}>
                                         {(statusData?.guarantor_status === 'verified' || statusData?.guarantor_status === 'submitted') ? <ShieldCheck className="w-8 h-8" /> : <ShieldAlert className="w-8 h-8" />}
                                     </div>
-                                    <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] mb-3">
+                                    <h3 className="text-xs font-black text-zinc-400 uppercase tracking-[0.3em] mb-3">
                                         {t('dashboard.verification.verification.tabs.guarantor', undefined, 'Guarantor')}
                                     </h3>
                                     <p className={`text-lg font-black uppercase tracking-tight ${statusData?.guarantor_status === 'verified' ? 'text-zinc-950' : statusData?.guarantor_status === 'submitted' ? 'text-zinc-950' : 'text-zinc-400'}`}>
@@ -227,7 +227,7 @@ export default function VerificationPage() {
                                     <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center mb-8 shadow-xl transition-all duration-500 group-hover:scale-110 ${statusData?.ownership_verified ? 'bg-emerald-950 text-white' : 'bg-zinc-100 text-zinc-400'}`}>
                                         {statusData?.ownership_verified ? <Home className="w-8 h-8" /> : <Clock className="w-8 h-8" />}
                                     </div>
-                                    <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] mb-3">
+                                    <h3 className="text-xs font-black text-zinc-400 uppercase tracking-[0.3em] mb-3">
                                         {t('dashboard.verification.verification.progress.ownership', undefined, 'Ownership')}
                                     </h3>
                                     <p className={`text-lg font-black uppercase tracking-tight ${statusData?.ownership_verified ? 'text-zinc-950' : 'text-zinc-400'}`}>
@@ -241,7 +241,7 @@ export default function VerificationPage() {
                         <motion.div variants={itemVariants} className="lg:col-span-4 glass-card !p-12 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.3)] bg-zinc-900 text-white border-none rounded-[3rem] relative overflow-hidden group">
                             <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full blur-[60px] -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-1000" />
                             
-                            <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500 mb-10">
+                            <h3 className="text-xs font-black uppercase tracking-[0.4em] text-zinc-500 mb-10">
                                 {t('dashboard.verification.verification.progress.trustScore', undefined, 'Trust Score')}
                             </h3>
                             
@@ -263,15 +263,15 @@ export default function VerificationPage() {
                                         </defs>
                                     </svg>
                                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                        <span className="text-7xl font-black tracking-tighter">
+                                        <span className="text-5xl sm:text-7xl font-black tracking-tighter">
                                             {animatedScore}
                                         </span>
-                                        <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] mt-2">
+                                        <span className="text-xs font-black text-zinc-500 uppercase tracking-[0.3em] mt-2">
                                             {t('dashboard.points', undefined, 'Score')}
                                         </span>
                                     </div>
                                 </div>
-                                <p className="mt-8 text-center text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
+                                <p className="mt-8 text-center text-xs font-black uppercase tracking-[0.2em] text-zinc-400">
                                     {animatedScore < 100 
                                         ? t('dashboard.verification.verification.progress.boost', undefined, 'Complete verification to boost score') 
                                         : t('dashboard.verification.verification.progress.max', undefined, 'Maximum Trust Score Achieved')}
@@ -298,7 +298,7 @@ export default function VerificationPage() {
                                     <button
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id as any)}
-                                        className={`px-8 py-4.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 ${activeTab === tab.id
+                                        className={`px-8 py-4.5 rounded-2xl text-xs font-black uppercase tracking-[0.2em] transition-all duration-500 ${activeTab === tab.id
                                             ? 'bg-zinc-900 text-white shadow-2xl scale-105'
                                             : 'text-zinc-400 hover:text-zinc-950'
                                             }`}
@@ -359,7 +359,7 @@ export default function VerificationPage() {
                                                 </p>
                                                 <button
                                                     onClick={() => setActiveTab('identity')}
-                                                    className="inline-flex items-center gap-2 px-6 py-4.5 bg-zinc-900 hover:bg-zinc-800 text-white text-[10px] font-black uppercase tracking-wider rounded-2xl transition-all mt-4"
+                                                    className="inline-flex items-center gap-2 px-6 py-4.5 bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-black uppercase tracking-wider rounded-2xl transition-all mt-4"
                                                 >
                                                     Verify Identity First <ArrowRight className="w-4 h-4" />
                                                 </button>
@@ -382,13 +382,13 @@ export default function VerificationPage() {
                                                 <div className="flex items-center justify-center gap-2 text-xs">
                                                     <button
                                                         onClick={() => setIntlIncome(false)}
-                                                        className={`px-4 py-2 rounded-full font-black uppercase tracking-widest text-[10px] transition-all ${!intlIncome ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500'}`}
+                                                        className={`px-4 py-2 rounded-full font-black uppercase tracking-widest text-xs transition-all ${!intlIncome ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500'}`}
                                                     >
                                                         {t('verification.intl.toggle.french', undefined, 'French documents')}
                                                     </button>
                                                     <button
                                                         onClick={() => setIntlIncome(true)}
-                                                        className={`px-4 py-2 rounded-full font-black uppercase tracking-widest text-[10px] transition-all ${intlIncome ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500'}`}
+                                                        className={`px-4 py-2 rounded-full font-black uppercase tracking-widest text-xs transition-all ${intlIncome ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500'}`}
                                                     >
                                                         {t('verification.intl.toggle.international', undefined, 'International documents')}
                                                     </button>
@@ -426,7 +426,7 @@ export default function VerificationPage() {
                                                 </p>
                                                 <button
                                                     onClick={() => setActiveTab('identity')}
-                                                    className="inline-flex items-center gap-2 px-6 py-4.5 bg-zinc-900 hover:bg-zinc-800 text-white text-[10px] font-black uppercase tracking-wider rounded-2xl transition-all mt-4"
+                                                    className="inline-flex items-center gap-2 px-6 py-4.5 bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-black uppercase tracking-wider rounded-2xl transition-all mt-4"
                                                 >
                                                     Verify Identity First <ArrowRight className="w-4 h-4" />
                                                 </button>
@@ -437,7 +437,7 @@ export default function VerificationPage() {
                                                     <div className="max-w-xl mx-auto space-y-8">
                                                         <div className="p-8 rounded-[2.5rem] bg-zinc-50 border border-zinc-100 space-y-6">
                                                             <div className="flex justify-between items-center pb-4 border-b border-zinc-200/50">
-                                                                <span className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">Registered Guarantor Type</span>
+                                                                <span className="text-xs font-black text-zinc-400 uppercase tracking-wider">Registered Guarantor Type</span>
                                                                 <span className="font-bold text-zinc-900 capitalize">
                                                                     {statusData.guarantor_type === 'visale' && 'Visale (Action Logement)'}
                                                                     {statusData.guarantor_type === 'garantme' && 'Garantme'}
@@ -446,9 +446,9 @@ export default function VerificationPage() {
                                                                 </span>
                                                             </div>
                                                             <div className="flex justify-between items-center pb-4 border-b border-zinc-200/50">
-                                                                <span className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">Status</span>
+                                                                <span className="text-xs font-black text-zinc-400 uppercase tracking-wider">Status</span>
                                                                 <div className="flex items-center gap-2">
-                                                                    <span className={`text-[10px] px-3 py-1 rounded-full font-bold uppercase tracking-wider ${
+                                                                    <span className={`text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider ${
                                                                         statusData.guarantor_status === 'verified' ? 'bg-emerald-50 text-emerald-700' :
                                                                         statusData.guarantor_status === 'submitted' ? 'bg-blue-50 text-blue-700' :
                                                                         statusData.guarantor_status === 'pending' ? 'bg-amber-50 text-amber-700' :
@@ -457,28 +457,28 @@ export default function VerificationPage() {
                                                                         {statusData.guarantor_status}
                                                                     </span>
                                                                     {statusData.guarantor_assurance === 'MEDIUM' && (
-                                                                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 font-bold uppercase tracking-wider">OCR verified</span>
+                                                                        <span className="text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 font-bold uppercase tracking-wider">OCR verified</span>
                                                                     )}
                                                                     {statusData.guarantor_assurance === 'DOCUMENT_SUBMITTED' && (
-                                                                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600 font-bold uppercase tracking-wider">Docs on file</span>
+                                                                        <span className="text-xs px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600 font-bold uppercase tracking-wider">Docs on file</span>
                                                                     )}
                                                                 </div>
                                                             </div>
                                                             {statusData.guarantor_type === 'visale' && statusData.visale_id && (
                                                                 <div className="flex justify-between items-center">
-                                                                    <span className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">Dossier ID</span>
+                                                                    <span className="text-xs font-black text-zinc-400 uppercase tracking-wider">Dossier ID</span>
                                                                     <span className="font-mono font-bold text-zinc-900">{statusData.visale_id}</span>
                                                                 </div>
                                                             )}
                                                             {statusData.guarantor_type === 'garantme' && statusData.garantme_ref && (
                                                                 <div className="flex justify-between items-center">
-                                                                    <span className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">Reference Code</span>
+                                                                    <span className="text-xs font-black text-zinc-400 uppercase tracking-wider">Reference Code</span>
                                                                     <span className="font-mono font-bold text-zinc-900">{statusData.garantme_ref}</span>
                                                                 </div>
                                                             )}
                                                             {statusData.guarantor_type === 'physical' && statusData.guarantor_data?.files && (
                                                                 <div className="space-y-3 pt-2">
-                                                                    <span className="text-[10px] font-black text-zinc-400 uppercase tracking-wider block">Files Verified</span>
+                                                                    <span className="text-xs font-black text-zinc-400 uppercase tracking-wider block">Files Verified</span>
                                                                     <div className="grid gap-2">
                                                                         {statusData.guarantor_data.files.map((file: any, index: number) => (
                                                                             <div key={index} className="flex justify-between items-center text-sm py-1 border-b border-zinc-100 last:border-0">

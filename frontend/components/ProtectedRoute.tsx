@@ -295,7 +295,7 @@ export default function ProtectedRoute({
                         <div className="absolute inset-0 rounded-full border-2 border-zinc-200" />
                         <div className="absolute inset-0 rounded-full border-2 border-t-zinc-950 animate-spin" />
                     </div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
+                    <p className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400">
                         {t('emailVerification.loading', undefined, 'Loading...')}
                     </p>
                 </div>
@@ -317,9 +317,9 @@ export default function ProtectedRoute({
                             </div>
                             <div className="flex-1 flex flex-col items-center justify-center space-y-4 relative z-10">
                                 <div className="w-48 h-12 bg-zinc-200/50 backdrop-blur-sm animate-pulse rounded-2xl" />
-                                <div className="w-96 h-6 bg-zinc-200/50 backdrop-blur-sm animate-pulse rounded-xl" />
+                                <div className="w-full max-w-96 h-6 bg-zinc-200/50 backdrop-blur-sm animate-pulse rounded-xl mx-4" />
                             </div>
-                            <div className="flex justify-between items-center w-full max-w-7xl mx-auto text-[10px] text-zinc-400 font-bold uppercase tracking-wider relative z-10">
+                            <div className="flex justify-between items-center w-full max-w-7xl mx-auto text-xs text-zinc-400 font-bold uppercase tracking-wider relative z-10">
                                 <span>Roomivo &copy; 2026</span>
                                 <span>Secured by Roomivo</span>
                             </div>
@@ -413,7 +413,7 @@ export default function ProtectedRoute({
 
                                             <form onSubmit={handleLoginSubmit} className="space-y-4">
                                                 <div className="space-y-1.5">
-                                                    <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider pl-1">
+                                                    <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider pl-1">
                                                         {t('auth.login.emailLabel', undefined, 'Email Address')}
                                                     </label>
                                                     <div className="relative">
@@ -434,7 +434,7 @@ export default function ProtectedRoute({
 
                                                 <div className="space-y-1.5">
                                                     <div className="flex justify-between items-center px-1">
-                                                        <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
+                                                        <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
                                                             {t('auth.login.passwordLabel', undefined, 'Password')}
                                                         </label>
                                                     </div>
@@ -476,7 +476,7 @@ export default function ProtectedRoute({
 
                                             <div className="relative flex py-2 items-center">
                                                 <div className="flex-grow border-t border-zinc-100"></div>
-                                                <span className="flex-shrink mx-4 text-zinc-300 text-[10px] font-black uppercase tracking-widest">
+                                                <span className="flex-shrink mx-4 text-zinc-300 text-xs font-black uppercase tracking-widest">
                                                     {t('auth.login.or', undefined, 'or')}
                                                 </span>
                                                 <div className="flex-grow border-t border-zinc-100"></div>
@@ -524,7 +524,7 @@ export default function ProtectedRoute({
                                                          signupStep === 2 ? t('auth.register.titles.step2', undefined, 'Basics First') :
                                                          t('auth.register.titles.step3', undefined, 'Secure Account')}
                                                     </h3>
-                                                    <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mt-1">
+                                                    <p className="text-xs font-black text-zinc-400 uppercase tracking-widest mt-1">
                                                         {t('auth.register.step', undefined, 'Step')} {signupStep} / 3
                                                     </p>
                                                 </div>
@@ -598,7 +598,7 @@ export default function ProtectedRoute({
                                                 /* STEP 2: BASIC INFO */
                                                 <div className="space-y-4">
                                                     <div className="space-y-1.5">
-                                                        <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider pl-1">
+                                                        <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider pl-1">
                                                             {t('auth.register.fullNameLabel', undefined, 'Full Name')}
                                                         </label>
                                                         <div className="relative">
@@ -616,7 +616,7 @@ export default function ProtectedRoute({
                                                     </div>
 
                                                     <div className="space-y-1.5">
-                                                        <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider pl-1">
+                                                        <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider pl-1">
                                                             {t('auth.register.emailLabel', undefined, 'Email Address')}
                                                         </label>
                                                         <div className="relative">
@@ -634,7 +634,7 @@ export default function ProtectedRoute({
                                                     </div>
 
                                                     <div className="space-y-1.5">
-                                                        <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider pl-1">
+                                                        <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider pl-1">
                                                             {t('auth.register.phoneLabel', undefined, 'Phone Number')}
                                                         </label>
                                                         <input
@@ -664,7 +664,7 @@ export default function ProtectedRoute({
                                                 /* STEP 3: SECURITY */
                                                 <form onSubmit={handleSignupSubmit} className="space-y-4">
                                                     <div className="space-y-1.5">
-                                                        <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider pl-1">
+                                                        <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider pl-1">
                                                             {t('auth.register.passwordLabel', undefined, 'Password')}
                                                         </label>
                                                         <div className="relative">
@@ -691,7 +691,7 @@ export default function ProtectedRoute({
                                                     {/* Password Strength Meter */}
                                                     {signupData.password && (
                                                         <div className="space-y-1.5 px-1">
-                                                            <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-wider text-zinc-400">
+                                                            <div className="flex justify-between items-center text-xs font-black uppercase tracking-wider text-zinc-400">
                                                                 <span>{t('auth.register.strength.label', undefined, 'Strength')}:</span>
                                                                 <span className="text-zinc-950">
                                                                     {strength < 40 ? t('auth.register.strength.weak', undefined, 'Weak') :
@@ -705,14 +705,14 @@ export default function ProtectedRoute({
                                                                     style={{ width: `${strength}%` }}
                                                                 />
                                                             </div>
-                                                            <p className="text-[10px] text-zinc-400 leading-normal">
+                                                            <p className="text-xs text-zinc-400 leading-normal">
                                                                 {t('auth.register.strength.info', undefined, 'Requires at least 8 characters, uppercase, number & symbol')}
                                                             </p>
                                                         </div>
                                                     )}
 
                                                     <div className="space-y-1.5">
-                                                        <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider pl-1">
+                                                        <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider pl-1">
                                                             {t('auth.register.confirmPasswordLabel', undefined, 'Confirm Password')}
                                                         </label>
                                                         <div className="relative">
@@ -754,7 +754,7 @@ export default function ProtectedRoute({
                                                                     <Check className={`w-3.5 h-3.5 text-white transition-transform ${signupData.gdprConsent ? 'scale-100' : 'scale-0'}`} />
                                                                 </div>
                                                             </div>
-                                                            <span className="text-[11px] text-zinc-500 leading-snug">
+                                                            <span className="text-xs text-zinc-500 leading-snug">
                                                                 {t('auth.register.gdpr', undefined, 'I accept the general terms, GDPR & CNIL privacy protection laws.')}
                                                             </span>
                                                         </label>
@@ -774,7 +774,7 @@ export default function ProtectedRoute({
                                                                     <Check className={`w-3.5 h-3.5 text-white transition-transform ${signupData.marketingConsent ? 'scale-100' : 'scale-0'}`} />
                                                                 </div>
                                                             </div>
-                                                            <span className="text-[11px] text-zinc-500 leading-snug">
+                                                            <span className="text-xs text-zinc-500 leading-snug">
                                                                 {t('auth.register.marketing', undefined, 'Send me regular market updates, legal guidelines and French rental news.')}
                                                             </span>
                                                         </label>
@@ -796,7 +796,7 @@ export default function ProtectedRoute({
 
                                             <div className="relative flex py-2 items-center">
                                                 <div className="flex-grow border-t border-zinc-100"></div>
-                                                <span className="flex-shrink mx-4 text-zinc-300 text-[10px] font-black uppercase tracking-widest">
+                                                <span className="flex-shrink mx-4 text-zinc-300 text-xs font-black uppercase tracking-widest">
                                                     {t('auth.login.or', undefined, 'or')}
                                                 </span>
                                                 <div className="flex-grow border-t border-zinc-100"></div>

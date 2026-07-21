@@ -53,21 +53,21 @@ export default function LandingFooter() {
             <div className="flex flex-wrap gap-8">
               <div className="flex items-center gap-3 text-zinc-400">
                 <ShieldCheck className="w-5 h-5 text-zinc-900" />
-                <span className="text-[10px] font-black uppercase tracking-widest">{t('landing.footer.secureConnection', undefined, 'Secure Connection')}</span>
+                <span className="text-xs font-black uppercase tracking-widest">{t('landing.footer.secureConnection', undefined, 'Secure Connection')}</span>
               </div>
               <div className="flex items-center gap-3 text-zinc-400">
                 <Lock className="w-5 h-5 text-zinc-900" />
-                <span className="text-[10px] font-black uppercase tracking-widest">{t('landing.footer.aesEncrypted', undefined, 'AES-256 Encrypted')}</span>
+                <span className="text-xs font-black uppercase tracking-widest">{t('landing.footer.aesEncrypted', undefined, 'AES-256 Encrypted')}</span>
               </div>
               <div className="flex items-center gap-3 text-zinc-400">
                 <Globe className="w-5 h-5 text-zinc-900" />
-                <span className="text-[10px] font-black uppercase tracking-widest">{t('landing.footer.gdprCompliant', undefined, 'GDPR Compliant')}</span>
+                <span className="text-xs font-black uppercase tracking-widest">{t('landing.footer.gdprCompliant', undefined, 'GDPR Compliant')}</span>
               </div>
             </div>
 
             {/* ─── Institutional endorsement (PÉPITE / SNEE / Ministère ESR) ─── */}
             <div className="mt-12">
-              <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-4">
+              <p className="text-xs font-black uppercase tracking-widest text-zinc-400 mb-4">
                 {t('landing.footer.backedBy', undefined, 'Soutenu par')}
               </p>
               <div className="flex flex-wrap items-center gap-8">
@@ -91,7 +91,7 @@ export default function LandingFooter() {
           
           {sections.map((section, i) => (
             <div key={i} className="col-span-1 lg:col-span-1">
-              <h4 className="font-black text-zinc-900 mb-8 uppercase tracking-[0.2em] text-[10px]">{section.title}</h4>
+              <h4 className="font-black text-zinc-900 mb-8 uppercase tracking-[0.2em] text-xs">{section.title}</h4>
               <ul className="space-y-5">
                 {section.links.map((link, j) => (
                   <li key={j}>
@@ -116,7 +116,7 @@ export default function LandingFooter() {
           ))}
         </div>
         
-        <div className="border-t border-zinc-100 pt-12 flex flex-col md:flex-row items-center justify-between gap-8 text-zinc-400 text-[10px] font-black tracking-[0.2em] uppercase">
+        <div className="border-t border-zinc-100 pt-12 flex flex-col md:flex-row items-center justify-between gap-8 text-zinc-400 text-xs font-black tracking-[0.2em] uppercase">
           <span>© {new Date().getFullYear()} Roomivo Platform. {t('globalFooter.rights', undefined, 'All rights reserved.')}</span>
           <div className="flex gap-8">
             <Link href="/legal/terms" className="hover:text-zinc-900 transition-colors">{t('landing.footer.termsLink', undefined, 'Terms')}</Link>

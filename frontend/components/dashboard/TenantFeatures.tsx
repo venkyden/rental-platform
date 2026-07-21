@@ -45,7 +45,7 @@ export default function TenantFeatures() {
                     
                     <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-10">
                         <div className="flex-1 space-y-6">
-                            <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.3em]">
+                            <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.3em]">
                                 <Sparkles className="w-3 h-3 mr-2" />
                                 {t('tenant.features.trust.badge', undefined, 'Trust Layer')}
                             </div>
@@ -58,7 +58,7 @@ export default function TenantFeatures() {
                         </div>
                         <button
                             onClick={() => router.push('/verification')}
-                            className="px-12 py-6 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.4em] rounded-3xl shadow-2xl shadow-zinc-900/40 hover:scale-105 active:scale-95 transition-all"
+                            className="px-12 py-6 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.4em] rounded-3xl shadow-2xl shadow-zinc-900/40 hover:scale-105 active:scale-95 transition-all"
                         >
                             {t('tenant.features.trust.cta', undefined, 'Get Verified')}
                         </button>
@@ -73,7 +73,7 @@ export default function TenantFeatures() {
                         <div className="absolute top-0 right-0 w-40 h-40 bg-zinc-100 rounded-full blur-[60px] opacity-20 -mr-20 -mt-20 group-hover:scale-150 transition-transform duration-1000" />
                         
                         <div className="flex items-center justify-between relative z-10">
-                            <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 flex items-center gap-3">
+                            <h3 className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400 flex items-center gap-3">
                                 <Zap className="w-4 h-4 text-zinc-900" /> {t('tenant.features.activity.title', undefined, 'Activity Hub')}
                             </h3>
                         </div>
@@ -88,8 +88,8 @@ export default function TenantFeatures() {
                                         {stat.icon}
                                     </div>
                                     <p className="text-4xl font-black text-zinc-900 tracking-tighter mb-2 italic">{stat.value}</p>
-                                    <p className="text-[10px] font-black text-zinc-900 uppercase tracking-widest">{stat.label}</p>
-                                    <p className="text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em] mt-2">{stat.sub}</p>
+                                    <p className="text-xs font-black text-zinc-900 uppercase tracking-widest">{stat.label}</p>
+                                    <p className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em] mt-2">{stat.sub}</p>
                                 </div>
                             ))}
                         </div>

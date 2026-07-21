@@ -80,7 +80,7 @@ function IdSelfieIllustration() {
             </div>
 
             <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full">
-                <span className="text-[8px] font-black text-white uppercase tracking-[0.25em]">Example</span>
+                <span className="text-xs font-black text-white uppercase tracking-[0.25em]">Example</span>
             </div>
         </div>
     );
@@ -369,7 +369,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                 {qrLoading && (
                     <div className="py-20 flex flex-col items-center">
                         <div className="w-16 h-16 border-4 border-zinc-900/20 border-t-zinc-900 rounded-full animate-spin mb-6" />
-                        <p className="text-zinc-400 font-black text-[10px] uppercase tracking-[0.4em] animate-pulse">
+                        <p className="text-zinc-400 font-black text-xs uppercase tracking-[0.4em] animate-pulse">
                             {t('dashboard.verification.verification.actions.generatingSession', undefined, 'Establishing Secure Link...')}
                         </p>
                     </div>
@@ -378,10 +378,10 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                 {!qrLoading && !qrSession && error && (
                     <div className="py-16 flex flex-col items-center text-center space-y-6">
                         <div className="p-4 rounded-2xl bg-zinc-900 text-white shadow-xl max-w-sm">
-                            <p className="text-[10px] font-black uppercase tracking-[0.3em]">{error}</p>
+                            <p className="text-xs font-black uppercase tracking-[0.3em]">{error}</p>
                         </div>
                         <button onClick={() => { setError(''); createQrSession(); }}
-                            className="px-6 py-3 bg-zinc-100 text-zinc-900 font-black rounded-2xl text-[10px] uppercase tracking-[0.3em] hover:bg-zinc-200 transition-colors">
+                            className="px-6 py-3 bg-zinc-100 text-zinc-900 font-black rounded-2xl text-xs uppercase tracking-[0.3em] hover:bg-zinc-200 transition-colors">
                             {t('common.actions.retry', undefined, 'Try Again')}
                         </button>
                     </div>
@@ -395,7 +395,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                                 <QRCodeSVG value={qrSession.captureUrl} size={240} level="H" includeMargin={false} />
                                 <div className="mt-8 flex items-center justify-center gap-3">
                                     <div className="w-2 h-2 rounded-full bg-zinc-900 animate-ping" />
-                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-900">
+                                    <span className="text-xs font-black uppercase tracking-[0.3em] text-zinc-900">
                                         {t('dashboard.verification.verification.status.live', undefined, 'Live Connection Active')}
                                     </span>
                                 </div>
@@ -404,7 +404,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
 
                         <div className="grid md:grid-cols-2 gap-10">
                             <motion.div whileHover={{ y: -8 }} className="glass-card !p-10 border-none shadow-xl">
-                                <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-900 mb-8">
+                                <h4 className="text-xs font-black uppercase tracking-[0.4em] text-zinc-900 mb-8">
                                     {t('dashboard.verification.verification.instructions.title', undefined, 'Instructions')}
                                 </h4>
                                 <ul className="space-y-6">
@@ -424,7 +424,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
 
                             <motion.div whileHover={{ y: -8 }} className="glass-card !p-10 flex flex-col justify-center border-none shadow-xl relative overflow-hidden group">
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-zinc-900/5 rounded-bl-[100%] group-hover:scale-110 transition-transform duration-700" />
-                                <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 mb-8">
+                                <h4 className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400 mb-8">
                                     {t('dashboard.verification.verification.status.title', undefined, 'Session Status')}
                                 </h4>
                                 <div className="flex items-center gap-6 py-6 px-8 rounded-3xl bg-zinc-50 mb-8 border border-zinc-100">
@@ -436,17 +436,17 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                                         <p className="text-lg font-black uppercase tracking-widest text-zinc-900 leading-none mb-1">
                                             {t('dashboard.verification.verification.status.awaiting', undefined, 'Awaiting Capture')}
                                         </p>
-                                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">
+                                        <p className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500">
                                             {t('dashboard.verification.verification.status.synced', undefined, 'Synchronized with Cloud')}
                                         </p>
                                     </div>
                                 </div>
                                 <div className="mt-auto flex items-center justify-between">
-                                    <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+                                    <p className="text-xs font-black text-zinc-400 uppercase tracking-widest">
                                         {t('dashboard.verification.verification.status.expiresAt', undefined, 'Expires at')} <span className="text-zinc-900">{new Date(qrSession.expiresAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                     </p>
                                     <button onClick={() => copyToClipboard(qrSession.captureUrl)}
-                                        className="text-[10px] font-black uppercase tracking-widest text-zinc-900 hover:text-zinc-700 transition-colors">
+                                        className="text-xs font-black uppercase tracking-widest text-zinc-900 hover:text-zinc-700 transition-colors">
                                         {t('dashboard.verification.verification.actions.copy', undefined, 'Copy Link')}
                                     </button>
                                 </div>
@@ -476,7 +476,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                 {qrLoading ? (
                     <div className="flex flex-col items-center gap-4">
                         <div className="w-12 h-12 border-4 border-zinc-900/20 border-t-zinc-900 rounded-full animate-spin" />
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">Loading...</p>
+                        <p className="text-xs font-black uppercase tracking-[0.3em] text-zinc-400">Loading...</p>
                     </div>
                 ) : (
                     <button onClick={createQrSession}
@@ -484,7 +484,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                         Start Verification
                     </button>
                 )}
-                {error && <p className="text-[10px] font-black uppercase tracking-[0.3em] text-red-500 mt-6">{error}</p>}
+                {error && <p className="text-xs font-black uppercase tracking-[0.3em] text-red-500 mt-6">{error}</p>}
             </div>
         );
     }
@@ -516,7 +516,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
 
                         {verificationType === 'property' && !propertyId && (
                             <div className="mb-8">
-                                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 block mb-2">
+                                <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400 block mb-2">
                                     {loadingProps ? 'Loading properties...' : 'Select Property'}
                                 </label>
                                 {properties.length > 0 ? (
@@ -533,7 +533,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
 
                         {/* Profile situation display */}
                         <div className="mb-8">
-                            <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 block mb-2">
+                            <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400 block mb-2">
                                 {t('dashboard.verification.verification.steps.detectedProfile', undefined, 'Current Profile Situation')}
                             </label>
                             <p className="text-sm font-black text-zinc-900 uppercase tracking-widest">
@@ -556,7 +556,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                             </p>
                         </div>
 
-                        <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 block mb-6">
+                        <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400 block mb-6">
                             {t('dashboard.verification.verification.steps.selectType', undefined, '1. Select Document Type')}
                         </label>
                         <select value={documentType} onChange={e => { setDocumentType(e.target.value); setFiles([]); }}
@@ -572,7 +572,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                     </motion.div>
 
                     <motion.div variants={itemVariants} className="glass-card !p-10 border-none shadow-2xl">
-                        <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 block mb-8">
+                        <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400 block mb-8">
                             {t('dashboard.verification.verification.steps.secureCapture', undefined, '2. Upload Document')}
                         </label>
                         <div className="relative group">
@@ -585,7 +585,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                                     <p className="text-sm font-black uppercase tracking-widest text-zinc-900 mb-2">
                                         {files.length > 0 ? files[0].name : 'Select or Drop Document'}
                                     </p>
-                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">PDF, JPG, or PNG max 10MB</p>
+                                    <p className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400">PDF, JPG, or PNG max 10MB</p>
                                 </div>
                             </div>
                         </div>
@@ -594,7 +594,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                     {error && (
                         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
                             className="p-6 rounded-2xl bg-zinc-900 text-white text-center shadow-2xl">
-                            <p className="text-[10px] font-black uppercase tracking-[0.3em]">{error}</p>
+                            <p className="text-xs font-black uppercase tracking-[0.3em]">{error}</p>
                         </motion.div>
                     )}
 

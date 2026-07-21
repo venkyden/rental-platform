@@ -194,7 +194,7 @@ export default function DashboardPage() {
                             <div className="relative z-10 px-12 py-20 sm:px-20 sm:py-24 flex flex-col sm:flex-row items-center gap-12">
                                 <motion.div 
                                     whileHover={{ scale: 1.05, rotate: 5 }}
-                                    className="w-40 h-40 bg-zinc-900 rounded-[2.5rem] flex items-center justify-center text-6xl text-white font-black shadow-2xl active:scale-95 transition-all cursor-default relative overflow-hidden"
+                                    className="w-40 h-40 bg-zinc-900 rounded-[2.5rem] flex items-center justify-center text-4xl sm:text-6xl text-white font-black shadow-2xl active:scale-95 transition-all cursor-default relative overflow-hidden"
                                 >
                                     <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
                                     {user.full_name?.charAt(0) || 'U'}
@@ -204,7 +204,7 @@ export default function DashboardPage() {
                                         <h2 className="text-5xl sm:text-7xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-zinc-900 to-zinc-600 uppercase leading-[0.9]">
                                             {t('dashboard.landlord.welcome', { name: user.full_name?.split(' ')[0] || user.email?.split('@')[0] }, undefined)}
                                         </h2>
-                                        <div className="inline-flex items-center self-center sm:self-start px-4 py-1.5 rounded-full bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.2em]">
+                                        <div className="inline-flex items-center self-center sm:self-start px-4 py-1.5 rounded-full bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.2em]">
                                             {user.role}
                                         </div>
                                     </div>
@@ -236,13 +236,13 @@ export default function DashboardPage() {
                                     ].map((stat, i) => (
                                         <motion.div key={i} variants={itemVariants} className="glass-card !p-10 rounded-[2.5rem] hover:translate-y-[-8px] transition-all duration-500 group border-zinc-100 shadow-xl">
                                             <div className="flex items-center justify-between mb-8">
-                                                <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em]">{stat.label}</h3>
+                                                <h3 className="text-xs font-black text-zinc-400 uppercase tracking-[0.3em]">{stat.label}</h3>
                                                 <div className={`p-2 rounded-xl bg-zinc-50 ${stat.color} group-hover:scale-110 transition-transform`}>
                                                     {stat.icon}
                                                 </div>
                                             </div>
                                             <p className={`text-5xl font-black ${stat.color} mb-4 tracking-tighter`}>{stat.value}</p>
-                                            <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest">{stat.sub}</p>
+                                            <p className="text-xs text-zinc-500 font-black uppercase tracking-widest">{stat.sub}</p>
                                         </motion.div>
                                     ))}
                                 </>
@@ -254,7 +254,7 @@ export default function DashboardPage() {
                     <motion.div variants={itemVariants} className="space-y-10">
                         <div className="flex items-center gap-4 px-4">
                             <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-zinc-200 to-transparent" />
-                            <h2 className="text-[10px] font-black tracking-[0.4em] uppercase text-zinc-400 whitespace-nowrap">
+                            <h2 className="text-xs font-black tracking-[0.4em] uppercase text-zinc-400 whitespace-nowrap">
                                 {t('dashboard.quickActions.title', undefined, 'Quick Actions')}
                             </h2>
                             <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-zinc-200 to-transparent" />
@@ -289,12 +289,12 @@ export default function DashboardPage() {
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                         <motion.div variants={itemVariants} className="lg:col-span-2 space-y-8">
                             <div className="flex items-center justify-between px-6">
-                                <h3 className="text-[10px] font-black tracking-[0.4em] uppercase text-zinc-400 flex items-center gap-4">
+                                <h3 className="text-xs font-black tracking-[0.4em] uppercase text-zinc-400 flex items-center gap-4">
                                     <Mail className="w-4 h-4" /> {t('dashboard.inbox.title', undefined, undefined)}
                                 </h3>
                                 <button
                                     onClick={() => router.push('/inbox')}
-                                    className="px-6 py-2 bg-zinc-100 text-[10px] font-black rounded-full uppercase tracking-[0.2em] hover:bg-zinc-900 hover:text-white transition-all active:scale-95 shadow-sm"
+                                    className="px-6 py-2 bg-zinc-100 text-xs font-black rounded-full uppercase tracking-[0.2em] hover:bg-zinc-900 hover:text-white transition-all active:scale-95 shadow-sm"
                                 >
                                     {t('dashboard.inbox.viewAll', undefined, undefined)}
                                 </button>
@@ -318,13 +318,13 @@ export default function DashboardPage() {
                                                         <span className="font-black text-xl text-zinc-900 truncate uppercase tracking-tight">
                                                             {conv.other_party_name}
                                                         </span>
-                                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest whitespace-nowrap ml-4">
+                                                        <span className="text-xs font-black text-zinc-400 uppercase tracking-widest whitespace-nowrap ml-4">
                                                             {new Date(conv.last_message_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}
                                                         </span>
                                                     </div>
                                                     <div className="flex items-center gap-3 mb-3">
                                                         <div className="w-1.5 h-1.5 rounded-full bg-zinc-900" />
-                                                        <p className="text-[10px] text-zinc-900 font-black uppercase tracking-widest truncate">
+                                                        <p className="text-xs text-zinc-900 font-black uppercase tracking-widest truncate">
                                                             {conv.property_title}
                                                         </p>
                                                     </div>
@@ -353,7 +353,7 @@ export default function DashboardPage() {
                             {/* Verification Progress - High Fidelity */}
                             <div className="glass-card !p-10 shadow-2xl border-white/40 rounded-[2.5rem] relative overflow-hidden">
                                 <div className="absolute top-0 left-0 w-full h-1 bg-zinc-900" />
-                                <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 mb-10 flex items-center gap-3">
+                                <h3 className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400 mb-10 flex items-center gap-3">
                                     <ShieldCheck className="w-4 h-4 text-zinc-900" /> {t('dashboard.progress', undefined, 'Compliance')}
                                 </h3>
                                 <div className="space-y-10">
@@ -368,19 +368,19 @@ export default function DashboardPage() {
                                                     {item.verified ? <CheckCircle2 className="w-5 h-5" /> : <Clock className="w-5 h-5" />}
                                                 </div>
                                                 <div>
-                                                    <p className="text-[10px] font-black text-zinc-900 uppercase tracking-widest">{item.label}</p>
-                                                    <p className={`text-[9px] font-black uppercase tracking-[0.2em] mt-1.5 ${item.verified ? 'text-zinc-900' : 'text-zinc-400'}`}>
+                                                    <p className="text-xs font-black text-zinc-900 uppercase tracking-widest">{item.label}</p>
+                                                    <p className={`text-xs font-black uppercase tracking-[0.2em] mt-1.5 ${item.verified ? 'text-zinc-900' : 'text-zinc-400'}`}>
                                                         {item.verified ? t('dashboard.complete', undefined, 'Verified') : t('dashboard.pending', undefined, 'Awaiting')}
                                                     </p>
                                                 </div>
                                             </div>
                                             {item.resend && (
-                                                <button onClick={handleResendVerification} disabled={resendingEmail} className="px-4 py-1.5 bg-zinc-900 text-white text-[9px] font-black rounded-lg uppercase tracking-widest hover:scale-105 active:scale-95 transition-all">
+                                                <button onClick={handleResendVerification} disabled={resendingEmail} className="px-4 py-1.5 bg-zinc-900 text-white text-xs font-black rounded-lg uppercase tracking-widest hover:scale-105 active:scale-95 transition-all">
                                                     {resendingEmail ? '...' : t('dashboard.verification.resend', undefined, 'Resend')}
                                                 </button>
                                             )}
                                             {item.start && (
-                                                <button onClick={() => router.push('/verification')} className="px-4 py-1.5 bg-zinc-900 text-white text-[9px] font-black rounded-lg uppercase tracking-widest hover:scale-105 active:scale-95 transition-all">
+                                                <button onClick={() => router.push('/verification')} className="px-4 py-1.5 bg-zinc-900 text-white text-xs font-black rounded-lg uppercase tracking-widest hover:scale-105 active:scale-95 transition-all">
                                                     {t('dashboard.verification.start', undefined, 'Fix')}
                                                 </button>
                                             )}
@@ -393,7 +393,7 @@ export default function DashboardPage() {
                             <div className="glass-card !p-12 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.3)] bg-zinc-900 text-white border-none rounded-[3rem] relative overflow-hidden group">
                                  <div className="absolute top-0 right-0 w-40 h-40 bg-zinc-100/10 rounded-full blur-[60px] -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-1000" />
                                 
-                                <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500 mb-12">{t('dashboard.stats.trustScore', undefined, undefined)}</h3>
+                                <h3 className="text-xs font-black uppercase tracking-[0.4em] text-zinc-500 mb-12">{t('dashboard.stats.trustScore', undefined, undefined)}</h3>
                                 <div className="flex flex-col items-center">
                                     <div className="relative w-48 h-48">
                                         <svg className="transform -rotate-90 w-full h-full">
@@ -415,11 +415,11 @@ export default function DashboardPage() {
                                             <motion.span 
                                                 initial={{ scale: 0.5, opacity: 0 }}
                                                 animate={{ scale: 1, opacity: 1 }}
-                                                className="text-7xl font-black tracking-tighter"
+                                                className="text-5xl sm:text-7xl font-black tracking-tighter"
                                             >
                                                 {user.trust_score}
                                             </motion.span>
-                                            <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] mt-2">
+                                            <span className="text-xs font-black text-zinc-500 uppercase tracking-[0.3em] mt-2">
                                                 {t('dashboard.points', undefined, 'Score')}
                                             </span>
                                         </div>
@@ -431,7 +431,7 @@ export default function DashboardPage() {
                                         {user.trust_score < 100 && (
                                             <button
                                                 onClick={() => router.push('/verification')}
-                                                className="w-full py-5 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl shadow-2xl shadow-zinc-900/40 hover:scale-105 active:scale-95 transition-all"
+                                                className="w-full py-5 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.3em] rounded-2xl shadow-2xl shadow-zinc-900/40 hover:scale-105 active:scale-95 transition-all"
                                             >
                                                 {t('dashboard.stats.improve', undefined, undefined)}
                                             </button>

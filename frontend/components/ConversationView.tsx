@@ -214,18 +214,18 @@ export default function ConversationView({ conversationId, onClose, onArchive }:
                 <div className="flex items-center gap-8">
                     <div className="flex items-center gap-3">
                         <div className="w-2 h-2 rounded-full bg-zinc-900" />
-                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{t('conversation.landlord', undefined, 'Landlord')}:</span>
-                        <span className="text-[11px] font-black text-zinc-900 uppercase tracking-tight">{conversation.landlord_name}</span>
+                        <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">{t('conversation.landlord', undefined, 'Landlord')}:</span>
+                        <span className="text-xs font-black text-zinc-900 uppercase tracking-tight">{conversation.landlord_name}</span>
                     </div>
                     <div className="flex items-center gap-3">
                         <div className="w-2 h-2 rounded-full bg-zinc-400" />
-                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{t('conversation.tenant', undefined, 'Tenant')}:</span>
-                        <span className="text-[11px] font-black text-zinc-900 uppercase tracking-tight">{conversation.tenant_name}</span>
+                        <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">{t('conversation.tenant', undefined, 'Tenant')}:</span>
+                        <span className="text-xs font-black text-zinc-900 uppercase tracking-tight">{conversation.tenant_name}</span>
                     </div>
                 </div>
                 <Link
                     href={`/properties/${conversation.property_id}`}
-                    className="text-[10px] font-black text-zinc-900 uppercase tracking-widest hover:text-zinc-600 transition-colors flex items-center gap-2 group"
+                    className="text-xs font-black text-zinc-900 uppercase tracking-widest hover:text-zinc-600 transition-colors flex items-center gap-2 group"
                 >
                     {t('conversation.viewProperty', undefined, 'View Property')} 
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -238,7 +238,7 @@ export default function ConversationView({ conversationId, onClose, onArchive }:
                     <div key={date} className="space-y-10">
                         {/* Date separator */}
                         <div className="flex items-center justify-center">
-                            <div className="px-6 py-2 bg-white text-zinc-400 text-[10px] font-black uppercase tracking-[0.3em] rounded-full shadow-sm border border-zinc-100">
+                            <div className="px-6 py-2 bg-white text-zinc-400 text-xs font-black uppercase tracking-[0.3em] rounded-full shadow-sm border border-zinc-100">
                                 {formatDate(msgs[0].created_at)}
                             </div>
                         </div>
@@ -266,7 +266,7 @@ export default function ConversationView({ conversationId, onClose, onArchive }:
                                         >
                                             {/* Sender name for received messages */}
                                             {!isOwn && !isSystemType && (
-                                                <div className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-3">
+                                                <div className="text-xs font-black text-zinc-400 uppercase tracking-widest mb-3">
                                                     {msg.sender_name}
                                                 </div>
                                             )}
@@ -285,7 +285,7 @@ export default function ConversationView({ conversationId, onClose, onArchive }:
                                                             href={msg.metadata.download_url}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
-                                                            className={`flex items-center gap-3 w-fit px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                                                            className={`flex items-center gap-3 w-fit px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${
                                                                 isOwn 
                                                                 ? 'bg-white/10 hover:bg-white/20 text-white' 
                                                                 : 'bg-zinc-900 text-white shadow-lg shadow-zinc-900/20 hover:scale-105'
@@ -299,7 +299,7 @@ export default function ConversationView({ conversationId, onClose, onArchive }:
                                             </div>
 
                                             {/* Timestamp */}
-                                            <div className={`text-[9px] mt-4 font-black uppercase tracking-widest flex items-center gap-2 ${isOwn ? 'text-zinc-400 justify-end' : 'text-zinc-400'}`}>
+                                            <div className={`text-xs mt-4 font-black uppercase tracking-widest flex items-center gap-2 ${isOwn ? 'text-zinc-400 justify-end' : 'text-zinc-400'}`}>
                                                 {formatTime(msg.created_at)}
                                                 {isOwn && msg.is_read && (
                                                     <CheckCheck className="w-3 h-3 text-zinc-900" />

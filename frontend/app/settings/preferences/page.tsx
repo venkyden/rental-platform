@@ -48,7 +48,7 @@ function PreferenceCard({ title, icon: Icon, value, onEdit, isCurrency, isSurfac
                         <Icon className="w-5 h-5 text-zinc-900" />
                     </div>
                     <div>
-                        <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">{title}</h3>
+                        <h3 className="text-xs font-black text-zinc-400 uppercase tracking-widest mb-1">{title}</h3>
                         <p className="text-sm font-black text-zinc-900 uppercase tracking-wider truncate max-w-[200px]">{displayValue}</p>
                     </div>
                 </div>
@@ -151,9 +151,9 @@ function EditModal({ isOpen, title, currentValue, options, type, min, max, unit,
                                         className="w-full h-2 bg-zinc-100 rounded-full appearance-none cursor-pointer accent-zinc-900"
                                     />
                                     <div className="flex justify-between mt-6">
-                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{unit === '€' ? unit : ''}{min}{unit !== '€' ? unit : ''}</span>
+                                        <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">{unit === '€' ? unit : ''}{min}{unit !== '€' ? unit : ''}</span>
                                         <span className="text-2xl font-black text-zinc-900">{unit === '€' ? unit : ''}{value || min}{unit !== '€' ? unit : ''}</span>
-                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{unit === '€' ? unit : ''}{max}{unit !== '€' ? unit : ''}+</span>
+                                        <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">{unit === '€' ? unit : ''}{max}{unit !== '€' ? unit : ''}+</span>
                                     </div>
                                 </div>
                             )}
@@ -169,10 +169,10 @@ function EditModal({ isOpen, title, currentValue, options, type, min, max, unit,
                         </div>
 
                         <div className="grid grid-cols-2 gap-4 mt-10">
-                            <button onClick={onClose} className="py-4 bg-zinc-100 text-zinc-900 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-zinc-200 transition-all">
+                            <button onClick={onClose} className="py-4 bg-zinc-100 text-zinc-900 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-zinc-200 transition-all">
                                 {t('common.cancel')}
                             </button>
-                            <button onClick={handleSave} className="py-4 bg-zinc-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-zinc-900/20 hover:scale-105 transition-all">
+                            <button onClick={handleSave} className="py-4 bg-zinc-900 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-zinc-900/20 hover:scale-105 transition-all">
                                 {t('common.save')}
                             </button>
                         </div>
@@ -271,7 +271,7 @@ export default function SettingsPreferencesPage() {
                                 <div key={tab.id} className="flex flex-row md:flex-col shrink-0">
                                     <button
                                         onClick={() => router.push(tab.path)}
-                                        className={`flex items-center gap-3 px-5 md:px-6 py-3 md:py-4 rounded-full md:rounded-[1.5rem] text-[10px] md:text-sm font-black uppercase tracking-widest transition-all duration-500 whitespace-nowrap ${
+                                        className={`flex items-center gap-3 px-5 md:px-6 py-3 md:py-4 rounded-full md:rounded-[1.5rem] text-xs md:text-sm font-black uppercase tracking-widest transition-all duration-500 whitespace-nowrap ${
                                             tab.id === 'preferences' 
                                             ? 'bg-zinc-900 text-white shadow-xl scale-100' 
                                             : 'text-zinc-400 hover:text-zinc-600'
@@ -284,7 +284,7 @@ export default function SettingsPreferencesPage() {
                                     {tab.id === 'preferences' && (
                                         <div className="hidden md:flex px-6 py-4 flex-col gap-4">
                                             <button 
-                                                className="text-[10px] font-black uppercase tracking-widest text-left text-zinc-900"
+                                                className="text-xs font-black uppercase tracking-widest text-left text-zinc-900"
                                             >
                                                 {t('settings.preferences.matchingCriteria')}
                                             </button>
@@ -303,7 +303,7 @@ export default function SettingsPreferencesPage() {
                                 
                                 <div className="space-y-12">
                                     <section>
-                                        <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                                        <h3 className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
                                             <User className="w-3 h-3" /> {t('settings.preferences.identity')}
                                         </h3>
                                         <div className="grid gap-4 sm:grid-cols-2">
@@ -316,7 +316,7 @@ export default function SettingsPreferencesPage() {
                                     {isTenant && (
                                         <>
                                             <section>
-                                                <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                                                <h3 className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
                                                     <DollarSign className="w-3 h-3" /> {t('settings.preferences.housing')}
                                                 </h3>
                                                 <div className="grid gap-4 sm:grid-cols-2">
@@ -327,7 +327,7 @@ export default function SettingsPreferencesPage() {
                                             </section>
 
                                             <section>
-                                                <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                                                <h3 className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
                                                     <MapPin className="w-3 h-3" /> {t('settings.preferences.location')}
                                                 </h3>
                                                 <div className="grid gap-4 sm:grid-cols-2">
@@ -337,7 +337,7 @@ export default function SettingsPreferencesPage() {
                                             </section>
 
                                             <section>
-                                                <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                                                <h3 className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
                                                      <Sparkles className="w-3 h-3" /> {t('settings.preferences.amenities')}
                                                  </h3>
                                                  <div className="grid gap-4">
@@ -346,7 +346,7 @@ export default function SettingsPreferencesPage() {
                                              </section>
 
                                              <section>
-                                                 <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                                                 <h3 className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
                                                      <DollarSign className="w-3 h-3" /> {t('settings.preferences.caf')}
                                                  </h3>
                                                  <div className="grid gap-4 sm:grid-cols-2">
@@ -359,7 +359,7 @@ export default function SettingsPreferencesPage() {
                                     {(isLandlord || isAgency) && (
                                         <>
                                             <section>
-                                                <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                                                <h3 className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
                                                     <Heart className="w-3 h-3" /> {t('settings.preferences.tenant')}
                                                 </h3>
                                                 <div className="grid gap-4 sm:grid-cols-2">
@@ -398,7 +398,7 @@ export default function SettingsPreferencesPage() {
                                             {isLandlord && (
                                                 <>
                                                     <section>
-                                                        <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                                                        <h3 className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
                                                             <Heart className="w-3 h-3" /> {t('settings.preferences.tenantCriteria', undefined, 'Target Tenant')}
                                                         </h3>
                                                         <div className="grid gap-4 sm:grid-cols-2">
@@ -408,7 +408,7 @@ export default function SettingsPreferencesPage() {
                                                     </section>
 
                                                     <section>
-                                                        <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                                                        <h3 className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
                                                             <ShieldCheck className="w-3 h-3" /> {t('settings.preferences.requirements')}
                                                         </h3>
                                                         <div className="grid gap-4 sm:grid-cols-2">
@@ -418,7 +418,7 @@ export default function SettingsPreferencesPage() {
                                                     </section>
 
                                                     <section>
-                                                        <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                                                        <h3 className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
                                                             <DollarSign className="w-3 h-3" /> {t('settings.preferences.caf')}
                                                         </h3>
                                                         <div className="grid gap-4 sm:grid-cols-2">
@@ -429,7 +429,7 @@ export default function SettingsPreferencesPage() {
                                             )}
 
                                             <section>
-                                                <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                                                <h3 className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
                                                     <Loader2 className="w-3 h-3" /> {t('settings.preferences.urgency', undefined, 'Urgency')}
                                                 </h3>
                                                 <div className="grid gap-4 sm:grid-cols-2">
@@ -476,7 +476,7 @@ export default function SettingsPreferencesPage() {
                 <div className="fixed inset-0 bg-zinc-950/20 backdrop-blur-sm flex items-center justify-center z-[200]">
                     <div className="bg-white rounded-2xl p-6 shadow-2xl flex items-center gap-4">
                         <Loader2 className="w-5 h-5 animate-spin text-zinc-900" />
-                        <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t('settings.preferences.updating', undefined, 'Updating...')}</p>
+                        <p className="text-xs font-black uppercase tracking-widest text-zinc-500">{t('settings.preferences.updating', undefined, 'Updating...')}</p>
                     </div>
                 </div>
             )}

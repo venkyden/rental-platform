@@ -150,7 +150,7 @@ export default function DisputeDetailPage() {
                         <ChevronLeft className="w-5 h-5" />
                         <span className="text-sm font-bold">{t('disputes.detail.back', undefined, undefined)}</span>
                     </button>
-                    <div className={`px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest border border-current ${getStatusStyles(dispute.status)}`}>
+                    <div className={`px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-widest border border-current ${getStatusStyles(dispute.status)}`}>
                         {getStatusLabel(dispute.status)}
                     </div>
                 </div>
@@ -221,7 +221,7 @@ export default function DisputeDetailPage() {
                                         <div className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center group-hover:scale-110 transition-transform">
                                             <Camera className="w-5 h-5 text-zinc-500" />
                                         </div>
-                                        <span className="text-[10px] font-bold text-zinc-400 uppercase">{t('disputes.detail.addPhoto', undefined, undefined)}</span>
+                                        <span className="text-xs font-bold text-zinc-400 uppercase">{t('disputes.detail.addPhoto', undefined, undefined)}</span>
                                     </button>
                                     <input 
                                         ref={extraInputRef} type="file" accept="image/*" capture="environment" className="hidden" 
@@ -269,7 +269,7 @@ export default function DisputeDetailPage() {
                                             </a>
                                         ))}
                                     </div>
-                                    <div className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                                    <div className="text-xs font-bold uppercase tracking-widest text-zinc-400">
                                         {t('disputes.detail.submittedOn', { date: new Date(dispute.responded_at).toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US', { month: 'long', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' } as any) }, undefined)}
                                     </div>
                                 </div>
@@ -349,7 +349,7 @@ export default function DisputeDetailPage() {
                                                 </div>
                                                 <div>
                                                     <div className="text-xs font-bold tracking-tight">{t(`disputes.detail.steps.${step.id}.label` as any, undefined, undefined)}</div>
-                                                    <div className="text-[10px] text-zinc-400">{t(`disputes.detail.steps.${step.id}.desc` as any, undefined, undefined)}</div>
+                                                    <div className="text-xs text-zinc-400">{t(`disputes.detail.steps.${step.id}.desc` as any, undefined, undefined)}</div>
                                                 </div>
                                             </div>
                                         );
@@ -380,7 +380,7 @@ export default function DisputeDetailPage() {
 
                         {dispute.mediation_redirect_url && (
                             <div className="mt-6 pt-6 border-t border-white/10">
-                                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-3">{t('disputes.detail.recommendedAction', undefined, undefined)}</p>
+                                <p className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-3">{t('disputes.detail.recommendedAction', undefined, undefined)}</p>
                                 <a 
                                     href={dispute.mediation_redirect_url} 
                                     target="_blank" 
@@ -390,7 +390,7 @@ export default function DisputeDetailPage() {
                                     <span>{t('disputes.detail.proceedMediation', undefined, undefined)}</span>
                                     <ExternalLink className="w-4 h-4" />
                                 </a>
-                                <p className="text-[9px] text-zinc-500 mt-3 text-center opacity-80 uppercase tracking-tighter">
+                                <p className="text-xs text-zinc-500 mt-3 text-center opacity-80 uppercase tracking-tighter">
                                     {t('disputes.detail.mediationPlatform', undefined, undefined)}
                                 </p>
                             </div>
@@ -399,8 +399,8 @@ export default function DisputeDetailPage() {
 
                     {/* Legal Context */}
                     <section className="bg-zinc-100 rounded-[2rem] p-8 border border-zinc-200">
-                        <h4 className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-zinc-400 mb-4">{t('disputes.detail.legalDisclaimerTitle', undefined, undefined)}</h4>
-                        <p className="text-[10px] text-zinc-500 leading-relaxed uppercase tracking-tighter">
+                        <h4 className="text-xs font-extrabold uppercase tracking-[0.2em] text-zinc-400 mb-4">{t('disputes.detail.legalDisclaimerTitle', undefined, undefined)}</h4>
+                        <p className="text-xs text-zinc-500 leading-relaxed uppercase tracking-tighter">
                             {t('disputes.detail.legalDisclaimerDesc', undefined, undefined)}
                         </p>
                     </section>

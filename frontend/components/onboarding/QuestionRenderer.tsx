@@ -163,7 +163,7 @@ export default function QuestionRenderer({
                             <MapPin className="w-5 h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">Confirmed Location</p>
+                            <p className="text-xs font-black text-zinc-400 uppercase tracking-widest mb-1">Confirmed Location</p>
                             <p className="text-xl font-bold text-zinc-900 truncate leading-tight">
                                 {selectedAddress.display}
                             </p>
@@ -188,7 +188,7 @@ export default function QuestionRenderer({
                     }
                 }}
                 disabled={!selectedAddress}
-                className="w-full py-8 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.5em] rounded-[2rem] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.2)] disabled:opacity-30 transition-all flex items-center justify-center gap-4 group"
+                className="w-full py-8 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.5em] rounded-[2rem] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.2)] disabled:opacity-30 transition-all flex items-center justify-center gap-4 group"
             >
                 {t('common.continue', undefined, 'Continue')}
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -232,7 +232,7 @@ export default function QuestionRenderer({
                     >
                         <div className="p-10 bg-zinc-50 rounded-[3rem] border border-zinc-100 shadow-inner space-y-8">
                             <div className="flex items-center justify-between mb-2">
-                                <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] flex items-center gap-2">
+                                <h3 className="text-xs font-black text-zinc-400 uppercase tracking-[0.3em] flex items-center gap-2">
                                     <Building2 className="w-4 h-4" />
                                     Manual Entry
                                 </h3>
@@ -269,7 +269,7 @@ export default function QuestionRenderer({
                                     }
                                 }}
                                 disabled={!manualUniName.trim() || !manualUniCity.trim()}
-                                className="w-full py-6 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl transition-all disabled:opacity-30"
+                                className="w-full py-6 bg-zinc-900 text-white text-xs font-black uppercase tracking-widest rounded-2xl shadow-xl transition-all disabled:opacity-30"
                             >
                                 {t('common.confirm')}
                             </motion.button>
@@ -313,7 +313,7 @@ export default function QuestionRenderer({
                     <div className="absolute top-6 left-6 right-6 flex items-center justify-center pointer-events-none">
                         <div className="px-6 py-3 bg-white/90 backdrop-blur shadow-xl rounded-full border border-zinc-100 flex items-center gap-3">
                             <div className="w-2 h-2 bg-zinc-900 rounded-full animate-pulse" />
-                            <span className="text-[10px] font-black text-zinc-900 uppercase tracking-widest">Interactive Selection</span>
+                            <span className="text-xs font-black text-zinc-900 uppercase tracking-widest">Interactive Selection</span>
                         </div>
                     </div>
                 </div>
@@ -321,8 +321,8 @@ export default function QuestionRenderer({
                 <div className="bg-zinc-50 p-10 rounded-[3rem] border border-zinc-100 shadow-inner">
                     <div className="flex justify-between items-end mb-10">
                         <div>
-                            <h3 className="text-[10px] font-black text-zinc-900 uppercase tracking-[0.3em] mb-2">{t('onboarding.radius.areaSize', undefined, 'Search Area Radius')}</h3>
-                            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{t('onboarding.radius.commuteDesc', undefined, 'Maximum commute distance')}</p>
+                            <h3 className="text-xs font-black text-zinc-900 uppercase tracking-[0.3em] mb-2">{t('onboarding.radius.areaSize', undefined, 'Search Area Radius')}</h3>
+                            <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest">{t('onboarding.radius.commuteDesc', undefined, 'Maximum commute distance')}</p>
                         </div>
                         <div className="text-4xl font-black text-zinc-900 tracking-tighter">
                             {mapRadius >= 1000 ? `${+(mapRadius / 1000).toFixed(1)}km` : `${mapRadius}m`}
@@ -337,7 +337,7 @@ export default function QuestionRenderer({
                         onChange={(e) => setMapRadius(Number(e.target.value))}
                         className="w-full h-1.5 bg-zinc-200 rounded-full appearance-none cursor-pointer accent-zinc-900"
                     />
-                    <div className="flex justify-between text-[9px] font-black text-zinc-300 mt-6 uppercase tracking-[0.5em]">
+                    <div className="flex justify-between text-xs font-black text-zinc-300 mt-6 uppercase tracking-[0.5em]">
                         <span>500m</span>
                         <span>20km</span>
                     </div>
@@ -347,7 +347,7 @@ export default function QuestionRenderer({
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => onAnswerAction({ lat: currentLat, lng: currentLng, radius: mapRadius })}
-                    className="w-full py-8 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.5em] rounded-[2rem] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.2)] transition-all"
+                    className="w-full py-8 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.5em] rounded-[2rem] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.2)] transition-all"
                 >
                     {t('common.confirm_area', undefined, 'Confirm Search Area')}
                 </motion.button>
@@ -381,15 +381,15 @@ export default function QuestionRenderer({
                     />
                     
                     <div className="flex justify-between mt-8">
-                        <span className="text-[10px] font-black text-zinc-300 uppercase tracking-widest">{question.min}{question.unit}</span>
-                        <span className="text-[10px] font-black text-zinc-300 uppercase tracking-widest">{question.max}{question.unit}+</span>
+                        <span className="text-xs font-black text-zinc-300 uppercase tracking-widest">{question.min}{question.unit}</span>
+                        <span className="text-xs font-black text-zinc-300 uppercase tracking-widest">{question.max}{question.unit}+</span>
                     </div>
                 </div>
                 <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => onAnswerAction(value)}
-                    className="w-full py-8 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.5em] rounded-[2rem] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.2)]"
+                    className="w-full py-8 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.5em] rounded-[2rem] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.2)]"
                 >
                     {t('common.next')}
                 </motion.button>
@@ -420,7 +420,7 @@ export default function QuestionRenderer({
                                 : 'bg-white border border-zinc-100 text-zinc-400 hover:border-zinc-300'
                             }`}
                         >
-                            <span className={`text-[10px] font-black uppercase tracking-[0.2em] relative z-10 transition-colors ${isSelected ? 'text-white' : 'group-hover:text-zinc-900'}`}>
+                            <span className={`text-xs font-black uppercase tracking-[0.2em] relative z-10 transition-colors ${isSelected ? 'text-white' : 'group-hover:text-zinc-900'}`}>
                                 {(() => {
                                     const translationUserType = userType === 'agency' ? 'landlord' : userType;
                                     const labelKey = option.label.startsWith('options.') 
@@ -443,7 +443,7 @@ export default function QuestionRenderer({
                 whileTap={{ scale: 0.98 }}
                 onClick={() => onAnswerAction(multiSelectValues)}
                 disabled={multiSelectValues.length === 0}
-                className="w-full py-8 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.5em] rounded-[2rem] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.2)] disabled:opacity-30"
+                className="w-full py-8 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.5em] rounded-[2rem] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.2)] disabled:opacity-30"
             >
                 {t('common.continue')} ({multiSelectValues.length} Selected)
             </motion.button>
@@ -466,7 +466,7 @@ export default function QuestionRenderer({
                     onClick={() => onAnswerAction(option.value)}
                     className="w-full text-left px-10 py-8 bg-white hover:bg-zinc-900 rounded-[2.5rem] border border-zinc-100 hover:border-zinc-900 transition-all group flex items-center justify-between"
                 >
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 group-hover:text-white transition-colors">
+                    <span className="text-xs font-black uppercase tracking-[0.3em] text-zinc-400 group-hover:text-white transition-colors">
                         {(() => {
                             const translationUserType = userType === 'agency' ? 'landlord' : userType;
                             const labelKey = option.label.startsWith('options.') 
@@ -501,7 +501,7 @@ export default function QuestionRenderer({
                     const input = document.querySelector('input[type="text"]') as HTMLInputElement;
                     if (input?.value) onAnswerAction(input.value);
                 }}
-                className="w-full py-8 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.5em] rounded-[2rem] shadow-2xl transition-all"
+                className="w-full py-8 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.5em] rounded-[2rem] shadow-2xl transition-all"
             >
                 {t('common.next')}
             </motion.button>
@@ -535,7 +535,7 @@ export default function QuestionRenderer({
                                     }}
                                     className="px-8 py-8 text-left rounded-[2.5rem] bg-white border border-zinc-100 text-zinc-900 hover:border-zinc-300 transition-all duration-300 relative overflow-hidden flex items-center justify-between group shadow-sm hover:shadow-md cursor-pointer"
                                 >
-                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] relative z-10 transition-colors group-hover:text-zinc-900">
+                                    <span className="text-xs font-black uppercase tracking-[0.2em] relative z-10 transition-colors group-hover:text-zinc-900">
                                         {region.label}
                                     </span>
                                     <div className="w-8 h-8 rounded-full border border-zinc-100 flex items-center justify-center group-hover:border-zinc-700 transition-colors">
@@ -557,12 +557,12 @@ export default function QuestionRenderer({
                             <div className="flex items-center justify-between px-2">
                                 <button
                                     onClick={() => setSelectedRegion(null)}
-                                    className="flex items-center gap-2 text-[10px] font-black text-zinc-400 hover:text-zinc-900 uppercase tracking-widest transition-colors group cursor-pointer"
+                                    className="flex items-center gap-2 text-xs font-black text-zinc-400 hover:text-zinc-900 uppercase tracking-widest transition-colors group cursor-pointer"
                                 >
                                     <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
                                     Back to Regions
                                 </button>
-                                <span className="text-[10px] font-black text-zinc-900 uppercase tracking-widest">
+                                <span className="text-xs font-black text-zinc-900 uppercase tracking-widest">
                                     {REGIONS.find(r => r.id === selectedRegion)?.label}
                                 </span>
                             </div>
@@ -577,7 +577,7 @@ export default function QuestionRenderer({
                                         className="px-6 py-5 text-left rounded-[2rem] bg-white border border-zinc-100 hover:border-zinc-300 transition-all duration-300 flex items-center gap-3 group cursor-pointer shadow-sm hover:shadow-md"
                                     >
                                         <span className="text-2xl select-none">{country.flag}</span>
-                                        <span className="text-[10px] font-black uppercase tracking-wider text-zinc-500 group-hover:text-zinc-900 transition-colors truncate">
+                                        <span className="text-xs font-black uppercase tracking-wider text-zinc-500 group-hover:text-zinc-900 transition-colors truncate">
                                             {t(country.labelKey)}
                                         </span>
                                     </motion.button>
@@ -589,7 +589,7 @@ export default function QuestionRenderer({
 
                 {/* Privacy/Compliance Note */}
                 <div className="mt-8 p-6 bg-zinc-50 border border-zinc-100 rounded-[1.5rem] text-center">
-                    <p className="text-[9px] font-medium text-zinc-400 uppercase tracking-wider leading-relaxed">
+                    <p className="text-xs font-medium text-zinc-400 uppercase tracking-wider leading-relaxed">
                         {t('onboarding.university.nationalityNote')}
                     </p>
                 </div>

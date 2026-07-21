@@ -19,19 +19,19 @@ export default function Step8Review({ formData, t, declared, setDeclared, loadin
                 </h3>
                 <div className="space-y-4">
                     <div className="flex justify-between items-center py-4 border-b border-zinc-100">
-                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+                        <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">
                             {t('properties.new.steps.review.asset')}
                         </span>
                         <span className="text-sm font-black uppercase">{formData.title}</span>
                     </div>
                     <div className="flex justify-between items-center py-4 border-b border-zinc-100">
-                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+                        <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">
                             {t('properties.new.steps.review.location')}
                         </span>
                         <span className="text-sm font-black uppercase">{formData.city}</span>
                     </div>
                     <div className="flex justify-between items-center py-4">
-                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+                        <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">
                             {t('properties.new.steps.review.pricing')}
                         </span>
                         <span className="text-sm font-black uppercase">

@@ -345,7 +345,7 @@ export default function TeamManager() {
                                                     <div className={`font-black uppercase tracking-widest text-xs ${invitePermission === key ? 'text-white' : 'text-zinc-900'}`}>
                                                         {info.label}
                                                     </div>
-                                                    <div className={`text-[10px] font-bold mt-1 ${invitePermission === key ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                                                    <div className={`text-xs font-bold mt-1 ${invitePermission === key ? 'text-zinc-400' : 'text-zinc-500'}`}>
                                                         {info.description}
                                                     </div>
                                                 </div>

@@ -184,7 +184,7 @@ export default function OnboardingQuestionnaire({ userType, initialResponses, on
                             className="absolute inset-0 border-4 border-zinc-900 border-t-transparent rounded-full"
                         />
                     </div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-900 animate-pulse">
+                    <p className="text-xs font-black uppercase tracking-[0.5em] text-zinc-900 animate-pulse">
                         {t('onboarding.processing', undefined, 'Crafting your profile')}
                     </p>
                 </motion.div>
@@ -207,11 +207,11 @@ export default function OnboardingQuestionnaire({ userType, initialResponses, on
                     <div className="flex justify-between items-end mb-6 px-4">
                         <div className="flex items-center gap-3">
                             <Sparkles className="w-4 h-4 text-zinc-400" />
-                            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em]">
+                            <span className="text-xs font-black text-zinc-400 uppercase tracking-[0.3em]">
                                 {t('onboarding.stepLabel', undefined, 'Personalization')}
                             </span>
                         </div>
-                        <span className="text-[10px] font-black text-zinc-900 uppercase tracking-widest">
+                        <span className="text-xs font-black text-zinc-900 uppercase tracking-widest">
                             {currentVisibleIndex} / {totalVisibleQuestions}
                         </span>
                     </div>
@@ -253,7 +253,7 @@ export default function OnboardingQuestionnaire({ userType, initialResponses, on
                                     initial={{ scale: 0 }}
                                     animate={{ scale: 1 }}
                                     transition={{ type: 'spring', delay: 0.2 }}
-                                    className="text-7xl mb-8 select-none"
+                                    className="text-5xl md:text-7xl mb-8 select-none"
                                 >
                                     {currentQuestion.emoji}
                                 </motion.div>
@@ -268,7 +268,7 @@ export default function OnboardingQuestionnaire({ userType, initialResponses, on
                                     })()}
                                 </h2>
                                 {currentQuestion.description && (
-                                    <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] max-w-xs mx-auto leading-relaxed">
+                                    <p className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em] max-w-xs mx-auto leading-relaxed">
                                         {t(currentQuestion.description, undefined, currentQuestion.description)}
                                     </p>
                                 )}
@@ -295,7 +295,7 @@ export default function OnboardingQuestionnaire({ userType, initialResponses, on
                                     className="bg-zinc-900 text-white p-6 rounded-2xl flex items-center justify-center gap-4 mb-8 shadow-2xl text-center"
                                 >
                                     <div className="w-2 h-2 bg-red-500 rounded-full animate-ping" />
-                                    <span className="text-[10px] font-black uppercase tracking-[0.3em]">
+                                    <span className="text-xs font-black uppercase tracking-[0.3em]">
                                         {error}
                                     </span>
                                 </motion.div>
@@ -306,7 +306,7 @@ export default function OnboardingQuestionnaire({ userType, initialResponses, on
                                 {currentStepIndex > 0 ? (
                                     <button
                                         onClick={handleBack}
-                                        className="flex items-center gap-3 text-[10px] font-black text-zinc-400 hover:text-zinc-900 uppercase tracking-widest transition-colors group"
+                                        className="flex items-center gap-3 text-xs font-black text-zinc-400 hover:text-zinc-900 uppercase tracking-widest transition-colors group"
                                     >
                                         <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
                                         {t('common.back', undefined, 'Previous')}
@@ -315,7 +315,7 @@ export default function OnboardingQuestionnaire({ userType, initialResponses, on
 
                                 <button
                                     onClick={() => handleAnswer(responses[currentQuestion.id] || null)}
-                                    className="flex items-center gap-3 text-[10px] font-black text-zinc-300 hover:text-zinc-500 uppercase tracking-widest transition-colors group"
+                                    className="flex items-center gap-3 text-xs font-black text-zinc-300 hover:text-zinc-500 uppercase tracking-widest transition-colors group"
                                 >
                                     {t('onboarding.skip', undefined, 'Skip')}
                                     <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

@@ -143,7 +143,7 @@ export default function CookieConsentBanner() {
                                                         <span className="block text-sm font-semibold text-zinc-900">{t('cookies.essential.title')}</span>
                                                         <p className="text-xs text-zinc-500">{t('cookies.essential.description')}</p>
                                                     </div>
-                                                    <div className="flex items-center gap-2 text-zinc-900 bg-zinc-100 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase">
+                                                    <div className="flex items-center gap-2 text-zinc-900 bg-zinc-100 px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase">
                                                         <Check className="w-3 h-3" />
                                                         {t('common.requiredByLaw')}
                                                     </div>

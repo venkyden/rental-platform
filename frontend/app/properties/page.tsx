@@ -142,7 +142,7 @@ export default function PropertiesPage() {
                     {/* Header - Ultra Premium */}
                     <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12 mb-20">
                         <div className="space-y-6">
-                            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-zinc-900/5 border border-zinc-900/10 text-zinc-900 text-[10px] font-black uppercase tracking-[0.2em]">
+                            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-zinc-900/5 border border-zinc-900/10 text-zinc-900 text-xs font-black uppercase tracking-[0.2em]">
                                 {t('property.landlord.portfolio', undefined, 'Portfolio Management')}
                             </div>
                             <h1 className="text-6xl sm:text-8xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-zinc-900 to-zinc-600 uppercase leading-[0.9]">
@@ -168,7 +168,7 @@ export default function PropertiesPage() {
                                 <button
                                     key={status}
                                     onClick={() => setFilter(status as any)}
-                                    className={`px-10 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-700 ${
+                                    className={`px-10 py-3 rounded-2xl text-xs font-black uppercase tracking-[0.2em] transition-all duration-700 ${
                                         filter === status 
                                         ? 'bg-zinc-900 text-white shadow-2xl scale-100' 
                                         : 'text-zinc-400 hover:text-zinc-600'
@@ -180,7 +180,7 @@ export default function PropertiesPage() {
                         </div>
                         <div className="hidden sm:flex items-center gap-2">
                             <div className="w-2 h-2 rounded-full bg-zinc-900" />
-                            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{t('properties.listingsCount', { count: properties.length }, `${properties.length} Listings`)}</span>
+                            <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">{t('properties.listingsCount', { count: properties.length }, `${properties.length} Listings`)}</span>
                         </div>
                     </div>
 
@@ -199,7 +199,7 @@ export default function PropertiesPage() {
                             <p className="text-lg text-zinc-500 font-medium max-w-sm mx-auto leading-relaxed mb-12">{t('properties.emptyDescription', undefined, 'Start by adding your first listing to the platform to begin your journey.')}</p>
                             <button 
                                 onClick={() => router.push('/properties/new')} 
-                                className="px-12 py-5 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.4em] rounded-[2rem] shadow-2xl hover:scale-105 active:scale-95 transition-all"
+                                className="px-12 py-5 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.4em] rounded-[2rem] shadow-2xl hover:scale-105 active:scale-95 transition-all"
                             >
                                 {t('properties.addProperty', undefined, 'Create Listing')} →
                             </button>
@@ -230,14 +230,14 @@ export default function PropertiesPage() {
                                         )}
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
                                         <div className="absolute top-6 right-6">
-                                            <div className={`px-5 py-2 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] backdrop-blur-xl shadow-2xl ${property.status === 'active' ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-600'}`}>
+                                            <div className={`px-5 py-2 rounded-2xl text-xs font-black uppercase tracking-[0.2em] backdrop-blur-xl shadow-2xl ${property.status === 'active' ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-600'}`}>
                                                 {property.status}
                                             </div>
                                         </div>
                                         <div className="absolute bottom-6 left-6 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700">
                                             <div className="flex items-baseline gap-1">
                                                 <span className="text-3xl font-black text-white tracking-tighter">€{property.monthly_rent}</span>
-                                                <span className="text-[10px] text-zinc-300 font-black uppercase tracking-widest">{t('search.property.mo', undefined, '/mo')}</span>
+                                                <span className="text-xs text-zinc-300 font-black uppercase tracking-widest">{t('search.property.mo', undefined, '/mo')}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -247,27 +247,27 @@ export default function PropertiesPage() {
                                             <h3 className="text-2xl font-black text-zinc-900 truncate tracking-tighter uppercase pr-4 group-hover:text-zinc-600 transition-colors duration-500">{property.title}</h3>
                                             <div className="text-right flex flex-col items-end">
                                                 <p className="text-xl font-black text-zinc-900 tracking-tighter">€{property.monthly_rent}</p>
-                                                <p className="text-[8px] font-black text-zinc-400 uppercase tracking-[0.2em] mt-1">{t('property.price.investment', undefined, 'Investment')}</p>
+                                                <p className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em] mt-1">{t('property.price.investment', undefined, 'Investment')}</p>
                                             </div>
                                         </div>
                                         
                                         <div className="flex items-center gap-3 mb-10">
-                                            <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">{property.city}</p>
+                                            <p className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em]">{property.city}</p>
                                             <div className="w-1 h-1 rounded-full bg-zinc-200" />
-                                            <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">{property.bedrooms} {t('property.bedrooms', undefined, 'Bed')}</p>
+                                            <p className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em]">{property.bedrooms} {t('property.bedrooms', undefined, 'Bed')}</p>
                                         </div>
                                         
                                         {/* Verification Status - Refined */}
                                         <div className="mb-10">
                                             {property.ownership_verified ? (
-                                                <div className="flex items-center gap-3 text-[10px] font-black text-zinc-900 bg-zinc-900/5 px-5 py-3 rounded-2xl border border-zinc-900/20 uppercase tracking-[0.2em] shadow-sm">
+                                                <div className="flex items-center gap-3 text-xs font-black text-zinc-900 bg-zinc-900/5 px-5 py-3 rounded-2xl border border-zinc-900/20 uppercase tracking-[0.2em] shadow-sm">
                                                     <div className="w-2 h-2 rounded-full bg-zinc-900 shadow-[0_0_8px_rgba(0,0,0,0.2)]" />
                                                     {t('property.status.verified', undefined, 'Verified Registry')}
                                                 </div>
                                             ) : (
                                                 <button 
                                                     onClick={() => setVerifyingProperty(property.id)}
-                                                    className="w-full flex items-center justify-center gap-3 text-[10px] font-black text-zinc-600 bg-zinc-100 px-5 py-3 rounded-2xl border border-zinc-200 uppercase tracking-[0.2em] hover:bg-zinc-200 transition-all group/btn shadow-inner"
+                                                    className="w-full flex items-center justify-center gap-3 text-xs font-black text-zinc-600 bg-zinc-100 px-5 py-3 rounded-2xl border border-zinc-200 uppercase tracking-[0.2em] hover:bg-zinc-200 transition-all group/btn shadow-inner"
                                                 >
                                                     <div className="w-2 h-2 rounded-full bg-zinc-400 animate-pulse" />
                                                     {t('verification.buttons.ownership', undefined, 'Validate Ownership')}
@@ -279,13 +279,13 @@ export default function PropertiesPage() {
                                             <div className="grid grid-cols-2 gap-4">
                                                 <button
                                                     onClick={() => router.push(`/properties/${property.id}/edit`)}
-                                                    className="py-4 bg-zinc-50 text-zinc-900 rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.3em] hover:bg-zinc-900 hover:text-white transition-all duration-500 shadow-sm"
+                                                    className="py-4 bg-zinc-50 text-zinc-900 rounded-[1.5rem] font-black text-xs uppercase tracking-[0.3em] hover:bg-zinc-900 hover:text-white transition-all duration-500 shadow-sm"
                                                 >
                                                     {t('property.actions.edit', undefined, 'Edit')}
                                                 </button>
                                                 <button
                                                     onClick={() => router.push(`/properties/${property.id}`)}
-                                                    className="py-4 bg-zinc-900 text-white rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.3em] hover:scale-105 active:scale-95 transition-all shadow-xl shadow-zinc-900/20"
+                                                    className="py-4 bg-zinc-900 text-white rounded-[1.5rem] font-black text-xs uppercase tracking-[0.3em] hover:scale-105 active:scale-95 transition-all shadow-xl shadow-zinc-900/20"
                                                 >
                                                     {t('property.actions.preview', undefined, 'Preview')}
                                                 </button>
@@ -294,21 +294,21 @@ export default function PropertiesPage() {
                                                 {property.status === 'archived' ? (
                                                     <button
                                                         onClick={() => handleUnarchive(property.id)}
-                                                        className="py-3 bg-zinc-50 text-zinc-600 rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.3em] hover:bg-zinc-200 transition-all duration-500 shadow-sm"
+                                                        className="py-3 bg-zinc-50 text-zinc-600 rounded-[1.5rem] font-black text-xs uppercase tracking-[0.3em] hover:bg-zinc-200 transition-all duration-500 shadow-sm"
                                                     >
                                                         {t('property.actions.unarchive', undefined, 'Unarchive')}
                                                     </button>
                                                 ) : (
                                                     <button
                                                         onClick={() => handleArchive(property.id)}
-                                                        className="py-3 bg-zinc-50 text-zinc-600 rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.3em] hover:bg-zinc-200 transition-all duration-500 shadow-sm"
+                                                        className="py-3 bg-zinc-50 text-zinc-600 rounded-[1.5rem] font-black text-xs uppercase tracking-[0.3em] hover:bg-zinc-200 transition-all duration-500 shadow-sm"
                                                     >
                                                         {t('property.actions.archive', undefined, 'Archive')}
                                                     </button>
                                                 )}
                                                 <button
                                                     onClick={() => handleDelete(property.id)}
-                                                    className="py-3 bg-red-50 text-red-600 rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.3em] hover:bg-red-600 hover:text-white transition-all duration-500 shadow-sm"
+                                                    className="py-3 bg-red-50 text-red-600 rounded-[1.5rem] font-black text-xs uppercase tracking-[0.3em] hover:bg-red-600 hover:text-white transition-all duration-500 shadow-sm"
                                                 >
                                                     {t('property.actions.delete', undefined, 'Delete')}
                                                 </button>
@@ -324,7 +324,7 @@ export default function PropertiesPage() {
                         <div className="mt-20 flex justify-center pb-20">
                             <button 
                                 onClick={handleLoadMore}
-                                className="px-16 py-6 bg-white text-zinc-900 border border-zinc-200 text-[10px] font-black uppercase tracking-[0.4em] rounded-[2rem] shadow-xl hover:bg-zinc-50 transition-all hover:scale-105 active:scale-95"
+                                className="px-16 py-6 bg-white text-zinc-900 border border-zinc-200 text-xs font-black uppercase tracking-[0.4em] rounded-[2rem] shadow-xl hover:bg-zinc-50 transition-all hover:scale-105 active:scale-95"
                             >
                                 {t('search.loadMore', undefined, 'Discover More Listings')}
                             </button>

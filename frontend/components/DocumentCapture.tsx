@@ -264,7 +264,7 @@ export default function DocumentCapture({ documentType, onComplete, onCancel }: 
                         <h3 className="text-2xl font-black text-zinc-900 uppercase tracking-tighter">
                             Verification
                         </h3>
-                        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mt-1">
+                        <p className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em] mt-1">
                             Step {currentStep + 1} of {totalSteps}
                         </p>
                     </div>
@@ -290,11 +290,11 @@ export default function DocumentCapture({ documentType, onComplete, onCancel }: 
                     <div className="mx-8 mt-6 p-5 bg-zinc-900 text-white rounded-2xl flex flex-col gap-3">
                         <div className="flex items-center gap-3">
                             <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                            <p className="text-[10px] font-black uppercase tracking-widest">{error}</p>
+                            <p className="text-xs font-black uppercase tracking-widest">{error}</p>
                         </div>
                         {/* Fallback file upload when camera stream fails */}
                         <div className="mt-2 pt-4 border-t border-white/10">
-                            <label className="inline-flex items-center gap-2 cursor-pointer text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-white transition-colors">
+                            <label className="inline-flex items-center gap-2 cursor-pointer text-xs font-black uppercase tracking-widest text-zinc-400 hover:text-white transition-colors">
                                  Upload from gallery instead
                                 <input
                                     type="file"
@@ -321,7 +321,7 @@ export default function DocumentCapture({ documentType, onComplete, onCancel }: 
 
                         {/* Tips */}
                          <div className="bg-zinc-50 rounded-[2rem] p-8 mb-10 border border-zinc-100">
-                            <h5 className="text-[10px] font-black text-zinc-900 uppercase tracking-[0.3em] mb-6"> Protocol:</h5>
+                            <h5 className="text-xs font-black text-zinc-900 uppercase tracking-[0.3em] mb-6"> Protocol:</h5>
                             <ul className="space-y-4">
                                 {currentInstruction.tips.map((tip, index) => (
                                     <li key={index} className="text-sm text-zinc-600 font-medium flex items-start gap-4">
@@ -334,7 +334,7 @@ export default function DocumentCapture({ documentType, onComplete, onCancel }: 
                             /* Mobile: native camera capture */
                             <button
                                 onClick={handleMobileCapture}
-                                className="w-full py-6 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.4em] rounded-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-2xl flex items-center justify-center gap-3"
+                                className="w-full py-6 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.4em] rounded-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-2xl flex items-center justify-center gap-3"
                             >
                                 Take Photo
                             </button>
@@ -342,7 +342,7 @@ export default function DocumentCapture({ documentType, onComplete, onCancel }: 
                             /* Desktop: getUserMedia stream */
                             <button
                                 onClick={startCamera}
-                                className="w-full py-6 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.4em] rounded-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-2xl flex items-center justify-center gap-3"
+                                className="w-full py-6 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.4em] rounded-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-2xl flex items-center justify-center gap-3"
                             >
                                 Open Camera
                             </button>
@@ -350,7 +350,7 @@ export default function DocumentCapture({ documentType, onComplete, onCancel }: 
 
                         {/* Fallback upload for all devices */}
                          <div className="mt-6 text-center">
-                            <label className="inline-flex items-center gap-2 cursor-pointer text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 transition-colors">
+                            <label className="inline-flex items-center gap-2 cursor-pointer text-xs font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 transition-colors">
                                  Or upload from gallery
                                 <input
                                     type="file"
@@ -378,8 +378,8 @@ export default function DocumentCapture({ documentType, onComplete, onCancel }: 
                                 <div className="relative">
                                     {/* Frame overlay */}
                                     <div className={`border-4 border-blue-500 rounded-lg ${currentInstruction.frameType === 'landscape'
-                                        ? 'w-96 h-60'
-                                        : 'w-60 h-80'
+                                        ? 'w-[85vw] sm:w-96 aspect-[1.6]'
+                                        : 'w-[65vw] sm:w-60 aspect-[0.75]'
                                         }`}>
                                         {/* Corner guides */}
                                         <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-white"></div>
@@ -398,13 +398,13 @@ export default function DocumentCapture({ documentType, onComplete, onCancel }: 
                          <div className="flex gap-4">
                             <button
                                 onClick={handleCancel}
-                                className="flex-1 py-4 bg-zinc-100 text-zinc-600 text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-zinc-200 transition-colors"
+                                className="flex-1 py-4 bg-zinc-100 text-zinc-600 text-xs font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-zinc-200 transition-colors"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={capturePhoto}
-                                className="flex-1 py-4 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-2xl flex items-center justify-center gap-2"
+                                className="flex-1 py-4 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.2em] rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-2xl flex items-center justify-center gap-2"
                             >
                                 Capture
                             </button>
@@ -416,13 +416,13 @@ export default function DocumentCapture({ documentType, onComplete, onCancel }: 
                 {capturedFiles.length > 0 && !capturing && !showGuidelines && (
                     <div className="p-6">
                         <div className="text-center">
-                            <div className="text-6xl mb-4"></div>
+                            <div className="text-4xl sm:text-6xl mb-4">📄</div>
                             <p className="text-lg text-gray-700 mb-4">
                                 {capturedFiles.length} of {totalSteps} photo(s) captured
                             </p>
                              <button
                                 onClick={handleRetake}
-                                className="text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 transition-colors"
+                                className="text-xs font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 transition-colors"
                             >
                                 Start Over
                             </button>

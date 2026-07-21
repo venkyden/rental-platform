@@ -63,7 +63,7 @@ export default function ForgotEmailPage() {
                 <h2 className="text-4xl font-black text-zinc-900 tracking-tighter mb-2">
                     {status === 'success' ? t('auth.forgotEmail.successTitle', undefined, 'Check your inbox') : t('auth.forgotEmail.title', undefined, 'Find your email')}
                 </h2>
-                <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] max-w-sm mx-auto">
+                <p className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em] max-w-sm mx-auto">
                     {status === 'success'
                         ? t('auth.forgotEmail.successDesc', undefined, "If an account matches the details you provided, we've sent a reminder to its email address.")
                         : t('auth.forgotEmail.desc', undefined, "Enter your registered full name and phone number and we'll send a reminder to the matching email address.")}
@@ -74,7 +74,7 @@ export default function ForgotEmailPage() {
                 <motion.div variants={itemVariants} className="space-y-6">
                     <Link
                         href="/auth/login"
-                        className="w-full py-5 rounded-full bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-3 hover:shadow-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-zinc-900/10"
+                        className="w-full py-5 rounded-full bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.4em] flex items-center justify-center gap-3 hover:shadow-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-zinc-900/10"
                     >
                         {t('common.back', undefined, 'Return to login')}
                     </Link>
@@ -127,7 +127,7 @@ export default function ForgotEmailPage() {
                     <button
                         type="submit"
                         disabled={status === 'loading' || !fullName || !phone}
-                        className="w-full py-5 rounded-full bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-3 hover:shadow-2xl hover:scale-[1.02] active:scale-95 disabled:opacity-50 transition-all shadow-xl shadow-zinc-900/10"
+                        className="w-full py-5 rounded-full bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.4em] flex items-center justify-center gap-3 hover:shadow-2xl hover:scale-[1.02] active:scale-95 disabled:opacity-50 transition-all shadow-xl shadow-zinc-900/10"
                     >
                         {status === 'loading' ? (
                             <div className="flex items-center gap-3">
@@ -140,7 +140,7 @@ export default function ForgotEmailPage() {
                     <div className="flex justify-center mt-6">
                         <Link
                             href="/auth/login"
-                            className="inline-flex items-center gap-2 text-[10px] font-black text-zinc-400 uppercase tracking-widest hover:text-zinc-900 transition-colors"
+                            className="inline-flex items-center gap-2 text-xs font-black text-zinc-400 uppercase tracking-widest hover:text-zinc-900 transition-colors"
                         >
                             <ArrowLeft className="w-3 h-3" strokeWidth={3} />
                             {t('common.back', undefined, 'Back to login')}

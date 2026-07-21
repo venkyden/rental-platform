@@ -125,18 +125,18 @@ export default function RentalDossier() {
                                                 {item.label}
                                             </label>
                                             {existingDocs.length > 0 ? (
-                                                <span className="bg-zinc-900 text-white text-[10px] px-3 py-1 rounded-full font-black uppercase tracking-widest">
+                                                <span className="bg-zinc-900 text-white text-xs px-3 py-1 rounded-full font-black uppercase tracking-widest">
                                                      {t('dossier.status.received', undefined, 'Received')}
                                                 </span>
                                             ) : (
-                                                <span className="bg-zinc-100 text-zinc-400 text-[10px] px-3 py-1 rounded-full font-black uppercase tracking-widest">
+                                                <span className="bg-zinc-100 text-zinc-400 text-xs px-3 py-1 rounded-full font-black uppercase tracking-widest">
                                                     {t('dossier.status.missing', undefined, 'Missing')}
                                                 </span>
                                             )}
                                         </div>
 
                                         {existingDocs.map(doc => (
-                                            <div key={doc.id} className="flex items-center gap-2 text-[10px] font-bold text-zinc-600 mb-2 bg-zinc-50 p-2 rounded-lg border border-zinc-100">
+                                            <div key={doc.id} className="flex items-center gap-2 text-xs font-bold text-zinc-600 mb-2 bg-zinc-50 p-2 rounded-lg border border-zinc-100">
                                                 <span> {doc.file_name}</span>
                                             </div>
                                         ))}
@@ -172,23 +172,23 @@ export default function RentalDossier() {
                 <div className="bg-zinc-900 text-white rounded-2xl p-6 mt-8">
                     <p className="font-black uppercase tracking-widest text-xs mb-4 text-white/50"> {t('dossier.prohibited.title', undefined, 'Prohibited Documents (Never submit):')}</p>
                     <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <li className="text-[10px] font-bold text-zinc-400 flex items-center gap-2 bg-white/5 p-3 rounded-xl">
+                        <li className="text-xs font-bold text-zinc-400 flex items-center gap-2 bg-white/5 p-3 rounded-xl">
                             <span className="w-1 h-1 bg-white/20 rounded-full" />
                             {t('dossier.prohibited.item1', undefined, 'Social Security Card')}
                         </li>
-                        <li className="text-[10px] font-bold text-zinc-400 flex items-center gap-2 bg-white/5 p-3 rounded-xl">
+                        <li className="text-xs font-bold text-zinc-400 flex items-center gap-2 bg-white/5 p-3 rounded-xl">
                             <span className="w-1 h-1 bg-white/20 rounded-full" />
                             {t('dossier.prohibited.item2', undefined, 'Bank Account Statements')}
                         </li>
-                        <li className="text-[10px] font-bold text-zinc-400 flex items-center gap-2 bg-white/5 p-3 rounded-xl">
+                        <li className="text-xs font-bold text-zinc-400 flex items-center gap-2 bg-white/5 p-3 rounded-xl">
                             <span className="w-1 h-1 bg-white/20 rounded-full" />
                             {t('dossier.prohibited.item3', undefined, 'Direct Debit Authorization (before lease signing)')}
                         </li>
-                        <li className="text-[10px] font-bold text-zinc-400 flex items-center gap-2 bg-white/5 p-3 rounded-xl">
+                        <li className="text-xs font-bold text-zinc-400 flex items-center gap-2 bg-white/5 p-3 rounded-xl">
                             <span className="w-1 h-1 bg-white/20 rounded-full" />
                             {t('dossier.prohibited.item4', undefined, 'Medical Records / Criminal Record')}
                         </li>
-                        <li className="text-[10px] font-bold text-zinc-400 flex items-center gap-2 bg-white/5 p-3 rounded-xl">
+                        <li className="text-xs font-bold text-zinc-400 flex items-center gap-2 bg-white/5 p-3 rounded-xl">
                             <span className="w-1 h-1 bg-white/20 rounded-full" />
                             {t('dossier.prohibited.item5', undefined, 'Reservation Check')}
                         </li>

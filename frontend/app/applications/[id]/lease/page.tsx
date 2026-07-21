@@ -367,7 +367,7 @@ export default function LeaseGeneratorPage() {
                                         className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-zinc-950 text-sm font-semibold disabled:opacity-50"
                                     />
                                     {leaseType === 'mobilite' && (
-                                        <p className="text-[10px] text-amber-500 font-bold uppercase tracking-wider mt-1.5">
+                                        <p className="text-xs text-amber-500 font-bold uppercase tracking-wider mt-1.5">
                                             {t('lease.mobilite.depositInfo')}
                                         </p>
                                     )}

@@ -66,7 +66,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                             ].map((item, i) => (
                                 <div key={i} className="flex items-center gap-2">
                                     <div className="w-1.5 h-1.5 rounded-full bg-zinc-900" />
-                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">{item.label}</span>
+                                    <span className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400">{item.label}</span>
                                 </div>
                             ))}
                         </div>

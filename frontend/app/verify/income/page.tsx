@@ -43,7 +43,7 @@ export default function IncomeVerifyPage() {
                             
                             <button 
                                 onClick={() => router.back()}
-                                className="flex items-center gap-2 text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] hover:text-zinc-900 transition-all mb-12 group"
+                                className="flex items-center gap-2 text-xs font-black text-zinc-400 uppercase tracking-[0.3em] hover:text-zinc-900 transition-all mb-12 group"
                             >
                                 <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
                                 {t('common.actions.back', undefined, 'Back')}
@@ -92,7 +92,7 @@ export default function IncomeVerifyPage() {
                             <div className="text-center pt-8 border-t border-zinc-100">
                                 <button
                                     onClick={() => router.push('/dashboard')}
-                                    className="text-zinc-400 hover:text-zinc-900 text-[10px] font-black uppercase tracking-[0.4em] transition-all"
+                                    className="text-zinc-400 hover:text-zinc-900 text-xs font-black uppercase tracking-[0.4em] transition-all"
                                 >
                                     {t('onboarding.skip', undefined, 'I will do this later')}
                                 </button>

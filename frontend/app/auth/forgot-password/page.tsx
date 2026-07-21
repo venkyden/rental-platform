@@ -65,7 +65,7 @@ export default function ForgotPasswordPage() {
                     <h2 className="text-4xl font-black text-zinc-900 tracking-tighter mb-2">
                         {t('auth.forgotPassword.successTitle', undefined, 'Check your email')}
                     </h2>
-                    <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">
+                    <p className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em]">
                         {t('auth.forgotPassword.successDesc', { email }, `We've sent reset instructions to ${email}`)}
                     </p>
                 </motion.div>
@@ -73,7 +73,7 @@ export default function ForgotPasswordPage() {
                 <motion.div variants={itemVariants}>
                     <Link
                         href="/auth/login"
-                        className="w-full py-5 rounded-full bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-3 hover:shadow-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-zinc-900/10"
+                        className="w-full py-5 rounded-full bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.4em] flex items-center justify-center gap-3 hover:shadow-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-zinc-900/10"
                     >
                         <ArrowLeft size={14} strokeWidth={3} />
                         {t('auth.forgotPassword.backToSignIn', undefined, 'Back to sign in')}
@@ -89,7 +89,7 @@ export default function ForgotPasswordPage() {
                 <h2 className="text-4xl font-black text-zinc-900 tracking-tighter mb-2">
                     {t('auth.forgotPassword.title', undefined, 'Reset password')}
                 </h2>
-                <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">
+                <p className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em]">
                     {t('auth.forgotPassword.subtitle', undefined, "Enter your email — we'll send a reset link")}
                 </p>
             </motion.div>
@@ -136,7 +136,7 @@ export default function ForgotPasswordPage() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full py-5 rounded-full bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-3 hover:shadow-2xl hover:scale-[1.02] active:scale-95 disabled:opacity-50 transition-all shadow-xl shadow-zinc-900/10 group"
+                        className="w-full py-5 rounded-full bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.4em] flex items-center justify-center gap-3 hover:shadow-2xl hover:scale-[1.02] active:scale-95 disabled:opacity-50 transition-all shadow-xl shadow-zinc-900/10 group"
                     >
                         {loading ? (
                             <div className="flex items-center gap-3">
@@ -156,7 +156,7 @@ export default function ForgotPasswordPage() {
             <motion.div variants={itemVariants} className="mt-10 text-center">
                 <Link
                     href="/auth/login"
-                    className="inline-flex items-center gap-2 text-[10px] font-black text-zinc-400 uppercase tracking-widest hover:text-zinc-900 transition-colors"
+                    className="inline-flex items-center gap-2 text-xs font-black text-zinc-400 uppercase tracking-widest hover:text-zinc-900 transition-colors"
                 >
                     <ArrowLeft size={12} strokeWidth={3} />
                     {t('auth.forgotPassword.backToSignIn', undefined, 'Back to sign in')}

@@ -141,7 +141,7 @@ export default function UnifiedInbox({ onSelectConversation, selectedConversatio
                     <h2 className="text-2xl font-black text-zinc-900 tracking-tighter uppercase flex items-center gap-4">
                          {t('dashboard.inbox.title', undefined, 'Messages')}
                          {totalUnread > 0 && (
-                            <span className="px-3 py-1 bg-zinc-900 text-white text-[10px] font-black rounded-full uppercase tracking-widest shadow-lg shadow-zinc-900/10">
+                            <span className="px-3 py-1 bg-zinc-900 text-white text-xs font-black rounded-full uppercase tracking-widest shadow-lg shadow-zinc-900/10">
                                 {totalUnread}
                             </span>
                         )}
@@ -171,7 +171,7 @@ export default function UnifiedInbox({ onSelectConversation, selectedConversatio
                     <button
                         key={key}
                         onClick={() => setFilter(key as typeof filter)}
-                        className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest transition-all rounded-2xl ${filter === key
+                        className={`flex-1 py-3 text-xs font-black uppercase tracking-widest transition-all rounded-2xl ${filter === key
                             ? 'bg-white text-zinc-900 shadow-xl'
                             : 'text-zinc-400 hover:text-zinc-900'
                             }`}
@@ -202,10 +202,10 @@ export default function UnifiedInbox({ onSelectConversation, selectedConversatio
                         <motion.div variants={itemVariants} key={propertyId} className="group/property">
                             {/* Property Header */}
                             <div className="px-6 py-4 bg-zinc-50/30 border-b border-zinc-100 sticky top-0 backdrop-blur-md z-10">
-                                <div className="font-black text-zinc-900 text-[10px] uppercase tracking-[0.2em] mb-1">
+                                <div className="font-black text-zinc-900 text-xs uppercase tracking-[0.2em] mb-1">
                                      {group.property_title || t('inbox.propertyFallback', undefined, 'Property')}
                                 </div>
-                                <div className="text-[10px] font-bold text-zinc-400 truncate uppercase tracking-widest">
+                                <div className="text-xs font-bold text-zinc-400 truncate uppercase tracking-widest">
                                     {group.property_address}
                                 </div>
                             </div>
@@ -239,7 +239,7 @@ export default function UnifiedInbox({ onSelectConversation, selectedConversatio
                                                     <span className={`text-lg tracking-tight truncate ${conv.unread_count > 0 ? 'font-black text-zinc-900' : 'font-bold text-zinc-700'}`}>
                                                         {conv.other_party_name}
                                                     </span>
-                                                    <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest whitespace-nowrap">
+                                                    <span className="text-xs font-black text-zinc-400 uppercase tracking-widest whitespace-nowrap">
                                                         {formatDate(conv.last_message_at)}
                                                     </span>
                                                 </div>
@@ -249,7 +249,7 @@ export default function UnifiedInbox({ onSelectConversation, selectedConversatio
                                                         {conv.last_message_preview || conv.subject}
                                                     </p>
                                                      {conv.unread_count > 0 && (
-                                                        <span className="flex-shrink-0 w-6 h-6 bg-zinc-900 text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-lg shadow-zinc-900/10">
+                                                        <span className="flex-shrink-0 w-6 h-6 bg-zinc-900 text-white text-xs font-black rounded-full flex items-center justify-center shadow-lg shadow-zinc-900/10">
                                                             {conv.unread_count}
                                                         </span>
                                                     )}

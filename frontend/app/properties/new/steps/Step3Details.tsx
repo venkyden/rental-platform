@@ -12,7 +12,7 @@ export default function Step3Details({ formData, updateFormData, t }: Props) {
         <div className="space-y-12">
             <div className="grid grid-cols-2 gap-12">
                 <div className="space-y-6">
-                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                    <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                         {t('properties.new.steps.details.bedrooms')}
                     </label>
                     <div className="flex items-center gap-8">
@@ -23,7 +23,7 @@ export default function Step3Details({ formData, updateFormData, t }: Props) {
                         >
                             -
                         </button>
-                        <span className="text-6xl font-black tracking-tighter">{formData.bedrooms}</span>
+                        <span className="text-4xl sm:text-6xl font-black tracking-tighter">{formData.bedrooms}</span>
                         <button
                             onClick={() => updateFormData({ bedrooms: formData.bedrooms + 1 })}
                             className="w-16 h-16 rounded-full bg-zinc-100 flex items-center justify-center text-2xl font-black"
@@ -34,7 +34,7 @@ export default function Step3Details({ formData, updateFormData, t }: Props) {
                     </div>
                 </div>
                 <div className="space-y-6">
-                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                    <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                         {t('properties.new.steps.details.surface')}
                     </label>
                     <input
@@ -43,7 +43,7 @@ export default function Step3Details({ formData, updateFormData, t }: Props) {
                         onChange={(e) =>
                             updateFormData({ size_sqm: e.target.value === '' ? 0 : parseInt(e.target.value) || 0 })
                         }
-                        className="w-full bg-transparent text-6xl font-black tracking-tighter border-none focus:ring-0"
+                        className="w-full bg-transparent text-4xl sm:text-6xl font-black tracking-tighter border-none focus:ring-0"
                         aria-label={t('property.create.details.size', undefined, 'Surface area in square meters')}
                     />
                     {formData.size_sqm > 0 && formData.size_sqm < 9 * formData.accommodation_capacity && (
@@ -54,7 +54,7 @@ export default function Step3Details({ formData, updateFormData, t }: Props) {
                 </div>
             </div>
             <div className="space-y-10">
-                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                     {t('properties.new.steps.details.energyProtocol')}
                 </label>
                 <div className="flex flex-wrap gap-4">
@@ -78,7 +78,7 @@ export default function Step3Details({ formData, updateFormData, t }: Props) {
                 
                 <div className="grid grid-cols-2 gap-8 mt-6">
                     <div className="space-y-4">
-                        <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                        <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                             {t('property.create.details.dpeValue', undefined, 'DPE Value (kWh/m²/year)')}
                             <span className="text-red-500 ml-1">*</span>
                         </label>
@@ -91,7 +91,7 @@ export default function Step3Details({ formData, updateFormData, t }: Props) {
                         />
                     </div>
                     <div className="space-y-4">
-                        <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                        <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                             {t('property.create.details.gesValue', undefined, 'GES Value (kg CO₂/m²/year)')}
                             <span className="text-red-500 ml-1">*</span>
                         </label>

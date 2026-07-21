@@ -202,7 +202,7 @@ export default function RegisterPage() {
                              step === 2 ? t('auth.register.titles.step2', undefined, 'Basics First') :
                              t('auth.register.titles.step3', undefined, 'Security')}
                         </h2>
-                        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">
+                        <p className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em]">
                             {t('auth.register.step', undefined, 'Step')} {step} / 3
                         </p>
                     </motion.div>
@@ -258,10 +258,10 @@ export default function RegisterPage() {
                                             {React.cloneElement(role.icon as React.ReactElement<any>, { size: 24, strokeWidth: 2.5 })}
                                         </div>
                                         <div>
-                                            <p className={`text-[10px] font-black uppercase tracking-widest mb-1 ${formData.role === role.id ? 'text-zinc-900' : 'text-zinc-900'}`}>
+                                            <p className={`text-xs font-black uppercase tracking-widest mb-1 ${formData.role === role.id ? 'text-zinc-900' : 'text-zinc-900'}`}>
                                                 {role.label}
                                             </p>
-                                            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-tight opacity-70">{role.desc}</p>
+                                            <p className="text-xs font-bold text-zinc-400 uppercase tracking-tight opacity-70">{role.desc}</p>
                                         </div>
                                         {formData.role === role.id && (
                                             <motion.div layoutId="active-role" className="absolute right-6">
@@ -276,7 +276,7 @@ export default function RegisterPage() {
                             <div className="pt-6">
                                 <div id="google-signup-btn" className="flex justify-center transform scale-110" />
                                 {googleLoading && (
-                                    <p className="text-[9px] font-black text-zinc-900 text-center mt-4 animate-pulse uppercase tracking-widest">
+                                    <p className="text-xs font-black text-zinc-900 text-center mt-4 animate-pulse uppercase tracking-widest">
                                         {t('auth.register.connectingGoogle', undefined, 'Verifying Google...')}
                                     </p>
                                 )}
@@ -353,7 +353,7 @@ export default function RegisterPage() {
                                 <button
                                     type="button"
                                     onClick={nextStep}
-                                    className="flex-1 py-5 rounded-full bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-3 group"
+                                    className="flex-1 py-5 rounded-full bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.3em] flex items-center justify-center gap-3 group"
                                 >
                                     {t('common.continue', undefined, 'Continue')}
                                     <ChevronRight size={16} strokeWidth={3} className="group-hover:translate-x-1 transition-transform" />
@@ -395,10 +395,10 @@ export default function RegisterPage() {
                                     {/* Strength Bar */}
                                     <div className="mt-3 px-1">
                                         <div className="flex justify-between items-center mb-2">
-                                            <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">
+                                            <p className="text-xs font-black uppercase tracking-widest text-zinc-400">
                                                 {t('auth.register.strength.label', undefined, 'Security Strength')}
                                             </p>
-                                            <p className={`text-[9px] font-black uppercase tracking-widest ${strengthColor.replace('bg-', 'text-')}`}>
+                                            <p className={`text-xs font-black uppercase tracking-widest ${strengthColor.replace('bg-', 'text-')}`}>
                                                 {strength === 100 
                                                     ? t('auth.register.strength.strong', undefined, 'Very strong') 
                                                     : strength >= 60 
@@ -455,7 +455,7 @@ export default function RegisterPage() {
                                                 <Check className={`text-white w-3 h-3 transition-opacity ${formData.gdprConsent ? 'opacity-100' : 'opacity-0'}`} strokeWidth={4} />
                                             </div>
                                         </div>
-                                        <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-tight leading-relaxed group-hover:text-zinc-600 transition-colors">
+                                        <p className="text-xs font-bold text-zinc-400 uppercase tracking-tight leading-relaxed group-hover:text-zinc-600 transition-colors">
                                             {t('auth.register.accept', undefined, 'I agree to the')}{' '}
                                             <Link href="/legal/privacy" className="text-zinc-900 underline underline-offset-4">{t('auth.register.privacy', undefined, 'Privacy Policy')}</Link>{' '}
                                             {t('auth.register.and', undefined, 'and')}{' '}
@@ -478,7 +478,7 @@ export default function RegisterPage() {
                                                 <Check className={`text-white w-3 h-3 transition-opacity ${formData.marketingConsent ? 'opacity-100' : 'opacity-0'}`} strokeWidth={4} />
                                             </div>
                                         </div>
-                                        <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-tight leading-relaxed group-hover:text-zinc-600 transition-colors">
+                                        <p className="text-xs font-bold text-zinc-400 uppercase tracking-tight leading-relaxed group-hover:text-zinc-600 transition-colors">
                                             {t('auth.register.consent.marketing', undefined, 'Receive offers and news (optional)')}
                                         </p>
                                     </label>
@@ -492,7 +492,7 @@ export default function RegisterPage() {
                                 <button
                                     type="submit"
                                     disabled={loading || !formData.gdprConsent}
-                                    className="flex-1 py-5 rounded-full bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-3 relative overflow-hidden"
+                                    className="flex-1 py-5 rounded-full bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.3em] flex items-center justify-center gap-3 relative overflow-hidden"
                                 >
                                     {loading ? (
                                         <div className="flex items-center gap-3">
@@ -513,7 +513,7 @@ export default function RegisterPage() {
             </form>
 
             <motion.div variants={itemVariants} className="mt-12 text-center">
-                <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+                <p className="text-xs font-black text-zinc-400 uppercase tracking-widest">
                     {t('auth.register.hasAccount', undefined, 'Already part of Roomivo?')}{' '}
                     <Link href="/auth/login" className="text-zinc-900 hover:text-zinc-800 transition-colors underline underline-offset-4">
                         {t('auth.register.signIn', undefined, 'Sign In')}

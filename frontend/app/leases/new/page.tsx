@@ -309,7 +309,7 @@ export default function LeaseWizard() {
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 rounded-full text-[10px] font-black uppercase tracking-[0.3em] mb-6 shadow-md"
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 rounded-full text-xs font-black uppercase tracking-[0.3em] mb-6 shadow-md"
                         >
                             <FileText className="w-4 h-4" />
                             Digital Lease Protocol
@@ -337,7 +337,7 @@ export default function LeaseWizard() {
                                     }`}>
                                         {step > i + 1 ? <CheckCircle2 className="w-5 h-5 text-emerald-500" /> : i + 1}
                                     </div>
-                                    <span className={`mt-3 text-[10px] font-bold uppercase tracking-widest ${
+                                    <span className={`mt-3 text-xs font-bold uppercase tracking-widest ${
                                         step >= i + 1 ? 'text-zinc-950 dark:text-white' : 'text-zinc-400'
                                     }`}>{s}</span>
                                 </div>
@@ -520,14 +520,14 @@ export default function LeaseWizard() {
                                                 placeholder={t('lease.wizard.guarantorFullName')}
                                                 className="w-full px-5 py-4 bg-white/10 border border-white/20 rounded-xl text-sm font-semibold placeholder:text-white/30 outline-none focus:bg-white/20 transition-all text-white"
                                             />
-                                            <p className="text-[10px] font-bold text-white/40 mt-3 uppercase tracking-wider">
+                                            <p className="text-xs font-bold text-white/40 mt-3 uppercase tracking-wider">
                                                 {t('lease.wizard.guarantorNote')}
                                             </p>
                                         </div>
 
                                         <div className="bg-zinc-50 dark:bg-zinc-950/40 border border-zinc-150 dark:border-zinc-800/80 p-8 rounded-[2rem]">
                                             <h3 className="text-lg font-black text-zinc-950 dark:text-white uppercase tracking-tight mb-1">{t('lease.wizard.lessorSignature')}</h3>
-                                            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-6">{t('lease.wizard.signatureSubtitle')}</p>
+                                            <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-6">{t('lease.wizard.signatureSubtitle')}</p>
                                             <div ref={containerRef} className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-sm mb-4">
                                                 <SignatureCanvas
                                                     ref={sigCanvas}
@@ -537,7 +537,7 @@ export default function LeaseWizard() {
                                             </div>
                                             <button
                                                 onClick={() => sigCanvas.current?.clear()}
-                                                className="inline-flex items-center gap-2 text-[10px] font-bold text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 uppercase tracking-widest transition-colors"
+                                                className="inline-flex items-center gap-2 text-xs font-bold text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 uppercase tracking-widest transition-colors"
                                             >
                                                 <Trash2 className="w-3.5 h-3.5" />
                                                 {t('lease.wizard.clearSignature')}
@@ -574,26 +574,26 @@ export default function LeaseWizard() {
                                             </div>
                                             <div>
                                                 <h3 className="font-black uppercase tracking-wider text-xs leading-none">{t('lease.wizard.previewTitle')}</h3>
-                                                <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mt-1">Status: Generated</p>
+                                                <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest mt-1">Status: Generated</p>
                                             </div>
                                         </div>
                                         <div className="flex gap-2">
                                             <button
                                                 onClick={() => setStep(2)}
-                                                className="px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
+                                                className="px-4 py-2.5 text-xs font-bold uppercase tracking-widest bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
                                             >
                                                 {t('lease.wizard.modify')}
                                             </button>
                                             <button
                                                 onClick={printLease}
-                                                className="px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest bg-white/10 hover:bg-white/20 rounded-lg transition-colors flex items-center gap-1.5"
+                                                className="px-4 py-2.5 text-xs font-bold uppercase tracking-widest bg-white/10 hover:bg-white/20 rounded-lg transition-colors flex items-center gap-1.5"
                                             >
                                                 <Printer className="w-3.5 h-3.5" /> {t('lease.wizard.print')}
                                             </button>
                                             <button
                                                 onClick={handleCreateLease}
                                                 disabled={generating}
-                                                className="px-5 py-2.5 text-[10px] font-bold uppercase tracking-widest bg-white hover:bg-zinc-100 text-zinc-950 rounded-lg transition-colors flex items-center gap-1.5 shadow"
+                                                className="px-5 py-2.5 text-xs font-bold uppercase tracking-widest bg-white hover:bg-zinc-100 text-zinc-950 rounded-lg transition-colors flex items-center gap-1.5 shadow"
                                             >
                                                 {generating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
                                                 {t('lease.wizard.finalize')}

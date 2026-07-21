@@ -185,14 +185,14 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                     </div>
                     <div className="flex items-center gap-3">
                         {pendingCount > 0 && (
-                            <div className="flex items-center gap-2 px-4 py-2 bg-zinc-900 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">
+                            <div className="flex items-center gap-2 px-4 py-2 bg-zinc-900 text-white rounded-full text-xs font-black uppercase tracking-widest shadow-lg">
                                 <WifiOff className="w-3 h-3" />
                                 {pendingCount} {fr ? 'en attente' : 'pending'}
                             </div>
                         )}
                         <button
                             onClick={() => setLanguage(fr ? 'en' : 'fr')}
-                            className="px-3 py-1.5 rounded-full bg-zinc-100 hover:bg-zinc-200 text-[10px] font-black uppercase tracking-wider text-zinc-900 transition-colors"
+                            className="px-3 py-1.5 rounded-full bg-zinc-100 hover:bg-zinc-200 text-xs font-black uppercase tracking-wider text-zinc-900 transition-colors"
                         >
                             {fr ? 'EN' : 'FR'}
                         </button>
@@ -230,7 +230,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                             className="flex-1 flex flex-col"
                         >
                             <div className="space-y-6 mb-12">
-                                <div className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                                <div className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                                     {fr ? 'Photos du logement' : 'Property photos'}
                                 </div>
                                 <h1 className="text-5xl font-black tracking-tighter uppercase leading-[0.9]">
@@ -249,7 +249,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                                         <MapPin className="text-zinc-500 w-5 h-5" />
                                     </div>
                                     <div>
-                                        <div className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-1">
+                                        <div className="text-xs font-black uppercase tracking-widest text-zinc-400 mb-1">
                                             {fr ? 'Adresse du bien' : 'Property address'}
                                         </div>
                                         <div className="text-sm font-black uppercase truncate max-w-[200px]">{sessionDetails.target_address}</div>
@@ -259,7 +259,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
 
                             {rooms.length > 0 && (
                                 <div className="space-y-6 mb-12">
-                                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                                    <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                                         {fr ? 'Quelle pièce photographiez-vous ?' : 'Which room are you photographing?'}
                                     </label>
                                     <div className="grid grid-cols-2 gap-4">
@@ -269,7 +269,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                                                 onClick={() => setSelectedRoom(room)}
                                                 className={`p-6 rounded-[2.5rem] border-2 text-left transition-all ${selectedRoom?.index === room.index ? 'bg-zinc-900 border-zinc-900 shadow-2xl' : 'border-zinc-100'}`}
                                             >
-                                                <div className={`text-[10px] font-black uppercase tracking-widest mb-1 ${selectedRoom?.index === room.index ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                                                <div className={`text-xs font-black uppercase tracking-widest mb-1 ${selectedRoom?.index === room.index ? 'text-zinc-400' : 'text-zinc-500'}`}>
                                                     {fr ? 'Pièce' : 'Room'}
                                                 </div>
                                                 <div className={`text-sm font-black uppercase ${selectedRoom?.index === room.index ? 'text-white' : 'text-zinc-900'}`}>{room.label}</div>
@@ -299,7 +299,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                             className="flex-1 flex flex-col"
                         >
                             <div className="space-y-8 flex-1">
-                                <div className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                                <div className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                                     {fr ? 'Vérifiez vos photos' : 'Check your photos'}
                                 </div>
                                 <div className="grid grid-cols-1 gap-6 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
@@ -311,7 +311,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                                                 <img src={url} className="w-full h-full object-cover" alt={fr ? 'Aperçu' : 'Preview'} />
                                             )}
                                             <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
-                                            <div className="absolute bottom-6 left-6 text-white text-[10px] font-black uppercase tracking-widest pointer-events-none">
+                                            <div className="absolute bottom-6 left-6 text-white text-xs font-black uppercase tracking-widest pointer-events-none">
                                                 {files[i].type.startsWith('video') ? (fr ? 'Vidéo' : 'Video') : 'Photo'} &mdash; {i + 1}
                                             </div>
                                         </div>
@@ -328,7 +328,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                                 </button>
                                 <button
                                     onClick={() => fileInputRef.current?.click()}
-                                    className="w-full py-6 text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 hover:text-zinc-900 transition-all"
+                                    className="w-full py-6 text-xs font-black uppercase tracking-[0.4em] text-zinc-400 hover:text-zinc-900 transition-all"
                                 >
                                     {fr ? "Ajouter d'autres photos" : 'Add more photos'}
                                 </button>
@@ -384,7 +384,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                                 </button>
                                 <button
                                     onClick={() => setStep('finished')}
-                                    className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400"
+                                    className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400"
                                 >
                                     {fr ? "J'ai terminé" : "I'm done"}
                                 </button>
@@ -414,7 +414,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                             </div>
                             <button
                                 onClick={() => { setFiles([]); setPreviewUrls([]); setStep('intro'); }}
-                                className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400"
+                                className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400"
                             >
                                 {fr ? "Reprendre d'autres photos" : 'Take more photos'}
                             </button>
@@ -436,7 +436,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                 <footer className="mt-20 pt-12 border-t border-zinc-100 flex flex-col items-center gap-6">
                     <div className="flex items-center gap-3">
                         <Shield className="w-4 h-4 text-zinc-300" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-300">
+                        <span className="text-xs font-black uppercase tracking-[0.2em] text-zinc-300">
                             {fr ? 'Roomivo — Capture sécurisée' : 'Roomivo — Secure capture'}
                         </span>
                     </div>

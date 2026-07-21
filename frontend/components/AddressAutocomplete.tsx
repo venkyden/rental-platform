@@ -329,7 +329,7 @@ export default function AddressAutocomplete({
                                     <p className={`font-semibold text-sm truncate ${idx === activeIndex ? 'text-white' : 'text-zinc-900'}`}>
                                         {result.address}
                                     </p>
-                                    <p className={`text-[10px] uppercase tracking-widest font-black truncate ${
+                                    <p className={`text-xs uppercase tracking-widest font-black truncate ${
                                         idx === activeIndex ? 'text-white/60' : 'text-zinc-400'
                                     }`}>
                                         {[result.postal_code, result.city].filter(Boolean).join(' • ')}
@@ -365,7 +365,7 @@ export default function AddressAutocomplete({
                                     <p className="font-semibold text-sm truncate">
                                         {t('common.components.addressAutocomplete.useTyped', { query })}
                                     </p>
-                                    <p className={`text-[10px] uppercase tracking-widest font-black ${
+                                    <p className={`text-xs uppercase tracking-widest font-black ${
                                         activeIndex === results.length ? 'text-white/60' : 'text-zinc-400'
                                     }`}>
                                         {t('common.components.addressAutocomplete.notFound')}
@@ -375,7 +375,7 @@ export default function AddressAutocomplete({
                         )}
 
                         {/* Branding / Footer */}
-                        <li className="px-6 py-2 bg-zinc-50/50 text-[8px] font-black uppercase tracking-[0.2em] text-zinc-300 text-right">
+                        <li className="px-6 py-2 bg-zinc-50/50 text-xs font-black uppercase tracking-[0.2em] text-zinc-300 text-right">
                             {t('common.components.addressAutocomplete.poweredBy')}
                         </li>
                     </motion.ul>

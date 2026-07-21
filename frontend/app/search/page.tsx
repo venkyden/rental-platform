@@ -187,7 +187,7 @@ function SearchContent() {
                     <motion.div 
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl"
+                        className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.2em] shadow-2xl"
                     >
                         {t('search.discovery', undefined, 'Marketplace Discovery')}
                     </motion.div>
@@ -234,7 +234,7 @@ function SearchContent() {
 
                         <div className="flex-1 min-w-[200px] px-8 py-4 bg-zinc-100/50 rounded-[2rem] shadow-inner">
                             <div className="flex justify-between mb-2 px-1">
-                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">{t('search.filters.budget', undefined, 'Budget')}</span>
+                                <span className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400">{t('search.filters.budget', undefined, 'Budget')}</span>
                                 <span className="text-xs font-black text-zinc-900 tracking-tighter">€{priceRange}</span>
                             </div>
                             <input
@@ -248,7 +248,7 @@ function SearchContent() {
                             <select 
                                 value={propertyType}
                                 onChange={(e) => setPropertyType(e.target.value)}
-                                className="px-8 py-4 bg-zinc-100/50 rounded-[1.5rem] text-base md:text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 border-none focus:ring-0 cursor-pointer hover:bg-zinc-100 transition-colors"
+                                className="px-8 py-4 bg-zinc-100/50 rounded-[1.5rem] text-base md:text-xs font-black uppercase tracking-[0.2em] text-zinc-400 border-none focus:ring-0 cursor-pointer hover:bg-zinc-100 transition-colors"
                             >
                                 <option value="">{t('search.filters.allTypes', undefined, 'All Types')}</option>
                                 <option value="apartment">{t('properties.new.types.apartment')}</option>
@@ -264,7 +264,7 @@ function SearchContent() {
                                     setSortBy(field);
                                     setOrderDir(dir);
                                 }}
-                                className="px-8 py-4 bg-zinc-100/50 rounded-[1.5rem] text-base md:text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 border-none focus:ring-0 cursor-pointer hover:bg-zinc-100 transition-colors"
+                                className="px-8 py-4 bg-zinc-100/50 rounded-[1.5rem] text-base md:text-xs font-black uppercase tracking-[0.2em] text-zinc-400 border-none focus:ring-0 cursor-pointer hover:bg-zinc-100 transition-colors"
                             >
                                 <option value="created_at:desc">{t('search.sort.newest')}</option>
                                 <option value="monthly_rent:asc">{t('search.sort.priceAsc')}</option>
@@ -284,7 +284,7 @@ function SearchContent() {
                             <button
                                 key={c.key}
                                 onClick={() => setTypology(typology === c.key ? '' : c.key)}
-                                className={`px-6 py-2 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] transition-all duration-700 ${typology === c.key ? 'bg-zinc-900 text-white shadow-lg' : 'bg-zinc-50 text-zinc-400 hover:text-zinc-600'}`}
+                                className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-[0.2em] transition-all duration-700 ${typology === c.key ? 'bg-zinc-900 text-white shadow-lg' : 'bg-zinc-50 text-zinc-400 hover:text-zinc-600'}`}
                             >
                                 {c.label}
                             </button>
@@ -302,7 +302,7 @@ function SearchContent() {
                             <button
                                 key={i}
                                 onClick={() => filter.setter()}
-                                className={`px-6 py-2 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] flex items-center gap-2 transition-all duration-700 ${filter.state ? 'bg-zinc-900 text-white shadow-lg' : 'bg-zinc-50 text-zinc-400 hover:text-zinc-600'}`}
+                                className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-[0.2em] flex items-center gap-2 transition-all duration-700 ${filter.state ? 'bg-zinc-900 text-white shadow-lg' : 'bg-zinc-50 text-zinc-400 hover:text-zinc-600'}`}
                             >
                                 {filter.icon && <filter.icon className="w-3 h-3" />}
                                 {filter.label}
@@ -326,7 +326,7 @@ function SearchContent() {
                                 className="px-5 py-3 rounded-xl text-zinc-400 hover:text-zinc-900 hover:bg-zinc-200/50 transition-all flex items-center gap-2 group"
                             >
                                 <X className="w-3.5 h-3.5" />
-                                <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t('search.filters.resetExploration', undefined, 'Reset')}</span>
+                                <span className="text-xs font-black uppercase tracking-[0.2em]">{t('search.filters.resetExploration', undefined, 'Reset')}</span>
                             </button>
                             <button 
                                 onClick={() => setViewMode('grid')}
@@ -377,7 +377,7 @@ function SearchContent() {
                                 {!user && (
                                     <button 
                                         onClick={() => router.push('/onboarding')}
-                                        className="px-16 py-6 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.4em] rounded-[2rem] shadow-2xl hover:scale-105 active:scale-95 transition-all"
+                                        className="px-16 py-6 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.4em] rounded-[2rem] shadow-2xl hover:scale-105 active:scale-95 transition-all"
                                     >
                                         {t('search.filters.setupMatchProfile', undefined, 'Setup Match Profile')}
                                     </button>
@@ -414,7 +414,7 @@ function SearchContent() {
                                 <div className="mt-20 flex justify-center pb-20">
                                     <button 
                                         onClick={handleLoadMore}
-                                        className="px-16 py-6 bg-white text-zinc-900 border border-zinc-200 text-[10px] font-black uppercase tracking-[0.4em] rounded-[2rem] shadow-xl hover:bg-zinc-50 transition-all hover:scale-105 active:scale-95"
+                                        className="px-16 py-6 bg-white text-zinc-900 border border-zinc-200 text-xs font-black uppercase tracking-[0.4em] rounded-[2rem] shadow-xl hover:bg-zinc-50 transition-all hover:scale-105 active:scale-95"
                                     >
                                         {t('search.loadMore', undefined, 'Discover More Listings')}
                                     </button>

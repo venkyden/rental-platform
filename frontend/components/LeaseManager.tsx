@@ -111,7 +111,7 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
 
             {/* Lease Type Selection */}
             <div className="mb-8">
-                <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-3">
+                <label className="block text-xs font-black uppercase tracking-widest text-zinc-400 mb-3">
                     {t('lease.leaseType', undefined, 'Lease Type')} *
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -125,7 +125,7 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
                                 }`}
                         >
                             <div className="font-black text-sm uppercase tracking-tight">{info.name}</div>
-                            <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mt-1 group-hover:text-zinc-500">{info.duration}</div>
+                            <div className="text-xs font-bold text-zinc-400 uppercase tracking-widest mt-1 group-hover:text-zinc-500">{info.duration}</div>
                         </button>
                     ))}
                 </div>
@@ -136,19 +136,19 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
                 <div className="font-black text-zinc-900 mb-4 uppercase tracking-tighter">{selectedType.name}</div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{t('lease.duration', undefined, 'Duration')}:</span>
+                        <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">{t('lease.duration', undefined, 'Duration')}:</span>
                         <span className="text-xs font-bold text-zinc-900 uppercase tracking-tight">{selectedType.duration}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{t('lease.deposit', undefined, 'Deposit')}:</span>
+                        <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">{t('lease.deposit', undefined, 'Deposit')}:</span>
                         <span className="text-xs font-bold text-zinc-900 uppercase tracking-tight">{selectedType.depositInfo}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{t('lease.tenantNotice', undefined, 'Tenant Notice')}:</span>
+                        <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">{t('lease.tenantNotice', undefined, 'Tenant Notice')}:</span>
                         <span className="text-xs font-bold text-zinc-900 uppercase tracking-tight">{selectedType.tenantNotice}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{t('lease.landlordNotice', undefined, 'Landlord Notice')}:</span>
+                        <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">{t('lease.landlordNotice', undefined, 'Landlord Notice')}:</span>
                         <span className="text-xs font-bold text-zinc-900 uppercase tracking-tight">{selectedType.landlordNotice}</span>
                     </div>
                 </div>
@@ -157,7 +157,7 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
             {/* Duration for Bail Mobilité */}
             {leaseType === 'mobilite' && (
                 <div className="mb-6">
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">
+                    <label className="block text-xs font-black uppercase tracking-widest text-zinc-400 mb-2">
                         {t('lease.mobiliteDuration', undefined, 'Duration (1-10 months)')} *
                     </label>
                     <input
@@ -173,7 +173,7 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
 
             {/* Tenant Email */}
             <div className="mb-6">
-                <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">
+                <label className="block text-xs font-black uppercase tracking-widest text-zinc-400 mb-2">
                     {t('lease.tenantEmail', undefined, 'Tenant Email')} *
                 </label>
                 <input
@@ -187,7 +187,7 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
 
             {/* Start Date */}
             <div className="mb-10">
-                <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">
+                <label className="block text-xs font-black uppercase tracking-widest text-zinc-400 mb-2">
                     {t('lease.startDate', undefined, 'Lease Start Date')} *
                 </label>
                 <input
@@ -203,11 +203,11 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
                 <div className="text-xs font-black uppercase tracking-widest text-zinc-400 mb-4">{t('lease.financialConditions', undefined, 'Financial Conditions')}</div>
                 <div className="grid grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-1">{t('lease.monthlyRent', undefined, 'Monthly Rent')}</label>
+                        <label className="block text-xs font-black uppercase tracking-widest text-zinc-400 mb-1">{t('lease.monthlyRent', undefined, 'Monthly Rent')}</label>
                         <div className="text-lg font-black text-zinc-900">{monthlyRent} €</div>
                     </div>
                     <div>
-                        <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-1">{t('lease.charges', undefined, 'Charges')}</label>
+                        <label className="block text-xs font-black uppercase tracking-widest text-zinc-400 mb-1">{t('lease.charges', undefined, 'Charges')}</label>
                         <input
                             type="number"
                             value={(customCharges === undefined || isNaN(customCharges)) ? '' : customCharges}
@@ -218,7 +218,7 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
                     </div>
                     {leaseType !== 'mobilite' && (
                         <div className="col-span-2">
-                            <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-1">
+                            <label className="block text-xs font-black uppercase tracking-widest text-zinc-400 mb-1">
                                 {t('lease.securityDeposit', undefined, 'Security Deposit')} ({selectedType.depositInfo})
                             </label>
                             <input
@@ -242,7 +242,7 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
             <button
                 onClick={handleGenerate}
                 disabled={loading || !tenantEmail || !startDate}
-                className="w-full py-6 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.4em] rounded-[2rem] shadow-2xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed group overflow-hidden relative"
+                className="w-full py-6 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.4em] rounded-[2rem] shadow-2xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed group overflow-hidden relative"
             >
                 <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
                 <span className="relative z-10 flex items-center justify-center gap-3">

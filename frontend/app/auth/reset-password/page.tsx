@@ -107,7 +107,7 @@ function ResetPasswordContent() {
                 <div className="pt-4">
                     <Link
                         href="/auth/login"
-                        className="block w-full py-4 bg-zinc-900 text-white font-black uppercase text-[10px] tracking-widest rounded-2xl hover:bg-zinc-800 hover:shadow-xl hover:shadow-zinc-900/10 active:scale-[0.98] transition-all"
+                        className="block w-full py-4 bg-zinc-900 text-white font-black uppercase text-xs tracking-widest rounded-2xl hover:bg-zinc-800 hover:shadow-xl hover:shadow-zinc-900/10 active:scale-[0.98] transition-all"
                     >
                         {t('auth.resetPassword.signInNow', undefined, 'Sign in now')}
                     </Link>
@@ -125,7 +125,7 @@ function ResetPasswordContent() {
                 <h2 className="text-2xl font-black text-zinc-900 uppercase tracking-tight">
                     {t('auth.resetPassword.title', undefined, 'Set new password')}
                 </h2>
-                <p className="mt-2 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+                <p className="mt-2 text-xs font-bold text-zinc-400 uppercase tracking-widest">
                     {t('auth.resetPassword.subtitle', undefined, 'Enter your new password below')}
                 </p>
             </div>
@@ -140,7 +140,7 @@ function ResetPasswordContent() {
                     <div className="pt-2">
                         <Link
                             href="/auth/forgot-password"
-                            className="inline-block text-[10px] font-black uppercase tracking-widest text-zinc-300 hover:text-white transition-colors underline underline-offset-4"
+                            className="inline-block text-xs font-black uppercase tracking-widest text-zinc-300 hover:text-white transition-colors underline underline-offset-4"
                         >
                             {t('auth.resetPassword.requestNew', undefined, 'Request new reset link')}
                         </Link>
@@ -162,7 +162,7 @@ function ResetPasswordContent() {
                     )}
 
                     <div className="space-y-1">
-                        <label htmlFor="password" className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1 mb-1 block">
+                        <label htmlFor="password" className="text-xs font-black text-zinc-400 uppercase tracking-widest ml-1 mb-1 block">
                             {t('auth.resetPassword.newPasswordLabel', undefined, 'New Password')}
                         </label>
                         <div className="relative">
@@ -187,13 +187,13 @@ function ResetPasswordContent() {
                                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                             </button>
                         </div>
-                        <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-tight leading-relaxed ml-1 pt-1 opacity-70">
+                        <p className="text-xs font-bold text-zinc-400 uppercase tracking-tight leading-relaxed ml-1 pt-1 opacity-70">
                             {t('auth.resetPassword.requirements', undefined, 'Must be 8+ characters with uppercase, lowercase, and number')}
                         </p>
                     </div>
 
                     <div className="space-y-1">
-                        <label htmlFor="confirmPassword" className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1 mb-1 block">
+                        <label htmlFor="confirmPassword" className="text-xs font-black text-zinc-400 uppercase tracking-widest ml-1 mb-1 block">
                             {t('auth.resetPassword.confirmPasswordLabel', undefined, 'Confirm Password')}
                         </label>
                         <div className="relative">
@@ -223,7 +223,7 @@ function ResetPasswordContent() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full py-5 bg-zinc-900 text-white font-black uppercase text-[10px] tracking-widest rounded-2xl hover:bg-zinc-800 focus:outline-none focus:ring-4 focus:ring-zinc-900/10 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-xl shadow-zinc-900/10 active:scale-[0.98] mt-2"
+                        className="w-full py-5 bg-zinc-900 text-white font-black uppercase text-xs tracking-widest rounded-2xl hover:bg-zinc-800 focus:outline-none focus:ring-4 focus:ring-zinc-900/10 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-xl shadow-zinc-900/10 active:scale-[0.98] mt-2"
                     >
                         {loading ? (
                             <span className="flex items-center justify-center gap-2">
@@ -238,7 +238,7 @@ function ResetPasswordContent() {
                     <div className="text-center pt-2">
                         <Link
                             href="/auth/login"
-                            className="text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 transition-colors underline underline-offset-4"
+                            className="text-xs font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 transition-colors underline underline-offset-4"
                         >
                             {t('auth.forgotPassword.backToSignIn', undefined, 'Back to sign in')}
                         </Link>
@@ -254,7 +254,7 @@ function LoadingFallback() {
     return (
         <div className="flex flex-col items-center justify-center py-12 space-y-4">
             <Loader2 className="animate-spin text-zinc-900 w-12 h-12" strokeWidth={2.5} />
-            <p className="text-zinc-600 font-bold uppercase text-[10px] tracking-widest">{t('common.loading', undefined, 'Loading...')}</p>
+            <p className="text-zinc-600 font-bold uppercase text-xs tracking-widest">{t('common.loading', undefined, 'Loading...')}</p>
         </div>
     );
 }

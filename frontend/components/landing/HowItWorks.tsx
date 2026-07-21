@@ -81,7 +81,7 @@ export default function HowItWorks() {
                   <div className="w-24 h-24 rounded-[2.5rem] bg-zinc-50 border border-zinc-100 text-zinc-900 flex items-center justify-center shadow-xl shadow-zinc-900/5 group-hover:bg-zinc-900 group-hover:text-white transition-all duration-700 group-hover:scale-110 group-hover:-rotate-3">
                     {item.icon}
                   </div>
-                  <div className="text-7xl font-black text-zinc-100 tracking-tighter group-hover:text-zinc-900/5 transition-colors duration-700 italic">
+                  <div className="text-5xl md:text-7xl font-black text-zinc-100 tracking-tighter group-hover:text-zinc-900/5 transition-colors duration-700 italic">
                     {item.step}
                   </div>
                 </div>

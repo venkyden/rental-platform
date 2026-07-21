@@ -57,7 +57,7 @@ export default function SearchMap({ properties, center = [48.8566, 2.3522] }: Se
             className: 'custom-div-icon',
             html: `
                 <div class="group relative flex items-center justify-center">
-                    <div class="px-3 py-1.5 rounded-full bg-zinc-900 text-white text-[10px] font-black shadow-2xl border-2 border-white/20 transition-all group-hover:scale-110 group-hover:-translate-y-1">
+                    <div class="px-3 py-1.5 rounded-full bg-zinc-900 text-white text-xs font-black shadow-2xl border-2 border-white/20 transition-all group-hover:scale-110 group-hover:-translate-y-1">
                         €${price}
                     </div>
                 </div>
@@ -71,7 +71,7 @@ export default function SearchMap({ properties, center = [48.8566, 2.3522] }: Se
         <div className="w-full h-full bg-zinc-50 flex items-center justify-center overflow-hidden rounded-[3.5rem] border border-zinc-100 shadow-2xl">
             <div className="flex flex-col items-center gap-4">
                 <div className="w-16 h-16 border-4 border-zinc-100 border-t-zinc-900 rounded-full animate-spin" />
-                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 animate-pulse">Mapping Marketplace...</span>
+                <span className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400 animate-pulse">Mapping Marketplace...</span>
             </div>
         </div>
     );
@@ -123,14 +123,14 @@ export default function SearchMap({ properties, center = [48.8566, 2.3522] }: Se
                                     </div>
                                     
                                     <div className="px-1">
-                                        <h4 className="text-[11px] font-black uppercase tracking-widest text-zinc-900 mb-1 truncate">
+                                        <h4 className="text-xs font-black uppercase tracking-widest text-zinc-900 mb-1 truncate">
                                             {property.title}
                                         </h4>
-                                        <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mb-3">{property.city}</p>
+                                        <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-3">{property.city}</p>
                                         
                                         <button
                                             onClick={() => router.push(`/properties/${property.id}`)}
-                                            className="w-full py-4 bg-zinc-900 text-white text-[9px] font-black uppercase tracking-[0.3em] rounded-xl hover:bg-zinc-800 transition-all active:scale-95 shadow-xl"
+                                            className="w-full py-4 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.3em] rounded-xl hover:bg-zinc-800 transition-all active:scale-95 shadow-xl"
                                         >
                                             {t('search.property.viewDetails', undefined, 'Explore')} →
                                         </button>
@@ -146,7 +146,7 @@ export default function SearchMap({ properties, center = [48.8566, 2.3522] }: Se
             <div className="absolute top-8 left-8 p-4 glass-card border-none rounded-2xl shadow-2xl pointer-events-none">
                 <div className="flex items-center gap-3">
                     <div className="w-3 h-3 rounded-full bg-zinc-900 shadow-[0_0_10px_rgba(24,24,27,0.5)]" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-900">High Compatibility</span>
+                    <span className="text-xs font-black uppercase tracking-widest text-zinc-900">High Compatibility</span>
                 </div>
             </div>
         </motion.div>

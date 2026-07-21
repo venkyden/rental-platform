@@ -52,7 +52,7 @@ function BioSection() {
 
     return (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass-card mb-8">
-            <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.4em] mb-6">
+            <h3 className="text-xs font-black text-zinc-400 uppercase tracking-[0.4em] mb-6">
                 {t('bio.sectionTitle', undefined, 'Public presentation')}
             </h3>
             <div className="space-y-5">
@@ -82,10 +82,10 @@ function BioSection() {
                         placeholder={t('bio.placeholder', undefined, 'Your situation (student, employed…), your rhythm of life, why this city. 40–300 characters.')}
                     />
                     <div className="flex justify-between mt-2">
-                        <p className="text-[11px] text-zinc-400 max-w-md">
+                        <p className="text-xs text-zinc-400 max-w-md">
                             {t('bio.guidance', undefined, 'Required to publish a listing or apply. Do not include origin, religion, family status, health, or contact details.')}
                         </p>
-                        <span className={`text-[11px] font-bold shrink-0 ${bioValid ? 'text-zinc-400' : 'text-red-500'}`}>
+                        <span className={`text-xs font-bold shrink-0 ${bioValid ? 'text-zinc-400' : 'text-red-500'}`}>
                             {bioLength}/300
                         </span>
                     </div>
@@ -93,7 +93,7 @@ function BioSection() {
                 <button
                     onClick={handleSave}
                     disabled={saving || !bioValid}
-                    className="px-8 py-3 bg-zinc-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-40"
+                    className="px-8 py-3 bg-zinc-900 text-white rounded-2xl text-xs font-black uppercase tracking-[0.3em] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-40"
                 >
                     {saving ? t('common.saving', undefined, 'Saving…') : t('common.save', undefined, 'Save')}
                 </button>
@@ -133,7 +133,7 @@ export default function ProfilePage() {
                              <div>
                                  <h2 className="text-2xl font-black text-zinc-900 uppercase tracking-tighter leading-none mb-2">{user?.full_name}</h2>
                                  <p className="text-zinc-400 font-medium tracking-tight mb-3">{user?.email}</p>
-                                 <div className="inline-flex items-center px-3 py-1 bg-zinc-900/5 text-zinc-900 text-[8px] font-black rounded-full border border-zinc-900/10 uppercase tracking-[0.2em]">
+                                 <div className="inline-flex items-center px-3 py-1 bg-zinc-900/5 text-zinc-900 text-xs font-black rounded-full border border-zinc-900/10 uppercase tracking-[0.2em]">
                                      {user?.role}
                                  </div>
                              </div>
@@ -141,8 +141,8 @@ export default function ProfilePage() {
 
                         <div className="space-y-6 pt-6 border-t border-zinc-100">
                              <div className="flex justify-between items-center">
-                                 <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.4em]">{t('profile.preferences.title', undefined, 'Rental Preferences')}</h3>
-                                 <Link href="/profile/preferences" className="text-zinc-900 hover:scale-105 transition-transform text-[10px] font-black uppercase tracking-widest">
+                                 <h3 className="text-xs font-black text-zinc-400 uppercase tracking-[0.4em]">{t('profile.preferences.title', undefined, 'Rental Preferences')}</h3>
+                                 <Link href="/profile/preferences" className="text-zinc-900 hover:scale-105 transition-transform text-xs font-black uppercase tracking-widest">
                                      {t('common.edit', undefined, 'Edit')}
                                  </Link>
                              </div>
@@ -223,7 +223,7 @@ export default function ProfilePage() {
 
                      <button 
                          onClick={logout} 
-                         className="w-full py-5 bg-zinc-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.4em] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 shadow-2xl"
+                         className="w-full py-5 bg-zinc-900 text-white rounded-2xl text-xs font-black uppercase tracking-[0.4em] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 shadow-2xl"
                      >
                          <LogOut className="w-5 h-5" />
                          {t('auth.logoutAction', undefined, 'Logout')}
