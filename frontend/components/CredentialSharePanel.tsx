@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Copy, Check, Download, ExternalLink, ShieldCheck } from 'lucide-react';
+import { useLanguage } from '@/lib/LanguageContext';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://roomivo.app';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
@@ -15,6 +16,8 @@ interface Props {
 }
 
 export default function CredentialSharePanel({ credentialId, subjectRole, expiresAt, assuranceSummary }: Props) {
+    const { language } = useLanguage();
+    const fr = language === 'fr';
     const verifyUrl = `${SITE_URL}/c/${credentialId}`;
     const [copied, setCopied] = useState(false);
 
@@ -24,7 +27,10 @@ export default function CredentialSharePanel({ credentialId, subjectRole, expire
         setTimeout(() => setCopied(false), 2000);
     };
 
-    const roleLabel = subjectRole === 'landlord' ? 'propriétaire' : 'locataire';
+    const roleLabel = subjectRole === 'landlord'
+        ? (fr ? 'propriétaire' : 'landlord')
+        : (fr ? 'locataire' : 'tenant');
+    const expiryDate = new Date(expiresAt).toLocaleDateString(fr ? 'fr-FR' : 'en-GB');
 
     return (
         <div className="rounded-2xl border border-zinc-200 bg-white overflow-hidden">
@@ -32,10 +38,13 @@ export default function CredentialSharePanel({ credentialId, subjectRole, expire
             <div className="bg-emerald-50 border-b border-emerald-100 px-5 py-4 flex items-center gap-3">
                 <ShieldCheck className="w-6 h-6 text-emerald-600 shrink-0" />
                 <div>
-                    <p className="font-semibold text-emerald-800">Attestation émise</p>
+                    <p className="font-semibold text-emerald-800">
+                        {fr ? 'Attestation émise' : 'Certificate issued'}
+                    </p>
                     <p className="text-sm text-emerald-700">
-                        Partagez ce lien pour prouver votre profil {roleLabel} ·{' '}
-                        expire le {new Date(expiresAt).toLocaleDateString('fr-FR')}
+                        {fr
+                            ? `Partagez ce lien pour prouver votre profil ${roleLabel} · expire le ${expiryDate}`
+                            : `Share this link to prove your ${roleLabel} profile · expires ${expiryDate}`}
                     </p>
                 </div>
             </div>
@@ -52,7 +61,7 @@ export default function CredentialSharePanel({ credentialId, subjectRole, expire
                     <button
                         onClick={copyLink}
                         className="shrink-0 p-1.5 rounded-lg hover:bg-zinc-200 transition-colors"
-                        title="Copier"
+                        title={fr ? 'Copier' : 'Copy'}
                     >
                         {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4 text-zinc-500" />}
                     </button>
@@ -60,9 +69,11 @@ export default function CredentialSharePanel({ credentialId, subjectRole, expire
 
                 {/* Anti-phishing reminder */}
                 <p className="text-xs text-zinc-400 leading-relaxed">
-                    Conseil anti-phishing : indiquez à votre interlocuteur de saisir le code{' '}
-                    <span className="font-mono font-semibold text-zinc-600">{credentialId.slice(0, 12)}…</span>{' '}
-                    directement sur <strong>roomivo.app</strong> plutôt que de cliquer sur le lien.
+                    {fr ? 'Conseil anti-phishing : indiquez à votre interlocuteur de saisir le code ' : 'Anti-phishing tip: ask the other person to type the code '}
+                    <span className="font-mono font-semibold text-zinc-600">{credentialId.slice(0, 12)}…</span>
+                    {fr ? ' directement sur ' : ' directly on '}
+                    <strong>roomivo.app</strong>
+                    {fr ? ' plutôt que de cliquer sur le lien.' : ' rather than clicking the link.'}
                 </p>
 
                 {/* QR */}
@@ -79,7 +90,7 @@ export default function CredentialSharePanel({ credentialId, subjectRole, expire
                         className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-zinc-200 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
                     >
                         <ExternalLink className="w-4 h-4" />
-                        Voir la page
+                        {fr ? 'Voir la page' : 'Open the page'}
                     </a>
                     <a
                         href={`${API_URL}/credentials/${credentialId}/evidence.pdf`}
@@ -88,7 +99,7 @@ export default function CredentialSharePanel({ credentialId, subjectRole, expire
                         className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-zinc-900 text-sm font-medium text-white hover:bg-zinc-800 transition-colors"
                     >
                         <Download className="w-4 h-4" />
-                        Télécharger PDF
+                        {fr ? 'Télécharger le PDF' : 'Download PDF'}
                     </a>
                 </div>
             </div>

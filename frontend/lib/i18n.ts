@@ -33,6 +33,10 @@ export const translations = {
             verification: "Verification status",
         },
         verification: {
+            credential: {
+                ready: "Your profile is verified enough to generate a signed, shareable certificate.",
+                generate: "Generate my verified certificate",
+            },
             buttons: {
                 ownership: "Verify ownership",
             },
@@ -2867,6 +2871,10 @@ export const translations = {
             verification: "Statut de vérification",
         },
         verification: {
+            credential: {
+                ready: "Votre profil est suffisamment vérifié pour générer une attestation signée et partageable.",
+                generate: "Générer mon attestation vérifiée",
+            },
             buttons: {
                 ownership: "Vérifier la propriété",
             },

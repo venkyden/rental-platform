@@ -22,6 +22,7 @@ import { useToast } from '@/lib/ToastContext';
 import PremiumLayout from '@/components/PremiumLayout';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useLanguage } from '@/lib/LanguageContext';
+import CredentialExplainer from '@/components/CredentialExplainer';
 import { useAuth } from '@/lib/useAuth';
 
 type GuarantorType = 'selection' | 'visale' | 'garantme' | 'physical' | 'none';
@@ -485,6 +486,9 @@ export default function GuarantorVerifyPage() {
                                                     </div>
                                                     <span className="text-zinc-900 font-bold text-xs uppercase tracking-widest shrink-0 transition-transform group-hover:translate-x-1">&rarr;</span>
                                                 </button>
+
+                                                {/* Why a verified profile can stand in for a guarantor */}
+                                                <CredentialExplainer role="tenant" compact />
                                             </div>
                                         </motion.div>
                                     )}

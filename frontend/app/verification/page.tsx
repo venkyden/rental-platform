@@ -29,6 +29,7 @@ import {
 import { apiClient } from '@/lib/api';
 import { useToast } from '@/lib/ToastContext';
 import CredentialSharePanel from '@/components/CredentialSharePanel';
+import CredentialExplainer from '@/components/CredentialExplainer';
 
 const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -520,6 +521,9 @@ export default function VerificationPage() {
                                                         </button>
                                                     </div>
                                                 )}
+                                                <div className="max-w-xl mx-auto">
+                                                    <CredentialExplainer role="tenant" compact />
+                                                </div>
                                             </div>
                                         )
                                     )}
@@ -540,7 +544,8 @@ export default function VerificationPage() {
 
                     {/* Credential issuance */}
                     {statusData?.identity_verified && (
-                        <motion.div variants={itemVariants} className="max-w-lg mx-auto">
+                        <motion.div variants={itemVariants} className="max-w-lg mx-auto space-y-6">
+                            <CredentialExplainer role={hasPropertyTab ? 'landlord' : 'tenant'} />
                             {credential ? (
                                 <CredentialSharePanel
                                     credentialId={credential.credentialId}
@@ -550,7 +555,7 @@ export default function VerificationPage() {
                             ) : (
                                 <div className="text-center space-y-4">
                                     <p className="text-sm text-zinc-500">
-                                        Votre profil est suffisamment vérifié pour générer une attestation signée et partageable.
+                                        {t('verification.credential.ready', undefined, 'Your profile is verified enough to generate a signed, shareable certificate.')}
                                     </p>
                                     <button
                                         onClick={handleIssueMine}
@@ -562,7 +567,7 @@ export default function VerificationPage() {
                                         ) : (
                                             <ShieldCheck className="w-4 h-4" />
                                         )}
-                                        Générer mon attestation vérifiée
+                                        {t('verification.credential.generate', undefined, 'Generate my verified certificate')}
                                     </button>
                                 </div>
                             )}
