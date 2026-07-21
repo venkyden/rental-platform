@@ -4,7 +4,7 @@ import secrets
 from datetime import datetime, timedelta
 from typing import Optional
 
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.models.dossier import TrustDossier, DossierShareLink
@@ -14,7 +14,7 @@ from app.services.storage import storage
 from app.core.timeutils import naive_utcnow
 
 class DossierService:
-    async def compile_dossier(self, db: Session, user_id: str, role: str) -> TrustDossier:
+    async def compile_dossier(self, db: AsyncSession, user_id: str, role: str) -> TrustDossier:
         """
         Orchestrates the compilation of a Universal Trust Dossier.
         Fetches the latest Credential, generates the PDF, stores it in S3, and returns the TrustDossier.
@@ -24,7 +24,7 @@ class DossierService:
         # For now, we assume the latest credential for this user/role exists.
         from app.models.credential import Credential
         
-        latest_cred = db.scalar(
+        latest_cred = await db.scalar(
             select(Credential)
             .where(Credential.subject_user_id == user_id, Credential.subject_role == role)
             .order_by(Credential.issued_at.desc())
@@ -34,7 +34,7 @@ class DossierService:
             raise ValueError(f"No valid credential found for user {user_id} and role {role}")
             
         # 1. Create or update the TrustDossier record
-        dossier = db.scalar(
+        dossier = await db.scalar(
             select(TrustDossier)
             .where(TrustDossier.user_id == user_id, TrustDossier.role == role)
         )
@@ -47,12 +47,12 @@ class DossierService:
                 credential_id=latest_cred.id
             )
             db.add(dossier)
-            db.commit()
-            db.refresh(dossier)
+            await db.commit()
+            await db.refresh(dossier)
         else:
             dossier.status = "compiling"
             dossier.credential_id = latest_cred.id
-            db.commit()
+            await db.commit()
 
         # 2. Generate PDF
         try:
@@ -75,18 +75,18 @@ class DossierService:
             dossier.status = "ready"
             dossier.expires_at = latest_cred.expires_at
             
-            db.commit()
-            db.refresh(dossier)
+            await db.commit()
+            await db.refresh(dossier)
             return dossier
             
         except Exception as e:
             dossier.status = "failed"
-            db.commit()
+            await db.commit()
             raise RuntimeError(f"Dossier compilation failed: {e}") from e
 
-    def create_share_link(
+    async def create_share_link(
         self, 
-        db: Session, 
+        db: AsyncSession, 
         dossier_id: str, 
         expires_in_days: int = 7, 
         target_user_id: Optional[str] = None
@@ -94,7 +94,7 @@ class DossierService:
         """
         Creates a securely tokenized share link for a given Dossier.
         """
-        dossier = db.scalar(select(TrustDossier).where(TrustDossier.id == dossier_id))
+        dossier = await db.scalar(select(TrustDossier).where(TrustDossier.id == dossier_id))
         if not dossier:
             raise ValueError("Dossier not found")
             
@@ -112,8 +112,8 @@ class DossierService:
             expires_at=expires_at
         )
         db.add(link)
-        db.commit()
-        db.refresh(link)
+        await db.commit()
+        await db.refresh(link)
         return link
 
 dossier_service = DossierService()
