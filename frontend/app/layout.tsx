@@ -102,7 +102,7 @@ export default function RootLayout({
   const jsonLdString = JSON.stringify(jsonLd).replace(/</g, '\\u003c');
 
   return (
-    <html lang="fr" suppressHydrationWarning>
+    <html lang="fr" className="overflow-x-hidden" suppressHydrationWarning>
       <head>
         <script
           type="application/ld+json"
@@ -110,7 +110,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className="antialiased bg-zinc-50 text-zinc-900 min-h-screen selection:bg-zinc-900 selection:text-white"
+        className="antialiased bg-zinc-50 text-zinc-900 min-h-screen selection:bg-zinc-900 selection:text-white overflow-x-hidden"
         style={{ fontFamily: fontStack }}
       >
         <LanguageProvider>

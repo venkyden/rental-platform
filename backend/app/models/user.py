@@ -131,6 +131,7 @@ class User(Base):
 
     # Relationships
     applications = relationship("Application", back_populates="tenant")
+    dossiers = relationship("TrustDossier", back_populates="user", cascade="all, delete-orphan")
 
 
 class VerificationRecord(Base):

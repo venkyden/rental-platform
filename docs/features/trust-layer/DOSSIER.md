@@ -15,7 +15,8 @@ moving on ([[roomivo-test-per-feature]]).
 
 Status legend: 🔴 blocking · 🟠 important · 🟡 polish · ✅ done.
 Verdicts: **KEEP / FIX / REPLACE / KILL / BUILD**.
-Last updated: 2026-06-24. Status: **Phase 1 complete**; INTL fiscal-capacity rail + UI + solvency_verified rollup **shipped & merged** (PRs #6–#11); launch prereqs done (Gemini billing, privacy/subprocessor disclosure, logos, consent). **2026-06-24: e-sign legal gate CLEARED (§0.16) — both paths (upload + generate) green-lit.** Open/next: **e-sign + lease module (items 8/9)** = the next major feature; ✅ deposit-binding + SCI (items 15/16) **shipped 2026-07-12** (branch `feat/deposit-binding-sci`); INTL HIGH deferred to EUDI. ✅ Lawyer's **written** e-sign/lease opinion now on file (2026-06-20, Mathieu Galand — `docs/legal/2026-06-20-avis-avocat-esign-lease-galand.md`); PRD §7.6 written-blessing item closed.
+Last updated: 2026-07-20. Status: **Phase 1 complete**; INTL fiscal-capacity rail + UI + solvency_verified rollup **shipped & merged** (PRs #6–#11); launch prereqs done (Gemini billing, privacy/subprocessor disclosure, logos, consent). **2026-06-24: e-sign legal gate CLEARED (§0.16) — both paths (upload + generate) green-lit.** Open/next: **e-sign + lease module (items 8/9)** = the next major feature; ✅ deposit-binding + SCI (items 15/16) **shipped 2026-07-12** (branch `feat/deposit-binding-sci`); INTL HIGH deferred to EUDI. ✅ Lawyer's **written** e-sign/lease opinion now on file (2026-06-20, Mathieu Galand — `docs/legal/2026-06-20-avis-avocat-esign-lease-galand.md`); PRD §7.6 written-blessing item closed.
+- **Universal Trust Dossier scope fixed 2026-07-20 (§0.20):** dossier = banded claims + signed credential only, never raw source documents. First attempt (PR #71) rejected — it bundled every stored `Document` into a shared PDF and broke the API import (`app.api.deps`); see §0.20 and the rebuild.
 - **Phase 1 complete (2026-06-13):** GLI removed; credential core; FR identity MEDIUM rail + avis cross-check; FR HIGH solvency (2D-Doc ECDSA); property control (taxe foncière, PR-8 fixed); both-sided wiring (/c/ verify page, issue-mine, QR share, anti-phishing).
 - **Item 2 (Credential core) landed 2026-06-05:** `Credential` model, `app/services/credential.py` (Ed25519 sign/verify), `app/routers/credentials.py` (POST /issue, GET /{id}, GET /public-key, GET /evidence.pdf, POST /issue-mine, POST /revoke), Alembic migration `c1d2e3f4a5b6`, 23 integration tests green. Assurance guards AS-1/AS-2/AS-3 enforced at signing time.
 - **DPE reclassification enforcement (§5.4 PR-1/3/4/5) landed 2026-06-10.**
@@ -154,6 +155,32 @@ Last updated: 2026-06-24. Status: **Phase 1 complete**; INTL fiscal-capacity rai
     is a *deployer*. High-risk Annex III obligations deferred to **2 Dec 2027**
     (Digital Omnibus, 7 May 2026) — runway, but architect to stay out, don't lean on it.
     Separate from GDPR data-residency (the Gemini→Vertex-EU question, §9 build notes).
+
+### Decisions added 2026-07-20 (Universal Trust Dossier)
+
+20. **The shareable dossier carries banded claims + the signed credential ONLY —
+    never raw source documents.** Set by the product owner on 2026-07-20 after the
+    first implementation attempt (PR #71) compiled *every* stored `Document` for a
+    user into a single PDF, persisted it in R2, and exposed it via a share link.
+    That re-materialises exactly the PII the verify-and-forget retrofit (item 12,
+    §9) removed, and it does so in the **most portable, hardest-to-recall form**:
+    a downloadable file in a third party's hands. Independently flagged Critical by
+    CodeRabbit on the same PR.
+    **The rule:** the dossier is a *presentation layer over the credential*. It may
+    render the banded claims already inside the signed credential (identity band,
+    solvency band, funds band, property-control label, MRH status), the assurance
+    summary, the "does not prove" disclosure, validity dates, the verification code
+    and the Ed25519 signature. It may **not** embed, append, link to, or re-download
+    an identity document, avis d'imposition, payslip, bank statement, guarantor
+    file, or any other source artefact — not watermarked, not redacted, not
+    "temporarily".
+    **Consequence:** a dossier is reproducible from the credential alone. If a
+    stored dossier PDF is ever added, it is a cache of public claims, must inherit
+    the credential's TTL, must be revocable with it, and must be wired into
+    `gdpr.py` erasure at the same time it is introduced — not afterwards.
+    **Test that enforces this:** a generator-level assertion that no `Document`
+    row / storage key is read during dossier build. If that test is ever deleted,
+    the doctrine is being violated.
 
 ---
 

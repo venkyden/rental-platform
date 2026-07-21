@@ -29,6 +29,10 @@ export default defineConfig({
                 ...devices['Desktop Safari']
             },
         },
+        {
+            name: 'Mobile Chrome',
+            use: { ...devices['Pixel 5'] },
+        },
     ],
     webServer: {
         command: 'npx next start -p 3001 -H 127.0.0.1',

@@ -61,6 +61,15 @@ The credential states banded claims ("solvency ≥ 3.0", "identity: HIGH"), neve
 Assurance levels: HIGH (state-cryptographic) / MEDIUM (OCR+liveness) / UNVERIFIED.
 **Never inflate a MEDIUM to HIGH.**
 
+**Anything shareable renders the credential, never the documents behind it** (set
+2026-07-20, DOSSIER §0.20). The trust dossier / shared PDF / verify page may show
+banded claims, the assurance summary, the "does not prove" disclosure and the
+signature — it must never embed, append or re-download an identity document, avis,
+payslip, bank statement or guarantor file, even watermarked. A shared artefact is
+the least recallable place PII can land. If a rendered artefact is cached at rest,
+it inherits the credential's TTL, is revoked with it, and is wired into `gdpr.py`
+erasure in the same change.
+
 ---
 
 ## Two rails — selected by documents held, not nationality

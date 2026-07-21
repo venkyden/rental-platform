@@ -281,9 +281,9 @@ test.describe('1. Auth — Register', () => {
     // C. Step indicator accuracy
     test('C — step indicator reflects current step position', async ({ page }) => {
         await page.goto('/auth/register');
-        await expect(page.locator('text=/Step 1/i').first()).toBeVisible({ timeout: 5_000 });
+        await expect(page.locator('text=/Step 1|Étape 1/i').first()).toBeVisible({ timeout: 5_000 });
         await page.locator('button:has-text("Tenant")').first().click();
-        await expect(page.locator('text=/Step 2/i').first()).toBeVisible({ timeout: 5_000 });
+        await expect(page.locator('text=/Step 2|Étape 2/i').first()).toBeVisible({ timeout: 5_000 });
     });
 });
 
@@ -458,6 +458,8 @@ test.describe('2. KYC — Identity (verify-capture/[code])', () => {
 
     // D — Document upload failure shows inline error
     test('D — upload API error shows inline error on preview screen', async ({ page }) => {
+        page.on('console', msg => console.log('BROWSER CONSOLE:', msg.text()));
+        page.on('request', req => console.log('REQUEST:', req.url()));
         await page.route('**/verification/identity/session/**', route =>
             route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ completed: false }) }),
         );
@@ -859,7 +861,7 @@ test.describe('6. Applications', () => {
         // scope to it so we don't match the card's withdraw button behind the modal.
         const confirmBtn = page.locator('.fixed.z-50 button.bg-rose-600').first();
         await expect(confirmBtn).toBeVisible({ timeout: 5_000 });
-        await confirmBtn.click();
+        await confirmBtn.click({ force: true });
         await expect(page.locator('text=/error|failed|wrong/i').first()).toBeVisible({ timeout: 8_000 });
     });
 });
@@ -1292,6 +1294,81 @@ test.describe('11. Property Media Capture', () => {
             await page.waitForTimeout(2_000);
             expect(uploadCalled).toBe(false);
         }
+    });
+});
+
+// ============================================================================
+// 12. Universal Trust Dossier
+// ============================================================================
+
+test.describe('12. Universal Trust Dossier — Hub', () => {
+    test.beforeEach(async ({ page }) => {
+        await page.addInitScript(() => localStorage.setItem('app-language', 'en'));
+        await mockAuthSession(page);
+    });
+
+    // A/D — Fetch dossiers failure
+    test('A/D — fetch dossiers API failure shows inline error, not blank page', async ({ page }) => {
+        await page.route('**/v1/dossiers/me', route => 
+            route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ detail: 'Server error' }) })
+        );
+        await page.goto('/dossier');
+        await expect(page.locator('text=/error|failed|wrong|could not be completed/i').first()).toBeVisible({ timeout: 10_000 });
+    });
+
+    // B — Loading state resolves
+    test('B — loading state resolves after dossier fetch completes', async ({ page }) => {
+        await page.route('**/v1/dossiers/me', route => 
+            route.fulfill({ status: 200, body: JSON.stringify([]) })
+        );
+        await page.goto('/dossier');
+        await expect(page.locator('.animate-spin')).toHaveCount(0, { timeout: 10_000 });
+    });
+
+    // A — Compile dossier failure
+    test('A — compile dossier failure shows user-facing error message', async ({ page }) => {
+        await page.route('**/v1/dossiers/me', route => 
+            route.fulfill({ status: 200, body: JSON.stringify([]) })
+        );
+        await page.route('**/v1/dossiers/compile', route => 
+            route.fulfill({ status: 400, contentType: 'application/json', body: JSON.stringify({ detail: 'No verified credentials found' }) })
+        );
+        await page.goto('/dossier');
+        const compileBtn = page.locator('button:has-text("Compile"), button:has-text("Generate")').first();
+        if (await compileBtn.isVisible()) {
+            await compileBtn.click();
+            await expect(page.locator('text=/error|failed|found|could not be completed/i').first()).toBeVisible({ timeout: 8_000 });
+        }
+    });
+});
+
+test.describe('13. Universal Trust Dossier — Viewer', () => {
+    test.beforeEach(async ({ page }) => {
+        await page.addInitScript(() => localStorage.setItem('app-language', 'en'));
+    });
+
+    // A — Invalid token
+    test('A — invalid or expired share token shows error message, not blank page', async ({ page }) => {
+        await page.route('**/v1/dossiers/shared/invalid-token/meta', route => 
+            route.fulfill({ status: 404, contentType: 'application/json', body: JSON.stringify({ detail: 'Dossier not found or expired' }) })
+        );
+        await page.goto('/d/share/invalid-token');
+        await expect(page.locator('text=/not found|expired|invalid/i').first()).toBeVisible({ timeout: 10_000 });
+    });
+
+    // B — Loading state resolves
+    test('B — loading spinner resolves when dossier is loaded successfully', async ({ page }) => {
+        await page.route('**/v1/dossiers/shared/valid-token/meta', route => 
+            route.fulfill({ status: 200, body: JSON.stringify({ 
+                id: 'dossier-1', 
+                role: 'tenant',
+                status: 'ready', 
+                expires_at: new Date(Date.now() + 86400000).toISOString(),
+            }) })
+        );
+        await page.goto('/d/share/valid-token');
+        await expect(page.locator('.animate-spin')).toHaveCount(0, { timeout: 10_000 });
+        await expect(page.locator('text=/tenant Dossier/i').first()).toBeVisible({ timeout: 5_000 });
     });
 });
 

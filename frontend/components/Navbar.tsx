@@ -21,9 +21,14 @@ export default function Navbar() {
     const { t } = useLanguage();
 
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    console.log('NAVBAR RENDER isMobileMenuOpen:', isMobileMenuOpen, 'user:', !!user);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isSwitching, setIsSwitching] = useState<string | null>(null);
     const profileRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        console.log('NAVBAR HYDRATED!');
+    }, []);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -268,96 +273,130 @@ export default function Navbar() {
                             >
                                 {t('landing.getStarted', undefined, 'Get Started')}
                             </Link>
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    console.log('REACT ONCLICK FIRED! Current state:', isMobileMenuOpen);
+                                    setIsMobileMenuOpen(prev => {
+                                        console.log('Setting new state to:', !prev);
+                                        return !prev;
+                                    });
+                                }}
+                                className="md:hidden p-2.5 rounded-xl bg-zinc-100 text-zinc-900 hover:bg-zinc-200 transition-all active:scale-90"
+                            >
+                                {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                            </button>
                         </div>
                     )}
                 </div>
             </div>
 
             {/* Mobile Navigation Menu */}
-            {user && (
-                <AnimatePresence>
-                    {isMobileMenuOpen && (
-                        <motion.div
-                            initial={{ opacity: 0, y: -20, scale: 0.95 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                            className="md:hidden mt-4 glass !rounded-[2rem] overflow-hidden shadow-2xl pointer-events-auto border-white/20 max-w-lg mx-auto"
-                        >
-                            <nav aria-label={t('navigation.mobile', undefined, 'Mobile Navigation')} className="p-6 flex flex-col gap-4">
-                                <div className="grid grid-cols-2 gap-3">
-                                    {navLinks.map((link) => {
-                                        const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);
-                                        return (
-                                            <Link
-                                                key={link.href}
-                                                href={link.href}
-                                                onClick={() => setIsMobileMenuOpen(false)}
-                                                className={`p-4 rounded-2xl text-xs font-black uppercase tracking-widest flex flex-col items-center gap-3 transition-all
-                                                    ${isActive
-                                                        ? 'bg-zinc-900 text-white shadow-xl'
-                                                        : 'bg-zinc-50 text-zinc-500 hover:text-zinc-900'
-                                                    }`}
-                                            >
-                                                <div className={`${isActive ? 'text-zinc-400' : 'text-zinc-400'}`}>
-                                                    {link.icon}
-                                                </div>
-                                                {link.label}
-                                            </Link>
-                                        );
-                                    })}
-                                </div>
-                                
-                                <div className="h-px bg-zinc-100 my-2"></div>
-                                
-                                <div className="flex flex-col gap-4">
-                                    <div className="flex flex-col gap-2 p-4 bg-zinc-50 rounded-2xl">
-                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">{t('dashboard.role.title', undefined, 'Active Role')}</span>
-                                        <div className="flex flex-wrap gap-2">
-                                            {['tenant', 'landlord', 'property_manager'].map(role => {
-                                                const isCurrent = user.role === role;
-                                                const isAvailable = (user.available_roles || []).includes(role);
-                                                return (
-                                                    <button
-                                                        key={role}
-                                                        onClick={() => handleRoleSwitch(role)}
-                                                        disabled={isCurrent || !!isSwitching}
-                                                        className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider transition-all
-                                                            ${isCurrent 
-                                                                ? 'bg-zinc-900 text-white' 
-                                                                : isAvailable
-                                                                    ? 'bg-zinc-200 text-zinc-600'
-                                                                    : 'bg-zinc-100 text-zinc-900 border border-zinc-200'
-                                                            }`}
-                                                    >
-                                                        {t(`dashboard.roleSwitcher.roles.${role}`)}
-                                                        {!isAvailable && !isCurrent && ' +'}
-                                                    </button>
-                                                );
-                                            })}
+            <AnimatePresence>
+                {isMobileMenuOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -20, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                        className="md:hidden mt-4 glass !rounded-[2rem] overflow-hidden shadow-2xl pointer-events-auto border-white/20 max-w-lg mx-auto"
+                    >
+                        <nav aria-label={t('navigation.mobile', undefined, 'Mobile Navigation')} className="p-6 flex flex-col gap-4">
+                            {user ? (
+                                <>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {navLinks.map((link) => {
+                                            const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);
+                                            return (
+                                                <Link
+                                                    key={link.href}
+                                                    href={link.href}
+                                                    onClick={() => setIsMobileMenuOpen(false)}
+                                                    className={`p-4 rounded-2xl text-xs font-black uppercase tracking-widest flex flex-col items-center gap-3 transition-all
+                                                        ${isActive
+                                                            ? 'bg-zinc-900 text-white shadow-xl'
+                                                            : 'bg-zinc-50 text-zinc-500 hover:text-zinc-900'
+                                                        }`}
+                                                >
+                                                    <div className={`${isActive ? 'text-zinc-400' : 'text-zinc-400'}`}>
+                                                        {link.icon}
+                                                    </div>
+                                                    {link.label}
+                                                </Link>
+                                            );
+                                        })}
+                                    </div>
+                                    
+                                    <div className="h-px bg-zinc-100 my-2"></div>
+                                    
+                                    <div className="flex flex-col gap-4">
+                                        <div className="flex flex-col gap-2 p-4 bg-zinc-50 rounded-2xl">
+                                            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">{t('dashboard.role.title', undefined, 'Active Role')}</span>
+                                            <div className="flex flex-wrap gap-2">
+                                                {['tenant', 'landlord', 'property_manager'].map(role => {
+                                                    const isCurrent = user.role === role;
+                                                    const isAvailable = (user.available_roles || []).includes(role);
+                                                    return (
+                                                        <button
+                                                            key={role}
+                                                            onClick={() => handleRoleSwitch(role)}
+                                                            disabled={isCurrent || !!isSwitching}
+                                                            className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider transition-all
+                                                                ${isCurrent 
+                                                                    ? 'bg-zinc-900 text-white' 
+                                                                    : isAvailable
+                                                                        ? 'bg-zinc-200 text-zinc-600'
+                                                                        : 'bg-zinc-100 text-zinc-900 border border-zinc-200'
+                                                                }`}
+                                                        >
+                                                            {t(`dashboard.roleSwitcher.roles.${role}`)}
+                                                            {!isAvailable && !isCurrent && ' +'}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center justify-between p-4 bg-zinc-50 rounded-2xl">
+                                            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{t('common.language', undefined, 'Language')}</span>
+                                            <LanguageSwitcher />
                                         </div>
                                     </div>
+
+
+                                    <button
+                                        onClick={() => {
+                                            setIsMobileMenuOpen(false);
+                                            logout();
+                                        }}
+                                        className="w-full p-4 rounded-2xl text-[10px] font-black uppercase tracking-widest text-zinc-900 bg-zinc-100 flex items-center justify-center gap-3 shadow-sm hover:bg-zinc-200 transition-all"
+                                    >
+                                        <LogOut className="w-4 h-4 text-zinc-400" />
+                                        {t('dashboard.logout', undefined, 'Logout')}
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="flex flex-col gap-3">
+                                        <Link 
+                                            href="/auth/login" 
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                            className="w-full p-4 rounded-2xl text-[11px] font-black uppercase tracking-widest text-zinc-600 bg-zinc-50 flex items-center justify-center gap-3 hover:bg-zinc-100 transition-all"
+                                        >
+                                            {t('landing.signIn', undefined, 'Sign In')}
+                                        </Link>
+                                    </div>
+                                    <div className="h-px bg-zinc-100 my-2"></div>
                                     <div className="flex items-center justify-between p-4 bg-zinc-50 rounded-2xl">
                                         <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{t('common.language', undefined, 'Language')}</span>
                                         <LanguageSwitcher />
                                     </div>
-                                </div>
-
-
-                                <button
-                                    onClick={() => {
-                                        setIsMobileMenuOpen(false);
-                                        logout();
-                                    }}
-                                    className="w-full p-4 rounded-2xl text-[10px] font-black uppercase tracking-widest text-zinc-900 bg-zinc-100 flex items-center justify-center gap-3 shadow-sm hover:bg-zinc-200 transition-all"
-                                >
-                                    <LogOut className="w-4 h-4 text-zinc-400" />
-                                    {t('dashboard.logout', undefined, 'Logout')}
-                                </button>
-                            </nav>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            )}
+                                </>
+                            )}
+                        </nav>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </header>
     );
 }

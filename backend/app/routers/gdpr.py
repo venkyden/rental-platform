@@ -259,6 +259,10 @@ async def delete_user_data(
     await storage.delete_files_by_prefix(f"verification/employment/{current_user.id}")
     await storage.delete_files_by_prefix(f"verification/guarantor/{current_user.id}")
     await storage.delete_files_by_prefix(f"verification/property/{current_user.id}")
+    # Compiled trust-dossier PDFs (folder is dossiers/{user_id} — see
+    # dossier_service.compile_dossier). These render banded claims only
+    # (DOSSIER §0.20), but they are still a user artefact and must go.
+    await storage.delete_files_by_prefix(f"dossiers/{current_user.id}")
 
     # Avatar lives under shared avatars/ folder (randomized name, no per-user
     # prefix) — delete by stored key

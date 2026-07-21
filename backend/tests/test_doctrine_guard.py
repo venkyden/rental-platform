@@ -79,6 +79,8 @@ STORAGE_WRITE_ALLOWLIST = {
     "app/routers/media.py",         # generic upload — ⚠ no reference tracking (feature-audit program)
     "app/routers/properties.py",    # property media; erased via properties/{id} prefix (gdpr.py)
     "app/routers/verification.py",  # identity/guarantor docs; purge_identity_doc + purge_object (WS-1)
+    "app/services/dossier_service.py",  # trust-dossier PDF (banded claims only, DOSSIER §0.20);
+                                       # erased via the dossiers/{user_id} prefix in gdpr.py
 }
 
 
