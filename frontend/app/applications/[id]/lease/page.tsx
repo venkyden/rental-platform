@@ -283,12 +283,17 @@ export default function LeaseGeneratorPage() {
                                         onChange={(e) => setLeaseType(e.target.value)}
                                         className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-zinc-950 text-sm font-semibold"
                                     >
-                                        <option value="meuble">{t('lease.meuble.name')} (Loi 89)</option>
-                                        <option value="vide">{t('lease.vide.name')} (Loi 89)</option>
-                                        <option value="mobilite">{t('lease.mobilite.name')}</option>
-                                        <option value="etudiant">{t('lease.etudiant.name')}</option>
-                                        <option value="colocation">Colocation Meublée</option>
-                                        <option value="code_civil">Bail Code Civil</option>
+                                        {/* Only `meuble` generates today — backend refuses (422) the rest:
+                                            vide/étudiant/colocation await the official model wiring (Path A —
+                                            the annexes cover colocation); mobilité lacks art. 25-13 mentions;
+                                            code_civil is outside loi 89 (no contrat-type published).
+                                            See app/services/lease_generator.py. */}
+                                        <option value="meuble">{t('lease.meuble.name')} (Loi 1989)</option>
+                                        <option value="vide" disabled>{t('lease.vide.name')} (Loi 1989) — {t('lease.type.unavailable', undefined, 'bientôt disponible')}</option>
+                                        <option value="mobilite" disabled>{t('lease.mobilite.name')} — {t('lease.type.unavailable', undefined, 'bientôt disponible')}</option>
+                                        <option value="etudiant" disabled>{t('lease.etudiant.name')} — {t('lease.type.unavailable', undefined, 'bientôt disponible')}</option>
+                                        <option value="colocation" disabled>Colocation Meublée — {t('lease.type.unavailable', undefined, 'bientôt disponible')}</option>
+                                        <option value="code_civil" disabled>Bail Code Civil — {t('lease.type.unavailable', undefined, 'bientôt disponible')}</option>
                                     </select>
                                 </div>
 

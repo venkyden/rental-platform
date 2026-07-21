@@ -22,7 +22,7 @@ from app.models.user import User
 from app.models.visits_and_leases import Lease
 from app.routers.auth import get_current_user, get_current_user_optional
 from app.services.lease_generator import lease_generator
-from app.services.lease_rules import LEASE_TYPES, max_deposit, validate_deposit
+from app.services.lease_rules import max_deposit, validate_deposit
 
 router = APIRouter(prefix="/leases", tags=["leases"])
 
@@ -114,21 +114,39 @@ async def generate_lease(
     # Generate HTML
     rent = request.rent_override or float(property_obj.monthly_rent or 0)
     charges = request.charges_override or float(property_obj.charges or 0)
-    deposit = request.deposit_override
 
-    html = lease_generator.generate_html(
-        property=property_obj,
-        landlord=current_user,
-        tenant=tenant,
-        start_date=request.start_date,
-        rent=rent,
-        lease_type=request.lease_type,
-        deposit=deposit,
-        charges=charges,
-        duration_months=request.duration_months,
-        guarantor_name=request.guarantor_name,
-        landlord_signature=request.landlord_signature,
-    )
+    # Same deposit rule as /create (loi 89 art. 22 caps per lease type): without
+    # this, generate_html silently capped an over-limit override, letting a user
+    # preview a lease that /create would then 422 on.
+    if request.deposit_override is not None:
+        deposit = request.deposit_override
+    else:
+        deposit = max_deposit(request.lease_type, rent)
+    deposit_errors = validate_deposit(request.lease_type, deposit, rent)
+    if deposit_errors:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=deposit_errors[0]
+        )
+
+    # The generator refuses (ValueError) rather than emit a legally wrong contract:
+    # bail mobilité (missing art. 25-13 mentions → requalification) and any lease
+    # type it has no template for. Surface that as a 422, not an uncaught 500.
+    try:
+        html = lease_generator.generate_html(
+            property=property_obj,
+            landlord=current_user,
+            tenant=tenant,
+            start_date=request.start_date,
+            rent=rent,
+            lease_type=request.lease_type,
+            deposit=deposit,
+            charges=charges,
+            duration_months=request.duration_months,
+            guarantor_name=request.guarantor_name,
+            landlord_signature=request.landlord_signature,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc))
 
     return HTMLResponse(content=html)
 
@@ -171,24 +189,22 @@ async def create_lease(
     rent = request.rent_override or float(property_obj.monthly_rent or 0)
     charges = request.charges_override or float(property_obj.charges or 0)
 
-    # Deposit — loi 89 art. 22 / loi ELAN art. 25-12. The previous default of
-    # `rent * 2` applied a meublé cap to EVERY type: illegal for a bail vide
-    # (1 month max) and for a bail mobilité (deposit must be 0). Default from the
-    # legal cap for the type, and validate an explicit override against it.
-    # `rent` is the hors-charges base (charges are a separate lease column).
+    # Deposit must follow the legal ceiling for THIS lease type (loi 89 art. 22:
+    # vide ≤ 1 month hors charges, meublé/étudiant ≤ 2; bail mobilité = 0, art.
+    # 25-13). A flat `rent * 2` default persisted an illegal deposit for `vide`
+    # (2x the 1-month cap) and for `mobilite` (any deposit is forbidden).
+    # lease_rules is the single source of truth — same validator the generator
+    # finalisation gate and the deposit-binding evidence layer use. An unmapped
+    # type (e.g. colocation) has no defined cap, so no default can be justified;
+    # validate_deposit() below catches it ("Type de bail inconnu") either way.
     if request.deposit_override is not None:
-        deposit = float(request.deposit_override)
-        cap_errors = validate_deposit(request.lease_type, deposit, rent)
-        if cap_errors:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=" ".join(cap_errors))
-    elif request.lease_type in LEASE_TYPES:
-        deposit = max_deposit(request.lease_type, rent)
+        deposit = request.deposit_override
     else:
-        # Type outside the legal rule-set (e.g. colocation): no cap is defined,
-        # so no default can be justified — require an explicit amount.
+        deposit = max_deposit(request.lease_type, rent)
+    deposit_errors = validate_deposit(request.lease_type, deposit, rent)
+    if deposit_errors:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Un dépôt de garantie explicite est requis pour le type de bail « {request.lease_type} ».",
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=deposit_errors[0]
         )
 
     lease = Lease(

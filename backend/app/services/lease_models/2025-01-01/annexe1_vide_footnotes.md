@@ -11,9 +11,16 @@ clauses — and are reproduced so the generated lease mirrors the official model
 (Option A). In the generated PDF they appear as end-notes, presented as the decree's
 notes, NOT as terms the parties sign.
 
-Status: ⏳ PENDING LAWYER SIGN-OFF. NB: fetched via web extraction — the lawyer must
-confirm the text verbatim against the official source before use (small transcription
-errors are possible, e.g. note (9)).
+✅ 2026-07-15: footnote (5 bis) reinstated — it had been dropped when the body's décence
+cross-reference was rewritten into an inline table; both fixed together, verified against
+the Légifrance API JSON. See docs/legal/2026-07-15-model-transcription-verification.md.
+
+Status: ✅ Owner risk-accepted (2026-07-15) — verified against the Légifrance API JSON
+(docs/legal/2026-07-15-model-transcription-verification.md), same pattern as
+bail_mobilite.fill.md's 2026-07-05 risk-acceptance. Formal counsel confirmation of the
+verbatim text (distinct from Galand's 2026-06-20 workflow-permissibility opinion) still
+pending. NB: small transcription errors remain possible (e.g. note (9)) despite the
+mechanical verification — flag any found the same way F1–F4 were found.
 -->
 
 # Notes du modèle — contrat de location logement nu (Décret n°2015-587, Annexe 1)
@@ -27,6 +34,8 @@ errors are possible, e.g. note (9)).
 (4) Si chauffage collectif, préciser les modalités de répartition de la consommation du locataire.
 
 (5) En cas de production collective, préciser les modalités de répartition de la consommation du locataire.
+
+(5 bis) Mention obligatoire s'appliquant aux logements dont la consommation énergétique, déterminée selon la méthode du diagnostic de performance énergétique mentionné à l'article L. 126-26 du code de la construction et de l'habitation, excède le seuil fixé au I de l'article L. 173-2 du même code.
 
 (6) Limité aux événements précis qui justifient que le bailleur personne physique ait à reprendre le local pour des raisons professionnelles ou familiales.
 

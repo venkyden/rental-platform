@@ -142,8 +142,26 @@ Common:
 **Status 2026-07-04: Phase 1 shipped** (2026-06-13) plus, since then: statelessness
 retrofit (verify-and-forget, Redis 10-min TTL), MRH insurance verification, INTL
 MEDIUM rails (identity + funds-coverage solvency — backend only, UI pending),
-**e-sign Path B live** (upload + legality screen + in-house Ed25519 signature),
-lease Path A generator on branch `feat/path-a-lease-generation` (unmerged).
+**e-sign Path B live** (upload + legality screen + in-house Ed25519 signature).
+**Path A (Décret 2015-587 generation) is NOT shipped**: PR #23 merged the official
+model *assets* + registry and a v0.1 filler (`lease_generation.py`), but that path is
+**gated** pending verbatim counsel sign-off and no router calls it. What IS live is the
+**legacy free-form generator** (`lease_generator.py`, `POST /leases/generate`), which
+uses custom templates and never runs the `lease_rules` legality gate. It now refuses any
+type without a verbatim Décret model **wired** in `lease_models/registry.py`
+(`supported_types()` is the oracle → vide/meublé/étudiant). **Only `meuble` generates
+today.** Why each is refused differs — don't conflate them:
+- `vide`/`etudiant`/`colocation` — an official model EXISTS (the annexes are titled
+  "CONTRAT TYPE DE LOCATION **OU DE COLOCATION**…", so colocation is covered too) but
+  isn't wired to this generator yet → Path A work.
+- `mobilite` — no décret contrat-type; art. 25-13 mandatory mentions unimplemented.
+- `code_civil` (outside loi 89) / `simple` — no published contrat-type at all.
+
+Open work: wire Path A (verbatim model + counsel-verified transcription). Two known
+gaps: (1) `meuble` still renders CUSTOM wording despite its official model existing, and
+the PDF stamps "conforme … au décret 2015-587"; (2) the model assets omit the published
+preamble (official title, "Champ du contrat type", "Modalités d'application") — found
+2026-07-13, so they are NOT yet a complete reproduction; they stay PENDING SIGN-OFF.
 Insurance remains verification-only, never sold. Next build order: see the feature
 audit program in `docs/superpowers/plans/2026-07-02-stress-test-remediation-master.md`
 (INTL solvency UI tab is the chosen next feature).

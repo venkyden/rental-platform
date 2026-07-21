@@ -6,15 +6,50 @@ location — reproduced VERBATIM from Légifrance, version en vigueur depuis le 
 https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000043842249
 
 Serves both lease types `meuble` and `etudiant`: section III carries the furnished
-1-year tacit-renewal rule AND the 9-month student variant (no tacit renewal).
+1-year tacit-renewal rule AND the 9-month student variant (no tacit renewal). The
+published title is "…OU DE COLOCATION…", so this annexe also covers colocation under a
+single contract (excluded: colocations formalisées par plusieurs contrats).
 
-Status: ⏳ PENDING LAWYER SIGN-OFF before it is wired into generation (Path A).
+✅ 2026-07-15: preamble reproduced (F1), the "identifiant fiscal du logement" line removed
+(F2 — confirmed to have NO basis anywhere in the official text; the schema entry in
+`lease_fields.py` is corrected, not deleted, pending an owner decision on whether to
+reinstate it under a real, cited legal basis), and the décence cross-reference clause
+restored verbatim + footnote (28 bis) reinstated (F3). All verified word-for-word against
+the Légifrance API (LEGIARTI000043842249, direct JSON `texte` field, not a web render) —
+see docs/legal/2026-07-15-model-transcription-verification.md for the diff method,
+evidence, and the F2 owner-decision flag.
+
+Status: ✅ Owner risk-accepted (2026-07-15) — transcription verified 99.17% against the
+Légifrance API (docs/legal/2026-07-15-model-transcription-verification.md). Enabled for
+wiring into Path A generation ahead of a separate formal counsel confirmation of this
+specific text — same pattern as bail_mobilite.fill.md's 2026-07-05 risk-acceptance.
+Note: Galand's 2026-06-20 opinion (docs/legal/2026-06-20-avis-avocat-esign-lease-galand.md)
+clears the generation/e-sign APPROACH being lawful (its condition 3); it does not itself
+confirm this transcription's accuracy — that is what this risk-acceptance covers, pending
+final counsel sign-off on the text itself.
 The generator fills the [...] placeholders only — it MUST NOT alter the standardized
 clause text (loi 1971 / LG-6). Bracketed [...] = fillable field. (n) = official footnote
 marker, preserved; texts in annexe2_meuble_footnotes.md (markers 24–44).
 -->
 
 # Contrat de location — logement meublé (Décret n°2015-587, Annexe 2)
+
+CONTRAT TYPE DE LOCATION OU DE COLOCATION DE LOGEMENT MEUBLÉ
+
+(Soumis au titre Ier bis de la loi du 6 juillet 1989 tendant à améliorer les rapports locatifs et portant modification de la loi n° 86-1290 du 23 décembre 1986)
+
+**Champ du contrat type :** Le présent contrat type de location est applicable aux locations et aux colocations de logement meublé et qui constitue la résidence principale du preneur, à l'exception :
+
+- des colocations formalisées par la conclusion de plusieurs contrats entre les locataires et le bailleur ;
+- des locations de logement appartenant à un organisme d'habitation à loyer modéré et faisant l'objet d'une convention passée en application de l'article L.351-2 du code de la construction et de l'habitation.
+
+**Modalités d'application du contrat type :** Le régime de droit commun en matière de baux d'habitation est défini principalement par la loi n° 89-462 du 6 juillet 1989 tendant à améliorer les rapports locatifs et portant modification de la loi n° 86-1290 du 23 décembre 1986. L'ensemble de ces dispositions étant d'ordre public, elles s'imposent aux parties qui, en principe, ne peuvent pas y renoncer. En conséquence :
+
+- le présent contrat type de location contient uniquement les clauses essentielles du contrat dont la législation et la réglementation en vigueur au jour de sa publication imposent la mention par les parties dans le contrat. Il appartient cependant aux parties de s'assurer des dispositions applicables au jour de la conclusion du contrat.
+- au-delà de ces clauses, les parties sont également soumises à l'ensemble des dispositions légales et réglementaires d'ordre public applicables aux baux d'habitation sans qu'il soit nécessaire de les faire figurer dans le contrat et qui sont rappelées utilement dans la notice d'information qui doit être jointe à chaque contrat.
+- les parties sont libres de prévoir dans le contrat d'autres clauses particulières, propres à chaque location, dans la mesure où celles-ci sont conformes aux dispositions législatives et réglementaires en vigueur. Les parties peuvent également convenir de l'utilisation de tout autre support pour établir leur contrat, dans le respect du présent contrat type.
+
+Le contrat type de location ou de colocation contient les éléments suivants :
 
 ## I. Désignation des parties
 
@@ -35,7 +70,6 @@ Le présent contrat a pour objet la location d'un logement ainsi déterminé :
 ### A. Consistance du logement
 
 - localisation du logement : {{logement_localisation}} ;
-- identifiant fiscal du logement : [Numéro Identifiant Fiscal du logement] ;
 - type d'habitat : [immeuble collectif ou individuel] ;
 - régime juridique de l'immeuble : [mono propriété ou copropriété] ;
 - période de construction : [exemples : avant 1949, de 1949 à 1974, de 1975 à 1989, de 1989 à 2005, depuis 2005] ;
@@ -45,26 +79,7 @@ Le présent contrat a pour objet la location d'un logement ainsi déterminé :
 - le cas échéant, Eléments d'équipements du logement : [exemples : cuisine équipée, détail des installations sanitaires etc.] ;
 - modalité de production chauffage : [individuel ou collectif] (27) ;
 - modalité de production d'eau chaude sanitaire : [individuelle ou collective] (28) ;
-
-- rappel : un logement décent doit respecter les critères minimaux de performance suivants :
-
-a) En France métropolitaine :
-
-i) A compter du 1er janvier 2025, le niveau de performance minimal correspond à la classe F du DPE ;
-
-ii) A compter du 1er janvier 2028, le niveau de performance minimal correspond à la classe E du DPE ;
-
-iii) A compter du 1er janvier 2034, le niveau de performance minimal correspond à la classe D du DPE.
-
-b) En Guadeloupe, en Martinique, en Guyane, à La Réunion et à Mayotte :
-
-i) A compter du 1er janvier 2028, le niveau de performance minimal du logement correspond à la classe F du DPE ;
-
-ii) A compter du 1er janvier 2031, le niveau de performance minimal du logement correspond à la classe E du DPE.
-
-La consommation d'énergie finale et le niveau de performance du logement sont déterminés selon la méthode du diagnostic de performance énergétique mentionné à l'article L. 126-26 du code de la construction et de l'habitation.
-
-- niveau de performance du logement : {{logement_dpe_classe}}.
+- le cas échéant, La consommation énergétique du logement, déterminée selon la méthode du diagnostic de performance énergétique mentionné à l'article L. 126-26 du code de la construction et de l'habitation, ne doit pas excéder, à compter du 1er janvier 2028, le seuil fixé au I de l'article L. 173-2 du même code (28 bis).
 
 ### B. Destination des locaux : {{destination_locaux}}
 

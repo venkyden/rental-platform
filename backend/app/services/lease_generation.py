@@ -1,9 +1,18 @@
 """
 Path A lease generation — fill the OFFICIAL model's blanks with validated values.
 
-⏳ GATED: the underlying model wording is pending lawyer sign-off (see
-`lease_models/`), so this must not be exposed in production until the texts are
-verbatim-verified. Status: v0.1 — `vide` core fields.
+✅ 2026-07-15: the underlying model wording (`vide`/`meuble`/`etudiant` in
+`lease_models/2025-01-01/`) is owner risk-accepted after mechanical verification
+against the Légifrance API (99.17%/99.30% match; see
+docs/legal/2026-07-15-model-transcription-verification.md) — same pattern as the
+2026-07-05 bail mobilité risk-acceptance. Formal counsel sign-off on this specific
+text is still pending (distinct from Galand's 2026-06-20 opinion, which clears the
+generation/e-sign workflow's legal permissibility, not this transcription).
+⏳ SEPARATELY STILL GATED: this module is not wired into any router — `POST
+/leases/generate` still runs the legacy free-form generator
+(`services/lease_generator.py`). Wiring this in (replacing that legacy path) is an
+unmade product decision, not something the model-text risk-acceptance implies.
+Status: v0.1 — `vide` core fields.
 
 Safety design (why this can't produce an illegal/altered lease):
 1. It NEVER edits standardized clause text — it only substitutes `{{token}}` blanks
@@ -23,20 +32,6 @@ from app.services.lease_models import registry
 
 _TOKEN_RE = re.compile(r"\{\{(\w+)\}\}")
 _BLANK_RE = re.compile(r"\[[^\]]*\]")
-
-# Bridges the schema's motif_mobilite field (French phrases, lease_fields.py) to
-# lease_rules' LG-8 tenant_situation vocabulary (snake_case, loi ELAN art. 25-12).
-# An unrecognised value passes through unchanged so LG-8 reports the actual
-# invalid situation rather than conflating it with "nothing declared".
-_MOTIF_TO_SITUATION: dict[str, str] = {
-    "formation professionnelle": "formation_professionnelle",
-    "études supérieures": "etudes_superieures",
-    "contrat d'apprentissage": "apprentissage",
-    "stage": "stage",
-    "engagement volontaire dans le cadre d'un service civique": "service_civique",
-    "mutation professionnelle": "mutation_professionnelle",
-    "mission temporaire dans le cadre de son activité professionnelle": "mission_temporaire",
-}
 
 
 @dataclass
@@ -87,7 +82,6 @@ def generate(
     GenerationResult; `text` is filled only when the LG gate passes, and `finalisable`
     is True only when no blank remains.
     """
-    motif = fields.get("motif_mobilite")
     rules = lease_rules.validate_lease_finalisation(
         lease_type=lease_type,
         deposit=deposit,
@@ -99,7 +93,7 @@ def generate(
         complement_justification=complement_justification,
         custom_clauses=custom_clauses,
         dpe_class=fields.get("logement_dpe_classe"),  # LG-7: block class G
-        tenant_situation=_MOTIF_TO_SITUATION.get(motif, motif) if motif else None,  # LG-8
+        tenant_situation=fields.get("motif_mobilite"),  # LG-8: bail mobilité eligibility
     )
     if not rules.ok:
         return GenerationResult(
