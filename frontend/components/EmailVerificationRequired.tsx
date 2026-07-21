@@ -68,7 +68,7 @@ export default function EmailVerificationRequired({ children }: EmailVerificatio
                         <div className="absolute inset-0 rounded-full border-2 border-zinc-200" />
                         <div className="absolute inset-0 rounded-full border-2 border-t-zinc-950 animate-spin" />
                     </div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
+                    <p className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400">
                         {t('emailVerification.loading', undefined, 'Loading...')}
                     </p>
                 </div>
@@ -162,21 +162,21 @@ export default function EmailVerificationRequired({ children }: EmailVerificatio
                         </div>
                         <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
                             {resendSuccess ? (
-                                <span className="text-[11px] font-bold text-green-400 flex items-center gap-1 py-1 px-3 bg-green-950/30 border border-green-800/50 rounded-full">
+                                <span className="text-xs font-bold text-green-400 flex items-center gap-1 py-1 px-3 bg-green-950/30 border border-green-800/50 rounded-full">
                                     <Check className="w-3.5 h-3.5" /> {t('emailVerification.bannerSuccess', undefined, 'Sent!')}
                                 </span>
                             ) : (
                                 <button
                                     onClick={handleResendVerification}
                                     disabled={resending}
-                                    className="text-[11px] font-bold text-zinc-300 hover:text-white bg-zinc-800 hover:bg-zinc-700 py-1.5 px-3 rounded-full transition-all disabled:opacity-50"
+                                    className="text-xs font-bold text-zinc-300 hover:text-white bg-zinc-800 hover:bg-zinc-700 py-1.5 px-3 rounded-full transition-all disabled:opacity-50"
                                 >
                                     {resending ? t('emailVerification.bannerSending', undefined, 'Sending...') : t('emailVerification.bannerResend', undefined, 'Resend Link')}
                                 </button>
                             )}
                             <button
                                 onClick={() => window.location.reload()}
-                                className="text-[11px] font-extrabold text-zinc-950 bg-amber-400 hover:bg-amber-300 py-1.5 px-3.5 rounded-full transition-all flex items-center gap-1 hover:scale-[1.02] active:scale-[0.98] shadow-sm"
+                                className="text-xs font-extrabold text-zinc-950 bg-amber-400 hover:bg-amber-300 py-1.5 px-3.5 rounded-full transition-all flex items-center gap-1 hover:scale-[1.02] active:scale-[0.98] shadow-sm"
                             >
                                 <ShieldAlert className="w-3.5 h-3.5 text-zinc-900" />
                                 {t('emailVerification.bannerVerified', undefined, 'Refresh')}

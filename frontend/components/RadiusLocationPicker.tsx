@@ -63,7 +63,7 @@ export default function RadiusLocationPicker({ initialLat, initialLng, radiusMet
             <div className="w-full h-[400px] bg-zinc-50 rounded-[2.5rem] flex items-center justify-center animate-pulse border border-zinc-100">
                 <div className="flex flex-col items-center gap-4">
                     <div className="w-8 h-8 border-4 border-zinc-200 border-t-zinc-900 rounded-full animate-spin" />
-                    <p className="text-zinc-400 text-[10px] font-black uppercase tracking-widest">Initializing Map</p>
+                    <p className="text-zinc-400 text-xs font-black uppercase tracking-widest">Initializing Map</p>
                 </div>
             </div>
         );
@@ -113,7 +113,7 @@ export default function RadiusLocationPicker({ initialLat, initialLng, radiusMet
             <div className="absolute top-6 right-6 bg-white/90 backdrop-blur-xl px-6 py-3 rounded-2xl shadow-xl border border-zinc-100 z-[1000]">
                 <div className="flex items-center gap-3">
                     <div className="w-4 h-1 bg-zinc-900 rounded-full" />
-                    <span className="text-[10px] font-black text-zinc-900 uppercase tracking-widest">
+                    <span className="text-xs font-black text-zinc-900 uppercase tracking-widest">
                         {radiusMeters >= 1000 ? `${+(radiusMeters / 1000).toFixed(1)}km` : `${radiusMeters}m`}
                     </span>
                 </div>

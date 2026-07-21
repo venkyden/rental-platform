@@ -13,12 +13,12 @@ export default function Step4Layout({ formData, updateFormData, t, roomAmenityIn
     return (
         <div className="space-y-10">
             <div className="space-y-6">
-                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                     {t('property.create.layout.globalTitle', undefined, 'General Information')}
                 </label>
                 <div className="grid grid-cols-2 gap-8">
                     <div className="space-y-4">
-                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
+                        <label className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400">
                             {t('property.create.layout.capacity', undefined, 'Total Occupancy')}
                         </label>
                         <div className="flex items-center gap-6">
@@ -40,7 +40,7 @@ export default function Step4Layout({ formData, updateFormData, t, roomAmenityIn
                         </div>
                     </div>
                     <div className="space-y-4">
-                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
+                        <label className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400">
                             {t('property.create.layout.pieces', undefined, 'Total Rooms (Pièces)')}
                         </label>
                         <div className="flex items-center gap-6">
@@ -65,7 +65,7 @@ export default function Step4Layout({ formData, updateFormData, t, roomAmenityIn
             </div>
             <div className="grid grid-cols-2 gap-8">
                 <div className="space-y-4">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
+                    <label className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400">
                         {t('property.create.layout.livingRoom', undefined, 'Living Room')}
                     </label>
                     <div className="flex gap-3">
@@ -86,7 +86,7 @@ export default function Step4Layout({ formData, updateFormData, t, roomAmenityIn
                     </div>
                 </div>
                 <div className="space-y-4">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
+                    <label className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400">
                         {t('property.create.layout.kitchen', undefined, 'Kitchen Type')}
                     </label>
                     <div className="flex gap-3">
@@ -117,7 +117,7 @@ export default function Step4Layout({ formData, updateFormData, t, roomAmenityIn
                             </h4>
                             <div className="grid grid-cols-3 gap-6">
                                 <div className="space-y-2">
-                                    <label className="text-[9px] font-black uppercase tracking-widest text-zinc-400">
+                                    <label className="text-xs font-black uppercase tracking-widest text-zinc-400">
                                         {t('property.create.layout.surface', undefined, 'Surface (m²)')}
                                     </label>
                                     <input
@@ -133,7 +133,7 @@ export default function Step4Layout({ formData, updateFormData, t, roomAmenityIn
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[9px] font-black uppercase tracking-widest text-zinc-400">
+                                    <label className="text-xs font-black uppercase tracking-widest text-zinc-400">
                                         {t('property.create.layout.roomCapacity', undefined, 'Occupancy')}
                                     </label>
                                     <input
@@ -150,7 +150,7 @@ export default function Step4Layout({ formData, updateFormData, t, roomAmenityIn
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[9px] font-black uppercase tracking-widest text-zinc-400">
+                                    <label className="text-xs font-black uppercase tracking-widest text-zinc-400">
                                         {t('property.create.layout.bedding', undefined, 'Bed Type')}
                                     </label>
                                     <select
@@ -171,7 +171,7 @@ export default function Step4Layout({ formData, updateFormData, t, roomAmenityIn
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[9px] font-black uppercase tracking-widest text-zinc-400">
+                                <label className="text-xs font-black uppercase tracking-widest text-zinc-400">
                                     {t('property.create.layout.roomDescLabel', undefined, 'Notes (Optional)')}
                                 </label>
                                 <input
@@ -197,7 +197,7 @@ export default function Step4Layout({ formData, updateFormData, t, roomAmenityIn
                     ⚠️ {t('properties.new.steps.pricing.decencyWarning')}
                 </p>
             ) : (
-                <p className="text-[10px] text-zinc-400 font-medium italic mt-2">
+                <p className="text-xs text-zinc-400 font-medium italic mt-2">
                     {t('property.create.layout.decencyNotice', undefined, 'Roomivo enforces French decency standards (min 9m² per occupant).')}
                 </p>
             )}

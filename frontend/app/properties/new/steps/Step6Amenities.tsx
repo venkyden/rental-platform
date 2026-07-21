@@ -17,7 +17,7 @@ export default function Step6Amenities({ formData, updateFormData, t, roomAmenit
         <div className="space-y-10">
             {/* Standard amenities */}
             <div className="space-y-6">
-                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                     {t('property.create.features.amenities', undefined, 'General Amenities')}
                 </label>
                 <div className="flex flex-wrap gap-3">
@@ -45,7 +45,7 @@ export default function Step6Amenities({ formData, updateFormData, t, roomAmenit
 
             {/* Custom amenities */}
             <div className="space-y-4">
-                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                     {t('property.create.features.customAmenities', undefined, 'Custom Amenities')}
                 </label>
                 <div className="flex gap-3">
@@ -99,7 +99,7 @@ export default function Step6Amenities({ formData, updateFormData, t, roomAmenit
                 <div className="grid grid-cols-2 gap-8">
                     {formData.public_transport.length > 0 && (
                         <div className="space-y-3">
-                            <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                            <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                                 {t('property.create.features.transport', undefined, 'Nearby Transport')}
                             </label>
                             <div className="space-y-2">
@@ -114,7 +114,7 @@ export default function Step6Amenities({ formData, updateFormData, t, roomAmenit
                     )}
                     {formData.nearby_landmarks.length > 0 && (
                         <div className="space-y-3">
-                            <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                            <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                                 {t('property.create.features.landmarks', undefined, 'Surroundings & Landmarks')}
                             </label>
                             <div className="space-y-2">

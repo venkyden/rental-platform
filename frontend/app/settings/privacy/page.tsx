@@ -84,7 +84,7 @@ function PrivacySettingsContent() {
                                 <div key={tab.id} className="flex flex-row md:flex-col shrink-0">
                                     <button
                                         onClick={() => router.push(tab.path)}
-                                        className={`flex items-center gap-3 px-5 md:px-6 py-3 md:py-4 rounded-full md:rounded-[1.5rem] text-[10px] md:text-sm font-black uppercase tracking-widest transition-all duration-500 whitespace-nowrap ${
+                                        className={`flex items-center gap-3 px-5 md:px-6 py-3 md:py-4 rounded-full md:rounded-[1.5rem] text-xs md:text-sm font-black uppercase tracking-widest transition-all duration-500 whitespace-nowrap ${
                                             tab.id === 'privacy' 
                                             ? 'bg-zinc-900 text-white shadow-xl scale-100' 
                                             : 'text-zinc-400 hover:text-zinc-600'
@@ -97,7 +97,7 @@ function PrivacySettingsContent() {
                                     {tab.id === 'privacy' && (
                                         <div className="hidden md:flex px-6 py-4 flex-col gap-4">
                                             <button 
-                                                className="text-[10px] font-black uppercase tracking-widest text-left text-zinc-900"
+                                                className="text-xs font-black uppercase tracking-widest text-left text-zinc-900"
                                             >
                                                 {t('settings.privacy.gdprData')}
                                             </button>
@@ -134,7 +134,7 @@ function PrivacySettingsContent() {
                                     </p>
                                     <button
                                         onClick={() => setShowDeleteModal(true)}
-                                        className="w-full py-4 bg-zinc-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-zinc-900/20 hover:scale-[1.02] transition-all"
+                                        className="w-full py-4 bg-zinc-900 text-white rounded-2xl text-xs font-black uppercase tracking-[0.2em] shadow-xl shadow-zinc-900/20 hover:scale-[1.02] transition-all"
                                     >
                                         {t('common.delete')}
                                     </button>
@@ -166,7 +166,7 @@ function PrivacySettingsContent() {
 
                             <div className="space-y-6">
                                 <div className="space-y-2">
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">
+                                    <p className="text-xs font-black uppercase tracking-widest text-zinc-400 ml-1">
                                         {t('settings.privacy.typeConfirm', { target: deleteTarget }, `Type ${deleteTarget} to confirm`)}
                                     </p>
                                     <input
@@ -179,13 +179,13 @@ function PrivacySettingsContent() {
                                 </div>
 
                                 <div className="flex gap-4">
-                                    <button onClick={() => setShowDeleteModal(false)} className="flex-1 py-4 bg-zinc-100 text-zinc-900 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-zinc-200 transition-all">
+                                    <button onClick={() => setShowDeleteModal(false)} className="flex-1 py-4 bg-zinc-100 text-zinc-900 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-zinc-200 transition-all">
                                         {t('common.cancel')}
                                     </button>
                                     <button
                                         onClick={handleDeleteAccount}
                                         disabled={deleteConfirmation.toUpperCase() !== deleteTarget.toUpperCase() || isDeleting}
-                                        className="flex-1 py-4 bg-zinc-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-zinc-900/20 disabled:opacity-50 hover:scale-105 transition-all"
+                                        className="flex-1 py-4 bg-zinc-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-zinc-900/20 disabled:opacity-50 hover:scale-105 transition-all"
                                     >
                                         {isDeleting ? t('settings.privacy.deleting', undefined, 'Deleting...') : t('common.delete')}
                                     </button>

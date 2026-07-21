@@ -94,7 +94,7 @@ export default function InviteAcceptPage() {
                     <p className="text-zinc-500 font-bold mb-10">{error}</p>
                     <button
                         onClick={() => router.push('/')}
-                        className="w-full py-5 bg-zinc-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] shadow-xl active:scale-95 transition-transform"
+                        className="w-full py-5 bg-zinc-900 text-white rounded-2xl text-xs font-black uppercase tracking-[0.3em] shadow-xl active:scale-95 transition-transform"
                     >
                         Back to Home
                     </button>
@@ -116,7 +116,7 @@ export default function InviteAcceptPage() {
                     </p>
                     <button
                         onClick={() => router.push('/dashboard')}
-                        className="w-full py-5 bg-zinc-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] shadow-xl active:scale-95 transition-transform"
+                        className="w-full py-5 bg-zinc-900 text-white rounded-2xl text-xs font-black uppercase tracking-[0.3em] shadow-xl active:scale-95 transition-transform"
                     >
                         Go to Dashboard
                     </button>
@@ -140,7 +140,7 @@ export default function InviteAcceptPage() {
                     </p>
                     <button
                         onClick={() => router.push('/')}
-                        className="w-full py-5 bg-zinc-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] shadow-xl active:scale-95 transition-transform"
+                        className="w-full py-5 bg-zinc-900 text-white rounded-2xl text-xs font-black uppercase tracking-[0.3em] shadow-xl active:scale-95 transition-transform"
                     >
                         Back to Home
                     </button>
@@ -173,7 +173,7 @@ export default function InviteAcceptPage() {
                         <h1 className="text-3xl font-black uppercase tracking-tighter relative z-10 leading-none">
                             You're Invited!
                         </h1>
-                        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500 mt-4 relative z-10">Roomivo Enterprise</p>
+                        <p className="text-xs font-black uppercase tracking-[0.4em] text-zinc-500 mt-4 relative z-10">Roomivo Enterprise</p>
                     </div>
 
                     {/* Content */}
@@ -188,27 +188,27 @@ export default function InviteAcceptPage() {
                         {/* Invite Details */}
                         <div className="bg-zinc-50 rounded-[2rem] p-8 mb-10 space-y-4 border border-zinc-100 shadow-inner">
                             <div className="flex justify-between items-center">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Name</span>
+                                <span className="text-xs font-black uppercase tracking-widest text-zinc-400">Name</span>
                                 <span className="text-sm font-black text-zinc-900 uppercase tracking-tighter">{invite?.name}</span>
                             </div>
                             <div className="flex justify-between items-center">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Email</span>
+                                <span className="text-xs font-black uppercase tracking-widest text-zinc-400">Email</span>
                                 <span className="text-sm font-black text-zinc-900 tracking-tighter">{invite?.email}</span>
                             </div>
                             <div className="flex justify-between items-center">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Permission</span>
-                                <div className="px-3 py-1 bg-zinc-900 text-white text-[9px] font-black rounded-full uppercase tracking-widest">
+                                <span className="text-xs font-black uppercase tracking-widest text-zinc-400">Permission</span>
+                                <div className="px-3 py-1 bg-zinc-900 text-white text-xs font-black rounded-full uppercase tracking-widest">
                                     {PERMISSION_LABELS[invite?.permission_level || ''] || invite?.permission_level}
                                 </div>
                             </div>
                             <div className="flex justify-between items-center">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Access</span>
+                                <span className="text-xs font-black uppercase tracking-widest text-zinc-400">Access</span>
                                 <span className="text-sm font-black text-zinc-900 uppercase tracking-tighter">{invite?.property_count} {invite?.property_count === 1 ? 'property' : 'properties'}</span>
                             </div>
                         </div>
 
                         {error && (
-                            <div className="bg-zinc-900 text-white p-5 rounded-2xl mb-8 text-[10px] font-black uppercase tracking-[0.2em] shadow-xl text-center">
+                            <div className="bg-zinc-900 text-white p-5 rounded-2xl mb-8 text-xs font-black uppercase tracking-[0.2em] shadow-xl text-center">
                                 {error}
                             </div>
                         )}
@@ -216,11 +216,11 @@ export default function InviteAcceptPage() {
                         {/* Action */}
                         {user ? (
                             <div className="space-y-6">
-                                <p className="text-[10px] font-black text-zinc-400 text-center uppercase tracking-widest">
+                                <p className="text-xs font-black text-zinc-400 text-center uppercase tracking-widest">
                                     Authenticated as <span className="text-zinc-900">{user.email}</span>
                                 </p>
                                 {user.email.toLowerCase() !== invite?.email.toLowerCase() && (
-                                    <div className="bg-zinc-900 text-white p-5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl text-center flex items-center gap-3">
+                                    <div className="bg-zinc-900 text-white p-5 rounded-2xl text-xs font-black uppercase tracking-[0.2em] shadow-xl text-center flex items-center gap-3">
                                         <Info className="w-4 h-4 shrink-0" />
                                         <span>Invitation is for {invite?.email}.</span>
                                     </div>
@@ -228,7 +228,7 @@ export default function InviteAcceptPage() {
                                 <button
                                     onClick={handleAccept}
                                     disabled={accepting || user.email.toLowerCase() !== invite?.email.toLowerCase()}
-                                    className="w-full py-6 bg-zinc-900 text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.4em] shadow-2xl active:scale-95 transition-all disabled:opacity-30 flex items-center justify-center gap-3"
+                                    className="w-full py-6 bg-zinc-900 text-white rounded-2xl text-xs font-black uppercase tracking-[0.4em] shadow-2xl active:scale-95 transition-all disabled:opacity-30 flex items-center justify-center gap-3"
                                 >
                                     {accepting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Accept Invitation'}
                                     {!accepting && <ArrowRight className="w-4 h-4" />}
@@ -238,13 +238,13 @@ export default function InviteAcceptPage() {
                             <div className="space-y-4">
                                 <button
                                     onClick={() => router.push(`/auth/login?returnUrl=/invite/${token}`)}
-                                    className="w-full py-6 bg-zinc-900 text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.4em] shadow-2xl active:scale-95 transition-all flex items-center justify-center gap-3"
+                                    className="w-full py-6 bg-zinc-900 text-white rounded-2xl text-xs font-black uppercase tracking-[0.4em] shadow-2xl active:scale-95 transition-all flex items-center justify-center gap-3"
                                 >
                                     Log in to Accept <ArrowRight className="w-4 h-4" />
                                 </button>
                                 <button
                                     onClick={() => router.push(`/auth/register?returnUrl=/invite/${token}&email=${invite?.email}`)}
-                                    className="w-full py-6 bg-white text-zinc-900 border-2 border-zinc-900 rounded-2xl text-[11px] font-black uppercase tracking-[0.4em] hover:bg-zinc-50 active:scale-95 transition-all"
+                                    className="w-full py-6 bg-white text-zinc-900 border-2 border-zinc-900 rounded-2xl text-xs font-black uppercase tracking-[0.4em] hover:bg-zinc-50 active:scale-95 transition-all"
                                 >
                                     Create Account
                                 </button>

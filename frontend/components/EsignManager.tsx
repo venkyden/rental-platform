@@ -157,7 +157,7 @@ export default function EsignManager({ leaseId }: EsignManagerProps) {
             )}
 
             {/* Step state banner */}
-            <div className="mb-8 flex flex-wrap gap-2 text-[10px] font-black uppercase tracking-widest">
+            <div className="mb-8 flex flex-wrap gap-2 text-xs font-black uppercase tracking-widest">
                 <span className={`px-3 py-1.5 rounded ${status.document_present ? 'bg-emerald-100 text-emerald-700' : 'bg-zinc-100 text-zinc-400'}`}>
                     1. {t('esign.step.document', undefined, 'Lease uploaded')}
                 </span>
@@ -230,7 +230,7 @@ export default function EsignManager({ leaseId }: EsignManagerProps) {
                         {t('esign.sign.ready', undefined, 'The lease is ready for your signature.')}
                     </div>
 
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">
+                    <label className="block text-xs font-black uppercase tracking-widest text-zinc-400 mb-2">
                         {t('esign.sign.draw', undefined, 'Draw your signature')}
                     </label>
                     <div className="border border-zinc-300 rounded-lg overflow-hidden bg-white mb-2">
@@ -248,7 +248,7 @@ export default function EsignManager({ leaseId }: EsignManagerProps) {
                         {t('esign.sign.clear', undefined, 'Clear')}
                     </button>
 
-                    <div className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">
+                    <div className="text-xs font-black uppercase tracking-widest text-zinc-400 mb-2">
                         {t('esign.sign.orTyped', undefined, 'Or type your full name')}
                     </div>
                     <input

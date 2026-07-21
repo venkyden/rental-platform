@@ -82,7 +82,7 @@ export default function Combobox({
     return (
         <div className={`relative w-full ${className}`} ref={containerRef}>
             {label && (
-                <label className="block text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-3 ml-4">
+                <label className="block text-xs font-black text-zinc-400 uppercase tracking-widest mb-3 ml-4">
                     {label}
                 </label>
             )}
@@ -147,7 +147,7 @@ export default function Combobox({
                                 Object.entries(groupedOptions).map(([group, opts]) => (
                                     <div key={group} className="mb-2 last:mb-0">
                                         {group !== 'Other' && (
-                                            <div className="px-8 py-3 text-[9px] font-black uppercase tracking-[0.3em] text-zinc-300 bg-zinc-50/50">
+                                            <div className="px-8 py-3 text-xs font-black uppercase tracking-[0.3em] text-zinc-300 bg-zinc-50/50">
                                                 {t(group, undefined, group)}
                                             </div>
                                         )}
@@ -180,7 +180,7 @@ export default function Combobox({
                 )}
             </AnimatePresence>
 
-            {error && <p className="mt-2 text-[10px] font-black text-red-500 uppercase tracking-widest ml-4">{error}</p>}
+            {error && <p className="mt-2 text-xs font-black text-red-500 uppercase tracking-widest ml-4">{error}</p>}
         </div>
     );
 }

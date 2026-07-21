@@ -243,13 +243,13 @@ export default function VerifyCapturePage() {
                     <div className="w-10 h-10 bg-zinc-900 rounded-xl flex items-center justify-center shadow-2xl">
                         <Shield className="w-5 h-5 text-white" />
                     </div>
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-900">
+                    <span className="text-xs font-black uppercase tracking-[0.3em] text-zinc-900">
                         {fr ? 'Capture Sécurisée' : 'Secure Capture'}
                     </span>
                 </div>
                 <button
                     onClick={() => setLanguage(language === 'fr' ? 'en' : 'fr')}
-                    className="px-3 py-1.5 rounded-full bg-zinc-100 hover:bg-zinc-200 text-[10px] font-black uppercase tracking-wider text-zinc-900 transition-colors"
+                    className="px-3 py-1.5 rounded-full bg-zinc-100 hover:bg-zinc-200 text-xs font-black uppercase tracking-wider text-zinc-900 transition-colors"
                 >
                     {fr ? 'EN' : 'FR'}
                 </button>
@@ -263,7 +263,7 @@ export default function VerifyCapturePage() {
                         <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                             className="flex-1 flex flex-col items-center justify-center">
                             <Loader2 className="w-12 h-12 text-zinc-900 animate-spin mb-6" />
-                            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 animate-pulse">
+                            <p className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400 animate-pulse">
                                 {fr ? 'Traitement...' : 'Processing...'}
                             </p>
                         </motion.div>
@@ -281,7 +281,7 @@ export default function VerifyCapturePage() {
                             </h1>
                             <p className="text-zinc-500 font-bold mb-8 px-4">{errorMessage}</p>
                             <button onClick={validateSession}
-                                className="w-full py-5 bg-zinc-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] shadow-xl active:scale-95 transition-transform">
+                                className="w-full py-5 bg-zinc-900 text-white rounded-2xl text-xs font-black uppercase tracking-[0.3em] shadow-xl active:scale-95 transition-transform">
                                 {fr ? 'Réessayer' : 'Try Again'}
                             </button>
                         </motion.div>
@@ -303,12 +303,12 @@ export default function VerifyCapturePage() {
                                     : 'Your identity has been confirmed. You can close this page and return to your desktop.'}
                             </p>
                             <div className="w-full p-6 rounded-3xl bg-zinc-900 text-white shadow-xl mb-6">
-                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
+                                <p className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400">
                                     {fr ? 'Synchronisation bureau active' : 'Desktop sync active'}
                                 </p>
                             </div>
                             <button onClick={() => window.location.href = '/dashboard'}
-                                className="w-full py-4 bg-zinc-100 text-zinc-900 font-black rounded-2xl text-[10px] uppercase tracking-[0.3em] active:scale-95 transition-transform">
+                                className="w-full py-4 bg-zinc-100 text-zinc-900 font-black rounded-2xl text-xs uppercase tracking-[0.3em] active:scale-95 transition-transform">
                                 {fr ? 'Retourner au tableau de bord' : 'Return to Dashboard'}
                             </button>
                         </motion.div>
@@ -338,7 +338,7 @@ export default function VerifyCapturePage() {
                                         <div className="flex items-center gap-4">
                                             <span className="text-2xl">{doc.icon}</span>
                                             <div>
-                                                <div className={`font-black text-[10px] uppercase tracking-widest mb-0.5 ${documentType === doc.value ? 'text-white' : 'text-zinc-900'}`}>
+                                                <div className={`font-black text-xs uppercase tracking-widest mb-0.5 ${documentType === doc.value ? 'text-white' : 'text-zinc-900'}`}>
                                                     {fr ? doc.labelFr : doc.labelEn}
                                                 </div>
                                                 <div className={`text-xs font-medium ${documentType === doc.value ? 'text-zinc-400' : 'text-zinc-500'}`}>
@@ -384,7 +384,7 @@ export default function VerifyCapturePage() {
                             </div>
 
                             <div className="p-5 rounded-2xl bg-zinc-50 border border-zinc-100 space-y-3 mt-8">
-                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">
+                                <p className="text-xs font-black uppercase tracking-[0.3em] text-zinc-400">
                                     {fr ? 'Conseils' : 'Tips'}
                                 </p>
                                 {getGuideContent().tips.map((tip, i) => (
@@ -420,18 +420,18 @@ export default function VerifyCapturePage() {
                                 <img src={previewUrl} alt="Preview" className="w-full h-full object-contain" />
                             </div>
                             {errorMessage && (
-                                <div className="bg-zinc-900 text-white p-4 rounded-2xl mb-4 text-[10px] font-black uppercase tracking-[0.2em] shadow-xl text-center">
+                                <div className="bg-zinc-900 text-white p-4 rounded-2xl mb-4 text-xs font-black uppercase tracking-[0.2em] shadow-xl text-center">
                                     {errorMessage}
                                 </div>
                             )}
                             <div className="grid grid-cols-2 gap-4">
                                 <button onClick={() => { setPreviewUrl(null); setErrorMessage(''); setStep('guide'); setTimeout(() => fileInputRef.current?.click(), 100); }}
-                                    className="flex items-center justify-center gap-3 bg-zinc-100 text-zinc-900 font-black py-5 rounded-2xl text-[10px] uppercase tracking-[0.3em] active:scale-95 transition-transform">
+                                    className="flex items-center justify-center gap-3 bg-zinc-100 text-zinc-900 font-black py-5 rounded-2xl text-xs uppercase tracking-[0.3em] active:scale-95 transition-transform">
                                     <RefreshCcw className="w-4 h-4" />
                                     {fr ? 'Reprendre' : 'Retake'}
                                 </button>
                                 <button onClick={handleNextCapture}
-                                    className="flex items-center justify-center gap-3 bg-zinc-900 text-white font-black py-5 rounded-2xl shadow-2xl text-[10px] uppercase tracking-[0.3em] active:scale-95 transition-transform">
+                                    className="flex items-center justify-center gap-3 bg-zinc-900 text-white font-black py-5 rounded-2xl shadow-2xl text-xs uppercase tracking-[0.3em] active:scale-95 transition-transform">
                                     {currentSide === 'selfie' ? (fr ? 'Envoyer' : 'Submit') : (fr ? 'Suivant' : 'Next')} <ArrowRight className="w-4 h-4" />
                                 </button>
                             </div>

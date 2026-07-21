@@ -269,7 +269,7 @@ export function SegmentBadge() {
         : 'bg-zinc-900 text-zinc-100';
 
     return (
-        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${badgeColor} border border-white/10`}>
+        <span className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest ${badgeColor} border border-white/10`}>
             {config.segment_name}
             {config?.settings?.show_premium_badge && ' (PREMIUM)'}
         </span>
@@ -296,7 +296,7 @@ export function VerificationProgress() {
     return (
         <div className="glass-card !p-6 rounded-[2rem] shadow-xl border-zinc-100">
             <div className="flex justify-between items-center mb-4">
-                <span className="font-black text-zinc-950 uppercase text-[10px] tracking-widest">
+                <span className="font-black text-zinc-950 uppercase text-xs tracking-widest">
                     {t('common.verification.title', undefined, 'Profile Verification')}
                 </span>
                 <span className="text-xs font-black text-zinc-900">{percentage}%</span>
@@ -313,7 +313,7 @@ export function VerificationProgress() {
                         <div className={`text-lg font-bold mb-1 ${step.done ? 'text-zinc-950' : 'text-zinc-300'}`}>
                             {step.done ? '✓' : '○'}
                         </div>
-                        <div className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">{step.label}</div>
+                        <div className="text-xs font-black text-zinc-400 uppercase tracking-widest">{step.label}</div>
                     </div>
                 ))}
             </div>

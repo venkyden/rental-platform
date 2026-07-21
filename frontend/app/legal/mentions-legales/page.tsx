@@ -35,7 +35,7 @@ export default function MentionsLegalesPage() {
                 >
                     {/* Header */}
                     <motion.div variants={sectionVariants} className="text-center space-y-4">
-                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl">
+                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.2em] shadow-xl">
                             {t('legal.notice.subtitle', undefined, 'Administrative Compliance')}
                         </div>
                         <h1 className="text-6xl sm:text-7xl font-black tracking-tighter text-zinc-900 uppercase">

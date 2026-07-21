@@ -183,7 +183,7 @@ export default function AdminDisputesPage() {
                                 <button
                                     key={f}
                                     onClick={() => setStatusFilter(f)}
-                                    className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest whitespace-nowrap transition-all ${
+                                    className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest whitespace-nowrap transition-all ${
                                         statusFilter === f 
                                         ? 'bg-zinc-900 text-white shadow-md' 
                                         : 'text-zinc-500 hover:text-zinc-900'
@@ -218,23 +218,23 @@ export default function AdminDisputesPage() {
                                         </div>
                                         <div className="flex-grow min-w-0">
                                             <div className="flex items-center gap-2 mb-1">
-                                                <span className={`text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md border ${STATUS_STYLES[d.status]}`}>
+                                                <span className={`text-xs font-bold uppercase tracking-widest px-2 py-0.5 rounded-md border ${STATUS_STYLES[d.status]}`}>
                                                     {t(`facilitation.filters.${d.status === 'under_review' ? 'review' : d.status === 'awaiting_response' ? 'awaiting' : d.status}`)}
                                                 </span>
-                                                <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">
+                                                <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest">
                                                     {new Date(d.created_at).toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                                                 </span>
                                             </div>
                                             <h3 className="text-lg font-bold truncate group-hover:text-zinc-900 transition-colors">
                                                 {d.title}
                                             </h3>
-                                            <div className="flex items-center gap-4 mt-2 text-[10px] font-black uppercase text-zinc-900">
+                                            <div className="flex items-center gap-4 mt-2 text-xs font-black uppercase text-zinc-900">
                                                 <span>{t(`facilitation.categories.${d.category}`)}</span>
                                                 {d.amount_claimed && <span>€{d.amount_claimed.toLocaleString()}</span>}
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2 text-zinc-400 group-hover:text-zinc-900 transition-colors">
-                                            <span className="text-[10px] font-bold uppercase tracking-tighter">{t('facilitation.reviewDetails')}</span>
+                                            <span className="text-xs font-bold uppercase tracking-tighter">{t('facilitation.reviewDetails')}</span>
                                             <ArrowRight className="w-4 h-4" />
                                         </div>
                                     </button>
@@ -278,7 +278,7 @@ export default function AdminDisputesPage() {
                                                 <div className="flex items-center justify-between mb-6">
                                                     <h2 className="text-2xl font-extrabold tracking-tight">{disputeDetail.title}</h2>
                                                     {disputeDetail.is_late_filing && (
-                                                        <div className="flex items-center gap-1.5 px-3 py-1 bg-zinc-900 text-white rounded-full text-[10px] font-black uppercase tracking-widest">
+                                                        <div className="flex items-center gap-1.5 px-3 py-1 bg-zinc-900 text-white rounded-full text-xs font-black uppercase tracking-widest">
                                                             <Clock className="w-3.5 h-3.5" />
                                                             {t('facilitation.lateFiling')}
                                                         </div>
@@ -290,12 +290,12 @@ export default function AdminDisputesPage() {
                                                 
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div className="p-4 bg-zinc-50 rounded-2xl">
-                                                        <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">{t('facilitation.reporter')}</div>
+                                                        <div className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-1">{t('facilitation.reporter')}</div>
                                                         <div className="font-bold">{disputeDetail.raised_by?.full_name || 'Unknown'}</div>
                                                         <div className="text-xs text-zinc-500">{disputeDetail.raised_by?.email}</div>
                                                     </div>
                                                     <div className="p-4 bg-zinc-50 rounded-2xl">
-                                                        <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">{t('facilitation.accused')}</div>
+                                                        <div className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-1">{t('facilitation.accused')}</div>
                                                         <div className="font-bold">{disputeDetail.accused?.full_name || 'N/A'}</div>
                                                         <div className="text-xs text-zinc-500">{disputeDetail.accused?.email || 'General issue'}</div>
                                                     </div>
@@ -357,7 +357,7 @@ export default function AdminDisputesPage() {
                                         <div className="bg-white rounded-[2rem] border border-zinc-200 overflow-hidden shadow-sm">
                                             <div className="p-6 bg-zinc-50 border-b border-zinc-200 flex justify-between items-center">
                                                 <h3 className="font-bold uppercase tracking-widest text-xs">{t('facilitation.conditionComparison')}</h3>
-                                                <div className="flex gap-4 text-[10px] font-bold">
+                                                <div className="flex gap-4 text-xs font-bold">
                                                     <span className="text-zinc-500">{t('facilitation.moveIn')}: {new Date(diffData.move_in.date).toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US', { month: 'short', day: '2-digit' })}</span>
                                                     <span className="text-zinc-500">{t('facilitation.moveOut')}: {new Date(diffData.move_out.date).toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US', { month: 'short', day: '2-digit' })}</span>
                                                 </div>
@@ -376,7 +376,7 @@ export default function AdminDisputesPage() {
                                                         <tr key={idx} className={row.changed ? 'bg-zinc-900/5' : ''}>
                                                             <td className="p-4">
                                                                 <div className="font-bold">{row.name}</div>
-                                                                <div className="text-[10px] text-zinc-400">{row.category}</div>
+                                                                <div className="text-xs text-zinc-400">{row.category}</div>
                                                             </td>
                                                             <td className="p-4">
                                                                 {row.before ? (
@@ -416,7 +416,7 @@ export default function AdminDisputesPage() {
                                         
                                         <div className="space-y-6">
                                             <div>
-                                                <label className="block text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-2">{t('facilitation.observations')}</label>
+                                                <label className="block text-xs font-bold uppercase tracking-widest text-zinc-400 mb-2">{t('facilitation.observations')}</label>
                                                 <textarea 
                                                     className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl p-4 text-xs min-h-[100px] outline-none focus:border-zinc-900 transition-all"
                                                     placeholder={t('common.placeholders.factualObservations')}
@@ -426,7 +426,7 @@ export default function AdminDisputesPage() {
                                             </div>
 
                                             <div>
-                                                <label className="block text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-2">{t('facilitation.updateStatus')}</label>
+                                                <label className="block text-xs font-bold uppercase tracking-widest text-zinc-400 mb-2">{t('facilitation.updateStatus')}</label>
                                                 <select 
                                                     className="w-full bg-zinc-50 border border-zinc-200 rounded-xl p-3 text-xs outline-none"
                                                     value={newStatus}
@@ -440,12 +440,12 @@ export default function AdminDisputesPage() {
                                             </div>
 
                                             <div>
-                                                <label className="block text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-2">{t('facilitation.mediationLink')}</label>
+                                                <label className="block text-xs font-bold uppercase tracking-widest text-zinc-400 mb-2">{t('facilitation.mediationLink')}</label>
                                                 <div className="relative">
                                                     <ExternalLink className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
                                                     <input 
                                                         type="text"
-                                                        className="w-full bg-zinc-50 border border-zinc-200 rounded-xl p-3 pr-10 text-[10px] outline-none"
+                                                        className="w-full bg-zinc-50 border border-zinc-200 rounded-xl p-3 pr-10 text-xs outline-none"
                                                         placeholder={t('common.placeholders.url')}
                                                         value={mediationUrl}
                                                         onChange={e => setMediationUrl(e.target.value)}
@@ -474,13 +474,13 @@ export default function AdminDisputesPage() {
 
                                     {/* Geo-Verification */}
                                     <div className="bg-zinc-100 rounded-[2rem] p-6 border border-zinc-200">
-                                        <h4 className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-4 flex items-center gap-2">
+                                        <h4 className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-4 flex items-center gap-2">
                                             <MapPin className="w-4 h-4" />
                                             {t('facilitation.geoVerification')}
                                         </h4>
                                         <div className="flex items-center justify-between mb-2">
                                             <span className="text-xs font-bold">{t('facilitation.status')}</span>
-                                            <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md ${disputeDetail?.location_verified === 'verified' ? 'bg-zinc-900 text-white' : 'bg-white text-zinc-400 border border-zinc-200'}`}>
+                                            <span className={`text-xs font-black uppercase tracking-widest px-2 py-0.5 rounded-md ${disputeDetail?.location_verified === 'verified' ? 'bg-zinc-900 text-white' : 'bg-white text-zinc-400 border border-zinc-200'}`}>
                                                 {disputeDetail?.location_verified === 'verified' ? t('facilitation.verified') : t('facilitation.unverified')}
                                             </span>
                                         </div>
@@ -494,8 +494,8 @@ export default function AdminDisputesPage() {
 
                                     {/* Compliance Check */}
                                     <div className="p-6 bg-zinc-900 rounded-[2rem] border border-zinc-800 shadow-2xl">
-                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">{t('facilitation.alurCheck')}</h4>
-                                        <p className="text-[10px] text-zinc-300 leading-relaxed">
+                                        <h4 className="text-xs font-black uppercase tracking-widest text-zinc-400 mb-2">{t('facilitation.alurCheck')}</h4>
+                                        <p className="text-xs text-zinc-300 leading-relaxed">
                                             {t('facilitation.alurNotice')}
                                         </p>
                                     </div>

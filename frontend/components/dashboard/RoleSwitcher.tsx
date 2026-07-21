@@ -125,7 +125,7 @@ export default function RoleSwitcher({ currentRole, availableRoles, onSwitch }: 
                         {/* Current Role */}
                         <div className="px-4 py-3 mb-2 bg-zinc-50 rounded-2xl flex items-center justify-between">
                             <div className="flex flex-col">
-                                <span className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-1">
+                                <span className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em] mb-1">
                                     {t('dashboard.roleSwitcher.currentSession')}
                                 </span>
                                 <div className={`flex items-center gap-2 ${currentConfig.color}`}>
@@ -142,7 +142,7 @@ export default function RoleSwitcher({ currentRole, availableRoles, onSwitch }: 
                         {/* Switch Options */}
                         {otherRoles.length > 0 && (
                             <div className="space-y-1 mb-2">
-                                <p className="px-4 py-2 text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">
+                                <p className="px-4 py-2 text-xs font-black text-zinc-400 uppercase tracking-[0.2em]">
                                     {t('dashboard.roleSwitcher.switchTo')}
                                 </p>
                                 {otherRoles.map((role) => {
@@ -170,7 +170,7 @@ export default function RoleSwitcher({ currentRole, availableRoles, onSwitch }: 
                         {/* Unlockable */}
                         {lockableRoles.length > 0 && (
                             <div className="pt-2 border-t border-zinc-100 space-y-1">
-                                <p className="px-4 py-2 text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">
+                                <p className="px-4 py-2 text-xs font-black text-zinc-400 uppercase tracking-[0.2em]">
                                     {t('dashboard.roleSwitcher.unlockNew')}
                                 </p>
                                 {lockableRoles.map((role) => {
@@ -189,7 +189,7 @@ export default function RoleSwitcher({ currentRole, availableRoles, onSwitch }: 
                                                 <span className="text-sm font-bold text-zinc-500 group-hover:text-zinc-900">
                                                     {t(`dashboard.roleSwitcher.roles.${role}`)}
                                                 </span>
-                                                <span className="text-[10px] text-zinc-400">
+                                                <span className="text-xs text-zinc-400">
                                                     {t('dashboard.roleSwitcher.unlockWorkspace')}
                                                 </span>
                                             </div>

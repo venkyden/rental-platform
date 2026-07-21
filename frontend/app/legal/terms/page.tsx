@@ -35,7 +35,7 @@ export default function TermsPage() {
                 >
                     {/* Header */}
                     <motion.div variants={sectionVariants} className="text-center space-y-4">
-                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-zinc-900/5 border border-zinc-900/10 text-zinc-900 text-[10px] font-black uppercase tracking-[0.2em]">
+                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-zinc-900/5 border border-zinc-900/10 text-zinc-900 text-xs font-black uppercase tracking-[0.2em]">
                             {t('landing.hero.badge', undefined, 'Legal Framework')}
                         </div>
                         <h1 className="text-6xl sm:text-7xl font-black tracking-tighter text-zinc-900 uppercase">

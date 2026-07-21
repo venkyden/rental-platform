@@ -97,7 +97,7 @@ export default function VisitScheduler({ propertyId, rooms = [] }: VisitSchedule
                 <div className="flex flex-wrap gap-2 mb-4">
                     <button
                         onClick={() => setSelectedRoom(null)}
-                        className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${selectedRoom === null
+                        className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all border ${selectedRoom === null
                                 ? 'bg-zinc-900 text-white border-zinc-900 shadow-lg shadow-zinc-900/20'
                                 : 'bg-white text-zinc-400 border-zinc-200 hover:border-zinc-400'
                             }`}
@@ -108,7 +108,7 @@ export default function VisitScheduler({ propertyId, rooms = [] }: VisitSchedule
                         <button
                             key={`room-${room.index}`}
                             onClick={() => setSelectedRoom(room.index)}
-                            className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${selectedRoom === room.index
+                            className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all border ${selectedRoom === room.index
                                     ? 'bg-zinc-900 text-white border-zinc-900 shadow-lg shadow-zinc-900/20'
                                     : 'bg-white text-zinc-400 border-zinc-200 hover:border-zinc-400'
                                 }`}
@@ -123,7 +123,7 @@ export default function VisitScheduler({ propertyId, rooms = [] }: VisitSchedule
             <div className="mb-10 p-8 bg-white rounded-[2rem] border border-zinc-100 grid grid-cols-1 sm:grid-cols-4 gap-6 items-end">
                 {rooms.length > 0 && (
                     <div>
-                        <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">Asset</label>
+                        <label className="block text-xs font-black uppercase tracking-widest text-zinc-400 mb-2">Asset</label>
                         <select
                             value={selectedRoom ?? ''}
                             onChange={(e) => setSelectedRoom(e.target.value ? parseInt(e.target.value) : null)}
@@ -136,7 +136,7 @@ export default function VisitScheduler({ propertyId, rooms = [] }: VisitSchedule
                     </div>
                 )}
                 <div>
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">Date</label>
+                    <label className="block text-xs font-black uppercase tracking-widest text-zinc-400 mb-2">Date</label>
                     <input
                         type="date"
                         value={selectedDate}
@@ -146,7 +146,7 @@ export default function VisitScheduler({ propertyId, rooms = [] }: VisitSchedule
                     />
                 </div>
                 <div>
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">Time</label>
+                    <label className="block text-xs font-black uppercase tracking-widest text-zinc-400 mb-2">Time</label>
                     <input
                         type="time"
                         value={selectedTime}
@@ -157,7 +157,7 @@ export default function VisitScheduler({ propertyId, rooms = [] }: VisitSchedule
                 <button
                     onClick={addSlot}
                     disabled={loading}
-                    className="bg-zinc-900 text-white h-12 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="bg-zinc-900 text-white h-12 rounded-xl text-xs font-black uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                     <Plus className="w-4 h-4" />
                     Provision Slot
@@ -178,7 +178,7 @@ export default function VisitScheduler({ propertyId, rooms = [] }: VisitSchedule
                             <div className="flex flex-wrap gap-2">
                                 {daySlots.map(slot => (
                                      <div key={slot.id} className={`
-                                         text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full flex items-center gap-2 transition-all
+                                         text-xs font-black uppercase tracking-widest px-4 py-2 rounded-full flex items-center gap-2 transition-all
                                          ${slot.is_booked
                                              ? 'bg-zinc-900 text-white shadow-lg shadow-zinc-900/20'
                                              : 'bg-white border border-zinc-100 text-zinc-400 hover:text-zinc-900 hover:border-zinc-900'}
@@ -186,7 +186,7 @@ export default function VisitScheduler({ propertyId, rooms = [] }: VisitSchedule
                                         <Clock className="w-3 h-3" />
                                         {new Date(slot.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                         {slot.room_label && (
-                                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${slot.is_booked ? 'bg-white/20 text-white' : 'bg-zinc-100 text-zinc-900'}`}>
+                                            <span className={`text-xs px-1.5 py-0.5 rounded-full ${slot.is_booked ? 'bg-white/20 text-white' : 'bg-zinc-100 text-zinc-900'}`}>
                                                 {slot.room_label}
                                             </span>
                                         )}

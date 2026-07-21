@@ -19,13 +19,13 @@ export default function WebhooksPage() {
                 <p className="text-zinc-500 font-medium mb-8">
                     Configure your webhooks for real-time synchronization.
                     <br />
-                    <span className="text-[10px] font-black bg-zinc-900 text-white px-3 py-1 rounded-full mt-4 inline-block uppercase tracking-[0.2em]">
+                    <span className="text-xs font-black bg-zinc-900 text-white px-3 py-1 rounded-full mt-4 inline-block uppercase tracking-[0.2em]">
                         Endpoint Security Active
                     </span>
                 </p>
                 <button
                     onClick={() => router.back()}
-                    className="w-full py-5 bg-zinc-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.4em] hover:scale-[1.02] active:scale-95 transition-all shadow-2xl"
+                    className="w-full py-5 bg-zinc-900 text-white rounded-2xl text-xs font-black uppercase tracking-[0.4em] hover:scale-[1.02] active:scale-95 transition-all shadow-2xl"
                 >
                     Manage API Keys
                 </button>

@@ -218,7 +218,7 @@ export default function AnalyticsPage() {
                         {/* Left Main Chart - Views over Time */}
                         <div className="lg:col-span-2 glass-card !p-10 rounded-[2.5rem] border-zinc-100 shadow-xl relative overflow-hidden text-left flex flex-col">
                             <div className="mb-8">
-                                <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 mb-2">
+                                <h3 className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400 mb-2">
                                     {t('analytics.viewsOverTime', undefined, 'Views Over Time')}
                                 </h3>
                                 <h2 className="text-3xl font-black text-zinc-950 tracking-tight">
@@ -245,7 +245,7 @@ export default function AnalyticsPage() {
                         {/* Right Secondary Chart - Applications Trend */}
                         <div className="glass-card !p-10 rounded-[2.5rem] border-zinc-100 shadow-xl relative overflow-hidden text-left flex flex-col">
                             <div className="mb-8">
-                                <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 mb-2">
+                                <h3 className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400 mb-2">
                                     {t('analytics.applicationsTrend', undefined, 'Applications Trend')}
                                 </h3>
                                 <h2 className="text-3xl font-black text-zinc-950 tracking-tight">

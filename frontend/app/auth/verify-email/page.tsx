@@ -55,7 +55,7 @@ function VerifyEmailContent() {
                 <h2 className="text-2xl font-black tracking-tighter text-zinc-900 uppercase">
                     {t('auth.verifyEmail.title', undefined, 'Email Verification')}
                 </h2>
-                <p className="mt-2 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+                <p className="mt-2 text-xs font-bold text-zinc-400 uppercase tracking-widest">
                     {status === 'verifying'
                         ? t('auth.verifyEmail.verifyingSub', undefined, 'Authenticating your request')
                         : status === 'success'
@@ -72,7 +72,7 @@ function VerifyEmailContent() {
                         className="flex flex-col items-center justify-center space-y-4"
                     >
                         <Loader2 className="animate-spin text-zinc-900 w-12 h-12" strokeWidth={2.5} />
-                        <p className="text-zinc-600 font-bold uppercase text-[10px] tracking-widest animate-pulse">
+                        <p className="text-zinc-600 font-bold uppercase text-xs tracking-widest animate-pulse">
                             {t('auth.verifyEmail.verifying', undefined, 'Verifying your email...')}
                         </p>
                     </motion.div>
@@ -91,7 +91,7 @@ function VerifyEmailContent() {
                             {t('auth.verifyEmail.success', undefined, 'Success!')}
                         </h3>
                         <p className="text-xs text-zinc-500 font-medium max-w-sm px-4">{message}</p>
-                        <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 animate-pulse pt-2">
+                        <p className="text-xs font-black uppercase tracking-widest text-zinc-400 animate-pulse pt-2">
                             {t('auth.verifyEmail.redirecting', undefined, 'Redirecting you...')}
                         </p>
                     </motion.div>
@@ -114,13 +114,13 @@ function VerifyEmailContent() {
                         <div className="w-full pt-6 space-y-3">
                             <Link
                                 href="/auth/login"
-                                className="block w-full text-center py-4 bg-zinc-900 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-zinc-800 hover:shadow-xl hover:shadow-zinc-900/10 active:scale-[0.98] transition-all"
+                                className="block w-full text-center py-4 bg-zinc-900 text-white rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-zinc-800 hover:shadow-xl hover:shadow-zinc-900/10 active:scale-[0.98] transition-all"
                             >
                                 {t('auth.verifyEmail.goToLogin', undefined, 'Go to Login')}
                             </Link>
                             <Link
                                 href="/auth/register"
-                                className="block w-full text-center py-4 border-2 border-zinc-100 text-[10px] font-black uppercase tracking-widest rounded-2xl text-zinc-900 bg-white hover:bg-zinc-50 active:scale-[0.98] transition-all"
+                                className="block w-full text-center py-4 border-2 border-zinc-100 text-xs font-black uppercase tracking-widest rounded-2xl text-zinc-900 bg-white hover:bg-zinc-50 active:scale-[0.98] transition-all"
                             >
                                 {t('auth.verifyEmail.createNewAccount', undefined, 'Create New Account')}
                             </Link>
@@ -137,7 +137,7 @@ function LoadingFallback() {
     return (
         <div className="flex flex-col items-center justify-center py-12 space-y-4">
             <Loader2 className="animate-spin text-zinc-900 w-12 h-12" strokeWidth={2.5} />
-            <p className="text-zinc-600 font-bold uppercase text-[10px] tracking-widest">{t('common.loading', undefined, 'Loading...')}</p>
+            <p className="text-zinc-600 font-bold uppercase text-xs tracking-widest">{t('common.loading', undefined, 'Loading...')}</p>
         </div>
     );
 }

@@ -179,7 +179,7 @@ function LoginContent() {
                 <h2 className="text-4xl font-black text-zinc-900 tracking-tighter mb-2">
                     {t('auth.login.title', undefined, 'Welcome Back')}
                 </h2>
-                <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">
+                <p className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em]">
                     {t('auth.login.subtitle', undefined, 'Enter your credentials')}
                 </p>
             </motion.div>
@@ -268,7 +268,7 @@ function LoginContent() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full py-5 rounded-full bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-3 hover:shadow-2xl hover:scale-[1.02] active:scale-95 disabled:opacity-50 transition-all shadow-xl shadow-zinc-900/10 group"
+                            className="w-full py-5 rounded-full bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.4em] flex items-center justify-center gap-3 hover:shadow-2xl hover:scale-[1.02] active:scale-95 disabled:opacity-50 transition-all shadow-xl shadow-zinc-900/10 group"
                         >
                             {loading ? (
                                 <div className="flex items-center gap-3">
@@ -307,13 +307,13 @@ function LoginContent() {
                 )}
 
                 {googleLoading && (
-                    <p className="text-[9px] font-black text-zinc-900 text-center animate-pulse uppercase tracking-widest">
+                    <p className="text-xs font-black text-zinc-900 text-center animate-pulse uppercase tracking-widest">
                         {t('auth.login.connectingGoogle', undefined, 'Connecting to Google…')}
                     </p>
                 )}
 
                 <div className="text-center pt-8">
-                    <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+                    <p className="text-xs font-black text-zinc-400 uppercase tracking-widest">
                         {t('auth.login.noAccount', undefined, "Don't have an account?")}{' '}
                         <Link href="/auth/register" className="text-zinc-900 hover:text-zinc-800 transition-colors underline underline-offset-4 decoration-2">
                             {t('auth.login.signUp', undefined, 'Join Roomivo')}

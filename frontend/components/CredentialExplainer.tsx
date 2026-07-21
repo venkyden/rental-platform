@@ -89,7 +89,7 @@ export default function CredentialExplainer({ role, compact = false }: Props) {
     return (
         <div className="p-8 rounded-[2.5rem] bg-zinc-50 border border-zinc-100 space-y-6 text-left">
             <div className="space-y-2">
-                <div className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">
+                <div className="text-xs font-black uppercase tracking-[0.3em] text-zinc-400">
                     {fr ? 'Attestation vérifiée' : 'Verified certificate'}
                 </div>
                 <h3 className="text-xl font-black text-zinc-900 tracking-tight">

@@ -32,7 +32,7 @@ export default function NotificationSettingsPage() {
                                 <div key={tab.id} className="flex flex-row md:flex-col shrink-0">
                                     <button
                                         onClick={() => router.push(tab.path)}
-                                        className={`flex items-center gap-3 px-5 md:px-6 py-3 md:py-4 rounded-full md:rounded-[1.5rem] text-[10px] md:text-sm font-black uppercase tracking-widest transition-all duration-500 whitespace-nowrap ${
+                                        className={`flex items-center gap-3 px-5 md:px-6 py-3 md:py-4 rounded-full md:rounded-[1.5rem] text-xs md:text-sm font-black uppercase tracking-widest transition-all duration-500 whitespace-nowrap ${
                                             tab.id === 'notifications' 
                                             ? 'bg-zinc-900 text-white shadow-xl scale-100' 
                                             : 'text-zinc-400 hover:text-zinc-600'
@@ -45,7 +45,7 @@ export default function NotificationSettingsPage() {
                                     {tab.id === 'notifications' && (
                                         <div className="hidden md:flex px-6 py-4 flex-col gap-4">
                                             <button 
-                                                className="text-[10px] font-black uppercase tracking-widest text-left text-zinc-900"
+                                                className="text-xs font-black uppercase tracking-widest text-left text-zinc-900"
                                             >
                                                 {t('settings.tabs.preferences', undefined, 'Preferences')}
                                             </button>

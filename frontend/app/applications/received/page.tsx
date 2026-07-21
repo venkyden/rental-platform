@@ -300,7 +300,7 @@ export default function ReceivedApplicationsPage() {
                                                                     {tenant?.full_name || 'Applicant'}
                                                                 </h5>
                                                                 {tenant && (
-                                                                    <span className="inline-flex items-center gap-1 bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 px-2 py-0.5 rounded text-[10px] font-black tracking-widest uppercase">
+                                                                    <span className="inline-flex items-center gap-1 bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 px-2 py-0.5 rounded text-xs font-black tracking-widest uppercase">
                                                                         <Award className="w-3.5 h-3.5" />
                                                                         {t('applications.trustScore')}: {tenant.trust_score}
                                                                     </span>
@@ -314,17 +314,17 @@ export default function ReceivedApplicationsPage() {
                                                             {/* Verification Badges */}
                                                             {tenant && (
                                                                 <div className="flex flex-wrap gap-2.5 mt-4 pt-3 border-t border-zinc-100 dark:border-zinc-800/60">
-                                                                    <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider ${tenant.identity_verified ? 'text-emerald-600' : 'text-zinc-400'}`}>
+                                                                    <span className={`inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider ${tenant.identity_verified ? 'text-emerald-600' : 'text-zinc-400'}`}>
                                                                         <CheckCircle className="w-3.5 h-3.5" /> {t('applications.identity')}
                                                                     </span>
-                                                                    <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider ${tenant.employment_verified ? 'text-emerald-600' : 'text-zinc-400'}`}>
+                                                                    <span className={`inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider ${tenant.employment_verified ? 'text-emerald-600' : 'text-zinc-400'}`}>
                                                                         <CheckCircle className="w-3.5 h-3.5" /> {t('applications.employment')}
                                                                     </span>
-                                                                    <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider ${(tenant.solvency_verified ?? tenant.income_verified) ? 'text-emerald-600' : 'text-zinc-400'}`}>
+                                                                    <span className={`inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider ${(tenant.solvency_verified ?? tenant.income_verified) ? 'text-emerald-600' : 'text-zinc-400'}`}>
                                                                         <CheckCircle className="w-3.5 h-3.5" /> {t('applications.resources')}
                                                                     </span>
                                                                     {tenant.guarantor_type && (
-                                                                        <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-500">
+                                                                        <span className="text-xs font-bold uppercase tracking-wider text-indigo-500">
                                                                             • {tenant.guarantor_type}
                                                                         </span>
                                                                     )}

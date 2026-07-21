@@ -46,7 +46,7 @@ export default function KpiCard({
             aria-live="polite"
         >
             <div className="flex items-center justify-between mb-6">
-                <span className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em]">{label}</span>
+                <span className="text-xs font-black text-zinc-400 uppercase tracking-[0.3em]">{label}</span>
                 <div className="p-2.5 rounded-xl bg-zinc-50 text-zinc-900 group-hover:scale-110 group-hover:bg-zinc-900 group-hover:text-white transition-all duration-300 shadow-sm">
                     {icon}
                 </div>
@@ -64,7 +64,7 @@ export default function KpiCard({
                         )}
                         {delta.value}
                     </span>
-                    <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">
+                    <span className="text-xs text-zinc-400 font-bold uppercase tracking-widest">
                         {delta.timeframe || 'vs prev month'}
                     </span>
                 </div>

@@ -14,7 +14,7 @@ export default function Step2Location({ formData, updateFormData, t, enriching, 
     return (
         <div className="space-y-10">
             <div className="space-y-6">
-                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                     {t('properties.new.steps.geolocation.label')}
                 </label>
                 <div className="glass-card !p-8 rounded-[3rem] border-zinc-100">
@@ -36,7 +36,7 @@ export default function Step2Location({ formData, updateFormData, t, enriching, 
             </div>
             <div className="grid grid-cols-2 gap-8">
                 <div className="space-y-4">
-                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                    <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                         {t('properties.new.steps.geolocation.city')}
                     </label>
                     <input
@@ -47,7 +47,7 @@ export default function Step2Location({ formData, updateFormData, t, enriching, 
                     />
                 </div>
                 <div className="space-y-4">
-                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                    <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                         {t('properties.new.steps.geolocation.zip')}
                     </label>
                     <input
@@ -61,7 +61,7 @@ export default function Step2Location({ formData, updateFormData, t, enriching, 
             <button
                 onClick={onEnrich}
                 disabled={enriching}
-                className="w-full py-6 bg-zinc-900 text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] shadow-2xl hover:scale-[1.02] active:scale-95 transition-all"
+                className="w-full py-6 bg-zinc-900 text-white rounded-[2rem] text-xs font-black uppercase tracking-[0.4em] shadow-2xl hover:scale-[1.02] active:scale-95 transition-all"
             >
                 {enriching
                     ? t('properties.new.steps.geolocation.enriching')

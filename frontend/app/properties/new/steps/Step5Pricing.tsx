@@ -16,7 +16,7 @@ export default function Step5Pricing({ formData, updateFormData, t, showRentCont
             {/* Monthly rent */}
             <div className="grid grid-cols-2 gap-8">
                 <div className="space-y-6">
-                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                    <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                         {t('properties.new.steps.pricing.monthlyRent')}
                     </label>
                     <div className="flex items-baseline gap-4">
@@ -27,13 +27,13 @@ export default function Step5Pricing({ formData, updateFormData, t, showRentCont
                             onChange={(e) =>
                                 updateFormData({ monthly_rent: e.target.value === '' ? 0 : parseInt(e.target.value) || 0 })
                             }
-                            className="bg-transparent text-8xl font-black tracking-tighter border-none focus:ring-0 w-full"
+                            className="bg-transparent text-5xl sm:text-8xl font-black tracking-tighter border-none focus:ring-0 w-full"
                             aria-label={t('property.create.pricing.monthlyRent', undefined, 'Monthly rent')}
                         />
                     </div>
                 </div>
                 <div className="space-y-6">
-                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                    <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                         {t('properties.new.steps.pricing.leaseDuration', undefined, 'Lease Duration (Months)')}
                     </label>
                     <input
@@ -43,7 +43,7 @@ export default function Step5Pricing({ formData, updateFormData, t, showRentCont
                             updateFormData({ lease_duration_months: e.target.value === '' ? undefined : parseInt(e.target.value) || 0 })
                         }
                         placeholder={t('property.create.pricing.flexibleDuration', undefined, 'Flexible / Open-ended')}
-                        className="bg-transparent text-6xl font-black tracking-tighter border-none focus:ring-0 w-full"
+                        className="bg-transparent text-4xl sm:text-6xl font-black tracking-tighter border-none focus:ring-0 w-full"
                         aria-label={t('property.create.pricing.leaseDuration', undefined, 'Lease duration')}
                     />
                 </div>
@@ -52,7 +52,7 @@ export default function Step5Pricing({ formData, updateFormData, t, showRentCont
             {/* Charges + deposit */}
             <div className="grid grid-cols-2 gap-8">
                 <div className="space-y-4">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
+                    <label className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400">
                         {t('property.create.pricing.charges', undefined, 'Monthly Charges')}
                     </label>
                     <div className="flex items-baseline gap-2">
@@ -68,7 +68,7 @@ export default function Step5Pricing({ formData, updateFormData, t, showRentCont
                     </div>
                 </div>
                 <div className="space-y-4">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
+                    <label className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400">
                         {t('property.create.pricing.deposit', undefined, 'Security Deposit')}
                     </label>
                     <div className="flex items-baseline gap-2">
@@ -81,13 +81,13 @@ export default function Step5Pricing({ formData, updateFormData, t, showRentCont
                             aria-label={t('property.create.pricing.deposit', undefined, 'Security deposit')}
                         />
                     </div>
-                    <p className="text-[9px] text-zinc-400 font-medium">
+                    <p className="text-xs text-zinc-400 font-medium">
                         {t('property.create.pricing.depositLimit', undefined, 'Max 1 month rent (Unfurnished) or 2 months (Furnished)')}
                     </p>
                     {formData.deposit !== undefined &&
                         formData.monthly_rent > 0 &&
                         formData.deposit > formData.monthly_rent * (formData.furnished ? 2 : 1) && (
-                            <p className="text-amber-500 text-[10px] font-bold mt-1" role="alert">
+                            <p className="text-amber-500 text-xs font-bold mt-1" role="alert">
                                 ⚠️ {t(formData.furnished
                                     ? 'properties.new.steps.pricing.depositWarningFurnished'
                                     : 'properties.new.steps.pricing.depositWarningUnfurnished')}
@@ -106,7 +106,7 @@ export default function Step5Pricing({ formData, updateFormData, t, showRentCont
                     }`}
                     aria-pressed={formData.charges_included}
                 >
-                    <div className={`text-[10px] font-black uppercase tracking-[0.2em] mb-2 ${formData.charges_included ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                    <div className={`text-xs font-black uppercase tracking-[0.2em] mb-2 ${formData.charges_included ? 'text-zinc-400' : 'text-zinc-500'}`}>
                         {t('properties.new.steps.pricing.chargesLabel')}
                     </div>
                     <div className="text-xl font-black">{t('properties.new.steps.pricing.allInclusive')}</div>
@@ -119,7 +119,7 @@ export default function Step5Pricing({ formData, updateFormData, t, showRentCont
                     }`}
                     aria-pressed={formData.caf_eligible}
                 >
-                    <div className={`text-[10px] font-black uppercase tracking-[0.2em] mb-2 ${formData.caf_eligible ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                    <div className={`text-xs font-black uppercase tracking-[0.2em] mb-2 ${formData.caf_eligible ? 'text-zinc-400' : 'text-zinc-500'}`}>
                         {t('properties.new.steps.pricing.complianceLabel')}
                     </div>
                     <div className="text-xl font-black">{t('properties.new.steps.pricing.cafEligible')}</div>
@@ -136,7 +136,7 @@ export default function Step5Pricing({ formData, updateFormData, t, showRentCont
                     }`}
                     aria-pressed={formData.guarantor_required}
                 >
-                    <div className="text-[10px] font-black uppercase tracking-[0.2em] mb-1">
+                    <div className="text-xs font-black uppercase tracking-[0.2em] mb-1">
                         {t('property.create.pricing.guarantor.title', undefined, 'Guarantor Required')}
                     </div>
                     <div className="text-sm font-bold">
@@ -169,7 +169,7 @@ export default function Step5Pricing({ formData, updateFormData, t, showRentCont
 
             {/* Rent control (Loi ELAN) */}
             <div className="space-y-6">
-                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                     {t('properties.new.steps.pricing.rentControlTitle')}
                 </label>
                 <button
@@ -191,7 +191,7 @@ export default function Step5Pricing({ formData, updateFormData, t, showRentCont
                     }`}
                     aria-pressed={showRentControl}
                 >
-                    <div className="text-[10px] font-black uppercase tracking-[0.2em] mb-1">
+                    <div className="text-xs font-black uppercase tracking-[0.2em] mb-1">
                         {t('properties.new.steps.pricing.rentControlToggle')}
                     </div>
                     <div className={`text-xs ${showRentControl ? 'text-zinc-300' : 'text-zinc-500'}`}>
@@ -207,7 +207,7 @@ export default function Step5Pricing({ formData, updateFormData, t, showRentCont
                     >
                         <div className="grid grid-cols-2 gap-8">
                             <div className="space-y-4">
-                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
+                                <label className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400">
                                     {t('properties.new.steps.pricing.loyerReferenceLabel')}
                                 </label>
                                 <input
@@ -223,7 +223,7 @@ export default function Step5Pricing({ formData, updateFormData, t, showRentCont
                                 />
                             </div>
                             <div className="space-y-4">
-                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
+                                <label className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400">
                                     {t('properties.new.steps.pricing.loyerReferenceMajoreLabel')}
                                 </label>
                                 <input
@@ -255,7 +255,7 @@ export default function Step5Pricing({ formData, updateFormData, t, showRentCont
                                         </p>
                                     </div>
                                     <div className="space-y-4">
-                                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
+                                        <label className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400">
                                             {t('properties.new.steps.pricing.complementLoyerLabel')}
                                         </label>
                                         <div className="flex items-baseline gap-2">
@@ -273,7 +273,7 @@ export default function Step5Pricing({ formData, updateFormData, t, showRentCont
                                         </div>
                                     </div>
                                     <div className="space-y-4">
-                                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
+                                        <label className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400">
                                             {t('properties.new.steps.pricing.complementLoyerJustificationLabel')}
                                             {formData.complement_de_loyer && formData.complement_de_loyer > 0 ? (
                                                 <span className="text-red-500 ml-1">*</span>
@@ -295,7 +295,7 @@ export default function Step5Pricing({ formData, updateFormData, t, showRentCont
 
             {/* Natural risks (ERP / Loi ALUR) */}
             <div className="space-y-6">
-                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                     {t('properties.new.steps.pricing.naturalRisksTitle')}
                 </label>
                 <button
@@ -306,7 +306,7 @@ export default function Step5Pricing({ formData, updateFormData, t, showRentCont
                     }`}
                     aria-pressed={formData.natural_risks_compliant}
                 >
-                    <div className="text-[10px] font-black uppercase tracking-[0.2em] mb-1">
+                    <div className="text-xs font-black uppercase tracking-[0.2em] mb-1">
                         {t('properties.new.steps.pricing.naturalRisksLabel')}
                     </div>
                     <div className={`text-xs ${formData.natural_risks_compliant ? 'text-zinc-300' : 'text-zinc-500'}`}>

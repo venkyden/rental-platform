@@ -101,13 +101,13 @@ export default function CameraCapture({ onCapture, onCancel }: CameraCaptureProp
                  {error && (
                     <div className="mb-6 p-5 bg-zinc-900 text-white rounded-2xl flex items-center gap-3">
                         <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                        <p className="text-[10px] font-black uppercase tracking-widest">{error}</p>
+                        <p className="text-xs font-black uppercase tracking-widest">{error}</p>
                     </div>
                 )}
 
                 {!capturing && !error && (
                     <div className="text-center py-8">
-                        <div className="text-6xl mb-4"></div>
+                        <div className="text-4xl sm:text-6xl mb-4">📷</div>
                          <h4 className="text-xl font-black text-zinc-900 uppercase tracking-tight mb-4">
                             {t('cameraCapture.liveCaptureTitle', undefined, 'Live Document Capture')}
                         </h4>
@@ -118,7 +118,7 @@ export default function CameraCapture({ onCapture, onCancel }: CameraCaptureProp
                         </p>
                         <button
                             onClick={startCamera}
-                            className="px-10 py-4 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl"
+                            className="px-10 py-4 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.3em] rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl"
                         >
                             {t('cameraCapture.openCamera', undefined, 'Open Camera')}
                         </button>
@@ -143,20 +143,20 @@ export default function CameraCapture({ onCapture, onCancel }: CameraCaptureProp
                          <div className="flex gap-4">
                             <button
                                 onClick={handleCancel}
-                                className="flex-1 py-4 bg-zinc-100 text-zinc-600 text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-zinc-200 transition-colors"
+                                className="flex-1 py-4 bg-zinc-100 text-zinc-600 text-xs font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-zinc-200 transition-colors"
                             >
                                 {t('cameraCapture.cancel', undefined, 'Cancel')}
                             </button>
                             <button
                                 onClick={capturePhoto}
-                                className="flex-1 py-4 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl"
+                                className="flex-1 py-4 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.2em] rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl"
                             >
                                  {t('cameraCapture.captureButton', undefined, 'Capture Photo')}
                             </button>
                         </div>
 
                          <div className="p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
-                            <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest text-center">
+                            <p className="text-xs font-black text-zinc-400 uppercase tracking-widest text-center">
                                  {t('cameraCapture.frameTip', undefined, 'Tip: Ensure your document is well-lit and all corners are visible within the frame.')}
                             </p>
                         </div>

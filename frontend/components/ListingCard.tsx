@@ -75,13 +75,13 @@ export default function ListingCard({ property, onToggleSave, index = 0 }: Listi
                 )}
                 <div className="absolute top-4 left-4 flex flex-col items-start gap-2">
                     {property.ownership_verified && (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-zinc-900/90 backdrop-blur text-white text-[10px] font-bold uppercase tracking-wider rounded-full">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-zinc-900/90 backdrop-blur text-white text-xs font-bold uppercase tracking-wider rounded-full">
                             <ShieldCheck className="w-3 h-3" />
                             {t('listing.gpsVerified', undefined, 'Photos vérifiées GPS')}
                         </span>
                     )}
                     {property.dpe_rating && (
-                        <span className="px-3 py-1.5 bg-white/90 backdrop-blur text-zinc-900 text-[10px] font-bold rounded-full">
+                        <span className="px-3 py-1.5 bg-white/90 backdrop-blur text-zinc-900 text-xs font-bold rounded-full">
                             DPE {property.dpe_rating}
                         </span>
                     )}
@@ -106,7 +106,7 @@ export default function ListingCard({ property, onToggleSave, index = 0 }: Listi
             <div className="p-6 flex flex-col flex-1 gap-2">
                 <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
-                        <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-zinc-500">
+                        <p className="text-xs font-bold uppercase tracking-[0.15em] text-zinc-500">
                             {typology} · {t(property.furnished ? 'listing.furnished' : 'listing.unfurnished', undefined, property.furnished ? 'Meublé' : 'Vide')}
                         </p>
                         <Link href={`/properties/${property.id}`}>
@@ -118,9 +118,9 @@ export default function ListingCard({ property, onToggleSave, index = 0 }: Listi
                     <div className="text-right shrink-0">
                         <p className="text-xl font-black text-zinc-900 tracking-tight">
                             {Math.round(price.amount)}€{' '}
-                            <span className="text-[10px] font-bold text-zinc-500 uppercase">{t(`listing.${price.suffix}`, undefined, price.suffix)}</span>
+                            <span className="text-xs font-bold text-zinc-500 uppercase">{t(`listing.${price.suffix}`, undefined, price.suffix)}</span>
                         </p>
-                        <p className="text-[10px] font-semibold text-zinc-400">{t('listing.perMonth', undefined, '/ mois')}</p>
+                        <p className="text-xs font-semibold text-zinc-400">{t('listing.perMonth', undefined, '/ mois')}</p>
                     </div>
                 </div>
 

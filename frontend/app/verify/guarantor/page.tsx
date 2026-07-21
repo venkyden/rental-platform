@@ -268,7 +268,7 @@ export default function GuarantorVerifyPage() {
                             {currentStep === 'selection' ? (
                                 <button
                                     onClick={() => router.back()}
-                                    className="flex items-center gap-2 text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] hover:text-zinc-900 transition-all mb-8 group"
+                                    className="flex items-center gap-2 text-xs font-black text-zinc-400 uppercase tracking-[0.3em] hover:text-zinc-900 transition-all mb-8 group"
                                 >
                                     <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
                                     {t('common.actions.back', undefined, 'Back')}
@@ -276,7 +276,7 @@ export default function GuarantorVerifyPage() {
                             ) : (
                                 <button
                                     onClick={() => setCurrentStep('selection')}
-                                    className="flex items-center gap-2 text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] hover:text-zinc-900 transition-all mb-8 group"
+                                    className="flex items-center gap-2 text-xs font-black text-zinc-400 uppercase tracking-[0.3em] hover:text-zinc-900 transition-all mb-8 group"
                                     disabled={submitting}
                                 >
                                     <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
@@ -321,12 +321,12 @@ export default function GuarantorVerifyPage() {
                                                     {existingStatus}
                                                 </span>
                                                 {existingAssurance === 'MEDIUM' && (
-                                                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 font-bold uppercase tracking-wider">
+                                                    <span className="text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 font-bold uppercase tracking-wider">
                                                         {t('verify.guarantor.assuranceMedium', undefined, 'OCR verified')}
                                                     </span>
                                                 )}
                                                 {existingAssurance === 'DOCUMENT_SUBMITTED' && (
-                                                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600 font-bold uppercase tracking-wider">
+                                                    <span className="text-xs px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600 font-bold uppercase tracking-wider">
                                                         {t('verify.guarantor.assuranceDocSubmitted', undefined, 'Docs on file')}
                                                     </span>
                                                 )}
@@ -427,7 +427,7 @@ export default function GuarantorVerifyPage() {
                                                             <div className="flex items-center gap-2">
                                                                 <h3 className="font-bold text-zinc-900 text-base">{t('verify.guarantor.visale', undefined, 'Visale (Action Logement)')}</h3>
                                                                 {!isFrenchResident && (
-                                                                    <span className="text-[10px] font-black uppercase tracking-widest bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">{t('verify.guarantor.visaleFranceOnly', undefined, 'France only')}</span>
+                                                                    <span className="text-xs font-black uppercase tracking-widest bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">{t('verify.guarantor.visaleFranceOnly', undefined, 'France only')}</span>
                                                                 )}
                                                             </div>
                                                             <p className="text-sm text-zinc-500 font-medium leading-normal mt-1">{t('verify.guarantor.visaleDesc', undefined, 'Free government guarantee for students and CDI < 1500€/mo.')}</p>
@@ -700,7 +700,7 @@ export default function GuarantorVerifyPage() {
                                                                 <button
                                                                     onClick={() => physicalFileRefs[doc.id as keyof typeof physicalFileRefs].current?.click()}
                                                                     disabled={!!uploadingDocType}
-                                                                    className={`px-4 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-wider transition-all inline-flex items-center gap-1.5 ${
+                                                                    className={`px-4 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all inline-flex items-center gap-1.5 ${
                                                                         isUploaded 
                                                                             ? 'bg-zinc-100 hover:bg-zinc-200 text-zinc-900' 
                                                                             : 'bg-zinc-900 hover:bg-zinc-800 text-white'

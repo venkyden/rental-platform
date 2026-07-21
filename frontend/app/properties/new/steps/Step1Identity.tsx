@@ -11,7 +11,7 @@ export default function Step1Identity({ formData, updateFormData, t }: Props) {
     return (
         <div className="space-y-10">
             <div className="space-y-6">
-                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                     {t('properties.new.steps.identity.label')}
                 </label>
                 <input
@@ -33,7 +33,7 @@ export default function Step1Identity({ formData, updateFormData, t }: Props) {
                                 : 'border-zinc-100 hover:border-zinc-300'
                         }`}
                     >
-                        <div className={`text-[10px] font-black uppercase tracking-[0.2em] mb-2 ${
+                        <div className={`text-xs font-black uppercase tracking-[0.2em] mb-2 ${
                             formData.property_type === type ? 'text-zinc-400' : 'text-zinc-500'
                         }`}>
                             {type}

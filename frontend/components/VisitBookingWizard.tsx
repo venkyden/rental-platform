@@ -113,7 +113,7 @@ export default function VisitBookingWizard({ propertyId, rooms = [], onBookingSu
             {/* Step 1: Room Selection (if rooms exist) */}
             {rooms.length > 0 && step === 'room' && (
                 <div className="space-y-6">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{t('visitBooking.selectRoomDesc', undefined, 'Select target asset for inspection')}</p>
+                    <p className="text-xs font-black uppercase tracking-widest text-zinc-400">{t('visitBooking.selectRoomDesc', undefined, 'Select target asset for inspection')}</p>
                     <div className="grid gap-2">
                         {rooms.map((room) => {
                             const roomSlotCount = slots.filter(s => s.room_index === room.index && !s.is_booked).length;
@@ -128,7 +128,7 @@ export default function VisitBookingWizard({ propertyId, rooms = [], onBookingSu
                                 >
                                     <div>
                                         <div className="font-black text-sm uppercase tracking-tight">{room.label}</div>
-                                        <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mt-1 group-hover:text-zinc-400">
+                                        <div className="text-xs font-bold text-zinc-400 uppercase tracking-widest mt-1 group-hover:text-zinc-400">
                                             {roomSlotCount} {t('visitBooking.slotsAvailable', { count: roomSlotCount }, `slot${roomSlotCount !== 1 ? 's' : ''} available`)}
                                         </div>
                                     </div>
@@ -151,12 +151,12 @@ export default function VisitBookingWizard({ propertyId, rooms = [], onBookingSu
                                     setSelectedSlot(null);
                                     setSelectedRoom(null);
                                 }}
-                                className="text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 transition-colors"
+                                className="text-xs font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 transition-colors"
                             >
                                 ← {t('visitBooking.backToRooms', undefined, 'Back to assets')}
                             </button>
                             <div className="h-4 w-[1px] bg-zinc-200" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-900">
+                            <span className="text-xs font-black uppercase tracking-widest text-zinc-900">
                                 {rooms.find(r => r.index === selectedRoom)?.label}
                             </span>
                         </div>
@@ -183,7 +183,7 @@ export default function VisitBookingWizard({ propertyId, rooms = [], onBookingSu
                                                         key={slot.id}
                                                         onClick={() => setSelectedSlot(slot.id)}
                                                         className={`
-                                                            text-[10px] font-black uppercase tracking-[0.2em] py-3 px-4 rounded-full border text-center transition-all
+                                                            text-xs font-black uppercase tracking-[0.2em] py-3 px-4 rounded-full border text-center transition-all
                                                             ${selectedSlot === slot.id
                                                                 ? 'bg-zinc-900 text-white border-zinc-900 shadow-xl shadow-zinc-900/20'
                                                                 : 'hover:border-zinc-900 text-zinc-400 border-zinc-100 bg-zinc-50/50'}
@@ -201,7 +201,7 @@ export default function VisitBookingWizard({ propertyId, rooms = [], onBookingSu
                             <button
                                 onClick={confirmBooking}
                                 disabled={!selectedSlot || booking}
-                                className={`w-full py-6 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] transition-all shadow-2xl ${selectedSlot && !booking
+                                className={`w-full py-6 rounded-[2rem] text-xs font-black uppercase tracking-[0.4em] transition-all shadow-2xl ${selectedSlot && !booking
                                         ? 'bg-zinc-900 text-white hover:scale-[1.02] active:scale-[0.98]'
                                         : 'bg-zinc-100 text-zinc-300 cursor-not-allowed shadow-none'
                                     }`}

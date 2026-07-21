@@ -50,7 +50,7 @@ export default function ErrorPage({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.8 }}
-          className="text-zinc-400 font-bold uppercase text-[10px] tracking-widest leading-relaxed max-w-md mx-auto mb-16"
+          className="text-zinc-400 font-bold uppercase text-xs tracking-widest leading-relaxed max-w-md mx-auto mb-16"
         >
           {t('common.error.genericDesc', undefined, 'An unexpected error has occurred. Please try again or go back to the homepage.')}
         </motion.p>
@@ -64,7 +64,7 @@ export default function ErrorPage({
         >
           <button
             onClick={() => reset()}
-            className="inline-flex items-center justify-center gap-3 px-8 py-5 bg-zinc-900 hover:bg-zinc-800 text-white font-black rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all uppercase tracking-widest text-[10px]"
+            className="inline-flex items-center justify-center gap-3 px-8 py-5 bg-zinc-900 hover:bg-zinc-800 text-white font-black rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all uppercase tracking-widest text-xs"
           >
             <RefreshCw className="w-4 h-4 animate-spin-slow" />
             <span>{t('common.error.tryAgain', undefined, 'Try Again')}</span>
@@ -72,7 +72,7 @@ export default function ErrorPage({
           
           <Link
             href="/"
-            className="inline-flex items-center justify-center gap-3 px-8 py-5 bg-zinc-50 border border-zinc-200 hover:border-zinc-300 text-zinc-900 font-black rounded-full shadow-sm hover:scale-105 active:scale-95 transition-all uppercase tracking-widest text-[10px]"
+            className="inline-flex items-center justify-center gap-3 px-8 py-5 bg-zinc-50 border border-zinc-200 hover:border-zinc-300 text-zinc-900 font-black rounded-full shadow-sm hover:scale-105 active:scale-95 transition-all uppercase tracking-widest text-xs"
           >
             <Home className="w-4 h-4" />
             <span>{t('navigation.home', undefined, 'Go Home')}</span>
@@ -88,10 +88,10 @@ export default function ErrorPage({
             className="mt-16 text-left max-w-lg mx-auto"
           >
             <details className="group cursor-pointer">
-              <summary className="text-[9px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 transition-colors select-none">
+              <summary className="text-xs font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 transition-colors select-none">
                 Error Stack Details
               </summary>
-              <pre className="mt-4 p-6 bg-zinc-950 border border-zinc-900 text-red-400 font-mono text-[10px] rounded-3xl overflow-auto max-h-48 leading-relaxed">
+              <pre className="mt-4 p-6 bg-zinc-950 border border-zinc-900 text-red-400 font-mono text-xs rounded-3xl overflow-auto max-h-48 leading-relaxed">
                 {error.message}
                 {error.stack && `\n\n${error.stack}`}
               </pre>

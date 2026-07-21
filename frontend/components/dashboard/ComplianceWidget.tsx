@@ -115,7 +115,7 @@ export default function ComplianceWidget() {
 
     return (
         <div className="glass-card !p-8 rounded-[2.5rem] border-zinc-100 shadow-xl relative overflow-hidden text-left">
-            <h2 className="text-xl font-black text-zinc-950 tracking-tight flex items-center gap-3 uppercase text-[10px] tracking-[0.4em] text-zinc-400 mb-8">
+            <h2 className="text-xl font-black text-zinc-950 tracking-tight flex items-center gap-3 uppercase text-xs tracking-[0.4em] text-zinc-400 mb-8">
                 <Scale className="w-4 h-4 text-zinc-950" />
                 {t('dashboard.compliance.title', undefined, 'French Law Compliance')}
             </h2>
@@ -149,7 +149,7 @@ export default function ComplianceWidget() {
                             <div>
                                 <h3 className="font-black text-sm uppercase tracking-wider text-red-950 flex items-center gap-2">
                                     {t('dashboard.compliance.dpe', undefined, 'DPE Warning')}
-                                    <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded text-[9px] font-black">
+                                    <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs font-black">
                                         Class {p.dpe_rating}
                                     </span>
                                 </h3>
@@ -233,7 +233,7 @@ export default function ComplianceWidget() {
                                 </h3>
                                 <p className="text-zinc-600 text-xs mt-2 font-medium">
                                     {l.property_title || 'Property'}: {t('dashboard.compliance.noticeExpiring', { days: diffDays }, `Lease ends in ${diffDays} days`)}
-                                    <span className="block mt-1 font-bold text-[10px] text-zinc-500 uppercase tracking-wider">
+                                    <span className="block mt-1 font-bold text-xs text-zinc-500 uppercase tracking-wider">
                                         {isFurnished 
                                             ? t('dashboard.compliance.noticeFurnished', undefined, '1 month notice (Furnished)')
                                             : t('dashboard.compliance.noticeUnfurnished', undefined, '3 months notice (Unfurnished)')

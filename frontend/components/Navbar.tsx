@@ -82,7 +82,7 @@ export default function Navbar() {
                                     <Link
                                         key={link.href}
                                         href={link.href}
-                                        className={`px-4 py-2 rounded-full text-[11px] font-black uppercase tracking-[0.1em] transition-all duration-500 flex items-center gap-2
+                                        className={`px-4 py-2 rounded-full text-xs font-black uppercase tracking-[0.1em] transition-all duration-500 flex items-center gap-2
                                             ${isActive
                                                 ? 'bg-zinc-900 text-white shadow-xl scale-100'
                                                 : 'text-zinc-500 hover:text-zinc-900'
@@ -125,7 +125,7 @@ export default function Navbar() {
                                         <span className="text-white font-black text-xs">{user.full_name?.charAt(0) || user.email?.charAt(0).toUpperCase()}</span>
                                     )}
                                 </div>
-                                <span className="text-[11px] font-black text-zinc-900 hidden xl:block uppercase tracking-[0.2em] ml-1">
+                                <span className="text-xs font-black text-zinc-900 hidden xl:block uppercase tracking-[0.2em] ml-1">
                                     {user.full_name?.split(' ')[0]}
                                 </span>
                                 <ChevronDown className={`w-3 h-3 text-zinc-400 transition-transform duration-300 ${isProfileOpen ? 'rotate-180' : ''}`} />
@@ -143,9 +143,9 @@ export default function Navbar() {
                                         {/* User Info */}
                                         <div className="px-4 py-4 mb-2 bg-zinc-50 rounded-2xl">
                                             <p className="text-xs font-black text-zinc-900 uppercase tracking-wider truncate">{user.full_name}</p>
-                                            <p className="text-[10px] text-zinc-400 truncate mt-0.5">{user.email}</p>
+                                            <p className="text-xs text-zinc-400 truncate mt-0.5">{user.email}</p>
                                             <div className="mt-3 flex items-center gap-2">
-                                                <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                                                <span className={`px-2 py-0.5 rounded-full text-xs font-black uppercase tracking-widest ${
                                                     user.role === 'tenant' ? 'bg-zinc-900 text-white' :
                                                     user.role === 'landlord' ? 'bg-zinc-200 text-zinc-900' :
                                                     'bg-zinc-100 text-zinc-600'
@@ -158,7 +158,7 @@ export default function Navbar() {
                                         {/* Role Switching */}
                                         {(user.available_roles || []).length > 0 && (
                                             <div className="py-2 border-b border-zinc-100 mb-2">
-                                                <p className="px-4 py-2 text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em]">
+                                                <p className="px-4 py-2 text-xs font-black text-zinc-400 uppercase tracking-[0.2em]">
                                                     {t('dashboard.roleSwitcher.title', undefined, 'Roles')}
                                                 </p>
                                                 {/* Switchable Roles */}
@@ -174,7 +174,7 @@ export default function Navbar() {
                                                              role === 'landlord' ? <User className="w-3.5 h-3.5 text-zinc-900" /> :
                                                              <Building className="w-3.5 h-3.5 text-zinc-900" />}
                                                         </div>
-                                                        <span className="text-[11px] font-bold text-zinc-600 group-hover:text-zinc-900 uppercase tracking-wider">
+                                                        <span className="text-xs font-bold text-zinc-600 group-hover:text-zinc-900 uppercase tracking-wider">
                                                             {t(`dashboard.roleSwitcher.roles.${role}`)}
                                                         </span>
                                                         {isSwitching === role && (
@@ -197,10 +197,10 @@ export default function Navbar() {
                                                                 <Plus className="w-3.5 h-3.5 text-zinc-400 group-hover:text-zinc-900" />
                                                             </div>
                                                             <div className="flex flex-col items-start">
-                                                                <span className="text-[11px] font-bold text-zinc-500 group-hover:text-zinc-900 uppercase tracking-wider">
+                                                                <span className="text-xs font-bold text-zinc-500 group-hover:text-zinc-900 uppercase tracking-wider">
                                                                     {t(`dashboard.roleSwitcher.roles.${role}`)}
                                                                 </span>
-                                                                <span className="text-[8px] text-zinc-400 uppercase tracking-tighter">
+                                                                <span className="text-xs text-zinc-400 uppercase tracking-tighter">
                                                                     {t('dashboard.roleSwitcher.unlockNew', undefined, 'Unlock Workspace')}
                                                                 </span>
                                                             </div>
@@ -219,7 +219,7 @@ export default function Navbar() {
                                                 className="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-zinc-100 transition-all group"
                                             >
                                                 <Settings className="w-4 h-4 text-zinc-400 group-hover:text-zinc-900" />
-                                                <span className="text-[11px] font-bold text-zinc-600 group-hover:text-zinc-900 uppercase tracking-wider">
+                                                <span className="text-xs font-bold text-zinc-600 group-hover:text-zinc-900 uppercase tracking-wider">
                                                     {t('settings.title', undefined, 'Settings')}
                                                 </span>
                                             </Link>
@@ -229,7 +229,7 @@ export default function Navbar() {
                                                 className="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-zinc-100 transition-all group"
                                             >
                                                 <Shield className="w-4 h-4 text-zinc-400 group-hover:text-zinc-900" />
-                                                <span className="text-[11px] font-bold text-zinc-600 group-hover:text-zinc-900 uppercase tracking-wider">
+                                                <span className="text-xs font-bold text-zinc-600 group-hover:text-zinc-900 uppercase tracking-wider">
                                                     {t('dashboard.verification.title', undefined, 'Verification')}
                                                 </span>
                                             </Link>
@@ -244,7 +244,7 @@ export default function Navbar() {
                                                 className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-zinc-100 transition-all group text-zinc-900"
                                             >
                                                 <LogOut className="w-4 h-4 text-zinc-400 group-hover:text-zinc-900" />
-                                                <span className="text-[11px] font-black uppercase tracking-widest">
+                                                <span className="text-xs font-black uppercase tracking-widest">
                                                     {t('dashboard.logout', undefined, 'Logout')}
                                                 </span>
                                             </button>
@@ -332,7 +332,7 @@ export default function Navbar() {
                                     
                                     <div className="flex flex-col gap-4">
                                         <div className="flex flex-col gap-2 p-4 bg-zinc-50 rounded-2xl">
-                                            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">{t('dashboard.role.title', undefined, 'Active Role')}</span>
+                                            <span className="text-xs font-black text-zinc-400 uppercase tracking-widest mb-2">{t('dashboard.role.title', undefined, 'Active Role')}</span>
                                             <div className="flex flex-wrap gap-2">
                                                 {['tenant', 'landlord', 'property_manager'].map(role => {
                                                     const isCurrent = user.role === role;
@@ -342,7 +342,7 @@ export default function Navbar() {
                                                             key={role}
                                                             onClick={() => handleRoleSwitch(role)}
                                                             disabled={isCurrent || !!isSwitching}
-                                                            className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider transition-all
+                                                            className={`px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider transition-all
                                                                 ${isCurrent 
                                                                     ? 'bg-zinc-900 text-white' 
                                                                     : isAvailable
@@ -358,7 +358,7 @@ export default function Navbar() {
                                             </div>
                                         </div>
                                         <div className="flex items-center justify-between p-4 bg-zinc-50 rounded-2xl">
-                                            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{t('common.language', undefined, 'Language')}</span>
+                                            <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">{t('common.language', undefined, 'Language')}</span>
                                             <LanguageSwitcher />
                                         </div>
                                     </div>
@@ -369,7 +369,7 @@ export default function Navbar() {
                                             setIsMobileMenuOpen(false);
                                             logout();
                                         }}
-                                        className="w-full p-4 rounded-2xl text-[10px] font-black uppercase tracking-widest text-zinc-900 bg-zinc-100 flex items-center justify-center gap-3 shadow-sm hover:bg-zinc-200 transition-all"
+                                        className="w-full p-4 rounded-2xl text-xs font-black uppercase tracking-widest text-zinc-900 bg-zinc-100 flex items-center justify-center gap-3 shadow-sm hover:bg-zinc-200 transition-all"
                                     >
                                         <LogOut className="w-4 h-4 text-zinc-400" />
                                         {t('dashboard.logout', undefined, 'Logout')}
@@ -381,14 +381,14 @@ export default function Navbar() {
                                         <Link 
                                             href="/auth/login" 
                                             onClick={() => setIsMobileMenuOpen(false)}
-                                            className="w-full p-4 rounded-2xl text-[11px] font-black uppercase tracking-widest text-zinc-600 bg-zinc-50 flex items-center justify-center gap-3 hover:bg-zinc-100 transition-all"
+                                            className="w-full p-4 rounded-2xl text-xs font-black uppercase tracking-widest text-zinc-600 bg-zinc-50 flex items-center justify-center gap-3 hover:bg-zinc-100 transition-all"
                                         >
                                             {t('landing.signIn', undefined, 'Sign In')}
                                         </Link>
                                     </div>
                                     <div className="h-px bg-zinc-100 my-2"></div>
                                     <div className="flex items-center justify-between p-4 bg-zinc-50 rounded-2xl">
-                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{t('common.language', undefined, 'Language')}</span>
+                                        <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">{t('common.language', undefined, 'Language')}</span>
                                         <LanguageSwitcher />
                                     </div>
                                 </>

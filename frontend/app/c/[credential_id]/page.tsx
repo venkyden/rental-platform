@@ -239,7 +239,7 @@ export default function CredentialVerifyPage() {
                 <div className="flex justify-end">
                     <button
                         onClick={() => setLanguage(fr ? 'en' : 'fr')}
-                        className="px-3 py-1.5 rounded-full bg-white border border-zinc-200 hover:bg-zinc-100 text-[10px] font-black uppercase tracking-wider text-zinc-700 transition-colors"
+                        className="px-3 py-1.5 rounded-full bg-white border border-zinc-200 hover:bg-zinc-100 text-xs font-black uppercase tracking-wider text-zinc-700 transition-colors"
                     >
                         {fr ? 'EN' : 'FR'}
                     </button>

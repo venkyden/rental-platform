@@ -147,7 +147,7 @@ export default function NotificationBell() {
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
                             exit={{ scale: 0 }}
-                            className="absolute -top-0.5 -right-0.5 bg-zinc-900 text-white text-[10px] font-bold rounded-full h-4.5 w-4.5 flex items-center justify-center ring-2 ring-white shadow-sm"
+                            className="absolute -top-0.5 -right-0.5 bg-zinc-900 text-white text-xs font-bold rounded-full h-4.5 w-4.5 flex items-center justify-center ring-2 ring-white shadow-sm"
                         >
                             {unreadCount > 9 ? '9+' : unreadCount}
                         </motion.span>
@@ -223,7 +223,7 @@ export default function NotificationBell() {
                                                 </p>
                                                 <div className="flex items-center gap-2 mt-2">
                                                     <Clock className="w-3 h-3 text-zinc-400" />
-                                                    <p className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">
+                                                    <p className="text-xs font-medium text-zinc-400 uppercase tracking-wider">
                                                         {formatTime(notification.created_at)}
                                                     </p>
                                                 </div>

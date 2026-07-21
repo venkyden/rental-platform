@@ -27,13 +27,13 @@ export default function DocumentsPage() {
                             <span className="text-2xl font-black relative z-10 group-hover:-translate-x-1 transition-transform">←</span>
                         </button>
                         <div className="space-y-2">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900/5 border border-zinc-900/10 text-zinc-900 text-[8px] font-black uppercase tracking-[0.2em]">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900/5 border border-zinc-900/10 text-zinc-900 text-xs font-black uppercase tracking-[0.2em]">
                                 Encrypted Storage
                             </div>
                             <h1 className="text-5xl sm:text-7xl font-black tracking-tighter text-zinc-900 uppercase leading-none">
                                 {t('documents.title', undefined, 'Secure Vault')}
                             </h1>
-                            <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.4em]">
+                            <p className="text-xs font-black text-zinc-400 uppercase tracking-[0.4em]">
                                 {t('documents.subtitle', undefined, 'Manage your verified credentials')}
                             </p>
                         </div>
@@ -56,7 +56,7 @@ export default function DocumentsPage() {
                                     <h2 className="text-3xl font-black tracking-tighter uppercase">{t('documents.verification', undefined, 'Compliance Status')}</h2>
                                     <div className="flex items-center gap-2 mt-2">
                                         <div className="w-2 h-2 rounded-full bg-zinc-900 animate-pulse shadow-[0_0_8px_rgba(0,0,0,0.2)]" />
-                                        <span className="text-[10px] font-black text-zinc-900 uppercase tracking-widest">Action Required</span>
+                                        <span className="text-xs font-black text-zinc-900 uppercase tracking-widest">Action Required</span>
                                     </div>
                                 </div>
                             </div>
@@ -93,8 +93,8 @@ export default function DocumentsPage() {
                                     </div>
                                     <h3 className="text-xl font-black uppercase tracking-tight mb-2">{doc.title}</h3>
                                     <div className="flex justify-between items-center">
-                                        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{doc.count} Files</p>
-                                        <button className="text-[10px] font-black text-zinc-900 uppercase tracking-widest hover:translate-x-1 transition-transform">Add +</button>
+                                        <p className="text-xs font-black text-zinc-400 uppercase tracking-widest">{doc.count} Files</p>
+                                        <button className="text-xs font-black text-zinc-900 uppercase tracking-widest hover:translate-x-1 transition-transform">Add +</button>
                                     </div>
                                 </motion.div>
                             ))}

@@ -100,7 +100,7 @@ export default function BiometricConsentScreen({ loading, onConsentedAction, onR
                 <button
                     onClick={consent}
                     disabled={!checked || submitting}
-                    className="flex-1 py-5 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl shadow-xl hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-40 disabled:hover:scale-100"
+                    className="flex-1 py-5 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.3em] rounded-2xl shadow-xl hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-40 disabled:hover:scale-100"
                 >
                     {submitting
                         ? t('verify.biometricConsent.submitting', undefined, 'Recording…')
@@ -108,7 +108,7 @@ export default function BiometricConsentScreen({ loading, onConsentedAction, onR
                 </button>
                 <button
                     onClick={onRefuseAction ?? (() => router.push('/dashboard'))}
-                    className="py-5 px-8 text-zinc-500 hover:text-zinc-900 text-[10px] font-black uppercase tracking-[0.3em] transition-colors"
+                    className="py-5 px-8 text-zinc-500 hover:text-zinc-900 text-xs font-black uppercase tracking-[0.3em] transition-colors"
                 >
                     {t('verify.biometricConsent.refuse', undefined, 'Not now')}
                 </button>

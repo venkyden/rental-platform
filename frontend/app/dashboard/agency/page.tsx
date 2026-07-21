@@ -100,7 +100,7 @@ export default function AgencyDashboard() {
                     </h1>
                     <div className="flex items-center gap-3 mt-4">
                         <SegmentBadge />
-                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">
+                        <span className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em]">
                             {t('dashboard.agency.title', undefined, 'Agency Portfolio Command Center')}
                         </span>
                     </div>
@@ -112,7 +112,7 @@ export default function AgencyDashboard() {
 
             {/* Enterprise Quick Actions */}
             <section className="space-y-6">
-                <h2 className="text-[10px] font-black tracking-[0.4em] uppercase text-zinc-400 px-2">
+                <h2 className="text-xs font-black tracking-[0.4em] uppercase text-zinc-400 px-2">
                     {t('dashboard.agency.enterpriseActions', undefined, 'Enterprise Actions')}
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -126,7 +126,7 @@ export default function AgencyDashboard() {
                         <span className="text-xl font-black text-zinc-950 tracking-tight uppercase group-hover:text-zinc-950 transition-colors">
                             {t('dashboard.agency.bulkImport', undefined, 'Bulk Import')}
                         </span>
-                        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mt-2">
+                        <span className="text-xs font-black uppercase tracking-widest text-zinc-400 mt-2">
                             {t('dashboard.agency.csvXml', undefined, 'CSV / XML')}
                         </span>
                     </Link>
@@ -141,7 +141,7 @@ export default function AgencyDashboard() {
                         <span className="text-xl font-black text-zinc-950 tracking-tight uppercase group-hover:text-zinc-950 transition-colors">
                             {t('dashboard.agency.erpIntegration', undefined, 'ERP Integration')}
                         </span>
-                        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mt-2">
+                        <span className="text-xs font-black uppercase tracking-widest text-zinc-400 mt-2">
                             {t('dashboard.agency.webhooksApi', undefined, 'Webhooks API')}
                         </span>
                     </Link>
@@ -156,7 +156,7 @@ export default function AgencyDashboard() {
                         <span className="text-xl font-black text-zinc-950 tracking-tight uppercase group-hover:text-zinc-950 transition-colors">
                             {t('dashboard.agency.team', undefined, 'Team')}
                         </span>
-                        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mt-2">
+                        <span className="text-xs font-black uppercase tracking-widest text-zinc-400 mt-2">
                             {t('dashboard.agency.accessManagement', undefined, 'Access Management')}
                         </span>
                     </Link>
@@ -166,7 +166,7 @@ export default function AgencyDashboard() {
             {/* KPI Performance Section */}
             <section className="space-y-6">
                 <div className="flex justify-between items-center px-2">
-                    <h2 className="text-[10px] font-black tracking-[0.4em] uppercase text-zinc-400">
+                    <h2 className="text-xs font-black tracking-[0.4em] uppercase text-zinc-400">
                         {t('dashboard.agency.overview', undefined, 'Overview')}
                     </h2>
                     {stats && (
@@ -188,7 +188,7 @@ export default function AgencyDashboard() {
                 <div className="lg:col-span-2 space-y-12">
                     <div className="glass-card !p-10 rounded-[2.5rem] border-zinc-100 shadow-xl relative overflow-hidden text-left">
                         <div className="flex justify-between items-center mb-8 px-2">
-                            <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+                            <h2 className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                                 {t('dashboard.agency.mandateManagement', undefined, 'Mandate Management')}
                             </h2>
                             <Link href="/properties" className="text-xs font-black uppercase tracking-widest text-zinc-900 hover:text-zinc-500">
@@ -209,7 +209,7 @@ export default function AgencyDashboard() {
                 <div className="space-y-12">
                     <div className="glass-card !p-10 shadow-2xl border-white/40 rounded-[2.5rem] relative overflow-hidden text-left">
                         <div className="absolute top-0 left-0 w-full h-1 bg-zinc-950" />
-                        <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 mb-8 flex items-center gap-3">
+                        <h3 className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400 mb-8 flex items-center gap-3">
                             <ShieldCheck className="w-4 h-4 text-zinc-950" />
                             {t('dashboard.agency.compliance', undefined, 'Company Compliance')}
                         </h3>
@@ -238,7 +238,7 @@ export default function AgencyDashboard() {
                                     </div>
                                 </div>
                                 {!agencyUser.kbis_verified && (
-                                    <Link href="/verification" className="px-3 py-1.5 bg-zinc-950 hover:bg-zinc-800 text-white text-[9px] font-black rounded-lg uppercase tracking-widest whitespace-nowrap self-center shadow-sm">
+                                    <Link href="/verification" className="px-3 py-1.5 bg-zinc-950 hover:bg-zinc-800 text-white text-xs font-black rounded-lg uppercase tracking-widest whitespace-nowrap self-center shadow-sm">
                                         {t('dashboard.agency.uploadKbis', undefined, 'Upload')}
                                     </Link>
                                 )}
@@ -269,7 +269,7 @@ export default function AgencyDashboard() {
                                     </div>
                                 </div>
                                 {!agencyUser.carte_g_verified && (
-                                    <Link href="/verification" className="px-3 py-1.5 bg-zinc-950 hover:bg-zinc-800 text-white text-[9px] font-black rounded-lg uppercase tracking-widest whitespace-nowrap self-center shadow-sm">
+                                    <Link href="/verification" className="px-3 py-1.5 bg-zinc-950 hover:bg-zinc-800 text-white text-xs font-black rounded-lg uppercase tracking-widest whitespace-nowrap self-center shadow-sm">
                                         {t('dashboard.agency.uploadCarteG', undefined, 'Upload')}
                                     </Link>
                                 )}

@@ -175,7 +175,7 @@ export default function AccountSettingsPage() {
                                 <div key={tab.id} className="flex flex-row md:flex-col shrink-0">
                                     <button
                                         onClick={() => router.push(tab.path)}
-                                        className={`flex items-center gap-3 px-5 md:px-6 py-3 md:py-4 rounded-full md:rounded-[1.5rem] text-[10px] md:text-sm font-black uppercase tracking-widest transition-all duration-500 whitespace-nowrap ${
+                                        className={`flex items-center gap-3 px-5 md:px-6 py-3 md:py-4 rounded-full md:rounded-[1.5rem] text-xs md:text-sm font-black uppercase tracking-widest transition-all duration-500 whitespace-nowrap ${
                                             tab.id === 'account' 
                                             ? 'bg-zinc-900 text-white shadow-xl scale-100' 
                                             : 'text-zinc-400 hover:text-zinc-600'
@@ -189,13 +189,13 @@ export default function AccountSettingsPage() {
                                         <div className="hidden md:flex px-6 py-4 flex-col gap-4">
                                             <button 
                                                 onClick={() => setActiveTab('profile')}
-                                                className={`text-[10px] font-black uppercase tracking-widest text-left transition-all ${activeTab === 'profile' ? 'text-zinc-900' : 'text-zinc-400 hover:text-zinc-500'}`}
+                                                className={`text-xs font-black uppercase tracking-widest text-left transition-all ${activeTab === 'profile' ? 'text-zinc-900' : 'text-zinc-400 hover:text-zinc-500'}`}
                                             >
                                                 {t('settings.account.general', undefined, 'General')}
                                             </button>
                                             <button 
                                                 onClick={() => setActiveTab('security')}
-                                                className={`text-[10px] font-black uppercase tracking-widest text-left transition-all ${activeTab === 'security' ? 'text-zinc-900' : 'text-zinc-400 hover:text-zinc-500'}`}
+                                                className={`text-xs font-black uppercase tracking-widest text-left transition-all ${activeTab === 'security' ? 'text-zinc-900' : 'text-zinc-400 hover:text-zinc-500'}`}
                                             >
                                                 {t('settings.account.security', undefined, 'Security')}
                                             </button>
@@ -207,7 +207,7 @@ export default function AccountSettingsPage() {
                             <div className="mt-4 md:mt-8 pt-4 md:pt-8 border-t border-zinc-200/50">
                                 <button
                                     onClick={logout}
-                                    className="flex items-center gap-3 px-5 md:px-6 py-3 md:py-4 rounded-full md:rounded-[1.5rem] text-[10px] md:text-sm font-black uppercase tracking-widest text-zinc-900 bg-white border border-zinc-200 hover:bg-zinc-50 transition-all duration-300 w-full shadow-sm"
+                                    className="flex items-center gap-3 px-5 md:px-6 py-3 md:py-4 rounded-full md:rounded-[1.5rem] text-xs md:text-sm font-black uppercase tracking-widest text-zinc-900 bg-white border border-zinc-200 hover:bg-zinc-50 transition-all duration-300 w-full shadow-sm"
                                 >
                                     <LogOut className="w-3.5 h-3.5 md:w-4 md:h-4 text-zinc-400" />
                                     {t('dashboard.logout', undefined, 'Sign Out')}
@@ -230,7 +230,7 @@ export default function AccountSettingsPage() {
                                         <p className="text-xs font-bold text-zinc-500 mt-1">{t('settings.account.verifyEmailDesc', undefined, 'Unlock full platform access by verifying your email.')}</p>
                                     </div>
                                 </div>
-                                <button onClick={handleResendVerification} disabled={isResending} className="px-6 py-3 bg-zinc-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:scale-105 transition-all">
+                                <button onClick={handleResendVerification} disabled={isResending} className="px-6 py-3 bg-zinc-900 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-xl hover:scale-105 transition-all">
                                     {isResending ? t('settings.account.sending', undefined, 'Sending...') : t('settings.account.resendLink', undefined, 'Resend link')}
                                 </button>
                             </motion.div>
@@ -260,22 +260,22 @@ export default function AccountSettingsPage() {
                                                 </label>
                                             </div>
                                             <div className="flex-1 text-center sm:text-left">
-                                                <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-2">{t('settings.account.avatarFormat', undefined, 'Avatar Format')}</p>
+                                                <p className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em] mb-2">{t('settings.account.avatarFormat', undefined, 'Avatar Format')}</p>
                                                 <p className="text-xs font-bold text-zinc-500">{t('settings.account.avatarDesc', undefined, 'Allowed: JPG, PNG, WEBP. Max size: 2MB.')}</p>
                                             </div>
                                         </div>
 
                                         <form onSubmit={handleProfileUpdate} className="space-y-8">
                                             <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">{t('settings.account.fullName', undefined, 'Full Name')}</label>
+                                                <label className="text-xs font-black text-zinc-400 uppercase tracking-widest ml-1">{t('settings.account.fullName', undefined, 'Full Name')}</label>
                                                 <input value={fullName} onChange={(e) => setFullName(e.target.value)} className="w-full bg-zinc-50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-zinc-900 focus:ring-2 focus:ring-zinc-900/20 transition-all" />
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">{t('settings.account.bio', undefined, 'Bio')}</label>
+                                                <label className="text-xs font-black text-zinc-400 uppercase tracking-widest ml-1">{t('settings.account.bio', undefined, 'Bio')}</label>
                                                 <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={4} className="w-full bg-zinc-50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-zinc-900 focus:ring-2 focus:ring-zinc-900/20 transition-all resize-none" />
                                             </div>
 
-                                            {profileMessage.text && <p className={`text-[10px] font-black uppercase tracking-widest ${profileMessage.type === 'success' ? 'text-zinc-900' : 'text-zinc-400'}`}>{profileMessage.text}</p>}
+                                            {profileMessage.text && <p className={`text-xs font-black uppercase tracking-widest ${profileMessage.type === 'success' ? 'text-zinc-900' : 'text-zinc-400'}`}>{profileMessage.text}</p>}
 
                                             <button type="submit" disabled={isUpdatingProfile} className="btn-primary !w-full !py-4 !rounded-2xl !text-xs uppercase tracking-[0.2em] shadow-xl shadow-zinc-900/10">
                                                 {isUpdatingProfile ? t('settings.account.saving', undefined, 'Saving...') : t('settings.account.saveChanges', undefined, 'Save Changes')}
@@ -293,21 +293,21 @@ export default function AccountSettingsPage() {
                                         <form onSubmit={handleChangePassword} className="space-y-8 mb-16">
                                             <div className="space-y-6">
                                                 <div className="space-y-2">
-                                                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">{t('settings.account.currentPassword', undefined, 'Current Password')}</label>
+                                                    <label className="text-xs font-black text-zinc-400 uppercase tracking-widest ml-1">{t('settings.account.currentPassword', undefined, 'Current Password')}</label>
                                                     <input type="password" value={oldPassword} onChange={(e) => setOldPassword(e.target.value)} className="w-full bg-zinc-50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-zinc-900 focus:ring-2 focus:ring-zinc-900/20 transition-all" />
                                                 </div>
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div className="space-y-2">
-                                                        <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">{t('settings.account.newPassword', undefined, 'New')}</label>
+                                                        <label className="text-xs font-black text-zinc-400 uppercase tracking-widest ml-1">{t('settings.account.newPassword', undefined, 'New')}</label>
                                                         <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full bg-zinc-50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-zinc-900 focus:ring-2 focus:ring-zinc-900/20 transition-all" />
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">{t('settings.account.confirmPassword', undefined, 'Confirm')}</label>
+                                                        <label className="text-xs font-black text-zinc-400 uppercase tracking-widest ml-1">{t('settings.account.confirmPassword', undefined, 'Confirm')}</label>
                                                         <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="w-full bg-zinc-50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-zinc-900 focus:ring-2 focus:ring-zinc-900/20 transition-all" />
                                                     </div>
                                                 </div>
                                             </div>
-                                            {passwordMessage.text && <p className={`text-[10px] font-black uppercase tracking-widest ${passwordMessage.type === 'success' ? 'text-zinc-900' : 'text-zinc-400'}`}>{passwordMessage.text}</p>}
+                                            {passwordMessage.text && <p className={`text-xs font-black uppercase tracking-widest ${passwordMessage.type === 'success' ? 'text-zinc-900' : 'text-zinc-400'}`}>{passwordMessage.text}</p>}
                                             <button type="submit" disabled={isChangingPassword} className="btn-primary !w-full !py-4 !rounded-2xl !text-xs uppercase tracking-[0.2em] shadow-xl shadow-zinc-900/10">{t('settings.account.updatePassword', undefined, 'Update Password')}</button>
                                         </form>
 
@@ -316,16 +316,16 @@ export default function AccountSettingsPage() {
                                             <form onSubmit={handleRequestEmailChange} className="space-y-8">
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div className="space-y-2">
-                                                        <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">{t('settings.account.newEmail', undefined, 'New Email')}</label>
+                                                        <label className="text-xs font-black text-zinc-400 uppercase tracking-widest ml-1">{t('settings.account.newEmail', undefined, 'New Email')}</label>
                                                         <input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} className="w-full bg-zinc-50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-zinc-900 focus:ring-2 focus:ring-zinc-900/20 transition-all" />
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">{t('settings.account.confirmPassword', undefined, 'Password')}</label>
+                                                        <label className="text-xs font-black text-zinc-400 uppercase tracking-widest ml-1">{t('settings.account.confirmPassword', undefined, 'Password')}</label>
                                                         <input type="password" value={emailPassword} onChange={(e) => setEmailPassword(e.target.value)} className="w-full bg-zinc-50 border-none rounded-2xl px-6 py-4 text-sm font-bold text-zinc-900 focus:ring-2 focus:ring-zinc-900/20 transition-all" />
                                                     </div>
                                                 </div>
-                                                {emailMessage.text && <p className={`text-[10px] font-black uppercase tracking-widest ${emailMessage.type === 'success' ? 'text-zinc-900' : 'text-zinc-400'}`}>{emailMessage.text}</p>}
-                                                <button type="submit" disabled={isChangingEmail} className="py-4 px-8 bg-zinc-100 text-zinc-900 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-zinc-200 transition-all w-full">{t('settings.account.requestEmailChange', undefined, 'Request Email Change')}</button>
+                                                {emailMessage.text && <p className={`text-xs font-black uppercase tracking-widest ${emailMessage.type === 'success' ? 'text-zinc-900' : 'text-zinc-400'}`}>{emailMessage.text}</p>}
+                                                <button type="submit" disabled={isChangingEmail} className="py-4 px-8 bg-zinc-100 text-zinc-900 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-zinc-200 transition-all w-full">{t('settings.account.requestEmailChange', undefined, 'Request Email Change')}</button>
                                             </form>
                                         </div>
                                     </div>

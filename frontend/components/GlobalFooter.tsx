@@ -26,7 +26,7 @@ export default function GlobalFooter() {
 
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-12 lg:gap-16">
                         <div className="space-y-6">
-                            <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-900">{t('landing.footer.legal')}</h4>
+                            <h4 className="text-xs font-black uppercase tracking-[0.3em] text-zinc-900">{t('landing.footer.legal')}</h4>
                             <ul className="space-y-4">
                                 <li>
                                     <Link href="/legal/terms" className="text-xs font-bold text-zinc-400 hover:text-zinc-900 transition-colors uppercase tracking-widest">
@@ -47,7 +47,7 @@ export default function GlobalFooter() {
                         </div>
 
                         <div className="space-y-6">
-                            <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-900">{t('landing.footer.support')}</h4>
+                            <h4 className="text-xs font-black uppercase tracking-[0.3em] text-zinc-900">{t('landing.footer.support')}</h4>
                             <ul className="space-y-4">
                                 <li>
                                     <Link href="/support" className="text-xs font-bold text-zinc-400 hover:text-zinc-900 transition-colors uppercase tracking-widest">
@@ -68,7 +68,7 @@ export default function GlobalFooter() {
                 </div>
 
                 <div className="mt-16 pt-8 border-t border-zinc-100 flex flex-col md:flex-row justify-between items-center gap-6">
-                    <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em]">
+                    <p className="text-xs font-black text-zinc-400 uppercase tracking-[0.3em]">
                         &copy; {currentYear} Roomivo • {t('globalFooter.rights')}
                     </p>
                 </div>

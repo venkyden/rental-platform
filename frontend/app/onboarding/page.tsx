@@ -116,7 +116,7 @@ export default function OnboardingPage() {
         <div className="min-h-screen flex items-center justify-center bg-white">
             <div className="flex flex-col items-center gap-6">
                 <div className="w-16 h-16 border-4 border-zinc-100 border-t-zinc-900 rounded-full animate-spin" />
-                <p className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-400">Synchronizing</p>
+                <p className="text-xs font-black uppercase tracking-[0.5em] text-zinc-400">Synchronizing</p>
             </div>
         </div>
     );
@@ -158,7 +158,7 @@ export default function OnboardingPage() {
 
                         <motion.h1 
                             variants={itemVariants}
-                            className="text-7xl md:text-9xl font-black tracking-tighter mb-6 text-zinc-900 text-center uppercase leading-[0.8] mix-blend-multiply"
+                            className="text-5xl md:text-7xl lg:text-9xl font-black tracking-tighter mb-6 text-zinc-900 text-center uppercase leading-[0.8] mix-blend-multiply"
                         >
                             {t('onboarding.welcome', undefined, 'Welcome Home')}
                         </motion.h1>
@@ -195,8 +195,8 @@ export default function OnboardingPage() {
                                     }`}>
                                         {role.icon}
                                     </div>
-                                    <span className="text-[11px] font-black uppercase tracking-[0.2em] mb-2">{role.label}</span>
-                                    <span className={`text-[9px] font-bold uppercase tracking-tight opacity-50 ${selectedRole === role.id ? 'text-zinc-400' : 'text-zinc-300'}`}>{role.desc}</span>
+                                    <span className="text-xs font-black uppercase tracking-[0.2em] mb-2">{role.label}</span>
+                                    <span className={`text-xs font-bold uppercase tracking-tight opacity-50 ${selectedRole === role.id ? 'text-zinc-400' : 'text-zinc-300'}`}>{role.desc}</span>
                                     
                                     <AnimatePresence>
                                         {selectedRole === role.id && (
@@ -231,7 +231,7 @@ export default function OnboardingPage() {
                                 }`}>
                                     {acceptedTerms && <Check className="w-5 h-5 stroke-[4]" />}
                                 </div>
-                                <p className={`text-[10px] font-black uppercase tracking-widest flex-1 leading-relaxed ${
+                                <p className={`text-xs font-black uppercase tracking-widest flex-1 leading-relaxed ${
                                     acceptedTerms ? 'text-white' : 'text-zinc-400'
                                 }`}>
                                     {t('onboarding.termsLabel', undefined, 'I accept the')} <a href="/legal/privacy" className={`underline decoration-zinc-300 ${acceptedTerms ? 'text-white' : 'text-zinc-900'}`}>privacy policy</a> {t('onboarding.and', undefined, '&')} <a href="/legal/terms" className={`underline decoration-zinc-300 ${acceptedTerms ? 'text-white' : 'text-zinc-900'}`}>terms</a>
@@ -248,7 +248,7 @@ export default function OnboardingPage() {
                                         className="bg-zinc-900 text-white p-6 rounded-2xl flex items-center justify-center gap-4 mt-8 shadow-2xl"
                                     >
                                         <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
-                                        <span className="text-[10px] font-black uppercase tracking-[0.3em]">
+                                        <span className="text-xs font-black uppercase tracking-[0.3em]">
                                             {error}
                                         </span>
                                     </motion.div>
@@ -260,7 +260,7 @@ export default function OnboardingPage() {
                             <button
                                 onClick={handleStart}
                                 disabled={isProcessing || !acceptedTerms}
-                                className="px-32 py-8 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.5em] rounded-full shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] hover:scale-105 active:scale-95 hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.4)] transition-all duration-500 disabled:opacity-10 flex items-center gap-6 group relative overflow-hidden"
+                                className="px-32 py-8 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.5em] rounded-full shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] hover:scale-105 active:scale-95 hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.4)] transition-all duration-500 disabled:opacity-10 flex items-center gap-6 group relative overflow-hidden"
                             >
                                 <span className="relative z-10">
                                     {isProcessing ? 'Processing' : t('onboarding.getStarted', undefined, 'Begin Experience')}
@@ -276,7 +276,7 @@ export default function OnboardingPage() {
 
                             <div className="flex items-center gap-4 text-zinc-300">
                                 <ShieldCheck className="w-4 h-4" />
-                                <span className="text-[10px] font-black uppercase tracking-[0.4em]">{t('onboarding.timeEstimate', undefined, 'Est. 2 minutes')}</span>
+                                <span className="text-xs font-black uppercase tracking-[0.4em]">{t('onboarding.timeEstimate', undefined, 'Est. 2 minutes')}</span>
                             </div>
                         </motion.div>
 
@@ -327,7 +327,7 @@ function PendingInvitesSection() {
                 <div className="w-12 h-12 rounded-[1.25rem] bg-zinc-900 flex items-center justify-center text-white shadow-lg">
                     <Bell className="w-5 h-5 animate-pulse" />
                 </div>
-                <h3 className="text-[10px] font-black text-zinc-900 uppercase tracking-[0.4em]">
+                <h3 className="text-xs font-black text-zinc-900 uppercase tracking-[0.4em]">
                     {t('onboarding.pendingInvites', undefined, 'Pending Invitations')}
                 </h3>
             </div>
@@ -336,8 +336,8 @@ function PendingInvitesSection() {
                 {invites.map(invite => (
                     <div key={invite.id} className="p-8 bg-zinc-50 rounded-[2.5rem] border border-zinc-100 flex items-center justify-between group hover:bg-white hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] transition-all duration-500">
                         <div className="text-left">
-                            <p className="text-[11px] font-black text-zinc-900 uppercase tracking-tight">{invite.landlord_name}</p>
-                            <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-2">Management Request</p>
+                            <p className="text-xs font-black text-zinc-900 uppercase tracking-tight">{invite.landlord_name}</p>
+                            <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mt-2">Management Request</p>
                         </div>
                         <button
                             onClick={() => router.push(`/invite/${invite.token}`)}

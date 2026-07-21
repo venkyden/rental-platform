@@ -274,13 +274,13 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                             <>
                                 <button
                                     onClick={() => router.push(`/properties/${propertyId}/edit`)}
-                                    className="px-8 py-4 bg-zinc-100 text-zinc-900 rounded-2xl hover:scale-105 active:scale-95 text-[10px] font-black uppercase tracking-[0.2em] transition-all"
+                                    className="px-8 py-4 bg-zinc-100 text-zinc-900 rounded-2xl hover:scale-105 active:scale-95 text-xs font-black uppercase tracking-[0.2em] transition-all"
                                 >
                                     {t('property.actions.edit', undefined, 'Configure')}
                                 </button>
                                 <button
                                     onClick={handleDelete}
-                                    className="px-8 py-4 bg-zinc-100 text-zinc-900 rounded-2xl hover:scale-105 active:scale-95 text-[10px] font-black uppercase tracking-[0.2em] transition-all border border-zinc-200"
+                                    className="px-8 py-4 bg-zinc-100 text-zinc-900 rounded-2xl hover:scale-105 active:scale-95 text-xs font-black uppercase tracking-[0.2em] transition-all border border-zinc-200"
                                 >
                                     {t('property.actions.delete', undefined, 'Terminate')}
                                 </button>
@@ -297,20 +297,20 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                         transition={{ delay: 0.1 }}
                         className="mb-10 flex flex-wrap items-center gap-4"
                     >
-                        <div className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.3em] backdrop-blur-3xl shadow-2xl border ${property.status === 'active' ? 'bg-zinc-900 border-zinc-900 text-white' : 'bg-zinc-100 border-zinc-200 text-zinc-600'}`}>
+                        <div className={`px-6 py-2 rounded-full text-xs font-black uppercase tracking-[0.3em] backdrop-blur-3xl shadow-2xl border ${property.status === 'active' ? 'bg-zinc-900 border-zinc-900 text-white' : 'bg-zinc-100 border-zinc-200 text-zinc-600'}`}>
                             {property.status === 'active' ? t('property.status.published', undefined, 'Market Active') : t('property.status.draft', undefined, 'Draft Protocol')}
                         </div>
                         {property.caf_eligible && (
-                            <div className="px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.3em] bg-zinc-100 border border-zinc-200 text-zinc-900 shadow-2xl">
+                            <div className="px-6 py-2 rounded-full text-xs font-black uppercase tracking-[0.3em] bg-zinc-100 border border-zinc-200 text-zinc-900 shadow-2xl">
                                 {t('property.pricing.cafEligible', undefined, 'CAF Approved')}
                             </div>
                         )}
                         {property.natural_risks_compliant && (
-                            <div className="px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.3em] bg-green-50 border border-green-200 text-green-800 shadow-2xl">
+                            <div className="px-6 py-2 rounded-full text-xs font-black uppercase tracking-[0.3em] bg-green-50 border border-green-200 text-green-800 shadow-2xl">
                                 ERP/ERNMT Compliant
                             </div>
                         )}
-                        <div className="px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.3em] bg-white/50 backdrop-blur-3xl border border-white/20 text-zinc-400">
+                        <div className="px-6 py-2 rounded-full text-xs font-black uppercase tracking-[0.3em] bg-white/50 backdrop-blur-3xl border border-white/20 text-zinc-400">
                             {t(`properties.new.types.${property.property_type}`, undefined, property.property_type)}
                         </div>
                     </motion.div>
@@ -339,7 +339,7 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
                                         
                                         {activePhoto.room_label && (
-                                            <div className="absolute top-8 left-8 px-6 py-3 bg-white/10 backdrop-blur-3xl border border-white/20 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-2xl">
+                                            <div className="absolute top-8 left-8 px-6 py-3 bg-white/10 backdrop-blur-3xl border border-white/20 rounded-2xl text-xs font-black uppercase tracking-[0.3em] text-white shadow-2xl">
                                                 {activePhoto.room_label}
                                             </div>
                                         )}
@@ -361,7 +361,7 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                             </button>
                                         </div>
 
-                                        <div className="absolute bottom-8 left-8 text-white/60 text-[10px] font-black uppercase tracking-[0.4em]">
+                                        <div className="absolute bottom-8 left-8 text-white/60 text-xs font-black uppercase tracking-[0.4em]">
                                             {activePhotoIdx + 1} / {photos.length}
                                         </div>
                                     </div>
@@ -377,7 +377,7 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                 <h1 className="text-6xl sm:text-8xl font-black tracking-tighter text-zinc-900 uppercase leading-[0.85]">
                                     {property.title}
                                 </h1>
-                                <div className="flex items-center gap-6 text-zinc-400 font-black text-[10px] uppercase tracking-[0.4em]">
+                                <div className="flex items-center gap-6 text-zinc-400 font-black text-xs uppercase tracking-[0.4em]">
                                     <span>{property.city}</span>
                                     <span className="w-1 h-1 rounded-full bg-zinc-200" />
                                     <span>{property.size_sqm}m²</span>
@@ -406,7 +406,7 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                         className="glass-card !p-8 rounded-[2.5rem] border-zinc-100 hover:shadow-2xl transition-all group"
                                     >
                                         <div className="mb-4 p-3 bg-zinc-50 rounded-2xl w-fit group-hover:scale-110 transition-transform">{stat.icon}</div>
-                                        <div className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">{stat.label}</div>
+                                        <div className="text-xs font-black text-zinc-400 uppercase tracking-widest mb-1">{stat.label}</div>
                                         <div className="text-xl font-black text-zinc-900 uppercase tracking-tighter">{stat.value}</div>
                                     </motion.div>
                                 ))}
@@ -420,7 +420,7 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                     viewport={{ once: true }}
                                     className="glass-card !p-10 rounded-[3rem] border-zinc-100"
                                 >
-                                    <h2 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.4em] mb-6">
+                                    <h2 className="text-xs font-black text-zinc-400 uppercase tracking-[0.4em] mb-6">
                                         {t('bio.landlordCard.title', undefined, 'Qui propose ce logement')}
                                     </h2>
                                     <div className="flex items-start gap-5">
@@ -433,14 +433,14 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                                     <span className="text-lg font-black text-zinc-900">{property.landlord_first_name}</span>
                                                 )}
                                                 {property.landlord_identity_verified && (
-                                                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-zinc-900 text-white text-[9px] font-black uppercase tracking-widest rounded-full">
+                                                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-zinc-900 text-white text-xs font-black uppercase tracking-widest rounded-full">
                                                         <BadgeCheck className="w-3 h-3" />
                                                         {t('bio.landlordCard.identityVerified', undefined, 'Identité vérifiée')}
                                                     </span>
                                                 )}
                                             </div>
                                             {property.landlord_member_since && (
-                                                <p className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest mb-3">
+                                                <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-3">
                                                     {t('bio.landlordCard.memberSince', undefined, 'Membre depuis')}{' '}
                                                     {new Intl.DateTimeFormat(language === 'fr' ? 'fr-FR' : 'en-GB', { month: 'long', year: 'numeric' }).format(new Date(property.landlord_member_since))}
                                                 </p>
@@ -468,7 +468,7 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                     </p>
                                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                                         <div className="p-6 bg-zinc-50 rounded-2xl">
-                                            <div className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">
+                                            <div className="text-xs font-black text-zinc-400 uppercase tracking-widest mb-1">
                                                 Reference Rent (Base)
                                             </div>
                                             <div className="text-lg font-black text-zinc-900">
@@ -476,7 +476,7 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                             </div>
                                         </div>
                                         <div className="p-6 bg-zinc-50 rounded-2xl">
-                                            <div className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">
+                                            <div className="text-xs font-black text-zinc-400 uppercase tracking-widest mb-1">
                                                 Reference Rent (Capped Max)
                                             </div>
                                             <div className="text-lg font-black text-zinc-900">
@@ -484,7 +484,7 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                             </div>
                                         </div>
                                         <div className="p-6 bg-zinc-50 rounded-2xl">
-                                            <div className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">
+                                            <div className="text-xs font-black text-zinc-400 uppercase tracking-widest mb-1">
                                                 Loi ALUR Rent Supplement
                                             </div>
                                             <div className="text-lg font-black text-zinc-900">
@@ -520,7 +520,7 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                         {property.room_details.map((room: any, index: number) => (
                                             <div key={index} className="p-6 bg-zinc-50 rounded-2xl border border-zinc-100/50 flex justify-between items-center">
                                                 <div>
-                                                    <div className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">
+                                                    <div className="text-xs font-black text-zinc-400 uppercase tracking-widest mb-1">
                                                         {room.room_type || `Space ${index + 1}`}
                                                     </div>
                                                     <div className="text-sm font-black text-zinc-900 uppercase">
@@ -531,7 +531,7 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                                     <div className="text-sm font-black text-zinc-900">
                                                         {room.surface_sqm} m²
                                                     </div>
-                                                    <div className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+                                                    <div className="text-xs font-black text-zinc-400 uppercase tracking-widest">
                                                         {room.furnished ? 'Furnished' : 'Unfurnished'}
                                                     </div>
                                                 </div>
@@ -570,10 +570,10 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                             </div>
                                         </div>
                                         <div>
-                                            <div className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">{t('properties.new.details.energyRatingTitle', undefined, 'Energy Performance (DPE)')}</div>
+                                            <div className="text-xs font-black text-zinc-400 uppercase tracking-widest mb-1">{t('properties.new.details.energyRatingTitle', undefined, 'Energy Performance (DPE)')}</div>
                                             <div className="text-sm font-black text-zinc-900">{property.dpe_value || 0} kWh/m²/year</div>
                                             {property.dpe_rating === 'G' && (
-                                                <div className="text-[10px] font-bold text-red-600 uppercase tracking-wider mt-1">
+                                                <div className="text-xs font-bold text-red-600 uppercase tracking-wider mt-1">
                                                     Banned from publishing under French Energy Passoire laws
                                                 </div>
                                             )}
@@ -584,7 +584,7 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                             {property.ges_rating || 'N/A'}
                                         </div>
                                         <div>
-                                            <div className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">{t('properties.new.details.gesLabel', undefined, 'GHG Emissions (GES)')}</div>
+                                            <div className="text-xs font-black text-zinc-400 uppercase tracking-widest mb-1">{t('properties.new.details.gesLabel', undefined, 'GHG Emissions (GES)')}</div>
                                             <div className="text-sm font-black text-zinc-900">{property.ges_value || 0} kgCO₂/m²/year</div>
                                         </div>
                                     </div>
@@ -700,12 +700,12 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                 
                                 <div className="text-center mb-12">
                                     <div className="flex items-baseline justify-center gap-2 mb-2">
-                                        <span className="text-7xl font-black text-zinc-900 tracking-tighter">€{property.monthly_rent}</span>
+                                        <span className="text-5xl sm:text-7xl font-black text-zinc-900 tracking-tighter">€{property.monthly_rent}</span>
                                         <span className="text-sm font-black text-zinc-400 uppercase tracking-[0.2em]">{t('search.property.mo', undefined, '/ Month')}</span>
                                     </div>
                                     <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-zinc-100 rounded-full">
                                         <div className="w-2 h-2 rounded-full bg-zinc-900" />
-                                        <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                                        <span className="text-xs font-black text-zinc-500 uppercase tracking-widest">
                                             {property.charges_included ? t('property.price.included', undefined, 'All-Inclusive') : t('property.price.excluded', undefined, 'Rent + Charges')}
                                         </span>
                                     </div>
@@ -719,7 +719,7 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                         { label: t('property.status.available', undefined, 'Available From'), value: property.available_from ? new Date(property.available_from).toLocaleDateString() : t('common.immediate', undefined, 'Immediate') }
                                     ].map((item, i) => (
                                         <div key={i} className="flex justify-between items-center pb-4 border-b border-zinc-100 last:border-0 last:pb-0">
-                                            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{item.label}</span>
+                                            <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">{item.label}</span>
                                             <span className="text-sm font-black text-zinc-900 uppercase tracking-tighter">{item.value}</span>
                                         </div>
                                     ))}
@@ -745,11 +745,11 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                     <div className="space-y-6">
                                         <div className="p-6 bg-zinc-100/50 rounded-[2.5rem] border border-zinc-200/50 text-center">
                                             <div className="text-4xl font-black text-zinc-900 tracking-tighter mb-1">{property.views_count}</div>
-                                            <div className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{t('property.status.views', undefined, 'Global Views')}</div>
+                                            <div className="text-xs font-black text-zinc-400 uppercase tracking-widest">{t('property.status.views', undefined, 'Global Views')}</div>
                                         </div>
                                         <button 
                                             onClick={() => router.push(`/properties/${propertyId}/edit`)}
-                                            className="w-full py-5 border-2 border-zinc-200 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] hover:border-zinc-900 transition-all"
+                                            className="w-full py-5 border-2 border-zinc-200 rounded-[2rem] text-xs font-black uppercase tracking-[0.4em] hover:border-zinc-900 transition-all"
                                         >
                                             {t('property.actions.edit', undefined, 'Update Protocol')}
                                         </button>
@@ -830,7 +830,7 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                             <div className="flex gap-6">
                                 <button 
                                     onClick={() => setIsApplying(false)}
-                                    className="flex-1 py-6 text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 hover:text-zinc-900 transition-all"
+                                    className="flex-1 py-6 text-xs font-black uppercase tracking-[0.4em] text-zinc-400 hover:text-zinc-900 transition-all"
                                 >
                                     {t('property.apply.cancel', undefined, 'Abort')}
                                 </button>

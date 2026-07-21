@@ -57,7 +57,7 @@ function VerifyEmailChangeContent() {
                             ? t('auth.verifyEmailChange.successTitle', undefined, 'Email Updated')
                             : t('auth.verifyEmailChange.failedTitle', undefined, 'Verification Failed')}
                 </h2>
-                <p className="mt-2 text-[10px] font-bold text-zinc-400 uppercase tracking-widest max-w-sm mx-auto">
+                <p className="mt-2 text-xs font-bold text-zinc-400 uppercase tracking-widest max-w-sm mx-auto">
                     {message}
                 </p>
             </div>
@@ -94,7 +94,7 @@ function VerifyEmailChangeContent() {
                 )}
 
                 {status === 'success' && (
-                    <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 animate-pulse pt-2">
+                    <p className="text-xs font-black uppercase tracking-widest text-zinc-400 animate-pulse pt-2">
                         {t('auth.verifyEmailChange.redirecting', undefined, 'Redirecting you to your profile...')}
                     </p>
                 )}
@@ -102,7 +102,7 @@ function VerifyEmailChangeContent() {
                 {status === 'error' && (
                     <button
                         onClick={() => router.push('/settings/account')}
-                        className="w-full py-5 bg-zinc-900 text-white font-black uppercase text-[10px] tracking-widest rounded-2xl hover:bg-zinc-800 hover:shadow-xl hover:shadow-zinc-900/10 active:scale-[0.98] transition-all mt-4"
+                        className="w-full py-5 bg-zinc-900 text-white font-black uppercase text-xs tracking-widest rounded-2xl hover:bg-zinc-800 hover:shadow-xl hover:shadow-zinc-900/10 active:scale-[0.98] transition-all mt-4"
                     >
                         {t('auth.verifyEmailChange.returnToSettings', undefined, 'Return to Settings')}
                     </button>

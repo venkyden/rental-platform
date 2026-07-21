@@ -71,7 +71,7 @@ export default function NotificationPreferences() {
                         <button
                             onClick={handleSave}
                             disabled={saving}
-                            className="px-6 py-3 bg-zinc-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-zinc-900/20 hover:scale-105 transition-all disabled:opacity-50"
+                            className="px-6 py-3 bg-zinc-900 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-xl shadow-zinc-900/20 hover:scale-105 transition-all disabled:opacity-50"
                         >
                             {saving ? t('settings.notifications.saving', undefined, 'Saving...') : t('settings.notifications.saveChanges', undefined, 'Save Changes')}
                         </button>
@@ -80,7 +80,7 @@ export default function NotificationPreferences() {
 
                 {/* Notification Channels */}
                 <div className="space-y-6 mb-12">
-                    <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-6">{t('settings.notifications.channels', undefined, 'Channels')}</h3>
+                    <h3 className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em] mb-6">{t('settings.notifications.channels', undefined, 'Channels')}</h3>
 
                     <div className="flex items-center justify-between p-6 bg-zinc-50 rounded-2xl border border-transparent hover:border-zinc-200 transition-all">
                         <div className="flex items-center gap-4">
@@ -92,7 +92,7 @@ export default function NotificationPreferences() {
                                 <p className="text-xs font-bold text-zinc-500">{t('settings.notifications.inAppDesc', undefined, 'Real-time alerts within the platform')}</p>
                             </div>
                         </div>
-                        <span className="text-[10px] font-black text-zinc-900 uppercase tracking-widest">{t('settings.notifications.alwaysOn', undefined, 'Always On')}</span>
+                        <span className="text-xs font-black text-zinc-900 uppercase tracking-widest">{t('settings.notifications.alwaysOn', undefined, 'Always On')}</span>
                     </div>
 
                     {[
@@ -125,7 +125,7 @@ export default function NotificationPreferences() {
                 {/* Email Frequency */}
                 {preferences.email_notifications && (
                     <div className="mb-12">
-                        <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-6">{t('settings.notifications.frequency', undefined, 'Frequency')}</h3>
+                        <h3 className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em] mb-6">{t('settings.notifications.frequency', undefined, 'Frequency')}</h3>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             {[
                                 { value: 'instant', label: t('settings.notifications.options.instant', undefined, 'Instant'), icon: Clock },
@@ -155,7 +155,7 @@ export default function NotificationPreferences() {
 
                 {/* Preferred Contact Method */}
                 <div>
-                    <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-6">{t('settings.notifications.primaryMethod', undefined, 'Primary Method')}</h3>
+                    <h3 className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em] mb-6">{t('settings.notifications.primaryMethod', undefined, 'Primary Method')}</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         {[
                             { value: 'in_app', label: t('settings.notifications.inApp', undefined, 'In-App'), icon: Bell },

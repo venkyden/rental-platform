@@ -323,7 +323,7 @@ export default function NewPropertyPage() {
                                 {STEP_KEYS.map((key, idx) => (
                                     <div
                                         key={key}
-                                        className={`text-[9px] font-black uppercase tracking-widest transition-colors ${
+                                        className={`text-xs font-black uppercase tracking-widest transition-colors ${
                                             currentStep === idx + 1 ? 'text-zinc-900' : 'text-zinc-300'
                                         }`}
                                     >
@@ -400,7 +400,7 @@ export default function NewPropertyPage() {
                                     {currentStep > 1 && (
                                         <button
                                             onClick={prevStep}
-                                            className="px-12 py-6 bg-zinc-100 text-zinc-500 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] hover:bg-zinc-200 transition-all"
+                                            className="px-12 py-6 bg-zinc-100 text-zinc-500 rounded-[2rem] text-xs font-black uppercase tracking-[0.4em] hover:bg-zinc-200 transition-all"
                                         >
                                             {t('properties.new.navigation.back')}
                                         </button>
@@ -408,7 +408,7 @@ export default function NewPropertyPage() {
                                     <button
                                         onClick={nextStep}
                                         disabled={enriching}
-                                        className="flex-1 py-6 bg-zinc-900 text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.4em] shadow-2xl hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                                        className="flex-1 py-6 bg-zinc-900 text-white rounded-[2rem] text-xs font-black uppercase tracking-[0.4em] shadow-2xl hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                                     >
                                         {enriching ? t('common.loading', undefined, 'Loading...') : t('properties.new.navigation.next')}
                                     </button>

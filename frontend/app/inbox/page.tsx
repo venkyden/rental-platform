@@ -46,13 +46,13 @@ export default function InboxPage() {
                                 <span className="text-2xl font-black relative z-10 group-hover:-translate-x-1 transition-transform">←</span>
                             </button>
                             <div className="space-y-2">
-                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900/10 border border-zinc-900/20 text-zinc-900 text-[8px] font-black uppercase tracking-[0.2em]">
+                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900/10 border border-zinc-900/20 text-zinc-900 text-xs font-black uppercase tracking-[0.2em]">
                                     {t('dashboard.inbox.secure', undefined, 'Secure Communications')}
                                 </div>
                                 <h1 className="text-5xl sm:text-7xl font-black tracking-tighter text-zinc-900 uppercase leading-none">
                                     {t('dashboard.inbox.title', undefined, 'Messages')}
                                 </h1>
-                                <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.4em]">
+                                <p className="text-xs font-black text-zinc-400 uppercase tracking-[0.4em]">
                                     {t('dashboard.inbox.subtitle', undefined, 'Real-time Rental Workspace')}
                                 </p>
                             </div>
@@ -97,7 +97,7 @@ export default function InboxPage() {
                                         {t('dashboard.inbox.selectDesc', undefined, 'Choose a message from the left to engage in professional communication and manage your rental journey.')}
                                     </p>
                                     <div className="mt-12 flex gap-4">
-                                        <div className="px-6 py-2 bg-zinc-100 rounded-full text-[10px] font-black text-zinc-400 uppercase tracking-widest">End-to-End Encrypted</div>
+                                        <div className="px-6 py-2 bg-zinc-100 rounded-full text-xs font-black text-zinc-400 uppercase tracking-widest">End-to-End Encrypted</div>
                                     </div>
                                 </motion.div>
                             )}

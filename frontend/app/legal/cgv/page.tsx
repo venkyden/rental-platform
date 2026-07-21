@@ -319,7 +319,7 @@ function SectionRenderer({ section }: { section: Section }) {
                             <thead className="bg-zinc-50">
                                 <tr>
                                     {(section.table as { headers: string[]; rows: string[][] }).headers.map((h, i) => (
-                                        <th key={i} className="px-4 py-2 text-left font-black text-zinc-900 uppercase text-[10px] border-b border-zinc-100">{h}</th>
+                                        <th key={i} className="px-4 py-2 text-left font-black text-zinc-900 uppercase text-xs border-b border-zinc-100">{h}</th>
                                     ))}
                                 </tr>
                             </thead>
@@ -394,11 +394,11 @@ export default function LegalPage() {
                         <div>
                             <h1 className="text-5xl font-black text-zinc-900 tracking-tighter uppercase">{t.title}</h1>
                             <p className="text-xs font-black text-zinc-400 uppercase tracking-[0.3em] mt-4">{t.subtitle}</p>
-                            <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mt-2">{t.updated}</p>
+                            <p className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em] mt-2">{t.updated}</p>
                         </div>
                         <button
                             onClick={() => setLang(lang === 'en' ? 'fr' : 'en')}
-                            className="text-[10px] px-4 py-2 bg-zinc-900 text-white rounded-full transition-all font-black uppercase tracking-widest hover:scale-105 active:scale-95 shadow-xl"
+                            className="text-xs px-4 py-2 bg-zinc-900 text-white rounded-full transition-all font-black uppercase tracking-widest hover:scale-105 active:scale-95 shadow-xl"
                         >
                             {t.langSwitch}
                         </button>
@@ -428,7 +428,7 @@ export default function LegalPage() {
                             { label: 'Privacy', path: '/legal/privacy' },
                             { label: 'Mentions Légales', path: '/legal/mentions-legales' }
                         ].map((link, i) => (
-                            <Link key={i} href={link.path} className="text-[10px] font-black text-zinc-400 hover:text-zinc-900 uppercase tracking-widest transition-colors">
+                            <Link key={i} href={link.path} className="text-xs font-black text-zinc-400 hover:text-zinc-900 uppercase tracking-widest transition-colors">
                                 {link.label}
                             </Link>
                         ))}

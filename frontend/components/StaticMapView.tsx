@@ -46,7 +46,7 @@ export default function StaticMapView({ lat, lng, address }: StaticMapViewProps)
     if (!isMounted) {
         return (
             <div className="w-full h-[400px] bg-zinc-50 rounded-[3rem] flex items-center justify-center animate-pulse border border-zinc-100">
-                <p className="text-zinc-400 text-[10px] font-black uppercase tracking-[0.2em]">Initializing Satellite...</p>
+                <p className="text-zinc-400 text-xs font-black uppercase tracking-[0.2em]">Initializing Satellite...</p>
             </div>
         );
     }
@@ -71,7 +71,7 @@ export default function StaticMapView({ lat, lng, address }: StaticMapViewProps)
 
             {/* Premium Overlay */}
             <div className="absolute top-8 left-8 bg-white/90 backdrop-blur-3xl px-6 py-3 rounded-2xl border border-white/20 shadow-2xl z-[1000]">
-                <div className="text-[10px] font-black text-zinc-900 uppercase tracking-widest flex items-center gap-3">
+                <div className="text-xs font-black text-zinc-900 uppercase tracking-widest flex items-center gap-3">
                     <div className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
                     Property Geolocation Verified
                 </div>
