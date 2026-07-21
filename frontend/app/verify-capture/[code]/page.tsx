@@ -137,11 +137,11 @@ export default function VerifyCapturePage() {
     };
 
     const handleNextCapture = () => {
-        setPreviewUrl(null);
         setErrorMessage('');
         const doc = DOCUMENT_TYPES.find(d => d.value === documentType);
-        
+
         if (currentSide === 'front') {
+            setPreviewUrl(null);
             if (doc?.hasBack) {
                 setCurrentSide('back');
                 setStep('guide');
@@ -150,9 +150,12 @@ export default function VerifyCapturePage() {
                 setStep('guide');
             }
         } else if (currentSide === 'back') {
+            setPreviewUrl(null);
             setCurrentSide('selfie');
             setStep('guide');
         } else if (currentSide === 'selfie') {
+            // Keep the selfie preview mounted: upload failures return to the
+            // preview step to show the error, which renders nothing without it.
             handleFinalUpload();
         }
     };
