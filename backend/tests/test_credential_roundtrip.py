@@ -15,6 +15,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost:5432/test_db")
 os.environ.setdefault("SECRET_KEY", "test-secret-key-not-for-production")
 
+from itertools import count
+
 from fastapi.testclient import TestClient
 
 from app.main import app
@@ -22,6 +24,7 @@ from app.core.database import get_db
 from app.routers.auth import get_current_user
 
 from tests.conftest import make_mock_user
+
 
 
 class FakeCredentialSession:
@@ -68,6 +71,14 @@ def make_verified_user():
     return user
 
 
+# The public verify endpoint is rate limited per client IP (30/min, shared
+# scope) and test_anti_phishing deliberately exhausts that budget. Every
+# TestClient defaults to the same "testclient" address, so give each client a
+# distinct source IP: the real limiter still runs, but these tests get their
+# own bucket and stay independent of suite ordering.
+_client_ips = count(1)
+
+
 def make_client(session: FakeCredentialSession, user):
     target_app = app.app if hasattr(app, "app") else app
 
@@ -76,7 +87,7 @@ def make_client(session: FakeCredentialSession, user):
 
     target_app.dependency_overrides[get_current_user] = lambda: user
     target_app.dependency_overrides[get_db] = fake_get_db
-    return TestClient(app)
+    return TestClient(app, client=(f"10.0.0.{next(_client_ips)}", 50000))
 
 
 def _issue(client) -> dict:
