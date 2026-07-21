@@ -1349,7 +1349,7 @@ test.describe('13. Universal Trust Dossier — Viewer', () => {
 
     // A — Invalid token
     test('A — invalid or expired share token shows error message, not blank page', async ({ page }) => {
-        await page.route('**/v1/dossiers/share/invalid-token', route => 
+        await page.route('**/v1/dossiers/shared/invalid-token/meta', route => 
             route.fulfill({ status: 404, contentType: 'application/json', body: JSON.stringify({ detail: 'Dossier not found or expired' }) })
         );
         await page.goto('/d/share/invalid-token');
@@ -1358,7 +1358,7 @@ test.describe('13. Universal Trust Dossier — Viewer', () => {
 
     // B — Loading state resolves
     test('B — loading spinner resolves when dossier is loaded successfully', async ({ page }) => {
-        await page.route('**/v1/dossiers/share/valid-token', route => 
+        await page.route('**/v1/dossiers/shared/valid-token/meta', route => 
             route.fulfill({ status: 200, body: JSON.stringify({ 
                 id: 'dossier-1', 
                 role: 'tenant',
