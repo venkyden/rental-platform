@@ -23,7 +23,7 @@ test.describe('Page 2: Search Marketplace', () => {
 
     test('should show property results grid', async ({ page }) => {
         // Wait for properties to load (either property card or empty state to be visible)
-        const propertyCard = page.locator('.glass-card').filter({ hasText: /€/ }).first();
+        const propertyCard = page.locator('article').filter({ hasText: /€/ }).first();
         const emptyState = page.locator('text=Market Vacant');
         
         await expect(propertyCard.or(emptyState)).toBeVisible({ timeout: 15_000 });

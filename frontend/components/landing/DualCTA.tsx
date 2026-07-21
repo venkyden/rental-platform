@@ -9,7 +9,7 @@ export default function DualCTA() {
   const { t } = useLanguage();
 
   return (
-    <section className="py-32 sm:py-56 bg-zinc-50/50">
+    <section className="py-32 sm:py-56 bg-zinc-50/50 overflow-hidden">
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid md:grid-cols-2 gap-12 sm:gap-20">
           {/* ─── Tenant CTA ─── */}

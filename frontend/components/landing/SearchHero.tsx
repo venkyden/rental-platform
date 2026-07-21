@@ -80,15 +80,15 @@ export default function SearchHero() {
               aria-label={t('landing.hero.searchPlaceholder', undefined, 'Where do you want to live?')}
               className="bg-white p-3 rounded-[3rem] flex flex-col sm:flex-row items-center shadow-[0_40px_100px_-20px_rgba(0,0,0,0.15)] border border-zinc-100 group transition-all duration-700 hover:shadow-[0_50px_120px_-20px_rgba(0,0,0,0.2)] focus-within:border-zinc-300"
             >
-              <div className="flex-1 w-full flex items-center px-10 gap-6 py-6 sm:py-0">
-                <MapPin className="w-6 h-6 text-zinc-900 shrink-0" aria-hidden="true" />
+              <div className="flex-1 w-full flex items-center px-5 sm:px-10 gap-3 sm:gap-6 py-4 sm:py-0">
+                <MapPin className="w-5 h-5 sm:w-6 sm:h-6 text-zinc-900 shrink-0" aria-hidden="true" />
                 <input 
                   type="text" 
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder={t('landing.hero.searchPlaceholder', undefined, 'Where do you want to live?')}
                   aria-label={t('landing.hero.searchPlaceholder', undefined, 'Where do you want to live?')}
-                  className="w-full bg-transparent border-none focus:ring-0 text-lg sm:text-xl font-semibold text-zinc-900 placeholder:text-zinc-400"
+                  className="w-full min-w-0 bg-transparent border-none focus:ring-0 text-base sm:text-xl font-semibold text-zinc-900 placeholder:text-zinc-400"
                 />
               </div>
               
@@ -98,7 +98,7 @@ export default function SearchHero() {
                 <button 
                   type="submit"
                   aria-label={t('landing.hero.searchButton', undefined, 'Search')}
-                  className="w-full sm:w-auto bg-zinc-900 text-white px-12 py-6 rounded-[2.2rem] font-bold uppercase tracking-wider text-sm flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] transition-all duration-500 shadow-2xl shadow-zinc-900/20 group/btn"
+                  className="w-full sm:w-auto bg-zinc-900 text-white px-8 sm:px-12 py-4 sm:py-6 rounded-[2.2rem] font-bold uppercase tracking-wider text-sm flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] transition-all duration-500 shadow-2xl shadow-zinc-900/20 group/btn shrink-0"
                 >
                   <Search className="w-4 h-4 group-hover/btn:scale-125 transition-transform" strokeWidth={3} aria-hidden="true" />
                   <span>{t('landing.hero.searchButton', undefined, 'Search')}</span>
