@@ -774,7 +774,7 @@ async def delete_property(
         )
 
     # Use soft delete to preserve historical data (leases, applications) without cascading FK errors
-    property_obj.status = "deleted"
+    property_obj.status = "deleted"  # type: ignore
     await db.commit()
 
     return
@@ -805,7 +805,7 @@ async def archive_property(
             detail="You can only archive your own properties",
         )
 
-    property_obj.status = "archived"
+    property_obj.status = "archived"  # type: ignore
     await db.commit()
     await db.refresh(property_obj)
     
@@ -837,7 +837,7 @@ async def unarchive_property(
             detail="You can only unarchive your own properties",
         )
 
-    property_obj.status = "draft"
+    property_obj.status = "draft"  # type: ignore
     await db.commit()
     await db.refresh(property_obj)
     
@@ -1013,9 +1013,10 @@ async def publish_property(
     # loyer_reference_majore absent; cleared on re-publish if landlord supplies
     # it (prevents stale advisory).
     from app.services.zone_tendue import is_zone_tendue
-    _od = property_obj.ownership_data or {}
-    if is_zone_tendue(property_obj.postal_code) and not property_obj.loyer_reference_majore:
-        property_obj.ownership_data = {
+    _od = cast(dict, property_obj.ownership_data or {})
+    postal_code_str = cast(Optional[str], property_obj.postal_code)
+    if postal_code_str and is_zone_tendue(postal_code_str) and not property_obj.loyer_reference_majore:
+        property_obj.ownership_data = {  # type: ignore
             **_od,
             "zone_tendue_advisory": True,
             "zone_tendue_note": (
@@ -1028,7 +1029,7 @@ async def publish_property(
         }
     elif _od.get("zone_tendue_advisory"):
         # Landlord has since supplied loyer_reference_majore — clear stale advisory.
-        property_obj.ownership_data = {
+        property_obj.ownership_data = {  # type: ignore
             k: v for k, v in _od.items()
             if k not in ("zone_tendue_advisory", "zone_tendue_note")
         }
@@ -1470,7 +1471,7 @@ async def update_room_status(
             status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied"
         )
 
-    room_details = list(property_obj.room_details or [])
+    room_details = list(cast(list, property_obj.room_details) or [])
     if room_index < 0 or room_index >= len(room_details):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid room index"
@@ -1484,7 +1485,7 @@ async def update_room_status(
         room.pop("available_from", None)
 
     room_details[room_index] = room
-    property_obj.room_details = room_details
+    property_obj.room_details = room_details  # type: ignore
     flag_modified(property_obj, "room_details")
 
     await db.commit()
