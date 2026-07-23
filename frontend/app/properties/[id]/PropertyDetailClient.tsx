@@ -367,6 +367,16 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                             {activePhotoIdx + 1} / {galleryPhotos.length}
                                         </div>
                                     </div>
+                                ) : walkthroughVideo ? (
+                                    <div className="relative w-full aspect-[16/9] lg:aspect-[21/9] bg-zinc-900">
+                                        <video
+                                            src={resolveMediaUrl(walkthroughVideo.url || walkthroughVideo)}
+                                            className="w-full h-full object-cover"
+                                            controls
+                                            playsInline
+                                            preload="metadata"
+                                        />
+                                    </div>
                                 ) : (
                                     <div className="aspect-[16/9] bg-zinc-100 flex items-center justify-center">
                                         <span className="text-3xl font-black text-zinc-300 italic tracking-tighter uppercase">{t('property.media.noMedia', undefined, 'Visuals Offline')}</span>

@@ -616,6 +616,12 @@ async def get_property(
         # If we modified photos, we need to commit
         await db.commit()
 
+    # Any commit/flush above may have marked server-computed columns (e.g.
+    # updated_at's onupdate=func.now()) as expired on this instance — refresh
+    # so the sync Pydantic validation below doesn't trigger an implicit
+    # lazy-load outside the async context (MissingGreenlet).
+    await db.refresh(property_obj)
+
     prop_dict = PropertyResponse.model_validate(property_obj).model_dump()
     prop_dict.update(_landlord_trust_fields(property_obj.landlord))
     if property_obj.landlord:

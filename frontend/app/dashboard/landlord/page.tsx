@@ -18,6 +18,7 @@ import { motion } from 'framer-motion';
 
 interface OverviewStats {
     active_properties: number;
+    total_properties: number;
     pending_applications: number;
     total_views: number;
     unread_messages: number;
@@ -109,7 +110,7 @@ export default function LandlordDashboard() {
             {/* Loi ALUR Onboarding banner for S1 — only while the landlord has no properties yet;
                 segment is set once at signup and never recomputed, so without this check it
                 would keep telling an active landlord to "add your first property" forever. */}
-            {config?.settings.show_onboarding_tips && !statsLoading && (stats?.active_properties ?? 0) === 0 && (
+            {config?.settings.show_onboarding_tips && !statsLoading && (stats?.total_properties ?? 0) === 0 && (
                 <div className="bg-zinc-950 text-white rounded-[2.5rem] shadow-2xl p-8 sm:p-12 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-[60px] -translate-y-1/2 translate-x-1/2 group-hover:scale-110 transition-transform duration-1000"></div>
                     <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-8">

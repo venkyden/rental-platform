@@ -35,6 +35,7 @@ router = APIRouter(prefix="/stats", tags=["Stats"])
 
 class LandlordStats(BaseModel):
     active_properties: int
+    total_properties: int
     pending_applications: int
     total_views: int
     unread_messages: int
@@ -122,11 +123,19 @@ async def get_landlord_stats(
     """Get high-level stats for landlord dashboard."""
     _require_landlord(current_user)
 
-    # 1. Properties count
+    # 1. Properties count — total (any status) for onboarding, and active-only for the
+    # "Properties" KPI, so draft listings aren't counted as if they were live.
     result_props = await db.execute(
         select(func.count(Property.id)).where(Property.landlord_id == current_user.id)
     )
     total_properties = result_props.scalar_one_or_none() or 0
+
+    result_active_props = await db.execute(
+        select(func.count(Property.id)).where(
+            and_(Property.landlord_id == current_user.id, Property.status == "active")
+        )
+    )
+    active_properties = result_active_props.scalar_one_or_none() or 0
 
     # 2. Total Views & Potential Revenue
     result_views_rev = await db.execute(
@@ -169,19 +178,20 @@ async def get_landlord_stats(
     )
     unread_messages = result_msgs.scalar_one_or_none() or 0
 
-    # 5. Occupancy Rate (active leases / total properties)
+    # 5. Occupancy Rate (active leases / active properties)
     occupancy_rate = 0.0
-    if total_properties > 0:
+    if active_properties > 0:
         result_leases = await db.execute(
             select(func.count(Lease.id)).where(
                 and_(Lease.landlord_id == current_user.id, Lease.status == "active")
             )
         )
         active_leases = result_leases.scalar_one_or_none() or 0
-        occupancy_rate = round((active_leases / total_properties) * 100, 1)
+        occupancy_rate = round((active_leases / active_properties) * 100, 1)
 
     return LandlordStats(
-        active_properties=total_properties,
+        active_properties=active_properties,
+        total_properties=total_properties,
         pending_applications=pending_applications,
         total_views=total_views,
         unread_messages=unread_messages,
