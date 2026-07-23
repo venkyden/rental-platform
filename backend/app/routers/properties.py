@@ -991,11 +991,11 @@ async def publish_property(
             },
         )
     if assessment.requires_acknowledgment and acknowledged:
-        property_obj.ownership_data = {
+        property_obj.ownership_data = {  # type: ignore
             **od,
             "dpe_decence_acknowledged_at": naive_utcnow().isoformat(),
             "dpe_decence_acknowledged_class": assessment.authoritative_class,
-        }  # type: ignore
+        }
 
     # Remaining French compliance (deposit cap, surface, rent control) — consolidated.
     from app.services.french_compliance import validate_property_compliance
