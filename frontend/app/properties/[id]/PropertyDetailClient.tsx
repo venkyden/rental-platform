@@ -775,67 +775,67 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                         </div>
 
                         {/* Right Column - Transaction Center */}
-                        <div className="lg:col-span-4 space-y-10">
+                        <div className="lg:col-span-4 space-y-8">
                             <motion.div
                                 initial={{ y: 40, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
                                 transition={{ delay: 0.3 }}
-                                className="glass-card !p-12 sticky top-32 shadow-[0_60px_120px_-20px_rgba(0,0,0,0.15)] border-zinc-100 rounded-[3.5rem] relative overflow-hidden"
+                                className="glass-card !p-6 sm:!p-8 sticky top-28 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] border border-zinc-200/80 rounded-[2.5rem] relative overflow-hidden bg-white/95 backdrop-blur-xl"
                             >
-                                <div className="absolute top-0 left-0 w-full h-2 bg-zinc-900" />
+                                <div className="absolute top-0 inset-x-0 h-1.5 bg-zinc-900 rounded-t-[2.5rem]" />
                                 
-                                <div className="text-center mb-12">
-                                    <div className="flex items-baseline justify-center gap-2 mb-2">
-                                        <span className="text-5xl sm:text-7xl font-black text-zinc-900 tracking-tighter">€{property.monthly_rent}</span>
-                                        <span className="text-sm font-black text-zinc-400 uppercase tracking-[0.2em]">{t('search.property.mo', undefined, '/ Month')}</span>
+                                <div className="text-center mb-8 pt-2">
+                                    <div className="flex items-baseline justify-center gap-1.5 flex-wrap">
+                                        <span className="text-4xl sm:text-5xl font-black text-zinc-900 tracking-tighter">€{property.monthly_rent}</span>
+                                        <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">{t('search.property.mo', undefined, '/ Month')}</span>
                                     </div>
-                                    <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-zinc-100 rounded-full">
+                                    <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-zinc-100 rounded-full mt-2">
                                         <div className="w-2 h-2 rounded-full bg-zinc-900" />
-                                        <span className="text-xs font-black text-zinc-500 uppercase tracking-widest">
+                                        <span className="text-[11px] font-black text-zinc-600 uppercase tracking-wider">
                                             {property.charges_included ? t('property.price.included', undefined, 'All-Inclusive') : t('property.price.excluded', undefined, 'Rent + Charges')}
                                         </span>
                                     </div>
                                 </div>
 
-                                <div className="space-y-6 mb-12">
+                                <div className="space-y-4 mb-8">
                                     {[
                                         { label: t('property.price.deposit', undefined, 'Security Deposit'), value: `€${property.deposit || 0}` },
                                         { label: t('property.price.charges', undefined, 'Monthly Charges'), value: `€${property.charges || 0}` },
                                         { label: t('property.guarantor.title', undefined, 'Guarantor Protocol'), value: property.guarantor_required ? t('property.guarantor.required', undefined, 'Required') : t('property.guarantor.notRequired', undefined, 'Flexible') },
                                         { label: t('property.status.available', undefined, 'Available From'), value: property.available_from ? new Date(property.available_from).toLocaleDateString() : t('common.immediate', undefined, 'Immediate') }
                                     ].map((item, i) => (
-                                        <div key={i} className="flex justify-between items-center pb-4 border-b border-zinc-100 last:border-0 last:pb-0">
-                                            <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">{item.label}</span>
-                                            <span className="text-sm font-black text-zinc-900 uppercase tracking-tighter">{item.value}</span>
+                                        <div key={i} className="flex justify-between items-center pb-3 border-b border-zinc-100 last:border-0 last:pb-0 gap-2">
+                                            <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider shrink-0">{item.label}</span>
+                                            <span className="text-xs sm:text-sm font-black text-zinc-900 uppercase tracking-tight text-right truncate">{item.value}</span>
                                         </div>
                                     ))}
                                 </div>
 
                                 {!isOwner ? (
-                                    <div className="space-y-4">
+                                    <div className="space-y-3">
                                         <button 
                                             onClick={() => executeWithAuth(() => setIsApplying(true))}
-                                            className="w-full py-6 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.4em] rounded-[2rem] shadow-2xl hover:scale-105 active:scale-95 transition-all group overflow-hidden relative"
+                                            className="w-full py-4 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.3em] rounded-2xl shadow-xl hover:scale-[1.02] active:scale-95 transition-all group overflow-hidden relative"
                                         >
                                             <div className="absolute inset-0 bg-zinc-800 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
                                             <span className="relative z-10">{t('property.actions.apply', undefined, 'Initialize Application')}</span>
                                         </button>
                                         <button 
                                             onClick={() => executeWithAuth(() => router.push('/inbox'))}
-                                            className="w-full py-6 bg-zinc-100 text-zinc-900 text-xs font-black uppercase tracking-[0.4em] rounded-[2rem] hover:bg-zinc-200 transition-all"
+                                            className="w-full py-4 bg-zinc-100 text-zinc-900 text-xs font-black uppercase tracking-[0.3em] rounded-2xl hover:bg-zinc-200 transition-all"
                                         >
                                             {t('property.actions.message', undefined, 'Open Channel')}
                                         </button>
                                     </div>
                                 ) : (
-                                    <div className="space-y-6">
-                                        <div className="p-6 bg-zinc-100/50 rounded-[2.5rem] border border-zinc-200/50 text-center">
-                                            <div className="text-4xl font-black text-zinc-900 tracking-tighter mb-1">{property.views_count}</div>
-                                            <div className="text-xs font-black text-zinc-400 uppercase tracking-widest">{t('property.status.views', undefined, 'Global Views')}</div>
+                                    <div className="space-y-4">
+                                        <div className="p-4 bg-zinc-50 rounded-2xl border border-zinc-200/60 text-center">
+                                            <div className="text-3xl font-black text-zinc-900 tracking-tighter mb-0.5">{property.views_count}</div>
+                                            <div className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{t('property.status.views', undefined, 'Global Views')}</div>
                                         </div>
                                         <button 
                                             onClick={() => router.push(`/properties/${propertyId}/edit`)}
-                                            className="w-full py-5 border-2 border-zinc-200 rounded-[2rem] text-xs font-black uppercase tracking-[0.4em] hover:border-zinc-900 transition-all"
+                                            className="w-full py-4 border-2 border-zinc-200 rounded-2xl text-xs font-black uppercase tracking-[0.2em] hover:border-zinc-900 transition-all"
                                         >
                                             {t('property.actions.edit', undefined, 'Update Protocol')}
                                         </button>
@@ -844,8 +844,8 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                             </motion.div>
 
                             {/* Integrated Tools */}
-                            <div className="glass-card !p-12 rounded-[3.5rem] border-zinc-100">
-                                <h3 className="text-xl font-black uppercase tracking-tighter mb-8 italic">{t('dashboard.landlord.sections.portfolio', undefined, 'Management Suite')}</h3>
+                            <div className="glass-card !p-6 sm:!p-8 rounded-[2.5rem] border border-zinc-200/80 bg-white/95 backdrop-blur-xl">
+                                <h3 className="text-lg font-black uppercase tracking-tighter mb-6 italic">{t('dashboard.landlord.sections.portfolio', undefined, 'Management Suite')}</h3>
                                 {isOwner ? (
                                     <div className="space-y-10">
                                         <VisitScheduler
