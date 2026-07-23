@@ -75,6 +75,7 @@
   "PATCH /applications/{application_id}",
   "PATCH /auth/me",
   "PATCH /auth/me/preferences",
+  "PATCH /properties/{property_id}/rooms/{room_index}/status",
   "PATCH /users/me",
   "POST /admin/cleanup-stale-photos",
   "POST /admin/features",

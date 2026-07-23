@@ -89,21 +89,95 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
         }
     };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const [uploadProgress, setUploadProgress] = useState(0);
+
+    const compressImage = async (f: File): Promise<File> => {
+        if (f.type.startsWith('video')) return f;
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(f);
+            reader.onload = ev => {
+                const img = new Image();
+                img.src = ev.target?.result as string;
+                img.onload = () => {
+                    const MAX = 1800;
+                    let w = img.width, h = img.height;
+                    if (w > MAX || h > MAX) {
+                        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+                        else       { w = Math.round(w * MAX / h); h = MAX; }
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d', { willReadFrequently: true })?.drawImage(img, 0, 0, w, h);
+                    canvas.toBlob(b => {
+                        if (b) {
+                            resolve(new File([b], f.name.replace(/\.[^/.]+$/, ".jpg"), { type: 'image/jpeg' }));
+                        } else {
+                            resolve(f);
+                        }
+                    }, 'image/jpeg', 0.88);
+                };
+                img.onerror = () => resolve(f);
+            };
+            reader.onerror = () => resolve(f);
+        });
+    };
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
-            const newlyCapturedFiles = Array.from(e.target.files);
-            setFiles(prev => [...prev, ...newlyCapturedFiles]);
-            setPreviewUrls(prev => [...prev, ...newlyCapturedFiles.map(f => URL.createObjectURL(f))]);
-            setStep('preview');
+            const rawFiles = Array.from(e.target.files);
+            const validFiles: File[] = [];
+
+            const hasExistingVideo = sessionDetails?.has_video || files.some(f => f.type.startsWith('video'));
+
+            for (const f of rawFiles) {
+                const isVideo = f.type.startsWith('video');
+                if (isVideo) {
+                    if (hasExistingVideo || validFiles.some(vf => vf.type.startsWith('video'))) {
+                        showToast(
+                            fr ? 'Une seule vidéo de présentation est autorisée par annonce.' : 'Only 1 video walkthrough allowed per listing.',
+                            'error'
+                        );
+                        continue;
+                    }
+                    if (f.size > 100 * 1024 * 1024) {
+                        showToast(
+                            fr ? 'La vidéo dépasse la limite de 100 Mo.' : 'Video exceeds 100MB size limit.',
+                            'error'
+                        );
+                        continue;
+                    }
+                    validFiles.push(f);
+                } else {
+                    if (f.size > 15 * 1024 * 1024) {
+                        showToast(
+                            fr ? "L'image dépasse la limite de 15 Mo." : 'Image exceeds 15MB limit.',
+                            'error'
+                        );
+                        continue;
+                    }
+                    const compressed = await compressImage(f);
+                    validFiles.push(compressed);
+                }
+            }
+
+            if (validFiles.length > 0) {
+                setFiles(prev => [...prev, ...validFiles]);
+                setPreviewUrls(prev => [...prev, ...validFiles.map(f => URL.createObjectURL(f))]);
+                setStep('preview');
+            }
         }
     };
 
     const handleUpload = async () => {
         if (files.length === 0 || !code) return;
         setStep('uploading');
+        setUploadProgress(0);
         let successCount = 0;
+        const total = files.length;
 
-        for (const file of files) {
+        for (let idx = 0; idx < total; idx++) {
+            const file = files[idx];
             const metadataObj = {
                 latitude: location?.lat || null,
                 longitude: location?.lng || null,
@@ -130,6 +204,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                         'error'
                     );
                 }
+                setUploadProgress(Math.round(((idx + 1) * 100) / total));
                 continue;
             }
 
@@ -157,6 +232,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                     // IndexedDB unavailable — skip offline queueing silently
                 }
             }
+            setUploadProgress(Math.round(((idx + 1) * 100) / total));
         }
 
         if (isOffline) {
@@ -343,13 +419,16 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                             animate={{ opacity: 1 }}
                             className="flex-1 flex flex-col items-center justify-center text-center space-y-12"
                         >
-                            <div className="w-24 h-24 border-4 border-zinc-100 border-t-zinc-900 rounded-full animate-spin" />
+                            <div className="relative w-28 h-28 flex items-center justify-center">
+                                <div className="w-24 h-24 border-4 border-zinc-100 border-t-zinc-900 rounded-full animate-spin absolute" />
+                                <span className="text-xl font-black text-zinc-900 z-10">{uploadProgress}%</span>
+                            </div>
                             <div className="space-y-4">
                                 <h2 className="text-3xl font-black uppercase tracking-tighter">
                                     {fr ? 'Envoi en cours' : 'Sending'}
                                 </h2>
                                 <p className="text-zinc-500 font-medium">
-                                    {fr ? 'Vos photos sont transmises de manière sécurisée…' : 'Your photos are being uploaded securely…'}
+                                    {fr ? 'Vos médias sont transmis de manière sécurisée…' : 'Your media files are being uploaded securely…'}
                                 </p>
                             </div>
                         </motion.div>

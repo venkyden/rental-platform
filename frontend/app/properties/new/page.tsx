@@ -113,8 +113,14 @@ export default function NewPropertyPage() {
                 public_transport: res.data.public_transport || [],
                 nearby_landmarks: res.data.nearby_landmarks || [],
             });
+            if (res.data.latitude && res.data.longitude) {
+                toast.success(t('properties.new.steps.geolocation.enrichSuccess', undefined, 'Location geocoded successfully! GPS media verification enabled.'));
+            } else {
+                toast.warning(t('properties.new.steps.geolocation.enrichNoCoords', undefined, 'Could not determine GPS coordinates. Please select your address from the autocomplete suggestions.'));
+            }
         } catch (e) {
             console.error('Enrichment error:', e);
+            toast.error(t('properties.new.steps.geolocation.enrichError', undefined, 'Location enrichment failed. Please select your address from the autocomplete dropdown.'));
         } finally {
             setEnriching(false);
         }
@@ -190,21 +196,31 @@ export default function NewPropertyPage() {
         }
     };
 
-    const handlePublish = async () => {
+    const handlePublish = async (acknowledgeDpe = false) => {
         if (!propertyId) return;
         setPublishing(true);
         try {
-            await apiClient.client.post(`/properties/${propertyId}/publish`);
+            await apiClient.client.post(`/properties/${propertyId}/publish`, {
+                acknowledge_dpe_warning: acknowledgeDpe
+            });
+            localStorage.removeItem('roomivo_property_draft_v2');
             toast.success(t('properties.new.steps.success.published', undefined, 'Your listing is now live.'));
             router.push('/properties');
         } catch (e: any) {
             console.error('Publish error:', e);
             const detail = e.response?.data?.detail;
+            if (detail?.code === 'dpe_acknowledgment_required') {
+                if (confirm(t('properties.new.dpeAcknowledgePrompt', undefined, 'Your property has an energy rating warning (passoire énergétique). Do you acknowledge and wish to proceed with publishing?'))) {
+                    await handlePublish(true);
+                    return;
+                }
+            }
             if (detail === 'landlord_bio_required') {
                 toast.error(t('bio.landlordRequired', undefined, 'Add a short bio to your profile before publishing — tenants need to know who they are dealing with.'));
                 router.push('/profile');
             } else {
-                toast.error(typeof detail === 'string' ? detail : t('properties.new.steps.success.publishFailed', undefined, 'Publishing failed. Please try again.'));
+                const errorStr = typeof detail === 'string' ? detail : (detail?.message || t('properties.new.steps.success.publishFailed', undefined, 'Publishing failed. Please try again.'));
+                toast.error(errorStr);
             }
         } finally {
             setPublishing(false);

@@ -17,7 +17,7 @@ import StaticMapView from '@/components/StaticMapView';
 import Image from 'next/image';
 import {
     MapPin, Share2, Shield, Zap, Wind, Check, LayoutGrid, Info,
-    TrendingUp, Heart, Navigation, Building2, Flame, AlertTriangle, Calendar, BadgeCheck
+    TrendingUp, Heart, Navigation, Building2, Flame, AlertTriangle, Calendar, BadgeCheck, Download, Video
 } from 'lucide-react';
 
 interface Property {
@@ -229,8 +229,10 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
     const publicTransport = property.public_transport?.items || [];
     const nearbyLandmarks = property.nearby_landmarks?.items || [];
     const photos = Array.isArray(property.photos) ? property.photos : property.photos?.urls ? property.photos.urls.map((url: string) => ({ url })) : [];
+    const galleryPhotos = photos.filter((p: any) => p.media_type !== 'video' && !(typeof (p.url || p) === 'string' && /\.(mp4|mov|webm|avi|m4v)$/i.test(p.url || p)));
+    const walkthroughVideo = photos.find((p: any) => p.media_type === 'video' || (typeof (p.url || p) === 'string' && /\.(mp4|mov|webm|avi|m4v)$/i.test(p.url || p)));
 
-    const activePhoto = photos[activePhotoIdx];
+    const activePhoto = galleryPhotos[activePhotoIdx] || galleryPhotos[0];
 
     return (
         <PremiumLayout withNavbar={true}>
@@ -325,7 +327,7 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                 viewport={{ once: true }}
                                 className="glass-card !p-0 rounded-[3.5rem] shadow-[0_60px_120px_-20px_rgba(0,0,0,0.15)] border-zinc-100 overflow-hidden group relative"
                             >
-                                {photos && photos.length > 0 && activePhoto ? (
+                                {galleryPhotos && galleryPhotos.length > 0 && activePhoto ? (
                                     <div className="relative w-full aspect-[16/9] lg:aspect-[21/9]">
                                         <Image
                                             key={activePhotoIdx}
@@ -346,14 +348,14 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
 
                                         <div className="absolute bottom-8 right-8 flex gap-3 z-20">
                                             <button
-                                                onClick={() => setActivePhotoIdx(i => i === 0 ? photos.length - 1 : i - 1)}
+                                                onClick={() => setActivePhotoIdx(i => i === 0 ? galleryPhotos.length - 1 : i - 1)}
                                                 className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-3xl border border-white/20 text-white flex items-center justify-center hover:bg-white/20 transition-all font-bold"
                                                 aria-label="Previous photo"
                                             >
                                                 ←
                                             </button>
                                             <button
-                                                onClick={() => setActivePhotoIdx(i => i === photos.length - 1 ? 0 : i + 1)}
+                                                onClick={() => setActivePhotoIdx(i => i === galleryPhotos.length - 1 ? 0 : i + 1)}
                                                 className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-3xl border border-white/20 text-white flex items-center justify-center hover:bg-white/20 transition-all font-bold"
                                                 aria-label="Next photo"
                                             >
@@ -362,7 +364,7 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                         </div>
 
                                         <div className="absolute bottom-8 left-8 text-white/60 text-xs font-black uppercase tracking-[0.4em]">
-                                            {activePhotoIdx + 1} / {photos.length}
+                                            {activePhotoIdx + 1} / {galleryPhotos.length}
                                         </div>
                                     </div>
                                 ) : (
@@ -371,6 +373,40 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                     </div>
                                 )}
                             </motion.div>
+
+                            {/* Walkthrough Video Download Section */}
+                            {walkthroughVideo && (
+                                <motion.div 
+                                    initial={{ y: 20, opacity: 0 }}
+                                    whileInView={{ y: 0, opacity: 1 }}
+                                    viewport={{ once: true }}
+                                    className="glass-card !p-8 rounded-[3rem] border-zinc-100 bg-zinc-900 text-white flex flex-col sm:flex-row items-center justify-between gap-6 shadow-2xl"
+                                >
+                                    <div className="flex items-center gap-6">
+                                        <div className="w-16 h-16 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center shrink-0">
+                                            <Video className="w-8 h-8 text-white" />
+                                        </div>
+                                        <div>
+                                            <div className="text-xs font-black uppercase tracking-[0.3em] text-zinc-400 mb-1">
+                                                {t('property.videoWalkthrough', undefined, 'Accommodation Walkthrough Video')}
+                                            </div>
+                                            <div className="text-lg font-black uppercase tracking-tight text-white">
+                                                {t('property.videoDownloadHint', undefined, 'On-site Verified Walkthrough')}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <a
+                                        href={resolveMediaUrl(walkthroughVideo.url || walkthroughVideo)}
+                                        download={`roomivo_walkthrough_${property.id}.mp4`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="px-8 py-5 bg-white text-zinc-900 font-black text-xs uppercase tracking-[0.3em] rounded-2xl flex items-center gap-3 shadow-xl hover:scale-105 active:scale-95 transition-all shrink-0"
+                                    >
+                                        <Download className="w-4 h-4 text-zinc-900" />
+                                        {t('property.downloadVideo', undefined, 'Download Walkthrough')}
+                                    </a>
+                                </motion.div>
+                            )}
 
                             {/* Core Identity */}
                             <div className="space-y-6">
@@ -512,31 +548,55 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                     viewport={{ once: true }}
                                     className="glass-card !p-12 rounded-[3rem] border-zinc-100"
                                 >
-                                    <h2 className="text-2xl font-black uppercase tracking-tighter mb-8 flex items-center gap-4">
-                                        <Building2 className="w-6 h-6 text-zinc-900" />
-                                        Habitable Configuration & Rooms
-                                    </h2>
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                                        <h2 className="text-2xl font-black uppercase tracking-tighter flex items-center gap-4">
+                                            <Building2 className="w-6 h-6 text-zinc-900" />
+                                            {t('property.roomsTitle', undefined, 'Habitable Configuration & Rooms')}
+                                        </h2>
+                                        <div className="px-4 py-2 bg-zinc-100 rounded-full text-xs font-black uppercase tracking-widest text-zinc-600 self-start sm:self-auto">
+                                            {property.room_details.filter((r: any) => r.status !== 'occupied').length} / {property.room_details.length} {t('property.roomsAvailable', undefined, 'Rooms Available')}
+                                        </div>
+                                    </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                        {property.room_details.map((room: any, index: number) => (
-                                            <div key={index} className="p-6 bg-zinc-50 rounded-2xl border border-zinc-100/50 flex justify-between items-center">
-                                                <div>
-                                                    <div className="text-xs font-black text-zinc-400 uppercase tracking-widest mb-1">
-                                                        {room.room_type || `Space ${index + 1}`}
+                                        {property.room_details.map((room: any, index: number) => {
+                                            const isOccupied = room.status === 'occupied';
+                                            return (
+                                                <div key={index} className={`p-6 rounded-2xl border flex justify-between items-center transition-all ${isOccupied ? 'bg-zinc-100/60 border-zinc-200 opacity-60' : 'bg-zinc-50 border-zinc-100 shadow-sm'}`}>
+                                                    <div>
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">
+                                                                {room.room_type || `Space ${index + 1}`}
+                                                            </span>
+                                                            {isOccupied ? (
+                                                                <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-zinc-200 text-zinc-600">
+                                                                    {t('property.occupied', undefined, 'Occupied')}
+                                                                </span>
+                                                            ) : (
+                                                                <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800">
+                                                                    {t('property.available', undefined, 'Available')}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <div className="text-sm font-black text-zinc-900 uppercase">
+                                                            {room.label || `Bedroom ${index + 1}`}
+                                                        </div>
+                                                        {!isOccupied && (
+                                                            <div className="text-xs font-bold text-emerald-700 mt-1">
+                                                                Available from: {room.available_from || (property as any).available_from || 'Now'}
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                    <div className="text-sm font-black text-zinc-900 uppercase">
-                                                        {room.label || `Bedroom ${index + 1}`}
+                                                    <div className="text-right">
+                                                        <div className="text-sm font-black text-zinc-900">
+                                                            {room.surface_sqm || room.size_sqm || 0} m²
+                                                        </div>
+                                                        <div className="text-xs font-black text-zinc-400 uppercase tracking-widest">
+                                                            {room.furnished ? 'Furnished' : 'Unfurnished'}
+                                                        </div>
                                                     </div>
                                                 </div>
-                                                <div className="text-right">
-                                                    <div className="text-sm font-black text-zinc-900">
-                                                        {room.surface_sqm} m²
-                                                    </div>
-                                                    <div className="text-xs font-black text-zinc-400 uppercase tracking-widest">
-                                                        {room.furnished ? 'Furnished' : 'Unfurnished'}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 </motion.div>
                             )}

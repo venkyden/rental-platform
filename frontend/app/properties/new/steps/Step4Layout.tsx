@@ -170,6 +170,61 @@ export default function Step4Layout({ formData, updateFormData, t, roomAmenityIn
                                     </select>
                                 </div>
                             </div>
+                            <div className="grid grid-cols-2 gap-6 pt-2">
+                                <div className="space-y-2">
+                                    <label className="text-xs font-black uppercase tracking-widest text-zinc-400">
+                                        Occupancy Status
+                                    </label>
+                                    <div className="flex gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                const updated = [...formData.room_details];
+                                                updated[idx] = { ...updated[idx], status: 'available' };
+                                                updateFormData({ room_details: updated });
+                                            }}
+                                            className={`flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+                                                room.status !== 'occupied'
+                                                    ? 'bg-emerald-800 text-white shadow'
+                                                    : 'bg-zinc-100 text-zinc-400'
+                                            }`}
+                                        >
+                                            Available
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                const updated = [...formData.room_details];
+                                                updated[idx] = { ...updated[idx], status: 'occupied' };
+                                                updateFormData({ room_details: updated });
+                                            }}
+                                            className={`flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+                                                room.status === 'occupied'
+                                                    ? 'bg-zinc-900 text-white shadow'
+                                                    : 'bg-zinc-100 text-zinc-400'
+                                            }`}
+                                        >
+                                            Occupied
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-black uppercase tracking-widest text-zinc-400">
+                                        Available From
+                                    </label>
+                                    <input
+                                        type="date"
+                                        value={room.available_from || ''}
+                                        disabled={room.status === 'occupied'}
+                                        onChange={(e) => {
+                                            const updated = [...formData.room_details];
+                                            updated[idx] = { ...updated[idx], available_from: e.target.value };
+                                            updateFormData({ room_details: updated });
+                                        }}
+                                        className="w-full bg-zinc-50 p-3 rounded-xl border-none font-black text-sm disabled:opacity-40"
+                                    />
+                                </div>
+                            </div>
                             <div className="space-y-2">
                                 <label className="text-xs font-black uppercase tracking-widest text-zinc-400">
                                     {t('property.create.layout.roomDescLabel', undefined, 'Notes (Optional)')}

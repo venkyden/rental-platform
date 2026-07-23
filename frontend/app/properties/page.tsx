@@ -133,6 +133,24 @@ export default function PropertiesPage() {
         }
     };
 
+    const handlePublishProperty = async (id: string, acknowledgeDpe = false) => {
+        try {
+            await apiClient.client.post(`/properties/${id}/publish`, { acknowledge_dpe_warning: acknowledgeDpe });
+            toast.success(t('properties.publishSuccess', undefined, 'Property published successfully!'));
+            loadProperties(false);
+        } catch (e: any) {
+            const detail = e.response?.data?.detail;
+            if (detail?.code === 'dpe_acknowledgment_required') {
+                if (confirm(t('properties.dpeAcknowledgePrompt', undefined, 'This property has a DPE energy rating warning. Do you acknowledge and wish to proceed with publishing?'))) {
+                    await handlePublishProperty(id, true);
+                    return;
+                }
+            }
+            const msg = typeof detail === 'string' ? detail : (detail?.message || 'Error publishing property');
+            toast.error(msg);
+        }
+    };
+
     return (
         <ProtectedRoute>
             <PremiumLayout withNavbar={true}>
@@ -276,6 +294,14 @@ export default function PropertiesPage() {
                                         </div>
 
                                         <div className="mt-auto flex flex-col gap-2">
+                                            {property.status === 'draft' && (
+                                                <button
+                                                    onClick={() => handlePublishProperty(property.id)}
+                                                    className="w-full py-4 bg-emerald-900 text-white rounded-[1.5rem] font-black text-xs uppercase tracking-[0.3em] hover:bg-emerald-950 transition-all duration-500 shadow-lg mb-1 flex items-center justify-center gap-2"
+                                                >
+                                                    🚀 {t('property.actions.publishNow', undefined, 'Publish Listing')}
+                                                </button>
+                                            )}
                                             <div className="grid grid-cols-2 gap-4">
                                                 <button
                                                     onClick={() => router.push(`/properties/${property.id}/edit`)}

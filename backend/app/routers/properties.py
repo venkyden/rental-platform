@@ -1134,6 +1134,17 @@ async def get_media_session(
                 for i in range(len(room_details))
             ]
 
+    # Check if a video walkthrough has already been uploaded
+    video_res = await db.execute(
+        select(func.count(PropertyMedia.id)).where(
+            and_(
+                PropertyMedia.property_id == session.property_id,
+                PropertyMedia.media_type == "video",
+            )
+        )
+    )
+    has_video = (video_res.scalar_one_or_none() or 0) > 0
+
     return {
         "target_address": session.target_address,
         "target_latitude": float(cast(Decimal, session.target_latitude)) if session.target_latitude else None,
@@ -1142,6 +1153,7 @@ async def get_media_session(
         "location_verified": session.location_verified or False,
         "expires_at": session.expires_at,
         "rooms": rooms_list,
+        "has_video": has_video,
     }
 
 
@@ -1231,6 +1243,23 @@ async def upload_media(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Verification code has expired",
         )
+
+    # Max 1 video per property check
+    if meta_obj.media_type == "video":
+        v_res = await db.execute(
+            select(func.count(PropertyMedia.id)).where(
+                and_(
+                    PropertyMedia.property_id == session.property_id,
+                    PropertyMedia.media_type == "video",
+                )
+            )
+        )
+        existing_videos = v_res.scalar_one_or_none() or 0
+        if existing_videos >= 1:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="A video walkthrough has already been uploaded for this property (maximum 1 video allowed).",
+            )
 
     # GPS verification (if coordinates provided)
     distance = None
@@ -1364,4 +1393,57 @@ async def upload_media(
         "gps_verified": gps_verified,
         "distance_meters": int(distance) if distance else None,
         "verification_status": verification_status,
+    }
+
+
+class RoomStatusUpdate(BaseModel):
+    status: str  # 'available' | 'occupied'
+    available_from: Optional[str] = None
+
+
+@router.patch("/{property_id}/rooms/{room_index}/status")
+async def update_room_status(
+    property_id: UUID,
+    room_index: int,
+    payload: RoomStatusUpdate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Update occupancy status and availability date of a colocation room"""
+    result = await db.execute(select(Property).where(Property.id == property_id))
+    property_obj = result.scalar_one_or_none()
+
+    if not property_obj:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Property not found"
+        )
+
+    if property_obj.landlord_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied"
+        )
+
+    room_details = list(property_obj.room_details or [])
+    if room_index < 0 or room_index >= len(room_details):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid room index"
+        )
+
+    room = dict(room_details[room_index])
+    room["status"] = payload.status
+    if payload.available_from:
+        room["available_from"] = payload.available_from
+    elif payload.status == "occupied":
+        room.pop("available_from", None)
+
+    room_details[room_index] = room
+    property_obj.room_details = room_details
+    flag_modified(property_obj, "room_details")
+
+    await db.commit()
+    await db.refresh(property_obj)
+
+    return {
+        "message": "Room status updated successfully",
+        "room_details": property_obj.room_details,
     }

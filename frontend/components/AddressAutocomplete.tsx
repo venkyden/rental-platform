@@ -118,10 +118,7 @@ export default function AddressAutocomplete({
                     lang: 'fr',
                 });
 
-                // Add country filter if specified
-                if (countryCode) {
-                    params.set('osm_tag', `place`);
-                }
+                // Add country filter if specified (handled via client-side filtering below)
 
                 // If restricting to specific cities, add bbox for the first matching city
                 if (restrictToCities.length > 0) {

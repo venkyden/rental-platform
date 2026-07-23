@@ -24,6 +24,8 @@ export type PropertyFormData = {
         description: string;
         bedding: string;
         custom_amenities: string[];
+        status?: 'available' | 'occupied';
+        available_from?: string;
     }>;
     dpe_rating: string;
     ges_rating: string;
