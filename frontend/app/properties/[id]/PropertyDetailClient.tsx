@@ -224,10 +224,10 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
     ].filter(Boolean).join(', ');
 
     // Parse amenities and features
-    const amenities = property.amenities?.standard || [];
-    const customAmenities = property.custom_amenities?.items || [];
-    const publicTransport = property.public_transport?.items || [];
-    const nearbyLandmarks = property.nearby_landmarks?.items || [];
+    const amenities = Array.isArray(property.amenities) ? property.amenities : [];
+    const customAmenities = Array.isArray(property.custom_amenities) ? property.custom_amenities : [];
+    const publicTransport = Array.isArray(property.public_transport) ? property.public_transport : [];
+    const nearbyLandmarks = Array.isArray(property.nearby_landmarks) ? property.nearby_landmarks : [];
     const photos = Array.isArray(property.photos) ? property.photos : property.photos?.urls ? property.photos.urls.map((url: string) => ({ url })) : [];
     const galleryPhotos = photos.filter((p: any) => p.media_type !== 'video' && !(typeof (p.url || p) === 'string' && /\.(mp4|mov|webm|avi|m4v)$/i.test(p.url || p)));
     const walkthroughVideo = photos.find((p: any) => p.media_type === 'video' || (typeof (p.url || p) === 'string' && /\.(mp4|mov|webm|avi|m4v)$/i.test(p.url || p)));
