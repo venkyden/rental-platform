@@ -346,7 +346,11 @@ export default function EditPropertyPage() {
             } else {
                 setDescriptionFr(fallback);
             }
-            toast.error(error.response?.data?.detail || 'Failed to generate AI description. Loaded default template.');
+            if (error.response?.status === 401) {
+                toast.error(t('auth.loginRequired', undefined, 'Authentication required to generate AI suggestions. Please log in.'));
+            } else {
+                toast.error(error.response?.data?.detail || 'Failed to generate AI description. Loaded default template.');
+            }
         } finally {
             setGeneratingAi(false);
         }

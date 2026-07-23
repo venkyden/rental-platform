@@ -161,7 +161,11 @@ export default function NewPropertyPage() {
                     : `Magnifique ${formData.property_type} situé au coeur de ${formData.city || 'la ville'}. Cette propriété de ${formData.size_sqm}m² comprend ${formData.bedrooms} chambre(s) et des équipements modernes. Idéal pour ceux qui recherchent le confort et la commodité.`;
             if (descLanguage === 'en') setDescriptionEn(fallback);
             else setDescriptionFr(fallback);
-            toast.error(e.response?.data?.detail || 'Failed to generate AI description. Loaded default template.');
+            if (e.response?.status === 401) {
+                toast.error(t('auth.loginRequired', undefined, 'Authentication required to generate AI suggestions. Please log in.'));
+            } else {
+                toast.error(e.response?.data?.detail || 'Failed to generate AI description. Loaded default template.');
+            }
         } finally {
             setGeneratingAi(false);
         }

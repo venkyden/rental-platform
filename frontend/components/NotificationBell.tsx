@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, Mail, FileText, Calendar, Zap, ShieldCheck, Check, Clock, X } from 'lucide-react';
 import { apiClient } from '@/lib/api';
+import { useAuth } from '@/lib/useAuth';
 
 interface Notification {
     id: string;
@@ -18,6 +19,7 @@ interface Notification {
 
 export default function NotificationBell() {
     const router = useRouter();
+    const { user, isAuthenticated } = useAuth();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [isOpen, setIsOpen] = useState(false);
@@ -25,12 +27,17 @@ export default function NotificationBell() {
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
+        if (!user || !isAuthenticated) {
+            setUnreadCount(0);
+            return;
+        }
+
         loadUnreadCount();
 
         // Poll for new notifications every 30 seconds
         const interval = setInterval(loadUnreadCount, 30000);
         return () => clearInterval(interval);
-    }, []);
+    }, [user, isAuthenticated]);
 
     useEffect(() => {
         // Close dropdown when clicking outside
@@ -44,6 +51,7 @@ export default function NotificationBell() {
     }, []);
 
     const loadUnreadCount = async () => {
+        if (!apiClient.getToken()) return;
         try {
             const response = await apiClient.client.get('/notifications/unread-count');
             setUnreadCount(response.data.count);
@@ -53,6 +61,7 @@ export default function NotificationBell() {
     };
 
     const loadNotifications = async () => {
+        if (!apiClient.getToken()) return;
         setLoading(true);
         try {
             const response = await apiClient.client.get('/notifications?limit=10');
