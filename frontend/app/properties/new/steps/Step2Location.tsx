@@ -67,6 +67,39 @@ export default function Step2Location({ formData, updateFormData, t, enriching, 
                     ? t('properties.new.steps.geolocation.enriching')
                     : t('properties.new.steps.geolocation.enrichButton')}
             </button>
+
+            {(formData.public_transport.length > 0 || formData.nearby_landmarks.length > 0) && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                    {formData.public_transport.length > 0 && (
+                        <div className="space-y-4">
+                            <h3 className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em]">
+                                {t('property.transport', undefined, 'Public Transit')}
+                            </h3>
+                            <ul className="space-y-2">
+                                {formData.public_transport.map((item: any, i: number) => (
+                                    <li key={i} className="text-xs font-black text-zinc-700 uppercase tracking-wider">
+                                        {item.line || item}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+                    {formData.nearby_landmarks.length > 0 && (
+                        <div className="space-y-4">
+                            <h3 className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em]">
+                                {t('property.landmarks', undefined, 'Points of Interest')}
+                            </h3>
+                            <ul className="space-y-2">
+                                {formData.nearby_landmarks.map((item: any, i: number) => (
+                                    <li key={i} className="text-xs font-black text-zinc-700 uppercase tracking-wider">
+                                        {item.name || item}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 }

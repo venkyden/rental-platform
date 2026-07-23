@@ -37,9 +37,10 @@ interface Props {
     publishing: boolean;
     onPublish: () => void;
     onReturn: () => void;
+    onBack: () => void;
 }
 
-export default function Step9Success({ formData, t, language, propertyId, mediaSession, publishing, onPublish, onReturn }: Props) {
+export default function Step9Success({ formData, t, language, propertyId, mediaSession, publishing, onPublish, onReturn, onBack }: Props) {
     const [dpeAcknowledged, setDpeAcknowledged] = useState(false);
     const [capturedPhotos, setCapturedPhotos] = useState<CapturedPhoto[]>([]);
     const [isPolling, setIsPolling] = useState(false);
@@ -81,10 +82,13 @@ export default function Step9Success({ formData, t, language, propertyId, mediaS
 
     const hasMedia = capturedPhotos.length > 0;
 
+    const rentHorsCharges = formData.charges_included
+        ? Math.max(0, formData.monthly_rent - (formData.charges || 0))
+        : formData.monthly_rent;
     const isDepositLimitExceeded =
         formData.deposit !== undefined &&
         formData.monthly_rent > 0 &&
-        formData.deposit > formData.monthly_rent * (formData.furnished ? 2 : 1);
+        formData.deposit > rentHorsCharges * (formData.furnished ? 2 : 1);
     const isDpeGBanned = formData.dpe_rating === 'G';
     const isSizeTooSmall = formData.size_sqm < 9;
     const hasHardComplianceErrors = isDpeGBanned || isSizeTooSmall || isDepositLimitExceeded;
@@ -244,6 +248,14 @@ export default function Step9Success({ formData, t, language, propertyId, mediaS
                         ? t('properties.new.steps.success.synchronizing')
                         : t('properties.new.steps.success.forcePublish', undefined, 'Publish listing')}
                 </button>
+                {hasHardComplianceErrors && (
+                    <button
+                        onClick={onBack}
+                        className="px-12 py-6 bg-zinc-100 text-zinc-500 rounded-[2rem] text-xs font-black uppercase tracking-[0.4em] hover:bg-zinc-200 transition-all mx-auto"
+                    >
+                        {t('properties.new.navigation.back')}
+                    </button>
+                )}
                 <button
                     onClick={onReturn}
                     className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400 hover:text-zinc-900 transition-colors"

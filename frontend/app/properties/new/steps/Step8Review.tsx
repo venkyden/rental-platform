@@ -8,9 +8,10 @@ interface Props {
     setDeclared: (v: boolean) => void;
     loading: boolean;
     onSubmit: () => void;
+    onBack: () => void;
 }
 
-export default function Step8Review({ formData, t, declared, setDeclared, loading, onSubmit }: Props) {
+export default function Step8Review({ formData, t, declared, setDeclared, loading, onSubmit, onBack }: Props) {
     return (
         <div className="space-y-10">
             <div className="glass-card !p-12 rounded-[4rem] border-zinc-100 space-y-8">
@@ -71,15 +72,24 @@ export default function Step8Review({ formData, t, declared, setDeclared, loadin
                 </span>
             </label>
 
-            <button
-                onClick={onSubmit}
-                disabled={loading || !declared}
-                className="w-full py-8 bg-zinc-900 text-white text-sm font-black uppercase tracking-[0.5em] rounded-[2.5rem] shadow-2xl hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
-            >
-                {loading
-                    ? t('properties.new.steps.review.initializing')
-                    : t('properties.new.steps.review.commitButton')}
-            </button>
+            <div className="flex gap-6">
+                <button
+                    onClick={onBack}
+                    disabled={loading}
+                    className="px-12 py-6 bg-zinc-100 text-zinc-500 rounded-[2rem] text-xs font-black uppercase tracking-[0.4em] hover:bg-zinc-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    {t('properties.new.navigation.back')}
+                </button>
+                <button
+                    onClick={onSubmit}
+                    disabled={loading || !declared}
+                    className="flex-1 py-8 bg-zinc-900 text-white text-sm font-black uppercase tracking-[0.5em] rounded-[2.5rem] shadow-2xl hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
+                >
+                    {loading
+                        ? t('properties.new.steps.review.initializing')
+                        : t('properties.new.steps.review.commitButton')}
+                </button>
+            </div>
         </div>
     );
 }

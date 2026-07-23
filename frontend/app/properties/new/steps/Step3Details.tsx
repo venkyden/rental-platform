@@ -53,6 +53,21 @@ export default function Step3Details({ formData, updateFormData, t }: Props) {
                     )}
                 </div>
             </div>
+
+            {/* Furnished toggle */}
+            <button
+                onClick={() => updateFormData({ furnished: !formData.furnished })}
+                aria-label={t('property.create.details.furnished', undefined, 'Furnished Property')}
+                className={`w-full p-8 rounded-[3rem] border-2 text-left transition-all ${formData.furnished ? 'bg-zinc-900 border-zinc-900 text-white shadow-2xl' : 'border-zinc-100'}`}
+            >
+                <div className={`text-xs font-black uppercase tracking-[0.2em] mb-2 ${formData.furnished ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                    {t('property.create.details.furnished', undefined, 'Furnished')}
+                </div>
+                <div className="text-xl font-black">
+                    {formData.furnished ? t('property.yes', undefined, 'Yes') : t('property.no', undefined, 'No')}
+                </div>
+            </button>
+
             <div className="space-y-10">
                 <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                     {t('properties.new.steps.details.energyProtocol')}

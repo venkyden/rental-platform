@@ -184,8 +184,16 @@ def validate_property_compliance(property_obj) -> List[str]:
             rent_hc = max(0.0, monthly_rent - charges)
         max_deposit = rent_hc * max_deposit_months
         if deposit > max_deposit:
-            label = "2 months" if is_furnished else "1 month"
-            errors.append(f"Security deposit exceeds the legal maximum of {label} rent hors charges (€{max_deposit:.2f}) for {'furnished' if is_furnished else 'unfurnished'} properties.")
+            label_en = "2 months" if is_furnished else "1 month"
+            label_fr = "2 mois" if is_furnished else "1 mois"
+            furnished_en = "furnished" if is_furnished else "unfurnished"
+            furnished_fr = "meublés" if is_furnished else "non meublés"
+            errors.append(
+                f"Le dépôt de garantie dépasse le maximum légal de {label_fr} de loyer hors "
+                f"charges ({max_deposit:.2f}€) pour les logements {furnished_fr}. — "
+                f"Security deposit exceeds the legal maximum of {label_en} rent hors charges "
+                f"(€{max_deposit:.2f}) for {furnished_en} properties."
+            )
 
     # Minimum habitable surface (Décret n° 2002-120)
     size_sqm = _to_float(property_obj.size_sqm)

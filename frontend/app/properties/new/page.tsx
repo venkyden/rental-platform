@@ -184,11 +184,17 @@ export default function NewPropertyPage() {
             if (payload.complement_de_loyer_justification === '') payload.complement_de_loyer_justification = undefined as any;
             payload.description = descLanguage === 'fr' ? descriptionFr.trim() : descriptionEn.trim();
 
-            const res = await apiClient.client.post('/properties', payload);
-            const newId = res.data.id;
-            setPropertyId(newId);
-            const sessionRes = await apiClient.client.post(`/properties/${newId}/media-session`);
-            setMediaSession(sessionRes.data);
+            if (propertyId) {
+                // Already created on an earlier pass through this step (user went back to
+                // fix something) — update the existing draft instead of creating a duplicate.
+                await apiClient.client.put(`/properties/${propertyId}`, payload);
+            } else {
+                const res = await apiClient.client.post('/properties', payload);
+                const newId = res.data.id;
+                setPropertyId(newId);
+                const sessionRes = await apiClient.client.post(`/properties/${newId}/media-session`);
+                setMediaSession(sessionRes.data);
+            }
             setCurrentStep(9);
         } catch (e: any) {
             console.error('Submit error:', e);
@@ -275,7 +281,10 @@ export default function NewPropertyPage() {
                     return false;
                 }
                 if (ok && formData.deposit !== undefined) {
-                    const max = formData.monthly_rent * (formData.furnished ? 2 : 1);
+                    const rentHc = formData.charges_included
+                        ? Math.max(0, formData.monthly_rent - (formData.charges || 0))
+                        : formData.monthly_rent;
+                    const max = rentHc * (formData.furnished ? 2 : 1);
                     if (formData.deposit > max)
                         toast.warning(t(formData.furnished
                             ? 'properties.new.steps.pricing.depositWarningFurnished'
@@ -407,10 +416,10 @@ export default function NewPropertyPage() {
                                         />
                                     )}
                                     {currentStep === 8 && (
-                                        <Step8Review formData={formData} t={t} declared={declared} setDeclared={setDeclared} loading={loading} onSubmit={handleSubmit} />
+                                        <Step8Review formData={formData} t={t} declared={declared} setDeclared={setDeclared} loading={loading} onSubmit={handleSubmit} onBack={prevStep} />
                                     )}
                                     {currentStep === 9 && (
-                                        <Step9Success formData={formData} t={t} language={language} propertyId={propertyId} mediaSession={mediaSession} publishing={publishing} onPublish={handlePublish} onReturn={() => router.push('/properties')} />
+                                        <Step9Success formData={formData} t={t} language={language} propertyId={propertyId} mediaSession={mediaSession} publishing={publishing} onPublish={handlePublish} onReturn={() => router.push('/properties')} onBack={prevStep} />
                                     )}
                                 </motion.div>
                             </AnimatePresence>
