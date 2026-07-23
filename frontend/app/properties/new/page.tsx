@@ -200,12 +200,13 @@ export default function NewPropertyPage() {
         }
     };
 
-    const handlePublish = async (acknowledgeDpe = false) => {
+    const handlePublish = async (acknowledgeDpe: boolean | any = false) => {
         if (!propertyId) return;
+        const ackBool = typeof acknowledgeDpe === 'boolean' ? acknowledgeDpe : false;
         setPublishing(true);
         try {
             await apiClient.client.post(`/properties/${propertyId}/publish`, {
-                acknowledge_dpe_warning: acknowledgeDpe
+                acknowledge_dpe_warning: ackBool
             });
             localStorage.removeItem('roomivo_property_draft_v2');
             toast.success(t('properties.new.steps.success.published', undefined, 'Your listing is now live.'));

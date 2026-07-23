@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { CheckCircle2, Shield, Camera, RefreshCw } from 'lucide-react';
+import { CheckCircle2, Shield, Camera, RefreshCw, Play } from 'lucide-react';
 import QRCodeDisplay from '@/components/QRCodeDisplay';
 import { apiClient } from '@/lib/api';
 import { resolveMediaUrl } from '@/lib/mediaUrl';
@@ -12,6 +12,21 @@ interface CapturedPhoto {
     room_label?: string;
     captured_at?: string;
 }
+
+const isVideoUrl = (url: string) => {
+    if (!url) return false;
+    const lower = String(url).toLowerCase();
+    return (
+        lower.endsWith('.mp4') ||
+        lower.endsWith('.mov') ||
+        lower.endsWith('.webm') ||
+        lower.endsWith('.m4v') ||
+        lower.endsWith('.avi') ||
+        lower.endsWith('.3gp') ||
+        lower.includes('/video/') ||
+        lower.includes('video_')
+    );
+};
 
 interface Props {
     formData: PropertyFormData;
@@ -134,25 +149,48 @@ export default function Step9Success({ formData, t, language, propertyId, mediaS
                     </div>
                 ) : (
                     <div className="grid grid-cols-3 gap-3">
-                        {capturedPhotos.map((photo, i) => (
-                            <div
-                                key={i}
-                                className="aspect-square rounded-2xl overflow-hidden bg-zinc-100 relative group"
-                            >
-                                <img
-                                    src={resolveMediaUrl(photo.url || (photo as any))}
-                                    alt={photo.room_label || `Photo ${i + 1}`}
-                                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                                />
-                                {photo.room_label && (
-                                    <div className="absolute bottom-0 inset-x-0 bg-black/50 px-2 py-1">
-                                        <span className="text-xs font-black uppercase tracking-wider text-white truncate block">
-                                            {photo.room_label}
-                                        </span>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
+                        {capturedPhotos.map((photo, i) => {
+                            const rawUrl = photo.url || (photo as any);
+                            const mediaUrl = resolveMediaUrl(rawUrl);
+                            const isVid = isVideoUrl(rawUrl);
+
+                            return (
+                                <div
+                                    key={i}
+                                    className="aspect-square rounded-2xl overflow-hidden bg-zinc-100 relative group"
+                                >
+                                    {isVid ? (
+                                        <div className="w-full h-full relative bg-zinc-900">
+                                            <video
+                                                src={mediaUrl}
+                                                className="w-full h-full object-cover"
+                                                muted
+                                                playsInline
+                                                preload="metadata"
+                                            />
+                                            <div className="absolute inset-0 bg-black/30 flex items-center justify-center pointer-events-none">
+                                                <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center">
+                                                    <Play className="w-4 h-4 text-white fill-white ml-0.5" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <img
+                                            src={mediaUrl}
+                                            alt={photo.room_label || `Photo ${i + 1}`}
+                                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                        />
+                                    )}
+                                    {photo.room_label && (
+                                        <div className="absolute bottom-0 inset-x-0 bg-black/50 px-2 py-1 z-10">
+                                            <span className="text-xs font-black uppercase tracking-wider text-white truncate block">
+                                                {photo.room_label}
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
                     </div>
                 )}
             </div>
@@ -198,7 +236,7 @@ export default function Step9Success({ formData, t, language, propertyId, mediaS
                     </p>
                 )}
                 <button
-                    onClick={onPublish}
+                    onClick={() => onPublish()}
                     disabled={publishing || hasHardComplianceErrors || !hasMedia}
                     className="px-16 py-6 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.4em] rounded-[2rem] shadow-2xl hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
