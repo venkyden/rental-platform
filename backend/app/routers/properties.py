@@ -620,7 +620,10 @@ async def get_property(
     # updated_at's onupdate=func.now()) as expired on this instance — refresh
     # so the sync Pydantic validation below doesn't trigger an implicit
     # lazy-load outside the async context (MissingGreenlet).
-    await db.refresh(property_obj)
+    import inspect
+    ref_res = db.refresh(property_obj)
+    if inspect.isawaitable(ref_res):
+        await ref_res
 
     prop_dict = PropertyResponse.model_validate(property_obj).model_dump()
     prop_dict.update(_landlord_trust_fields(property_obj.landlord))

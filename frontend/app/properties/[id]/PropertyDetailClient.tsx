@@ -7,6 +7,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import PremiumLayout from '@/components/PremiumLayout';
 import { apiClient } from '@/lib/api';
 import { resolveMediaUrl } from '@/lib/mediaUrl';
+import { decodeHtmlEntities } from '@/lib/textUtils';
 import { useToast } from '@/lib/ToastContext';
 import VisitScheduler from '@/components/VisitScheduler';
 import VisitBookingWizard from '@/components/VisitBookingWizard';
@@ -228,9 +229,15 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
     const customAmenities = Array.isArray(property.custom_amenities) ? property.custom_amenities : [];
     const publicTransport = Array.isArray(property.public_transport) ? property.public_transport : [];
     const nearbyLandmarks = Array.isArray(property.nearby_landmarks) ? property.nearby_landmarks : [];
+    const getMediaRawUrl = (p: any): string => {
+        if (!p) return '';
+        if (typeof p === 'string') return p;
+        return p.url || p.file_url || p.media_url || p.path || p.src || '';
+    };
+
     const photos = Array.isArray(property.photos) ? property.photos : property.photos?.urls ? property.photos.urls.map((url: string) => ({ url })) : [];
-    const galleryPhotos = photos.filter((p: any) => p.media_type !== 'video' && !(typeof (p.url || p) === 'string' && /\.(mp4|mov|webm|avi|m4v)$/i.test(p.url || p)));
-    const walkthroughVideo = photos.find((p: any) => p.media_type === 'video' || (typeof (p.url || p) === 'string' && /\.(mp4|mov|webm|avi|m4v)$/i.test(p.url || p)));
+    const galleryPhotos = photos.filter((p: any) => p.media_type !== 'video' && !/\.(mp4|mov|webm|avi|m4v)$/i.test(getMediaRawUrl(p)));
+    const walkthroughVideo = photos.find((p: any) => p.media_type === 'video' || /\.(mp4|mov|webm|avi|m4v)$/i.test(getMediaRawUrl(p)));
 
     const activePhoto = galleryPhotos[activePhotoIdx] || galleryPhotos[0];
 
@@ -331,10 +338,11 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                     <div className="relative w-full aspect-[16/9] lg:aspect-[21/9]">
                                         <Image
                                             key={activePhotoIdx}
-                                            src={resolveMediaUrl(activePhoto.url || activePhoto)}
+                                            src={resolveMediaUrl(activePhoto)}
                                             alt={`${property.title} - ${activePhoto.room_label || 'View'}`}
                                             fill
                                             priority={activePhotoIdx === 0}
+                                            unoptimized
                                             className="object-cover transition-transform duration-700"
                                             sizes="(max-width: 1200px) 100vw, 1200px"
                                         />
@@ -421,7 +429,7 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                             {/* Core Identity */}
                             <div className="space-y-6">
                                 <h1 className="text-6xl sm:text-8xl font-black tracking-tighter text-zinc-900 uppercase leading-[0.85]">
-                                    {property.title}
+                                    {decodeHtmlEntities(property.title)}
                                 </h1>
                                 <div className="flex items-center gap-6 text-zinc-400 font-black text-xs uppercase tracking-[0.4em]">
                                     <span>{property.city}</span>
@@ -430,8 +438,8 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                     <span className="w-1 h-1 rounded-full bg-zinc-200" />
                                     <span>{property.bedrooms} {t('property.bedrooms', undefined, 'Bedrooms')}</span>
                                 </div>
-                                <p className="text-xl text-zinc-500 font-medium leading-relaxed max-w-4xl">
-                                    {property.description}
+                                <p className="text-xl text-zinc-500 font-medium leading-relaxed max-w-4xl whitespace-pre-line">
+                                    {decodeHtmlEntities(property.description)}
                                 </p>
                             </div>
 
@@ -440,8 +448,16 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                 {[
                                     { label: t('search.detail.matrix.surface', undefined, 'Surface Area'), value: `${property.size_sqm}m²`, icon: <LayoutGrid className="w-5 h-5 text-zinc-900" /> },
                                     { label: t('search.detail.matrix.bedrooms', undefined, 'Bedrooms'), value: property.bedrooms, icon: <Wind className="w-5 h-5 text-zinc-900" /> },
-                                    { label: t('search.detail.matrix.bathrooms', undefined, 'Bathrooms'), value: property.bathrooms, icon: <Shield className="w-5 h-5 text-zinc-900" /> },
-                                    { label: t('search.detail.matrix.floor', undefined, 'Floor Level'), value: property.floor_number || 'GF', icon: <TrendingUp className="w-5 h-5 text-zinc-900" /> }
+                                    { label: t('search.detail.matrix.bathrooms', undefined, 'Bathrooms'), value: property.bathrooms ? (Number(property.bathrooms) % 1 === 0 ? Math.round(Number(property.bathrooms)) : property.bathrooms) : 1, icon: <Shield className="w-5 h-5 text-zinc-900" /> },
+                                    { 
+                                        label: t('search.detail.matrix.floor', undefined, 'Floor Level'), 
+                                        value: (property.floor_number !== null && property.floor_number !== undefined && Number(property.floor_number) === 0)
+                                            ? (language === 'fr' ? 'Rez-de-chaussée (RDC)' : 'Ground Floor (RDC)') 
+                                            : (property.floor_number !== undefined && property.floor_number !== null && !isNaN(Number(property.floor_number)))
+                                            ? `${property.floor_number}` 
+                                            : (language === 'fr' ? 'Rez-de-chaussée (RDC)' : 'Ground Floor (RDC)'), 
+                                        icon: <TrendingUp className="w-5 h-5 text-zinc-900" /> 
+                                    }
                                 ].map((stat, i) => (
                                     <motion.div 
                                         key={i} 
@@ -598,7 +614,7 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                                     </div>
                                                     <div className="text-right">
                                                         <div className="text-sm font-black text-zinc-900">
-                                                            {room.surface_sqm || room.size_sqm || 0} m²
+                                                            {room.surface || room.surface_sqm || room.size_sqm || 0} m²
                                                         </div>
                                                         <div className="text-xs font-black text-zinc-400 uppercase tracking-widest">
                                                             {room.furnished ? 'Furnished' : 'Unfurnished'}

@@ -96,7 +96,6 @@ const nextConfig: NextConfig = {
   // Image optimization
   images: {
     remotePatterns: [
-      // Dev-only: allow loading images over http from localhost
       {
         protocol: 'http',
         hostname: 'localhost',
@@ -105,11 +104,10 @@ const nextConfig: NextConfig = {
         protocol: 'http',
         hostname: '127.0.0.1',
       },
-      // Production: allow https from the configured API hostname
-      ...(isProd ? [{
-        protocol: 'https' as const,
-        hostname: apiHostname,
-      }] : []),
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
     ],
   },
 };

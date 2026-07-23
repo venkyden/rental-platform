@@ -1423,33 +1423,12 @@ export const translations = {
             listingsCount: "{{count}} listings",
             yourProperties: "Your properties",
             new: {
-                details: {
-                    energyRatingTitle: "Energy performance (DPE)",
-                    gesLabel: "Greenhouse gas emissions (GES)",
-                },
-                title: "Create a listing",
-                stepStatus: "Step {{current}} of 8: {{status}}",
-                initializing: "Let's get started",
-                exit: "×",
-                wizard: {
-                    identity: "Identity",
-                    location: "Location",
-                    specs: "Specs",
-                    capacity: "Capacity",
-                    pricing: "Pricing",
-                    features: "Amenities",
-                    narrative: "Narrative",
-                    review: "Review"
-                },
-                error: {
-                    mandatoryDpe: "DPE Rating is mandatory in France.",
-                    invalidPrice: "Please enter a valid monthly rent."
-                },
                 types: {
                     apartment: "Apartment",
                     house: "House",
+                    colocation: "Shared Flat",
                     studio: "Studio",
-                    room: "Room"
+                    room: "Private Room",
                 },
                 steps: {
                     capacity: {
@@ -1468,7 +1447,10 @@ export const translations = {
                         city: "City",
                         zip: "Zip",
                         enrichButton: "Verify transit & nearby places",
-                        enriching: "Loading nearby data..."
+                        enriching: "Loading nearby data...",
+                        enrichSuccess: "Location geocoded successfully!",
+                        enrichNoCoords: "Could not determine GPS coordinates.",
+                        enrichError: "Location enrichment failed.",
                     },
                     details: {
                         missingDetails: "Please complete the property details (size, bedrooms).",
@@ -1476,8 +1458,13 @@ export const translations = {
                         missingDpeValues: "Please enter the exact DPE and GES values.",
                         label: "03 // Details",
                         bedrooms: "Bedrooms",
-                        surface: "Surface (m²)",
-                        energyProtocol: "Energy rating (DPE)"
+                        bathrooms: "Bathrooms",
+                        surface: "Surface Area (m²)",
+                        floorNumber: "Floor Level",
+                        groundFloor: "Ground Floor (RDC)",
+                        energyProtocol: "Energy Performance Certificate (DPE)",
+                        energyRatingTitle: "Energy performance (DPE)",
+                        gesLabel: "Greenhouse gas emissions (GES)",
                     },
                     pricing: {
                         leaseDuration: "Lease duration (months)",
@@ -4329,33 +4316,12 @@ export const translations = {
             listingsCount: "{{count}} annonces",
             yourProperties: "Vos biens",
             new: {
-                details: {
-                    energyRatingTitle: "Performance énergétique (DPE)",
-                    gesLabel: "Émissions de gaz à effet de serre (GES)",
-                },
-                title: "Créer une annonce",
-                stepStatus: "Étape {{current}} sur 8 : {{status}}",
-                initializing: "Commençons",
-                exit: "×",
-                wizard: {
-                    identity: "Identité",
-                    location: "Localisation",
-                    specs: "Espaces",
-                    capacity: "Capacité",
-                    pricing: "Loyer",
-                    features: "Équipements",
-                    narrative: "Description",
-                    review: "Révision"
-                },
-                error: {
-                    mandatoryDpe: "Le diagnostic DPE est obligatoire en France.",
-                    invalidPrice: "Veuillez entrer un loyer mensuel valide."
-                },
                 types: {
                     apartment: "Appartement",
                     house: "Maison",
+                    colocation: "Colocation",
                     studio: "Studio",
-                    room: "Chambre"
+                    room: "Chambre privée",
                 },
                 steps: {
                     capacity: {
@@ -4374,7 +4340,10 @@ export const translations = {
                         city: "Ville",
                         zip: "Code Postal",
                         enrichButton: "Vérifier transports & lieux à proximité",
-                        enriching: "Chargement des données à proximité..."
+                        enriching: "Chargement des données à proximité...",
+                        enrichSuccess: "Géolocalisation réussie !",
+                        enrichNoCoords: "Impossible de déterminer les coordonnées GPS.",
+                        enrichError: "Échec de la géolocalisation.",
                     },
                     details: {
                         missingDetails: "Complétez les caractéristiques du bien (surface, chambres).",
@@ -4382,8 +4351,13 @@ export const translations = {
                         missingDpeValues: "Saisissez les valeurs exactes DPE et GES.",
                         label: "03 // Détails",
                         bedrooms: "Chambres",
+                        bathrooms: "Salles de bain",
                         surface: "Surface (m²)",
-                        energyProtocol: "Diagnostic énergétique (DPE)"
+                        floorNumber: "Étage",
+                        groundFloor: "Rez-de-chaussée (RDC)",
+                        energyProtocol: "Diagnostic énergétique (DPE)",
+                        energyRatingTitle: "Performance énergétique (DPE)",
+                        gesLabel: "Émissions de gaz à effet de serre (GES)",
                     },
                     pricing: {
                         leaseDuration: "Durée du bail (mois)",

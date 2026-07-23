@@ -16,11 +16,11 @@ def sanitize_html(text: Optional[str]) -> Optional[str]:
     if text is None:
         return None
 
-    # Strip all HTML tags
-    clean = re.sub(r"<[^>]+>", "", str(text))
+    # Unescape any existing HTML entities (e.g. &#x27; -> ', &amp; -> &)
+    clean = html.unescape(str(text))
 
-    # Escape remaining HTML entities
-    clean = html.escape(clean)
+    # Strip all HTML tags
+    clean = re.sub(r"<[^>]+>", "", clean)
 
     # Remove common XSS vectors
     clean = re.sub(r"javascript:", "", clean, flags=re.IGNORECASE)

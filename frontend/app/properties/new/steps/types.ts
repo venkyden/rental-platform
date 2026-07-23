@@ -20,6 +20,8 @@ export type PropertyFormData = {
     kitchen_type: 'Private' | 'Municipality' | 'None';
     room_details: Array<{
         surface: number;
+        surface_sqm?: number;
+        size_sqm?: number;
         capacity: number;
         description: string;
         bedding: string;

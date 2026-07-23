@@ -161,7 +161,7 @@ class TestPropertyCompliance:
             assert created_property is not None
             # <script> and </script> tags should be stripped, and single quotes HTML escaped
             assert "<script>" not in created_property.title
-            assert "alert(&#x27;XSS&#x27;)" in created_property.title
+            assert "alert('XSS')" in created_property.title
             # <img ...> tag should be stripped
             assert "<img" not in created_property.description
             assert "Lovely place" in created_property.description

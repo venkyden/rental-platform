@@ -122,10 +122,11 @@ export default function Step4Layout({ formData, updateFormData, t, roomAmenityIn
                                     </label>
                                     <input
                                         type="number"
-                                        value={room.surface}
+                                        value={room.surface || room.surface_sqm || room.size_sqm || ''}
                                         onChange={(e) => {
+                                            const val = parseInt(e.target.value) || 0;
                                             const updated = [...formData.room_details];
-                                            updated[idx] = { ...updated[idx], surface: parseInt(e.target.value) || 0 };
+                                            updated[idx] = { ...updated[idx], surface: val, surface_sqm: val, size_sqm: val };
                                             updateFormData({ room_details: updated });
                                         }}
                                         className="w-full bg-zinc-50 p-4 rounded-xl border-none font-black text-lg"

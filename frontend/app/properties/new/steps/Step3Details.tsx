@@ -13,10 +13,11 @@ export default function Step3Details({ formData, updateFormData, t }: Props) {
             <div className="grid grid-cols-2 gap-12">
                 <div className="space-y-6">
                     <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
-                        {t('properties.new.steps.details.bedrooms')}
+                        {t('properties.new.steps.details.bedrooms', undefined, 'Bedrooms')}
                     </label>
                     <div className="flex items-center gap-8">
                         <button
+                            type="button"
                             onClick={() => updateFormData({ bedrooms: Math.max(0, formData.bedrooms - 1) })}
                             className="w-16 h-16 rounded-full bg-zinc-100 flex items-center justify-center text-2xl font-black"
                             aria-label={t('property.create.details.bedrooms', undefined, 'Decrease bedrooms')}
@@ -25,6 +26,7 @@ export default function Step3Details({ formData, updateFormData, t }: Props) {
                         </button>
                         <span className="text-4xl sm:text-6xl font-black tracking-tighter">{formData.bedrooms}</span>
                         <button
+                            type="button"
                             onClick={() => updateFormData({ bedrooms: formData.bedrooms + 1 })}
                             className="w-16 h-16 rounded-full bg-zinc-100 flex items-center justify-center text-2xl font-black"
                             aria-label={t('property.create.details.bedrooms', undefined, 'Increase bedrooms')}
@@ -35,7 +37,34 @@ export default function Step3Details({ formData, updateFormData, t }: Props) {
                 </div>
                 <div className="space-y-6">
                     <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
-                        {t('properties.new.steps.details.surface')}
+                        {t('properties.new.steps.details.bathrooms', undefined, 'Bathrooms')}
+                    </label>
+                    <div className="flex items-center gap-8">
+                        <button
+                            type="button"
+                            onClick={() => updateFormData({ bathrooms: Math.max(1, (formData.bathrooms || 1) - 1) })}
+                            className="w-16 h-16 rounded-full bg-zinc-100 flex items-center justify-center text-2xl font-black"
+                            aria-label={t('property.create.details.bathrooms', undefined, 'Decrease bathrooms')}
+                        >
+                            -
+                        </button>
+                        <span className="text-4xl sm:text-6xl font-black tracking-tighter">{formData.bathrooms || 1}</span>
+                        <button
+                            type="button"
+                            onClick={() => updateFormData({ bathrooms: (formData.bathrooms || 1) + 1 })}
+                            className="w-16 h-16 rounded-full bg-zinc-100 flex items-center justify-center text-2xl font-black"
+                            aria-label={t('property.create.details.bathrooms', undefined, 'Increase bathrooms')}
+                        >
+                            +
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-12">
+                <div className="space-y-6">
+                    <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
+                        {t('properties.new.steps.details.surface', undefined, 'Surface (m²)')}
                     </label>
                     <input
                         type="number"
@@ -48,9 +77,38 @@ export default function Step3Details({ formData, updateFormData, t }: Props) {
                     />
                     {formData.size_sqm > 0 && formData.size_sqm < 9 * formData.accommodation_capacity && (
                         <p className="text-amber-500 text-xs font-bold" role="alert">
-                            ⚠️ {t('properties.new.steps.pricing.decencyWarning')}
+                            ⚠️ {t('properties.new.steps.pricing.decencyWarning', undefined, 'Surface is below legal decency threshold')}
                         </p>
                     )}
+                </div>
+                <div className="space-y-6">
+                    <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
+                        {t('properties.new.steps.details.floorNumber', undefined, 'Floor Level (Étage)')}
+                    </label>
+                    <div className="flex items-center gap-4">
+                        <button
+                            type="button"
+                            onClick={() => updateFormData({ floor_number: 0 })}
+                            className={`px-6 py-4 rounded-2xl font-black text-sm uppercase tracking-wider transition-all ${
+                                formData.floor_number === 0
+                                    ? 'bg-zinc-900 text-white shadow-xl'
+                                    : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
+                            }`}
+                        >
+                            {t('property.floor.groundFloorShort', undefined, 'RDC / Ground Floor')}
+                        </button>
+                        <input
+                            type="number"
+                            min="0"
+                            placeholder="e.g. 2"
+                            value={formData.floor_number === undefined || formData.floor_number === null ? '' : formData.floor_number}
+                            onChange={(e) =>
+                                updateFormData({ floor_number: e.target.value === '' ? undefined : Math.max(0, parseInt(e.target.value) || 0) })
+                            }
+                            className="flex-1 bg-zinc-50 p-4 rounded-2xl border-none font-black text-xl text-center"
+                            aria-label={t('properties.new.steps.details.floorNumber', undefined, 'Floor Level')}
+                        />
+                    </div>
                 </div>
             </div>
 

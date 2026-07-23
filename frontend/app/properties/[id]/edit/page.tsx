@@ -56,6 +56,8 @@ type PropertyFormData = {
     kitchen_type: 'Private' | 'Municipality' | 'None';
     room_details: Array<{
         surface: number;
+        surface_sqm?: number;
+        size_sqm?: number;
         capacity: number;
         description: string;
         bedding: string;
@@ -711,13 +713,28 @@ export default function EditPropertyPage() {
                                                     <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                                                         {t('property.create.details.floor', undefined, 'Floor Number')}
                                                     </label>
-                                                    <input
-                                                        type="number"
-                                                        value={formData.floor_number ?? ''}
-                                                        onChange={(e) => updateFormData({ floor_number: e.target.value === '' ? undefined : parseInt(e.target.value) })}
-                                                        aria-label={t('property.create.details.floor', undefined, 'Floor Number')}
-                                                        className="w-full bg-transparent text-4xl sm:text-6xl font-black tracking-tighter border-none focus:ring-0"
-                                                    />
+                                                    <div className="flex items-center gap-4">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => updateFormData({ floor_number: 0 })}
+                                                            className={`px-4 py-3 rounded-2xl font-black text-xs uppercase tracking-wider transition-all ${
+                                                                formData.floor_number === 0
+                                                                    ? 'bg-zinc-900 text-white shadow-xl'
+                                                                    : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
+                                                            }`}
+                                                        >
+                                                            {t('property.floor.groundFloorShort', undefined, 'RDC / Ground Floor')}
+                                                        </button>
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            placeholder="e.g. 2"
+                                                            value={formData.floor_number ?? ''}
+                                                            onChange={(e) => updateFormData({ floor_number: e.target.value === '' ? undefined : Math.max(0, parseInt(e.target.value) || 0) })}
+                                                            aria-label={t('property.create.details.floor', undefined, 'Floor Number')}
+                                                            className="flex-1 bg-transparent text-4xl sm:text-6xl font-black tracking-tighter border-none focus:ring-0"
+                                                        />
+                                                    </div>
                                                 </div>
                                             </div>
 
@@ -921,10 +938,11 @@ export default function EditPropertyPage() {
                                                                     </label>
                                                                     <input
                                                                         type="number"
-                                                                        value={room.surface}
+                                                                        value={room.surface || room.surface_sqm || room.size_sqm || ''}
                                                                         onChange={(e) => {
+                                                                            const val = parseInt(e.target.value) || 0;
                                                                             const updated = [...formData.room_details];
-                                                                            updated[idx] = { ...updated[idx], surface: parseInt(e.target.value) || 0 };
+                                                                            updated[idx] = { ...updated[idx], surface: val, surface_sqm: val, size_sqm: val };
                                                                             updateFormData({ room_details: updated });
                                                                         }}
                                                                         aria-label={`${t('property.create.layout.surface', undefined, 'Surface')} - ${t('property.create.layout.bedroomTitle', { number: String(idx + 1) }, `Bedroom ${idx + 1}`)}`}

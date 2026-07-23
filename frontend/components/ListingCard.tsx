@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { Heart, MapPin, ShieldCheck, BadgeCheck, Camera } from 'lucide-react';
 import { useLanguage } from '@/lib/LanguageContext';
 import { resolveMediaUrl } from '@/lib/mediaUrl';
+import { decodeHtmlEntities } from '@/lib/textUtils';
 import {
     ListingSummary,
     getTypology,
@@ -61,7 +62,7 @@ export default function ListingCard({ property, onToggleSave, index = 0 }: Listi
             <Link href={`/properties/${property.id}`} className="relative aspect-[4/3] block overflow-hidden bg-zinc-100">
                 {cover ? (
                     <Image
-                        src={resolveMediaUrl(cover.url)}
+                        src={resolveMediaUrl(cover)}
                         alt={property.title}
                         fill
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -111,7 +112,7 @@ export default function ListingCard({ property, onToggleSave, index = 0 }: Listi
                         </p>
                         <Link href={`/properties/${property.id}`}>
                             <h3 className="text-lg font-bold text-zinc-900 truncate group-hover:text-zinc-600 transition-colors">
-                                {property.title}
+                                {decodeHtmlEntities(property.title)}
                             </h3>
                         </Link>
                     </div>
@@ -134,7 +135,7 @@ export default function ListingCard({ property, onToggleSave, index = 0 }: Listi
                     <p className="text-sm font-medium text-zinc-700">{specParts.join(' · ')}</p>
                 )}
 
-                {preview && <p className="text-sm text-zinc-500 line-clamp-2">{preview}</p>}
+                {preview && <p className="text-sm text-zinc-500 line-clamp-2">{decodeHtmlEntities(preview)}</p>}
 
                 <div className="mt-auto pt-4 flex items-center justify-between gap-3 border-t border-zinc-100">
                     <p className="flex items-center gap-2 text-xs font-semibold">
