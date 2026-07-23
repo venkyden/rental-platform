@@ -1423,6 +1423,24 @@ export const translations = {
             listingsCount: "{{count}} listings",
             yourProperties: "Your properties",
             new: {
+                title: "Create a listing",
+                stepStatus: "Step {{current}} of 8: {{status}}",
+                initializing: "Let's get started",
+                exit: "×",
+                wizard: {
+                    identity: "Identity",
+                    location: "Location",
+                    specs: "Specs",
+                    capacity: "Capacity",
+                    pricing: "Pricing",
+                    features: "Amenities",
+                    narrative: "Narrative",
+                    review: "Review"
+                },
+                error: {
+                    mandatoryDpe: "DPE Rating is mandatory in France.",
+                    invalidPrice: "Please enter a valid monthly rent."
+                },
                 types: {
                     apartment: "Apartment",
                     house: "House",
@@ -4316,6 +4334,24 @@ export const translations = {
             listingsCount: "{{count}} annonces",
             yourProperties: "Vos biens",
             new: {
+                title: "Créer une annonce",
+                stepStatus: "Étape {{current}} sur 8 : {{status}}",
+                initializing: "Commençons",
+                exit: "×",
+                wizard: {
+                    identity: "Identité",
+                    location: "Localisation",
+                    specs: "Espaces",
+                    capacity: "Capacité",
+                    pricing: "Loyer",
+                    features: "Équipements",
+                    narrative: "Description",
+                    review: "Révision"
+                },
+                error: {
+                    mandatoryDpe: "Le diagnostic DPE est obligatoire en France.",
+                    invalidPrice: "Veuillez entrer un loyer mensuel valide."
+                },
                 types: {
                     apartment: "Appartement",
                     house: "Maison",
