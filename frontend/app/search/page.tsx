@@ -99,7 +99,10 @@ function SearchContent() {
             else if (typology === 't3plus') params.rooms_count_min = 3;
             if (cafOnly) params.caf_eligible = true;
             if (propertyType && !(typology === 'studio')) params.property_type = propertyType;
-            if (colocation) params.amenities = ['colocation'];
+            if (colocation) {
+                params.colocation = '1';
+                params.amenities = ['colocation'];
+            }
             
             const response = savedOnly 
                 ? await apiClient.getSavedProperties(params)

@@ -323,9 +323,30 @@ def _apply_property_filters(
         val = caf_eligible.lower() == "true" if isinstance(caf_eligible, str) else bool(caf_eligible)
         query = query.where(Property.caf_eligible == val)
 
+    colocation = params.get("colocation")
+    if colocation and colocation != "":
+        val = colocation.lower() in ("true", "1") if isinstance(colocation, str) else bool(colocation)
+        if val:
+            from sqlalchemy import or_
+            query = query.where(
+                or_(
+                    Property.property_type.in_(["room", "colocation"]),
+                    Property.amenities.contains(["colocation"])
+                )
+            )
+
     if amenities:
+        from sqlalchemy import or_
         for amenity in amenities:
-            query = query.where(Property.amenities.contains([amenity]))
+            if amenity == "colocation":
+                query = query.where(
+                    or_(
+                        Property.property_type.in_(["room", "colocation"]),
+                        Property.amenities.contains(["colocation"])
+                    )
+                )
+            else:
+                query = query.where(Property.amenities.contains([amenity]))
 
     if verified_only:
         query = query.where(Property.ownership_verified == True)
