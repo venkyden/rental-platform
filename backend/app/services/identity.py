@@ -181,11 +181,11 @@ class IdentityVerificationService:
             logger.warning("AI client not initialized — skipping verification")
             return None
 
-        from app.core.gemini_quota import check_quota
+        from app.core.gemini_quota import check_quota, gemini_slot
         await check_quota()
 
         start_time = time.time()
-        
+
         models_to_try = ["gemini-2.5-flash"]
         max_retries = 2
 
@@ -234,13 +234,14 @@ Return ONLY the JSON."""
         for model_name in models_to_try:
             for attempt in range(max_retries + 1):
                 try:
-                    response = self.ai_client.models.generate_content(
-                        model=model_name,
-                        contents=[document_part, prompt],
-                        config=types.GenerateContentConfig(
-                            response_mime_type="application/json",
-                        ),
-                    )
+                    async with gemini_slot():
+                        response = self.ai_client.models.generate_content(
+                            model=model_name,
+                            contents=[document_part, prompt],
+                            config=types.GenerateContentConfig(
+                                response_mime_type="application/json",
+                            ),
+                        )
 
                     json_text = response.text
                     data = json.loads(json_text)
@@ -463,7 +464,7 @@ Return ONLY the JSON."""
                 "rejection_reason": "verification_service_unavailable",
             }
 
-        from app.core.gemini_quota import check_quota
+        from app.core.gemini_quota import check_quota, gemini_slot
         await check_quota()
 
         start_time = time.time()
@@ -514,11 +515,12 @@ Rules:
         for model_name in models_to_try:
             for attempt in range(3):
                 try:
-                    response = self.ai_client.models.generate_content(
-                        model=model_name,
-                        contents=[image_part, prompt],
-                        config=types.GenerateContentConfig(response_mime_type="application/json"),
-                    )
+                    async with gemini_slot():
+                        response = self.ai_client.models.generate_content(
+                            model=model_name,
+                            contents=[image_part, prompt],
+                            config=types.GenerateContentConfig(response_mime_type="application/json"),
+                        )
                     data = json.loads(response.text)
                     logger.info(f"Selfie+ID verification (model={model_name}) in {time.time()-start_time:.2f}s: {data}")
 
@@ -674,7 +676,7 @@ Rules:
         if not self.ai_client:
             return {"verified": False, "status": "error", "data": None, "validation_checks": [], "rejection_reason": "verification_service_unavailable"}
 
-        from app.core.gemini_quota import check_quota
+        from app.core.gemini_quota import check_quota, gemini_slot
         await check_quota()
 
         start_time = time.time()
@@ -717,11 +719,12 @@ Rules:
         for model_name in models_to_try:
             for attempt in range(3):
                 try:
-                    res = self.ai_client.models.generate_content(
-                        model=model_name,
-                        contents=doc_parts + [doc_prompt],
-                        config=types.GenerateContentConfig(response_mime_type="application/json"),
-                    )
+                    async with gemini_slot():
+                        res = self.ai_client.models.generate_content(
+                            model=model_name,
+                            contents=doc_parts + [doc_prompt],
+                            config=types.GenerateContentConfig(response_mime_type="application/json"),
+                        )
                     doc_data = json.loads(res.text)
                     break
                 except Exception as e:
@@ -760,11 +763,12 @@ Rules:
         for model_name in models_to_try:
             for attempt in range(3):
                 try:
-                    res = self.ai_client.models.generate_content(
-                        model=model_name,
-                        contents=face_parts + [face_prompt],
-                        config=types.GenerateContentConfig(response_mime_type="application/json"),
-                    )
+                    async with gemini_slot():
+                        res = self.ai_client.models.generate_content(
+                            model=model_name,
+                            contents=face_parts + [face_prompt],
+                            config=types.GenerateContentConfig(response_mime_type="application/json"),
+                        )
                     face_data = json.loads(res.text)
                     break
                 except Exception as e:
