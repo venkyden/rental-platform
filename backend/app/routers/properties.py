@@ -11,7 +11,7 @@ from decimal import Decimal
 from typing import List, Optional, cast
 from uuid import UUID
 
-from fastapi import (APIRouter, Depends, File, HTTPException, Query, Request,
+from fastapi import (APIRouter, Depends, File, Form, HTTPException, Query, Request,
                      UploadFile, status)
 from sqlalchemy import and_
 from sqlalchemy import delete as sql_delete
@@ -1162,11 +1162,22 @@ async def get_media_session(
 async def upload_media(
     request: Request,
     file: UploadFile = File(...),
-    metadata: str = Query(...),  # JSON string
-    verification_code: str = Query(...),
+    metadata: Optional[str] = Query(None),  # JSON string
+    verification_code: Optional[str] = Query(None),
+    metadata_form: Optional[str] = Form(None, alias="metadata"),
+    verification_code_form: Optional[str] = Form(None, alias="verification_code"),
     db: AsyncSession = Depends(get_db),
 ):
     """Upload property media with GPS verification"""
+    final_verification_code = verification_code or verification_code_form
+    if not final_verification_code:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Verification code is required."
+        )
+
+    final_metadata_raw = metadata or metadata_form or "{}"
+
     # File type validation
     ALLOWED_IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".heic", ".heif"}
     ALLOWED_VIDEO_EXTENSIONS = {".mp4", ".mov", ".webm", ".avi", ".m4v"}
@@ -1210,8 +1221,14 @@ async def upload_media(
 
     # Parse metadata
     try:
-        meta = json.loads(metadata)
+        meta = json.loads(final_metadata_raw) if isinstance(final_metadata_raw, str) else final_metadata_raw
+        if not isinstance(meta, dict):
+            meta = {}
+        if is_video and "media_type" not in meta:
+            meta["media_type"] = "video"
         meta_obj = MediaUploadMetadata(**meta)
+        if meta_obj.captured_at is None:
+            meta_obj.captured_at = naive_utcnow()
     except json.JSONDecodeError as e:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -1226,7 +1243,7 @@ async def upload_media(
     # Get session
     result = await db.execute(
         select(PropertyMediaSession).where(
-            PropertyMediaSession.verification_code == verification_code
+            PropertyMediaSession.verification_code == final_verification_code
         )
     )
     session = result.scalar_one_or_none()

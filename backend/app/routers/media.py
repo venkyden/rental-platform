@@ -2,7 +2,8 @@ import os
 import secrets
 from io import BytesIO
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from typing import Optional
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
 
 from app.models.user import User
 from app.routers.auth import get_current_user
@@ -14,18 +15,19 @@ router = APIRouter(prefix="/media", tags=["Media"])
 @router.post("/upload")
 async def upload_media(
     file: UploadFile = File(...),
-    folder: str = "general",
+    folder: Optional[str] = Query(None),
+    folder_form: Optional[str] = Form(None, alias="folder"),
     current_user: User = Depends(get_current_user),
 ):
     """
     Generic media upload for authenticated users.
     Returns the public URL of the uploaded file.
-    Target folders: 'inventory', 'disputes', 'properties'
+    Target folders: 'inventory', 'disputes', 'properties', 'incidents'
     """
-    # Validation
-    allowed_folders = {"inventory", "disputes", "properties", "avatars", "general"}
-    if folder not in allowed_folders:
-        folder = "general"
+    target_folder = folder or folder_form or "general"
+    allowed_folders = {"inventory", "disputes", "properties", "avatars", "incidents", "general"}
+    if target_folder not in allowed_folders:
+        target_folder = "general"
 
     file_ext = os.path.splitext(file.filename)[1].lower()
     allowed_extensions = {".jpg", ".jpeg", ".png", ".webp", ".pdf", ".mov", ".mp4"}
@@ -45,7 +47,7 @@ async def upload_media(
         file_data=file_obj,
         filename=safe_filename,
         content_type=file.content_type,
-        folder=folder,
+        folder=target_folder,
     )
 
     return {"url": result["url"], "key": result["key"]}

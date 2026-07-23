@@ -47,3 +47,17 @@ def test_upload_media_invalid_folder(tenant_client):
 
         # Verify fallback
         assert mock_upload.call_args[1]["folder"] == "general"
+
+
+def test_upload_media_form_folder(tenant_client):
+    """Verify folder can be passed via FormData body"""
+    with patch.object(storage, "upload_file", new_callable=AsyncMock) as mock_upload:
+        mock_upload.return_value = {"url": "url", "key": "key", "storage": "local"}
+
+        files = {"file": ("test.png", b"content", "image/png")}
+        data = {"folder": "incidents"}
+        response = tenant_client.post("/media/upload", files=files, data=data)
+
+        assert response.status_code == 200
+        assert mock_upload.call_args[1]["folder"] == "incidents"
+

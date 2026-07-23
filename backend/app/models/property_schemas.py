@@ -309,15 +309,16 @@ class MediaSessionResponse(BaseModel):
 class MediaUploadMetadata(BaseModel):
     """Metadata sent with media upload"""
 
-    media_type: str  # 'photo' or 'video'
+    media_type: str = "photo"  # 'photo' or 'video'
     latitude: Optional[Decimal] = None
     longitude: Optional[Decimal] = None
     gps_accuracy: Optional[float] = None  # meters
-    captured_at: datetime
+    captured_at: Optional[datetime] = None
     device_id: Optional[str] = None
     watermark_address: str = ""
     room_index: Optional[int] = None  # which room this media belongs to
     room_label: Optional[str] = None
+
 
 class PropertyMatchResponse(PropertyResponse):
     """Schema for property response with match details"""

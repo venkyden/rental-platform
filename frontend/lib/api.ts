@@ -253,6 +253,8 @@ class ApiClient {
         formData.append('file', file);
 
         const metadataStr = typeof metadata === 'string' ? metadata : JSON.stringify(metadata);
+        formData.append('metadata', metadataStr);
+        formData.append('verification_code', verificationCode);
 
         const response = await this.client.post('/properties/media/upload', formData, {
             params: {

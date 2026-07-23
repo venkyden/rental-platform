@@ -5,7 +5,7 @@ import { apiClient } from '@/lib/api';
 import { useToast } from '@/lib/ToastContext';
 import { useLanguage } from '@/lib/LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Camera, CheckCircle2, Shield, MapPin, ChevronRight, WifiOff } from 'lucide-react';
+import { Camera, Video, CheckCircle2, Shield, MapPin, ChevronRight, WifiOff, Info, Play } from 'lucide-react';
 
 interface Room {
     index: number;
@@ -30,6 +30,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
     const [loadError, setLoadError] = useState(false);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const videoInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         const handleOnline = () => { setIsOffline(false); syncOfflineQueue(); };
@@ -167,6 +168,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                 setStep('preview');
             }
         }
+        if (e.target) e.target.value = '';
     };
 
     const handleUpload = async () => {
@@ -200,7 +202,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                     successCount++;
                 } catch {
                     showToast(
-                        fr ? 'Impossible de mettre la photo en attente. Réessayez une fois reconnecté.' : 'Offline queueing unavailable. Please try again when online.',
+                        fr ? 'Impossible de mettre le média en attente. Réessayez une fois reconnecté.' : 'Offline queueing unavailable. Please try again when online.',
                         'error'
                     );
                 }
@@ -215,10 +217,10 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
             } catch (err: any) {
                 const detail = err?.response?.data?.detail;
                 const msg = Array.isArray(detail)
-                    ? detail.map((d: any) => d.msg || JSON.stringify(d)).join(', ')
+                    ? detail.map((d: any) => (typeof d === 'string' ? d : d.msg || d.detail || JSON.stringify(d))).join(', ')
                     : (typeof detail === 'string' ? detail
-                        : (fr ? "L'envoi a échoué. La photo sera renvoyée automatiquement." : 'Upload failed. The photo will be retried automatically.'));
-                showToast(msg, 'error');
+                        : (fr ? "L'envoi a échoué. Le fichier sera renvoyé automatiquement." : 'Upload failed. The file will be retried automatically.'));
+                showToast(msg === 'Field required' ? (fr ? 'Formulaire incomplet. Veuillez compléter tous les champs.' : 'Required field missing. Please check your data.') : msg, 'error');
                 // Queue for offline retry — best-effort, never crash on queue failure
                 try {
                     const { backgroundSyncManager } = await import('@/lib/backgroundSync');
@@ -238,8 +240,8 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
         if (isOffline) {
             showToast(
                 fr
-                    ? `${successCount} photo${successCount !== 1 ? 's' : ''} en attente — envoi automatique dès le retour du réseau.`
-                    : `${successCount} photo${successCount !== 1 ? 's' : ''} queued — they will upload as soon as you're back online.`,
+                    ? `${successCount} média${successCount !== 1 ? 's' : ''} en attente — envoi automatique dès le retour du réseau.`
+                    : `${successCount} file${successCount !== 1 ? 's' : ''} queued — they will upload as soon as you're back online.`,
                 'info'
             );
             setStep('success');
@@ -290,8 +292,8 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                                 </h1>
                                 <p className="text-lg text-zinc-500 font-medium leading-relaxed max-w-sm">
                                     {fr
-                                        ? 'Cette session de photos est introuvable. Le lien a peut-être expiré — demandez-en un nouveau depuis votre annonce.'
-                                        : 'This photo session could not be found. The link may have expired — please request a new one from your listing.'}
+                                        ? 'Cette session de photos/vidéo est introuvable. Le lien a peut-être expiré — demandez-en un nouveau depuis votre annonce.'
+                                        : 'This capture session could not be found. The link may have expired — please request a new one from your listing.'}
                                 </p>
                             </div>
                         </motion.div>
@@ -305,22 +307,22 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                             exit={{ opacity: 0, y: -20 }}
                             className="flex-1 flex flex-col"
                         >
-                            <div className="space-y-6 mb-12">
+                            <div className="space-y-6 mb-10">
                                 <div className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
-                                    {fr ? 'Photos du logement' : 'Property photos'}
+                                    {fr ? 'Médias du logement' : 'Property media'}
                                 </div>
                                 <h1 className="text-5xl font-black tracking-tighter uppercase leading-[0.9]">
-                                    {fr ? <>Photographiez<br />sur place</> : <>Photograph<br />on-site</>}
+                                    {fr ? <>Capturez<br />sur place</> : <>Capture<br />on-site</>}
                                 </h1>
                                 <p className="text-xl text-zinc-500 font-medium leading-relaxed">
                                     {fr
-                                        ? "Prenez des photos du logement depuis le logement lui-même. Votre position sert uniquement à confirmer qu'elles sont bien prises sur place."
-                                        : 'Take photos of the property while you are there. Your location is used only to confirm the photos were really taken at the property.'}
+                                        ? "Prenez des photos et vidéos du logement depuis le logement lui-même. Votre position géolocalisée certifie votre annonce."
+                                        : 'Capture photos and video tours while you are at the property. Your GPS location certifies your listing.'}
                                 </p>
                             </div>
 
                             {sessionDetails?.target_address && (
-                                <div className="glass-card !p-8 rounded-[3rem] border-zinc-100 mb-12 flex items-center gap-6">
+                                <div className="glass-card !p-6 rounded-[2.5rem] border-zinc-100 mb-8 flex items-center gap-5">
                                     <div className="w-12 h-12 bg-zinc-100 rounded-2xl flex items-center justify-center shrink-0">
                                         <MapPin className="text-zinc-500 w-5 h-5" />
                                     </div>
@@ -333,8 +335,38 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                                 </div>
                             )}
 
+                            {/* Dedicated Video Tour Guidance UI */}
+                            <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 text-white p-8 rounded-[2.5rem] shadow-xl mb-10 border border-zinc-700/50 relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="w-10 h-10 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-md">
+                                        <Video className="w-5 h-5 text-white" />
+                                    </div>
+                                    <div>
+                                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 block">
+                                            {fr ? 'Option recommandée' : 'Recommended Feature'}
+                                        </span>
+                                        <h3 className="text-lg font-black uppercase tracking-tight text-white">
+                                            {fr ? 'Vidéo de présentation (Tour Virtuel)' : 'Video Tour Walkthrough'}
+                                        </h3>
+                                    </div>
+                                </div>
+                                <p className="text-sm text-zinc-300 font-medium leading-relaxed mb-6">
+                                    {fr
+                                        ? 'Enregistrez une vidéo continue en marchant depuis l\'entrée pour montrer l\'agencement, les pièces et la luminosité (Max 100 Mo, 1 vidéo par annonce).'
+                                        : 'Record a continuous video walkthrough starting from the main entrance, walking through all rooms to highlight room layout, space, and natural light (Max 100MB, 1 video per listing).'}
+                                </p>
+                                <button
+                                    onClick={() => videoInputRef.current?.click()}
+                                    className="w-full py-4 bg-white text-zinc-900 text-xs font-black uppercase tracking-[0.3em] rounded-2xl hover:bg-zinc-100 transition-all flex items-center justify-center gap-3 shadow-lg active:scale-95"
+                                >
+                                    <Video className="w-4 h-4 text-zinc-900" />
+                                    {fr ? 'Enregistrer une vidéo' : 'Record Video Tour'}
+                                </button>
+                            </div>
+
                             {rooms.length > 0 && (
-                                <div className="space-y-6 mb-12">
+                                <div className="space-y-6 mb-10">
                                     <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                                         {fr ? 'Quelle pièce photographiez-vous ?' : 'Which room are you photographing?'}
                                     </label>
@@ -355,12 +387,13 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                                 </div>
                             )}
 
-                            <div className="mt-auto pt-12">
+                            <div className="mt-auto pt-4 space-y-4">
                                 <button
                                     onClick={() => fileInputRef.current?.click()}
-                                    className="w-full py-8 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.4em] rounded-[2.5rem] shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-4"
+                                    className="w-full py-7 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.4em] rounded-[2.5rem] shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-4"
                                 >
-                                    {fr ? "Ouvrir l'appareil photo" : 'Open camera'}
+                                    <Camera className="w-4 h-4" />
+                                    {fr ? "Prendre des photos" : 'Take Room Photos'}
                                     <ChevronRight className="w-4 h-4" />
                                 </button>
                             </div>
@@ -376,7 +409,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                         >
                             <div className="space-y-8 flex-1">
                                 <div className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
-                                    {fr ? 'Vérifiez vos photos' : 'Check your photos'}
+                                    {fr ? 'Vérifiez vos médias' : 'Check your media'}
                                 </div>
                                 <div className="grid grid-cols-1 gap-6 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
                                     {previewUrls.map((url, i) => (
@@ -387,27 +420,45 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                                                 <img src={url} className="w-full h-full object-cover" alt={fr ? 'Aperçu' : 'Preview'} />
                                             )}
                                             <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
-                                            <div className="absolute bottom-6 left-6 text-white text-xs font-black uppercase tracking-widest pointer-events-none">
-                                                {files[i].type.startsWith('video') ? (fr ? 'Vidéo' : 'Video') : 'Photo'} &mdash; {i + 1}
+                                            <div className="absolute bottom-6 left-6 text-white text-xs font-black uppercase tracking-widest pointer-events-none flex items-center gap-2">
+                                                {files[i].type.startsWith('video') ? (
+                                                    <span className="px-3 py-1 bg-white text-zinc-900 rounded-full font-extrabold flex items-center gap-1.5">
+                                                        <Video className="w-3 h-3" /> {fr ? 'Vidéo Tour' : 'Video Tour'}
+                                                    </span>
+                                                ) : (
+                                                    <span className="px-3 py-1 bg-black/60 backdrop-blur-md rounded-full">
+                                                        Photo &mdash; {i + 1}
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
                                     ))}
                                 </div>
                             </div>
 
-                            <div className="pt-12 space-y-6">
+                            <div className="pt-10 space-y-4">
                                 <button
                                     onClick={handleUpload}
                                     className="w-full py-8 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.4em] rounded-[2.5rem] shadow-2xl hover:scale-105 active:scale-95 transition-all"
                                 >
-                                    {fr ? 'Envoyer les photos' : 'Send photos'}
+                                    {fr ? 'Envoyer les médias' : 'Send media files'}
                                 </button>
-                                <button
-                                    onClick={() => fileInputRef.current?.click()}
-                                    className="w-full py-6 text-xs font-black uppercase tracking-[0.4em] text-zinc-400 hover:text-zinc-900 transition-all"
-                                >
-                                    {fr ? "Ajouter d'autres photos" : 'Add more photos'}
-                                </button>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <button
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="py-4 bg-zinc-100 text-zinc-900 text-xs font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-zinc-200 transition-all flex items-center justify-center gap-2"
+                                    >
+                                        <Camera className="w-4 h-4" />
+                                        {fr ? "+ Photos" : '+ Photos'}
+                                    </button>
+                                    <button
+                                        onClick={() => videoInputRef.current?.click()}
+                                        className="py-4 bg-zinc-100 text-zinc-900 text-xs font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-zinc-200 transition-all flex items-center justify-center gap-2"
+                                    >
+                                        <Video className="w-4 h-4" />
+                                        {fr ? "+ Vidéo" : '+ Video'}
+                                    </button>
+                                </div>
                             </div>
                         </motion.div>
                     )}
@@ -446,12 +497,12 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                             </div>
                             <div className="space-y-4">
                                 <h2 className="text-5xl font-black tracking-tighter uppercase">
-                                    {fr ? 'Photos bien reçues' : 'Photos received'}
+                                    {fr ? 'Médias bien reçus' : 'Media received'}
                                 </h2>
                                 <p className="text-xl text-zinc-500 font-medium max-w-xs mx-auto">
                                     {fr
-                                        ? 'Vos photos ont été ajoutées au dossier du logement.'
-                                        : 'Your photos have been added to the property file.'}
+                                        ? 'Vos médias ont été ajoutés au dossier du logement.'
+                                        : 'Your photos and video have been added to the property file.'}
                                 </p>
                             </div>
                             <div className="pt-12 flex flex-col gap-6 w-full">
@@ -459,7 +510,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                                     onClick={() => { setFiles([]); setPreviewUrls([]); setStep('intro'); }}
                                     className="w-full py-8 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.4em] rounded-[2.5rem] shadow-2xl"
                                 >
-                                    {fr ? "Prendre d'autres photos" : 'Take more photos'}
+                                    {fr ? "Capturer d'autres médias" : 'Capture more media'}
                                 </button>
                                 <button
                                     onClick={() => setStep('finished')}
@@ -495,20 +546,30 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                                 onClick={() => { setFiles([]); setPreviewUrls([]); setStep('intro'); }}
                                 className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400"
                             >
-                                {fr ? "Reprendre d'autres photos" : 'Take more photos'}
+                                {fr ? "Reprendre d'autres photos/vidéos" : 'Take more photos/videos'}
                             </button>
                         </motion.div>
                     )}
                 </AnimatePresence>
 
-                {/* Hidden Input */}
+                {/* Hidden Photo Camera Input */}
                 <input
                     type="file"
                     ref={fileInputRef}
                     onChange={handleFileChange}
-                    accept="image/*,video/*"
+                    accept="image/*"
                     capture="environment"
                     multiple
+                    className="hidden"
+                />
+
+                {/* Hidden Dedicated Video Camera Input */}
+                <input
+                    type="file"
+                    ref={videoInputRef}
+                    onChange={handleFileChange}
+                    accept="video/*"
+                    capture="environment"
                     className="hidden"
                 />
 

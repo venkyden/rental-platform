@@ -191,7 +191,8 @@ async def get_biometric_consent_status(
 
 @router.post("/identity/upload")
 async def upload_identity_document(
-    document_type: str,
+    document_type: Optional[str] = Form(None),
+    document_type_query: Optional[str] = Query(None, alias="document_type"),
     side: str = Form("front"),
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user),
@@ -203,6 +204,7 @@ async def upload_identity_document(
     For MVP: Simulates document verification
     For Production: Integrate with Fourthline API
     """
+    final_doc_type = document_type or document_type_query or "passport"
     # GDPR Art. 9: the selfie_with_id path runs a face-match on the image
     if side == "selfie_with_id":
         await _require_biometric_consent(current_user.id, db)
@@ -557,9 +559,12 @@ async def upload_identity_multi_mobile(
 
 @router.post("/identity/upload-mobile")
 async def upload_identity_mobile(
-    verification_code: str = Query(...),
-    document_type: str = Query("passport"),
+    verification_code: Optional[str] = Query(None),
+    verification_code_form: Optional[str] = Form(None, alias="verification_code"),
+    document_type: Optional[str] = Query(None),
+    document_type_form: Optional[str] = Form(None, alias="document_type"),
     side: Optional[str] = Query(None),
+    side_form: Optional[str] = Form(None, alias="side"),
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_db),
 ):
@@ -567,7 +572,13 @@ async def upload_identity_mobile(
     Upload identity document via mobile using a verification session code.
     No auth token needed — the session code links to the user.
     """
-    session = await _get_session(verification_code)
+    code = verification_code or verification_code_form
+    if not code:
+        raise HTTPException(status_code=400, detail="Verification code is required")
+    doc_type = document_type or document_type_form or "passport"
+    sd = side or side_form
+
+    session = await _get_session(code)
     if not session:
         raise HTTPException(status_code=404, detail="Invalid or expired verification code")
 
@@ -1810,29 +1821,29 @@ async def upload_insurance_document(
 
 @router.post("/property/upload")
 async def upload_property_document(
-    property_id: str = Query(...),
-    document_type: str = Query(...),
+    property_id: Optional[str] = Query(None),
+    property_id_form: Optional[str] = Form(None, alias="property_id"),
+    document_type: Optional[str] = Query(None),
+    document_type_form: Optional[str] = Form(None, alias="document_type"),
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """
     Upload taxe foncière or titre de propriété to evidence property control.
-
-    DOSSIER PR-8 fix: this endpoint establishes "control, not ownership-attested".
-    There is no free ownership oracle at ~€0 OPEX; this document corroborates that
-    the submitter has a plausible connection to the property (received the tax notice,
-    or holds a titre). The result is labelled MEDIUM (OCR) and explicitly NOT
-    ownership_verified — it is property_control = "documented".
-
-    Source document is processed transiently and NEVER stored (no URL in ownership_data).
     """
+    prop_id = property_id or property_id_form
+    doc_type = document_type or document_type_form
+    if not prop_id:
+        raise HTTPException(status_code=400, detail="Property ID is required")
+    if not doc_type:
+        raise HTTPException(status_code=400, detail="Document type is required")
     from app.models.property import Property
     
     # 1. Validate property
     import uuid
     try:
-        prop_uuid = uuid.UUID(property_id)
+        prop_uuid = uuid.UUID(prop_id)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid property ID")
         
