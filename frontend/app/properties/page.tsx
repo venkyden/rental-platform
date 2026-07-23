@@ -233,20 +233,31 @@ export default function PropertiesPage() {
                             initial="hidden" animate="show"
                             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12"
                         >
-                            {properties.map((property) => (
-                                <motion.div 
-                                    variants={itemVariants} 
-                                    key={property.id} 
+                            {properties.map((property) => {
+                                const thumbnail = property.photos?.find((p: any) => p.media_type !== 'video') || property.photos?.[0];
+                                const isThumbnailVideo = thumbnail?.media_type === 'video';
+                                return (
+                                <motion.div
+                                    variants={itemVariants}
+                                    key={property.id}
                                     className="group glass-card !p-0 overflow-hidden flex flex-col border-zinc-100 hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.15)] transition-all duration-1000 rounded-[3rem] relative"
                                 >
                                     <div className="aspect-[16/11] bg-zinc-100 relative overflow-hidden">
-                                        {property.photos?.[0] ? (
-                                            <Image 
-                                                src={resolveMediaUrl(property.photos[0].url)} 
-                                                alt={property.title} 
-                                                fill 
+                                        {thumbnail && isThumbnailVideo ? (
+                                            <video
+                                                src={resolveMediaUrl(thumbnail.url)}
+                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
+                                                muted
+                                                playsInline
+                                                preload="metadata"
+                                            />
+                                        ) : thumbnail ? (
+                                            <Image
+                                                src={resolveMediaUrl(thumbnail.url)}
+                                                alt={property.title}
+                                                fill
                                                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                                className="object-cover group-hover:scale-110 transition-transform duration-1000" 
+                                                className="object-cover group-hover:scale-110 transition-transform duration-1000"
                                             />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center text-zinc-300 font-black italic uppercase tracking-widest text-xs">{t('property.media.noMedia', undefined, 'No Imagery')}</div>
@@ -266,12 +277,8 @@ export default function PropertiesPage() {
                                     </div>
 
                                     <div className="p-10 flex flex-col flex-1">
-                                        <div className="flex justify-between items-start mb-6">
-                                            <h3 className="text-2xl font-black text-zinc-900 truncate tracking-tighter uppercase pr-4 group-hover:text-zinc-600 transition-colors duration-500">{property.title}</h3>
-                                            <div className="text-right flex flex-col items-end">
-                                                <p className="text-xl font-black text-zinc-900 tracking-tighter">€{property.monthly_rent}</p>
-                                                <p className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em] mt-1">{t('property.price.investment', undefined, 'Investment')}</p>
-                                            </div>
+                                        <div className="mb-6">
+                                            <h3 className="text-2xl font-black text-zinc-900 truncate tracking-tighter uppercase group-hover:text-zinc-600 transition-colors duration-500">{property.title}</h3>
                                         </div>
                                         
                                         <div className="flex items-center gap-3 mb-10">
@@ -347,7 +354,8 @@ export default function PropertiesPage() {
                                         </div>
                                     </div>
                                 </motion.div>
-                            ))}
+                            );
+                            })}
                         </motion.div>
                     )}
 
