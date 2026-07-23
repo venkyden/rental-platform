@@ -14,6 +14,8 @@ Covers:
 - full_name is stored raw (not HTML-escaped at rest).
 - Per-account login lockout after repeated failures.
 """
+import asyncio
+
 import pytest
 import pytest_asyncio
 from datetime import timedelta
@@ -157,3 +159,22 @@ async def test_login_lockout_after_repeated_failures(client, monkeypatch):
         "username": "lock@example.com", "password": "StrongPass123!",
     })
     assert locked.status_code == 429, "account should be locked after 5 failures"
+
+
+@pytest.mark.asyncio
+async def test_concurrent_registration_same_email_no_500(client):
+    """Two near-simultaneous registrations for the same email both pass the
+    existence check (TOCTOU race); the loser must hit the unique constraint
+    and get a clean 400, never an unhandled 500."""
+    payload = {
+        "email": "racer@example.com",
+        "password": "StrongPass123!",
+        "full_name": "Racer",
+        "role": "tenant",
+    }
+    responses = await asyncio.gather(
+        client.post("/auth/register", json=payload),
+        client.post("/auth/register", json=payload),
+    )
+    statuses = sorted(r.status_code for r in responses)
+    assert statuses == [201, 400], statuses

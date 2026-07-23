@@ -21,14 +21,9 @@ export default function Navbar() {
     const { t } = useLanguage();
 
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    console.log('NAVBAR RENDER isMobileMenuOpen:', isMobileMenuOpen, 'user:', !!user);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isSwitching, setIsSwitching] = useState<string | null>(null);
     const profileRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        console.log('NAVBAR HYDRATED!');
-    }, []);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -278,11 +273,7 @@ export default function Navbar() {
                                 onClick={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
-                                    console.log('REACT ONCLICK FIRED! Current state:', isMobileMenuOpen);
-                                    setIsMobileMenuOpen(prev => {
-                                        console.log('Setting new state to:', !prev);
-                                        return !prev;
-                                    });
+                                    setIsMobileMenuOpen(prev => !prev);
                                 }}
                                 className="md:hidden p-2.5 rounded-xl bg-zinc-100 text-zinc-900 hover:bg-zinc-200 transition-all active:scale-90"
                             >

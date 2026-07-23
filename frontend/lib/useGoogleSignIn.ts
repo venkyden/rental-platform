@@ -61,8 +61,6 @@ export function useGoogleSignIn({
   }, []);
 
   useEffect(() => {
-    console.log('[useGoogleSignIn] Hook mounted with clientId:', clientId ? 'PRESENT' : 'MISSING', 'buttonId:', buttonId);
-    
     if (!clientId) {
       console.error('[useGoogleSignIn] Missing Google Client ID. Button will not render.');
       return;
@@ -79,22 +77,21 @@ export function useGoogleSignIn({
     }
 
     const renderButton = () => {
+      // Some consumers only need revoke() and never pass a buttonId — that's
+      // intentional, not an error.
       if (!buttonId || !window.google) {
-        console.error('[useGoogleSignIn] Cannot render: missing buttonId or window.google', { buttonId, hasGoogle: !!window.google });
         return;
       }
-      
+
       const buttonDiv = document.getElementById(buttonId);
       if (!buttonDiv) {
         console.error('[useGoogleSignIn] Cannot find DOM element with id:', buttonId);
         return;
       }
-      
+
       const containerWidth = buttonDiv.parentElement?.clientWidth || 300;
       const buttonWidth = Math.max(200, Math.min(400, Math.floor(containerWidth)));
-      
-      console.log('[useGoogleSignIn] Rendering Google button into', buttonId, 'with width', buttonWidth);
-      
+
       try {
         window.google.accounts.id.renderButton(buttonDiv, {
           theme: 'outline',
@@ -103,21 +100,18 @@ export function useGoogleSignIn({
           text: buttonText,
           shape: 'pill',
         });
-        console.log('[useGoogleSignIn] Render successful');
       } catch (err) {
         console.error('[useGoogleSignIn] Error rendering button:', err);
       }
     };
 
     const initializeGSI = () => {
-      console.log('[useGoogleSignIn] initializeGSI called');
       if (!window.google) {
         console.error('[useGoogleSignIn] window.google is undefined during initializeGSI');
         return;
       }
 
       if (!window.__GSI_INITIALIZED__) {
-        console.log('[useGoogleSignIn] Initializing Google Identity Services');
         try {
           window.google.accounts.id.initialize({
             client_id: clientId,
@@ -133,8 +127,6 @@ export function useGoogleSignIn({
         } catch (err) {
           console.error('[useGoogleSignIn] Error initializing GSI:', err);
         }
-      } else {
-        console.log('[useGoogleSignIn] GSI already initialized');
       }
 
       renderButton();
@@ -142,26 +134,19 @@ export function useGoogleSignIn({
 
     const existingScript = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
     if (existingScript) {
-      console.log('[useGoogleSignIn] Script already in DOM');
       if (window.google) {
-        console.log('[useGoogleSignIn] window.google available, initializing immediately');
         initializeGSI();
       } else {
-        console.log('[useGoogleSignIn] window.google not ready, adding load listener');
         existingScript.addEventListener('load', initializeGSI);
       }
       return;
     }
 
-    console.log('[useGoogleSignIn] Injecting GSI script');
     const script = document.createElement('script');
     script.src = 'https://accounts.google.com/gsi/client';
     script.async = true;
     script.defer = true;
-    script.addEventListener('load', () => {
-      console.log('[useGoogleSignIn] Script loaded from network');
-      initializeGSI();
-    });
+    script.addEventListener('load', initializeGSI);
     script.addEventListener('error', () => {
       console.error('[useGoogleSignIn] Failed to load Google Sign-In script');
       onErrorRef.current?.('Failed to load Google Sign-In script');
