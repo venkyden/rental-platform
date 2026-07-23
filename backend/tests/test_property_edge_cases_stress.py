@@ -3,15 +3,20 @@ Exhaustive stress tests for property edge cases, sanitization, model boundaries,
 """
 
 import uuid
-from datetime import datetime
 from decimal import Decimal
+from typing import Any, cast
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from app.core.database import get_db
-from app.core.sanitize import sanitize_html, sanitize_dict
+from app.core.sanitize import sanitize_dict, sanitize_html
+from app.core.timeutils import utcnow
 from app.models.property_schemas import PropertyCreate
-from conftest import MOCK_LANDLORD
+
+try:
+    from tests.conftest import MOCK_LANDLORD, mock_get_db
+except ImportError:
+    from conftest import MOCK_LANDLORD, mock_get_db  # type: ignore
 
 
 class TestPropertyEdgeCasesAndSanitization:
@@ -31,7 +36,7 @@ class TestPropertyEdgeCasesAndSanitization:
         # Inline javascript: stripped
         assert sanitize_html("javascript:alert(1)") == "alert(1)"
         # Non-string input converted to string safely
-        assert sanitize_html(123) == "123"
+        assert sanitize_html(str(123)) == "123"
 
     def test_sanitize_dict_edge_cases(self):
         """Verify sanitize_dict cleans target string fields cleanly."""
@@ -124,10 +129,12 @@ class TestPropertyEdgeCasesAndSanitization:
             "room_details": rooms,
         }
         obj = PropertyCreate(**payload)
-        assert len(obj.room_details) == 3
-        assert obj.room_details[0]["surface"] == 12
-        assert obj.room_details[1]["surface_sqm"] == 15
-        assert obj.room_details[2]["size_sqm"] == 10
+        assert obj.room_details is not None
+        room_details = cast(list, obj.room_details)
+        assert len(room_details) == 3
+        assert room_details[0]["surface"] == 12
+        assert room_details[1]["surface_sqm"] == 15
+        assert room_details[2]["size_sqm"] == 10
 
     def test_create_property_endpoint_with_ground_floor_and_rooms(self, landlord_client):
         """POST /properties with floor_number = 0 and room_details executes successfully."""
@@ -144,7 +151,7 @@ class TestPropertyEdgeCasesAndSanitization:
             obj.ownership_verified = False
             obj.status = "draft"
             obj.views_count = 0
-            obj.created_at = datetime.utcnow()
+            obj.created_at = utcnow()
             obj.landlord_id = landlord_id
 
         mock_db.add = mock_add
@@ -154,7 +161,7 @@ class TestPropertyEdgeCasesAndSanitization:
         async def override_get_db():
             yield mock_db
 
-        target_app = app.app if hasattr(app, "app") else app
+        target_app = cast(Any, app.app if hasattr(app, "app") else app)
         target_app.dependency_overrides[get_db] = override_get_db
 
         try:
@@ -182,5 +189,4 @@ class TestPropertyEdgeCasesAndSanitization:
             assert created_obj.floor_number == 0
             assert "Studio d'espace" in created_obj.description
         finally:
-            from conftest import mock_get_db
             target_app.dependency_overrides[get_db] = mock_get_db
