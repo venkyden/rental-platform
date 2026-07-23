@@ -23,6 +23,7 @@ class ApiClient {
                     if (newAccessToken) this.setToken(newAccessToken);
                     return newAccessToken;
                 })
+                .catch(() => null)
                 .finally(() => {
                     this.refreshPromise = null;
                 });

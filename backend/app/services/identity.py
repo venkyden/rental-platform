@@ -136,7 +136,7 @@ class IdentityVerificationService:
                 "rejection_reason": None,
             }
 
-        validation_results = self._validate_identity_data(extracted_data, expected_name, document_type)
+        validation_results = await self._validate_identity_data(extracted_data, expected_name, document_type)
 
         critical_failed = any(
             not check["passed"] and check["critical"] for check in validation_results
@@ -279,7 +279,7 @@ Return ONLY the JSON."""
         logger.error(f"All AI models failed for identity extraction. Last error: {last_error}")
         return None
 
-    def _validate_identity_data(
+    async def _validate_identity_data(
         self, data: IdentityData, expected_name: str, expected_document_type: Optional[str] = None
     ) -> list:
         checks = []
@@ -387,12 +387,12 @@ Return ONLY the JSON."""
         )
 
         # 4. CRITICAL: Name match (Blocking in production)
-        name_match = self._fuzzy_name_match(data.full_name, expected_name)
+        name_match = await self._robust_name_match(data.full_name, expected_name)
         checks.append(
             {
                 "name": "name_match",
                 "description": "Name on document matches account name",
-                "passed": name_match > 0.5,
+                "passed": name_match >= 0.5,
                 "critical": True,
                 "details": f"Document: {data.full_name} | Account: {expected_name} | Match: {name_match:.0%}",
             }
@@ -414,17 +414,90 @@ Return ONLY the JSON."""
     def _fuzzy_name_match(self, name1: str, name2: str) -> float:
         if not name1 or not name2:
             return 0.0
-            
-        n1 = set(str(name1).lower().split())
-        n2 = set(str(name2).lower().split())
+
+        import unicodedata
+        import re
+
+        def _clean_tokens(s: str) -> set:
+            # Strip accents, convert to lower case
+            norm = ''.join(
+                c for c in unicodedata.normalize('NFD', str(s).lower())
+                if unicodedata.category(c) != 'Mn'
+            )
+            # Tokenize on non-alphanumeric chars
+            tokens = [t for t in re.split(r'[^a-z0-9]+', norm) if len(t) > 1 or t.isalnum()]
+            return set(tokens)
+
+        n1 = _clean_tokens(name1)
+        n2 = _clean_tokens(name2)
 
         if not n1 or not n2:
             return 0.0
 
-        intersection = len(n1 & n2)
-        union = len(n1 | n2)
+        # Exact token subset match (e.g. "Venkat" in "Venkat Ramanathan" or "Jean" in "Jean-Paul Dupont")
+        if n1.issubset(n2) or n2.issubset(n1):
+            return 1.0
 
-        return intersection / union if union > 0 else 0.0
+        intersection = len(n1 & n2)
+        min_size = min(len(n1), len(n2))
+        max_size = max(len(n1), len(n2))
+
+        # Token overlap ratio relative to shorter name (handles middle names / extra surnames)
+        subset_ratio = intersection / min_size if min_size > 0 else 0.0
+        jaccard_ratio = intersection / max_size if max_size > 0 else 0.0
+
+        return max(subset_ratio, jaccard_ratio)
+
+    async def _robust_name_match(self, name_on_id: str, expected_name: str) -> float:
+        """
+        Robust name matching using an initial fuzzy match, falling back to AI
+        for complex cultural or partial matches.
+        """
+        if not name_on_id or not expected_name or name_on_id == "Unknown":
+            return 0.0
+
+        # Fast path: evaluate basic string similarity
+        base_score = self._fuzzy_name_match(name_on_id, expected_name)
+        
+        # If it's a very strong match or completely different, trust the fast path
+        if base_score > 0.8 or base_score < 0.2:
+            return base_score
+
+        # Complex path: use AI to understand cultural nuances
+        if not self.ai_client:
+            return base_score
+
+        try:
+            from app.core.gemini_quota import gemini_slot
+            prompt = f"""You are a strict KYC name matching expert.
+Name on ID: "{name_on_id}"
+Expected Account Name: "{expected_name}"
+
+Determine the probability (0.0 to 1.0) that these names belong to the exact same person.
+Rules:
+1. Account for cultural naming conventions (e.g., South Indian patronymics where 'Nallam Venkat krishnan' and 'Venkat Raman' might match due to the shared 'Venkat' identifier).
+2. Account for missing middle names, maiden/married names, typos, and reversed order.
+3. If they share a generic first name but different last names (e.g., "John Smith" vs "John Doe"), score LOW (< 0.4).
+4. If they share a highly specific identifier or follow a known cultural pattern, score HIGH (>= 0.7).
+
+Return ONLY JSON:
+{{"confidence": 0.85, "reasoning": "brief explanation"}}"""
+            
+            async with gemini_slot():
+                response = self.ai_client.models.generate_content(
+                    model="gemini-2.5-flash",
+                    contents=[prompt],
+                    config={"response_mime_type": "application/json"}
+                )
+            
+            import json
+            data = json.loads(response.text)
+            ai_score = float(data.get("confidence", base_score))
+            logger.info(f"AI name match for '{name_on_id}' vs '{expected_name}': {ai_score} ({data.get('reasoning')})")
+            return max(base_score, ai_score)
+        except Exception as e:
+            logger.warning(f"AI name match failed, falling back to fuzzy match: {e}")
+            return base_score
 
     def _get_rejection_reason(self, checks: list) -> str:
         """Get human-readable rejection reason"""
@@ -504,9 +577,9 @@ Rules:
 - has_live_face: a real human face is clearly visible in the photo (not a printout/screen)
 - has_id_document: a government ID is clearly present and its text is legible
 - id_has_face_photo: the ID itself contains a portrait/face photo
-- face_comparison_reasoning: YOU ARE AUDITING FOR FRAUD. Assume they are DIFFERENT people. Look for mismatched jawline, nose shape, eyes, and eyebrows. Briefly describe any mismatches.
-- face_match_confidence: strictly evaluate facial features based on reasoning. 1.0 for perfect match, 0.0 for completely different people. If ANY feature explicitly mismatches, this MUST be 0.1 or lower.
-- is_same_person: strictly true ONLY IF face_match_confidence >= 0.8. If they are different people, this MUST be false.
+- face_comparison_reasoning: Compare face shape, nose, eyes, and eyebrows between the live face and ID portrait. Note similarities or differences. Account for reasonable variations in lighting, angle, expression, hairstyle, or age.
+- face_match_confidence: 1.0 for high confidence match, 0.7-0.9 for likely match with minor photo/lighting differences, <0.5 for clearly different individuals.
+- is_same_person: true if face_match_confidence >= 0.7.
 - confidence_score below 0.4 if: blurry, poorly lit, ID text unreadable, or face obscured"""
 
         models_to_try = ["gemini-2.5-flash"]
@@ -549,9 +622,9 @@ Rules:
                         {
                             "name": "same_person",
                             "description": "Live face matches face on ID",
-                            "passed": bool(data.get("is_same_person", False)) and float(data.get("face_match_confidence", 0.0)) >= 0.8,
+                            "passed": bool(data.get("is_same_person", False)) and float(data.get("face_match_confidence", 0.0)) >= 0.7,
                             "critical": True,
-                            "details": "Identity confirmed" if bool(data.get("is_same_person", False)) and float(data.get("face_match_confidence", 0.0)) >= 0.8 else "Live face does not match the face on the ID",
+                            "details": "Identity confirmed" if bool(data.get("is_same_person", False)) and float(data.get("face_match_confidence", 0.0)) >= 0.7 else "Live face does not match the face on the ID",
                         },
                         {
                             "name": "image_quality",
@@ -600,11 +673,11 @@ Rules:
 
                     full_name = data.get("full_name", "Unknown")
                     if expected_name:
-                        match = self._fuzzy_name_match(full_name, expected_name) if full_name != "Unknown" else 0.0
+                        match = await self._robust_name_match(full_name, expected_name) if full_name != "Unknown" else 0.0
                         checks.append({
                             "name": "name_match",
                             "description": "Name on ID matches account name",
-                            "passed": match > 0.5 and full_name != "Unknown",
+                            "passed": match >= 0.5 and full_name != "Unknown",
                             "critical": True,
                             "details": f"ID: {full_name} | Account: {expected_name} | Match: {match:.0%}",
                         })
@@ -855,7 +928,7 @@ Rules:
 
         full_name = doc_data.get("full_name", "Unknown")
         if expected_name:
-            match = self._fuzzy_name_match(full_name, expected_name) if full_name != "Unknown" else 0.0
+            match = await self._robust_name_match(full_name, expected_name) if full_name != "Unknown" else 0.0
             checks.append({
                 "name": "name_match",
                 "description": "Name on ID matches account name",

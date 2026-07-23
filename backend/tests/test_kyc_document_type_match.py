@@ -12,7 +12,10 @@ os.environ["DATABASE_URL"] = "postgresql+asyncpg://mockuser:mockpass@localhost/m
 
 from app.services.identity import identity_service, IdentityData
 
-def test_validate_identity_data_matching_types():
+import pytest
+
+@pytest.mark.asyncio
+async def test_validate_identity_data_matching_types():
     # Arrange
     data = IdentityData(
         full_name="Tenant User",
@@ -25,7 +28,7 @@ def test_validate_identity_data_matching_types():
     )
     
     # Act
-    checks = identity_service._validate_identity_data(
+    checks = await identity_service._validate_identity_data(
         data=data,
         expected_name="Tenant User",
         expected_document_type="passport"
@@ -36,7 +39,8 @@ def test_validate_identity_data_matching_types():
     assert type_match_check["passed"] is True
     print("✅ test_validate_identity_data_matching_types passed")
 
-def test_validate_identity_data_matching_types_synonyms():
+@pytest.mark.asyncio
+async def test_validate_identity_data_matching_types_synonyms():
     # Arrange
     data = IdentityData(
         full_name="Tenant User",
@@ -49,7 +53,7 @@ def test_validate_identity_data_matching_types_synonyms():
     )
     
     # Act
-    checks = identity_service._validate_identity_data(
+    checks = await identity_service._validate_identity_data(
         data=data,
         expected_name="Tenant User",
         expected_document_type="id_card"
@@ -60,7 +64,8 @@ def test_validate_identity_data_matching_types_synonyms():
     assert type_match_check["passed"] is True
     print("✅ test_validate_identity_data_matching_types_synonyms passed")
 
-def test_validate_identity_data_mismatched_types():
+@pytest.mark.asyncio
+async def test_validate_identity_data_mismatched_types():
     # Arrange
     data = IdentityData(
         full_name="Tenant User",
@@ -73,7 +78,7 @@ def test_validate_identity_data_mismatched_types():
     )
     
     # Act
-    checks = identity_service._validate_identity_data(
+    checks = await identity_service._validate_identity_data(
         data=data,
         expected_name="Tenant User",
         expected_document_type="passport"
@@ -84,6 +89,18 @@ def test_validate_identity_data_mismatched_types():
     assert type_match_check["passed"] is False
     assert type_match_check["critical"] is True
     print("✅ test_validate_identity_data_mismatched_types passed")
+
+def test_fuzzy_name_match_variations():
+    # 1. Single-word account name vs full ID name
+    assert identity_service._fuzzy_name_match("Venkat", "Venkat Ramanathan") >= 0.5
+    # 2. Middle names
+    assert identity_service._fuzzy_name_match("Jean Dupont", "Jean Paul Dupont") >= 0.5
+    # 3. Accents and hyphens
+    assert identity_service._fuzzy_name_match("Élodie Martin", "Elodie Martin") >= 0.5
+    assert identity_service._fuzzy_name_match("Jean-Paul", "Jean Paul") >= 0.5
+    # 4. Reversed name order
+    assert identity_service._fuzzy_name_match("Dupont Jean", "Jean Dupont") >= 0.5
+    print("✅ test_fuzzy_name_match_variations passed")
 
 import asyncio
 
@@ -170,9 +187,9 @@ async def test_verify_selfie_with_id_mismatch():
         identity_service.ai_client = original_client
 
 if __name__ == "__main__":
-    test_validate_identity_data_matching_types()
-    test_validate_identity_data_matching_types_synonyms()
-    test_validate_identity_data_mismatched_types()
+    asyncio.run(test_validate_identity_data_matching_types())
+    asyncio.run(test_validate_identity_data_matching_types_synonyms())
+    asyncio.run(test_validate_identity_data_mismatched_types())
     asyncio.run(test_verify_selfie_with_id_match())
     asyncio.run(test_verify_selfie_with_id_mismatch())
     print("🎉 All document type validation tests passed!")
