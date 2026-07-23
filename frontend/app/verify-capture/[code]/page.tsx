@@ -173,7 +173,6 @@ export default function VerifyCapturePage() {
             formData.append('selfie', images.selfie, 'selfie.jpg');
 
             await apiClient.client.post('/verification/identity/upload-multi-mobile', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
                 onUploadProgress: ev => setUploadProgress(Math.round((ev.loaded * 100) / (ev.total || 1))),
             });
             setStep('success');

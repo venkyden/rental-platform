@@ -11,9 +11,6 @@ export const mediaApi = {
         
         const response = await apiClient.client.post(`/media/upload`, formData, {
             params: { folder },
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
         });
         
         return response.data.url;

@@ -74,9 +74,7 @@ export default function AccountSettingsPage() {
         formData.append('file', file);
 
         try {
-            await apiClient.client.post('/auth/me/avatar', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-            });
+            await apiClient.client.post('/auth/me/avatar', formData);
             window.location.reload();
         } catch (error: any) {
             console.error("Avatar upload failed:", error);

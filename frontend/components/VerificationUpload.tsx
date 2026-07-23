@@ -320,7 +320,6 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                 formData.append('side', i === 0 ? 'front' : 'back');
                 const endpoint = verificationType === 'property' ? '/verification/property/upload' : '/verification/income/upload';
                 await apiClient.client.post(endpoint, formData, {
-                    headers: { 'Content-Type': 'multipart/form-data' },
                     params: { document_type: documentType, ...(verificationType === 'property' && { property_id: selectedPropertyId }) }
                 });
             }

@@ -54,12 +54,19 @@ class ApiClient {
             }
         });
 
-        // Add request interceptor to attach token
+        // Add request interceptor to attach token & handle FormData headers
         this.client.interceptors.request.use(
             (config) => {
                 const token = this.getToken();
                 if (token) {
                     config.headers.Authorization = `Bearer ${token}`;
+                }
+                if (config.data instanceof FormData) {
+                    // Remove fixed Content-Type so Axios/browser sets boundary header dynamically
+                    if (config.headers) {
+                        delete (config.headers as any)['Content-Type'];
+                        delete (config.headers as any)['content-type'];
+                    }
                 }
                 return config;
             },
@@ -276,9 +283,6 @@ class ApiClient {
         formData.append('folder', folder);
 
         const response = await this.client.post('/media/upload', formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
             params: { folder },
         });
         return response.data;

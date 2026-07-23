@@ -167,9 +167,7 @@ export default function RentalDossier() {
         formData.append('document_type', docType);
 
         try {
-            await apiClient.client.post('/documents/upload', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
+            await apiClient.client.post('/documents/upload', formData);
             toast.success(t('dossier.success.upload', undefined, 'Document added!'));
             fetchDocuments();
         } catch (error: any) {

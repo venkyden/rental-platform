@@ -56,9 +56,7 @@ export default function IntlSolvencyUpload({ onSuccessAction }: Props) {
             if (path === 'funds') {
                 fd.append('document_type', documentType);
                 fd.append('funds_source', fundsSource);
-                const res = await apiClient.client.post('/verification/intl/funds', fd, {
-                    headers: { 'Content-Type': 'multipart/form-data' },
-                });
+                const res = await apiClient.client.post('/verification/intl/funds', fd);
                 const d = res.data;
                 if (d.assurance === 'UNVERIFIED') {
                     setError(t('verification.intl.errors.fundsCurrency', undefined, 'Could not verify funds — currency unsupported. Try a EUR document.'));
@@ -67,9 +65,7 @@ export default function IntlSolvencyUpload({ onSuccessAction }: Props) {
                     onSuccessAction();
                 }
             } else {
-                const res = await apiClient.client.post('/verification/intl/solvency', fd, {
-                    headers: { 'Content-Type': 'multipart/form-data' },
-                });
+                const res = await apiClient.client.post('/verification/intl/solvency', fd);
                 const d = res.data;
                 if (d.solvency_assurance === 'UNVERIFIED') {
                     setError(t('verification.intl.errors.incomeCurrency', undefined, 'Could not verify income — currency unsupported. Try a EUR document.'));

@@ -59,9 +59,7 @@ export default function EsignManager({ leaseId }: EsignManagerProps) {
         try {
             const form = new FormData();
             form.append('file', file);
-            await apiClient.client.post(`/esign/leases/${leaseId}/document`, form, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-            });
+            await apiClient.client.post(`/esign/leases/${leaseId}/document`, form);
             await loadStatus();
         } catch (err: any) {
             setError(err.response?.data?.detail || t('esign.error.upload', undefined, 'Upload failed'));

@@ -132,9 +132,7 @@ export default function GuarantorVerifyPage() {
             setSubmitting(true);
             const formData = new FormData();
             formData.append('file', visaleFile);
-            await apiClient.client.post('/verification/guarantor/visale', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
+            await apiClient.client.post('/verification/guarantor/visale', formData);
             toast.success(t('verify.guarantor.success', undefined, 'Guarantor successfully registered!'));
             await checkAuth();
             router.push('/dashboard');
@@ -155,9 +153,7 @@ export default function GuarantorVerifyPage() {
             setSubmitting(true);
             const formData = new FormData();
             formData.append('file', garantmeFile);
-            await apiClient.client.post('/verification/guarantor/garantme', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
+            await apiClient.client.post('/verification/guarantor/garantme', formData);
             toast.success(t('verify.guarantor.success', undefined, 'Guarantor successfully registered!'));
             await checkAuth();
             router.push('/dashboard');
@@ -187,9 +183,7 @@ export default function GuarantorVerifyPage() {
             formData.append('file', file);
             formData.append('document_type', docType);
 
-            const response = await apiClient.client.post('/verification/guarantor/upload', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
+            const response = await apiClient.client.post('/verification/guarantor/upload', formData);
 
             const updatedFilesList: GuarantorFile[] = response.data.files;
             const newDocMap = { ...uploadedDocs };
