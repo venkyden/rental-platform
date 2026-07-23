@@ -124,17 +124,23 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
         });
     };
 
+    const checkIsVideo = (f: File) => {
+        if (f.type && f.type.toLowerCase().startsWith('video')) return true;
+        const name = (f.name || '').toLowerCase();
+        return name.endsWith('.mp4') || name.endsWith('.mov') || name.endsWith('.webm') || name.endsWith('.m4v') || name.endsWith('.avi') || name.endsWith('.3gp');
+    };
+
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
             const rawFiles = Array.from(e.target.files);
             const validFiles: File[] = [];
 
-            const hasExistingVideo = sessionDetails?.has_video || files.some(f => f.type.startsWith('video'));
+            const hasExistingVideo = sessionDetails?.has_video || files.some(f => checkIsVideo(f));
 
             for (const f of rawFiles) {
-                const isVideo = f.type.startsWith('video');
+                const isVideo = checkIsVideo(f);
                 if (isVideo) {
-                    if (hasExistingVideo || validFiles.some(vf => vf.type.startsWith('video'))) {
+                    if (hasExistingVideo || validFiles.some(vf => checkIsVideo(vf))) {
                         showToast(
                             fr ? 'Une seule vidéo de présentation est autorisée par annonce.' : 'Only 1 video walkthrough allowed per listing.',
                             'error'
@@ -180,12 +186,13 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
 
         for (let idx = 0; idx < total; idx++) {
             const file = files[idx];
+            const isVideo = checkIsVideo(file);
             const metadataObj = {
                 latitude: location?.lat || null,
                 longitude: location?.lng || null,
                 gps_accuracy: location?.accuracy || null,
                 captured_at: new Date().toISOString(),
-                media_type: file.type.startsWith('video') ? 'video' : 'photo',
+                media_type: isVideo ? 'video' : 'photo',
                 room_index: selectedRoom?.index ?? null,
                 room_label: selectedRoom?.label ?? null,
             };
@@ -197,7 +204,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                         file,
                         JSON.stringify(metadataObj),
                         code,
-                        file.type.startsWith('video') ? 'video' : 'photo'
+                        isVideo ? 'video' : 'photo'
                     );
                     successCount++;
                 } catch {
@@ -216,11 +223,29 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                 successCount++;
             } catch (err: any) {
                 const detail = err?.response?.data?.detail;
-                const msg = Array.isArray(detail)
-                    ? detail.map((d: any) => (typeof d === 'string' ? d : d.msg || d.detail || JSON.stringify(d))).join(', ')
-                    : (typeof detail === 'string' ? detail
-                        : (fr ? "L'envoi a échoué. Le fichier sera renvoyé automatiquement." : 'Upload failed. The file will be retried automatically.'));
-                showToast(msg === 'Field required' ? (fr ? 'Formulaire incomplet. Veuillez compléter tous les champs.' : 'Required field missing. Please check your data.') : msg, 'error');
+                let userMsg = '';
+                if (Array.isArray(detail)) {
+                    userMsg = detail
+                        .map((d: any) => {
+                            if (typeof d === 'string') return d;
+                            const field = Array.isArray(d.loc) ? d.loc[d.loc.length - 1] : '';
+                            if (d.msg === 'Field required' || d.type === 'missing') {
+                                return fr ? `Champ obligatoire manquant (${field || 'donnée'})` : `Missing required field: ${field || 'data'}`;
+                            }
+                            return d.msg || d.detail || JSON.stringify(d);
+                        })
+                        .join(', ');
+                } else if (typeof detail === 'string') {
+                    if (detail.includes('Field required')) {
+                        userMsg = fr ? 'Donnée ou champ obligatoire manquant.' : 'Required field or file missing.';
+                    } else {
+                        userMsg = detail;
+                    }
+                } else {
+                    userMsg = fr ? "L'envoi a échoué. Le fichier sera renvoyé automatiquement." : 'Upload failed. The file will be retried automatically.';
+                }
+
+                showToast(userMsg, 'error');
                 // Queue for offline retry — best-effort, never crash on queue failure
                 try {
                     const { backgroundSyncManager } = await import('@/lib/backgroundSync');
@@ -228,7 +253,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                         file,
                         JSON.stringify(metadataObj),
                         code,
-                        file.type.startsWith('video') ? 'video' : 'photo'
+                        isVideo ? 'video' : 'photo'
                     );
                 } catch {
                     // IndexedDB unavailable — skip offline queueing silently

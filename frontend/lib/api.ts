@@ -250,7 +250,9 @@ class ApiClient {
     // Property media upload
     async uploadPropertyMedia(file: File, metadata: Record<string, any> | string, verificationCode: string) {
         const formData = new FormData();
-        formData.append('file', file);
+        const isVideo = (file.type && file.type.startsWith('video')) || (file.name && /\.(mp4|mov|webm|avi|m4v|3gp)$/i.test(file.name));
+        const filename = file.name && file.name !== 'blob' ? file.name : (isVideo ? 'video_walkthrough.mp4' : 'photo.jpg');
+        formData.append('file', file, filename);
 
         const metadataStr = typeof metadata === 'string' ? metadata : JSON.stringify(metadata);
         formData.append('metadata', metadataStr);
@@ -268,13 +270,16 @@ class ApiClient {
     // Generic media upload
     async uploadMedia(file: File, folder: string = 'general') {
         const formData = new FormData();
-        formData.append('file', file);
+        const isVideo = (file.type && file.type.startsWith('video')) || (file.name && /\.(mp4|mov|webm|avi|m4v|3gp)$/i.test(file.name));
+        const filename = file.name && file.name !== 'blob' ? file.name : (isVideo ? 'video.mp4' : 'file.jpg');
+        formData.append('file', file, filename);
         formData.append('folder', folder);
 
         const response = await this.client.post('/media/upload', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
+            params: { folder },
         });
         return response.data;
     }
