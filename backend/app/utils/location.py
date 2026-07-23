@@ -1,12 +1,21 @@
 """
 Location services utility for geocoding and nearby POI detection.
 Uses OpenStreetMap Nominatim for geocoding and Overpass API for POI search.
+Includes in-memory TTL caching and fast HTTP failover to ensure low latency.
 """
 
 import asyncio
+import time
 from typing import Dict, List, Optional, Tuple
 
 import httpx
+
+# In-memory TTL caches for performance optimization
+# Key format: (address_str) -> (timestamp, (lat, lon))
+_GEOCODE_CACHE: Dict[str, Tuple[float, Optional[Tuple[float, float]]]] = {}
+# Key format: (lat_3dp, lon_3dp) -> (timestamp, pois_dict)
+_POI_CACHE: Dict[Tuple[float, float], Tuple[float, Dict[str, List[str]]]] = {}
+CACHE_TTL_SECONDS = 3600  # 1 hour cache TTL
 
 
 async def geocode_address(
@@ -15,10 +24,18 @@ async def geocode_address(
     """
     Geocode an address to GPS coordinates using Nominatim.
     Returns (latitude, longitude) or None if not found.
+    Uses in-memory cache to prevent slow repeated external calls.
     """
-    full_address = f"{address}, {postal_code} {city}, {country}"
+    full_address = f"{address.strip()}, {postal_code.strip()} {city.strip()}, {country.strip()}".lower()
+    now = time.time()
 
-    async with httpx.AsyncClient() as client:
+    # Check cache hit
+    if full_address in _GEOCODE_CACHE:
+        ts, cached_coords = _GEOCODE_CACHE[full_address]
+        if now - ts < CACHE_TTL_SECONDS:
+            return cached_coords
+
+    async with httpx.AsyncClient(timeout=2.5) as client:
         try:
             response = await client.get(
                 "https://nominatim.openstreetmap.org/search",
@@ -29,22 +46,33 @@ async def geocode_address(
             if response.status_code == 200:
                 results = response.json()
                 if results:
-                    return (float(results[0]["lat"]), float(results[0]["lon"]))
+                    coords = (float(results[0]["lat"]), float(results[0]["lon"]))
+                    _GEOCODE_CACHE[full_address] = (now, coords)
+                    return coords
         except Exception as e:
             print(f"Geocoding error: {e}")
 
+    _GEOCODE_CACHE[full_address] = (now, None)
     return None
 
 
-async def get_nearby_pois(latitude: float, longitude: float) -> Dict[str, List[Dict]]:
+async def get_nearby_pois(latitude: float, longitude: float) -> Dict[str, List[str]]:
     """
     Query OpenStreetMap Overpass API for nearby points of interest.
-    Returns dict with transit stops, route lines, and nearby landmarks.
+    Returns dict with transit stops and nearby landmarks.
+    Streamlined Overpass query and low timeout prevent slow response times.
     """
+    now = time.time()
+    grid_key = (round(latitude, 3), round(longitude, 3))
 
-    # Overpass query — includes transit stops, route relations, and POIs
+    if grid_key in _POI_CACHE:
+        ts, cached_pois = _POI_CACHE[grid_key]
+        if now - ts < CACHE_TTL_SECONDS:
+            return cached_pois
+
+    # Optimized Overpass query - exclude relation route regex scans which cause 20s+ latency
     overpass_query = f"""
-    [out:json][timeout:25];
+    [out:json][timeout:5];
     (
       // Metro/Train/RER stations (800m)
       node["railway"="station"](around:800,{latitude},{longitude});
@@ -57,39 +85,30 @@ async def get_nearby_pois(latitude: float, longitude: float) -> Dict[str, List[D
       // Bus stops (500m)
       node["highway"="bus_stop"](around:500,{latitude},{longitude});
 
-      // Bus/Tram/Metro route relations passing near this point (500m)
-      relation["type"="route"]["route"~"bus|tram|subway|light_rail"](around:500,{latitude},{longitude});
+      // Schools & Universities (800m)
+      node["amenity"="school"](around:800,{latitude},{longitude});
+      node["amenity"="university"](around:1000,{latitude},{longitude});
 
-      // Schools (1000m)
-      node["amenity"="school"](around:1000,{latitude},{longitude});
-      way["amenity"="school"](around:1000,{latitude},{longitude});
-      node["amenity"="university"](around:1500,{latitude},{longitude});
-      way["amenity"="university"](around:1500,{latitude},{longitude});
+      // Hospitals & Health (1000m)
+      node["amenity"="hospital"](around:1000,{latitude},{longitude});
 
-      // Hospitals (2000m)
-      node["amenity"="hospital"](around:2000,{latitude},{longitude});
-      way["amenity"="hospital"](around:2000,{latitude},{longitude});
-
-      // Supermarkets & convenience stores (500m)
+      // Supermarkets & Convenience (500m)
       node["shop"="supermarket"](around:500,{latitude},{longitude});
-      way["shop"="supermarket"](around:500,{latitude},{longitude});
       node["shop"="convenience"](around:300,{latitude},{longitude});
 
-      // Police (2000m)
-      node["amenity"="police"](around:2000,{latitude},{longitude});
-      way["amenity"="police"](around:2000,{latitude},{longitude});
+      // Police (1000m)
+      node["amenity"="police"](around:1000,{latitude},{longitude});
 
       // Pharmacies (500m)
       node["amenity"="pharmacy"](around:500,{latitude},{longitude});
 
-      // Parks (800m)
-      node["leisure"="park"](around:800,{latitude},{longitude});
-      way["leisure"="park"](around:800,{latitude},{longitude});
+      // Parks (500m)
+      node["leisure"="park"](around:500,{latitude},{longitude});
 
-      // Post offices (800m)
-      node["amenity"="post_office"](around:800,{latitude},{longitude});
+      // Post offices (500m)
+      node["amenity"="post_office"](around:500,{latitude},{longitude});
 
-      // Bakeries / restaurants (300m)
+      // Bakeries (300m)
       node["shop"="bakery"](around:300,{latitude},{longitude});
     );
     out center tags;
@@ -101,25 +120,22 @@ async def get_nearby_pois(latitude: float, longitude: float) -> Dict[str, List[D
         "https://overpass.kumi.systems/api/interpreter",
     ]
 
-    async with httpx.AsyncClient(timeout=45.0) as client:
-        for i, endpoint in enumerate(overpass_endpoints):
+    async with httpx.AsyncClient(timeout=3.0) as client:
+        for endpoint in overpass_endpoints:
             try:
                 response = await client.post(endpoint, data={"data": overpass_query})
                 if response.status_code == 200:
                     data = response.json()
-                    return parse_overpass_results(data, latitude, longitude)
-                # If 429/504, try next mirror after short delay
-                if response.status_code in (429, 504):
-                    print(f"Overpass {response.status_code} on {endpoint}, trying next...")
-                    if i < len(overpass_endpoints) - 1:
-                        await asyncio.sleep(3)
+                    parsed = parse_overpass_results(data, latitude, longitude)
+                    _POI_CACHE[grid_key] = (now, parsed)
+                    return parsed
             except Exception as e:
                 print(f"Overpass API error ({endpoint}): {e}")
-                if i < len(overpass_endpoints) - 1:
-                    await asyncio.sleep(3)
                 continue
 
-    return {"public_transport": [], "nearby_landmarks": []}
+    fallback = {"public_transport": [], "nearby_landmarks": []}
+    _POI_CACHE[grid_key] = (now, fallback)
+    return fallback
 
 
 def parse_overpass_results(
