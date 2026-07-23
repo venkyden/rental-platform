@@ -222,7 +222,7 @@ export default function NewPropertyPage() {
             }
             if (detail === 'landlord_bio_required') {
                 toast.error(t('bio.landlordRequired', undefined, 'Add a short bio to your profile before publishing — tenants need to know who they are dealing with.'));
-                router.push('/profile');
+                router.push(`/profile?returnTo=${encodeURIComponent('/properties')}`);
             } else {
                 const errorStr = typeof detail === 'string' ? detail : (detail?.message || t('properties.new.steps.success.publishFailed', undefined, 'Publishing failed. Please try again.'));
                 toast.error(errorStr);

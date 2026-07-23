@@ -146,6 +146,11 @@ export default function PropertiesPage() {
                     return;
                 }
             }
+            if (detail === 'landlord_bio_required') {
+                toast.error(t('bio.landlordRequired', undefined, 'Add a short bio to your profile before publishing — tenants need to know who they are dealing with.'));
+                router.push(`/profile?returnTo=${encodeURIComponent('/properties')}`);
+                return;
+            }
             const msg = typeof detail === 'string' ? detail : (detail?.message || 'Error publishing property');
             toast.error(msg);
         }

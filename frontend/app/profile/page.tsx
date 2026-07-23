@@ -4,11 +4,11 @@ import { User, Settings, Bell, Shield, LogOut, ChevronRight } from 'lucide-react
 import { useLanguage } from '@/lib/LanguageContext';
 import PremiumLayout from '@/components/PremiumLayout';
 import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/useAuth';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { apiClient } from '@/lib/api';
 import { useToast } from '@/lib/ToastContext';
 
@@ -16,6 +16,8 @@ function BioSection() {
     const { user, checkAuth } = useAuth() as any;
     const { t } = useLanguage();
     const toast = useToast();
+    const router = useRouter();
+    const searchParams = useSearchParams();
     const [firstName, setFirstName] = useState('');
     const [bio, setBio] = useState('');
     const [saving, setSaving] = useState(false);
@@ -37,6 +39,10 @@ function BioSection() {
             });
             await checkAuth?.();
             toast.success(t('bio.saved', undefined, 'Profile updated'));
+            const returnTo = searchParams?.get('returnTo');
+            if (returnTo && returnTo.startsWith('/') && !returnTo.startsWith('//') && !returnTo.startsWith('/\\')) {
+                router.push(returnTo);
+            }
         } catch (e: any) {
             const detail = e.response?.data?.detail;
             const msg = Array.isArray(detail) ? detail[0]?.msg : detail;
@@ -120,7 +126,9 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="max-w-2xl mx-auto">
-                    <BioSection />
+                    <Suspense fallback={null}>
+                        <BioSection />
+                    </Suspense>
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
