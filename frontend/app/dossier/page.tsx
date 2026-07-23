@@ -6,6 +6,7 @@ import { useAuthContext as useAuth } from '@/lib/AuthContext';
 import { ShieldCheck, Share2, FileText, CheckCircle2, Copy } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { useToast } from '@/lib/ToastContext';
+import RentalDossier from '@/components/RentalDossier';
 
 interface Dossier {
   id: string;
@@ -86,6 +87,10 @@ export default function DossierHub() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
+        <div className="md:col-span-2">
+            <RentalDossier />
+        </div>
+
         <div className="md:col-span-2 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-900 border border-blue-100 dark:border-slate-800 rounded-xl overflow-hidden">
           <div className="p-6 border-b border-blue-100/50 dark:border-slate-800/50">
             <h3 className="font-semibold text-lg">{t('dossier.hub.desc')}</h3>

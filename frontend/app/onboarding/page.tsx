@@ -102,9 +102,7 @@ export default function OnboardingPage() {
             if (selectedRole !== user?.role) {
                 await switchRole(selectedRole);
             }
-            // Questionnaire/personalization step hidden temporarily as requested by user
-            // setStep('questionnaire');
-            await handleComplete({});
+            setStep('questionnaire');
         } catch (err) {
             setError(t('onboarding.error.savingName', undefined, 'Unable to save profile preferences'));
         } finally {

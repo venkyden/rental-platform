@@ -30,7 +30,12 @@ LOI_ALUR_ALLOWED_TENANT_DOCS = {
     "payslip", "tax_return", "foreign_tax_return", "scholarship", "caf",
     "accounting", "benefits", "pension", "bank_funds_certificate",
     "visale_certificate", "garantme_certificate",
-    "rent_receipt", "guarantor_form", "property_tax_notice"
+    "rent_receipt", "guarantor_form", "property_tax_notice",
+    # Frontend keys matching Legifrance
+    "identity", "proof_of_address", "student_card", "pays_slip", "scholarship_proof",
+    "tax_notice", "accounting_balance", "pension_proof", "activity_proof", "income_proof",
+    "guarantor_identity", "guarantor_proof_address", "guarantor_activity", "guarantor_income",
+    "taxe_fonciere", "rib", "carte_pro", "financial_guarantee"
 }
 
 
