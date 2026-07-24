@@ -6,7 +6,9 @@ import { Copy, Check, Download, ExternalLink, ShieldCheck } from 'lucide-react';
 import { useLanguage } from '@/lib/LanguageContext';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://roomivo.app';
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+// Only used for the evidence-PDF API link, so carry the /api/v1 mount here.
+const API_ORIGIN = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+const API_URL = API_ORIGIN.endsWith('/api/v1') ? API_ORIGIN : `${API_ORIGIN}/api/v1`;
 
 interface Props {
     credentialId: string;

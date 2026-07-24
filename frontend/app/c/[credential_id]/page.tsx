@@ -18,7 +18,10 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '@/lib/LanguageContext';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+// Every use below is an API call, so carry the /api/v1 mount here rather than
+// repeating it at each call site.
+const API_ORIGIN = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+const API_URL = API_ORIGIN.endsWith('/api/v1') ? API_ORIGIN : `${API_ORIGIN}/api/v1`;
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://roomivo.app';
 
 interface DepositBinding {

@@ -2,7 +2,10 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import PropertyDetailClient from './PropertyDetailClient';
 
+// API_URL stays the bare origin because media paths below resolve against it
+// (/uploads/...). API calls go through API_V1, which carries the router mount.
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+const API_V1 = API_URL.endsWith('/api/v1') ? API_URL : `${API_URL}/api/v1`;
 
 interface PageProps {
     params: Promise<{ id: string }>;
@@ -10,7 +13,7 @@ interface PageProps {
 
 async function getPropertyData(id: string) {
     try {
-        const res = await fetch(`${API_URL}/properties/${id}`, {
+        const res = await fetch(`${API_V1}/properties/${id}`, {
             cache: 'no-store', // ensures we fetch fresh data
         });
         if (!res.ok) {

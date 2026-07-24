@@ -177,7 +177,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
     const startSseConnection = (code: string) => {
         if (eventSourceRef.current) eventSourceRef.current.close();
         if (pollRef.current) clearInterval(pollRef.current);
-        const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/verification/identity/session/${code}/stream`;
+        const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/v1/verification/identity/session/${code}/stream`;
         const es = new EventSource(url);
         eventSourceRef.current = es;
         es.onmessage = (event) => {
