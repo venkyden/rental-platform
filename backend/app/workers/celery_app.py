@@ -46,8 +46,10 @@ celery_app.conf.update(
 # Discover tasks automatically (you can add tasks later)
 celery_app.autodiscover_tasks(["app.workers"])
 
-# Periodic work. Requires the worker to run with --beat (see render.yaml);
-# without it these tasks exist but nothing ever invokes them.
+# Periodic work. Dispatched by the dedicated roomivo-beat service (render.yaml);
+# without a beat process running somewhere these tasks exist but nothing ever
+# invokes them. Beat must stay at exactly one instance — a second would
+# double-fire every entry below.
 #
 # Raw identity documents on the storage fallback path have no TTL of their own,
 # so this sweep is the only thing that reclaims them. Every 15 minutes against a

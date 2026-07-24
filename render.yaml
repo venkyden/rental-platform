@@ -102,11 +102,59 @@ services:
     branch: master
     rootDir: backend
     buildCommand: "pip install -r requirements.txt"
-    # --beat embeds the scheduler so beat_schedule entries (the stale identity-doc
-    # sweep) actually fire. Safe only while this stays a single worker instance —
-    # a second replica would double-schedule; split beat into its own service first.
+    # Executes tasks only. The scheduler lives in the separate roomivo-beat
+    # service, so this one is free to scale to multiple instances without
+    # double-firing periodic tasks.
+    startCommand: "python -m celery -A app.workers.celery_app worker --loglevel=info --concurrency=2 --without-gossip --without-mingle --without-heartbeat"
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.13"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: roomivo-db
+          property: connectionString
+      - key: REDIS_URL
+        sync: false
+      - key: SECRET_KEY
+        sync: false
+      - key: MASTER_ENCRYPTION_KEY
+        sync: false
+      - key: CREDENTIAL_SIGNING_KEY
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: FROM_EMAIL
+        value: "Roomivo <contact@roomivo.eu>"
+      - key: ENVIRONMENT
+        value: "production"
+      - key: PYTHONPATH
+        value: "."
+      - key: STORAGE_ENDPOINT
+        value: "https://e9e4f279f640445e67f1070fea6e8c6c.r2.cloudflarestorage.com"
+      - key: STORAGE_BUCKET
+        value: "rental-platform-media"
+      - key: STORAGE_ACCESS_KEY
+        sync: false
+      - key: STORAGE_SECRET_KEY
+        sync: false
+
+  # ── Celery Beat Scheduler ────────────────────────────────────────────
+  # Scheduler only — dispatches periodic tasks (the stale identity-doc sweep)
+  # onto the broker for roomivo-worker to execute. Kept separate so the worker
+  # can scale: every extra instance of *this* service double-fires every
+  # scheduled task, so it MUST stay at exactly one instance.
+  # Env mirrors the worker because app.core.config validates on import and
+  # exits non-zero when production secrets are absent.
+  - type: worker
+    name: roomivo-beat
+    runtime: python
+    region: frankfurt
+    plan: starter
+    branch: master
+    rootDir: backend
+    buildCommand: "pip install -r requirements.txt"
     # Schedule DB goes to /tmp because the app dir is not reliably writable.
-    startCommand: "python -m celery -A app.workers.celery_app worker --beat --schedule=/tmp/celerybeat-schedule --loglevel=info --concurrency=2 --without-gossip --without-mingle --without-heartbeat"
+    startCommand: "python -m celery -A app.workers.celery_app beat --schedule=/tmp/celerybeat-schedule --loglevel=info"
     envVars:
       - key: PYTHON_VERSION
         value: "3.13"
