@@ -14,6 +14,14 @@ class UserRegister(BaseModel):
     role: str = Field(pattern="^(tenant|landlord|property_manager)$")
     marketing_consent: bool = False
 
+    @field_validator("full_name")
+    @classmethod
+    def validate_full_name_no_xss(cls, v: str) -> str:
+        """Prevent basic XSS payloads in full_name"""
+        if "<" in v or ">" in v or "script" in v.lower():
+            raise ValueError("Invalid characters in full_name")
+        return v
+
     @field_validator("password")
     @classmethod
     def validate_password_complexity(cls, v: str) -> str:
