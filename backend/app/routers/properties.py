@@ -247,7 +247,6 @@ def _apply_property_filters(
     property_type = params.get("property_type")
     furnished = params.get("furnished")
     caf_eligible = params.get("caf_eligible")
-    caf_eligible = params.get("caf_eligible")
     landlord_id = params.get("landlord_id")
     sort_by = params.get("sort_by", "created_at")
     order_direction = params.get("order_direction", "desc")
@@ -268,8 +267,16 @@ def _apply_property_filters(
         else:
             query = query.where(Property.status == "active")
 
-    if city:
-        query = query.where(Property.city.ilike(f"%{city}%"))
+    if city and city.strip():
+        city_term = city.strip()
+        from sqlalchemy import or_
+        query = query.where(
+            or_(
+                Property.city.ilike(f"%{city_term}%"),
+                Property.postal_code.ilike(f"%{city_term}%"),
+                Property.address_line1.ilike(f"%{city_term}%")
+            )
+        )
     
     # Parse numeric/bool params
     try:
@@ -312,8 +319,9 @@ def _apply_property_filters(
         except (ValueError, TypeError):
             pass
 
-    if property_type:
-        query = query.where(Property.property_type == property_type)
+    if property_type and property_type.strip():
+        from sqlalchemy import func
+        query = query.where(func.lower(Property.property_type) == property_type.strip().lower())
 
     if furnished and furnished != "":
         val = furnished.lower() == "true" if isinstance(furnished, str) else bool(furnished)
@@ -327,22 +335,32 @@ def _apply_property_filters(
     if colocation and colocation != "":
         val = colocation.lower() in ("true", "1") if isinstance(colocation, str) else bool(colocation)
         if val:
-            from sqlalchemy import or_
+            from sqlalchemy import or_, func, String
             query = query.where(
                 or_(
-                    Property.property_type.in_(["room", "colocation"]),
-                    Property.amenities.contains(["colocation"])
+                    func.lower(Property.property_type).in_(["room", "colocation", "chambre"]),
+                    Property.amenities.cast(String).ilike("%colocation%"),
+                    Property.amenities.cast(String).ilike("%coloc%"),
+                    Property.title.ilike("%colocation%"),
+                    Property.title.ilike("%coloc%"),
+                    Property.description.ilike("%colocation%"),
+                    Property.room_details.isnot(None),
                 )
             )
 
     if amenities:
-        from sqlalchemy import or_
+        from sqlalchemy import or_, func, String
         for amenity in amenities:
             if amenity == "colocation":
                 query = query.where(
                     or_(
-                        Property.property_type.in_(["room", "colocation"]),
-                        Property.amenities.contains(["colocation"])
+                        func.lower(Property.property_type).in_(["room", "colocation", "chambre"]),
+                        Property.amenities.cast(String).ilike("%colocation%"),
+                        Property.amenities.cast(String).ilike("%coloc%"),
+                        Property.title.ilike("%colocation%"),
+                        Property.title.ilike("%coloc%"),
+                        Property.description.ilike("%colocation%"),
+                        Property.room_details.isnot(None),
                     )
                 )
             else:

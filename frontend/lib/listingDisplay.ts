@@ -27,9 +27,11 @@ export interface ListingSummary {
 // 'Studio' / 'T2' / 'Colocation' are language-neutral tokens; returns null when
 // only a translated type name (apartment/house) applies — caller falls back to t().
 export function getTypology(p: ListingSummary): string | null {
-    if (p.property_type === 'studio') return 'Studio';
-    if (p.property_type === 'room') return 'Colocation';
-    if (p.amenities?.some(a => a.toLowerCase().includes('colocation'))) return 'Colocation';
+    const propType = p.property_type?.toLowerCase();
+    if (propType === 'studio') return 'Studio';
+    if (propType === 'room' || propType === 'colocation' || propType === 'chambre') return 'Colocation';
+    if (p.amenities?.some(a => a.toLowerCase().includes('colocation') || a.toLowerCase().includes('coloc'))) return 'Colocation';
+    if (p.title?.toLowerCase().includes('colocation') || p.title?.toLowerCase().includes('coloc')) return 'Colocation';
     if (p.rooms_count && p.rooms_count >= 1) {
         return p.rooms_count >= 6 ? 'T6+' : `T${p.rooms_count}`;
     }

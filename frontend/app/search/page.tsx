@@ -65,7 +65,6 @@ function SearchContent() {
         const mode = config.settings.default_filter_mode;
         if (mode === 'budget') {
             setPriceRange(800);
-            setColocation(true);
         } else if (mode === 'location') {
             setPriceRange(2500);
         } else if (mode === 'term') {
@@ -101,7 +100,6 @@ function SearchContent() {
             if (propertyType && !(typology === 'studio')) params.property_type = propertyType;
             if (colocation) {
                 params.colocation = '1';
-                params.amenities = ['colocation'];
             }
             
             const response = savedOnly 
