@@ -339,14 +339,6 @@ export default function ReceivedApplicationsPage() {
                                                             )}
                                                         </div>
 
-                                                        {tenant?.id && (
-                                                            <button
-                                                                onClick={() => router.push(`/tenants/${tenant.id}`)} // Dossier route or profile verification
-                                                                className="text-xs font-black text-zinc-900 dark:text-white uppercase tracking-widest hover:underline hover:scale-105 transition-transform"
-                                                            >
-                                                                {t('applications.viewDossier')}
-                                                            </button>
-                                                        )}
                                                     </div>
 
                                                     {/* Cover Letter */}

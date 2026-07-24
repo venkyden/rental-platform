@@ -150,7 +150,7 @@ export default function RentalDossier() {
 
     const fetchDocuments = async () => {
         try {
-            const res = await apiClient.client.get('/documents/me');
+            const res = await apiClient.client.get('/documents');
             setDocuments(res.data);
         } catch (error) {
             console.error(error);

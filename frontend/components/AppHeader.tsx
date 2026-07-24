@@ -64,7 +64,7 @@ export default function AppHeader({
 
                                 {/* Dropdown menu trigger - simplified for now */}
                                 <button
-                                    onClick={() => router.push('/settings')}
+                                    onClick={() => router.push('/settings/account')}
                                     className="p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors"
                                     title="Settings"
                                 >
