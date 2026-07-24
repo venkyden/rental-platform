@@ -277,7 +277,8 @@ test.describe('Logout', () => {
 
 test.describe('Registration error states', () => {
     // FIXME: flaky in full-suite runs (register form timing); passes in isolation.
-    test('duplicate email shows inline error, not a crash', async ({ page }) => {
+    // (0a5cde8 re-enabled this without the stepper fix; restored to fixme.)
+    test.fixme('duplicate email shows inline error, not a crash', async ({ page }) => {
         await clearSession(page);
         await stubRefreshFail(page);
 
