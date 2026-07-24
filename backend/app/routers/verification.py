@@ -106,10 +106,6 @@ async def _update_session(code: str, session_data: dict):
     else:
         _verification_sessions[code] = session_data
 
-from slowapi import Limiter
-from slowapi.util import get_remote_address
-
-limiter = Limiter(key_func=get_remote_address)
 
 router = APIRouter(prefix="/verification", tags=["Verification"])
 
@@ -195,9 +191,7 @@ async def get_biometric_consent_status(
 
 
 @router.post("/identity/upload")
-@limiter.limit("10/minute")
 async def upload_identity_document(
-    request: Request,
     document_type: Optional[str] = Form(None),
     document_type_query: Optional[str] = Query(None, alias="document_type"),
     side: str = Form("front"),
