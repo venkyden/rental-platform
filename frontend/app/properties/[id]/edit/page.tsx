@@ -435,7 +435,10 @@ export default function EditPropertyPage() {
                 const isValid = formData.monthly_rent > 0;
                 if (isValid && formData.deposit !== undefined) {
                     const maxDepositMonths = formData.furnished ? 2 : 1;
-                    const maxDeposit = formData.monthly_rent * maxDepositMonths;
+                    const baseRent = formData.monthly_rent || 0;
+                    const chargesAmount = formData.charges || 0;
+                    const totalRent = formData.charges_included ? baseRent : baseRent + chargesAmount;
+                    const maxDeposit = Math.max(baseRent, totalRent) * maxDepositMonths;
                     if (formData.deposit > maxDeposit) {
                         toast.warning(t(formData.furnished ? 'properties.new.steps.pricing.depositWarningFurnished' : 'properties.new.steps.pricing.depositWarningUnfurnished', undefined, `Deposit exceeds the legal limit of ${formData.furnished ? '2 months' : '1 month'} rent.`));
                     }
@@ -1785,8 +1788,12 @@ export default function EditPropertyPage() {
                                             </label>
 
                                             {(() => {
-                                                const isDepositLimitExceeded = formData.deposit !== undefined && formData.monthly_rent > 0 && 
-                                                    formData.deposit > formData.monthly_rent * (formData.furnished ? 2 : 1);
+                                                const editBaseRent = formData.monthly_rent || 0;
+                                                const editChargesAmount = formData.charges || 0;
+                                                const editTotalRent = formData.charges_included ? editBaseRent : editBaseRent + editChargesAmount;
+                                                const maxAllowedDep = Math.max(editBaseRent, editTotalRent) * (formData.furnished ? 2 : 1);
+                                                const isDepositLimitExceeded = formData.deposit !== undefined && editBaseRent > 0 && 
+                                                    formData.deposit > maxAllowedDep;
                                                 const isDpeDecenceWarning = formData.dpe_rating === 'G';
                                                 const isSizeTooSmall = formData.size_sqm < 9;
                                                 const hasHardComplianceErrors = isSizeTooSmall || isDepositLimitExceeded;

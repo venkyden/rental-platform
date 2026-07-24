@@ -11,13 +11,56 @@ interface Props {
 }
 
 export default function Step5Pricing({ formData, updateFormData, t, showRentControl, setShowRentControl }: Props) {
+    const baseRent = formData.monthly_rent || 0;
+    const chargesAmount = formData.charges || 0;
+    const totalRent = formData.charges_included ? baseRent : baseRent + chargesAmount;
+    const maxDepositMonths = formData.furnished ? 2 : 1;
+    const maxDeposit = Math.max(baseRent, totalRent) * maxDepositMonths;
+
     return (
         <div className="space-y-12">
+            {/* Live Financial Breakdown Summary Card */}
+            <div className="p-6 sm:p-8 rounded-[2.5rem] bg-zinc-900 text-white space-y-6 shadow-2xl">
+                <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
+                    <span className="text-xs font-black uppercase tracking-[0.3em] text-zinc-400">
+                        {t('property.create.pricing.financialBreakdown', undefined, 'Financial Breakdown (Décompte Financier)')}
+                    </span>
+                    <span className="text-xs font-bold px-3 py-1 bg-zinc-800 rounded-full text-zinc-300">
+                        {formData.charges_included ? 'Charges Comprises (CC)' : 'Hors Charges (HC)'}
+                    </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    <div className="space-y-1">
+                        <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                            {t('property.create.pricing.baseRentHC', undefined, 'Loyer Hors Charges')}
+                        </p>
+                        <p className="text-3xl font-black tracking-tight text-white">€{baseRent}</p>
+                    </div>
+
+                    <div className="space-y-1">
+                        <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                            {t('property.create.pricing.monthlyCharges', undefined, 'Charges Mensuelles')}
+                        </p>
+                        <p className="text-3xl font-black tracking-tight text-zinc-300">
+                            {formData.charges_included ? 'Incluses' : `+ €${chargesAmount}`}
+                        </p>
+                    </div>
+
+                    <div className="space-y-1 border-t sm:border-t-0 sm:border-l border-zinc-800 pt-4 sm:pt-0 sm:pl-6">
+                        <p className="text-xs font-bold text-emerald-400 uppercase tracking-wider">
+                            {t('property.create.pricing.totalMonthlyRent', undefined, 'Total Mensuel (CC)')}
+                        </p>
+                        <p className="text-3xl font-black tracking-tight text-emerald-400">€{totalRent} <span className="text-xs font-medium text-emerald-300">/ mois</span></p>
+                    </div>
+                </div>
+            </div>
+
             {/* Monthly rent */}
             <div className="grid grid-cols-2 gap-8">
                 <div className="space-y-6">
                     <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
-                        {t('properties.new.steps.pricing.monthlyRent')}
+                        {t('properties.new.steps.pricing.monthlyRent')} (HC)
                     </label>
                     <div className="flex items-baseline gap-4">
                         <span className="text-4xl font-black text-zinc-300">€</span>
@@ -61,7 +104,7 @@ export default function Step5Pricing({ formData, updateFormData, t, showRentCont
                             type="number"
                             value={formData.charges || ''}
                             onChange={(e) => updateFormData({ charges: parseInt(e.target.value) || 0 })}
-                            placeholder={t('property.create.pricing.chargesPlaceholder', undefined, 'ex: 100')}
+                            placeholder={t('property.create.pricing.chargesPlaceholder', undefined, 'ex: 75')}
                             className="w-full bg-zinc-50 p-4 rounded-xl border-none font-black text-xl"
                             aria-label={t('property.create.pricing.charges', undefined, 'Charges')}
                         />
@@ -69,7 +112,7 @@ export default function Step5Pricing({ formData, updateFormData, t, showRentCont
                 </div>
                 <div className="space-y-4">
                     <label className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400">
-                        {t('property.create.pricing.deposit', undefined, 'Security Deposit')}
+                        {t('property.create.pricing.deposit', undefined, 'Security Deposit (Caution)')}
                     </label>
                     <div className="flex items-baseline gap-2">
                         <span className="text-xl font-black text-zinc-300">€</span>
@@ -81,12 +124,42 @@ export default function Step5Pricing({ formData, updateFormData, t, showRentCont
                             aria-label={t('property.create.pricing.deposit', undefined, 'Security deposit')}
                         />
                     </div>
+
+                    {/* Deposit Quick-Fill Presets */}
+                    <div className="flex flex-wrap gap-2 pt-1">
+                        <button
+                            type="button"
+                            onClick={() => updateFormData({ deposit: totalRent })}
+                            className="px-3 py-1.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-900 text-xs font-bold rounded-lg transition-all"
+                        >
+                            {t('property.create.pricing.preset1mTotal', undefined, `1 mois CC (${totalRent}€)`)}
+                        </button>
+                        {baseRent !== totalRent && (
+                            <button
+                                type="button"
+                                onClick={() => updateFormData({ deposit: baseRent })}
+                                className="px-3 py-1.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-900 text-xs font-bold rounded-lg transition-all"
+                            >
+                                {t('property.create.pricing.preset1mBase', undefined, `1 mois HC (${baseRent}€)`)}
+                            </button>
+                        )}
+                        {formData.furnished && (
+                            <button
+                                type="button"
+                                onClick={() => updateFormData({ deposit: totalRent * 2 })}
+                                className="px-3 py-1.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-900 text-xs font-bold rounded-lg transition-all"
+                            >
+                                {t('property.create.pricing.preset2mTotal', undefined, `2 mois CC (${totalRent * 2}€)`)}
+                            </button>
+                        )}
+                    </div>
+
                     <p className="text-xs text-zinc-400 font-medium">
                         {t('property.create.pricing.depositLimit', undefined, 'Max 1 month rent (Unfurnished) or 2 months (Furnished)')}
                     </p>
                     {formData.deposit !== undefined &&
-                        formData.monthly_rent > 0 &&
-                        formData.deposit > formData.monthly_rent * (formData.furnished ? 2 : 1) && (
+                        baseRent > 0 &&
+                        formData.deposit > maxDeposit && (
                             <p className="text-amber-500 text-xs font-bold mt-1" role="alert">
                                 ⚠️ {t(formData.furnished
                                     ? 'properties.new.steps.pricing.depositWarningFurnished'

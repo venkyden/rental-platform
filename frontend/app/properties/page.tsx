@@ -12,6 +12,7 @@ import { resolveMediaUrl } from '@/lib/mediaUrl';
 import VerificationUpload from '@/components/VerificationUpload';
 import { useLanguage } from '@/lib/LanguageContext';
 import { useToast } from '@/lib/ToastContext';
+import PremiumEmptyState from '@/components/PremiumEmptyState';
 import { PropertyCardSkeleton } from '@/components/SkeletonLoaders';
 import { Building } from 'lucide-react';
 import Image from 'next/image';
@@ -213,20 +214,13 @@ export default function PropertiesPage() {
                             {[1, 2, 3, 4, 5, 6].map(i => <PropertyCardSkeleton key={i} />)}
                         </div>
                     ) : properties.length === 0 ? (
-                        <div className="py-40 text-center glass-card border-none rounded-[3rem] shadow-2xl relative overflow-hidden">
-                            <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-[0.03] pointer-events-none"></div>
-                            <div className="w-24 h-24 bg-zinc-50 rounded-full flex items-center justify-center mx-auto mb-10 shadow-inner">
-                                <Building className="w-10 h-10 text-zinc-300" />
-                            </div>
-                            <h3 className="text-3xl font-black mb-4 uppercase tracking-tighter">{t('properties.emptyTitle', undefined, 'Portfolio Empty')}</h3>
-                            <p className="text-lg text-zinc-500 font-medium max-w-sm mx-auto leading-relaxed mb-12">{t('properties.emptyDescription', undefined, 'Start by adding your first listing to the platform to begin your journey.')}</p>
-                            <button 
-                                onClick={() => router.push('/properties/new')} 
-                                className="px-12 py-5 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.4em] rounded-[2rem] shadow-2xl hover:scale-105 active:scale-95 transition-all"
-                            >
-                                {t('properties.addProperty', undefined, 'Create Listing')} →
-                            </button>
-                        </div>
+                        <PremiumEmptyState
+                            icon={Building}
+                            title={t('properties.emptyTitle', undefined, 'Portfolio Empty')}
+                            description={t('properties.emptyDescription', undefined, 'Start by adding your first listing to the platform to begin your journey.')}
+                            actionLabel={t('properties.addProperty', undefined, 'Create Listing')}
+                            onAction={() => router.push('/properties/new')}
+                        />
                     ) : (
                         <motion.div
                             variants={containerVariants}

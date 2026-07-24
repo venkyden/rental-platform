@@ -2,6 +2,7 @@
 
 import { useRouter, useParams } from 'next/navigation';
 import { useLanguage } from '@/lib/LanguageContext';
+import Navbar from '@/components/Navbar';
 
 export default function GuidePage() {
     const router = useRouter();
@@ -10,7 +11,9 @@ export default function GuidePage() {
     const slug = params?.slug;
 
     return (
-        <div className="min-h-screen flex flex-col bg-slate-50 relative overflow-hidden">
+        <>
+        <Navbar />
+        <div className="min-h-screen flex flex-col bg-slate-50 relative overflow-hidden pt-20">
             {/* Background Effects */}
             <div className="absolute inset-0 z-0">
                 <div className="absolute top-0 w-full h-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-100/50 via-slate-50 to-white"></div>
@@ -77,6 +80,7 @@ export default function GuidePage() {
                 </div>
             </main>
         </div>
+        </>
     );
 }
 

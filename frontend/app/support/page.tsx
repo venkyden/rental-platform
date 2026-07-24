@@ -1,12 +1,15 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import Navbar from '@/components/Navbar';
 
 export default function SupportPage() {
     const router = useRouter();
 
     return (
-        <div className="min-h-screen flex flex-col bg-slate-50 relative overflow-hidden">
+        <>
+        <Navbar />
+        <div className="min-h-screen flex flex-col bg-slate-50 relative overflow-hidden pt-20">
             {/* Background Effects */}
             <div className="absolute inset-0 z-0">
                 <div className="absolute top-0 w-full h-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-teal-50/50 via-slate-50 to-white"></div>
@@ -33,5 +36,6 @@ export default function SupportPage() {
                 </div>
             </main>
         </div>
+        </>
     );
 }

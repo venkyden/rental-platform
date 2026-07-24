@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import React, { useState } from 'react';
+import Navbar from '@/components/Navbar';
 
 const content = {
     en: {
@@ -387,7 +388,9 @@ export default function LegalPage() {
     const t = lang === 'fr' ? content.fr : content.en;
 
     return (
-        <div className="min-h-screen bg-zinc-50 py-24 px-4 sm:px-6 lg:px-8">
+        <>
+        <Navbar />
+        <div className="min-h-screen bg-zinc-50 pt-32 pb-24 px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto">
                 <div className="glass-card !p-12 rounded-[3rem] border-zinc-100 shadow-2xl">
                     <div className="flex justify-between items-start mb-12">
@@ -436,5 +439,6 @@ export default function LegalPage() {
                 </div>
             </div>
         </div>
+        </>
     );
 }

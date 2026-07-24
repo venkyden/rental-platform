@@ -7,6 +7,8 @@ import { ShieldCheck, Share2, FileText, CheckCircle2, Copy } from 'lucide-react'
 import { apiClient } from '@/lib/api';
 import { useToast } from '@/lib/ToastContext';
 import RentalDossier from '@/components/RentalDossier';
+import Navbar from '@/components/Navbar';
+import PremiumEmptyState from '@/components/PremiumEmptyState';
 
 interface Dossier {
   id: string;
@@ -73,8 +75,10 @@ export default function DossierHub() {
   };
 
   return (
-    <div className="container max-w-4xl py-12 px-4 space-y-8">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <>
+      <Navbar />
+      <div className="container max-w-4xl pt-32 pb-12 px-4 space-y-8 mx-auto">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
             <ShieldCheck className="h-8 w-8 text-blue-600" />
@@ -112,9 +116,12 @@ export default function DossierHub() {
         </div>
 
         {!loading && !error && dossiers.length === 0 && (
-          <div className="md:col-span-2 py-12 text-center border-2 border-dashed rounded-xl border-slate-200 dark:border-slate-800">
-            <FileText className="h-12 w-12 mx-auto text-slate-300 mb-4" />
-            <p className="text-slate-500">{t('dossier.hub.empty')}</p>
+          <div className="md:col-span-2">
+            <PremiumEmptyState
+              icon={FileText}
+              title={t('dossier.hub.empty', undefined, 'No dossiers generated')}
+              description={t('dossier.hub.emptyDesc', undefined, 'Click the Compile button above to generate your first rental dossier.')}
+            />
           </div>
         )}
 
@@ -159,5 +166,6 @@ export default function DossierHub() {
         ))}
       </div>
     </div>
+    </>
   );
 }

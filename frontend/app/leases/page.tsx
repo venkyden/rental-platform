@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { FileText, ArrowRight, PenLine, ShieldCheck, Clock } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import PremiumLayout from '@/components/PremiumLayout';
+import PremiumEmptyState from '@/components/PremiumEmptyState';
 import { leaseApi, Lease } from '@/app/lib/api/lease';
 import { useToast } from '@/lib/ToastContext';
 import { useLanguage } from '@/lib/LanguageContext';
@@ -53,10 +54,11 @@ export default function LeasesListPage() {
                     {loading ? (
                         <div className="text-zinc-400 py-12">{t('esign.list.loading', undefined, 'Loading…')}</div>
                     ) : leases.length === 0 ? (
-                        <div className="border border-dashed border-zinc-200 rounded-2xl p-12 text-center text-zinc-400">
-                            <FileText className="w-10 h-10 mx-auto mb-3 text-zinc-300" />
-                            <p className="text-sm font-semibold uppercase tracking-wider">{t('esign.list.empty', undefined, 'No leases yet')}</p>
-                        </div>
+                        <PremiumEmptyState
+                            icon={FileText}
+                            title={t('esign.list.empty', undefined, 'No leases yet')}
+                            description={t('esign.list.emptyDesc', undefined, 'You have not created or received any lease agreements yet.')}
+                        />
                     ) : (
                         <div className="space-y-3">
                             {leases.map((lease) => {
