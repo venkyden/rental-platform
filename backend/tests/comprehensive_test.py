@@ -569,7 +569,15 @@ async def feature_flag_tests(session: aiohttp.ClientSession):
             return
             
     import subprocess
-    subprocess.run(["psql", "-d", "rental_platform", "-c", f"UPDATE users SET role='admin' WHERE email='{email}';"], capture_output=True)
+    # psql variable substitution (:'email' quotes safely) — never interpolate into SQL.
+    subprocess.run(
+        [
+            "psql", "-d", "rental_platform",
+            "-v", f"email={email}",
+            "-c", "UPDATE users SET role='admin' WHERE email=:'email';",
+        ],
+        capture_output=True,
+    )
 
         
     # 2. Login
