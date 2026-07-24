@@ -29,7 +29,7 @@ export default function SharedDossierViewer() {
 
   const fetchDetails = async () => {
     try {
-      const res = await apiClient.client.get(`/api/v1/dossiers/shared/${token}/meta`);
+      const res = await apiClient.client.get(`/dossiers/shared/${token}/meta`);
       setDetails(res.data);
     } catch (err: any) {
       setError(err.response?.status === 404 ? t('dossier.viewer.notFound') : t('common.errors.failed'));

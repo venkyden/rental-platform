@@ -34,7 +34,7 @@ export default function DossierHub() {
 
   const fetchDossiers = async () => {
     try {
-      const res = await apiClient.client.get('/api/v1/dossiers/me');
+      const res = await apiClient.client.get('/dossiers/me');
       setDossiers(res.data);
     } catch (err) {
       console.error(err);
@@ -48,7 +48,7 @@ export default function DossierHub() {
   const handleCompile = async () => {
     setCompiling(true);
     try {
-      await apiClient.client.post('/api/v1/dossiers/compile', { role: user?.role || 'tenant' });
+      await apiClient.client.post('/dossiers/compile', { role: user?.role || 'tenant' });
       await fetchDossiers();
       toast.success(t('common.save')); // Generic success
     } catch (err: any) {
@@ -61,7 +61,7 @@ export default function DossierHub() {
   const handleShare = async (dossierId: string) => {
     setSharing(dossierId);
     try {
-      const res = await apiClient.client.post('/api/v1/dossiers/share', { 
+      const res = await apiClient.client.post('/dossiers/share', { 
         dossier_id: dossierId,
         expires_in_days: 7 
       });
