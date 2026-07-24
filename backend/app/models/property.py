@@ -29,11 +29,11 @@ class Property(Base):
     # Location
     address_line1 = Column(String(200), nullable=False)
     address_line2 = Column(String(200))
-    city = Column(String(100), nullable=False)
-    postal_code = Column(String(20), nullable=False)
+    city = Column(String(100), nullable=False, index=True)
+    postal_code = Column(String(20), nullable=False, index=True)
     country = Column(String(100), default="France")
-    latitude = Column(DECIMAL(10, 8))
-    longitude = Column(DECIMAL(11, 8))
+    latitude = Column(DECIMAL(10, 8), index=True)
+    longitude = Column(DECIMAL(11, 8), index=True)
 
     bedrooms = Column(Integer, nullable=False)
     bathrooms = Column(DECIMAL(3, 1))
@@ -113,7 +113,7 @@ class Property(Base):
 
     # Status
     status = Column(
-        String(20), default="draft"
+        String(20), default="draft", index=True
     )  # 'draft', 'active', 'rented', 'inactive'
 
     # Verification

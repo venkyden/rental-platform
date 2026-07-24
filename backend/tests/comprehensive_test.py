@@ -572,9 +572,8 @@ async def feature_flag_tests(session: aiohttp.ClientSession):
     # psql variable substitution (:'email' quotes safely) — never interpolate into SQL.
     subprocess.run(
         [
-            "psql", "-d", "rental_platform",
-            "-v", f"email={email}",
-            "-c", "UPDATE users SET role='admin' WHERE email=:'email';",
+            "psql", "-h", "127.0.0.1", "-d", "rental_platform",
+            "-c", f"UPDATE users SET role='admin' WHERE email='{email}';",
         ],
         capture_output=True,
     )

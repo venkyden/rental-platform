@@ -13,6 +13,7 @@ import AlertCenter from '@/components/dashboard/AlertCenter';
 import ComplianceWidget from '@/components/dashboard/ComplianceWidget';
 import RevenueChart from '@/components/dashboard/RevenueChart';
 import RoleSwitcher from '@/components/dashboard/RoleSwitcher';
+import PremiumLayout from '@/components/PremiumLayout';
 import { Building, FileText, Calendar, Mail, ArrowUpRight, BarChart3, Users, Settings } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -87,66 +88,103 @@ export default function LandlordDashboard() {
     if (!user) return null;
 
     return (
-        <div className="w-full space-y-12" role="main">
-            {/* Header / Welcome Banner */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-                <div>
-                    <h1 className="text-3xl sm:text-5xl font-black text-zinc-950 tracking-tight uppercase leading-none">
-                        {t('dashboard.landlord.welcome', { name: user.full_name?.split(' ')[0] || user.email?.split('@')[0] }, 'Welcome back')}
-                    </h1>
-                    <div className="flex items-center gap-3 mt-4">
-                        <SegmentBadge />
-                        <span className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em]">
-                            {t('dashboard.landlord.title', undefined, 'Landlord Command Center')}
-                        </span>
+        <PremiumLayout>
+            <div className="w-full space-y-12" role="main">
+                {/* Header / Welcome Banner */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                    <div>
+                        <h1 className="text-3xl sm:text-5xl font-black text-zinc-950 tracking-tight uppercase leading-none">
+                            {t('dashboard.landlord.welcome', { name: user.full_name?.split(' ')[0] || user.email?.split('@')[0] }, 'Welcome back')}
+                        </h1>
+                        <div className="flex items-center gap-3 mt-4">
+                            <SegmentBadge />
+                            <span className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em]">
+                                {t('dashboard.landlord.title', undefined, 'Landlord Command Center')}
+                            </span>
+                        </div>
+                    </div>
+                    {/* Role Switcher integrates standard header controls */}
+                    <div className="flex items-center gap-4 self-end sm:self-auto">
+                        <RoleSwitcher currentRole={user.role} availableRoles={user.available_roles || [user.role]} />
                     </div>
                 </div>
-                {/* Role Switcher integrates standard header controls */}
-                <div className="flex items-center gap-4 self-end sm:self-auto">
-                    <RoleSwitcher currentRole={user.role} availableRoles={user.available_roles || [user.role]} />
-                </div>
-            </div>
 
-            {/* Loi ALUR Onboarding banner for S1 — only while the landlord has no properties yet;
-                segment is set once at signup and never recomputed, so without this check it
-                would keep telling an active landlord to "add your first property" forever. */}
-            {config?.settings.show_onboarding_tips && !statsLoading && (stats?.total_properties ?? 0) === 0 && (
-                <div className="bg-zinc-950 text-white rounded-[2.5rem] shadow-2xl p-8 sm:p-12 relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-[60px] -translate-y-1/2 translate-x-1/2 group-hover:scale-110 transition-transform duration-1000"></div>
-                    <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-8">
-                        <div className="flex items-center gap-5">
-                            <div className="w-14 h-14 flex-shrink-0 flex items-center justify-center bg-white/10 rounded-2xl text-2xl shadow-inner">
-                                🏠
+                {/* Loi ALUR Onboarding banner for S1 */}
+                {config?.settings.show_onboarding_tips && !statsLoading && (stats?.total_properties ?? 0) === 0 && (
+                    <div className="bg-zinc-950 text-white rounded-[2.5rem] shadow-2xl p-8 sm:p-12 relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-[60px] -translate-y-1/2 translate-x-1/2 group-hover:scale-110 transition-transform duration-1000"></div>
+                        <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-8">
+                            <div className="flex items-center gap-5">
+                                <div className="w-14 h-14 flex-shrink-0 flex items-center justify-center bg-white/10 rounded-2xl text-2xl shadow-inner">
+                                    🏠
+                                </div>
+                                <div className="text-left">
+                                    <h3 className="text-xl font-black uppercase tracking-wider">
+                                        {t('dashboard.landlord.gettingStarted', undefined, 'Getting Started')}
+                                    </h3>
+                                    <p className="text-sm text-zinc-400 mt-2 font-medium max-w-lg leading-relaxed">
+                                        {t('dashboard.landlord.gettingStartedDesc', undefined, 'Add your first property to start receiving applications in compliance with the French ALUR law.')}
+                                    </p>
+                                </div>
                             </div>
-                            <div className="text-left">
-                                <h3 className="text-xl font-black uppercase tracking-wider">
-                                    {t('dashboard.landlord.gettingStarted', undefined, 'Getting Started')}
-                                </h3>
-                                <p className="text-sm text-zinc-400 mt-2 font-medium max-w-lg leading-relaxed">
-                                    {t('dashboard.landlord.gettingStartedDesc', undefined, 'Add your first property to start receiving applications in compliance with the French ALUR law.')}
+                            <Link
+                                href="/properties/new"
+                                className="w-full sm:w-auto px-8 py-4 bg-white text-zinc-950 font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-zinc-100 active:scale-95 transition-all text-center shadow-lg whitespace-nowrap"
+                            >
+                                {t('dashboard.landlord.addProperty', undefined, 'Add a Property')}
+                            </Link>
+                        </div>
+                    </div>
+                )}
+
+                {/* KPI Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <KpiCard
+                        title={t('dashboard.landlord.kpiActiveProps', undefined, 'Active Listings')}
+                        value={statsLoading ? '...' : String(stats?.active_properties ?? 0)}
+                        subtitle={t('dashboard.landlord.kpiTotalProps', { count: stats?.total_properties ?? 0 }, `of ${stats?.total_properties ?? 0} total`)}
+                        icon={Building}
+                        href="/properties"
+                    />
+                    <KpiCard
+                        title={t('dashboard.landlord.kpiApplications', undefined, 'Pending Applications')}
+                        value={statsLoading ? '...' : String(stats?.pending_applications ?? 0)}
+                        subtitle={t('dashboard.landlord.kpiReviewAction', undefined, 'Requires review')}
+                        icon={FileText}
+                        href="/applications/received"
+                        accent={Boolean((stats?.pending_applications ?? 0) > 0)}
+                    />
+                    <KpiCard
+                        title={t('dashboard.landlord.kpiVisits', undefined, 'Upcoming Visits')}
+                        value={visitsLoading ? '...' : String(visits?.upcoming_visits ?? 0)}
+                        subtitle={t('dashboard.landlord.kpiPendingVisits', { count: visits?.pending_requests ?? 0 }, `${visits?.pending_requests ?? 0} pending requests`)}
+                        icon={Calendar}
+                        href="/visits"
+                    />
+                    <KpiCard
+                        title={t('dashboard.landlord.kpiMessages', undefined, 'Unread Messages')}
+                        value={statsLoading ? '...' : String(stats?.unread_messages ?? 0)}
+                        subtitle={t('dashboard.landlord.kpiOpenInbox', undefined, 'Open Inbox')}
+                        icon={Mail}
+                        href="/inbox"
+                        accent={Boolean((stats?.unread_messages ?? 0) > 0)}
+                    />
+                </div>
+
+                {/* Main Content Grid: Revenue Chart + Alerts/Compliance */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Revenue & Views Chart (2 cols) */}
+                    <div className="lg:col-span-2 bg-white border border-zinc-200/80 rounded-[2.5rem] p-8 shadow-sm">
+                        <div className="flex items-center justify-between mb-8">
+                            <div>
+                                <h2 className="text-xl font-black text-zinc-950 uppercase tracking-tight flex items-center gap-3">
+                                    <BarChart3 className="w-5 h-5 text-zinc-950" />
+                                    {t('dashboard.landlord.performanceTitle', undefined, 'Portfolio Performance')}
+                                </h2>
+                                <p className="text-xs text-zinc-400 font-bold uppercase tracking-widest mt-1">
+                                    {t('dashboard.landlord.performanceSubtitle', undefined, 'Views, inquiries, and revenue over time')}
                                 </p>
                             </div>
-                        </div>
-                        <Link
-                            href="/properties/new"
-                            className="w-full sm:w-auto px-8 py-4 bg-white text-zinc-950 font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-zinc-100 active:scale-95 transition-all text-center shadow-lg whitespace-nowrap"
-                        >
-                            {t('dashboard.landlord.addProperty', undefined, 'Add a Property')}
-                        </Link>
-                    </div>
-                </div>
-            )}
-
-            {/* KPI Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                <KpiCard
-                    label={t('dashboard.stats.properties', undefined, 'Properties')}
-                    value={stats?.active_properties ?? 0}
-                    icon={<Building className="w-5 h-5" />}
-                    loading={statsLoading}
-                    delta={stats ? {
-                        value: stats.occupancy_rate + '%',
-                        isPositive: stats.occupancy_rate >= 80,
                         timeframe: 'Occupancy Rate'
                     } : undefined}
                 />

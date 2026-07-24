@@ -69,7 +69,31 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
     const [result, setResult] = useState<{ downloadUrl?: string; leaseType?: string } | null>(null);
     const [error, setError] = useState('');
 
-    const selectedType = LEASE_TYPES[leaseType];
+    const [downloadingPdf, setDownloadingPdf] = useState(false);
+
+    const handleDownloadPdf = async () => {
+        if (!result?.downloadUrl) return;
+        setDownloadingPdf(true);
+        try {
+            const url = result.downloadUrl.startsWith('http')
+                ? result.downloadUrl
+                : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${result.downloadUrl}`;
+            
+            const response = await apiClient.client.get(url, { responseType: 'blob' });
+            const blobUrl = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.setAttribute('download', `lease_${propertyId}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(blobUrl);
+        } catch {
+            setError(t('common.errors.downloadFailed', undefined, 'Failed to download PDF'));
+        } finally {
+            setDownloadingPdf(false);
+        }
+    };
 
     const handleGenerate = async () => {
         if (!tenantEmail || !startDate) {
@@ -266,18 +290,14 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
                     <p className="text-xs font-bold text-zinc-400 mb-6 leading-relaxed">
                         {t('lease.successDesc', undefined, 'The contract includes all required clauses: notice periods, end of lease conditions, security deposit, obligations of both parties, inventory, and termination clause.')}
                     </p>
-                    <a
-                        href={result.downloadUrl ? (
-                            result.downloadUrl.startsWith('http') 
-                                ? `${result.downloadUrl}?token=${apiClient.getToken() ?? ''}`
-                                : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${result.downloadUrl}?token=${apiClient.getToken() ?? ''}`
-                        ) : '#'}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center w-full px-6 py-4 bg-white text-zinc-900 rounded-xl font-black uppercase tracking-widest hover:bg-zinc-100 transition-all active:scale-95"
+                    <button
+                        type="button"
+                        onClick={handleDownloadPdf}
+                        disabled={downloadingPdf}
+                        className="inline-flex items-center justify-center w-full px-6 py-4 bg-white text-zinc-900 rounded-xl font-black uppercase tracking-widest hover:bg-zinc-100 transition-all active:scale-95 disabled:opacity-50"
                     >
-                         {t('lease.downloadPdf', undefined, 'Download PDF')}
-                    </a>
+                         {downloadingPdf ? t('common.downloading', undefined, 'Downloading...') : t('lease.downloadPdf', undefined, 'Download PDF')}
+                    </button>
                 </div>
             )}
         </div>

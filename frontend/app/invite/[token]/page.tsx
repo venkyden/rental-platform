@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { apiClient } from '@/lib/api';
 import { useAuth } from '@/lib/useAuth';
+import { useLanguage } from '@/lib/LanguageContext';
 import PremiumLayout from '@/components/PremiumLayout';
 import { motion } from 'framer-motion';
 import { Mail, CheckCircle2, AlertCircle, Clock, Info, ShieldCheck, ArrowRight, Loader2 } from 'lucide-react';
@@ -28,6 +29,7 @@ export default function InviteAcceptPage() {
     const router = useRouter();
     const params = useParams();
     const { user, loading: authLoading } = useAuth();
+    const { t } = useLanguage();
     const token = params?.token as string;
 
     const [invite, setInvite] = useState<InviteInfo | null>(null);
@@ -47,7 +49,7 @@ export default function InviteAcceptPage() {
             const response = await apiClient.client.get(`/team/invite/${token}`);
             setInvite(response.data);
         } catch (err: any) {
-            setError(err.response?.data?.detail || 'Invalid invitation link');
+            setError(err.response?.data?.detail || t('invite.invalidLink', undefined, 'Invalid invitation link'));
         } finally {
             setLoading(false);
         }
@@ -67,7 +69,7 @@ export default function InviteAcceptPage() {
             await apiClient.client.post(`/team/invite/accept/${token}`);
             setSuccess(true);
         } catch (err: any) {
-            setError(err.response?.data?.detail || 'Error accepting invitation');
+            setError(err.response?.data?.detail || t('invite.errorAccepting', undefined, 'Error accepting invitation'));
         } finally {
             setAccepting(false);
         }
@@ -89,14 +91,14 @@ export default function InviteAcceptPage() {
                         <AlertCircle className="w-10 h-10" />
                     </div>
                     <h1 className="text-3xl font-black text-zinc-900 mb-4 tracking-tighter uppercase">
-                        Invalid Invitation
+                        {t('invite.invalidTitle', undefined, 'Invalid Invitation')}
                     </h1>
                     <p className="text-zinc-500 font-bold mb-10">{error}</p>
                     <button
                         onClick={() => router.push('/')}
                         className="w-full py-5 bg-zinc-900 text-white rounded-2xl text-xs font-black uppercase tracking-[0.3em] shadow-xl active:scale-95 transition-transform"
                     >
-                        Back to Home
+                        {t('common.backToHome', undefined, 'Back to Home')}
                     </button>
                 </div>
             </div>
@@ -110,9 +112,9 @@ export default function InviteAcceptPage() {
                     <div className="w-24 h-24 bg-zinc-900 text-white rounded-[2.5rem] flex items-center justify-center mx-auto mb-10 shadow-2xl">
                         <CheckCircle2 className="w-12 h-12" />
                     </div>
-                    <h1 className="text-4xl font-black text-zinc-900 mb-4 tracking-tighter uppercase leading-none">Accepted!</h1>
+                    <h1 className="text-4xl font-black text-zinc-900 mb-4 tracking-tighter uppercase leading-none">{t('invite.acceptedTitle', undefined, 'Accepted!')}</h1>
                     <p className="text-zinc-500 font-bold mb-12">
-                        You now have access to {invite?.landlord_name}'s properties
+                        {t('invite.acceptedDesc', { name: invite?.landlord_name }, `You now have access to ${invite?.landlord_name}'s properties`)}
                     </p>
                     <button
                         onClick={() => router.push('/dashboard')}
