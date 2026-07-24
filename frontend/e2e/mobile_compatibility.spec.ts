@@ -37,8 +37,13 @@ test.describe('Mobile Compatibility & Stress Test', () => {
     await expect(mobileLangEn).toBeVisible();
     await expect(mobileLangFr).toBeVisible();
 
-    // Test language switch in mobile drawer
-    await mobileLangFr.click();
+    // Test language switch in mobile drawer.
+    // force:true — the active-language button carries the framer-motion layoutId
+    // pill, whose layout projection never satisfies Playwright's "stable" check,
+    // so a normal click retries until timeout. Visibility and enabled state are
+    // already asserted above; a real user can click it fine. (FR is the active
+    // language by default, so this is the active button.)
+    await mobileLangFr.click({ force: true });
     // Give it a moment to apply
     await page.waitForTimeout(500);
 
