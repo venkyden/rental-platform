@@ -8,9 +8,11 @@ interface Props {
     t: TFn;
     enriching: boolean;
     onEnrich: () => void;
+    onAddressSelect: (result: { address: string; city: string; postal_code: string; lat?: number; lng?: number }) => void;
 }
 
-export default function Step2Location({ formData, updateFormData, t, enriching, onEnrich }: Props) {
+export default function Step2Location({ formData, updateFormData, t, enriching, onEnrich, onAddressSelect }: Props) {
+    const hasEnrichment = formData.public_transport.length > 0 || formData.nearby_landmarks.length > 0;
     return (
         <div className="space-y-10">
             <div className="space-y-6">
@@ -19,15 +21,7 @@ export default function Step2Location({ formData, updateFormData, t, enriching, 
                 </label>
                 <div className="glass-card !p-8 rounded-[3rem] border-zinc-100">
                     <AddressAutocomplete
-                        onSelectAction={(result) => {
-                            updateFormData({
-                                address_line1: result.address,
-                                city: result.city,
-                                postal_code: result.postal_code,
-                                latitude: result.lat,
-                                longitude: result.lng,
-                            });
-                        }}
+                        onSelectAction={(result) => onAddressSelect(result)}
                         countryCode="fr"
                         initialValue={formData.address_line1}
                         variant="form"
@@ -65,7 +59,9 @@ export default function Step2Location({ formData, updateFormData, t, enriching, 
             >
                 {enriching
                     ? t('properties.new.steps.geolocation.enriching')
-                    : t('properties.new.steps.geolocation.enrichButton')}
+                    : hasEnrichment
+                        ? t('properties.new.steps.geolocation.enrichRetry', undefined, 'Refresh nearby transit & POIs')
+                        : t('properties.new.steps.geolocation.enrichButton')}
             </button>
 
             {(formData.public_transport.length > 0 || formData.nearby_landmarks.length > 0) && (

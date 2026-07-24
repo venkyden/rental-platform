@@ -98,23 +98,44 @@ export default function NewPropertyPage() {
         setFormData((prev) => ({ ...prev, ...updates }));
 
     // ── API helpers ────────────────────────────────────────────────────
-    const handleEnrichLocation = async () => {
+    // Accepts an explicit address so it can run straight off an autocomplete
+    // selection (formData is set async and would be stale); falls back to
+    // formData when invoked manually via the retry button.
+    const handleEnrichLocation = async (override?: { address: string; city: string; postal_code: string; country?: string }) => {
+        const addr = override ?? {
+            address: formData.address_line1,
+            city: formData.city,
+            postal_code: formData.postal_code,
+            country: formData.country,
+        };
+        if (!addr.address || !addr.postal_code) {
+            toast.warning(t('properties.new.steps.geolocation.enrichNoCoords', undefined, 'Could not determine GPS coordinates. Please select your address from the autocomplete suggestions.'));
+            return;
+        }
         setEnriching(true);
         try {
             const res = await apiClient.client.post('/location/enrich', {
-                address: formData.address_line1,
-                city: formData.city,
-                postal_code: formData.postal_code,
-                country: formData.country,
+                address: addr.address,
+                city: addr.city,
+                postal_code: addr.postal_code,
+                country: addr.country || 'France',
             });
+            const transport = res.data.public_transport || [];
+            const landmarks = res.data.nearby_landmarks || [];
             updateFormData({
                 latitude: res.data.latitude,
                 longitude: res.data.longitude,
-                public_transport: res.data.public_transport || [],
-                nearby_landmarks: res.data.nearby_landmarks || [],
+                public_transport: transport,
+                nearby_landmarks: landmarks,
             });
             if (res.data.latitude && res.data.longitude) {
-                toast.success(t('properties.new.steps.geolocation.enrichSuccess', undefined, 'Location geocoded successfully! GPS media verification enabled.'));
+                if (transport.length === 0 && landmarks.length === 0) {
+                    // Geocoding worked but the POI provider (Overpass) returned nothing —
+                    // tell the user instead of silently saving an empty enrichment.
+                    toast.info(t('properties.new.steps.geolocation.enrichNoPois', undefined, 'Location saved, but nearby transit and points of interest could not be fetched right now. You can retry.'));
+                } else {
+                    toast.success(t('properties.new.steps.geolocation.enrichSuccess', undefined, 'Location geocoded successfully! GPS media verification enabled.'));
+                }
             } else {
                 toast.warning(t('properties.new.steps.geolocation.enrichNoCoords', undefined, 'Could not determine GPS coordinates. Please select your address from the autocomplete suggestions.'));
             }
@@ -124,6 +145,19 @@ export default function NewPropertyPage() {
         } finally {
             setEnriching(false);
         }
+    };
+
+    // Autocomplete selection → set the address fields, then auto-run enrichment
+    // with the fresh values so the user never has to remember the Enrich button.
+    const handleAddressSelect = (result: { address: string; city: string; postal_code: string; lat?: number; lng?: number }) => {
+        updateFormData({
+            address_line1: result.address,
+            city: result.city,
+            postal_code: result.postal_code,
+            latitude: result.lat,
+            longitude: result.lng,
+        });
+        handleEnrichLocation({ address: result.address, city: result.city, postal_code: result.postal_code });
     };
 
     const handleAiSuggest = async () => {
@@ -388,7 +422,7 @@ export default function NewPropertyPage() {
                                         <Step1Identity formData={formData} updateFormData={updateFormData} t={t} />
                                     )}
                                     {currentStep === 2 && (
-                                        <Step2Location formData={formData} updateFormData={updateFormData} t={t} enriching={enriching} onEnrich={handleEnrichLocation} />
+                                        <Step2Location formData={formData} updateFormData={updateFormData} t={t} enriching={enriching} onEnrich={handleEnrichLocation} onAddressSelect={handleAddressSelect} />
                                     )}
                                     {currentStep === 3 && (
                                         <Step3Details formData={formData} updateFormData={updateFormData} t={t} />

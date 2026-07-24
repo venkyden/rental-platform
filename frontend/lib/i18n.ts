@@ -1468,6 +1468,8 @@ export const translations = {
                         enriching: "Loading nearby data...",
                         enrichSuccess: "Location geocoded successfully!",
                         enrichNoCoords: "Could not determine GPS coordinates.",
+                        enrichNoPois: "Location saved, but nearby transit and points of interest could not be fetched right now. You can retry.",
+                        enrichRetry: "Refresh nearby transit & POIs",
                         enrichError: "Location enrichment failed.",
                     },
                     details: {
@@ -4379,6 +4381,8 @@ export const translations = {
                         enriching: "Chargement des données à proximité...",
                         enrichSuccess: "Géolocalisation réussie !",
                         enrichNoCoords: "Impossible de déterminer les coordonnées GPS.",
+                        enrichNoPois: "Adresse enregistrée, mais les transports et points d'intérêt à proximité n'ont pas pu être récupérés pour le moment. Vous pouvez réessayer.",
+                        enrichRetry: "Actualiser transports & POI à proximité",
                         enrichError: "Échec de la géolocalisation.",
                     },
                     details: {
