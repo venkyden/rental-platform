@@ -45,19 +45,12 @@ interface Property {
     charges_included?: boolean;
     charges_description?: string;
     available_from?: string;
-    amenities?: string[];
-    custom_amenities?: string[];
-    public_transport?: Array<{ name?: string; distance?: string; type?: string }>;
-    nearby_landmarks?: Array<{ name?: string; distance?: string; type?: string }>;
-    photos?: Array<string | { url: string; caption?: string }>;
-    room_details?: Array<{
-        room_number?: number;
-        room_type?: string;
-        size_sqm?: number;
-        monthly_rent?: number;
-        available_from?: string;
-        is_available?: boolean;
-    }>;
+    amenities: any;
+    custom_amenities: any;
+    public_transport: any;
+    nearby_landmarks: any;
+    photos: any;
+    room_details?: any[];
     landlord_first_name?: string | null;
     landlord_identity_verified?: boolean;
     landlord_bio?: string | null;
@@ -587,11 +580,11 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                             {t('property.roomsTitle', undefined, 'Habitable Configuration & Rooms')}
                                         </h2>
                                         <div className="px-4 py-2 bg-zinc-100 rounded-full text-xs font-black uppercase tracking-widest text-zinc-600 self-start sm:self-auto">
-                                            {property.room_details.filter((r) => (r as any).status !== 'occupied').length} / {property.room_details.length} {t('property.roomsAvailable', undefined, 'Rooms Available')}
+                                            {property.room_details.filter((r: any) => r.status !== 'occupied').length} / {property.room_details.length} {t('property.roomsAvailable', undefined, 'Rooms Available')}
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                        {property.room_details.map((room, index: number) => {
+                                        {property.room_details.map((room: any, index: number) => {
                                             const isOccupied = room.status === 'occupied';
                                             return (
                                                 <div key={index} className={`p-6 rounded-2xl border flex justify-between items-center transition-all ${isOccupied ? 'bg-zinc-100/60 border-zinc-200 opacity-60' : 'bg-zinc-50 border-zinc-100 shadow-sm'}`}>

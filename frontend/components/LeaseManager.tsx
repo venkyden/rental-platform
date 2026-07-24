@@ -69,6 +69,8 @@ export default function LeaseManager({ propertyId, monthlyRent, deposit, charges
     const [result, setResult] = useState<{ downloadUrl?: string; leaseType?: string } | null>(null);
     const [error, setError] = useState('');
 
+    const selectedType = LEASE_TYPES[leaseType];
+
     const [downloadingPdf, setDownloadingPdf] = useState(false);
 
     const handleDownloadPdf = async () => {

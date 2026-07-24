@@ -114,7 +114,7 @@ export default function InviteAcceptPage() {
                     </div>
                     <h1 className="text-4xl font-black text-zinc-900 mb-4 tracking-tighter uppercase leading-none">{t('invite.acceptedTitle', undefined, 'Accepted!')}</h1>
                     <p className="text-zinc-500 font-bold mb-12">
-                        {t('invite.acceptedDesc', { name: invite?.landlord_name }, `You now have access to ${invite?.landlord_name}'s properties`)}
+                        {t('invite.acceptedDesc', { name: invite?.landlord_name ?? '' }, `You now have access to ${invite?.landlord_name}'s properties`)}
                     </p>
                     <button
                         onClick={() => router.push('/dashboard')}

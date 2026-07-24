@@ -10,7 +10,6 @@ import { useLanguage } from '@/lib/LanguageContext';
 import { apiClient } from '@/lib/api';
 import AgencyKpiRow from '@/components/dashboard/AgencyKpiRow';
 import RoleSwitcher from '@/components/dashboard/RoleSwitcher';
-import PremiumLayout from '@/components/PremiumLayout';
 import { Building, FileText, ShieldCheck, CheckCircle2, Clock, Plus, BarChart3, Download, Users, Network, Settings } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -92,8 +91,7 @@ export default function AgencyDashboard() {
     if (!user) return null;
 
     return (
-        <PremiumLayout>
-            <div className="w-full space-y-12" role="main">
+        <div className="w-full space-y-12" role="main">
             {/* Header & welcome */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                 <div>
@@ -280,6 +278,6 @@ export default function AgencyDashboard() {
                     </div>
                 </div>
             </div>
-        </PremiumLayout>
+        </div>
     );
 }
