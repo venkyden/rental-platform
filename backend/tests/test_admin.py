@@ -23,7 +23,7 @@ def make_admin_client():
     target_app = app.app if hasattr(app, "app") else app
     target_app.dependency_overrides[get_current_user] = lambda: admin
     target_app.dependency_overrides[get_db] = mock_get_db
-    return TestClient(app)
+    return TestClient(app, base_url="http://testserver/api/v1")
 
 
 class TestVerificationReviewModel:
@@ -137,7 +137,7 @@ class TestPendingVerificationsQueue:
         target_app.dependency_overrides[get_current_user] = lambda: admin
         target_app.dependency_overrides[get_db] = lambda: mock_db
 
-        with TestClient(app) as client:
+        with TestClient(app, base_url="http://testserver/api/v1") as client:
             response = client.get("/admin/verifications/pending")
 
         target_app.dependency_overrides.clear()
@@ -171,7 +171,7 @@ class TestPendingVerificationsQueue:
         target_app.dependency_overrides[get_current_user] = lambda: admin
         target_app.dependency_overrides[get_db] = lambda: mock_db
 
-        with TestClient(app) as client:
+        with TestClient(app, base_url="http://testserver/api/v1") as client:
             response = client.get("/admin/verifications/pending")
 
         target_app.dependency_overrides.clear()
@@ -200,7 +200,7 @@ class TestPendingVerificationsQueue:
         target_app.dependency_overrides[get_current_user] = lambda: admin
         target_app.dependency_overrides[get_db] = lambda: mock_db
 
-        with TestClient(app) as client:
+        with TestClient(app, base_url="http://testserver/api/v1") as client:
             response = client.get("/admin/verifications/pending")
 
         target_app.dependency_overrides.clear()
@@ -212,7 +212,7 @@ class TestPendingVerificationsQueue:
         tenant = make_mock_user("tenant")
         target_app.dependency_overrides[get_current_user] = lambda: tenant
         target_app.dependency_overrides[get_db] = mock_get_db
-        with TestClient(app) as client:
+        with TestClient(app, base_url="http://testserver/api/v1") as client:
             response = client.get("/admin/verifications/pending")
         target_app.dependency_overrides.clear()
         assert response.status_code == 403
@@ -240,7 +240,7 @@ class TestResetVerification:
         mock_db = self._make_db_with_user(user)
         target_app = self._admin_client_with_db(mock_db)
 
-        with TestClient(app) as client:
+        with TestClient(app, base_url="http://testserver/api/v1") as client:
             response = client.post(f"/admin/verifications/{user.id}/reset?type=identity")
 
         target_app.dependency_overrides.clear()
@@ -256,7 +256,7 @@ class TestResetVerification:
         mock_db = self._make_db_with_user(user)
         target_app = self._admin_client_with_db(mock_db)
 
-        with TestClient(app) as client:
+        with TestClient(app, base_url="http://testserver/api/v1") as client:
             response = client.post(f"/admin/verifications/{user.id}/reset?type=identity")
 
         target_app.dependency_overrides.clear()
@@ -268,7 +268,7 @@ class TestResetVerification:
         mock_db.get = AsyncMock(return_value=None)
         target_app = self._admin_client_with_db(mock_db)
 
-        with TestClient(app) as client:
+        with TestClient(app, base_url="http://testserver/api/v1") as client:
             response = client.post(f"/admin/verifications/{uuid.uuid4()}/reset?type=identity")
 
         target_app.dependency_overrides.clear()
@@ -279,7 +279,7 @@ class TestResetVerification:
         mock_db = self._make_db_with_user(user)
         target_app = self._admin_client_with_db(mock_db)
 
-        with TestClient(app) as client:
+        with TestClient(app, base_url="http://testserver/api/v1") as client:
             response = client.post(f"/admin/verifications/{user.id}/reset?type=property")
 
         target_app.dependency_overrides.clear()
@@ -294,7 +294,7 @@ class TestResetVerification:
         mock_db = self._make_db_with_user(user)
         target_app = self._admin_client_with_db(mock_db)
 
-        with TestClient(app) as client:
+        with TestClient(app, base_url="http://testserver/api/v1") as client:
             client.post(f"/admin/verifications/{user.id}/reset?type=identity")
 
         target_app.dependency_overrides.clear()
@@ -313,7 +313,7 @@ class TestApproveGuard:
         target_app.dependency_overrides[get_current_user] = lambda: admin
         target_app.dependency_overrides[get_db] = lambda: mock_db
 
-        with TestClient(app) as client:
+        with TestClient(app, base_url="http://testserver/api/v1") as client:
             response = client.post(f"/admin/verifications/{user.id}/approve?type=identity")
 
         target_app.dependency_overrides.clear()
@@ -332,7 +332,7 @@ class TestApproveGuard:
         target_app.dependency_overrides[get_current_user] = lambda: admin
         target_app.dependency_overrides[get_db] = lambda: mock_db
 
-        with TestClient(app) as client:
+        with TestClient(app, base_url="http://testserver/api/v1") as client:
             response = client.post(f"/admin/verifications/{prop.id}/approve?type=property")
 
         target_app.dependency_overrides.clear()

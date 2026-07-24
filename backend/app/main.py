@@ -255,76 +255,78 @@ async def diagnostic_check():
 from app.routers import (auth, credentials, location, onboarding, properties,
                          property_manager, verification)
 
-fastapi_app.include_router(properties.router)
-fastapi_app.include_router(auth.router)
+api_v1_router = fastapi.routing.APIRouter(prefix="/api/v1")
+api_v1_router.include_router(properties.router)
+api_v1_router.include_router(auth.router)
 if settings.ENABLE_AGENCY_TOOLING:  # FREEZE 2026-07-04: agency tooling
-    fastapi_app.include_router(property_manager.router)
-fastapi_app.include_router(onboarding.router)
-fastapi_app.include_router(verification.router)
-fastapi_app.include_router(location.router)
-fastapi_app.include_router(credentials.router)
-
+    api_v1_router.include_router(property_manager.router)
+api_v1_router.include_router(onboarding.router)
+api_v1_router.include_router(verification.router)
+api_v1_router.include_router(location.router)
+api_v1_router.include_router(credentials.router)
 from app.routers import webhooks
-fastapi_app.include_router(webhooks.router)
+api_v1_router.include_router(webhooks.router)
 
 from app.routers import visits
-fastapi_app.include_router(visits.router)
+api_v1_router.include_router(visits.router)
 
 from app.routers import messages
-fastapi_app.include_router(messages.router)
+api_v1_router.include_router(messages.router)
 
 from app.routers import team
 
 if settings.ENABLE_AGENCY_TOOLING:  # FREEZE 2026-07-04: agency tooling
-    fastapi_app.include_router(team.router)
+    api_v1_router.include_router(team.router)
 
 from app.routers import bulk, stats
 
 if settings.ENABLE_AGENCY_TOOLING:  # FREEZE 2026-07-04: agency tooling
-    fastapi_app.include_router(bulk.router)
-fastapi_app.include_router(stats.router)
+    api_v1_router.include_router(bulk.router)
+api_v1_router.include_router(stats.router)
 
 from app.routers import erp_webhooks
 
 if settings.ENABLE_AGENCY_TOOLING:  # FREEZE 2026-07-04: agency tooling
-    fastapi_app.include_router(erp_webhooks.router)
+    api_v1_router.include_router(erp_webhooks.router)
 
 from app.routers import documents
-fastapi_app.include_router(documents.router)
+api_v1_router.include_router(documents.router)
 
 from app.api.v1.endpoints import dossiers
-fastapi_app.include_router(dossiers.router, prefix="/api/v1/dossiers", tags=["dossiers"])
+api_v1_router.include_router(dossiers.router, prefix="/dossiers", tags=["dossiers"])
 
 from app.routers import applications
-fastapi_app.include_router(applications.router)
+api_v1_router.include_router(applications.router)
 
 from app.routers import notifications
-fastapi_app.include_router(notifications.router)
+api_v1_router.include_router(notifications.router)
 
 from app.routers import leases
-fastapi_app.include_router(leases.router)
+api_v1_router.include_router(leases.router)
 
 from app.routers import esign
-fastapi_app.include_router(esign.router)
+api_v1_router.include_router(esign.router)
 
 from app.routers import inventory
-fastapi_app.include_router(inventory.router)
+api_v1_router.include_router(inventory.router)
 
 from app.routers import dispute
-fastapi_app.include_router(dispute.router)
+api_v1_router.include_router(dispute.router)
 
 from app.routers import admin
-fastapi_app.include_router(admin.router)
+api_v1_router.include_router(admin.router)
 
 from app.routers import media
-fastapi_app.include_router(media.router)
+api_v1_router.include_router(media.router)
 
 from app.routers import feedback
-fastapi_app.include_router(feedback.router)
+api_v1_router.include_router(feedback.router)
 
 
 from app.routers import gdpr
-fastapi_app.include_router(gdpr.router)
+api_v1_router.include_router(gdpr.router)
+
+fastapi_app.include_router(api_v1_router)
 
 
 # ------------------------------------------------------------------

@@ -99,7 +99,7 @@ class TestApplyGate:
         target.dependency_overrides[get_db] = _get_db
         target.dependency_overrides[get_current_user] = lambda: tenant
         try:
-            return TestClient(main_app).post(
+            return TestClient(main_app, base_url="http://testserver/api/v1").post(
                 "/applications", json={"property_id": str(uuid.uuid4())})
         finally:
             target.dependency_overrides.clear()
@@ -133,7 +133,7 @@ class TestPublishGate:
         target.dependency_overrides[get_db] = _get_db
         target.dependency_overrides[get_current_user] = lambda: landlord
         try:
-            return TestClient(main_app).post(f"/properties/{prop.id}/publish")
+            return TestClient(main_app, base_url="http://testserver/api/v1").post(f"/properties/{prop.id}/publish")
         finally:
             target.dependency_overrides.clear()
 

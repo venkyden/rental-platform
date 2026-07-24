@@ -35,7 +35,7 @@ def make_client(mock_user):
     target_app = app.app if hasattr(app, "app") else app
     target_app.dependency_overrides[get_current_user] = lambda: mock_user
     target_app.dependency_overrides[get_db] = mock_get_db
-    return TestClient(app)
+    return TestClient(app, base_url="http://testserver/api/v1")
 
 
 def _valid_mrz_result():
@@ -412,7 +412,7 @@ def _intl_client_for(user):
     target_app = app.app if hasattr(app, "app") else app
     target_app.dependency_overrides[get_current_user] = lambda: user
     target_app.dependency_overrides[get_db] = mock_get_db
-    return target_app, TestClient(app)
+    return target_app, TestClient(app, base_url="http://testserver/api/v1")
 
 
 class TestIntlFunds:
@@ -729,7 +729,7 @@ class TestIntlFunds:
         with patch("app.routers.verification._check_upload_rate_limit", new=AsyncMock()), \
              patch("app.routers.verification._ai_extract_intl_income", new=AsyncMock(return_value=extraction)), \
              patch("app.routers.verification.cache"):
-            with TestClient(app) as client:
+            with TestClient(app, base_url="http://testserver/api/v1") as client:
                 resp = client.post("/verification/intl/solvency",
                                    data={"monthly_rent": "1000"},
                                    files={"file": ("s.jpg", b"x", "image/jpeg")})
@@ -763,7 +763,7 @@ class TestIntlFunds:
         with patch("app.routers.verification._check_upload_rate_limit", new=AsyncMock()), \
              patch("app.routers.verification._ai_extract_intl_income", new=AsyncMock(return_value=extraction)), \
              patch("app.routers.verification.cache"):
-            with TestClient(app) as client:
+            with TestClient(app, base_url="http://testserver/api/v1") as client:
                 resp = client.post("/verification/intl/solvency",
                                    data={"monthly_rent": "1000"},
                                    files={"file": ("s.jpg", b"x", "image/jpeg")})

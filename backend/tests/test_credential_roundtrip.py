@@ -87,7 +87,7 @@ def make_client(session: FakeCredentialSession, user):
 
     target_app.dependency_overrides[get_current_user] = lambda: user
     target_app.dependency_overrides[get_db] = fake_get_db
-    return TestClient(app, client=(f"10.0.0.{next(_client_ips)}", 50000))
+    return TestClient(app, base_url="http://testserver/api/v1", client=(f"10.0.0.{next(_client_ips)}", 50000))
 
 
 def _issue(client) -> dict:

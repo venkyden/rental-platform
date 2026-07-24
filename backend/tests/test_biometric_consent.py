@@ -28,7 +28,7 @@ def make_client(mock_user, raise_server_exceptions=True):
     target_app = app.app if hasattr(app, "app") else app
     target_app.dependency_overrides[get_current_user] = lambda: mock_user
     target_app.dependency_overrides[get_db] = mock_get_db
-    return TestClient(app, raise_server_exceptions=raise_server_exceptions)
+    return TestClient(app, base_url="http://testserver/api/v1", raise_server_exceptions=raise_server_exceptions)
 
 
 def _consent_error(response):
@@ -191,7 +191,7 @@ class TestConsentIntegrityHandling:
             yield s
 
         target_app.dependency_overrides[get_db] = failing_session
-        return TestClient(app, raise_server_exceptions=False)
+        return TestClient(app, base_url="http://testserver/api/v1", raise_server_exceptions=False)
 
     def test_unique_race_returns_already_recorded(self):
         user = make_mock_user("tenant")

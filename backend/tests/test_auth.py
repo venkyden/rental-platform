@@ -211,7 +211,7 @@ class TestAuthAuditHardening:
         target_app = app.app if hasattr(app, "app") else app
         target_app.dependency_overrides[get_current_user] = lambda: user
         target_app.dependency_overrides[get_db] = mock_get_db
-        return TestClient(app)
+        return TestClient(app, base_url="http://testserver/api/v1")
 
     def test_change_password_revokes_other_sessions(self):
         from unittest.mock import patch

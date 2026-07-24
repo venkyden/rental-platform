@@ -29,7 +29,7 @@ const toIsoDate = (value?: string): string => {
 async function getPropertyEntries(): Promise<MetadataRoute.Sitemap> {
   // Best-effort: a sitemap must never fail the build/route if the API is down.
   try {
-    const res = await fetch(`${API_URL}/properties?limit=1000`, {
+    const res = await fetch(`${API_URL}/api/v1/properties?limit=1000`, {
       next: { revalidate: 3600 },
     });
     if (!res.ok) return [];

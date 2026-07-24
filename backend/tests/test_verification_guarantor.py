@@ -102,7 +102,7 @@ class TestVisaleVerify:
                 patch("app.routers.verification.apply_watermark", return_value=FAKE_PDF),
             ):
                 from fastapi.testclient import TestClient
-                with TestClient(app) as c:
+                with TestClient(app, base_url="http://testserver/api/v1") as c:
                     resp = c.post(
                         "/verification/guarantor/visale",
                         files={"file": ("cert.pdf", io.BytesIO(FAKE_PDF), "application/pdf")},
@@ -135,7 +135,7 @@ class TestVisaleVerify:
                 patch("app.routers.verification.apply_watermark", return_value=FAKE_PDF),
             ):
                 from fastapi.testclient import TestClient
-                with TestClient(app) as c:
+                with TestClient(app, base_url="http://testserver/api/v1") as c:
                     resp = c.post(
                         "/verification/guarantor/visale",
                         files={"file": ("cert.pdf", io.BytesIO(FAKE_PDF), "application/pdf")},
@@ -165,7 +165,7 @@ class TestVisaleVerify:
                 patch("app.routers.verification.apply_watermark", return_value=FAKE_PDF),
             ):
                 from fastapi.testclient import TestClient
-                with TestClient(app) as c:
+                with TestClient(app, base_url="http://testserver/api/v1") as c:
                     resp = c.post(
                         "/verification/guarantor/visale",
                         files={"file": ("cert.pdf", io.BytesIO(FAKE_PDF), "application/pdf")},
@@ -193,7 +193,7 @@ class TestVisaleVerify:
                 patch("app.routers.verification._check_upload_rate_limit", new=AsyncMock()),
             ):
                 from fastapi.testclient import TestClient
-                with TestClient(app) as c:
+                with TestClient(app, base_url="http://testserver/api/v1") as c:
                     resp = c.post(
                         "/verification/guarantor/visale",
                         files={"file": ("cert.pdf", io.BytesIO(FAKE_PDF), "application/pdf")},
@@ -237,7 +237,7 @@ class TestGarantmeVerify:
                 patch("app.routers.verification.apply_watermark", return_value=FAKE_PDF),
             ):
                 from fastapi.testclient import TestClient
-                with TestClient(app) as c:
+                with TestClient(app, base_url="http://testserver/api/v1") as c:
                     resp = c.post(
                         "/verification/guarantor/garantme",
                         files={"file": ("cert.pdf", io.BytesIO(FAKE_PDF), "application/pdf")},
@@ -261,7 +261,7 @@ class TestPhysicalGuarantorSubmit:
 
         try:
             from fastapi.testclient import TestClient
-            with TestClient(app) as c:
+            with TestClient(app, base_url="http://testserver/api/v1") as c:
                 resp = c.post(
                     "/verification/guarantor/physical/submit",
                     json={"consent": True},
@@ -282,7 +282,7 @@ class TestPhysicalGuarantorSubmit:
 
         try:
             from fastapi.testclient import TestClient
-            with TestClient(app) as c:
+            with TestClient(app, base_url="http://testserver/api/v1") as c:
                 resp = c.post(
                     "/verification/guarantor/physical/submit",
                     json={"consent": False},
@@ -309,7 +309,7 @@ class TestPhysicalGuarantorSubmit:
 
         try:
             from fastapi.testclient import TestClient
-            with TestClient(app) as c:
+            with TestClient(app, base_url="http://testserver/api/v1") as c:
                 resp = c.post(
                     "/verification/guarantor/physical/submit",
                     json={"consent": True},
@@ -328,7 +328,7 @@ class TestPhysicalGuarantorSubmit:
 
         try:
             from fastapi.testclient import TestClient
-            with TestClient(app) as c:
+            with TestClient(app, base_url="http://testserver/api/v1") as c:
                 resp = c.post(
                     "/verification/guarantor/physical/submit",
                     json={"consent": True},
@@ -361,7 +361,7 @@ class TestVerificationStatus:
 
         try:
             from fastapi.testclient import TestClient
-            with TestClient(app) as c:
+            with TestClient(app, base_url="http://testserver/api/v1") as c:
                 resp = c.get("/verification/status")
 
             assert resp.status_code == 200

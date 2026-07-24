@@ -6,7 +6,14 @@ routers unmounted; team/bulk/webhooks features + nav stripped from served
 segment configs. Code retained — flag flips it back at B2B demand.
 """
 
-FROZEN_PREFIXES = ("/property-manager", "/team", "/bulk", "/webhooks/subscriptions")
+# Routers are mounted under the /api/v1 umbrella router — the prefixes must carry
+# it too, otherwise this guard silently matches nothing and stops guarding.
+FROZEN_PREFIXES = (
+    "/api/v1/property-manager",
+    "/api/v1/team",
+    "/api/v1/bulk",
+    "/api/v1/webhooks/subscriptions",
+)
 
 
 def test_frozen_routers_not_mounted():
@@ -19,7 +26,7 @@ def test_frozen_routers_not_mounted():
     offenders = {p for p in mounted if p.startswith(FROZEN_PREFIXES)}
     assert not offenders, f"frozen agency routes still mounted: {sorted(offenders)}"
     # general webhooks router (distinct from ERP /webhooks/subscriptions) stays
-    assert any(p.startswith("/webhooks") for p in mounted)
+    assert any(p.startswith("/api/v1/webhooks") for p in mounted)
 
 
 def test_segment_configs_hide_frozen_features_and_nav():

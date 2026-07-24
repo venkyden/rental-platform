@@ -138,7 +138,7 @@ def client():
     target_app = main_app.app if hasattr(main_app, 'app') else main_app
     target_app.dependency_overrides[get_db] = mock_get_db
     target_app.dependency_overrides.pop(get_current_user, None)
-    with TestClient(main_app) as c:
+    with TestClient(main_app, base_url="http://testserver/api/v1") as c:
         yield c
     target_app.dependency_overrides.clear()
 
@@ -149,7 +149,7 @@ def tenant_client():
     target_app = main_app.app if hasattr(main_app, 'app') else main_app
     target_app.dependency_overrides[get_db] = mock_get_db
     target_app.dependency_overrides[get_current_user] = lambda: MOCK_TENANT
-    with TestClient(main_app) as c:
+    with TestClient(main_app, base_url="http://testserver/api/v1") as c:
         yield c
     target_app.dependency_overrides.clear()
 
@@ -160,7 +160,7 @@ def landlord_client():
     target_app = main_app.app if hasattr(main_app, 'app') else main_app
     target_app.dependency_overrides[get_db] = mock_get_db
     target_app.dependency_overrides[get_current_user] = lambda: MOCK_LANDLORD
-    with TestClient(main_app) as c:
+    with TestClient(main_app, base_url="http://testserver/api/v1") as c:
         yield c
     target_app.dependency_overrides.clear()
 
@@ -171,7 +171,7 @@ def admin_client():
     target_app = main_app.app if hasattr(main_app, 'app') else main_app
     target_app.dependency_overrides[get_db] = mock_get_db
     target_app.dependency_overrides[get_current_user] = lambda: MOCK_ADMIN
-    with TestClient(main_app) as c:
+    with TestClient(main_app, base_url="http://testserver/api/v1") as c:
         yield c
     target_app.dependency_overrides.clear()
 
@@ -182,7 +182,7 @@ def pm_client():
     target_app = main_app.app if hasattr(main_app, 'app') else main_app
     target_app.dependency_overrides[get_db] = mock_get_db
     target_app.dependency_overrides[get_current_user] = lambda: MOCK_PROPERTY_MANAGER
-    with TestClient(main_app) as c:
+    with TestClient(main_app, base_url="http://testserver/api/v1") as c:
         yield c
     target_app.dependency_overrides.clear()
 

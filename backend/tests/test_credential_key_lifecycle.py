@@ -144,7 +144,7 @@ class TestPublicKeysEndpoint:
         from fastapi.testclient import TestClient
         from app.main import app
 
-        with TestClient(app) as c:
+        with TestClient(app, base_url="http://testserver/api/v1") as c:
             resp = c.get("/credentials/public-keys")
 
         assert resp.status_code == 200

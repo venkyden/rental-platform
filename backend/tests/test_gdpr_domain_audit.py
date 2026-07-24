@@ -32,7 +32,7 @@ def _client(user):
     from fastapi.testclient import TestClient
     target = app.app if hasattr(app, "app") else app
     target.dependency_overrides[get_current_user] = lambda: user
-    return TestClient(app), target
+    return TestClient(app, base_url="http://testserver/api/v1"), target
 
 
 def test_erasure_clears_all_pii_columns():

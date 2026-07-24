@@ -46,7 +46,7 @@ class TestAvatarReuploadPurge:
                 patch.object(storage, "purge_object", new=AsyncMock(return_value=True)) as mock_purge,
             ):
                 from fastapi.testclient import TestClient
-                with TestClient(app) as c:
+                with TestClient(app, base_url="http://testserver/api/v1") as c:
                     resp = c.post(
                         "/auth/me/avatar",
                         files={"file": ("me.png", io.BytesIO(FAKE_PNG), "image/png")},
@@ -74,7 +74,7 @@ class TestAvatarReuploadPurge:
                 patch.object(storage, "purge_object", new=AsyncMock(return_value=True)) as mock_purge,
             ):
                 from fastapi.testclient import TestClient
-                with TestClient(app) as c:
+                with TestClient(app, base_url="http://testserver/api/v1") as c:
                     resp = c.post(
                         "/auth/me/avatar",
                         files={"file": ("me.png", io.BytesIO(FAKE_PNG), "image/png")},

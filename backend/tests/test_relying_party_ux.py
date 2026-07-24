@@ -84,7 +84,7 @@ class TestVerifyResponseDisclosure:
         target = app.app if hasattr(app, "app") else app
         target.dependency_overrides[get_db] = override_db
         try:
-            with TestClient(app) as c:
+            with TestClient(app, base_url="http://testserver/api/v1") as c:
                 resp = c.get(f"/credentials/{row.id}")
             assert resp.status_code == 200
             body = resp.json()

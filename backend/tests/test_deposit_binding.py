@@ -159,7 +159,7 @@ def _client(user, property_obj):
 
     target.dependency_overrides[get_db] = _get_db
     target.dependency_overrides[get_current_user] = lambda: user
-    return TestClient(main_app), target
+    return TestClient(main_app, base_url="http://testserver/api/v1"), target
 
 
 _VALID_BODY = {

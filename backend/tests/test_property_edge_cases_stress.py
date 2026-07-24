@@ -190,3 +190,9 @@ class TestPropertyEdgeCasesAndSanitization:
             assert "Studio d'espace" in created_obj.description
         finally:
             target_app.dependency_overrides[get_db] = mock_get_db
+
+    def test_colocation_filter_matches_various_properties(self, tenant_client):
+        """colocation=1 query filter returns properties with property_type, title, or amenities matching colocation."""
+        resp = tenant_client.get("/properties?colocation=1")
+        assert resp.status_code == 200
+

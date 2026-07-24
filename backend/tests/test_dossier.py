@@ -139,7 +139,7 @@ def make_client(session, user=None, optional_user=None):
     target_app.dependency_overrides[get_current_user_optional] = lambda: optional_user
     # Public share endpoint is rate limited per IP on a shared scope; give each
     # client its own bucket so tests stay order-independent.
-    return TestClient(app, client=(f"10.1.0.{next(_client_ips)}", 50000))
+    return TestClient(app, base_url="http://testserver/api/v1", client=(f"10.1.0.{next(_client_ips)}", 50000))
 
 
 @pytest.fixture(autouse=True)
@@ -210,7 +210,7 @@ def test_sharing_someone_elses_dossier_is_rejected():
     session.seed(make_dossier(owner.id))
 
     client = make_client(session, user=attacker)
-    res = client.post("/api/v1/dossiers/share", json={"dossier_id": "dossier-1"})
+    res = client.post("/dossiers/share", json={"dossier_id": "dossier-1"})
     assert res.status_code == 404, res.text
 
 
@@ -218,7 +218,7 @@ def test_sharing_unknown_dossier_is_404():
     user = make_mock_user(role="tenant")
     session = FakeAsyncSession()
     client = make_client(session, user=user)
-    res = client.post("/api/v1/dossiers/share", json={"dossier_id": "nope"})
+    res = client.post("/dossiers/share", json={"dossier_id": "nope"})
     assert res.status_code == 404
 
 
@@ -228,7 +228,7 @@ def test_owner_can_create_share_link():
     session.seed(make_dossier(user.id))
 
     client = make_client(session, user=user)
-    res = client.post("/api/v1/dossiers/share", json={"dossier_id": "dossier-1", "expires_in_days": 7})
+    res = client.post("/dossiers/share", json={"dossier_id": "dossier-1", "expires_in_days": 7})
     assert res.status_code == 200, res.text
     body = res.json()
     assert body["token"]
@@ -243,7 +243,7 @@ def test_share_link_expiry_is_clamped_to_dossier_expiry():
     session.seed(make_dossier(user.id, expires_in_days=2))
 
     client = make_client(session, user=user)
-    res = client.post("/api/v1/dossiers/share", json={"dossier_id": "dossier-1", "expires_in_days": 365})
+    res = client.post("/dossiers/share", json={"dossier_id": "dossier-1", "expires_in_days": 365})
     assert res.status_code == 200, res.text
     granted = res.json()["expires_at"]
     # 365-day request must be clamped down to the dossier's 2-day horizon
@@ -255,7 +255,7 @@ def test_share_link_expiry_is_clamped_to_dossier_expiry():
 def test_shared_unknown_token_is_404():
     session = FakeAsyncSession()
     client = make_client(session, user=make_mock_user())
-    assert client.get("/api/v1/dossiers/shared/does-not-exist").status_code == 404
+    assert client.get("/dossiers/shared/does-not-exist").status_code == 404
 
 
 def test_shared_expired_link_is_403():
@@ -267,7 +267,7 @@ def test_shared_expired_link_is_403():
     session.seed(link)
 
     client = make_client(session, user=user)
-    res = client.get("/api/v1/dossiers/shared/tok-123")
+    res = client.get("/dossiers/shared/tok-123")
     assert res.status_code == 403
     assert "expired" in res.json()["detail"].lower()
 
@@ -279,7 +279,7 @@ def test_shared_targeted_link_rejects_anonymous_viewer():
     session.seed(make_link(dossier, target_user_id="22222222-2222-2222-2222-222222222222"))
 
     client = make_client(session, user=user, optional_user=None)
-    res = client.get("/api/v1/dossiers/shared/tok-123")
+    res = client.get("/dossiers/shared/tok-123")
     assert res.status_code == 403
 
 
@@ -293,7 +293,7 @@ def test_shared_targeted_link_rejects_wrong_user():
     session.seed(make_link(dossier, target_user_id="22222222-2222-2222-2222-222222222222"))
 
     client = make_client(session, user=user, optional_user=wrong)
-    res = client.get("/api/v1/dossiers/shared/tok-123")
+    res = client.get("/dossiers/shared/tok-123")
     assert res.status_code == 403
 
 
@@ -304,7 +304,7 @@ def test_shared_dossier_not_ready_is_404():
     session.seed(make_link(dossier))
 
     client = make_client(session, user=user)
-    assert client.get("/api/v1/dossiers/shared/tok-123").status_code == 404
+    assert client.get("/dossiers/shared/tok-123").status_code == 404
 
 
 def test_shared_valid_link_returns_pdf_and_counts_the_view():
@@ -315,7 +315,7 @@ def test_shared_valid_link_returns_pdf_and_counts_the_view():
 
     client = make_client(session, user=user)
     with patch("app.services.storage.storage.download_file", new=AsyncMock(return_value=b"%PDF-1.4 fake")):
-        res = client.get("/api/v1/dossiers/shared/tok-123")
+        res = client.get("/dossiers/shared/tok-123")
 
     assert res.status_code == 200, res.text
     assert res.headers["content-type"] == "application/pdf"
@@ -333,7 +333,7 @@ def test_missing_pdf_object_reports_404_not_500():
 
     client = make_client(session, user=user)
     with patch("app.services.storage.storage.download_file", new=AsyncMock(return_value=None)):
-        res = client.get("/api/v1/dossiers/shared/tok-123")
+        res = client.get("/dossiers/shared/tok-123")
     assert res.status_code == 404
 
 
@@ -349,7 +349,7 @@ def test_my_dossiers_lists_only_own():
     session.seed(foreign)
 
     client = make_client(session, user=user)
-    res = client.get("/api/v1/dossiers/me")
+    res = client.get("/dossiers/me")
     assert res.status_code == 200, res.text
     ids = [d["id"] for d in res.json()]
     assert ids == ["dossier-1"]
@@ -361,7 +361,7 @@ def test_compile_without_a_credential_is_400():
     user = make_mock_user(role="tenant")
     session = FakeAsyncSession()  # no Credential seeded
     client = make_client(session, user=user)
-    res = client.post("/api/v1/dossiers/compile", json={"role": "tenant"})
+    res = client.post("/dossiers/compile", json={"role": "tenant"})
     assert res.status_code == 400
 
 
@@ -373,7 +373,7 @@ def test_compile_builds_dossier_from_the_credential():
     client = make_client(session, user=user)
     with patch("app.services.dossier_service.generate_trust_dossier_pdf", new=AsyncMock(return_value=b"%PDF-1.4")), \
          patch("app.services.storage.storage.upload_file", new=AsyncMock(return_value={"key": "dossiers/u/d.pdf"})):
-        res = client.post("/api/v1/dossiers/compile", json={"role": "tenant"})
+        res = client.post("/dossiers/compile", json={"role": "tenant"})
 
     assert res.status_code == 200, res.text
     assert res.json()["status"] == "ready"
@@ -422,7 +422,7 @@ def test_shared_meta_returns_non_sensitive_descriptor_only():
     session.seed(make_link(dossier))
 
     client = make_client(session, user=user)
-    res = client.get("/api/v1/dossiers/shared/tok-123/meta")
+    res = client.get("/dossiers/shared/tok-123/meta")
     assert res.status_code == 200, res.text
     body = res.json()
     assert body["role"] == "tenant"
@@ -443,19 +443,19 @@ def test_shared_meta_enforces_the_same_guards_as_the_pdf_route():
     link.expires_at = naive_utcnow() - timedelta(minutes=1)
     session.seed(link)
     client = make_client(session, user=user)
-    assert client.get("/api/v1/dossiers/shared/tok-123/meta").status_code == 403
+    assert client.get("/dossiers/shared/tok-123/meta").status_code == 403
 
     # unknown token
     session2 = FakeAsyncSession()
     client2 = make_client(session2, user=user)
-    assert client2.get("/api/v1/dossiers/shared/nope/meta").status_code == 404
+    assert client2.get("/dossiers/shared/nope/meta").status_code == 404
 
     # targeted at someone else
     session3 = FakeAsyncSession()
     d3 = session3.seed(make_dossier(user.id))
     session3.seed(make_link(d3, target_user_id="22222222-2222-2222-2222-222222222222"))
     client3 = make_client(session3, user=user, optional_user=None)
-    assert client3.get("/api/v1/dossiers/shared/tok-123/meta").status_code == 403
+    assert client3.get("/dossiers/shared/tok-123/meta").status_code == 403
 
 
 def test_shared_meta_does_not_count_as_a_view():
@@ -466,5 +466,5 @@ def test_shared_meta_does_not_count_as_a_view():
     link = session.seed(make_link(dossier))
 
     client = make_client(session, user=user)
-    client.get("/api/v1/dossiers/shared/tok-123/meta")
+    client.get("/dossiers/shared/tok-123/meta")
     assert link.view_count == 0

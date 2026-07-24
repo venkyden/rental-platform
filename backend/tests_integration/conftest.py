@@ -86,7 +86,7 @@ async def client(engine, sessionmaker_):
 
     fastapi_app.dependency_overrides[get_db] = _get_db
     transport = ASGITransport(app=asgi_app)
-    async with httpx.AsyncClient(transport=transport, base_url="http://test") as c:
+    async with httpx.AsyncClient(transport=transport, base_url="http://test/api/v1") as c:
         c._sessionmaker = sessionmaker_  # expose for data setup
         yield c
     fastapi_app.dependency_overrides.pop(get_db, None)

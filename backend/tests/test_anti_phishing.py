@@ -46,7 +46,7 @@ class TestPublicVerifyRateLimit:
 
         target = self._override_db(app)
         try:
-            with TestClient(app) as c:
+            with TestClient(app, base_url="http://testserver/api/v1") as c:
                 statuses = [
                     c.get(f"/credentials/vc_{i:032x}").status_code for i in range(40)
                 ]
@@ -62,7 +62,7 @@ class TestPublicVerifyRateLimit:
 
         target = self._override_db(app)
         try:
-            with TestClient(app) as c:
+            with TestClient(app, base_url="http://testserver/api/v1") as c:
                 statuses = [
                     c.get(f"/credentials/vc_{i:032x}/evidence.pdf").status_code
                     for i in range(20)

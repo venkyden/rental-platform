@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
-
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+const API_URL = API_BASE_URL.endsWith('/api/v1') ? API_BASE_URL : `${API_BASE_URL}/api/v1`;
 // Access token lives in module memory only — never in localStorage/sessionStorage.
 // XSS cannot read it; the httpOnly refresh cookie is the durable session credential.
 let _accessToken: string | null = null;

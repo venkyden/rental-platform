@@ -63,7 +63,7 @@ class TestDeleteGuarantorPurgesFiles:
         try:
             with patch.object(storage, "delete_file", new=AsyncMock(return_value=True)) as mock_delete:
                 from fastapi.testclient import TestClient
-                with TestClient(app) as c:
+                with TestClient(app, base_url="http://testserver/api/v1") as c:
                     resp = c.delete("/verification/guarantor")
 
             assert resp.status_code == 200
@@ -84,7 +84,7 @@ class TestDeleteGuarantorPurgesFiles:
         try:
             with patch.object(storage, "delete_file", new=AsyncMock(side_effect=RuntimeError("boom"))):
                 from fastapi.testclient import TestClient
-                with TestClient(app) as c:
+                with TestClient(app, base_url="http://testserver/api/v1") as c:
                     resp = c.delete("/verification/guarantor")
 
             assert resp.status_code == 200
@@ -102,7 +102,7 @@ class TestDeleteGuarantorPurgesFiles:
         try:
             with patch.object(storage, "delete_file", new=AsyncMock(return_value=True)) as mock_delete:
                 from fastapi.testclient import TestClient
-                with TestClient(app) as c:
+                with TestClient(app, base_url="http://testserver/api/v1") as c:
                     resp = c.delete("/verification/guarantor")
 
             assert resp.status_code == 200
@@ -129,7 +129,7 @@ class TestGuarantorReuploadPurgesReplacedFile:
                 patch("app.routers.verification.apply_watermark", return_value=FAKE_PDF),
             ):
                 from fastapi.testclient import TestClient
-                with TestClient(app) as c:
+                with TestClient(app, base_url="http://testserver/api/v1") as c:
                     resp = c.post(
                         "/verification/guarantor/upload",
                         data={"document_type": "id_card"},
@@ -162,7 +162,7 @@ class TestGuarantorReuploadPurgesReplacedFile:
                 patch("app.routers.verification.apply_watermark", return_value=FAKE_PDF),
             ):
                 from fastapi.testclient import TestClient
-                with TestClient(app) as c:
+                with TestClient(app, base_url="http://testserver/api/v1") as c:
                     resp = c.post(
                         "/verification/guarantor/upload",
                         data={"document_type": "payslip"},
@@ -197,7 +197,7 @@ class TestDeleteDocumentPurgesStorage:
         try:
             with patch.object(storage, "delete_file", new=AsyncMock(return_value=True)) as mock_delete:
                 from fastapi.testclient import TestClient
-                with TestClient(app) as c:
+                with TestClient(app, base_url="http://testserver/api/v1") as c:
                     resp = c.delete(f"/documents/{doc.id}")
 
             assert resp.status_code == 204
@@ -220,7 +220,7 @@ class TestDeleteDocumentPurgesStorage:
         try:
             with patch.object(storage, "delete_file", new=AsyncMock(return_value=True)) as mock_delete:
                 from fastapi.testclient import TestClient
-                with TestClient(app) as c:
+                with TestClient(app, base_url="http://testserver/api/v1") as c:
                     resp = c.delete(f"/documents/{doc.id}")
 
             assert resp.status_code == 204
@@ -243,7 +243,7 @@ class TestDeleteDocumentPurgesStorage:
         try:
             with patch.object(storage, "delete_file", new=AsyncMock(side_effect=RuntimeError("boom"))):
                 from fastapi.testclient import TestClient
-                with TestClient(app) as c:
+                with TestClient(app, base_url="http://testserver/api/v1") as c:
                     resp = c.delete(f"/documents/{doc.id}")
 
             assert resp.status_code == 204

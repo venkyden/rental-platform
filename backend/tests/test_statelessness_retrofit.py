@@ -37,7 +37,7 @@ def make_client(mock_user):
     target_app = app.app if hasattr(app, "app") else app
     target_app.dependency_overrides[get_current_user] = lambda: mock_user
     target_app.dependency_overrides[get_db] = mock_get_db
-    return TestClient(app)
+    return TestClient(app, base_url="http://testserver/api/v1")
 
 
 # ── Identity: selfie_with_id (one-shot) ──────────────────────────────────────

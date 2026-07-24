@@ -30,7 +30,7 @@ async def test_health_check_reports_db_up(client):
     If this fails: the DB connection pool is broken, migrations failed,
     or the app cannot start. Nothing else matters — fix this first.
     """
-    r = await client.get("/health")
+    r = await client.get("http://test/health")
     assert r.status_code == 200, r.text
     body = r.json()
     assert body["checks"]["database"]["status"] == "up", (

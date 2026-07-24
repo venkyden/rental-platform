@@ -19,7 +19,8 @@ from typing import Any, Dict, List
 import aiohttp
 
 # Configuration
-BASE_URL = "http://127.0.0.1:8000"
+BASE_URL = "http://127.0.0.1:8000/api/v1"
+SYS_URL = "http://127.0.0.1:8000"
 FRONTEND_URL = "http://127.0.0.1:3000"
 CONCURRENT_USERS = 10
 STRESS_REQUESTS = 50
@@ -72,7 +73,7 @@ async def smoke_tests(session: aiohttp.ClientSession):
 
     # Health endpoint
     try:
-        async with session.get(f"{BASE_URL}/health") as resp:
+        async with session.get(f"{SYS_URL}/health") as resp:
             if resp.status == 200:
                 data = await resp.json()
                 log(
@@ -88,14 +89,14 @@ async def smoke_tests(session: aiohttp.ClientSession):
 
     # API Docs
     try:
-        async with session.get(f"{BASE_URL}/docs") as resp:
+        async with session.get(f"{SYS_URL}/docs") as resp:
             log("smoke", "API Documentation", resp.status == 200)
     except Exception as e:
         log("smoke", "API Documentation", False, str(e))
 
     # Root endpoint
     try:
-        async with session.get(f"{BASE_URL}/") as resp:
+        async with session.get(f"{SYS_URL}/") as resp:
             log("smoke", "Root Endpoint", resp.status == 200)
     except Exception as e:
         log("smoke", "Root Endpoint", False, str(e))
@@ -163,16 +164,16 @@ async def functional_tests(session: aiohttp.ClientSession):
     # 2.4 Identity Verification Start
     try:
         async with session.post(
-            f"{BASE_URL}/identity/start", headers=headers
+            f"{BASE_URL}/verification/identity/session", headers=headers
         ) as resp:
             if resp.status == 200:
                 data = await resp.json()
-                has_url = "url" in data
+                has_url = "capture_url" in data
                 log(
                     "functional",
                     "Identity Verification Start",
                     has_url,
-                    f"Mock URL: {data.get('url', 'N/A')[:50]}...",
+                    f"Mock URL: {data.get('capture_url', 'N/A')[:50]}...",
                 )
             else:
                 log(
@@ -264,7 +265,7 @@ async def load_tests(session: aiohttp.ClientSession):
 
     async def make_request():
         try:
-            async with session.get(f"{BASE_URL}/health") as resp:
+            async with session.get(f"{SYS_URL}/health") as resp:
                 return resp.status == 200
         except:
             return False
@@ -308,7 +309,7 @@ async def stress_tests(session: aiohttp.ClientSession):
 
     async def burst_request():
         try:
-            async with session.get(f"{BASE_URL}/health") as resp:
+            async with session.get(f"{SYS_URL}/health") as resp:
                 return resp.status
         except:
             return 0
@@ -521,7 +522,7 @@ async def security_tests(session: aiohttp.ClientSession):
 
     # 6.10 Security Headers Check
     try:
-        async with session.get(f"{BASE_URL}/health") as resp:
+        async with session.get(f"{SYS_URL}/health") as resp:
             headers = resp.headers
             has_csp = "content-security-policy" in [h.lower() for h in headers.keys()]
             has_xfo = "x-frame-options" in [h.lower() for h in headers.keys()]
@@ -558,7 +559,7 @@ async def feature_flag_tests(session: aiohttp.ClientSession):
     email = f"feat_{uuid.uuid4().hex[:8]}@test.com"
     password = "FeaturePass123!"
     
-    # 1. Register
+    # 1. Register as landlord, then manually promote to admin via DB
     async with session.post(f"{BASE_URL}/auth/register", json={
         "email": email, "password": password, "full_name": "Feature Test User", "role": "landlord"
     }) as resp:
@@ -566,6 +567,10 @@ async def feature_flag_tests(session: aiohttp.ClientSession):
             error = await resp.text()
             log("features", "Feature Test User Registration", False, f"HTTP {resp.status}: {error[:50]}")
             return
+            
+    import subprocess
+    subprocess.run(["psql", "-d", "rental_platform", "-c", f"UPDATE users SET role='admin' WHERE email='{email}';"], capture_output=True)
+
         
     # 2. Login
     async with session.post(f"{BASE_URL}/auth/login", data={
@@ -711,9 +716,11 @@ async def main():
             print(f"     └─ {finding['issue']}")
 
     # Save results
-    with open("tests/comprehensive_test_results.json", "w") as f:
+    import os
+    output_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "comprehensive_test_results.json")
+    with open(output_path, "w") as f:
         json.dump(results, f, indent=2)
-    print(f"\nResults saved to tests/comprehensive_test_results.json")
+    print(f"\nResults saved to {output_path}")
 
     return total_passed == total_tests
 
