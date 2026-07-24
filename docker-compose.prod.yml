@@ -122,7 +122,10 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
-      - NEXT_PUBLIC_API_URL=${FRONTEND_URL}/api # Assuming Nginx routing
+      # Same origin; the client appends /api/v1 itself, which nginx forwards
+      # verbatim to the backend. Do NOT add /api here — that produced
+      # /api/api/v1/... which bypassed the stricter auth rate-limit location.
+      - NEXT_PUBLIC_API_URL=${FRONTEND_URL}
       - NODE_ENV=production
     depends_on:
       api:
