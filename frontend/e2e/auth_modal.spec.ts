@@ -192,7 +192,7 @@ test.describe('Phase 6: Slide-Up Auth Modal & Hybrid Verification Gates', () => 
                 });
             });
 
-            await page.route(/:8000\/auth\/me$/, async (route) => {
+            await page.route(/:8000\/api\/v1\/auth\/me$/, async (route) => {
                 await route.fulfill({
                     status: 200,
                     contentType: 'application/json',
@@ -211,7 +211,7 @@ test.describe('Phase 6: Slide-Up Auth Modal & Hybrid Verification Gates', () => 
                 });
             });
 
-            await page.route(/:8000\/auth\/me\/segment-config/, async (route) => {
+            await page.route(/:8000\/api\/v1\/auth\/me\/segment-config/, async (route) => {
                 await route.fulfill({
                     status: 200,
                     contentType: 'application/json',
@@ -235,7 +235,7 @@ test.describe('Phase 6: Slide-Up Auth Modal & Hybrid Verification Gates', () => 
                 });
             });
 
-            await page.route(/:8000\/inbox\/unread-count/, async (route) => {
+            await page.route(/:8000\/api\/v1\/inbox\/unread-count/, async (route) => {
                 await route.fulfill({
                     status: 200,
                     contentType: 'application/json',
@@ -243,7 +243,7 @@ test.describe('Phase 6: Slide-Up Auth Modal & Hybrid Verification Gates', () => 
                 });
             });
 
-            await page.route(/:8000\/inbox/, async (route) => {
+            await page.route(/:8000\/api\/v1\/inbox/, async (route) => {
                 await route.fulfill({
                     status: 200,
                     contentType: 'application/json',
@@ -251,7 +251,7 @@ test.describe('Phase 6: Slide-Up Auth Modal & Hybrid Verification Gates', () => 
                 });
             });
 
-            await page.route(/:8000\/properties\/recommendations/, async (route) => {
+            await page.route(/:8000\/api\/v1\/properties\/recommendations/, async (route) => {
                 await route.fulfill({
                     status: 200,
                     contentType: 'application/json',
@@ -259,7 +259,7 @@ test.describe('Phase 6: Slide-Up Auth Modal & Hybrid Verification Gates', () => 
                 });
             });
 
-            await page.route(/:8000\/stats\/tenant\/overview/, async (route) => {
+            await page.route(/:8000\/api\/v1\/stats\/tenant\/overview/, async (route) => {
                 await route.fulfill({
                     status: 200,
                     contentType: 'application/json',
@@ -271,7 +271,7 @@ test.describe('Phase 6: Slide-Up Auth Modal & Hybrid Verification Gates', () => 
                 });
             });
 
-            await page.route(/:8000\/notifications\/unread-count/, async (route) => {
+            await page.route(/:8000\/api\/v1\/notifications\/unread-count/, async (route) => {
                 await route.fulfill({
                     status: 200,
                     contentType: 'application/json',
@@ -279,7 +279,7 @@ test.describe('Phase 6: Slide-Up Auth Modal & Hybrid Verification Gates', () => 
                 });
             });
 
-            await page.route(/:8000\/notifications/, async (route) => {
+            await page.route(/:8000\/api\/v1\/notifications/, async (route) => {
                 await route.fulfill({
                     status: 200,
                     contentType: 'application/json',
