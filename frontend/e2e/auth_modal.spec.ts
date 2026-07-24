@@ -175,7 +175,9 @@ test.describe('Phase 6: Slide-Up Auth Modal & Hybrid Verification Gates', () => 
                 await route.fulfill({ status: 401, contentType: 'application/json', body: JSON.stringify({ detail: 'No session' }) });
             });
 
-            await page.route(/:8000\/auth\/login/, async (route) => {
+            // Port-scoped so it hits the API only — a bare '**/auth/login' glob
+            // would also intercept the navigation to the /auth/login page itself.
+            await page.route(/:8000\/api\/v1\/auth\/login/, async (route) => {
                 await route.fulfill({
                     status: 200,
                     contentType: 'application/json',

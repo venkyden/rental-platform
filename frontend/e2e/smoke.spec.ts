@@ -24,8 +24,9 @@ test.describe('Smoke Tests', () => {
         await page.goto('/dashboard');
         // Should not redirect to /auth/login, preserving URL context
         expect(page.url()).toContain('/dashboard');
-        // Should render the premium "Roomivo Secure" modal
-        await expect(page.locator('text=Roomivo Secure').first()).toBeVisible({ timeout: 10_000 });
+        // Should render the premium "Roomivo Secure" modal. The UI defaults to
+        // French, so match either localisation rather than pinning to English.
+        await expect(page.locator('text=/Roomivo S(ecure|écurisé)/i').first()).toBeVisible({ timeout: 10_000 });
     });
 
     test('search page loads', async ({ page }) => {

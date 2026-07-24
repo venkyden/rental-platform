@@ -1313,7 +1313,7 @@ test.describe('12. Universal Trust Dossier — Hub', () => {
             route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ detail: 'Server error' }) })
         );
         await page.goto('/dossier');
-        await expect(page.locator('text=/error|failed|wrong|could not be completed/i').first()).toBeVisible({ timeout: 10_000 });
+        await expect(page.locator('text=/error|failed|wrong|could not be completed|erreur|échec|impossible/i').first()).toBeVisible({ timeout: 10_000 });
     });
 
     // B — Loading state resolves
@@ -1353,7 +1353,7 @@ test.describe('13. Universal Trust Dossier — Viewer', () => {
             route.fulfill({ status: 404, contentType: 'application/json', body: JSON.stringify({ detail: 'Dossier not found or expired' }) })
         );
         await page.goto('/d/share/invalid-token');
-        await expect(page.locator('text=/not found|expired|invalid/i').first()).toBeVisible({ timeout: 10_000 });
+        await expect(page.locator('text=/not found|expired|invalid|introuvable|expiré|invalide/i').first()).toBeVisible({ timeout: 10_000 });
     });
 
     // B — Loading state resolves

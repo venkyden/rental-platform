@@ -293,7 +293,7 @@ export default function Navbar() {
                         exit={{ opacity: 0, y: -20, scale: 0.95 }}
                         className="md:hidden mt-4 glass !rounded-[2rem] overflow-hidden shadow-2xl pointer-events-auto border-white/20 max-w-lg mx-auto"
                     >
-                        <nav aria-label={t('navigation.mobile', undefined, 'Mobile Navigation')} className="p-6 flex flex-col gap-4">
+                        <nav data-testid="mobile-nav" aria-label={t('navigation.mobile', undefined, 'Mobile Navigation')} className="p-6 flex flex-col gap-4">
                             {user ? (
                                 <>
                                     <div className="grid grid-cols-2 gap-3">

@@ -21,7 +21,7 @@ test.describe('Mobile Compatibility & Stress Test', () => {
     await expect(menuButton).toBeVisible();
     await menuButton.click();
 
-    const signInLink = page.locator('nav[aria-label*="obile"] a[href="/auth/login"]');
+    const signInLink = page.locator('[data-testid="mobile-nav"] a[href="/auth/login"]');
     try {
         await expect(signInLink).toBeVisible({ timeout: 5000 });
     } catch (e) {
@@ -31,8 +31,8 @@ test.describe('Mobile Compatibility & Stress Test', () => {
     }
 
     // Verify Language Switcher is visible in the drawer
-    const mobileLangEn = page.locator('nav[aria-label="Mobile navigation"] button[data-testid="lang-switch-en"]');
-    const mobileLangFr = page.locator('nav[aria-label="Mobile navigation"] button[data-testid="lang-switch-fr"]');
+    const mobileLangEn = page.locator('[data-testid="mobile-nav"] button[data-testid="lang-switch-en"]');
+    const mobileLangFr = page.locator('[data-testid="mobile-nav"] button[data-testid="lang-switch-fr"]');
     
     await expect(mobileLangEn).toBeVisible();
     await expect(mobileLangFr).toBeVisible();
