@@ -1,10 +1,16 @@
 'use client';
 
+import { useId } from 'react';
 import { useLanguage } from '@/lib/LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function LanguageSwitcher() {
     const { language, setLanguage } = useLanguage();
+    // Namespace the shared-layout id per instance. The desktop header and the
+    // mobile drawer both mount a switcher, and a layoutId shared across the two
+    // makes framer-motion animate the active pill between them forever — the
+    // button never settles, so a click on it can never land.
+    const layoutId = `activeLang-${useId()}`;
 
     return (
         <div className="flex items-center gap-1 p-1 bg-zinc-900/5 rounded-full border border-zinc-900/5 shadow-inner">
@@ -18,7 +24,7 @@ export default function LanguageSwitcher() {
                 >
                     {language === lang && (
                         <motion.div
-                            layoutId="activeLang"
+                            layoutId={layoutId}
                             className="absolute inset-0 bg-white rounded-full shadow-sm z-0 border border-zinc-200/50"
                             transition={{ type: "spring", stiffness: 300, damping: 30 }}
                         />
