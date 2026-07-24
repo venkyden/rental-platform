@@ -245,7 +245,8 @@ test.describe('1. Auth — Register', () => {
     // FIXME: flaky in full-suite runs — the multi-step register form re-renders
     // (step transition) and detaches the submit button mid-click; passes reliably
     // in isolation. Stabilise the stepper before re-enabling.
-    test('A — API 500 on submit shows error, form stays mounted', async ({ page }) => {
+    // (0a5cde8 re-enabled this without the stepper fix; restored to fixme.)
+    test.fixme('A — API 500 on submit shows error, form stays mounted', async ({ page }) => {
         await page.route('**/auth/register', route =>
             route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ detail: 'Server error' }) }),
         );
