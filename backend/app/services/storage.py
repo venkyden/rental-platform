@@ -6,7 +6,7 @@ Zero-cost alternative to AWS S3 for storing property media.
 import logging
 import os
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import BinaryIO, Optional
 
 logger = logging.getLogger(__name__)
@@ -321,6 +321,80 @@ class CloudStorageService:
         if not deleted:
             logger.warning("purge_object(%s): delete returned False for %s", context, key)
         return deleted
+
+    async def purge_stale_objects(self, prefix: str, older_than_seconds: int) -> int:
+        """
+        Delete objects under `prefix` whose last-modified time is older than
+        `older_than_seconds`. Returns the number deleted.
+
+        Age-based on purpose: delete_file/purge_object can only remove keys some
+        caller still knows about, so they cannot reach an object whose flow died
+        between the upload and the database commit (or whose delete was swallowed
+        as a warning). Nothing else in the system reclaims those.
+
+        DESTRUCTIVE AND INDISCRIMINATE within the prefix — it does not consult the
+        database. Only ever point it at a prefix holding transient data. Durable
+        prefixes (properties/, leases/, documents/, dossiers/, avatars/, and
+        verification/guarantor/ whose keys are referenced by guarantor_data) must
+        never be passed here.
+        """
+        if not prefix or prefix.strip("/") in ("", "."):
+            logger.error("purge_stale_objects refused unsafe prefix: %r", prefix)
+            return 0
+
+        count = 0
+
+        if self.client and not self.is_local:
+            cutoff = datetime.now(timezone.utc) - timedelta(seconds=older_than_seconds)
+            try:
+                paginator = self.client.get_paginator("list_objects_v2")
+                for page in paginator.paginate(Bucket=self.bucket_name, Prefix=prefix):
+                    stale = [
+                        {"Key": obj["Key"]}
+                        for obj in page.get("Contents", [])
+                        if obj["LastModified"] < cutoff
+                    ]
+                    if stale:
+                        self.client.delete_objects(
+                            Bucket=self.bucket_name, Delete={"Objects": stale}
+                        )
+                        count += len(stale)
+            except Exception as exc:
+                logger.error("purge_stale_objects(%s) cloud sweep failed: %s", prefix, exc)
+            if count:
+                logger.info("purge_stale_objects: deleted %d cloud object(s) under %s", count, prefix)
+            return count
+
+        # Local filesystem fallback — the path that actually accumulates, since a
+        # disk write has no TTL of any kind.
+        import time
+
+        cutoff_ts = time.time() - older_than_seconds
+        root = os.path.join(self.local_path, prefix)
+        if not os.path.isdir(root):
+            return 0
+
+        # topdown=False so a directory is visited after its children and can be
+        # pruned once emptied.
+        for dirpath, _dirnames, filenames in os.walk(root, topdown=False):
+            for name in filenames:
+                full = os.path.join(dirpath, name)
+                try:
+                    if os.path.getmtime(full) < cutoff_ts:
+                        os.remove(full)
+                        count += 1
+                except OSError as exc:
+                    logger.warning("purge_stale_objects: could not remove %s: %s", full, exc)
+            if dirpath != root:
+                try:
+                    if not os.listdir(dirpath):
+                        os.rmdir(dirpath)
+                except OSError:
+                    pass
+
+        if count:
+            logger.info("purge_stale_objects: deleted %d local file(s) under %s", count, prefix)
+        return count
 
     async def delete_files_by_prefix(self, prefix: str) -> int:
         """Delete all files starting with a prefix (e.g. 'users/{user_id}/')"""

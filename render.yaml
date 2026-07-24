@@ -102,7 +102,11 @@ services:
     branch: master
     rootDir: backend
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "python -m celery -A app.workers.celery_app worker --loglevel=info --concurrency=2 --without-gossip --without-mingle --without-heartbeat"
+    # --beat embeds the scheduler so beat_schedule entries (the stale identity-doc
+    # sweep) actually fire. Safe only while this stays a single worker instance —
+    # a second replica would double-schedule; split beat into its own service first.
+    # Schedule DB goes to /tmp because the app dir is not reliably writable.
+    startCommand: "python -m celery -A app.workers.celery_app worker --beat --schedule=/tmp/celerybeat-schedule --loglevel=info --concurrency=2 --without-gossip --without-mingle --without-heartbeat"
     envVars:
       - key: PYTHON_VERSION
         value: "3.13"

@@ -1,4 +1,5 @@
 from celery import Celery
+from celery.schedules import crontab
 from app.core.config import settings
 
 redis_url = settings.REDIS_URL or "redis://redis:6379/0"
@@ -44,3 +45,16 @@ celery_app.conf.update(
 
 # Discover tasks automatically (you can add tasks later)
 celery_app.autodiscover_tasks(["app.workers"])
+
+# Periodic work. Requires the worker to run with --beat (see render.yaml);
+# without it these tasks exist but nothing ever invokes them.
+#
+# Raw identity documents on the storage fallback path have no TTL of their own,
+# so this sweep is the only thing that reclaims them. Every 15 minutes against a
+# 1 hour retention bounds a stray ID image's life to ~1h15m.
+celery_app.conf.beat_schedule = {
+    "purge-stale-identity-docs": {
+        "task": "app.workers.tasks.purge_stale_identity_docs_task",
+        "schedule": crontab(minute="*/15"),
+    },
+}

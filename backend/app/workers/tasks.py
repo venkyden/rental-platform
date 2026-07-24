@@ -330,3 +330,98 @@ def retry_pending_dpe_task(self, property_id: str, dpe_number: str) -> dict:
         return future.result()
     else:
         return asyncio.run(_retry())
+
+
+# Raw identity documents are only useful for the ~10 minute face-match window
+# (Redis TTL is 600s). One hour is a generous safety margin for a slow user on
+# the storage fallback path, after which any surviving object is garbage.
+IDENTITY_DOC_RETENTION_SECONDS = 3600
+
+# Transient-only prefixes. verification/guarantor/ is deliberately excluded: its
+# keys are referenced by guarantor_data["files"] and are meant to persist.
+_TRANSIENT_IDENTITY_PREFIXES = (
+    "verification/identity/",
+    "verification/intl/identity/",
+)
+
+
+@celery_app.task(
+    name="app.workers.tasks.purge_stale_identity_docs_task",
+    bind=True,
+    max_retries=1,
+)
+def purge_stale_identity_docs_task(self) -> dict:
+    """
+    Age-sweep raw identity documents left behind by the storage fallback path.
+
+    The Redis path expires on its own (600s TTL), but when Redis is unavailable
+    the document goes to R2/disk instead — where nothing expires it. Two ways it
+    then survives forever:
+
+      1. the user abandons the flow before the selfie, so identity_data still
+         points at a raw ID image nobody will ever consume;
+      2. the process dies between upload and commit, or the delete is swallowed
+         as a warning, leaving an object no row references at all.
+
+    Case 2 is invisible to any database-driven purge, which is why this sweeps
+    storage by object age. Dangling identity_data pointers are cleared in the
+    same pass so the record stops claiming to hold a document.
+    """
+    import asyncio
+    from datetime import datetime, timedelta
+    from sqlalchemy import select
+    from app.core.database import AsyncSessionLocal
+    from app.core.timeutils import naive_utcnow
+    from app.models.user import User
+    from app.services.storage import storage
+
+    async def _purge():
+        deleted = 0
+        for prefix in _TRANSIENT_IDENTITY_PREFIXES:
+            try:
+                deleted += await storage.purge_stale_objects(
+                    prefix, IDENTITY_DOC_RETENTION_SECONDS
+                )
+            except Exception as exc:
+                logger.warning("purge_stale_identity_docs: sweep %s failed: %s", prefix, exc)
+
+        # Drop pointers whose object this sweep has just aged out.
+        cutoff = naive_utcnow() - timedelta(seconds=IDENTITY_DOC_RETENTION_SECONDS)
+        cleared = 0
+        async with AsyncSessionLocal() as db:
+            result = await db.execute(select(User).where(User.identity_data.isnot(None)))
+            for user in result.scalars().all():
+                data = user.identity_data or {}
+                if not (data.get("storage_key") or data.get("file_url")):
+                    continue
+                raw_date = data.get("upload_date")
+                if not raw_date:
+                    continue
+                try:
+                    uploaded = datetime.fromisoformat(str(raw_date))
+                except ValueError:
+                    continue
+                if uploaded >= cutoff:
+                    continue
+                user.identity_data = {
+                    k: v for k, v in data.items() if k not in ("storage_key", "file_url")
+                }
+                cleared += 1
+            if cleared:
+                await db.commit()
+
+        logger.info(
+            "purge_stale_identity_docs: objects_deleted=%d pointers_cleared=%d", deleted, cleared
+        )
+        return {"objects_deleted": deleted, "pointers_cleared": cleared}
+
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = None
+
+    if loop and loop.is_running():
+        future = asyncio.run_coroutine_threadsafe(_purge(), loop)
+        return future.result()
+    else:
+        return asyncio.run(_purge())
