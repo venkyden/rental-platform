@@ -1663,6 +1663,9 @@ async def verify_property_dpe(
     if prop.landlord_id != current_user.id:
         raise HTTPException(status_code=403, detail="You do not own this property")
 
+    # Throttle live ADEME lookups per property so the open-data API isn't hammered.
+    await _check_upload_rate_limit(str(current_user.id), f"dpe:{property_id}")
+
     from app.services import ademe_dpe
 
     # PR-2: reject class "H" explicitly — ADEME scale is A–G only.
@@ -1768,6 +1771,7 @@ async def upload_insurance_document(
             detail=f"Invalid file type: {file.content_type}. Please upload PDF, JPEG, or PNG",
         )
     await _validate_file_size(file, max_size_mb=10)
+    await _check_upload_rate_limit(str(current_user.id), "insurance")
     content = await file.read()
 
     # Derive expected name from identity_data (for IN-2 cross-check)
@@ -1855,6 +1859,10 @@ async def upload_property_document(
         
     if property_obj.landlord_id != current_user.id:
         raise HTTPException(status_code=403, detail="You do not own this property")
+
+    # Per-property upload throttle (OCR is expensive) — keyed by property so a
+    # landlord verifying several properties isn't blocked across all of them.
+    await _check_upload_rate_limit(str(current_user.id), f"property_doc:{prop_id}")
 
     # 2. Validate file type
     allowed_types = ["image/jpeg", "image/png", "image/jpg", "application/pdf"]
@@ -2089,6 +2097,9 @@ async def verify_landlord_entity(
 
     if body.landlord_type not in ("individual", "sci", "manager"):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid landlord_type.")
+
+    # Throttle per user — the SCI branch hits the external SIREN register.
+    await _check_upload_rate_limit(str(current_user.id), "landlord_entity")
 
     if not current_user.identity_verified:
         raise HTTPException(
