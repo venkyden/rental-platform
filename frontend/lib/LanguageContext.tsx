@@ -12,7 +12,12 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-    const [language, setLanguage] = useState<Language>('en');
+    // French-first: the product is built around French law (loi 89, DPE, Décret
+    // 2015-587) and the served legal pages are French. This also matches the
+    // lang="fr" that layout.tsx renders server-side — defaulting to 'en' here
+    // meant the effect below immediately contradicted the served markup.
+    // A returning user's stored choice still wins, hydrated just below.
+    const [language, setLanguage] = useState<Language>('fr');
 
     // Hydrate language preference from localStorage
     useEffect(() => {
