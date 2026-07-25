@@ -60,13 +60,22 @@ async def sessionmaker_(engine):
 
 @pytest.fixture(autouse=True)
 def _disable_rate_limiter():
-    """Per-IP rate limits (register/login/etc.) would trip during a full suite
-    run from a single test IP. Disable slowapi for tests; production keeps it."""
-    from app.routers.auth import limiter
-    previous = limiter.enabled
-    limiter.enabled = False
+    """Per-IP rate limits would trip during a full suite run from a single test
+    IP. Each router owns its own Limiter instance (auth.py, properties.py,
+    credentials.py, verification.py, ...) rather than sharing one, so every
+    instance needs disabling here — missing one is exactly what let
+    verification.py's identity-upload limit start failing unrelated tests that
+    happen to run after enough uploads elsewhere in the file. Disable for
+    tests; production keeps it."""
+    from app.routers import auth, credentials, properties, verification
+
+    limiters = [auth.limiter, credentials.limiter, properties.limiter, verification.limiter]
+    previous = [lim.enabled for lim in limiters]
+    for lim in limiters:
+        lim.enabled = False
     yield
-    limiter.enabled = previous
+    for lim, was_enabled in zip(limiters, previous):
+        lim.enabled = was_enabled
 
 
 @pytest_asyncio.fixture

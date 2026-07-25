@@ -109,6 +109,16 @@ async def _update_session(code: str, session_data: dict):
 
 router = APIRouter(prefix="/verification", tags=["Verification"])
 
+# Per-IP throttle on identity upload, defense-in-depth alongside the per-user
+# _check_upload_rate_limit below (which alone doesn't catch one IP hammering
+# the endpoint across many accounts). Own Limiter instance, matching the
+# convention in auth.py / properties.py / credentials.py — each router owns
+# its limiter rather than sharing a global one.
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+
+limiter = Limiter(key_func=get_remote_address)
+
 
 class VerificationStartRequest(BaseModel):
     """Request to start verification process"""
@@ -191,7 +201,9 @@ async def get_biometric_consent_status(
 
 
 @router.post("/identity/upload")
+@limiter.limit("10/minute")
 async def upload_identity_document(
+    request: Request,  # noqa: ARG001 — consumed by @limiter
     document_type: Optional[str] = Form(None),
     document_type_query: Optional[str] = Query(None, alias="document_type"),
     side: str = Form("front"),
