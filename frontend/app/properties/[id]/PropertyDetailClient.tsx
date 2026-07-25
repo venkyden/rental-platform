@@ -21,6 +21,35 @@ import {
     TrendingUp, Heart, Navigation, Building2, Flame, AlertTriangle, Calendar, BadgeCheck, Download, Video
 } from 'lucide-react';
 
+interface PropertyPhoto {
+    url?: string;
+    file_url?: string;
+    media_url?: string;
+    path?: string;
+    src?: string;
+    media_type?: string;
+    room_label?: string;
+    caption?: string;
+}
+
+interface RoomDetail {
+    // written by the property wizard (Step4Layout / properties/new/steps/types.ts)
+    surface?: number;
+    surface_sqm?: number;
+    size_sqm?: number;
+    capacity?: number;
+    description?: string;
+    bedding?: string;
+    custom_amenities?: string[];
+    status?: 'available' | 'occupied';
+    available_from?: string;
+    // legacy fields — no longer written by the wizard, still read defensively
+    // for records created before it settled on the fields above
+    label?: string;
+    room_type?: string;
+    furnished?: boolean;
+}
+
 interface Property {
     id: string;
     landlord_id: string;
@@ -45,12 +74,14 @@ interface Property {
     charges_included?: boolean;
     charges_description?: string;
     available_from?: string;
-    amenities: any;
-    custom_amenities: any;
-    public_transport: any;
-    nearby_landmarks: any;
-    photos: any;
-    room_details?: any[];
+    amenities?: string[];
+    custom_amenities?: string[];
+    public_transport?: Array<{ name?: string; distance?: string; type?: string }>;
+    nearby_landmarks?: Array<{ name?: string; distance?: string; type?: string }>;
+    // media-session responses have historically returned either a bare array or
+    // a { urls: string[] } wrapper — both still occur in stored data.
+    photos?: Array<string | PropertyPhoto> | { urls: string[] };
+    room_details?: RoomDetail[];
     landlord_first_name?: string | null;
     landlord_identity_verified?: boolean;
     landlord_bio?: string | null;
@@ -229,15 +260,22 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
     const customAmenities = Array.isArray(property.custom_amenities) ? property.custom_amenities : [];
     const publicTransport = Array.isArray(property.public_transport) ? property.public_transport : [];
     const nearbyLandmarks = Array.isArray(property.nearby_landmarks) ? property.nearby_landmarks : [];
-    const getMediaRawUrl = (p: any): string => {
+    const getMediaRawUrl = (p: string | PropertyPhoto | undefined): string => {
         if (!p) return '';
         if (typeof p === 'string') return p;
         return p.url || p.file_url || p.media_url || p.path || p.src || '';
     };
 
-    const photos = Array.isArray(property.photos) ? property.photos : property.photos?.urls ? property.photos.urls.map((url: string) => ({ url })) : [];
-    const galleryPhotos = photos.filter((p: any) => p.media_type !== 'video' && !/\.(mp4|mov|webm|avi|m4v)$/i.test(getMediaRawUrl(p)));
-    const walkthroughVideo = photos.find((p: any) => p.media_type === 'video' || /\.(mp4|mov|webm|avi|m4v)$/i.test(getMediaRawUrl(p)));
+    const getMediaType = (p: string | PropertyPhoto): string | undefined => (typeof p === 'string' ? undefined : p.media_type);
+    const getRoomLabel = (p: string | PropertyPhoto | undefined): string | undefined => (p && typeof p !== 'string' ? p.room_label : undefined);
+
+    const photos: Array<string | PropertyPhoto> = Array.isArray(property.photos)
+        ? property.photos
+        : property.photos?.urls
+            ? property.photos.urls.map((url: string) => ({ url }))
+            : [];
+    const galleryPhotos = photos.filter((p) => getMediaType(p) !== 'video' && !/\.(mp4|mov|webm|avi|m4v)$/i.test(getMediaRawUrl(p)));
+    const walkthroughVideo = photos.find((p) => getMediaType(p) === 'video' || /\.(mp4|mov|webm|avi|m4v)$/i.test(getMediaRawUrl(p)));
 
     const activePhoto = galleryPhotos[activePhotoIdx] || galleryPhotos[0];
 
@@ -339,7 +377,7 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                         <Image
                                             key={activePhotoIdx}
                                             src={resolveMediaUrl(activePhoto)}
-                                            alt={`${property.title} - ${activePhoto.room_label || 'View'}`}
+                                            alt={`${property.title} - ${getRoomLabel(activePhoto) || 'View'}`}
                                             fill
                                             priority={activePhotoIdx === 0}
                                             unoptimized
@@ -348,9 +386,9 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                         />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
                                         
-                                        {activePhoto.room_label && (
+                                        {getRoomLabel(activePhoto) && (
                                             <div className="absolute top-8 left-8 px-6 py-3 bg-white/10 backdrop-blur-3xl border border-white/20 rounded-2xl text-xs font-black uppercase tracking-[0.3em] text-white shadow-2xl">
-                                                {activePhoto.room_label}
+                                                {getRoomLabel(activePhoto)}
                                             </div>
                                         )}
 
@@ -378,7 +416,7 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                 ) : walkthroughVideo ? (
                                     <div className="relative w-full aspect-[16/9] lg:aspect-[21/9] bg-zinc-900">
                                         <video
-                                            src={resolveMediaUrl(walkthroughVideo.url || walkthroughVideo)}
+                                            src={resolveMediaUrl(walkthroughVideo)}
                                             className="w-full h-full object-cover"
                                             controls
                                             playsInline
@@ -414,7 +452,7 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                         </div>
                                     </div>
                                     <a
-                                        href={resolveMediaUrl(walkthroughVideo.url || walkthroughVideo)}
+                                        href={resolveMediaUrl(walkthroughVideo)}
                                         download={`roomivo_walkthrough_${property.id}.mp4`}
                                         target="_blank"
                                         rel="noopener noreferrer"
@@ -580,11 +618,11 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                             {t('property.roomsTitle', undefined, 'Habitable Configuration & Rooms')}
                                         </h2>
                                         <div className="px-4 py-2 bg-zinc-100 rounded-full text-xs font-black uppercase tracking-widest text-zinc-600 self-start sm:self-auto">
-                                            {property.room_details.filter((r: any) => r.status !== 'occupied').length} / {property.room_details.length} {t('property.roomsAvailable', undefined, 'Rooms Available')}
+                                            {property.room_details.filter((r) => r.status !== 'occupied').length} / {property.room_details.length} {t('property.roomsAvailable', undefined, 'Rooms Available')}
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                        {property.room_details.map((room: any, index: number) => {
+                                        {property.room_details.map((room, index: number) => {
                                             const isOccupied = room.status === 'occupied';
                                             return (
                                                 <div key={index} className={`p-6 rounded-2xl border flex justify-between items-center transition-all ${isOccupied ? 'bg-zinc-100/60 border-zinc-200 opacity-60' : 'bg-zinc-50 border-zinc-100 shadow-sm'}`}>
