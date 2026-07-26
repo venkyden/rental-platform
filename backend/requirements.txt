@@ -1,3 +1,11 @@
+# Production runtime dependencies.
+#
+# INSTALL (two steps — see requirements-2ddoc.txt for why):
+#   pip install -r requirements.txt
+#   pip install --no-deps -r requirements-2ddoc.txt
+#
+# Dev/CI additionally: pip install -r requirements-dev.txt
+
 fastapi>=0.109.0
 uvicorn[standard]>=0.47.0
 sqlalchemy>=2.0.25
@@ -6,7 +14,11 @@ psycopg2-binary==2.9.10
 alembic==1.13.1
 pydantic>=2.10.0
 pydantic-settings>=2.10.0
-python-jose[cryptography]==3.5.0
+# JWT: PyJWT, not python-jose. python-jose unconditionally pulls `ecdsa`,
+# which carries PYSEC-2026-1325 with no fixed release upstream. We sign
+# HS256 only (settings.ALGORITHM), so PyJWT covers it and needs no
+# elliptic-curve backend at all.
+pyjwt>=2.10.0
 passlib==1.7.4
 argon2-cffi==23.1.0
 python-multipart>=0.0.20
@@ -18,6 +30,11 @@ python-dotenv>=1.1.0
 greenlet>=3.1.0
 email-validator==2.3.0
 slowapi==0.1.9
+# Imported directly by app/utils/encryption.py (PII encryption) and
+# app/services/credential.py (Ed25519 credential signing), so declared
+# explicitly rather than inherited transitively. Floor is the fix for
+# PYSEC-2026-35 / -1284 / -2141 / GHSA-537c-gmf6-5ccf.
+cryptography>=48.0.1
 # Netflix-style infrastructure
 redis==5.0.1
 celery==5.3.4
@@ -32,13 +49,6 @@ reportlab==4.1.0
 Jinja2>=3.1.2
 pillow>=10.2.0
 pytesseract>=0.3.13
-# Testing
-pytest==7.4.4
-pytest-asyncio==0.23.5
-aiohttp>=3.10.0
-mcp>=1.0.0
-fastmcp>=0.1.0
 pylibdmtx>=0.1.10
 PyMuPDF>=1.24.0
 setuptools>=65.0.0
-2ddoc-parser @ git+https://github.com/betagouv/2ddoc-parser.git@6d521fe82bf9f0ee3e0c543013b808ee554a476a

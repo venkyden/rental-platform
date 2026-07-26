@@ -1,0 +1,26 @@
+# Installed separately with --no-deps:
+#     pip install --no-deps -r requirements-2ddoc.txt
+#
+# WHY: betagouv/2ddoc-parser 1.0.5 declares `cryptography<44.0.0,>=43.0.0`.
+# cryptography 43.x carries four known CVEs (PYSEC-2026-35, -1284, -2141,
+# GHSA-537c-gmf6-5ccf), and this codebase uses cryptography directly for PII
+# encryption and Ed25519 credential signing — so staying on 43.x to satisfy
+# that cap is not acceptable. Resolving both together is impossible; pip exits
+# with ResolutionImpossible and the whole install fails.
+#
+# The cap is over-conservative rather than a real incompatibility: 2ddoc-parser
+# uses stable ECDSA verification primitives whose API is unchanged across
+# 43 -> 48. Verified empirically — the full tests_integration/test_fr_2ddoc.py
+# suite (13 cases, including DGFiP signature acceptance AND rejection) passes
+# with the newer cryptography installed.
+#
+# So we install it with --no-deps and satisfy its real requirements ourselves.
+# 2ddoc-parser 1.0.5 requires exactly: cryptography, pydantic,
+# typing-extensions — all three are already provided by requirements.txt
+# (typing-extensions transitively via pydantic). Re-check this list when
+# bumping the pinned commit below.
+#
+# Upstream fix would be a relaxed cap in betagouv/2ddoc-parser; revisit and
+# fold this back into requirements.txt if that lands.
+
+2ddoc-parser @ git+https://github.com/betagouv/2ddoc-parser.git@6d521fe82bf9f0ee3e0c543013b808ee554a476a

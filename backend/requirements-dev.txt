@@ -1,0 +1,28 @@
+# Development / CI only — deliberately NOT installed in production.
+#
+# render.yaml's buildCommand installs requirements.txt alone, so nothing here
+# reaches a deployed image. Keeping these out of the production dependency
+# tree removes their transitive attack surface entirely:
+#   fastmcp -> fastmcp-slim[server] -> joserfc  (3 CVEs) + authlib
+#   pytest  -> PYSEC-2026-1845
+# None of these packages are imported by app/ — mcp/fastmcp are used only by
+# the local admin tooling (roomivo_mcp.py, test_mcp_client.py) and aiohttp
+# only by tests/comprehensive_test.py.
+
+-r requirements.txt
+
+# Test runner.
+# pytest stays at 7.4.4 despite PYSEC-2026-1845 (fixed in 9.0.3). Attempted the
+# bump to pytest 9.1.1 + pytest-asyncio 1.4.0: 10 tests in test_intl_rails.py
+# fail under the full suite while passing in isolation — pytest-asyncio 1.x
+# changed the default event-loop scope, which surfaces latent cross-test state
+# leakage. That's a real test-suite migration, not a dependency bump, and the
+# advisory is in the test runner, which this file deliberately keeps out of
+# production. Revisit as its own piece of work.
+pytest==7.4.4
+pytest-asyncio==0.23.5
+aiohttp>=3.10.0
+
+# Local MCP admin tooling (roomivo_mcp.py) — never run in prod or CI
+mcp>=1.0.0
+fastmcp>=0.1.0

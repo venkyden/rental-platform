@@ -15,7 +15,7 @@ services:
     plan: starter
     branch: master
     rootDir: backend
-    buildCommand: "pip install -r requirements.txt"
+    buildCommand: "pip install -r requirements.txt && pip install --no-deps -r requirements-2ddoc.txt"
     preDeployCommand: "python -c 'from app.main import app; print(\"import ok\")'"
     startCommand: "./start.sh"
     envVars:
@@ -101,7 +101,7 @@ services:
     plan: starter
     branch: master
     rootDir: backend
-    buildCommand: "pip install -r requirements.txt"
+    buildCommand: "pip install -r requirements.txt && pip install --no-deps -r requirements-2ddoc.txt"
     # Executes tasks only. The scheduler lives in the separate roomivo-beat
     # service, so this one is free to scale to multiple instances without
     # double-firing periodic tasks.
@@ -152,7 +152,7 @@ services:
     plan: starter
     branch: master
     rootDir: backend
-    buildCommand: "pip install -r requirements.txt"
+    buildCommand: "pip install -r requirements.txt && pip install --no-deps -r requirements-2ddoc.txt"
     # Schedule DB goes to /tmp because the app dir is not reliably writable.
     startCommand: "python -m celery -A app.workers.celery_app beat --schedule=/tmp/celerybeat-schedule --loglevel=info"
     envVars:

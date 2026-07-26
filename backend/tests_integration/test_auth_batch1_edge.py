@@ -16,7 +16,7 @@ import uuid
 from datetime import timedelta
 
 import pytest
-from jose import jwt
+import jwt
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
@@ -97,6 +97,9 @@ async def test_garbage_token_rejected_at_me(client):
 @pytest.mark.asyncio
 async def test_wrong_signature_token_rejected(client):
     """A token signed with a different key must be rejected."""
+    # The wrong key is the assertion: this token must NOT authenticate. A
+    # non-literal key here would defeat the test.
+    # nosemgrep: python.jwt.security.jwt-hardcode.jwt-python-hardcoded-secret
     forged = jwt.encode(
         {"sub": "x@example.com", "type": "access"},
         "totally-different-secret-key-not-the-real-one",
