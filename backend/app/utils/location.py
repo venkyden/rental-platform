@@ -5,10 +5,13 @@ Includes in-memory TTL caching and fast HTTP failover to ensure low latency.
 """
 
 import asyncio
+import logging
 import time
 from typing import Dict, List, Optional, Tuple
 
 import httpx
+
+logger = logging.getLogger(__name__)
 
 # In-memory TTL caches for performance optimization
 # Key format: (address_str) -> (timestamp, (lat, lon))
@@ -50,7 +53,7 @@ async def geocode_address(
                     _GEOCODE_CACHE[full_address] = (now, coords)
                     return coords
         except Exception as e:
-            print(f"Geocoding error: {e}")
+            logger.warning("Geocoding error: %s", e)
 
     _GEOCODE_CACHE[full_address] = (now, None)
     return None
@@ -130,7 +133,7 @@ async def get_nearby_pois(latitude: float, longitude: float) -> Dict[str, List[s
                     _POI_CACHE[grid_key] = (now, parsed)
                     return parsed
             except Exception as e:
-                print(f"Overpass API error ({endpoint}): {e}")
+                logger.warning("Overpass API error (%s): %s", endpoint, e)
                 continue
 
     fallback = {"public_transport": [], "nearby_landmarks": []}

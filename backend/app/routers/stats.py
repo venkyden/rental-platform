@@ -3,6 +3,7 @@ Analytics and Statistics API router.
 Aggregates data for dashboards — Overview, Alerts, Revenue Chart.
 """
 
+import logging
 from datetime import date, datetime, timedelta
 from app.core.timeutils import naive_utcnow
 from typing import List, Optional
@@ -12,6 +13,8 @@ from fastapi import APIRouter, Depends, HTTPException, Header
 from pydantic import BaseModel
 from sqlalchemy import Float, and_, case, cast, extract, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+logger = logging.getLogger(__name__)
 
 from app.core.database import get_db
 from app.models.application import Application
@@ -638,7 +641,7 @@ async def get_public_stats(db: AsyncSession = Depends(get_db)):
         if cached_data:
             return PublicStats(**cached_data)
     except Exception as e:
-        print(f"Error reading public stats from cache: {e}")
+        logger.warning("Error reading public stats from cache: %s", e)
 
     try:
         # 1. Total active properties
@@ -681,11 +684,11 @@ async def get_public_stats(db: AsyncSession = Depends(get_db)):
         try:
             await cache.set("public_overview", stats_data, ttl=30)
         except Exception as e:
-            print(f"Error writing public stats to cache: {e}")
+            logger.warning("Error writing public stats to cache: %s", e)
 
         return PublicStats(**stats_data)
     except Exception as e:
-        print(f"CRITICAL ERROR in get_public_stats: {str(e)}")
+        logger.error("Failed to compute public stats: %s", e)
         # Return zeros instead of crashing to keep landing page functional
         return PublicStats(
             total_properties=0,

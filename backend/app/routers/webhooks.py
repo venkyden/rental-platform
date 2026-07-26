@@ -87,7 +87,7 @@ async def verification_webhook(
 
     if not user:
         # Log but don't fail - user might have been deleted
-        print(f"Webhook: User {user_id} not found")
+        logger.warning("Webhook: User %s not found", user_id)
         return {"status": "acknowledged", "action": "user_not_found"}
 
     # Update user verification status
@@ -118,7 +118,7 @@ async def verification_webhook(
 
     elif event == "verification.failed":
         # Log failure for review
-        print(f"Verification failed for user {user_id}: {data.get('rejection_reason')}")
+        logger.warning("Verification failed for user %s: %s", user_id, data.get('rejection_reason'))
 
         # Send failure notification to user (off the webhook response path)
         background_tasks.add_task(
