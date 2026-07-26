@@ -185,17 +185,6 @@ async def export_user_data(
             "bio": getattr(user, "bio", None),
             "phone": getattr(user, "phone", None),
             "role": user.role.value if hasattr(user.role, "value") else str(user.role),
-            "nationality": getattr(user, "nationality", None),
-            "languages": getattr(user, "languages", None),
-            "gender": getattr(user, "gender", None),
-            "birth_date": str(user.birth_date) if getattr(user, "birth_date", None) else None,
-            "address": {
-                "line1": getattr(user, "address_line1", None),
-                "line2": getattr(user, "address_line2", None),
-                "city": getattr(user, "city", None),
-                "postal_code": getattr(user, "postal_code", None),
-                "country": getattr(user, "country", None),
-            },
             "verification": {
                 "email_verified": user.email_verified,
                 "identity_verified": user.identity_verified,
