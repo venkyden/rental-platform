@@ -83,7 +83,7 @@ class TestMRZExtraction:
              patch("app.services.mrz._ai_extract_mrz", new=AsyncMock(
                  return_value={"mrz_line1": _VALID_LINE1, "mrz_line2": _VALID_LINE2}
              )):
-            result = asyncio.get_event_loop().run_until_complete(
+            result = asyncio.run(
                 extract_mrz(b"fake", "image/jpeg")
             )
 
@@ -110,7 +110,7 @@ class TestMRZExtraction:
              )), \
              patch("app.services.mrz._tesseract_extract",
                    return_value=(_VALID_LINE1, _VALID_LINE2)):
-            result = asyncio.get_event_loop().run_until_complete(
+            result = asyncio.run(
                 extract_mrz(b"fake", "image/jpeg")
             )
 
@@ -130,7 +130,7 @@ class TestMRZExtraction:
                  return_value={"mrz_line1": "", "mrz_line2": junk}
              )), \
              patch("app.services.mrz._tesseract_extract", return_value=("", junk)):
-            result = asyncio.get_event_loop().run_until_complete(
+            result = asyncio.run(
                 extract_mrz(b"fake", "image/jpeg")
             )
 
@@ -148,7 +148,7 @@ class TestMRZExtraction:
              patch("app.services.mrz._ai_extract_mrz", new=AsyncMock(
                  return_value={"mrz_line1": _VALID_LINE1, "mrz_line2": _VALID_LINE2}
              )):
-            result = asyncio.get_event_loop().run_until_complete(
+            result = asyncio.run(
                 extract_mrz(b"fake", "image/jpeg")
             )
 
@@ -165,7 +165,7 @@ class TestMRZExtraction:
              patch("app.services.mrz._ai_extract_mrz", new=AsyncMock(
                  return_value={"mrz_line1": _VALID_LINE1, "mrz_line2": _VALID_LINE2}
              )):
-            result = asyncio.get_event_loop().run_until_complete(
+            result = asyncio.run(
                 extract_mrz(b"fake", "image/jpeg")
             )
 
@@ -195,7 +195,7 @@ class TestFXLivePath:
         with patch("app.services.fx_normalise.httpx.AsyncClient", return_value=mock_http), \
              patch("app.services.fx_normalise.cache") as mc:
             mc.redis_client = None
-            result = asyncio.get_event_loop().run_until_complete(
+            result = asyncio.run(
                 convert_to_eur(80000.0, "INR")
             )
 
@@ -234,7 +234,7 @@ class TestFXStaticFallback:
         with patch("app.services.fx_normalise.httpx.AsyncClient", return_value=mock_http), \
              patch("app.services.fx_normalise.cache") as mc:
             mc.redis_client = None
-            result = asyncio.get_event_loop().run_until_complete(
+            result = asyncio.run(
                 convert_to_eur(1000.0, "USD")
             )
 
@@ -251,7 +251,7 @@ class TestFXStaticFallback:
         with patch("app.services.fx_normalise.httpx.AsyncClient") as mock_cls, \
              patch("app.services.fx_normalise.cache") as mc:
             mc.redis_client = None
-            result = asyncio.get_event_loop().run_until_complete(
+            result = asyncio.run(
                 convert_to_eur(1000.0, "EUR")
             )
 
@@ -278,7 +278,7 @@ class TestFXUnknownCurrency:
         with patch("app.services.fx_normalise.httpx.AsyncClient", return_value=mock_http), \
              patch("app.services.fx_normalise.cache") as mc:
             mc.redis_client = None
-            result = asyncio.get_event_loop().run_until_complete(
+            result = asyncio.run(
                 convert_to_eur(5000.0, "XYZ")
             )
 
@@ -389,7 +389,7 @@ class TestIntlFundsExtraction:
     def test_no_ai_client_returns_none(self):
         import asyncio
         from app.routers.verification import _ai_extract_intl_funds
-        result = asyncio.get_event_loop().run_until_complete(
+        result = asyncio.run(
             _ai_extract_intl_funds(b"fake", "image/jpeg", ai_client=None)
         )
         assert result is None

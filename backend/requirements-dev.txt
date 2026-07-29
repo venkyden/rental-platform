@@ -12,11 +12,13 @@
 -r requirements.txt
 
 # Test runner. pytest >=9.0.3 closes PYSEC-2026-1845.
-# pytest-asyncio 1.x changed the default event-loop scope, surfacing a
-# pre-existing cross-test leak: tests/test_intl_rails.py (10 tests) passes in
-# isolation but fails under the full `pytest tests/` run with "no current
-# event loop in thread 'MainThread'". Test-suite migration, not a dependency
-# problem — tracked as its own follow-up, not blocking the CVE fix.
+# Note for future upgrades: pytest-asyncio 1.x no longer leaves an event loop
+# set on the main thread, so any test calling
+# asyncio.get_event_loop().run_until_complete() inherits a *closed* loop once
+# an async test has run before it — passing in isolation, failing in the full
+# run. test_intl_rails.py did that in 10 places; they use asyncio.run() now,
+# which owns its own loop. Prefer asyncio.run() (or a plain async def test) in
+# new tests.
 pytest>=9.0.3
 pytest-asyncio>=1.0
 aiohttp>=3.10.0

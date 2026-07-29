@@ -42,6 +42,39 @@ export default function Step8Review({ formData, t, declared, setDeclared, loadin
                 </div>
             </div>
 
+            {(formData.public_transport.length > 0 || formData.nearby_landmarks.length > 0) && (
+                <div className="glass-card !p-12 rounded-[4rem] border-zinc-100 grid grid-cols-1 sm:grid-cols-2 gap-8">
+                    {formData.public_transport.length > 0 && (
+                        <div className="space-y-3">
+                            <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
+                                {t('property.transport', undefined, 'Public Transit')}
+                            </label>
+                            <ul className="space-y-2">
+                                {formData.public_transport.map((item: any, i: number) => (
+                                    <li key={i} className="text-xs font-black text-zinc-700 uppercase tracking-wider">
+                                        {item.line || item}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+                    {formData.nearby_landmarks.length > 0 && (
+                        <div className="space-y-3">
+                            <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
+                                {t('property.landmarks', undefined, 'Points of Interest')}
+                            </label>
+                            <ul className="space-y-2">
+                                {formData.nearby_landmarks.map((item: any, i: number) => (
+                                    <li key={i} className="text-xs font-black text-zinc-700 uppercase tracking-wider">
+                                        {item.name || item}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+                </div>
+            )}
+
             {/* Legal declaration */}
             <label
                 htmlFor="declaration-checkbox"
