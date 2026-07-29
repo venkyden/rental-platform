@@ -11,16 +11,14 @@
 
 -r requirements.txt
 
-# Test runner.
-# pytest stays at 7.4.4 despite PYSEC-2026-1845 (fixed in 9.0.3). Attempted the
-# bump to pytest 9.1.1 + pytest-asyncio 1.4.0: 10 tests in test_intl_rails.py
-# fail under the full suite while passing in isolation — pytest-asyncio 1.x
-# changed the default event-loop scope, which surfaces latent cross-test state
-# leakage. That's a real test-suite migration, not a dependency bump, and the
-# advisory is in the test runner, which this file deliberately keeps out of
-# production. Revisit as its own piece of work.
-pytest==7.4.4
-pytest-asyncio==0.23.5
+# Test runner. pytest >=9.0.3 closes PYSEC-2026-1845.
+# pytest-asyncio 1.x changed the default event-loop scope, surfacing a
+# pre-existing cross-test leak: tests/test_intl_rails.py (10 tests) passes in
+# isolation but fails under the full `pytest tests/` run with "no current
+# event loop in thread 'MainThread'". Test-suite migration, not a dependency
+# problem — tracked as its own follow-up, not blocking the CVE fix.
+pytest>=9.0.3
+pytest-asyncio>=1.0
 aiohttp>=3.10.0
 
 # Local MCP admin tooling (roomivo_mcp.py) — never run in prod or CI

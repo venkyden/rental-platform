@@ -109,7 +109,7 @@ class EmploymentVerificationService:
                     gross_salary=Decimal(str(data.get("gross_salary", 0))),
                     net_salary=Decimal(str(data.get("net_salary", 0))),
                     pay_period=data.get("pay_period", ""),
-                    employment_type=data.get("employment_type", "Unknown"),
+                    employment_type=data.get("employment_type") or "Unknown",
                     siret=data.get("siret"),
                     job_title=data.get("job_title"),
                     confidence_score=data.get("confidence_score", 1.0),
@@ -286,7 +286,7 @@ Return ONLY the JSON, no explanation."""
                         gross_salary=Decimal(str(data.get("gross_salary") if data.get("gross_salary") is not None else 0)),
                         net_salary=Decimal(str(data.get("net_salary") if data.get("net_salary") is not None else 0)),
                         pay_period=data.get("pay_period", ""),
-                        employment_type=data.get("employment_type", "Unknown"),
+                        employment_type=data.get("employment_type") or "Unknown",
                         siret=data.get("siret"),
                         job_title=data.get("job_title"),
                         confidence_score=data.get("confidence_score", 0.5),
@@ -385,7 +385,11 @@ Return ONLY the JSON, no explanation."""
         if is_non_salaried:
             stable_employment = True
         else:
-            stable_employment = data.employment_type.upper() in ["CDI", "FONCTIONNAIRE"]
+            # `or ""` not just a None-check: the AI can emit an explicit JSON
+            # null for employment_type, which .get(key, default) passes through
+            # as None rather than substituting the default. Unguarded .upper()
+            # then 500s the whole payslip upload.
+            stable_employment = (data.employment_type or "").upper() in ["CDI", "FONCTIONNAIRE"]
             
         checks.append(
             {
