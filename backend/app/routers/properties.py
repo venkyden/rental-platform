@@ -331,6 +331,13 @@ def _apply_property_filters(
         val = caf_eligible.lower() == "true" if isinstance(caf_eligible, str) else bool(caf_eligible)
         query = query.where(Property.caf_eligible == val)
 
+    # `is_colocation` (WP2) is the authoritative signal. The rest of this OR is a
+    # legacy-data fallback for rows created before that flag existed — narrowed to
+    # actual colocation markers. `room_details.isnot(None)` was dropped from this
+    # OR (added in 62151d4): Step4Layout populates room_details for EVERY
+    # multi-bedroom property regardless of colocation status, so it was matching
+    # ordinary furnished T3s as "colocation" — is_colocation replaces its intent
+    # without the false positives.
     colocation = params.get("colocation")
     if colocation and colocation != "":
         val = colocation.lower() in ("true", "1") if isinstance(colocation, str) else bool(colocation)
@@ -338,13 +345,13 @@ def _apply_property_filters(
             from sqlalchemy import or_, func, String
             query = query.where(
                 or_(
+                    Property.is_colocation == True,
                     func.lower(Property.property_type).in_(["room", "colocation", "chambre"]),
                     Property.amenities.cast(String).ilike("%colocation%"),
                     Property.amenities.cast(String).ilike("%coloc%"),
                     Property.title.ilike("%colocation%"),
                     Property.title.ilike("%coloc%"),
                     Property.description.ilike("%colocation%"),
-                    Property.room_details.isnot(None),
                 )
             )
 
@@ -354,17 +361,27 @@ def _apply_property_filters(
             if amenity == "colocation":
                 query = query.where(
                     or_(
+                        Property.is_colocation == True,
                         func.lower(Property.property_type).in_(["room", "colocation", "chambre"]),
                         Property.amenities.cast(String).ilike("%colocation%"),
                         Property.amenities.cast(String).ilike("%coloc%"),
                         Property.title.ilike("%colocation%"),
                         Property.title.ilike("%coloc%"),
                         Property.description.ilike("%colocation%"),
-                        Property.room_details.isnot(None),
                     )
                 )
             else:
                 query = query.where(Property.amenities.contains([amenity]))
+
+    is_colocation_param = params.get("is_colocation")
+    if is_colocation_param and is_colocation_param != "":
+        val = (
+            is_colocation_param.lower() in ("true", "1")
+            if isinstance(is_colocation_param, str)
+            else bool(is_colocation_param)
+        )
+        if val:
+            query = query.where(Property.is_colocation == True)
 
     if verified_only:
         query = query.where(Property.ownership_verified == True)

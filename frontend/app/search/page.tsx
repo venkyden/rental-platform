@@ -100,6 +100,7 @@ function SearchContent() {
             if (propertyType && !(typology === 'studio')) params.property_type = propertyType;
             if (colocation) {
                 params.colocation = '1';
+                params.is_colocation = 'true';
             }
             
             const response = savedOnly 

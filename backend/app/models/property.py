@@ -40,13 +40,23 @@ class Property(Base):
     size_sqm = Column(DECIMAL(8, 2))
     floor_number = Column(Integer)
     furnished = Column(Boolean, default=False)
+    # Authoritative colocation signal — decoupled from property_type='room',
+    # which is ambiguous (single room in someone's home vs. a flat rented
+    # room-by-room). Legacy data without this flag still matches via the
+    # property_type/amenities OR-fallback in _apply_property_filters.
+    is_colocation = Column(Boolean, default=False, nullable=False, server_default="false")
 
     # Detailed Rooms Configuration
     accommodation_capacity = Column(Integer)
     rooms_count = Column(Integer)  # matches "number of pieces"
     living_room_type = Column(String(50))  # 'Private', 'Common', 'None'
     kitchen_type = Column(String(50))  # 'Private', 'Municipality', 'None'
-    room_details = Column(JSONB)  # Detailed configurations for each bedroom
+    # Detailed configurations for each bedroom — element shape (heterogeneous
+    # across record eras, see PropertyDetailClient.tsx RoomDetail): surface,
+    # surface_sqm, size_sqm, capacity, description, bedding, custom_amenities,
+    # status ('available'|'occupied'), available_from, monthly_rent (colocation
+    # per-room pricing, WP2).
+    room_details = Column(JSONB)
 
     # Pricing
     monthly_rent = Column(DECIMAL(10, 2), nullable=False)

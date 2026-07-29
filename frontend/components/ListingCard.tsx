@@ -11,6 +11,7 @@ import {
     ListingSummary,
     getTypology,
     getDisplayPrice,
+    getColocationPricing,
     getDescriptionPreview,
     getAvailability,
     getDifferentiatorKey,
@@ -29,6 +30,7 @@ export default function ListingCard({ property, onToggleSave, index = 0 }: Listi
         getTypology(property) ??
         t(`listing.type.${property.property_type}`, undefined, property.property_type);
     const price = getDisplayPrice(property);
+    const colocationPricing = getColocationPricing(property);
     const preview = getDescriptionPreview(property.description);
     const availability = getAvailability(property.available_from);
     const differentiatorKey = getDifferentiatorKey(property.amenities);
@@ -36,7 +38,12 @@ export default function ListingCard({ property, onToggleSave, index = 0 }: Listi
 
     const specParts: string[] = [];
     if (property.size_sqm) specParts.push(`${Math.round(Number(property.size_sqm))}m²`);
-    if (property.bedrooms > 0) {
+    if (colocationPricing) {
+        specParts.push(
+            t('listing.roomsAvailable', { available: colocationPricing.availableRooms, total: colocationPricing.totalRooms },
+                `${colocationPricing.availableRooms}/${colocationPricing.totalRooms} chambres disponibles`)
+        );
+    } else if (property.bedrooms > 0) {
         const key = property.bedrooms > 1 ? 'listing.bedrooms' : 'listing.bedroom';
         specParts.push(`${property.bedrooms} ${t(key, undefined, 'chambres')}`);
     }
@@ -117,10 +124,19 @@ export default function ListingCard({ property, onToggleSave, index = 0 }: Listi
                         </Link>
                     </div>
                     <div className="text-right shrink-0">
-                        <p className="text-xl font-black text-zinc-900 tracking-tight">
-                            {Math.round(price.amount)}€{' '}
-                            <span className="text-xs font-bold text-zinc-500 uppercase">{t(`listing.${price.suffix}`, undefined, price.suffix)}</span>
-                        </p>
+                        {colocationPricing ? (
+                            <>
+                                <p className="text-xs font-bold text-zinc-500 uppercase">{t('listing.colocationFrom', undefined, 'À partir de')}</p>
+                                <p className="text-xl font-black text-zinc-900 tracking-tight">
+                                    {Math.round(colocationPricing.fromPrice)}€
+                                </p>
+                            </>
+                        ) : (
+                            <p className="text-xl font-black text-zinc-900 tracking-tight">
+                                {Math.round(price.amount)}€{' '}
+                                <span className="text-xs font-bold text-zinc-500 uppercase">{t(`listing.${price.suffix}`, undefined, price.suffix)}</span>
+                            </p>
+                        )}
                         <p className="text-xs font-semibold text-zinc-400">{t('listing.perMonth', undefined, '/ mois')}</p>
                     </div>
                 </div>

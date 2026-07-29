@@ -67,6 +67,7 @@ export default function NewPropertyPage() {
         bathrooms: 1,
         size_sqm: 30,
         furnished: false,
+        is_colocation: false,
         accommodation_capacity: 1,
         rooms_count: 1,
         living_room_type: 'None',

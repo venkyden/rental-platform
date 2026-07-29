@@ -36,6 +36,7 @@ def make_test_property(**kwargs):
         "size_sqm": None,
         "floor_number": None,
         "furnished": False,
+        "is_colocation": False,
         "accommodation_capacity": None,
         "rooms_count": None,
         "living_room_type": None,
