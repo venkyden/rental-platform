@@ -63,6 +63,29 @@ export default function Step4Layout({ formData, updateFormData, t, roomAmenityIn
                     </div>
                 </div>
             </div>
+
+            <div className="space-y-4">
+                <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
+                    {t('property.create.layout.colocationToggle', undefined, 'Louez-vous à la chambre (colocation) ?')}
+                </label>
+                <div className="flex gap-3 max-w-md">
+                    {[{ v: false, l: t('common.no', undefined, 'No') }, { v: true, l: t('common.yes', undefined, 'Yes') }].map((opt) => (
+                        <button
+                            key={String(opt.v)}
+                            type="button"
+                            onClick={() => updateFormData({ is_colocation: opt.v })}
+                            className={`flex-1 py-4 rounded-2xl text-xs font-black uppercase tracking-wider transition-all ${
+                                formData.is_colocation === opt.v
+                                    ? 'bg-zinc-900 text-white shadow-lg'
+                                    : 'bg-zinc-100 text-zinc-400 hover:bg-zinc-200'
+                            }`}
+                            aria-label={`Colocation: ${opt.l}`}
+                        >
+                            {opt.l}
+                        </button>
+                    ))}
+                </div>
+            </div>
             <div className="grid grid-cols-2 gap-8">
                 <div className="space-y-4">
                     <label className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400">
@@ -226,6 +249,32 @@ export default function Step4Layout({ formData, updateFormData, t, roomAmenityIn
                                     />
                                 </div>
                             </div>
+                            {formData.is_colocation && (
+                                <div className="space-y-2">
+                                    <label className="text-xs font-black uppercase tracking-widest text-zinc-400">
+                                        {t('property.create.layout.roomRent', undefined, 'Loyer (€/mois)')}
+                                    </label>
+                                    <input
+                                        type="number"
+                                        value={room.monthly_rent ?? ''}
+                                        onChange={(e) => {
+                                            const val = e.target.value === '' ? undefined : parseInt(e.target.value) || 0;
+                                            const updated = [...formData.room_details];
+                                            updated[idx] = { ...updated[idx], monthly_rent: val };
+                                            updateFormData({ room_details: updated });
+                                        }}
+                                        min={0}
+                                        className="w-full bg-zinc-50 p-4 rounded-xl border-none font-black text-lg"
+                                        aria-label={`Bedroom ${idx + 1} rent`}
+                                    />
+                                    {(room.surface || room.surface_sqm || room.size_sqm || 0) > 0 &&
+                                        (room.surface || room.surface_sqm || room.size_sqm || 0) < 9 && (
+                                        <p className="text-amber-500 text-xs font-bold" role="alert">
+                                            ⚠️ {t('property.create.layout.roomDecencyWarning', undefined, 'Une chambre louée seule doit faire au moins 9m² (décence).')}
+                                        </p>
+                                    )}
+                                </div>
+                            )}
                             <div className="space-y-2">
                                 <label className="text-xs font-black uppercase tracking-widest text-zinc-400">
                                     {t('property.create.layout.roomDescLabel', undefined, 'Notes (Optional)')}

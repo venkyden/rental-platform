@@ -43,6 +43,7 @@ interface RoomDetail {
     custom_amenities?: string[];
     status?: 'available' | 'occupied';
     available_from?: string;
+    monthly_rent?: number;
     // legacy fields — no longer written by the wizard, still read defensively
     // for records created before it settled on the fields above
     label?: string;
@@ -82,6 +83,7 @@ interface Property {
     // a { urls: string[] } wrapper — both still occur in stored data.
     photos?: Array<string | PropertyPhoto> | { urls: string[] };
     room_details?: RoomDetail[];
+    is_colocation?: boolean;
     landlord_first_name?: string | null;
     landlord_identity_verified?: boolean;
     landlord_bio?: string | null;
@@ -511,6 +513,59 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                     </motion.div>
                                 ))}
                             </div>
+
+                            {/* Room availability table (WP2) — one row per colocation bedroom */}
+                            {property.is_colocation && property.room_details && property.room_details.length > 0 && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true }}
+                                    className="glass-card !p-10 rounded-[3rem] border-zinc-100"
+                                >
+                                    <h2 className="text-xs font-black text-zinc-400 uppercase tracking-[0.4em] mb-6">
+                                        {t('property.rooms.title', undefined, 'Chambres')}
+                                    </h2>
+                                    <div className="space-y-3">
+                                        {property.room_details.map((room, idx) => {
+                                            const surface = room.surface || room.surface_sqm || room.size_sqm;
+                                            const occupied = room.status === 'occupied';
+                                            return (
+                                                <div
+                                                    key={idx}
+                                                    className="flex items-center justify-between gap-4 p-4 bg-zinc-50 rounded-2xl border border-zinc-100"
+                                                >
+                                                    <div className="min-w-0">
+                                                        <p className="font-black text-zinc-900">
+                                                            {room.label || t('property.create.layout.bedroomTitle', { number: idx + 1 }, `Chambre ${idx + 1}`)}
+                                                            {surface ? ` — ${surface}m²` : ''}
+                                                        </p>
+                                                        {!occupied && room.available_from && (
+                                                            <p className="text-xs text-zinc-500">
+                                                                {t('listing.availableFrom', undefined, 'Disponible à partir du')}{' '}
+                                                                {new Intl.DateTimeFormat(language === 'fr' ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(room.available_from))}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex items-center gap-3 shrink-0">
+                                                        {typeof room.monthly_rent === 'number' && (
+                                                            <span className="font-black text-zinc-900">{room.monthly_rent}€</span>
+                                                        )}
+                                                        <span
+                                                            className={`px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-widest ${
+                                                                occupied ? 'bg-zinc-200 text-zinc-500' : 'bg-emerald-100 text-emerald-700'
+                                                            }`}
+                                                        >
+                                                            {occupied
+                                                                ? t('property.rooms.status.occupied', undefined, 'Occupée')
+                                                                : t('property.rooms.status.available', undefined, 'Disponible')}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </motion.div>
+                            )}
 
                             {/* Landlord card (WP3) — who is behind this listing */}
                             {property.landlord_bio && (

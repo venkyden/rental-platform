@@ -190,6 +190,8 @@ export const translations = {
             identityVerified: "verified identity",
             gpsVerified: "GPS-verified photos",
             noPhotos: "Photos coming soon",
+            colocationFrom: "From",
+            roomsAvailable: "{{available}}/{{total}} rooms available",
             type: { apartment: "Apartment", house: "House", studio: "Studio", room: "Room" },
             diff: {
                 privateBathroom: "Private bathroom",
@@ -369,6 +371,8 @@ export const translations = {
             confirm: "Confirm",
             confirm_area: "Confirm search area",
             continue: "Continue",
+            yes: "Yes",
+            no: "No",
             errors: {
                 failed: "The action could not be completed. Please try again.",
                 unknown: "An error occurred. Please try again.",
@@ -1788,6 +1792,13 @@ export const translations = {
         },
         property: {
             amenitiesTitle: "Amenities & features",
+            rooms: {
+                title: "Rooms",
+                status: {
+                    available: "Available",
+                    occupied: "Occupied",
+                },
+            },
             landlord: {
                 archiveConfirm: "Archive this property?",
                 deleteConfirm: "Delete this property? This cannot be undone.",
@@ -1888,6 +1899,9 @@ export const translations = {
                     roomDescLabel: "Notes (Optional)",
                     roomDescPlaceholder: "ex: View on the garden, built-in closet...",
                     decencyNotice: "Roomivo enforces French decency standards (min 9m² per occupant).",
+                    colocationToggle: "Renting room-by-room (colocation)?",
+                    roomRent: "Rent (€/month)",
+                    roomDecencyWarning: "A room rented individually must be at least 9m² (decency standard).",
                     amenities: "Room Amenities",
                     amenityPlaceholder: "Add amenity..."
                 },
@@ -3076,6 +3090,8 @@ export const translations = {
         common: {
             confirm: "Confirmer",
             confirm_area: "Valider la zone de recherche",
+            yes: "Oui",
+            no: "Non",
             continue: "Continuer",
             errors: {
                 failed: "L'action n'a pas pu aboutir. Réessayez.",
@@ -3291,6 +3307,8 @@ export const translations = {
             identityVerified: "identité vérifiée",
             gpsVerified: "Photos vérifiées GPS",
             noPhotos: "Photos en cours d'ajout",
+            colocationFrom: "À partir de",
+            roomsAvailable: "{{available}}/{{total}} chambres disponibles",
             type: { apartment: "Appartement", house: "Maison", studio: "Studio", room: "Chambre" },
             diff: {
                 privateBathroom: "Salle de bain privée",
@@ -4701,6 +4719,13 @@ export const translations = {
         },
         property: {
             amenitiesTitle: "Équipements et prestations",
+            rooms: {
+                title: "Chambres",
+                status: {
+                    available: "Disponible",
+                    occupied: "Occupée",
+                },
+            },
             landlord: {
                 archiveConfirm: "Archiver ce bien ?",
                 deleteConfirm: "Supprimer ce bien ? Cette action est irréversible.",
@@ -4798,6 +4823,9 @@ export const translations = {
                     roomDescLabel: "Notes (Optionnel)",
                     roomDescPlaceholder: "ex: Vue sur jardin, placard intégré...",
                     decencyNotice: "Roomivo applique les critères de décence français (min 9m² par occupant).",
+                    colocationToggle: "Louez-vous à la chambre (colocation) ?",
+                    roomRent: "Loyer (€/mois)",
+                    roomDecencyWarning: "Une chambre louée seule doit faire au moins 9m² (décence).",
                     amenities: "Équipements de la pièce",
                     amenityPlaceholder: "Ajouter un équipement..."
                 },

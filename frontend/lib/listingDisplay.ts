@@ -22,11 +22,19 @@ export interface ListingSummary {
     is_saved?: boolean;
     landlord_first_name?: string | null;
     landlord_identity_verified?: boolean;
+    // WP2 — authoritative colocation signal + derived per-room pricing/availability.
+    is_colocation?: boolean;
+    colocation_summary?: {
+        total_rooms: number;
+        available_rooms: number;
+        min_room_rent: number | null;
+    } | null;
 }
 
 // 'Studio' / 'T2' / 'Colocation' are language-neutral tokens; returns null when
 // only a translated type name (apartment/house) applies — caller falls back to t().
 export function getTypology(p: ListingSummary): string | null {
+    if (p.is_colocation) return 'Colocation';
     const propType = p.property_type?.toLowerCase();
     if (propType === 'studio') return 'Studio';
     if (propType === 'room' || propType === 'colocation' || propType === 'chambre') return 'Colocation';
@@ -44,6 +52,16 @@ export function getDisplayPrice(p: ListingSummary): { amount: number; suffix: 'c
     const charges = Number(p.charges) || 0;
     if (charges > 0) return { amount: rent + charges, suffix: 'cc' };
     return { amount: rent, suffix: 'hc' };
+}
+
+// Per-room "À partir de" pricing — null unless the listing is a colocation with
+// at least one room's rent captured (rooms without rent set don't count toward
+// the minimum, but still count toward availableRooms/totalRooms).
+export function getColocationPricing(p: ListingSummary): { fromPrice: number; availableRooms: number; totalRooms: number } | null {
+    if (!p.is_colocation || !p.colocation_summary) return null;
+    const { min_room_rent, available_rooms, total_rooms } = p.colocation_summary;
+    if (min_room_rent == null) return null;
+    return { fromPrice: min_room_rent, availableRooms: available_rooms, totalRooms: total_rooms };
 }
 
 export function getDescriptionPreview(description?: string | null, maxLength = 160): string | null {

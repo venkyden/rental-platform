@@ -14,6 +14,7 @@ export type PropertyFormData = {
     size_sqm: number;
     floor_number?: number;
     furnished: boolean;
+    is_colocation: boolean;
     accommodation_capacity: number;
     rooms_count: number;
     living_room_type: 'Private' | 'Common' | 'None';
@@ -28,6 +29,7 @@ export type PropertyFormData = {
         custom_amenities: string[];
         status?: 'available' | 'occupied';
         available_from?: string;
+        monthly_rent?: number;
     }>;
     dpe_rating: string;
     ges_rating: string;
