@@ -28,6 +28,7 @@ class PropertyCreate(BaseModel):
     size_sqm: Optional[Decimal] = Field(None, gt=Decimal("0"))
     floor_number: Optional[int] = None
     furnished: bool = False
+    is_colocation: bool = False
 
     accommodation_capacity: Optional[int] = Field(None, gt=0)
     rooms_count: Optional[int] = Field(None, gt=0)
@@ -118,6 +119,7 @@ class PropertyUpdate(BaseModel):
     size_sqm: Optional[Decimal] = Field(None, gt=Decimal("0"))
     floor_number: Optional[int] = None
     furnished: Optional[bool] = None
+    is_colocation: Optional[bool] = None
 
     accommodation_capacity: Optional[int] = Field(None, gt=0)
     rooms_count: Optional[int] = Field(None, gt=0)
@@ -202,6 +204,7 @@ class PropertyResponse(BaseModel):
     size_sqm: Optional[Decimal] = None
     floor_number: Optional[int] = None
     furnished: bool = False
+    is_colocation: bool = False
 
     accommodation_capacity: Optional[int] = None
     rooms_count: Optional[int] = None
@@ -276,6 +279,27 @@ class PropertyResponse(BaseModel):
     def is_zone_tendue(self) -> bool:
         from app.services.zone_tendue import is_zone_tendue as check_zone_tendue
         return check_zone_tendue(self.postal_code)
+
+    @computed_field
+    @property
+    def colocation_summary(self) -> Optional[dict]:
+        """Derived from room_details, not stored — avoids a second source of
+        truth for counts/pricing that the wizard already writes per room."""
+        if not self.is_colocation or not self.room_details:
+            return None
+        rents = [
+            r.get("monthly_rent") for r in self.room_details
+            if isinstance(r, dict) and r.get("monthly_rent")
+        ]
+        available = sum(
+            1 for r in self.room_details
+            if isinstance(r, dict) and r.get("status") != "occupied"
+        )
+        return {
+            "total_rooms": len(self.room_details),
+            "available_rooms": available,
+            "min_room_rent": min(rents) if rents else None,
+        }
 
 
 class MediaSessionCreate(BaseModel):
