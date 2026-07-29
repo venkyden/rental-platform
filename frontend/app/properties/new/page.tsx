@@ -157,7 +157,12 @@ export default function NewPropertyPage() {
             latitude: result.lat,
             longitude: result.lng,
         });
-        handleEnrichLocation({ address: result.address, city: result.city, postal_code: result.postal_code });
+        // Manual "use typed text" entries carry no city/postal_code (Photon had no match) —
+        // enriching now would just 404/no-op with a confusing toast. Skip; nextStep() retries
+        // enrichment once the user fills in City/Zip and advances.
+        if (result.city && result.postal_code) {
+            handleEnrichLocation({ address: result.address, city: result.city, postal_code: result.postal_code });
+        }
     };
 
     const handleAiSuggest = async () => {

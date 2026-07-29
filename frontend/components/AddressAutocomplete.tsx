@@ -11,8 +11,8 @@ export interface AddressResult {
     address: string;       // street + housenumber
     city: string;
     postal_code: string;
-    lat: number;
-    lng: number;
+    lat?: number;
+    lng?: number;
     display: string;       // full formatted string for the dropdown
 }
 
@@ -343,8 +343,6 @@ export default function AddressAutocomplete({
                                         address: query,
                                         city: '',
                                         postal_code: '',
-                                        lat: 0,
-                                        lng: 0,
                                         display: query,
                                     });
                                     setQuery(query);
