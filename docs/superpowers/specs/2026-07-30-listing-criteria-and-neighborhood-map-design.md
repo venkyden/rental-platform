@@ -149,9 +149,13 @@ New component `frontend/components/NeighborhoodMap.tsx`, used in place of
 `StaticMapView` in the "Verified Location" section of `PropertyDetailClient.tsx`
 (`StaticMapView.tsx` itself is unchanged — it's used elsewhere as a plain pin).
 
-- Renders the same Leaflet base map as `StaticMapView` (marker at
-  `property.latitude`/`longitude`, prefilled exactly as today — this part already
-  works and is not being rebuilt).
+- Renders a Leaflet base map centered on the same prefilled
+  `property.latitude`/`longitude` marker as `StaticMapView` (that prefill logic is
+  reused as-is, not rebuilt) — but **fully interactive**, not a frozen view: unlike
+  `StaticMapView` (which sets `scrollWheelZoom={false}` and `zoomControl={false}` for
+  a static-looking pin), `NeighborhoodMap` enables `zoomControl` (visible +/− buttons,
+  matching the Studapart reference) and `scrollWheelZoom`/drag-pan, since a visitor
+  needs to explore the area around the property, not just see a fixed snapshot.
 - Adds an address-search input, reusing `AddressAutocomplete` for the typed-address
   field, plus a "Rechercher" button.
 - Adds walk/bike/car mode toggles.
