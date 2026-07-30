@@ -7,6 +7,7 @@ import { apiClient } from '@/lib/api';
 import { QRCodeSVG } from 'qrcode.react';
 import { motion, Variants } from 'framer-motion';
 import { useLanguage } from '@/lib/LanguageContext';
+import { useAuth } from '@/lib/useAuth';
 import BiometricConsentScreen from '@/components/BiometricConsentScreen';
 
 const containerVariants: Variants = {
@@ -38,6 +39,16 @@ const IDENTITY_DOC_TYPES = [
     { value: 'id_card',          label: 'National ID Card',            icon: '🆔' },
     { value: 'drivers_license',  label: "Driver's License",            icon: '🚗' },
     { value: 'residence_permit', label: 'Residence Permit / Receipt',  icon: '🏠' },
+];
+
+// Drives getEmploymentDocumentTypes() branching below — kept in sync with the
+// 'situation' question in frontend/components/onboarding/onboardingQuestions.ts
+const SITUATION_OPTIONS = [
+    { value: 'student', label: 'Student' },
+    { value: 'young_professional', label: 'Young Professional' },
+    { value: 'self_employed', label: 'Self-Employed' },
+    { value: 'retired', label: 'Retired' },
+    { value: 'other', label: 'Other' },
 ];
 
 // ─── Inline selfie-with-ID guide illustration ────────────────────────────────
@@ -90,6 +101,7 @@ function IdSelfieIllustration() {
 
 export default function VerificationUpload({ verificationType, propertyId, onSuccessAction, user }: VerificationUploadProps) {
     const { t } = useLanguage();
+    const { checkAuth } = useAuth();
 
     // Common state
     const [files, setFiles] = useState<File[]>([]);
@@ -100,6 +112,7 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
     const [isMobile, setIsMobile] = useState(false);
     // GDPR Art. 9 — selfie face-match requires recorded explicit consent
     const [bioConsented, setBioConsented] = useState<boolean | null>(null);
+    const [savingSituation, setSavingSituation] = useState(false);
 
 
 
@@ -206,6 +219,20 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
 
 
     // ── Document type lists ───────────────────────────────────────────────
+
+    const handleSituationChange = async (value: string) => {
+        if (!value) return;
+        setSavingSituation(true);
+        try {
+            await apiClient.updateOnboardingPreferences({ situation: value });
+            await checkAuth();
+            setDocumentType(''); // re-trigger recommended-doc selection for the new situation
+        } catch {
+            setError('Failed to save your situation. Please try again.');
+        } finally {
+            setSavingSituation(false);
+        }
+    };
 
     const getEmploymentDocumentTypes = () => {
         const role = user?.role || 'tenant';
@@ -530,30 +557,52 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
                             </div>
                         )}
 
-                        {/* Profile situation display */}
-                        <div className="mb-8">
-                            <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400 block mb-2">
-                                {t('dashboard.verification.verification.steps.detectedProfile', undefined, 'Current Profile Situation')}
-                            </label>
-                            <p className="text-sm font-black text-zinc-900 uppercase tracking-widest">
-                                {(() => {
-                                    const role = user?.role || 'tenant';
-                                    const rolePrefs = user?.preferences?.[role] || user?.preferences || {};
-                                    let questionId = 'contract_type';
-                                    if (role === 'landlord' || role === 'property_manager') questionId = 'property_count';
-                                    else if (rolePrefs.situation) questionId = 'situation';
-                                    else if (rolePrefs.contract_type) questionId = 'contract_type';
-                                    const value = rolePrefs[questionId] || 'Standard';
-                                    if (value === '1_4') return '1 - 4 Properties';
-                                    if (value === '5_100') return '5 - 100 Properties';
-                                    if (value === '100_plus') return '100+ Properties';
-                                    const translationRole = (role === 'landlord' || role === 'property_manager') ? 'landlord' : 'tenant';
-                                    const translated = t(`onboarding.questions.${translationRole}.${questionId}.options.${value}`, undefined, '');
-                                    if (translated) return translated;
-                                    return typeof value === 'string' ? value.replace(/_/g, ' ') : String(value);
-                                })()}
-                            </p>
-                        </div>
+                        {/* Profile situation — editable for tenant employment verification, since it
+                            drives which KYC documents getEmploymentDocumentTypes() below requests */}
+                        {verificationType === 'employment' && (user?.role || 'tenant') === 'tenant' ? (
+                            <div className="mb-8">
+                                <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400 block mb-2">
+                                    {t('dashboard.verification.verification.steps.detectedProfile', undefined, 'Your Situation')}
+                                </label>
+                                <select
+                                    value={user?.preferences?.tenant?.situation || ''}
+                                    onChange={e => handleSituationChange(e.target.value)}
+                                    disabled={savingSituation}
+                                    required
+                                    className="w-full bg-zinc-50 border-none rounded-2xl px-6 py-4 text-sm font-medium focus:ring-2 focus:ring-zinc-900/10 transition-all outline-none appearance-none disabled:opacity-50">
+                                    <option value="">{t('dashboard.verification.verification.steps.selectSituation', undefined, 'Select your situation...')}</option>
+                                    {SITUATION_OPTIONS.map(opt => (
+                                        <option key={opt.value} value={opt.value}>
+                                            {t(`onboarding.questions.tenant.situation.options.${opt.value}`, undefined, opt.label)}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        ) : (
+                            <div className="mb-8">
+                                <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400 block mb-2">
+                                    {t('dashboard.verification.verification.steps.detectedProfile', undefined, 'Current Profile Situation')}
+                                </label>
+                                <p className="text-sm font-black text-zinc-900 uppercase tracking-widest">
+                                    {(() => {
+                                        const role = user?.role || 'tenant';
+                                        const rolePrefs = user?.preferences?.[role] || user?.preferences || {};
+                                        let questionId = 'contract_type';
+                                        if (role === 'landlord' || role === 'property_manager') questionId = 'property_count';
+                                        else if (rolePrefs.situation) questionId = 'situation';
+                                        else if (rolePrefs.contract_type) questionId = 'contract_type';
+                                        const value = rolePrefs[questionId] || 'Standard';
+                                        if (value === '1_4') return '1 - 4 Properties';
+                                        if (value === '5_100') return '5 - 100 Properties';
+                                        if (value === '100_plus') return '100+ Properties';
+                                        const translationRole = (role === 'landlord' || role === 'property_manager') ? 'landlord' : 'tenant';
+                                        const translated = t(`onboarding.questions.${translationRole}.${questionId}.options.${value}`, undefined, '');
+                                        if (translated) return translated;
+                                        return typeof value === 'string' ? value.replace(/_/g, ' ') : String(value);
+                                    })()}
+                                </p>
+                            </div>
+                        )}
 
                         <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400 block mb-6">
                             {t('dashboard.verification.verification.steps.selectType', undefined, '1. Select Document Type')}
