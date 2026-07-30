@@ -208,6 +208,20 @@ async def generate_property_description(
 
 
 
+def _rooms_for_capture(room_details) -> Optional[list]:
+    """Room list for the capture-page selector: index + surface only — no
+    hardcoded label text, so the capture page can localize it (FR/EN)."""
+    if not room_details:
+        return None
+    rooms = []
+    for i, room in enumerate(room_details):
+        surface = None
+        if isinstance(room, dict):
+            surface = room.get("surface") or room.get("surface_sqm") or room.get("size_sqm")
+        rooms.append({"index": i, "surface": surface})
+    return rooms
+
+
 def _landlord_trust_fields(landlord) -> dict:
     """First name + identity flag for the listing trust line. Never exposes full name.
 
@@ -653,6 +667,7 @@ async def get_property(
                     "room_index": m.room_index,
                     "room_label": m.room_label,
                     "media_type": m.media_type,
+                    "gps_verified": m.verification_status == "verified" and m.captured_latitude is not None,
                 })
             property_obj.photos = new_photos  # type: ignore
             flag_modified(property_obj, "photos")
@@ -1134,13 +1149,7 @@ async def create_media_session(
     capture_url = f"{settings.FRONTEND_URL}/capture/{verification_code}"
 
     # Fetch room details for the capture page room selector
-    rooms_list = None
-    room_details = cast(Optional[list], property_obj.room_details)
-    if room_details and len(room_details) > 0:
-        rooms_list = [
-            {"index": i, "label": f"Bedroom {i + 1}"}
-            for i in range(len(room_details))
-        ]
+    rooms_list = _rooms_for_capture(cast(Optional[list], property_obj.room_details))
 
     return {
         "id": session.id,
@@ -1191,14 +1200,7 @@ async def get_media_session(
     )
     property_obj = prop_result.scalar_one_or_none()
 
-    rooms_list = None
-    if property_obj:
-        room_details = cast(Optional[list], property_obj.room_details)
-        if room_details and len(room_details) > 0:
-            rooms_list = [
-                {"index": i, "label": f"Bedroom {i + 1}"}
-                for i in range(len(room_details))
-            ]
+    rooms_list = _rooms_for_capture(cast(Optional[list], property_obj.room_details)) if property_obj else None
 
     # Check if a video walkthrough has already been uploaded
     video_res = await db.execute(
