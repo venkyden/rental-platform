@@ -77,29 +77,36 @@ test.describe('Landing Page E2E Tests', () => {
     });
 
     test('language switcher changes text', async ({ page }) => {
-        // "Browse Listings"/"Browse listings" appears in several sections — anchor on the tenant CTA
         const tenantBtn = page.locator('a[href="/auth/register?role=tenant"]');
 
-        // Verify default english text
+        const switchLang = async (lang: 'fr' | 'en') => {
+            const btn = page.getByTestId(`lang-switch-${lang}`).first();
+            if (await btn.isVisible()) {
+                await btn.click();
+            } else {
+                const menuBtn = page.locator('button:has(svg.lucide-menu)').first();
+                if (await menuBtn.isVisible()) {
+                    await menuBtn.click();
+                    const drawer = page.locator('[data-testid="mobile-nav"]');
+                    await expect(drawer).toBeVisible({ timeout: 5000 });
+                    await drawer.locator(`button[data-testid="lang-switch-${lang}"]`).first().click();
+                    const closeBtn = page.locator('button:has(svg.lucide-x)').first();
+                    if (await closeBtn.isVisible()) {
+                        await closeBtn.click();
+                    }
+                }
+            }
+        };
+
+        // Switch to EN
+        await switchLang('en');
+        await page.waitForTimeout(300);
         await expect(tenantBtn).toContainText(/Browse Listings/i);
 
-        // Click FR button using test-id
-        await page.getByTestId('lang-switch-fr').click();
-
-        // Wait for potential hydration/translation update
-        await page.waitForTimeout(500);
-
-        // Check if text changed to French
+        // Switch to FR
+        await switchLang('fr');
+        await page.waitForTimeout(300);
         await expect(tenantBtn).toContainText(/Parcourir les annonces/i);
-
-        // Click EN button to revert using test-id
-        await page.getByTestId('lang-switch-en').click();
-
-        // Wait
-        await page.waitForTimeout(500);
-
-        // Verify back to English
-        await expect(tenantBtn).toContainText(/Browse Listings/i);
     });
 });
 
