@@ -9,7 +9,7 @@ import { Camera, Video, CheckCircle2, Shield, MapPin, ChevronRight, WifiOff, Inf
 
 interface Room {
     index: number;
-    label: string;
+    surface?: number | null;
 }
 
 export default function CapturePage({ params }: { params: Promise<{ code: string }> }) {
@@ -194,7 +194,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                 captured_at: new Date().toISOString(),
                 media_type: isVideo ? 'video' : 'photo',
                 room_index: selectedRoom?.index ?? null,
-                room_label: selectedRoom?.label ?? null,
+                room_label: selectedRoom ? `${fr ? 'Chambre' : 'Room'} ${selectedRoom.index + 1}` : null,
             };
 
             if (isOffline) {
@@ -405,7 +405,10 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                                                 <div className={`text-xs font-black uppercase tracking-widest mb-1 ${selectedRoom?.index === room.index ? 'text-zinc-400' : 'text-zinc-500'}`}>
                                                     {fr ? 'Pièce' : 'Room'}
                                                 </div>
-                                                <div className={`text-sm font-black uppercase ${selectedRoom?.index === room.index ? 'text-white' : 'text-zinc-900'}`}>{room.label}</div>
+                                                <div className={`text-sm font-black uppercase ${selectedRoom?.index === room.index ? 'text-white' : 'text-zinc-900'}`}>
+                                                    {fr ? 'Chambre' : 'Room'} {room.index + 1}
+                                                    {room.surface ? ` — ${room.surface}m²` : ''}
+                                                </div>
                                             </button>
                                         ))}
                                     </div>

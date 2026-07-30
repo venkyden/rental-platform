@@ -18,7 +18,7 @@ import StaticMapView from '@/components/StaticMapView';
 import Image from 'next/image';
 import {
     MapPin, Share2, Shield, Zap, Wind, Check, LayoutGrid, Info,
-    TrendingUp, Heart, Navigation, Building2, Flame, AlertTriangle, Calendar, BadgeCheck, Download, Video
+    TrendingUp, Heart, Navigation, Building2, Flame, AlertTriangle, Calendar, BadgeCheck, Download, Video, ShieldCheck
 } from 'lucide-react';
 
 interface PropertyPhoto {
@@ -30,6 +30,7 @@ interface PropertyPhoto {
     media_type?: string;
     room_label?: string;
     caption?: string;
+    gps_verified?: boolean;
 }
 
 interface RoomDetail {
@@ -270,6 +271,7 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
 
     const getMediaType = (p: string | PropertyPhoto): string | undefined => (typeof p === 'string' ? undefined : p.media_type);
     const getRoomLabel = (p: string | PropertyPhoto | undefined): string | undefined => (p && typeof p !== 'string' ? p.room_label : undefined);
+    const getGpsVerified = (p: string | PropertyPhoto | undefined): boolean => (!!p && typeof p !== 'string' && !!p.gps_verified);
 
     const photos: Array<string | PropertyPhoto> = Array.isArray(property.photos)
         ? property.photos
@@ -388,11 +390,19 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                         />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
                                         
-                                        {getRoomLabel(activePhoto) && (
-                                            <div className="absolute top-8 left-8 px-6 py-3 bg-white/10 backdrop-blur-3xl border border-white/20 rounded-2xl text-xs font-black uppercase tracking-[0.3em] text-white shadow-2xl">
-                                                {getRoomLabel(activePhoto)}
-                                            </div>
-                                        )}
+                                        <div className="absolute top-8 left-8 flex flex-wrap gap-3">
+                                            {getRoomLabel(activePhoto) && (
+                                                <div className="px-6 py-3 bg-white/10 backdrop-blur-3xl border border-white/20 rounded-2xl text-xs font-black uppercase tracking-[0.3em] text-white shadow-2xl">
+                                                    {getRoomLabel(activePhoto)}
+                                                </div>
+                                            )}
+                                            {getGpsVerified(activePhoto) && (
+                                                <div className="flex items-center gap-2 px-6 py-3 bg-white/10 backdrop-blur-3xl border border-white/20 rounded-2xl text-xs font-black uppercase tracking-[0.3em] text-white shadow-2xl">
+                                                    <ShieldCheck className="w-3.5 h-3.5" />
+                                                    {t('property.media.gpsVerified', undefined, 'GPS-verified')}
+                                                </div>
+                                            )}
+                                        </div>
 
                                         <div className="absolute bottom-8 right-8 flex gap-3 z-20">
                                             <button
@@ -431,6 +441,35 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                     </div>
                                 )}
                             </motion.div>
+
+                            {/* Thumbnail strip — room-grouped chip navigation (WP4) */}
+                            {galleryPhotos.length > 1 && (
+                                <div className="flex gap-4 overflow-x-auto pb-2">
+                                    {galleryPhotos.map((photo, i) => (
+                                        <button
+                                            key={i}
+                                            onClick={() => setActivePhotoIdx(i)}
+                                            className={`relative shrink-0 w-28 sm:w-32 aspect-[4/3] rounded-2xl overflow-hidden border-2 transition-all ${
+                                                i === activePhotoIdx ? 'border-zinc-900 shadow-lg' : 'border-transparent opacity-70 hover:opacity-100'
+                                            }`}
+                                        >
+                                            <Image
+                                                src={resolveMediaUrl(photo)}
+                                                alt={getRoomLabel(photo) || `${property.title} thumbnail ${i + 1}`}
+                                                fill
+                                                unoptimized
+                                                className="object-cover"
+                                                sizes="128px"
+                                            />
+                                            {getRoomLabel(photo) && (
+                                                <span className="absolute bottom-1 left-1 right-1 px-2 py-1 bg-black/60 backdrop-blur text-white text-[9px] font-black uppercase tracking-wider rounded-lg truncate text-center">
+                                                    {getRoomLabel(photo)}
+                                                </span>
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
 
                             {/* Walkthrough Video Download Section */}
                             {walkthroughVideo && (
