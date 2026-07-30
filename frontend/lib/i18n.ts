@@ -1807,6 +1807,7 @@ export const translations = {
             locationTitle: "Verified location",
             media: {
                 noMedia: "No photos yet",
+                gpsVerified: "GPS-verified",
             },
             share: {
                 copied: "Link copied to clipboard",
@@ -4733,6 +4734,7 @@ export const translations = {
             },
             media: {
                 noMedia: "Pas encore de photos",
+                gpsVerified: "Vérifié GPS",
             },
             size: "Surface",
             success: {
