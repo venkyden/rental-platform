@@ -74,6 +74,14 @@ exactly the "inflate MEDIUM to HIGH" mistake DOSSIER forbids.
 5. Credential copy in the panel states only what's actually live (MEDIUM identity on
    both rails, MEDIUM solvency, MEDIUM guarantor certs) — confirmed with the user
    (2026-07-30): omit any "coming soon" HIGH-tier caveat.
+6. **Public-transport mode is nearest-stop distance, not point-to-point transit
+   routing.** Studapart's own reference screenshot only offers pied/vélo/voiture —
+   no transit mode — so this goes beyond what's being matched, not a parity gap.
+   Confirmed with the user (2026-07-30): reuse the property's already-fetched
+   `public_transport` list (Overpass POI data, already computed at listing-creation
+   time and already displayed in the "Neighborhood Connectivity" section) to surface
+   the nearest stop + its distance, rather than integrating a second routing
+   provider (e.g. Navitia) for full transit journeys. No new backend call.
 
 ---
 
@@ -128,20 +136,28 @@ pattern used throughout this file.
 
 ### Backend
 
-New endpoint on the properties router:
+New endpoint on the existing location router (alongside `/location/enrich`, not nested
+under `/properties/{id}` — it's a stateless coordinate-to-coordinate lookup, not a
+property-owning resource):
 
 ```
-GET /properties/{id}/directions?address={text}&mode=walking|cycling|driving
+POST /location/directions
+{ origin_lat, origin_lng, dest_lat, dest_lng, mode: "walking"|"cycling"|"driving" }
 ```
 
-- Geocode `address` via the existing Photon-based geocoding already used behind
-  `AddressAutocomplete` (no new geocoder dependency).
+- **No server-side geocoding.** `AddressAutocomplete` already resolves the typed
+  address to lat/lng client-side via Photon before this endpoint is ever called, so
+  the origin coordinates arrive pre-geocoded — one less geocoder invocation, and no
+  risk of the client's Photon pick and a second server-side geocode disagreeing.
 - Call openrouteservice Directions API server-side using `mode` → ORS profile
   (`foot-walking`, `cycling-regular`, `driving-car`).
 - Response: `{ distance_m: number, duration_s: number, geometry: GeoJSON LineString }`.
 - New env var `ORS_API_KEY` (backend only).
 - No persistence — this is a stateless lookup, same pattern as the existing
   enrichment endpoint.
+- New route → must be added to `backend/tests/route_manifest.json` in the same change
+  (`test_doctrine_guard.py` fails CI otherwise — product-surface changes require an
+  explicit manifest update).
 
 ### Frontend
 
@@ -158,9 +174,11 @@ New component `frontend/components/NeighborhoodMap.tsx`, used in place of
   needs to explore the area around the property, not just see a fixed snapshot.
 - Adds an address-search input, reusing `AddressAutocomplete` for the typed-address
   field, plus a "Rechercher" button.
-- Adds walk/bike/car mode toggles.
-- On search: calls the new `/properties/{id}/directions` endpoint, draws the returned
-  route as a Leaflet `Polyline`, and displays distance + duration text near the map.
+- Adds walk/bike/car/public-transport mode toggles. For walk/bike/car: calls the new
+  `/location/directions` endpoint, draws the returned route as a Leaflet `Polyline`,
+  and displays distance + duration text near the map. For public transport: no
+  routing call — parses the property's existing `public_transport` list (already
+  loaded on the page) for the nearest stop and displays its label + distance.
 
 ---
 
