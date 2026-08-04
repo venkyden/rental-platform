@@ -77,6 +77,7 @@ class Property(Base):
     accepted_tenant_types = Column(
         JSONB
     )  # ['employee', 'student', 'freelancer', 'retired', 'other']
+    guarantor_income_multiple = Column(DECIMAL(3, 1))  # e.g. 3.0 = 3x rent required
 
     # Availability
     available_from = Column(Date)

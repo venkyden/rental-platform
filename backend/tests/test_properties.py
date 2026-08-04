@@ -239,6 +239,7 @@ class TestPropertyCompliance:
         mock_prop.is_overseas_dom = False
         mock_prop.ownership_data = None
         mock_prop.deposit = None
+        mock_prop.guarantor_income_multiple = None
         mock_prop.monthly_rent = 1000
         mock_prop.size_sqm = 40
         mock_prop.furnished = False
