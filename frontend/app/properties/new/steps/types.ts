@@ -47,6 +47,8 @@ export type PropertyFormData = {
     caf_eligible: boolean;
     guarantor_required: boolean;
     accepted_guarantor_types: string[];
+    accepted_tenant_types: string[];
+    guarantor_income_multiple?: number;
     loyer_reference?: number;
     loyer_reference_majore?: number;
     complement_de_loyer?: number;
