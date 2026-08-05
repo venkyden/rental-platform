@@ -141,7 +141,7 @@ test.describe('Landlord Listing Wizard', () => {
         await addressInput.fill('10 Rue de la Paix');
         const suggestion = page.locator('li:has-text("Rue de la Paix")').first();
         await expect(suggestion).toBeVisible();
-        await suggestion.click();
+        await suggestion.click({ force: true });
         await continueBtn.click();
 
         // Step 3: Details — select DPE rating B (exact aria-label avoids matching

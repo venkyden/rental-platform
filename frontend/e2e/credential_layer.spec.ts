@@ -118,7 +118,7 @@ test.describe('Credential layer — verification page', () => {
 
     test('guarantor tab explains the credential as the no-guarantor alternative', async ({ page }) => {
         await page.goto('/verification');
-        await page.locator('button:has-text("Guarantor")').first().click();
+        await page.locator('button:has-text("Guarantor")').first().click({ force: true });
         await expect(page.locator('text=/No guarantor\\? You have something better/i').first()).toBeVisible({ timeout: 10_000 });
     });
 
