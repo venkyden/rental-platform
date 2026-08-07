@@ -17,7 +17,7 @@ test.describe('Mobile Compatibility & Stress Test', () => {
     // We can just    // Wait for hydration to complete so React event listeners are attached
     await page.waitForTimeout(1500);
 
-    const menuButton = page.locator('button:has(svg.lucide-menu)');
+    const menuButton = page.locator('button:has(svg.lucide-menu), button.md\:hidden').first();
     await expect(menuButton).toBeVisible();
     await menuButton.click();
 

@@ -37,6 +37,11 @@ function attachConsoleListener(page: Page, errorsArray: string[]) {
 
 test.describe('Desktop Navigation & Controls', () => {
     test.use({ viewport: { width: 1280, height: 800 } });
+    test.beforeEach(async ({ page }) => {
+        if ((page.viewportSize()?.width ?? 1024) < 640) {
+            test.skip();
+        }
+    });
 
     test('desktop navigation links navigate smoothly to target routes', async ({ page }) => {
         await clearSession(page);
