@@ -22,7 +22,6 @@ VIDE_FIELDS = {
     "bailleur_designation": "M. Jean Bailleur, 1 rue Test, 44000 Nantes, personne physique",
     "locataire_designation": "Mme Marie Locataire",
     "logement_localisation": "2 avenue Exemple, 44000 Nantes, 2e étage",
-    "logement_id_fiscal": "44000000000000",
     "logement_type_habitat": "immeuble collectif",
     "logement_regime": "copropriété",
     "logement_periode_construction": "de 1975 à 1989",
@@ -75,7 +74,7 @@ def test_generate_fills_fields_and_keeps_clauses():
 
 
 def test_missing_required_field_blocks():
-    kw = {**VALID_KW, "fields": {k: v for k, v in VIDE_FIELDS.items() if k != "logement_id_fiscal"}}
+    kw = {**VALID_KW, "fields": {k: v for k, v in VIDE_FIELDS.items() if k != "logement_localisation"}}
     res = gen.generate(**kw)
     assert res.ok is False and res.text is None
     assert any("obligatoire manquant" in b.lower() for b in res.blocking)

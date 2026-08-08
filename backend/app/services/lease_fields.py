@@ -31,7 +31,15 @@ FIELDS: dict[str, Field] = {
     "carte_pro_garant": Field(default="Néant", label="Carte professionnelle / garant", source="Annexe I"),
     # II. Objet du contrat — consistance
     "logement_localisation": Field(required=True, label="Adresse du logement", source="Annexe II.A"),
-    "logement_id_fiscal": Field(required=True, label="Identifiant fiscal du logement", source="Annexe II.A"),
+    # 2026-07-15: NOT part of the official Annexe II text — confirmed absent from the
+    # Légifrance article (LEGIARTI000043842249/254) at this position and everywhere else,
+    # per docs/legal/2026-07-15-model-transcription-verification.md (F2). The prior
+    # `source="Annexe II.A"` citation was false; corrected here, not deleted. No current
+    # template references this token (removed from both fill.md variants same pass) —
+    # kept only pending an owner decision on whether it reflects a real, separately-cited
+    # obligation worth reinstating.
+    "logement_id_fiscal": Field(required=True, label="Identifiant fiscal du logement",
+                                source="UNVERIFIED — not in Décret 2015-587 Annexe II, see 2026-07-15 finding F2"),
     "logement_type_habitat": Field(required=True, type="enum",
                                    enum=("immeuble collectif", "immeuble individuel"),
                                    label="Type d'habitat", source="Annexe II.A"),

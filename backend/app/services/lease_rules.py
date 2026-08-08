@@ -22,6 +22,8 @@ Legal basis (sourced, factual — not legal advice):
 
 from dataclasses import dataclass, field
 
+from app.services import lease_fields
+
 # Lease type → deposit cap (months of rent HORS CHARGES) and whether it must be furnished.
 LEASE_TYPES: dict[str, dict] = {
     "vide":     {"deposit_max_months": 1, "furnished_required": False, "label": "bail vide (non meublee)"},
@@ -41,15 +43,15 @@ VIDE_DURATION_MONTHS: dict[str, int] = {
 # Bail mobilité eligible tenant situations (loi ELAN art. 25-12, exhaustive list).
 # The tenant MUST justify one of these at lease signature; absence requalifies
 # the lease as an ordinary bail meuble (12-month, renewable).
-MOBILITE_ELIGIBLE_SITUATIONS: frozenset[str] = frozenset({
-    "formation_professionnelle",
-    "etudes_superieures",
-    "apprentissage",
-    "stage",
-    "service_civique",
-    "mutation_professionnelle",
-    "mission_temporaire",
-})
+#
+# Single source of truth: lease_fields.FIELDS["motif_mobilite"].enum — the same full
+# French phrases embedded VERBATIM as {{motif_mobilite}} in the generated lease text
+# (art. 25-13 I 8° mandatory mention). This used to be a separately-maintained
+# snake_case slug set that never matched the schema enum, so lease_generation.generate()
+# passing a schema-valid motif through to this check always failed silently (found
+# 2026-07-16: every mobilité generation blocked regardless of a valid motif, because
+# `tenant_situation` was never wired through either — see lease_generation.py).
+MOBILITE_ELIGIBLE_SITUATIONS: frozenset[str] = frozenset(lease_fields.FIELDS["motif_mobilite"].enum)
 
 # Décret n°2015-981 — 11 mandatory equipment categories for a furnished lease.
 FURNISHED_REQUIRED_ITEMS: dict[str, str] = {
@@ -192,15 +194,15 @@ def validate_mobilite_eligibility(
         return []
     if not tenant_situation:
         return [
-            "Le bail mobilité exige que le locataire justifie l'une des situations "
-            "prévues par la loi ELAN (art. 25-12) : formation professionnelle, études "
-            "supérieures, apprentissage, stage, service civique, mutation ou mission "
-            "professionnelle temporaire. Aucune situation déclarée — bail non finalisable."
+            "Motif du bail mobilité manquant : le locataire doit justifier l'une des "
+            "situations prévues par la loi ELAN (art. 25-12) : formation professionnelle, "
+            "études supérieures, apprentissage, stage, service civique, mutation ou "
+            "mission professionnelle temporaire. Aucun motif déclaré — bail non finalisable."
         ]
     if tenant_situation not in MOBILITE_ELIGIBLE_SITUATIONS:
         return [
-            f"La situation « {tenant_situation} » ne figure pas dans la liste exhaustive des "
-            "situations éligibles au bail mobilité (loi ELAN art. 25-12). Le bail "
+            f"Motif du bail mobilité invalide : « {tenant_situation} » ne figure pas dans "
+            "la liste exhaustive des situations éligibles (loi ELAN art. 25-12). Le bail "
             "requalifierait en bail meuble ordinaire (12 mois renouvelable)."
         ]
     return []

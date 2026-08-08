@@ -10,8 +10,15 @@ They are the decree's editorial/drafting GUIDANCE — not contractual clauses �
 so the generated lease mirrors the official model verbatim (Option A). In the generated
 PDF they appear as end-notes, presented as the decree's notes, NOT as terms the parties sign.
 
-Status: ⏳ PENDING LAWYER SIGN-OFF. NB: fetched via web extraction — the lawyer must
-confirm the text verbatim against the official source before use.
+✅ 2026-07-15: footnote (28 bis) reinstated — it had been dropped when the body's décence
+cross-reference was rewritten into an inline table; both fixed together, verified against
+the Légifrance API JSON. See docs/legal/2026-07-15-model-transcription-verification.md.
+
+Status: ✅ Owner risk-accepted (2026-07-15) — verified against the Légifrance API JSON
+(docs/legal/2026-07-15-model-transcription-verification.md), same pattern as
+bail_mobilite.fill.md's 2026-07-05 risk-acceptance. Formal counsel confirmation of the
+verbatim text (distinct from Galand's 2026-06-20 workflow-permissibility opinion) still
+pending.
 -->
 
 # Notes du modèle — contrat de location logement meublé (Décret n°2015-587, Annexe 2)
@@ -25,6 +32,8 @@ confirm the text verbatim against the official source before use.
 (27) Si chauffage collectif, préciser les modalités de répartition de la consommation du locataire.
 
 (28) En cas de production collective, préciser les modalités de répartition de la consommation du locataire.
+
+(28 bis) Mention obligatoire s'appliquant aux logements dont la consommation énergétique, déterminée selon la méthode du diagnostic de performance énergétique mentionné à l'article L. 126-26 du code de la construction et de l'habitation, excède le seuil fixé au I de l'article L. 173-2 du même code.
 
 (29) Lorsqu'un complément de loyer est appliqué, le loyer mensuel s'entend comme la somme du loyer de base et de ce complément.
 
