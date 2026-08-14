@@ -18,7 +18,8 @@ import StaticMapView from '@/components/StaticMapView';
 import Image from 'next/image';
 import {
     MapPin, Share2, Shield, Zap, Wind, Check, LayoutGrid, Info,
-    TrendingUp, Heart, Navigation, Building2, Flame, AlertTriangle, Calendar, BadgeCheck, Download, Video, ShieldCheck
+    TrendingUp, Heart, Navigation, Building2, Flame, AlertTriangle, Calendar, BadgeCheck, Download, Video,
+    Users, ShieldCheck,
 } from 'lucide-react';
 
 interface PropertyPhoto {
@@ -101,6 +102,9 @@ interface Property {
     ges_value?: number;
     guarantor_required?: boolean;
     accepted_guarantor_types?: string[];
+    accepted_tenant_types?: string[];
+    guarantor_income_multiple?: number;
+    lease_duration_months?: number;
     caf_eligible?: boolean;
     loyer_reference?: number;
     loyer_reference_majore?: number;
@@ -884,6 +888,91 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                     </div>
                                 </motion.div>
                             )}
+
+                            {/* Landlord Criteria */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                className="glass-card !p-12 rounded-[3rem] border-zinc-100 space-y-10"
+                            >
+                                <h2 className="text-2xl font-black uppercase tracking-tighter flex items-center gap-4">
+                                    <Users className="w-6 h-6 text-zinc-900" />
+                                    {t('property.criteria.title', undefined, 'Landlord criteria')}
+                                </h2>
+
+                                <div className="space-y-6">
+                                    <h3 className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em]">
+                                        {t('property.criteria.whatLandlordRequires', undefined, 'What this landlord requires')}
+                                    </h3>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                        <div className="flex items-center justify-between py-2 border-b border-zinc-100">
+                                            <span className="text-xs font-black text-zinc-700 uppercase tracking-wider">
+                                                {t('property.criteria.minLeaseDuration', undefined, 'Minimum lease duration')}
+                                            </span>
+                                            <span className="text-xs text-zinc-500 font-bold">
+                                                {property.lease_duration_months
+                                                    ? t('property.criteria.months', { count: property.lease_duration_months })
+                                                    : t('property.criteria.flexible', undefined, 'Flexible')}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center justify-between py-2 border-b border-zinc-100">
+                                            <span className="text-xs font-black text-zinc-700 uppercase tracking-wider">
+                                                {t('property.criteria.guarantorRequired', undefined, 'Guarantor required')}
+                                            </span>
+                                            <span className="text-xs text-zinc-500 font-bold">
+                                                {property.guarantor_required
+                                                    ? t('property.guarantor.required', undefined, 'Required')
+                                                    : t('property.guarantor.notRequired', undefined, 'Not required')}
+                                            </span>
+                                        </div>
+                                        {property.guarantor_required && (property.accepted_guarantor_types?.length ?? 0) > 0 && (
+                                            <div className="flex items-center justify-between py-2 border-b border-zinc-100 sm:col-span-2">
+                                                <span className="text-xs font-black text-zinc-700 uppercase tracking-wider">
+                                                    {t('property.create.pricing.guarantor.typesLabel', undefined, 'Accepted Guarantors')}
+                                                </span>
+                                                <span className="text-xs text-zinc-500 font-bold">
+                                                    {property.accepted_guarantor_types!.map((g: string) => t(`property.guarantor.${g}`, undefined, g)).join(', ')}
+                                                </span>
+                                            </div>
+                                        )}
+                                        {property.guarantor_required && property.guarantor_income_multiple && (
+                                            <div className="flex items-center justify-between py-2 border-b border-zinc-100 sm:col-span-2">
+                                                <span className="text-xs font-black text-zinc-700 uppercase tracking-wider">
+                                                    {t('property.create.pricing.guarantor.incomeMultipleLabel', undefined, 'Required income multiple (x rent)')}
+                                                </span>
+                                                <span className="text-xs text-zinc-500 font-bold">
+                                                    {t('property.criteria.guarantorIncomeMultiple', { multiple: property.guarantor_income_multiple })}
+                                                </span>
+                                            </div>
+                                        )}
+                                        {(property.accepted_tenant_types?.length ?? 0) > 0 && (
+                                            <div className="flex items-center justify-between py-2 border-b border-zinc-100 sm:col-span-2">
+                                                <span className="text-xs font-black text-zinc-700 uppercase tracking-wider">
+                                                    {t('property.criteria.acceptedTenantTypes', undefined, 'Accepted tenant types')}
+                                                </span>
+                                                <span className="text-xs text-zinc-500 font-bold capitalize">
+                                                    {property.accepted_tenant_types!.join(', ')}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="space-y-6 pt-6 border-t border-zinc-100">
+                                    <h3 className="text-xs font-black text-zinc-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                                        <ShieldCheck className="w-4 h-4" />
+                                        {t('property.criteria.howToProve', undefined, 'How you prove it')}
+                                    </h3>
+                                    <ul className="space-y-3 text-xs text-zinc-500 font-medium leading-relaxed">
+                                        <li>{t('property.criteria.identityMedium', undefined, "Identity verified via Roomivo — MEDIUM assurance (OCR + selfie liveness), FR and INTL rails both supported.")}</li>
+                                        <li>{t('property.criteria.solvencyMedium', undefined, "Solvency verified via avis d'imposition 2D-Doc (FR) or funds-coverage rail (INTL) — both MEDIUM.")}</li>
+                                        {property.guarantor_required && (
+                                            <li>{t('property.criteria.guarantorMedium', undefined, "Guarantor certificates (Visale/Garantme) verified — MEDIUM.")}</li>
+                                        )}
+                                    </ul>
+                                </div>
+                            </motion.div>
 
                             {/* Location Intelligence */}
                             {property.latitude && property.longitude && (
