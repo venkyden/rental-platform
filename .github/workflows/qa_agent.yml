@@ -36,7 +36,7 @@ jobs:
         working-directory: frontend
         run: |
           npm ci
-          npx playwright install --with-deps chromium
+          npx playwright install --with-deps
 
       - name: Install Backend Dependencies
         working-directory: backend
@@ -45,20 +45,31 @@ jobs:
           pip install --no-deps -r requirements-2ddoc.txt
 
       - name: Run QA Agent
+        id: qa_agent
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           QA_REPORT_EMAIL: ${{ secrets.QA_REPORT_EMAIL || 'contact@roomivo.eu' }}
           FROM_EMAIL: "Roomivo QA <contact@roomivo.eu>"
-        working-directory: backend
-        run: python scripts/qa_agent.py
+        # Run from repo root, not backend/ — the agent's workspace scope is its
+        # cwd, and it needs write access to frontend/e2e/ (new specs) as well as
+        # backend/. Running from backend/ caused every frontend/e2e file-tool
+        # call to be denied by the SDK's workspace_only policy (visible in run
+        # logs as repeated "Denied by policy 'workspace_only'" before any real
+        # work happened).
+        run: python backend/scripts/qa_agent.py
 
       - name: Commit and Push New Tests
+        # Gated on the verifier agent's independent review (see qa_agent.py:
+        # run_verifier_agent). The QA agent's own claims are not trusted by
+        # themselves — a second pass fact-checks new/changed spec files
+        # against the actual repo and test output before anything commits.
+        if: steps.qa_agent.outputs.verified == 'true'
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add frontend/e2e/
-          
+
           if git diff --staged --quiet; then
             echo "No new tests created."
           else
