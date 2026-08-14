@@ -97,10 +97,6 @@ function claimSentence(key: string, value: string, claims: Record<string, string
         }
         case 'property_control_assurance':
             return fr ? 'Documents de contrôle du bien vérifiés' : 'Property-control documents verified';
-        case 'mrh_insurance_assurance':
-            return String(claims['mrh_insurance_verified']) === 'true'
-                ? (fr ? 'Assurance habitation (MRH) vérifiée' : 'Home insurance (MRH) verified')
-                : (fr ? 'Assurance habitation (MRH) signalée pour vérification' : 'Home insurance (MRH) flagged for review');
         default:
             return null; // raw bands / labels / sources are inputs to other sentences
     }

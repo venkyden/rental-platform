@@ -306,7 +306,7 @@ async def delete_user_data(
             employment_status="deleted",
             ownership_data=None,
             ownership_status="deleted",
-            # income/guarantor/insurance were omitted from erasure — they hold the
+            # income/guarantor were omitted from erasure — they hold the
             # user's verification PII, and guarantor_data holds THIRD-PARTY (the
             # guarantor's) name/metadata. Encryption at rest is not erasure.
             income_data=None,
@@ -315,7 +315,6 @@ async def delete_user_data(
             guarantor_status="deleted",
             visale_id=None,
             garantme_ref=None,
-            insurance_data=None,
             deposit_binding_data=None,
             preferences=None,
             contact_preferences=None,

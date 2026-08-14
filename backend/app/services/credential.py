@@ -187,17 +187,6 @@ def _evidence_claim_rows(claims: dict) -> list:
             phrase(prop_assur),
         ))
 
-    if "mrh_insurance_assurance" in claims:
-        mrh_ok = claims.get("mrh_insurance_verified")
-        mrh_status_label = "Vérifié ✓" if mrh_ok else "Signalé ⚠"
-        flags = claims.get("mrh_insurance_flags") or []
-        flag_note = f" — signalements : {', '.join(flags)}" if flags else ""
-        rows.append((
-            "Assurance MRH (loi 89 art. 7g)",
-            f"{mrh_status_label}{flag_note}",
-            phrase(claims.get("mrh_insurance_assurance", "UNVERIFIED")),
-        ))
-
     # Deposit-binding (item 15) — agreed deposit bound to a specific payee. The match
     # verdict is the anti-scam signal; a MISMATCH is rendered as an explicit warning,
     # never silently omitted. Assurance column carries the disclosed non-attestation.

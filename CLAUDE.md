@@ -140,11 +140,11 @@ Common:
 8. Shareable link/QR per side.
 
 **Status 2026-07-04: Phase 1 shipped** (2026-06-13) plus, since then: statelessness
-retrofit (verify-and-forget, Redis 10-min TTL), MRH insurance verification, INTL
+retrofit (verify-and-forget, Redis 10-min TTL), INTL
 MEDIUM rails (identity + funds-coverage solvency — backend only, UI pending),
 **e-sign Path B live** (upload + legality screen + in-house Ed25519 signature),
 lease Path A generator on branch `feat/path-a-lease-generation` (unmerged).
-Insurance remains verification-only, never sold. Next build order: see the feature
+Next build order: see the feature
 audit program in `docs/superpowers/plans/2026-07-02-stress-test-remediation-master.md`
 (INTL solvency UI tab is the chosen next feature).
 Full rationale + edge cases: docs/features/trust-layer/DOSSIER.md.

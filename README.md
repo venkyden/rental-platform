@@ -27,7 +27,6 @@ money changes hands — and the money never moves through Roomivo.
 | INTL identity | MRZ OCR + ICAO checksums + selfie | MEDIUM |
 | INTL solvency | Funds-coverage documents, FX-normalised, banded | MEDIUM |
 | Property | Taxe foncière document + ADEME DPE open data | "control, not ownership-attested" |
-| Insurance (MRH) | Attestation parsing — verification only, never sold | — |
 
 Credentials are Ed25519-signed JSON with banded claims and a short TTL. Assurance
 tiers are never inflated; MEDIUM is always labelled MEDIUM.

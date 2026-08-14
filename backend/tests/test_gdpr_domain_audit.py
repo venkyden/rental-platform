@@ -2,7 +2,7 @@
 GDPR domain audit (#8) — Art. 17 erasure completeness + Art. 15/20 export coverage.
 
 Findings fixed:
-- erasure left income_data / guarantor_data / insurance_data / visale_id /
+- erasure left income_data / guarantor_data / visale_id /
   garantme_ref in the DB (guarantor_data holds THIRD-PARTY PII) — encryption at
   rest is not erasure.
 - export omitted the user's income/guarantor verification summary and visits.
@@ -21,7 +21,7 @@ from app.routers.auth import get_current_user
 # Every EncryptedJSON / verification field that erasure MUST clear.
 ERASURE_MUST_CLEAR = {
     "identity_data", "employment_data", "ownership_data", "deposit_binding_data",
-    "income_data", "guarantor_data", "insurance_data",
+    "income_data", "guarantor_data",
     "visale_id", "garantme_ref",
     "income_status", "guarantor_status", "identity_status",
     "employment_status", "ownership_status",

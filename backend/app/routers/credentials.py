@@ -93,10 +93,6 @@ def _assurance_summary(claims: dict) -> str:
     pa = claims.get("property_assurance")
     if pa:
         parts.append(f"Bien : {pa}")
-    ma = claims.get("mrh_insurance_assurance")
-    if ma:
-        status_label = "OK" if claims.get("mrh_insurance_verified") else "Signalé"
-        parts.append(f"Assurance MRH : {ma} ({status_label})")
     return " | ".join(parts) if parts else "Aucune attestation"
 
 
@@ -361,15 +357,6 @@ def _build_claims_for_user(current_user) -> dict:
     if control_label:
         claims["property_control_label"] = control_label
 
-    # MRH insurance claim (DOSSIER §5.8 — always MEDIUM, never gated)
-    insurance_data = current_user.insurance_data or {}
-    mrh_status = insurance_data.get("status")
-    if mrh_status in ("verified", "flagged"):
-        claims["mrh_insurance_verified"] = mrh_status == "verified"
-        claims["mrh_insurance_assurance"] = "MEDIUM"
-        claims["mrh_insurance_status"] = mrh_status
-        if insurance_data.get("flags"):
-            claims["mrh_insurance_flags"] = insurance_data["flags"]
 
     # Deposit-binding (item 15) + entity/SCI (item 16) — landlord-side evidence.
     deposit_binding_data = current_user.deposit_binding_data or {}

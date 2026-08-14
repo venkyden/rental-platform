@@ -21,7 +21,7 @@ Last updated: 2026-07-20. Status: **Phase 1 complete**; INTL fiscal-capacity rai
 - **Item 2 (Credential core) landed 2026-06-05:** `Credential` model, `app/services/credential.py` (Ed25519 sign/verify), `app/routers/credentials.py` (POST /issue, GET /{id}, GET /public-key, GET /evidence.pdf, POST /issue-mine, POST /revoke), Alembic migration `c1d2e3f4a5b6`, 23 integration tests green. Assurance guards AS-1/AS-2/AS-3 enforced at signing time.
 - **DPE reclassification enforcement (§5.4 PR-1/3/4/5) landed 2026-06-10.**
 - **Guarantor verification fixes (§5.3 SV-3) landed 2026-06-12** (see "Done this pass" in §5.3).
-- **MRH insurance verification (§5.8 IN-1..IN-5) landed** (see "Done this pass" in §5.8).
+- **MRH insurance verification: removed completely** (2026-08-14).
 - **Item 12 (Statelessness retrofit + Redis TTL) landed 2026-06-15:** identity, income, and guarantor (Visale/Garantme) domains flipped to verify-and-forget; two-step identity front doc now stored in Redis (10-min TTL, per-upload session token) not R2; `purge_legacy_verification_docs_task` Celery task for existing stored docs (incl. nested physical-guarantor files). See §9 item 12.
 - **Item 12 admin downstream gap resolved 2026-06-16:** dead `pending_review` queue and stale `VerificationReview` fields (`file_url`, `extracted_data`, always blank post-retrofit) replaced with a stranded-upload monitor — `identity_stalled` queue (users stuck >15 min at `document_uploaded`) + `POST /reset` to unblock; evidence-free identity `/approve` guarded off (400, points to `/reset`). See §9 item 12.
 - **ADEME PENDING retry (PR-6) + zone tendue advisory (PR-7) landed 2026-06-13.**
@@ -168,7 +168,7 @@ Last updated: 2026-07-20. Status: **Phase 1 complete**; INTL fiscal-capacity rai
     CodeRabbit on the same PR.
     **The rule:** the dossier is a *presentation layer over the credential*. It may
     render the banded claims already inside the signed credential (identity band,
-    solvency band, funds band, property-control label, MRH status), the assurance
+    solvency band, funds band, property-control label), the assurance
     summary, the "does not prove" disclosure, validity dates, the verification code
     and the Ed25519 signature. It may **not** embed, append, link to, or re-download
     an identity document, avis d'imposition, payslip, bank statement, guarantor
@@ -305,7 +305,6 @@ Immigration status is **never** a gate.
 | Solvency | *Avis* 2D-Doc + optional SVAIR (HIGH) | Foreign tax/payslips (MEDIUM) + currency normalisation |
 | Property | ADEME DPE + document-verified control | same |
 | Lease | Generated (Décret 2015-587) or uploaded-and-checked | same; foreign-law uploads "not legality-verified" |
-| Insurance | French MRH attestation verify (required) | French MRH still required for FR property |
 | Signature | Simple/AES + audit trail | same |
 
 ---
@@ -537,22 +536,8 @@ spec `docs/superpowers/specs/2026-06-24-esign-path-b-design.md`.
 - ✅ Lawyer's **written** e-sign/lease opinion filed (2026-06-20, Mathieu Galand) —
   `docs/legal/2026-06-20-avis-avocat-esign-lease-galand.md`; PRD §7.6 / §0.16 written-blessing item closed.
 
-### 5.8 Insurance — verification only (PRD §6.7) — **post GLI removal**
-| # | Edge case | Expected | Now |
-|---|---|---|---|
-| IN-1 | Quote submitted (not final certificate) | **reject** — must be final cert | ✅ `mrh_doc_type == "quote"` → 400 rejected |
-| IN-2 | Address/name/date mismatch | normalise (strip accents, fuzzy) + **flag**; **never build RegExp from raw DB strings** (ReDoS/injection) | ✅ fuzzy name/address cross-check; flagged but not hard-blocked (landlord decides); no raw-string RegExp |
-| IN-3 | Foreign insurance, French property | **block** — French MRH required | ✅ `mrh_insurer_fr == False` → 400 rejected |
-| IN-4 | Cover starts after lease start | **flag** gap; landlord decides | ✅ `mrh_cover_start` stored; caller can cross-check against lease start |
-| IN-5 | Cancel-after-keys | dissolves (we gate nothing); offer paid annual re-verify | ✅ by design — no access gating; annual re-verify is future paid feature |
-
-**Done this pass — MRH insurance verification (Phase 2 item 10)** —
-- New `app/services/mrh_compliance.py`: AI-extracts `mrh_insurer`, `mrh_doc_type`, `mrh_cover_start`, `mrh_insurer_fr` flag, insured address. IN-1 (quote→reject), IN-2 (fuzzy name/address flag), IN-3 (foreign→reject), IN-4 (cover-start stored), IN-5 (no gating).
-- New endpoint `POST /verification/insurance/upload`: accepts certificate upload; runs compliance check; stores non-PII result in `User.insurance_data`; never stores the policy doc.
-- MRH claim surfaced in `issue-mine` assurance summary and evidence PDF.
-- DB columns: `insurance_verified`, `insurance_status`, `insurance_data` on `users`.
-- `mrh_insurer_fr` uses a fuzzy insurer list — not raw DB RegExp.
-- Legal: MRH verification = document-checking, no ORIAS/IDD; tenant MRH is mandatory under loi 89 art. 7g.
+### 5.8 Insurance — REMOVED COMPLETELY (2026-08-14)
+MRH insurance verification endpoint `POST /verification/insurance/upload`, service `mrh_insurance.py`, tests, user columns, and claims have been completely removed.
 
 ---
 
@@ -596,8 +581,7 @@ insurance posture. **Delete, don't flag-off.**
   keep Visale/Garantme (those are guarantor *verification*, not insurance sale).
 - ✅ Verify: grep `gli`/`GLI` repo-wide returns only historical journal mentions;
   full test suite green after removal.
-- ⚠️ Keep distinct: **MRH attestation verification** (§5.8) and **Visale/Garantme
-  guarantor verification** are verification, allowed, and stay.
+- ⚠️ Keep distinct: **Visale/Garantme guarantor verification** is guarantor verification, allowed, and stays (MRH insurance verification removed 2026-08-14).
 
 ---
 
@@ -621,7 +605,7 @@ insurance posture. **Delete, don't flag-off.**
 7. ✅ **DPE lettability depth** (§5.4, 2026-06-10) — class-G warn+ack publish gate; expired DPE gate; ADEME authoritative-class override; bilingual FR/EN; `dpe_compliance.py`.
 8. 🟡 **Uploaded-lease + generated-lease, then e-sign** (§5.5/§5.6) — ✅ **gate CLEARED 2026-06-24: lawyer green-lit BOTH paths**. ✅ **Path B (upload + e-sign) v1 SHIPPED 2026-06-24** (branch `feat/esign-path-b`, see §5.7 "Done this pass"): landlord uploads own lease → both verified parties sign → tamper-evident evidence pack; ✅ **§5.6 legality red-line shipped** (LU-1/2/4/5/6; LU-3 deferred to AI). **Still ❌:** Path A (Décret 2015-587 template generation). ✅ **Lawyer's written opinion on file** (2026-06-20, Mathieu Galand — `docs/legal/2026-06-20-avis-avocat-esign-lease-galand.md`); deems both modules deployable **subject to** §3 conditions (mandatory provisions + annexes are **gating for Path A**). Constraints unchanged: official model wording only (no custom clauses, loi 1971); no success fee; never touch the deposit/funds.
 9. 🟡 **E-sign + evidence pack** (§5.7, §6) — ✅ **SHIPPED 2026-06-24 as in-house Ed25519** (NOT DocuSeal/Documenso — founder 0 opex/capex; reuses the credential signing key so one published public key verifies both). eIDAS simple/advanced sig valid for a bail; gate CLEARED 2026-06-24 (§0.16). DocuSeal/QTSP **deferred** to the SG-5 "max robustness" v2 upgrade. SG-1..SG-4 enforced + tested (§5.7).
-10. ✅ **Insurance MRH verification** (§5.8) — IN-1..IN-5 covered; `mrh_compliance.py`; `POST /verification/insurance/upload`; evidence PDF row; issue-mine assurance summary.
+10. ❌ **Insurance MRH verification** (§5.8) — Removed completely (2026-08-14).
 11. 🟡 **INTL rails** (§4) — MEDIUM rail shipped (2026-06-16): `mrz.py` hybrid AI+Tesseract+ICAO-checksum; `fx_normalise.py` Frankfurter→static-29→UNVERIFIED; 3 endpoints: `POST /verification/intl/identity/upload`, `/intl/identity/selfie`, `/intl/solvency`. HIGH (NFC chip / Passive Auth) blocked on CSCA master-list assembly **AND a native app** (Web NFC is Android-only; no iOS) → **deferred to EUDI Wallet** (§0.12), not pursued now. Spec: `docs/superpowers/specs/2026-06-15-intl-rails-design.md`.
 12. ✅ **Statelessness retrofit + Redis TTL** (2026-06-15) — identity (`selfie_with_id`, `back`, `upload-selfie`), income, and guarantor (Visale/Garantme) domains flipped to verify-and-forget. Source docs discarded immediately after claim extraction; `extracted_data`/`file_url`/`storage_key` removed from JSONB. Two-step identity flow: front doc stored in **Redis with 10-min TTL** (primary); R2 fallback only if Redis unavailable; per-upload `secrets.token_hex(8)` suffix on key for web/mobile session isolation. Doc purged **before** raising face-match failure exception (GDPR: no retention on rejection). `purge_legacy_verification_docs_task` Celery task purges existing R2 docs for current users, now including nested `files[*].storage_key` for physical-guarantor records. Physical guarantor upload (human-review flow) out of scope. 15 new tests (+ 2 Redis-path tests). Known downstream: admin panel `file_url`/`extracted_data` fields always blank post-retrofit (accepted); insurance IN-2 name match uses profile name as permanent fallback (accepted statelessness tradeoff). **Admin downstream gap resolved 2026-06-16:** dead `pending_review` queue (never set post-retrofit) and stale `VerificationReview` fields (`file_url`, `extracted_data`, always blank) replaced with a stranded-upload monitor — `identity_stalled` queue surfaces users stuck >15 min at `document_uploaded`, plus a `POST /reset` endpoint so operators can unblock them. Evidence-free `/approve` action for identity guarded off (returns 400, points to `/reset`).
 

@@ -86,7 +86,7 @@ class TestDepositCap:
 def _user_with(deposit_binding_data):
     return types.SimpleNamespace(
         identity_data=None, income_data=None, ownership_data=None,
-        insurance_data=None, deposit_binding_data=deposit_binding_data,
+        deposit_binding_data=deposit_binding_data,
     )
 
 

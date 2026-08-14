@@ -399,7 +399,6 @@ def _mock_user_id_verified():
     u.trust_score = 50
     u.identity_data = {"identity_assurance": "MEDIUM"}
     u.ownership_data = None
-    u.insurance_data = None
     return u
 
 

@@ -147,7 +147,6 @@
   "POST /api/v1/verification/identity/upload-multi-mobile",
   "POST /api/v1/verification/identity/upload-selfie",
   "POST /api/v1/verification/income/upload",
-  "POST /api/v1/verification/insurance/upload",
   "POST /api/v1/verification/intl/funds",
   "POST /api/v1/verification/intl/identity/selfie",
   "POST /api/v1/verification/intl/identity/upload",

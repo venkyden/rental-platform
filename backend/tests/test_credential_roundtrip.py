@@ -65,7 +65,6 @@ def make_verified_user():
     user.identity_data = {"identity_assurance": "MEDIUM", "identity_source": "ocr_liveness"}
     user.income_data = {}
     user.ownership_data = {}
-    user.insurance_data = {}
     user.deposit_binding_data = {}
     user.ownership_verified = False
     return user
