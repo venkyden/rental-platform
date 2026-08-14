@@ -47,7 +47,7 @@ jobs:
       - name: Run QA Agent
         id: qa_agent
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY_QA || secrets.GEMINI_API_KEY }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           QA_REPORT_EMAIL: ${{ secrets.QA_REPORT_EMAIL || 'contact@roomivo.eu' }}
           FROM_EMAIL: "Roomivo QA <contact@roomivo.eu>"

@@ -10,6 +10,9 @@ from google.antigravity.hooks import policy
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 os.chdir(REPO_ROOT)
 
+if "GEMINI_API_KEY" not in os.environ and "GEMINI_API_KEY_QA" in os.environ:
+    os.environ["GEMINI_API_KEY"] = os.environ["GEMINI_API_KEY_QA"]
+
 PROMPT = """\
 ROOMIVO — NAVIGATION & INTERACTION SMOOTHNESS QA (scheduled agent prompt)
 
