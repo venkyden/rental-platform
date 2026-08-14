@@ -1,9 +1,14 @@
 import os
 import re
 import asyncio
+from pathlib import Path
 import resend
 from google.antigravity import Agent, LocalAgentConfig
 from google.antigravity.hooks import policy
+
+# Ensure process runs from repo root so LocalAgentConfig/tools encompass frontend/ and backend/
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+os.chdir(REPO_ROOT)
 
 PROMPT = """\
 ROOMIVO — NAVIGATION & INTERACTION SMOOTHNESS QA (scheduled agent prompt)
@@ -326,12 +331,24 @@ _FAILURE_MARKERS = (
 def _extract_final_report(raw: str) -> str:
     matches = list(_REPORT_HEADING_RE.finditer(raw))
     if not matches:
-        return raw
-    # Slice from the last heading onward — this both drops duplicated earlier
-    # drafts and strips any leading noise (background-task notifications,
-    # partial output) that preceded the agent's actual report, even when
-    # there's only one heading.
-    return raw[matches[-1].start():]
+        text = raw
+    else:
+        # Slice from the last heading onward — this both drops duplicated earlier
+        # drafts and strips any leading noise (background-task notifications,
+        # partial output) that preceded the agent's actual report.
+        text = raw[matches[-1].start():]
+
+    # Clean trailing runaway task polling and timeout artifacts from final report
+    cleaned_lines = []
+    for line in text.splitlines():
+        # Skip runner polling / background task noise
+        if re.search(r"^(Waiting for task|Parent task|Command timed out|context canceled|Access to path|Output:)", line.strip()):
+            continue
+        cleaned_line = re.sub(r"Command timed out after \d+(\.\d+)?s", "", line)
+        cleaned_line = re.sub(r"Waiting for task-\d+ completion\.?", "", cleaned_line)
+        cleaned_lines.append(cleaned_line)
+
+    return "\n".join(cleaned_lines).strip()
 
 
 def _integrity_banner(raw: str, final: str) -> str:

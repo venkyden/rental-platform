@@ -1,9 +1,9 @@
 name: QA Agent
 
 on:
-  schedule:
-    # Run at 20:00 (8:00 PM) every weekday (Monday-Friday)
-    - cron: '0 20 * * 1-5'
+  # No schedule — this job's two full Gemini agent passes (main + verifier)
+  # drove a 243% Gemini API cost jump in Aug 1-13 billing vs. the prior
+  # period (2026-08-14). Trigger manually via workflow_dispatch instead.
   workflow_dispatch: # Allow manual triggering
 
 jobs:
