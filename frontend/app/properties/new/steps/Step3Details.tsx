@@ -114,6 +114,9 @@ export default function Step3Details({ formData, updateFormData, t }: Props) {
 
             {/* Furnished toggle */}
             <button
+                type="button"
+                id="furnished-toggle"
+                data-testid="furnished-toggle"
                 onClick={() => updateFormData({ furnished: !formData.furnished })}
                 aria-label={t('property.create.details.furnished', undefined, 'Furnished Property')}
                 className={`w-full p-8 rounded-[3rem] border-2 text-left transition-all ${formData.furnished ? 'bg-zinc-900 border-zinc-900 text-white shadow-2xl' : 'border-zinc-100'}`}
@@ -134,6 +137,9 @@ export default function Step3Details({ formData, updateFormData, t }: Props) {
                     {['A', 'B', 'C', 'D', 'E', 'F', 'G'].map((r) => (
                         <button
                             key={r}
+                            type="button"
+                            id={`dpe-rating-${r}`}
+                            data-testid={`dpe-rating-${r}`}
                             onClick={() => updateFormData({ dpe_rating: r })}
                             className={`w-16 h-16 rounded-2xl flex items-center justify-center font-black text-xl transition-all ${
                                 formData.dpe_rating === r
