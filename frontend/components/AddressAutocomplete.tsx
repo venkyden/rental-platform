@@ -35,6 +35,8 @@ interface PhotonFeature {
 interface AddressAutocompleteProps {
     /** Called when user selects an address from the dropdown */
     onSelectAction: (result: AddressResult) => void;
+    /** Called when user types in the input */
+    onChangeText?: (text: string) => void;
     /** Restrict results to these cities (lowercase). Empty = no restriction. */
     restrictToCities?: string[];
     /** Country code for Photon API (default: 'fr'). Set to '' for global. */
@@ -70,6 +72,7 @@ const CITY_BOUNDS: Record<string, { bbox: string; lat: number; lng: number }> = 
 
 export default function AddressAutocomplete({
     onSelectAction,
+    onChangeText,
     restrictToCities = [],
     countryCode = 'fr',
     initialValue = '',
@@ -221,6 +224,7 @@ export default function AddressAutocomplete({
 
     const handleInputChange = (value: string) => {
         setQuery(value);
+        onChangeText?.(value);
 
         if (debounceRef.current) clearTimeout(debounceRef.current);
         debounceRef.current = setTimeout(() => {

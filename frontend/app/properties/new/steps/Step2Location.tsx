@@ -22,6 +22,7 @@ export default function Step2Location({ formData, updateFormData, t, enriching, 
                 <div className="glass-card !p-8 rounded-[3rem] border-zinc-100">
                     <AddressAutocomplete
                         onSelectAction={(result) => onAddressSelect(result)}
+                        onChangeText={(val) => updateFormData({ address_line1: val })}
                         countryCode="fr"
                         initialValue={formData.address_line1}
                         variant="form"
