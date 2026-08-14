@@ -30,10 +30,12 @@ export default function Step2Location({ formData, updateFormData, t, enriching, 
             </div>
             <div className="grid grid-cols-2 gap-8">
                 <div className="space-y-4">
-                    <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
+                    <label htmlFor="city-input" className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                         {t('properties.new.steps.geolocation.city')}
                     </label>
                     <input
+                        id="city-input"
+                        data-testid="city-input"
                         type="text"
                         value={formData.city}
                         onChange={(e) => updateFormData({ city: e.target.value })}
@@ -41,10 +43,12 @@ export default function Step2Location({ formData, updateFormData, t, enriching, 
                     />
                 </div>
                 <div className="space-y-4">
-                    <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
+                    <label htmlFor="zip-input" className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
                         {t('properties.new.steps.geolocation.zip')}
                     </label>
                     <input
+                        id="zip-input"
+                        data-testid="zip-input"
                         type="text"
                         value={formData.postal_code}
                         onChange={(e) => updateFormData({ postal_code: e.target.value })}
