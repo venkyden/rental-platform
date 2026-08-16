@@ -14,7 +14,7 @@ import VisitBookingWizard from '@/components/VisitBookingWizard';
 import LeaseManager from '@/components/LeaseManager';
 import { useLanguage } from '@/lib/LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import StaticMapView from '@/components/StaticMapView';
+import NeighborhoodMap from '@/components/NeighborhoodMap';
 import Image from 'next/image';
 import {
     MapPin, Share2, Shield, Zap, Wind, Check, LayoutGrid, Info,
@@ -79,7 +79,7 @@ interface Property {
     available_from?: string;
     amenities?: string[];
     custom_amenities?: string[];
-    public_transport?: Array<{ name?: string; distance?: string; type?: string }>;
+    public_transport?: string[];
     nearby_landmarks?: Array<{ name?: string; distance?: string; type?: string }>;
     // media-session responses have historically returned either a bare array or
     // a { urls: string[] } wrapper — both still occur in stored data.
@@ -986,10 +986,11 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                         <MapPin className="w-6 h-6 text-zinc-900" />
                                         {t('property.locationTitle', undefined, 'Verified Location')}
                                     </h2>
-                                    <StaticMapView 
-                                        lat={property.latitude} 
-                                        lng={property.longitude} 
-                                        address={fullAddress} 
+                                    <NeighborhoodMap
+                                        lat={property.latitude}
+                                        lng={property.longitude}
+                                        address={fullAddress}
+                                        publicTransport={publicTransport}
                                     />
                                 </motion.div>
                             )}
