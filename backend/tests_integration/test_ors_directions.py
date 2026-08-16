@@ -109,3 +109,21 @@ async def test_get_directions_timeout_raises_unavailable():
         await ors_directions.get_directions(
             48.85, 2.35, 48.86, 2.36, "walking", api_key="fake-key", http_client=client
         )
+
+
+@pytest.mark.asyncio
+async def test_get_directions_connection_error_raises_unavailable():
+    client = _MockClient(raise_request_error=True)
+    with pytest.raises(ors_directions.DirectionsUnavailable):
+        await ors_directions.get_directions(
+            48.85, 2.35, 48.86, 2.36, "walking", api_key="fake-key", http_client=client
+        )
+
+
+@pytest.mark.asyncio
+async def test_get_directions_malformed_response_raises_unavailable():
+    client = _MockClient(200, {"features": [{"properties": {}, "geometry": None}]})
+    with pytest.raises(ors_directions.DirectionsUnavailable):
+        await ors_directions.get_directions(
+            48.85, 2.35, 48.86, 2.36, "walking", api_key="fake-key", http_client=client
+        )
