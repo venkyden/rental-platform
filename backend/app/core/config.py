@@ -35,6 +35,8 @@ class Settings(BaseSettings):
     FOURTHLINE_API_KEY: Optional[str] = None
     SENDGRID_API_KEY: Optional[str] = None
     RESEND_API_KEY: Optional[str] = None
+    # openrouteservice — free tier (2000 req/day). https://openrouteservice.org/dev/#/signup
+    ORS_API_KEY: Optional[str] = None
     # FROM_EMAIL: Must match a verified sender domain in Resend.
     # Default uses Resend's test domain; set FROM_EMAIL=noreply@roomivo.eu in production
     # after verifying the roomivo.eu domain in the Resend dashboard.
