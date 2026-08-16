@@ -1942,7 +1942,8 @@ export const translations = {
                     guarantor: {
                         title: "Guarantor Information",
                         typesLabel: "Accepted Guarantors",
-                        elanNotice: "ELAN Law Compliant"
+                        elanNotice: "ELAN Law Compliant",
+                        incomeMultipleLabel: "Required income multiple (x rent)"
                     },
                     rentControl: {
                         title: "Rent Control",
@@ -4859,6 +4860,7 @@ export const translations = {
                         title: "Garant",
                         typesLabel: "Garants acceptés",
                         elanNotice: "Conforme à la loi ELAN",
+                        incomeMultipleLabel: "Multiple de revenu requis (x loyer)",
                     },
                     leaseDuration: "Durée du bail",
                     rentControl: {
