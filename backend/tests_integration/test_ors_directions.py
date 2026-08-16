@@ -127,3 +127,29 @@ async def test_get_directions_malformed_response_raises_unavailable():
         await ors_directions.get_directions(
             48.85, 2.35, 48.86, 2.36, "walking", api_key="fake-key", http_client=client
         )
+
+
+@pytest.mark.asyncio
+async def test_get_directions_null_properties_raises_unavailable():
+    """Distinct from the "missing key" malformed-response case above: here the
+    key is present but explicitly null, which breaks a naive
+    `.get("properties", {}).get("summary", {})` chain with an AttributeError
+    instead of the intended DirectionsUnavailable."""
+    client = _MockClient(200, {"features": [{"properties": None, "geometry": None}]})
+    with pytest.raises(ors_directions.DirectionsUnavailable):
+        await ors_directions.get_directions(
+            48.85, 2.35, 48.86, 2.36, "walking", api_key="fake-key", http_client=client
+        )
+
+
+@pytest.mark.asyncio
+async def test_get_directions_non_dict_response_raises_unavailable():
+    """ORS returning a bare JSON list instead of an object should not crash
+    with an unhandled AttributeError on data.get(...). Uses a non-empty list —
+    _MockClient's `json_data or {}` fallback would silently swallow an empty
+    list, defeating the point of this test."""
+    client = _MockClient(200, [{"unexpected": "shape"}])
+    with pytest.raises(ors_directions.DirectionsUnavailable):
+        await ors_directions.get_directions(
+            48.85, 2.35, 48.86, 2.36, "walking", api_key="fake-key", http_client=client
+        )

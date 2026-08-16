@@ -81,20 +81,27 @@ async def get_directions(
 
         if resp.status_code >= 400:
             raise DirectionsUnavailable(f"openrouteservice HTTP {resp.status_code}")
-        data = resp.json()
+        try:
+            data = resp.json()
+        except ValueError as exc:
+            raise DirectionsUnavailable("openrouteservice returned invalid JSON") from exc
     finally:
         if own_client:
             await client.aclose()
 
-    features = data.get("features", [])
-    if not features:
-        raise DirectionsUnavailable("No route found")
+    try:
+        features = (data or {}).get("features") or []
+        if not features:
+            raise DirectionsUnavailable("No route found")
 
-    feature = features[0]
-    summary = feature.get("properties", {}).get("summary", {})
-    distance_m = summary.get("distance")
-    duration_s = summary.get("duration")
-    geometry = feature.get("geometry")
+        feature = features[0]
+        summary = (feature.get("properties") or {}).get("summary") or {}
+        distance_m = summary.get("distance")
+        duration_s = summary.get("duration")
+        geometry = feature.get("geometry")
+    except (AttributeError, TypeError, KeyError, IndexError) as exc:
+        raise DirectionsUnavailable("Malformed openrouteservice response") from exc
+
     if distance_m is None or duration_s is None or geometry is None:
         raise DirectionsUnavailable("Malformed openrouteservice response")
 
