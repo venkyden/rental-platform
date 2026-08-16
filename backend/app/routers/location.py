@@ -2,6 +2,8 @@
 Property location enrichment + directions endpoints.
 """
 
+from typing import Literal
+
 from fastapi import APIRouter, HTTPException, Request, status
 from pydantic import BaseModel, Field
 from slowapi import Limiter
@@ -38,7 +40,7 @@ class DirectionsRequest(BaseModel):
     origin_lng: float = Field(..., ge=-180, le=180)
     dest_lat: float = Field(..., ge=-90, le=90)
     dest_lng: float = Field(..., ge=-180, le=180)
-    mode: str  # "walking" | "cycling" | "driving"
+    mode: Literal["walking", "cycling", "driving"]
 
 
 @router.post("/directions")
