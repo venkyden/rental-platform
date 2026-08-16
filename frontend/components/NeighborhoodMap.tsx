@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import 'leaflet/dist/leaflet.css';
 import { useLanguage } from '@/lib/LanguageContext';
@@ -89,6 +89,10 @@ export default function NeighborhoodMap({ lat, lng, address, publicTransport }: 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const nearestStop = parseNearestStop(publicTransport);
+    // Guards against out-of-order responses when the mode is switched
+    // rapidly (e.g. walking -> cycling -> driving) — only the response for
+    // the most recently issued request is applied.
+    const requestIdRef = useRef(0);
 
     useEffect(() => {
         setIsMounted(true);
@@ -103,6 +107,7 @@ export default function NeighborhoodMap({ lat, lng, address, publicTransport }: 
 
     const fetchRoute = useCallback(
         async (originLat: number, originLng: number, selectedMode: Mode) => {
+            const requestId = ++requestIdRef.current;
             setLoading(true);
             setError(null);
             try {
@@ -113,6 +118,7 @@ export default function NeighborhoodMap({ lat, lng, address, publicTransport }: 
                     dest_lng: lng,
                     mode: selectedMode,
                 });
+                if (requestId !== requestIdRef.current) return; // a newer request has superseded this one
                 const coords: [number, number][] = res.data.geometry.coordinates.map(
                     ([lngC, latC]: [number, number]) => [latC, lngC]
                 );
@@ -122,11 +128,12 @@ export default function NeighborhoodMap({ lat, lng, address, publicTransport }: 
                     positions: coords,
                 });
             } catch (e) {
+                if (requestId !== requestIdRef.current) return;
                 console.error('Directions error:', e);
                 setError(t('property.neighborhoodMap.searchError', undefined, 'Could not compute a route to this address.'));
                 setRoute(null);
             } finally {
-                setLoading(false);
+                if (requestId === requestIdRef.current) setLoading(false);
             }
         },
         [lat, lng, t]
@@ -170,12 +177,14 @@ export default function NeighborhoodMap({ lat, lng, address, publicTransport }: 
                     <Marker position={[lat, lng]}>
                         <Popup>{address}</Popup>
                     </Marker>
-                    {origin && (
+                    {mode !== 'transit' && origin && (
                         <Marker position={[origin.lat, origin.lng]}>
                             <Popup>{origin.label}</Popup>
                         </Marker>
                     )}
-                    {route && <Polyline positions={route.positions} pathOptions={{ color: '#18181b', weight: 4 }} />}
+                    {mode !== 'transit' && route && (
+                        <Polyline positions={route.positions} pathOptions={{ color: '#18181b', weight: 4 }} />
+                    )}
                 </MapContainer>
             </div>
 
