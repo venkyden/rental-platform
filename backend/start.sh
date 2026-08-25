@@ -57,6 +57,16 @@ fi
 echo "🏗️ Running database migrations..."
 alembic upgrade head
 
+# Start embedded Celery worker with Beat scheduler if Redis is configured
+CELERY_PID=""
+if [ -n "$REDIS_URL" ]; then
+    echo "⚡ Starting embedded Celery worker with Beat scheduler..."
+    python -m celery -A app.workers.celery_app worker -B --schedule=/tmp/celerybeat-schedule --loglevel=info --concurrency=1 --without-gossip --without-mingle --without-heartbeat &
+    CELERY_PID=$!
+else
+    echo "⚠️ REDIS_URL not set. Skipping embedded Celery worker."
+fi
+
 echo "🔥 Starting FastAPI application with Uvicorn..."
 # Production settings:
 #   --workers 2          : Handle concurrent requests (fits Render Starter 512MB)
@@ -64,4 +74,25 @@ echo "🔥 Starting FastAPI application with Uvicorn..."
 #   --timeout-keep-alive : Above Render's 60s proxy timeout to prevent 502s
 LOG_LEVEL="${LOG_LEVEL:-info}"
 WORKERS="${WEB_CONCURRENCY:-2}"
-exec uvicorn app.main:app --host 0.0.0.0 --port $PORT --log-level "$LOG_LEVEL" --workers "$WORKERS" --timeout-keep-alive 75 --proxy-headers --forwarded-allow-ips='*'
+PORT="${PORT:-8000}"
+
+# Graceful termination handler
+cleanup() {
+    echo "🛑 Shutting down backend processes..."
+    if [ -n "$CELERY_PID" ]; then
+        kill -TERM "$CELERY_PID" 2>/dev/null || true
+    fi
+    if [ -n "$UVICORN_PID" ]; then
+        kill -TERM "$UVICORN_PID" 2>/dev/null || true
+    fi
+    wait "$CELERY_PID" 2>/dev/null || true
+    wait "$UVICORN_PID" 2>/dev/null || true
+}
+trap cleanup SIGTERM SIGINT EXIT
+
+uvicorn app.main:app --host 0.0.0.0 --port "$PORT" --log-level "$LOG_LEVEL" --workers "$WORKERS" --timeout-keep-alive 75 --proxy-headers --forwarded-allow-ips='*' &
+UVICORN_PID=$!
+
+# Wait for primary web server
+wait "$UVICORN_PID"
+

@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from decimal import Decimal
 from typing import BinaryIO, Optional, Dict, Any
+from app.core.config import settings
 from app.services.french_government_api import french_gov_service
 from app.core.database import AsyncSessionLocal
 from app.models.document import DocumentExtraction
@@ -231,7 +232,7 @@ class EmploymentVerificationService:
         from app.core.gemini_quota import check_quota
         await check_quota()
 
-        models_to_try = ["gemini-2.5-flash"]
+        models_to_try = [settings.GEMINI_MODEL, settings.GEMINI_FALLBACK_MODEL]
         max_retries = 2
 
         # Prepare image for Gemini Vision
@@ -530,7 +531,7 @@ Return ONLY valid JSON with these exact keys:
 If a field is not visible or not applicable, return null for that field.
 Return ONLY the JSON object, no explanation."""
 
-        models_to_try = ["gemini-2.5-flash", "gemini-1.5-pro"]
+        models_to_try = [settings.GEMINI_MODEL, settings.GEMINI_FALLBACK_MODEL]
         for model_name in models_to_try:
             for attempt in range(2):
                 try:

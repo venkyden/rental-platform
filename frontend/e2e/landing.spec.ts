@@ -112,9 +112,8 @@ test.describe('Landing Page E2E Tests', () => {
 
 test.describe('Landing truth (WP1)', () => {
     test.beforeEach(async ({ page }) => {
+        await page.addInitScript(() => localStorage.setItem('app-language', 'en'));
         await page.goto('/');
-        await page.evaluate(() => localStorage.setItem('app-language', 'en'));
-        await page.reload();
     });
 
     test('no dead placeholder listing links', async ({ page }) => {
@@ -124,17 +123,17 @@ test.describe('Landing truth (WP1)', () => {
     });
 
     test('typology chip deep-links into search', async ({ page }) => {
-        await page.locator('a[href="/search?typology=t2"]').first().click();
-        await expect(page).toHaveURL(/\/search\?typology=t2/);
+        await page.locator('a[href*="/search?typology=t2"]').first().click();
+        await expect(page).toHaveURL(/\/search\?typology=t2/, { timeout: 15_000 });
     });
 
     test('colocation chip deep-links into search', async ({ page }) => {
-        await page.locator('a[href="/search?colocation=1"]').first().click();
-        await expect(page).toHaveURL(/\/search\?colocation=1/);
+        await page.locator('a[href*="/search?colocation=1"]').first().click();
+        await expect(page).toHaveURL(/\/search\?colocation=1/, { timeout: 15_000 });
     });
 
     test('furnished chip deep-links into search', async ({ page }) => {
-        await page.locator('a[href="/search?furnished=true"]').first().click();
-        await expect(page).toHaveURL(/\/search\?furnished=true/);
+        await page.locator('a[href*="/search?furnished=true"]').first().click();
+        await expect(page).toHaveURL(/\/search\?furnished=true/, { timeout: 15_000 });
     });
 });

@@ -12,6 +12,7 @@ import time
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
+from app.core.config import settings
 from app.core.database import AsyncSessionLocal
 from app.models.document import DocumentExtraction
 from sqlalchemy import select
@@ -186,7 +187,7 @@ class IdentityVerificationService:
 
         start_time = time.time()
 
-        models_to_try = ["gemini-2.5-flash"]
+        models_to_try = [settings.GEMINI_MODEL, settings.GEMINI_FALLBACK_MODEL]
         max_retries = 2
 
         document_part = types.Part.from_bytes(
@@ -485,7 +486,7 @@ Return ONLY JSON:
             
             async with gemini_slot():
                 response = self.ai_client.models.generate_content(
-                    model="gemini-2.5-flash",
+                    model=settings.GEMINI_MODEL,
                     contents=[prompt],
                     config={"response_mime_type": "application/json"}
                 )
@@ -582,7 +583,7 @@ Rules:
 - is_same_person: true if face_match_confidence >= 0.7.
 - confidence_score below 0.4 if: blurry, poorly lit, ID text unreadable, or face obscured"""
 
-        models_to_try = ["gemini-2.5-flash"]
+        models_to_try = [settings.GEMINI_MODEL, settings.GEMINI_FALLBACK_MODEL]
         last_error = None
 
         for model_name in models_to_try:
@@ -787,7 +788,7 @@ Rules:
 - detected_document_type: If the document is a health insurance card, medical card, or 'Carte Vitale', you MUST return "other".
 - confidence_score: below 0.4 if blurry or text unreadable
 """
-        models_to_try = ["gemini-2.5-flash"]
+        models_to_try = [settings.GEMINI_MODEL, settings.GEMINI_FALLBACK_MODEL]
         doc_data = None
         for model_name in models_to_try:
             for attempt in range(3):
@@ -1011,7 +1012,7 @@ Return ONLY this JSON:
     "reason": "one-sentence explanation"
 }"""
 
-        models_to_try = ["gemini-2.5-flash"]
+        models_to_try = [settings.GEMINI_MODEL, settings.GEMINI_FALLBACK_MODEL]
         for model_name in models_to_try:
             for attempt in range(3):
                 try:

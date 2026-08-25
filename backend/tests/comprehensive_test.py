@@ -569,14 +569,17 @@ async def feature_flag_tests(session: aiohttp.ClientSession):
             return
             
     import subprocess
-    # psql variable substitution (:'email' quotes safely) — never interpolate into SQL.
-    subprocess.run(
-        [
-            "psql", "-h", "127.0.0.1", "-d", "rental_platform",
-            "-c", f"UPDATE users SET role='admin' WHERE email='{email}';",
-        ],
-        capture_output=True,
-    )
+    promoted = False
+    for cmd in [
+        ["docker", "exec", "rental-platform-db-1", "psql", "-U", "rental", "-d", "rental_platform", "-c", f"UPDATE users SET role='admin' WHERE email='{email}';"],
+        ["docker", "exec", "rental-platform-db-1", "psql", "-U", "postgres", "-d", "rental_platform", "-c", f"UPDATE users SET role='admin' WHERE email='{email}';"],
+        ["psql", "-h", "127.0.0.1", "-U", "rental", "-d", "rental_platform", "-c", f"UPDATE users SET role='admin' WHERE email='{email}';"],
+        ["psql", "-h", "127.0.0.1", "-d", "rental_platform", "-c", f"UPDATE users SET role='admin' WHERE email='{email}';"],
+    ]:
+        res = subprocess.run(cmd, capture_output=True, text=True)
+        if "UPDATE 1" in res.stdout:
+            promoted = True
+            break
 
         
     # 2. Login

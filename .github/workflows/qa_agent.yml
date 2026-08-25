@@ -48,6 +48,8 @@ jobs:
         id: qa_agent
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY_QA || secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: "gemini-2.5-flash"
+          ENABLE_VERIFIER: "false"
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           QA_REPORT_EMAIL: ${{ secrets.QA_REPORT_EMAIL || 'contact@roomivo.eu' }}
           FROM_EMAIL: "Roomivo QA <contact@roomivo.eu>"

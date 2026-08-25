@@ -26,6 +26,8 @@ class Settings(BaseSettings):
 
     # External APIs
     GEMINI_API_KEY: Optional[str] = None
+    GEMINI_MODEL: str = "gemini-2.5-flash"
+    GEMINI_FALLBACK_MODEL: str = "gemini-2.0-flash"
     GEMINI_DAILY_LIMIT: int = 1500  # free tier cap; raise once on paid plan
     # Free-tier gemini-2.5-flash caps requests-per-minute far below the daily
     # limit; a burst of concurrent KYC uploads can blow through it even on a
