@@ -1805,6 +1805,32 @@ export const translations = {
                 portfolio: "Property management",
             },
             locationTitle: "Verified location",
+            criteria: {
+                title: "Landlord criteria",
+                whatLandlordRequires: "What this landlord requires",
+                minLeaseDuration: "Minimum lease duration",
+                flexible: "Flexible",
+                months: "{{count}} months",
+                guarantorRequired: "Guarantor required",
+                guarantorIncomeMultiple: "Income must be at least {{multiple}}x rent",
+                acceptedTenantTypes: "Accepted tenant types",
+                howToProve: "How you prove it",
+                identityMedium: "Identity verified via Roomivo — MEDIUM assurance (OCR + selfie liveness), FR and INTL rails both supported.",
+                solvencyMedium: "Solvency verified via avis d'imposition 2D-Doc (FR) or funds-coverage rail (INTL) — both MEDIUM.",
+                guarantorMedium: "Guarantor certificates (Visale/Garantme) verified — MEDIUM.",
+            },
+            neighborhoodMap: {
+                loading: "Loading map…",
+                searchPlaceholder: "Search an address to calculate…",
+                walking: "Walking",
+                cycling: "Cycling",
+                driving: "Driving",
+                transit: "Public transport",
+                calculating: "Calculating…",
+                searchError: "Could not compute a route to this address.",
+                nearestStop: "Nearest stop: {{stop}}",
+                noStopsFound: "No nearby stops on file for this property.",
+            },
             media: {
                 noMedia: "No photos yet",
                 gpsVerified: "GPS-verified",
@@ -1928,7 +1954,8 @@ export const translations = {
                     guarantor: {
                         title: "Guarantor Information",
                         typesLabel: "Accepted Guarantors",
-                        elanNotice: "ELAN Law Compliant"
+                        elanNotice: "ELAN Law Compliant",
+                        incomeMultipleLabel: "Required income multiple (x rent)"
                     },
                     rentControl: {
                         title: "Rent Control",
@@ -4845,6 +4872,7 @@ export const translations = {
                         title: "Garant",
                         typesLabel: "Garants acceptés",
                         elanNotice: "Conforme à la loi ELAN",
+                        incomeMultipleLabel: "Multiple de revenu requis (x loyer)",
                     },
                     leaseDuration: "Durée du bail",
                     rentControl: {
@@ -5083,6 +5111,32 @@ export const translations = {
             noGuarantor: "Sans garant",
             loginToView: "Connectez-vous pour voir les détails",
             locationTitle: "Localisation Vérifiée",
+            criteria: {
+                title: "Critères du bailleur",
+                whatLandlordRequires: "Ce que demande le bailleur",
+                minLeaseDuration: "Durée de location minimum",
+                flexible: "Flexible",
+                months: "{{count}} mois",
+                guarantorRequired: "Garant requis",
+                guarantorIncomeMultiple: "Revenus ≥ {{multiple}}x le loyer",
+                acceptedTenantTypes: "Profils de locataires acceptés",
+                howToProve: "Comment le prouver",
+                identityMedium: "Identité vérifiée via Roomivo — assurance MEDIUM (OCR + selfie liveness), rails FR et INTL pris en charge.",
+                solvencyMedium: "Solvabilité vérifiée via l'avis d'imposition 2D-Doc (FR) ou le rail de couverture de fonds (INTL) — MEDIUM.",
+                guarantorMedium: "Certificats de garantie (Visale/Garantme) vérifiés — MEDIUM.",
+            },
+            neighborhoodMap: {
+                loading: "Chargement de la carte…",
+                searchPlaceholder: "Rechercher une adresse pour calculer…",
+                walking: "À pied",
+                cycling: "À vélo",
+                driving: "En voiture",
+                transit: "Transports en commun",
+                calculating: "Calcul en cours…",
+                searchError: "Impossible de calculer un itinéraire vers cette adresse.",
+                nearestStop: "Arrêt le plus proche : {{stop}}",
+                noStopsFound: "Aucun arrêt à proximité enregistré pour ce bien.",
+            },
 //             energyTitle: "Intelligence Énergétique",
             share: {
                 copied: "Lien copié dans le presse-papiers"

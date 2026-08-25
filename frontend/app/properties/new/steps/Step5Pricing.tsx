@@ -217,27 +217,74 @@ export default function Step5Pricing({ formData, updateFormData, t, showRentCont
                     </div>
                 </button>
                 {formData.guarantor_required && (
-                    <div className="flex flex-wrap gap-3 pl-4">
-                        {['physical', 'visale', 'garantme', 'organisation'].map((type) => (
-                            <button
-                                key={type}
-                                type="button"
-                                onClick={() => {
-                                    const types = formData.accepted_guarantor_types.includes(type)
-                                        ? formData.accepted_guarantor_types.filter((t) => t !== type)
-                                        : [...formData.accepted_guarantor_types, type];
-                                    updateFormData({ accepted_guarantor_types: types });
-                                }}
-                                className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
-                                    formData.accepted_guarantor_types.includes(type) ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-400'
-                                }`}
-                                aria-pressed={formData.accepted_guarantor_types.includes(type)}
-                            >
-                                {t(`property.guarantor.${type}`, undefined, type)}
-                            </button>
-                        ))}
+                    <div className="space-y-4 pl-4">
+                        <div className="flex flex-wrap gap-3">
+                            {['physical', 'visale', 'garantme', 'organisation'].map((type) => (
+                                <button
+                                    key={type}
+                                    type="button"
+                                    onClick={() => {
+                                        const types = formData.accepted_guarantor_types.includes(type)
+                                            ? formData.accepted_guarantor_types.filter((t) => t !== type)
+                                            : [...formData.accepted_guarantor_types, type];
+                                        updateFormData({ accepted_guarantor_types: types });
+                                    }}
+                                    className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+                                        formData.accepted_guarantor_types.includes(type) ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-400'
+                                    }`}
+                                    aria-pressed={formData.accepted_guarantor_types.includes(type)}
+                                >
+                                    {t(`property.guarantor.${type}`, undefined, type)}
+                                </button>
+                            ))}
+                        </div>
+                        <div className="space-y-2 max-w-xs">
+                            <label className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400">
+                                {t('property.create.pricing.guarantor.incomeMultipleLabel', undefined, 'Required income multiple (x rent)')}
+                            </label>
+                            <input
+                                type="number"
+                                step="0.1"
+                                min="0"
+                                max="99.9"
+                                value={formData.guarantor_income_multiple ?? ''}
+                                onChange={(e) =>
+                                    updateFormData({ guarantor_income_multiple: e.target.value === '' ? undefined : parseFloat(e.target.value) || 0 })
+                                }
+                                placeholder="e.g. 3.0"
+                                className="w-full bg-zinc-50 p-4 rounded-xl border-none font-black text-lg"
+                                aria-label={t('property.create.pricing.guarantor.incomeMultipleLabel', undefined, 'Required income multiple')}
+                            />
+                        </div>
                     </div>
                 )}
+            </div>
+
+            {/* Accepted tenant types */}
+            <div className="space-y-4">
+                <label className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
+                    {t('properties.edit.acceptedTenants', undefined, 'Accepted Tenant Types')}
+                </label>
+                <div className="flex flex-wrap gap-3">
+                    {['student', 'employee', 'freelancer', 'family'].map((tt) => (
+                        <button
+                            key={tt}
+                            type="button"
+                            onClick={() => {
+                                const current = formData.accepted_tenant_types;
+                                const updated = current.includes(tt) ? current.filter((x) => x !== tt) : [...current, tt];
+                                updateFormData({ accepted_tenant_types: updated });
+                            }}
+                            aria-label={t(`settings.preferences.options.${tt}`, undefined, tt)}
+                            className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+                                formData.accepted_tenant_types.includes(tt) ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-400'
+                            }`}
+                            aria-pressed={formData.accepted_tenant_types.includes(tt)}
+                        >
+                            {t(`settings.preferences.options.${tt}`, undefined, tt)}
+                        </button>
+                    ))}
+                </div>
             </div>
 
             {/* Rent control (Loi ELAN) */}

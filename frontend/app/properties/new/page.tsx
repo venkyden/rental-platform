@@ -83,6 +83,8 @@ export default function NewPropertyPage() {
         caf_eligible: false,
         guarantor_required: false,
         accepted_guarantor_types: [],
+        accepted_tenant_types: [],
+        guarantor_income_multiple: undefined,
         amenities: [],
         custom_amenities: [],
         public_transport: [],

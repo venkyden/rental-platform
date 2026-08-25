@@ -120,6 +120,7 @@
   "POST /api/v1/inventory/{id}/sign",
   "POST /api/v1/leases/create",
   "POST /api/v1/leases/generate",
+  "POST /api/v1/location/directions",
   "POST /api/v1/location/enrich",
   "POST /api/v1/media/upload",
   "POST /api/v1/notifications/read-all",

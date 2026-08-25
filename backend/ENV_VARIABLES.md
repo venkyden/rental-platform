@@ -29,6 +29,11 @@ The application will start without these, but related features (Messaging, Stora
 |----------|-------------|----------------|
 | `SENTRY_DSN` | Sentry Data Source Name. | Error tracking + performance monitoring. |
 
+### Location / Directions
+| Variable | Description | Feature Impact |
+|----------|-------------|----------------|
+| `ORS_API_KEY` | openrouteservice API key (free tier: 2000 req/day). Sign up: https://openrouteservice.org/dev/#/signup | Walk/bike/car directions on the property listing page's neighborhood map. |
+
 ### Notification Channels (Email)
 | `RESEND_API_KEY` | Resend API Key (primary email provider). | Email delivery (verification, reset, invites). |
 | `FROM_EMAIL` | Sender address — must match verified Resend domain. Default: `Roomivo <onboarding@resend.dev>` (test). Production: `noreply@roomivo.eu`. | Email deliverability. |

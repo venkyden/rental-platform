@@ -72,6 +72,7 @@ type PropertyFormData = {
     caf_eligible: boolean;
     guarantor_required: boolean;
     accepted_guarantor_types: string[];
+    guarantor_income_multiple?: number;
     loyer_reference?: number;
     loyer_reference_majore?: number;
     complement_de_loyer?: number;
@@ -158,6 +159,7 @@ export default function EditPropertyPage() {
         caf_eligible: false,
         guarantor_required: false,
         accepted_guarantor_types: [],
+        guarantor_income_multiple: undefined,
         loyer_reference: undefined,
         loyer_reference_majore: undefined,
         complement_de_loyer: undefined,
@@ -253,6 +255,7 @@ export default function EditPropertyPage() {
                     caf_eligible: property.caf_eligible ?? false,
                     guarantor_required: property.guarantor_required ?? false,
                     accepted_guarantor_types: property.accepted_guarantor_types || [],
+                    guarantor_income_multiple: property.guarantor_income_multiple ?? undefined,
                     loyer_reference: property.loyer_reference,
                     loyer_reference_majore: property.loyer_reference_majore,
                     complement_de_loyer: property.complement_de_loyer,
@@ -1208,6 +1211,22 @@ export default function EditPropertyPage() {
                                                                     {t(`property.guarantor.${gt}`, undefined, gt)}
                                                                 </button>
                                                             ))}
+                                                        </div>
+                                                        <div className="space-y-2 max-w-xs">
+                                                            <label className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400">
+                                                                {t('property.create.pricing.guarantor.incomeMultipleLabel', undefined, 'Required income multiple (x rent)')}
+                                                            </label>
+                                                            <input
+                                                                type="number"
+                                                                step="0.1"
+                                                                min="0"
+                                                                max="99.9"
+                                                                value={formData.guarantor_income_multiple ?? ''}
+                                                                onChange={(e) => updateFormData({ guarantor_income_multiple: e.target.value === '' ? undefined : parseFloat(e.target.value) || 0 })}
+                                                                placeholder="e.g. 3.0"
+                                                                className="w-full bg-zinc-50 p-4 rounded-xl border-none font-black text-lg"
+                                                                aria-label={t('property.create.pricing.guarantor.incomeMultipleLabel', undefined, 'Required income multiple')}
+                                                            />
                                                         </div>
                                                         <p className="text-xs text-zinc-400 italic">
                                                             {t('property.create.pricing.guarantor.elanNotice', undefined, 'ELAN Law Compliant')}

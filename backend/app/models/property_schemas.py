@@ -64,7 +64,10 @@ class PropertyCreate(BaseModel):
     )  # physical, visale, garantme, organisation
     accepted_tenant_types: Optional[List[str]] = (
         []
-    )  # employee, student, freelancer, retired, other
+    )  # free-form list; both UI entry points currently ship student, employee, freelancer, family
+    guarantor_income_multiple: Optional[Decimal] = Field(
+        None, ge=Decimal("0"), le=Decimal("99.9")
+    )  # e.g. 3.0 = tenant income must be >= 3x rent; bounded to the DECIMAL(3,1) column's range
 
     # French Compliance (Loi ALUR / Loi ELAN)
     dpe_rating: Optional[str] = Field(None, pattern=r'^[A-G]$')  # Energy performance A-G
@@ -146,6 +149,7 @@ class PropertyUpdate(BaseModel):
     guarantor_required: Optional[bool] = None
     accepted_guarantor_types: Optional[List[str]] = None
     accepted_tenant_types: Optional[List[str]] = None
+    guarantor_income_multiple: Optional[Decimal] = Field(None, ge=Decimal("0"), le=Decimal("99.9"))
 
     # French Compliance
     dpe_rating: Optional[str] = Field(None, pattern=r'^[A-G]$')
@@ -231,6 +235,7 @@ class PropertyResponse(BaseModel):
     guarantor_required: bool = False
     accepted_guarantor_types: Optional[list] = []
     accepted_tenant_types: Optional[list] = []
+    guarantor_income_multiple: Optional[Decimal] = None
 
     # French Compliance
     dpe_rating: Optional[str] = None
