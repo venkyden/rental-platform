@@ -9,7 +9,6 @@ back to FastAPI ``BackgroundTasks`` instead.
 
 import logging
 import os
-import uuid as _uuid
 from typing import Optional
 
 from app.workers.celery_app import celery_app
@@ -234,22 +233,21 @@ def purge_legacy_verification_docs_task(self) -> dict:
         return asyncio.run(_purge_docs())
 
 
-@celery_app.task(
-    name="app.workers.tasks.retry_pending_dpe_task",
-    bind=True,
-    max_retries=3,
-    default_retry_delay=300,  # 5 min between retries
-    acks_late=True,
-)
-def retry_pending_dpe_task(self, property_id: str, dpe_number: str) -> dict:
+async def sweep_pending_dpe_properties() -> dict:
     """
-    Retry ADEME DPE lookup for a property whose last attempt returned PENDING (PR-6).
+    Resolve property DPE lookups left PENDING by a prior ADEME outage (PR-6).
 
-    On success: updates ownership_data to HIGH and sets dpe_rating.
-    On DPENotFound: updates to UNVERIFIED.
-    On ADEMEUnavailable: retries up to max_retries times (5 min apart).
+    Not a Celery task — called directly from the periodic sweep cron job
+    (backend/scripts/periodic_sweep.py). There's no worker to consume a
+    delayed retry message, so each 15-minute cron tick *is* the retry: a
+    property found still PENDING this run is simply left for the next one,
+    rather than scheduling a Celery countdown/backoff that nothing would
+    pick up.
+
+    ownership_data is an EncryptedJSON column (opaque at the DB level), so
+    candidates can't be filtered in SQL — fetch non-null rows and filter
+    dpe_assurance in Python, same pattern as the other sweeps in this file.
     """
-    import asyncio
     from sqlalchemy import select
     from app.core.database import AsyncSessionLocal
     from app.models.property import Property
@@ -260,47 +258,34 @@ def retry_pending_dpe_task(self, property_id: str, dpe_number: str) -> dict:
         InvalidDPENumber,
     )
 
-    async def _retry():
-        try:
-            dpe = await lookup_dpe(dpe_number)
-        except InvalidDPENumber:
-            logger.warning("retry_pending_dpe: invalid DPE number %r — skipping", dpe_number)
-            return {"status": "invalid_dpe_number"}
-        except DPENotFound:
-            async with AsyncSessionLocal() as db:
-                result = await db.execute(
-                    select(Property).where(Property.id == _uuid.UUID(property_id))
-                )
-                prop = result.scalar_one_or_none()
-                if prop is None:
-                    logger.warning(
-                        "retry_pending_dpe: property %s no longer exists — dropping task",
-                        property_id,
-                    )
-                    return {"status": "not_found"}
-                prop.ownership_data = {  # type: ignore
-                    **(prop.ownership_data or {}),
-                    "dpe_assurance": "UNVERIFIED",
-                    "dpe_number": dpe_number.strip(),
-                }
-                await db.commit()
-            logger.info("retry_pending_dpe: DPE %r not found → UNVERIFIED (property %s)", dpe_number, property_id)
-            return {"status": "unverified"}
-        except ADEMEUnavailable as exc:
-            logger.warning("retry_pending_dpe: ADEME still unavailable for %s — scheduling retry", property_id)
-            raise self.retry(exc=exc)
+    resolved = 0
+    unverified = 0
+    still_pending = 0
 
-        async with AsyncSessionLocal() as db:
-            result = await db.execute(
-                select(Property).where(Property.id == _uuid.UUID(property_id))
-            )
-            prop = result.scalar_one_or_none()
-            if prop is None:
-                logger.warning(
-                    "retry_pending_dpe: property %s no longer exists — dropping task",
-                    property_id,
-                )
-                return {"status": "not_found"}
+    async with AsyncSessionLocal() as db:
+        result = await db.execute(select(Property).where(Property.ownership_data.isnot(None)))
+        candidates = [
+            prop for prop in result.scalars().all()
+            if isinstance(prop.ownership_data, dict) and prop.ownership_data.get("dpe_assurance") == "PENDING"
+        ]
+
+        for prop in candidates:
+            dpe_number = (prop.ownership_data or {}).get("dpe_number")
+            if not dpe_number:
+                continue
+            try:
+                dpe = await lookup_dpe(dpe_number)
+            except InvalidDPENumber:
+                logger.warning("sweep_pending_dpe: invalid DPE number %r on property %s — skipping", dpe_number, prop.id)
+                continue
+            except DPENotFound:
+                prop.ownership_data = {**(prop.ownership_data or {}), "dpe_assurance": "UNVERIFIED"}  # type: ignore
+                unverified += 1
+                continue
+            except ADEMEUnavailable:
+                still_pending += 1
+                continue
+
             prop.dpe_rating = dpe.energy_class  # type: ignore
             prop.ownership_data = {  # type: ignore
                 **(prop.ownership_data or {}),
@@ -312,24 +297,16 @@ def retry_pending_dpe_task(self, property_id: str, dpe_number: str) -> dict:
                 "dpe_expired": dpe.expired,
                 "dpe_ademe_address": dpe.address_line,
             }
+            resolved += 1
+
+        if resolved or unverified:
             await db.commit()
-        logger.info(
-            "retry_pending_dpe: resolved property %s → class %s",
-            property_id,
-            dpe.energy_class,
-        )
-        return {"status": "resolved", "dpe_class": dpe.energy_class}
 
-    try:
-        loop = asyncio.get_running_loop()
-    except RuntimeError:
-        loop = None
-
-    if loop and loop.is_running():
-        future = asyncio.run_coroutine_threadsafe(_retry(), loop)
-        return future.result()
-    else:
-        return asyncio.run(_retry())
+    logger.info(
+        "sweep_pending_dpe: resolved=%d unverified=%d still_pending=%d",
+        resolved, unverified, still_pending,
+    )
+    return {"resolved": resolved, "unverified": unverified, "still_pending": still_pending}
 
 
 # Raw identity documents are only useful for the ~10 minute face-match window
@@ -345,12 +322,7 @@ _TRANSIENT_IDENTITY_PREFIXES = (
 )
 
 
-@celery_app.task(
-    name="app.workers.tasks.purge_stale_identity_docs_task",
-    bind=True,
-    max_retries=1,
-)
-def purge_stale_identity_docs_task(self) -> dict:
+async def purge_stale_identity_docs() -> dict:
     """
     Age-sweep raw identity documents left behind by the storage fallback path.
 
@@ -367,7 +339,6 @@ def purge_stale_identity_docs_task(self) -> dict:
     storage by object age. Dangling identity_data pointers are cleared in the
     same pass so the record stops claiming to hold a document.
     """
-    import asyncio
     from datetime import datetime, timedelta
     from sqlalchemy import select
     from app.core.database import AsyncSessionLocal
@@ -375,45 +346,56 @@ def purge_stale_identity_docs_task(self) -> dict:
     from app.models.user import User
     from app.services.storage import storage
 
-    async def _purge():
-        deleted = 0
-        for prefix in _TRANSIENT_IDENTITY_PREFIXES:
+    deleted = 0
+    for prefix in _TRANSIENT_IDENTITY_PREFIXES:
+        try:
+            deleted += await storage.purge_stale_objects(
+                prefix, IDENTITY_DOC_RETENTION_SECONDS
+            )
+        except Exception as exc:
+            logger.warning("purge_stale_identity_docs: sweep %s failed: %s", prefix, exc)
+
+    # Drop pointers whose object this sweep has just aged out.
+    cutoff = naive_utcnow() - timedelta(seconds=IDENTITY_DOC_RETENTION_SECONDS)
+    cleared = 0
+    async with AsyncSessionLocal() as db:
+        result = await db.execute(select(User).where(User.identity_data.isnot(None)))
+        for user in result.scalars().all():
+            data = user.identity_data or {}
+            if not (data.get("storage_key") or data.get("file_url")):
+                continue
+            raw_date = data.get("upload_date")
+            if not raw_date:
+                continue
             try:
-                deleted += await storage.purge_stale_objects(
-                    prefix, IDENTITY_DOC_RETENTION_SECONDS
-                )
-            except Exception as exc:
-                logger.warning("purge_stale_identity_docs: sweep %s failed: %s", prefix, exc)
+                uploaded = datetime.fromisoformat(str(raw_date))
+            except ValueError:
+                continue
+            if uploaded >= cutoff:
+                continue
+            user.identity_data = {
+                k: v for k, v in data.items() if k not in ("storage_key", "file_url")
+            }
+            cleared += 1
+        if cleared:
+            await db.commit()
 
-        # Drop pointers whose object this sweep has just aged out.
-        cutoff = naive_utcnow() - timedelta(seconds=IDENTITY_DOC_RETENTION_SECONDS)
-        cleared = 0
-        async with AsyncSessionLocal() as db:
-            result = await db.execute(select(User).where(User.identity_data.isnot(None)))
-            for user in result.scalars().all():
-                data = user.identity_data or {}
-                if not (data.get("storage_key") or data.get("file_url")):
-                    continue
-                raw_date = data.get("upload_date")
-                if not raw_date:
-                    continue
-                try:
-                    uploaded = datetime.fromisoformat(str(raw_date))
-                except ValueError:
-                    continue
-                if uploaded >= cutoff:
-                    continue
-                user.identity_data = {
-                    k: v for k, v in data.items() if k not in ("storage_key", "file_url")
-                }
-                cleared += 1
-            if cleared:
-                await db.commit()
+    logger.info(
+        "purge_stale_identity_docs: objects_deleted=%d pointers_cleared=%d", deleted, cleared
+    )
+    return {"objects_deleted": deleted, "pointers_cleared": cleared}
 
-        logger.info(
-            "purge_stale_identity_docs: objects_deleted=%d pointers_cleared=%d", deleted, cleared
-        )
-        return {"objects_deleted": deleted, "pointers_cleared": cleared}
+
+@celery_app.task(
+    name="app.workers.tasks.purge_stale_identity_docs_task",
+    bind=True,
+    max_retries=1,
+)
+def purge_stale_identity_docs_task(self) -> dict:
+    """Celery-task wrapper around purge_stale_identity_docs() — unused by the
+    periodic sweep script, which awaits the plain async function directly on
+    its own event loop instead (see scripts/periodic_sweep.py for why)."""
+    import asyncio
 
     try:
         loop = asyncio.get_running_loop()
@@ -421,7 +403,7 @@ def purge_stale_identity_docs_task(self) -> dict:
         loop = None
 
     if loop and loop.is_running():
-        future = asyncio.run_coroutine_threadsafe(_purge(), loop)
+        future = asyncio.run_coroutine_threadsafe(purge_stale_identity_docs(), loop)
         return future.result()
     else:
-        return asyncio.run(_purge())
+        return asyncio.run(purge_stale_identity_docs())

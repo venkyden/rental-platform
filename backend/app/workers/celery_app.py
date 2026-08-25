@@ -1,5 +1,4 @@
 from celery import Celery
-from celery.schedules import crontab
 from app.core.config import settings
 
 redis_url = settings.REDIS_URL or "redis://redis:6379/0"
@@ -46,17 +45,9 @@ celery_app.conf.update(
 # Discover tasks automatically (you can add tasks later)
 celery_app.autodiscover_tasks(["app.workers"])
 
-# Periodic work. Dispatched by the dedicated roomivo-beat service (render.yaml);
-# without a beat process running somewhere these tasks exist but nothing ever
-# invokes them. Beat must stay at exactly one instance — a second would
-# double-fire every entry below.
-#
-# Raw identity documents on the storage fallback path have no TTL of their own,
-# so this sweep is the only thing that reclaims them. Every 15 minutes against a
-# 1 hour retention bounds a stray ID image's life to ~1h15m.
-celery_app.conf.beat_schedule = {
-    "purge-stale-identity-docs": {
-        "task": "app.workers.tasks.purge_stale_identity_docs_task",
-        "schedule": crontab(minute="*/15"),
-    },
-}
+# No worker or beat process runs against this broker anymore (see
+# roomivo-periodic-sweep in render.yaml, scripts/periodic_sweep.py) — nothing
+# in app/ dispatches via .delay()/.apply_async() either. The remaining tasks
+# in app/workers/tasks.py are called directly (a plain function call, not a
+# broker round-trip) or are unused. This module still exists because
+# app.workers.tasks imports celery_app for the @celery_app.task decorator.

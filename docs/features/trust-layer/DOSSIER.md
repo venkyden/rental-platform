@@ -409,7 +409,7 @@ spec `docs/superpowers/specs/2026-06-06-fr-identity-medium-rail-design.md` (2D-D
 | PR-3 | 1 Jan 2026 DPE reform reclassification | read **live** ADEME, never hard-code class | ✅ authoritative ADEME (HIGH) class overrides self-typed at publish |
 | PR-4 | DPE ID not found / invalid | `energy: UNVERIFIED`, **don't hard-block** | ✅ self-declared allowed (flagged), publish not hard-blocked |
 | PR-5 | Expired DPE (>10yr / pre-Jul-2021) | require current | ✅ expired → warn + require acknowledgment at publish |
-| PR-6 | ADEME 5xx / timeout | **non-blocking** "pending", background retry | ✅ `ADEMEUnavailable` → stores `PENDING`; `retry_pending_dpe_task` (Celery, 60 s countdown, 3 retries × 5 min) resolves to HIGH/UNVERIFIED |
+| PR-6 | ADEME 5xx / timeout | **non-blocking** "pending", background retry | ✅ `ADEMEUnavailable` → stores `PENDING`; `sweep_pending_dpe_properties` (called by the `roomivo-periodic-sweep` cron job, every 15 min — see `render.yaml`, no Celery worker) resolves to HIGH/UNVERIFIED |
 | PR-7 | Zone tendue (encadrement loyers) | advisory flag vs loyer de référence majoré | ✅ `app/services/zone_tendue.py` dept-prefix lookup; `PropertyResponse.is_zone_tendue` computed field; publish stores `zone_tendue_advisory` in `ownership_data` when in zone and no `loyer_reference_majore` set |
 | PR-8 | Lister ≠ owner (ghost listing) | *taxe foncière* check, label **"control, not ownership-attested"** | ✅ `POST /verification/property/control` — AI-extracts taxe foncière; stores `property_control: "documented"` / `_assurance: "MEDIUM"`; never claims ownership proved (2026-06-13) |
 

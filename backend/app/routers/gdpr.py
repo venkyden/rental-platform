@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 
 from app.core.timeutils import naive_utcnow
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -337,10 +337,11 @@ async def delete_user_data(
 
 @router.post("/purge-stale-applications", status_code=status.HTTP_202_ACCEPTED)
 async def trigger_stale_applications_purge(
+    background_tasks: BackgroundTasks,
     current_user: User = Depends(get_current_user),
 ):
     """
-    Triggers the Celery task to purge REJECTED/WITHDRAWN applications older than 30 days.
+    Triggers a purge of REJECTED/WITHDRAWN applications older than 30 days.
     Only accessible by admins.
     """
     if current_user.role != "admin":
@@ -350,11 +351,10 @@ async def trigger_stale_applications_purge(
         )
 
     from app.workers.tasks import purge_stale_applications_task
-    # Dispatch to Celery
-    task = purge_stale_applications_task.delay()
-    
+    # No Celery broker/worker — run after the response is sent instead.
+    background_tasks.add_task(purge_stale_applications_task)
+
     return {
         "status": "accepted",
-        "message": "Stale applications purge task dispatched to background workers.",
-        "task_id": task.id
+        "message": "Stale applications purge dispatched.",
     }

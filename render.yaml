@@ -95,19 +95,26 @@ services:
       paths:
         - frontend/**
 
-  # ── Celery Background Worker ─────────────────────────────────────────
-  - type: worker
-    name: roomivo-worker
+  # ── Periodic Sweep (Cron) ─────────────────────────────────────────────
+  # Replaces the old always-on roomivo-worker + roomivo-beat Celery services.
+  # Both existed to run a couple of low-frequency jobs (a 15-min GDPR raw-
+  # identity-doc purge, occasional DPE-retry/application-purge work) — that
+  # doesn't need two 24/7 instances plus continuous Upstash broker polling.
+  # This cron job runs the same work in-process every 15 min and exits,
+  # billed only for its run time. No broker/queue involved — see
+  # backend/scripts/periodic_sweep.py. Env mirrors the backend service
+  # because app.core.config validates on import and exits non-zero when
+  # production secrets are absent.
+  - type: cron
+    name: roomivo-periodic-sweep
     runtime: python
     region: frankfurt
     plan: starter
     branch: master
     rootDir: backend
     buildCommand: "pip install -r requirements.txt && pip install --no-deps -r requirements-2ddoc.txt"
-    # Executes tasks only. The scheduler lives in the separate roomivo-beat
-    # service, so this one is free to scale to multiple instances without
-    # double-firing periodic tasks.
-    startCommand: "python -m celery -A app.workers.celery_app worker --loglevel=info --concurrency=2 --without-gossip --without-mingle --without-heartbeat"
+    schedule: "*/15 * * * *"
+    startCommand: "python scripts/periodic_sweep.py"
     envVars:
       - key: PYTHON_VERSION
         value: "3.13"
@@ -115,67 +122,12 @@ services:
         fromDatabase:
           name: roomivo-db
           property: connectionString
-      - key: REDIS_URL
-        sync: false
       - key: SECRET_KEY
         sync: false
       - key: MASTER_ENCRYPTION_KEY
         sync: false
       - key: CREDENTIAL_SIGNING_KEY
         sync: false
-      - key: RESEND_API_KEY
-        sync: false
-      - key: FROM_EMAIL
-        value: "Roomivo <contact@roomivo.eu>"
-      - key: ENVIRONMENT
-        value: "production"
-      - key: PYTHONPATH
-        value: "."
-      - key: STORAGE_ENDPOINT
-        value: "https://e9e4f279f640445e67f1070fea6e8c6c.r2.cloudflarestorage.com"
-      - key: STORAGE_BUCKET
-        value: "rental-platform-media"
-      - key: STORAGE_ACCESS_KEY
-        sync: false
-      - key: STORAGE_SECRET_KEY
-        sync: false
-
-  # ── Celery Beat Scheduler ────────────────────────────────────────────
-  # Scheduler only — dispatches periodic tasks (the stale identity-doc sweep)
-  # onto the broker for roomivo-worker to execute. Kept separate so the worker
-  # can scale: every extra instance of *this* service double-fires every
-  # scheduled task, so it MUST stay at exactly one instance.
-  # Env mirrors the worker because app.core.config validates on import and
-  # exits non-zero when production secrets are absent.
-  - type: worker
-    name: roomivo-beat
-    runtime: python
-    region: frankfurt
-    plan: starter
-    branch: master
-    rootDir: backend
-    buildCommand: "pip install -r requirements.txt && pip install --no-deps -r requirements-2ddoc.txt"
-    # Schedule DB goes to /tmp because the app dir is not reliably writable.
-    startCommand: "python -m celery -A app.workers.celery_app beat --schedule=/tmp/celerybeat-schedule --loglevel=info"
-    envVars:
-      - key: PYTHON_VERSION
-        value: "3.13"
-      - key: DATABASE_URL
-        fromDatabase:
-          name: roomivo-db
-          property: connectionString
-      - key: REDIS_URL
-        sync: false
-      - key: SECRET_KEY
-        sync: false
-      - key: MASTER_ENCRYPTION_KEY
-        sync: false
-      - key: CREDENTIAL_SIGNING_KEY
-        sync: false
-      - key: RESEND_API_KEY
-        sync: false
-      - key: FROM_EMAIL
-        value: "Roomivo <contact@roomivo.eu>"
       - key: ENVIRONMENT
         value: "production"
       - key: PYTHONPATH
