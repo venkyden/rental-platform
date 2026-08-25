@@ -18,6 +18,7 @@ services:
       - CREDENTIAL_SIGNING_KEY=${CREDENTIAL_SIGNING_KEY}
       - RESEND_API_KEY=${RESEND_API_KEY}
       - FROM_EMAIL=${FROM_EMAIL}
+      - ORS_API_KEY=${ORS_API_KEY}
     depends_on:
       db:
         condition: service_healthy

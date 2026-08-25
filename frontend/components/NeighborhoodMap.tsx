@@ -7,6 +7,14 @@ import { useLanguage } from '@/lib/LanguageContext';
 import { apiClient } from '@/lib/api';
 import AddressAutocomplete, { AddressResult } from './AddressAutocomplete';
 import { Footprints, Bike, Car, TrainFront } from 'lucide-react';
+// Static imports (not runtime require()) so Next.js's asset pipeline resolves
+// these reliably under both Webpack and Turbopack — a runtime require() of a
+// .png inside a client-side useEffect returns undefined under Turbopack dev,
+// crashing the whole route (verified live: "Cannot read properties of
+// undefined (reading 'src')" bubbling past the component's own error boundary).
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 
 const MapContainer = dynamic(() => import('react-leaflet').then((mod) => mod.MapContainer), { ssr: false });
 const TileLayer = dynamic(() => import('react-leaflet').then((mod) => mod.TileLayer), { ssr: false });
@@ -99,9 +107,9 @@ export default function NeighborhoodMap({ lat, lng, address, publicTransport }: 
         const L = require('leaflet');
         delete L.Icon.Default.prototype._getIconUrl;
         L.Icon.Default.mergeOptions({
-            iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png').default.src,
-            iconUrl: require('leaflet/dist/images/marker-icon.png').default.src,
-            shadowUrl: require('leaflet/dist/images/marker-shadow.png').default.src,
+            iconRetinaUrl: markerIcon2x,
+            iconUrl: markerIcon,
+            shadowUrl: markerShadow,
         });
     }, []);
 
