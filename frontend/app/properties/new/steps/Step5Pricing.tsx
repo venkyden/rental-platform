@@ -246,6 +246,7 @@ export default function Step5Pricing({ formData, updateFormData, t, showRentCont
                                 type="number"
                                 step="0.1"
                                 min="0"
+                                max="99.9"
                                 value={formData.guarantor_income_multiple ?? ''}
                                 onChange={(e) =>
                                     updateFormData({ guarantor_income_multiple: e.target.value === '' ? undefined : parseFloat(e.target.value) || 0 })

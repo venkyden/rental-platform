@@ -42,6 +42,13 @@ class TestGuarantorIncomeMultipleSchema:
         with pytest.raises(ValidationError):
             PropertyCreate(**_base_create_payload(guarantor_income_multiple=-1.0))
 
+    def test_property_create_rejects_multiple_above_column_range(self):
+        """The DECIMAL(3,1) column on Property caps at 99.9 — a value at or
+        above 100 would overflow it (a 500 at save time) if not rejected here
+        first."""
+        with pytest.raises(ValidationError):
+            PropertyCreate(**_base_create_payload(guarantor_income_multiple=100.0))
+
     def test_property_update_accepts_guarantor_income_multiple(self):
         data = PropertyUpdate(guarantor_income_multiple=Decimal("2.5"))
         assert data.guarantor_income_multiple == Decimal("2.5")

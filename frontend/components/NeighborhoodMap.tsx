@@ -142,6 +142,8 @@ export default function NeighborhoodMap({ lat, lng, address, publicTransport }: 
     const handleAddressSelect = (result: AddressResult) => {
         if (result.lat === undefined || result.lng === undefined) {
             setError(t('property.neighborhoodMap.searchError', undefined, 'Could not compute a route to this address.'));
+            setOrigin(null);
+            setRoute(null);
             return;
         }
         setOrigin({ lat: result.lat, lng: result.lng, label: result.display });

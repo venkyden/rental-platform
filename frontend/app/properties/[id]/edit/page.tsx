@@ -1220,6 +1220,7 @@ export default function EditPropertyPage() {
                                                                 type="number"
                                                                 step="0.1"
                                                                 min="0"
+                                                                max="99.9"
                                                                 value={formData.guarantor_income_multiple ?? ''}
                                                                 onChange={(e) => updateFormData({ guarantor_income_multiple: e.target.value === '' ? undefined : parseFloat(e.target.value) || 0 })}
                                                                 placeholder="e.g. 3.0"

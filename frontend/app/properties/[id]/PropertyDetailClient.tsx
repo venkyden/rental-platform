@@ -952,7 +952,7 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                                     {t('property.criteria.acceptedTenantTypes', undefined, 'Accepted tenant types')}
                                                 </span>
                                                 <span className="text-xs text-zinc-500 font-bold capitalize">
-                                                    {property.accepted_tenant_types!.join(', ')}
+                                                    {property.accepted_tenant_types!.map((tt: string) => t(`settings.preferences.options.${tt}`, undefined, tt)).join(', ')}
                                                 </span>
                                             </div>
                                         )}
