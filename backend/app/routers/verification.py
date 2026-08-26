@@ -1689,24 +1689,15 @@ async def verify_property_dpe(
         raise HTTPException(status_code=422, detail=str(exc))
     except ademe_dpe.ADEMEUnavailable:
         # PR-6: non-blocking — store PENDING so the frontend can retry later.
+        # The periodic sweep cron job (scripts/periodic_sweep.py) retries
+        # every PENDING property every 15 min — no need to schedule anything
+        # here.
         prop.ownership_data = {
             **(prop.ownership_data or {}),
             "dpe_assurance": "PENDING",
             "dpe_number": dpe_number.strip(),
         }
         await db.commit()
-        try:
-            from app.workers.tasks import retry_pending_dpe_task
-            retry_pending_dpe_task.apply_async(
-                args=[str(prop.id), dpe_number.strip()],
-                countdown=60,
-            )
-        except Exception as _celery_exc:
-            logger.warning(
-                "retry_pending_dpe: failed to enqueue background retry for property %s: %s",
-                prop.id,
-                _celery_exc,
-            )
         return {
             "dpe_assurance": "PENDING",
             "dpe_class": None,
