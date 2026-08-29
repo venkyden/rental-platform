@@ -22,7 +22,7 @@ class NotificationDelivery:
     Handles actual delivery of notifications via different channels.
 
     Environment variables needed:
-    - SENDGRID_API_KEY or RESEND_API_KEY for email
+    - RESEND_API_KEY for email
     - TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN for SMS/WhatsApp
     - TWILIO_PHONE_NUMBER for SMS
     - TWILIO_WHATSAPP_NUMBER for WhatsApp (e.g., "whatsapp:+14155238886")
@@ -30,7 +30,6 @@ class NotificationDelivery:
 
     def __init__(self):
         # Email config
-        self.sendgrid_key = os.getenv("SENDGRID_API_KEY")
         self.resend_key = os.getenv("RESEND_API_KEY")
         self.from_email = os.getenv("FROM_EMAIL", "noreply@roomivo.eu")
 
@@ -46,13 +45,10 @@ class NotificationDelivery:
         self, to: str, subject: str, body: str, html: Optional[str] = None
     ) -> bool:
         """
-        Send email notification.
-        Uses Resend if available, falls back to SendGrid.
+        Send email notification via Resend.
         """
         if self.resend_key:
             return await self._send_via_resend(to, subject, body, html)
-        elif self.sendgrid_key:
-            return await self._send_via_sendgrid(to, subject, body, html)
         else:
             logger.warning(
                 f"No email provider configured. Would send to {to}: {subject}"
@@ -81,41 +77,6 @@ class NotificationDelivery:
                     return True
                 else:
                     logger.error(f"Resend error: {response.text}")
-                    return False
-        except Exception as e:
-            logger.error(f"Email send failed: {e}")
-            return False
-
-    async def _send_via_sendgrid(
-        self, to: str, subject: str, body: str, html: Optional[str]
-    ) -> bool:
-        """Send via SendGrid API"""
-        try:
-            async with httpx.AsyncClient() as client:
-                response = await client.post(
-                    "https://api.sendgrid.com/v3/mail/send",
-                    headers={
-                        "Authorization": f"Bearer {self.sendgrid_key}",
-                        "Content-Type": "application/json",
-                    },
-                    json={
-                        "personalizations": [{"to": [{"email": to}]}],
-                        "from": {"email": self.from_email},
-                        "subject": subject,
-                        "content": [
-                            {"type": "text/plain", "value": body},
-                            {
-                                "type": "text/html",
-                                "value": html or body.replace("\n", "<br>"),
-                            },
-                        ],
-                    },
-                )
-                if response.status_code in [200, 202]:
-                    logger.info(f"Email sent to {to}")
-                    return True
-                else:
-                    logger.error(f"SendGrid error: {response.text}")
                     return False
         except Exception as e:
             logger.error(f"Email send failed: {e}")

@@ -49,7 +49,7 @@ passive-publisher posture (matching stays disabled).
 
 **Accuracy check on assurance claims**: the INTL identity rail currently ships MEDIUM
 only (MRZ-OCR + selfie liveness) — `mrz.py` and `credential.py` both note the web path
-cannot do NFC Passive Auth. Passport-NFC → HIGH (JMRTD/AndyQ) and FranceConnect → HIGH
+cannot do NFC Passive Auth. Passport-NFC → HIGH (library TBD) and FranceConnect → HIGH
 are both still aspirational (CLAUDE.md stack table), gated on a native mobile app and
 the CSCA master list / incorporation respectively, neither of which exist yet. This
 design's credential copy states **MEDIUM only, for both rails**, with no HIGH/NFC/

@@ -37,7 +37,6 @@ The application will start without these, but related features (Messaging, Stora
 ### Notification Channels (Email)
 | `RESEND_API_KEY` | Resend API Key (primary email provider). | Email delivery (verification, reset, invites). |
 | `FROM_EMAIL` | Sender address — must match verified Resend domain. Default: `Roomivo <onboarding@resend.dev>` (test). Production: `noreply@roomivo.eu`. | Email deliverability. |
-| `SENDGRID_API_KEY` | *Alternative* to Resend. | Email delivery. |
 | `TWILIO_ACCOUNT_SID` | Twilio Account SID. | SMS & WhatsApp notifications. |
 | `TWILIO_AUTH_TOKEN` | Twilio Auth Token. | SMS & WhatsApp notifications. |
 | `TWILIO_PHONE_NUMBER` | Sender Phone Number (E.164 format). | SMS delivery. |
@@ -61,7 +60,6 @@ If not provided, the system defaults to local storage in `./uploads`.
 |----------|-------------|
 | `STRIPE_SECRET_KEY` | Key for Payment processing. |
 | `STRIPE_IDENTITY_WEBHOOK_SECRET` | Secret for verifying Stripe Identity webhooks. |
-| `FOURTHLINE_API_KEY` | Key for Fourthline KYC/Identity verification. |
 
 ## Quick Setup
 Copy `.env.example` to `.env` and fill in the values:

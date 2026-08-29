@@ -4,11 +4,11 @@ Date: 2026-06-24. Status: design (build pass, branch `feat/esign-path-b`).
 Source of truth: `docs/features/trust-layer/DOSSIER.md` §0.16, §5.6, §5.7, §6, §12.1.
 
 ## Decision (recorded from this session)
-- **Engine: in-house Ed25519**, not DocuSeal/Documenso. Founder constraint: **0 opex/capex**
-  — no second service to host/operate, no AGPL surface to manage. We reuse the credential
-  signing key (`CredentialService`), the watermark util, and the evidence-PDF pattern that
-  already ship. DocuSeal/Documenso stay the **deferred SG-5 "max robustness / QTSP" v2**
-  upgrade (DOSSIER §5.7 SG-5), not Phase 1.
+- **Engine: in-house Ed25519**, not a third-party AGPL e-sign tool. Founder constraint:
+  **0 opex/capex** — no second service to host/operate, no AGPL surface to manage. We reuse
+  the credential signing key (`CredentialService`), the watermark util, and the evidence-PDF
+  pattern that already ship. A third-party tool stays the **deferred SG-5 "max robustness /
+  QTSP" v2** upgrade (DOSSIER §5.7 SG-5), not Phase 1.
 - **Path B before Path A** (DOSSIER §0.16): landlord uploads *their own* lease. Roomivo
   never drafts wording → stays clear of loi 1971. Legal basis: French residential lease is
   an *acte sous seing privé* → **no qualified signature required**; eIDAS simple/advanced is
@@ -22,7 +22,7 @@ LU-4 (DPE/ERP/notice referenced), LU-5 (FR-law / foreign governing law) → **VA
 **ATTACHED / NOT LEGALITY-VERIFIED**. It never gates signing (LU-6): flags are shown in the UI
 and recorded in the signed manifest. LU-3 (deposit/rent over cap) is deferred to AI extraction.
 
-Out of v1: Path A template generation; DocuSeal/QTSP; LU-3 + AI clause extraction; frontend
+Out of v1: Path A template generation; third-party QTSP upgrade; LU-3 + AI clause extraction; frontend
 wizard (a thin status/sign UI follows; the cryptographic rail is the load-bearing core).
 
 ## Boundaries held (DOSSIER §1)

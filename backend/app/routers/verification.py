@@ -212,10 +212,7 @@ async def upload_identity_document(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Upload identity document for verification.
-
-    For MVP: Simulates document verification
-    For Production: Integrate with Fourthline API
+    Upload identity document for verification (OCR + liveness rail, MEDIUM assurance).
     """
     final_doc_type = document_type or document_type_query or "passport"
     # GDPR Art. 9: the selfie_with_id path runs a face-match on the image

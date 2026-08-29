@@ -286,7 +286,7 @@ Usage des **30–50 k€** d'amorçage (`[Hypothèse]`, base-case 40 k€) :
 | **Immatriculation** | 1–2 k€ | Création de société → capacité contractuelle B2B. Structure : **une entité indienne** maintenant (immatriculation en cours) ; **entité UE ajoutée plus tard** (juridiction à définir — le seul avantage propre de la France ici est l'accès FranceConnect, qui exige un SIRET français ; une base UE non-française atteint l'identité HIGH via eIDAS 2.0 / portefeuille UE). **Sur le chemin critique B2B de l'An 1.** |
 | **Infrastructure & sécurité** | 2–4 k€/an | Hébergement, infra de signature (Ed25519), audit de sécurité. Coût marginal par vérif ≈ 0 €. |
 | **R&D Credential core + rails FR** | (temps fondateurs) | Modèle credential, OCR+liveness (MEDIUM), FranceConnect (post-immatriculation), 2D-Doc, contrôle du bien ADEME. |
-| **R&D rail INTL HIGH (Phase 2)** | à provisionner | Lecture NFC passeport (JMRTD / NFCPassportReader) ; **gap opérationnel : liste maîtresse CSCA via ICAO PKD**. |
+| **R&D rail INTL HIGH (Phase 2)** | à provisionner | Lecture NFC passeport (bibliothèque à définir) ; **gap opérationnel : liste maîtresse CSCA via ICAO PKD**. |
 | **Amorçage fondateurs / stipend** | solde | Permettre le plein-temps sur la phase critique. |
 
 **Éligibilité CIR/CII** : la R&D credential (cryptographie de la preuve, vérification de
@@ -317,7 +317,7 @@ Recherche / Innovation `[Hypothèse — à valider avec un expert-comptable]`.
 **Phase 2+ (An 2–3) — derrière le gate légal pour bail/e-sign :**
 7. Profondeur DPE (blocage classe G, zone tendue, réforme en direct).
 8. Scan de conformité d'un bail **téléversé** (VALIDÉ vs ATTACHÉ). ⚠ gate.
-9. **E-signature + pack-preuve** (DocuSeal / Documenso **non modifiés** — AGPL). ⚠ gate.
+9. **E-signature + pack-preuve** (moteur Ed25519 maison — ✅ livré 2026-06-24). ⚠ gate.
 10. Vérification d'attestation d'assurance MRH.
 11. **Rails INTL** (NFC natif HIGH ; web MRZ-OCR MEDIUM ; normalisation FX). Bloqué sur CSCA.
 
@@ -435,8 +435,8 @@ remplace des milliers de micro-paiements B2C.
   v1 (portail de vérification humain, pas une API).
 - **betagouv/2ddoc-parser** — lecture & vérification ECDSA de l'avis d'imposition 2D-Doc.
 - **ADEME** — API DPE open-data (classe A–G, pas de H ; réforme coefficient janv. 2026).
-- **JMRTD** (Android, LGPL) / **AndyQ/NFCPassportReader** (iOS, MIT) — lecture puce passeport.
-- **pdf-lib** (MIT) — génération de documents. **DocuSeal / Documenso** (AGPL — non modifiés).
+- Lecture puce passeport (NFC, bibliothèque native à définir) — reporté au profit d'EUDI Wallet.
+- **pdf-lib** (MIT) — génération de documents. **Ed25519 maison** pour la signature électronique.
 
 **Cadre juridique (à respecter dans le produit) :**
 - Loi Hoguet (entremise, mandat, maniement de fonds) ; Loi du 31 déc. 1971 (rédaction

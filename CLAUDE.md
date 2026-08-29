@@ -82,9 +82,9 @@ parse via betagouv/2ddoc-parser, `fr_2ddoc_parser` package) → offline ECDSA ve
 claim. The *avis* 2D-Doc name cross-check adds an anti-fraud flag but does NOT upgrade
 identity to HIGH (no presenter binding).
 
-**INTL rail:** Native-app passport NFC chip read (JMRTD / AndyQ NFCPassportReader,
-BAC/PACE/Passive Auth) → HIGH. Web MRZ-OCR + liveness → MEDIUM. OSS liveness has
-high false-accept rate — keep MEDIUM labelled MEDIUM, never upgrade it silently.
+**INTL rail:** Native-app passport NFC chip read (BAC/PACE/Passive Auth, library TBD)
+→ HIGH. Web MRZ-OCR + liveness → MEDIUM. OSS liveness has high false-accept rate —
+keep MEDIUM labelled MEDIUM, never upgrade it silently.
 
 The FR/INTL split is self-selected by which documents the user holds. Same tiers for everyone.
 
@@ -97,17 +97,15 @@ The FR/INTL split is self-selected by which documents the user holds. Same tiers
 | FR identity | France Identité state service (consumed, not built) | Free |
 | FR solvency | **betagouv/2ddoc-parser** (Python) | Govt OSS; verifies ANTS ECDSA sig |
 | Datamatrix decode | ZXing + pscott/poc-d-doc (browser) | Permissive |
-| INTL identity HIGH | **JMRTD** (Android) + **AndyQ/NFCPassportReader** (iOS) | LGPL / MIT; needs CSCA master list |
+| INTL identity HIGH | Native passport NFC read — vendor TBD | Needs CSCA master list; check license before picking one |
 | INTL identity MEDIUM | Tesseract (MRZ OCR) + DeepFace (face match) | See liveness caveat above |
 | Property | ADEME DPE open-data API | Free; class A–G only (no H) |
 | Lease generation | **pdf-lib** | MIT |
 | Uploaded lease parse | Tesseract + rule-set | Apache |
-| E-signature | **DocuSeal** or **Documenso** — unmodified, behind API | **AGPL** — do NOT fork; run unmodified or copyleft triggers |
+| E-signature | In-house Ed25519 (shipped 2026-06-24, DOSSIER §5.7) | Reuses the credential signing key; a QTSP upgrade is the deferred v2 path |
 | Insurance verify | Insurer API preferred; Tesseract fallback | |
 
 ### Key caveats
-- **AGPL:** DocuSeal and Documenso are AGPL. Use them unmodified behind their embed/API.
-  Do not fork. If you need to modify, pick a permissively-licensed alternative.
 - **CSCA master list:** Passive Auth on passport chips requires issuing-country root certs.
   Assembling a complete, current list (via ICAO PKD) is the operational gap for INTL HIGH.
 - **Liveness:** OSS anti-spoofing has a materially higher false-accept rate than commercial 3D.

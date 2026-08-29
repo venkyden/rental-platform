@@ -37,7 +37,7 @@ async def verification_webhook(
 ):
     """
     Webhook endpoint for identity verification callbacks.
-    Supports: Fourthline, Onfido, Jumio, etc.
+    Supports: Onfido, Jumio, etc.
 
     Expected payload:
     {

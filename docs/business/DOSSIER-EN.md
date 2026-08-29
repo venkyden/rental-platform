@@ -273,7 +273,7 @@ Use of the **€30–50k** seed (`[Assumption]`, base case €40k):
 | **Incorporation** | €1–2k | Company formation → B2B contract capacity. Structure: **an Indian entity** now (registration in progress); **EU entity added later** (jurisdiction TBD — France's only unique edge here is FranceConnect access, which requires a French SIRET; a non-France EU base reaches HIGH identity via the eIDAS 2.0 / EU wallet instead). **On the Y1 critical path for B2B.** |
 | **Infrastructure & security** | €2–4k/yr | Hosting, signing infra (Ed25519), security audit. Marginal cost per verif ≈ €0. |
 | **R&D Credential core + FR rails** | (founder time) | Credential model, OCR+liveness (MEDIUM), FranceConnect (post-incorporation), 2D-Doc, ADEME property control. |
-| **R&D INTL HIGH rail (Phase 2)** | to provision | Passport NFC read (JMRTD / NFCPassportReader); **operational gap: CSCA master list via ICAO PKD**. |
+| **R&D INTL HIGH rail (Phase 2)** | to provision | Passport NFC read (library TBD); **operational gap: CSCA master list via ICAO PKD**. |
 | **Founder seed / stipend** | balance | Enable full-time work through the critical phase. |
 
 **CIR/CII eligibility:** the credential R&D (proof cryptography, state-signature
@@ -304,7 +304,7 @@ verification, normalization) may qualify for the French Research / Innovation ta
 **Phase 2+ (Y2–3) — behind the legal gate for lease/e-sign:**
 7. DPE depth (class-G block, zone tendue, live reform handling).
 8. Uploaded-lease compliance scan (VALIDATED vs ATTACHED). ⚠ gate.
-9. **E-signature + evidence pack** (DocuSeal / Documenso **unmodified** — AGPL). ⚠ gate.
+9. **E-signature + evidence pack** (in-house Ed25519 engine — ✅ shipped 2026-06-24). ⚠ gate.
 10. MRH insurance attestation verification.
 11. **INTL rails** (native NFC HIGH; web MRZ-OCR MEDIUM; FX normalization). Blocked on CSCA.
 
@@ -421,8 +421,8 @@ thousands of B2C micro-payments.
   verification portal, not an API).
 - **betagouv/2ddoc-parser** — read & verify ECDSA of the 2D-Doc tax notice.
 - **ADEME** — DPE open-data API (class A–G, no H; coefficient reform Jan 2026).
-- **JMRTD** (Android, LGPL) / **AndyQ/NFCPassportReader** (iOS, MIT) — passport chip read.
-- **pdf-lib** (MIT) — document generation. **DocuSeal / Documenso** (AGPL — unmodified).
+- Passport chip read (NFC, native library TBD) — deferred in favor of the EUDI Wallet.
+- **pdf-lib** (MIT) — document generation. **In-house Ed25519** for e-signature.
 
 **Legal framework (enforced in the product):**
 - Loi Hoguet (brokering, mandate, fund handling); Loi of 31 Dec 1971 (drafting deeds);
