@@ -283,7 +283,6 @@ git commit -m "feat(location): add ors_directions service (openrouteservice clie
 In `backend/app/core/config.py`, replace:
 
 ```python
-    FOURTHLINE_API_KEY: Optional[str] = None
     SENDGRID_API_KEY: Optional[str] = None
     RESEND_API_KEY: Optional[str] = None
 ```
@@ -291,7 +290,6 @@ In `backend/app/core/config.py`, replace:
 with:
 
 ```python
-    FOURTHLINE_API_KEY: Optional[str] = None
     SENDGRID_API_KEY: Optional[str] = None
     RESEND_API_KEY: Optional[str] = None
     # openrouteservice — free tier (2000 req/day). https://openrouteservice.org/dev/#/signup
