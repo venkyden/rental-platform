@@ -123,10 +123,18 @@ async def get_nearby_pois(latitude: float, longitude: float) -> Dict[str, List[s
         "https://overpass.kumi.systems/api/interpreter",
     ]
 
-    async with httpx.AsyncClient(timeout=3.0) as client:
+    async with httpx.AsyncClient(timeout=6.0) as client:
         for endpoint in overpass_endpoints:
             try:
-                response = await client.post(endpoint, data={"data": overpass_query})
+                response = await client.post(
+                    endpoint,
+                    data={"data": overpass_query},
+                    # Overpass mirrors reject requests with no identifying UA (406) —
+                    # confirmed 2026-08-29 against overpass-api.de and lz4.overpass-api.de.
+                    # Nominatim's geocode_address() above already sends one; this call
+                    # silently never did, so every POI enrichment result was empty.
+                    headers={"User-Agent": "Roomivo/1.0"},
+                )
                 if response.status_code == 200:
                     data = response.json()
                     parsed = parse_overpass_results(data, latitude, longitude)
