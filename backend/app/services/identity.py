@@ -128,12 +128,20 @@ class IdentityVerificationService:
                         logger.warning(f"Failed to cache identity extraction: {e}")
 
         if not extracted_data:
+            # Fail closed like every sibling verifier (verify_selfie_with_id,
+            # verify_three_step_kyc, compare_faces): an AI outage/misconfiguration
+            # must never silently accept an unvalidated image as an identity
+            # document. This branch used to return verified=True here, which let
+            # ANY image through the front-document step (skipping is_identity_document,
+            # valid_document_type, expiry, name-match) whenever OCR extraction
+            # failed — completable end-to-end via a matching selfie with zero
+            # real ID ever checked.
             return {
-                "verified": True,
-                "status": "pending_review",
+                "verified": False,
+                "status": "error",
                 "data": None,
                 "validation_checks": [],
-                "rejection_reason": None,
+                "rejection_reason": "verification_service_unavailable",
             }
 
         validation_results = await self._validate_identity_data(extracted_data, expected_name, document_type)

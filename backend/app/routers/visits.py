@@ -14,6 +14,7 @@ from app.models.property import Property
 from app.models.user import User
 from app.models.visits_and_leases import Lease, VisitSlot
 from app.routers.auth import get_current_user
+from app.services.lease_rules import LEASE_TYPES, max_deposit, validate_deposit
 
 router = APIRouter(tags=["Visits & Leases"])
 
@@ -84,6 +85,13 @@ async def generate_lease_directly(
     if not property_obj or property_obj.landlord_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized")
 
+    # Identity verification required for legal documents (matches /leases/create).
+    if not current_user.identity_verified:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Identity verification required to generate leases",
+        )
+
     # Get or create tenant (simplified for UI)
     result = await db.execute(select(User).where(User.email == request.tenant_email))
     tenant = result.scalar_one_or_none()
@@ -93,6 +101,22 @@ async def generate_lease_directly(
             status_code=404, detail=f"No user found with email {request.tenant_email}"
         )
 
+    # Deposit — loi 89 art. 22 / loi ELAN art. 25-12 (same rule as /leases/create).
+    # The old unconditional `rent * 2` default applied a meublé cap to every type:
+    # illegal for a bail vide (1 month max) and for a bail mobilité (must be 0).
+    if request.deposit_amount is not None:
+        deposit = request.deposit_amount
+        cap_errors = validate_deposit(request.lease_type, deposit, request.rent_amount)
+        if cap_errors:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=" ".join(cap_errors))
+    elif request.lease_type in LEASE_TYPES:
+        deposit = max_deposit(request.lease_type, request.rent_amount)
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Un dépôt de garantie explicite est requis pour le type de bail « {request.lease_type} ».",
+        )
+
     # Create dummy lease entry just to satisfy the download endpoint
     lease = Lease(
         property_id=property_id,
@@ -100,7 +124,7 @@ async def generate_lease_directly(
         tenant_id=tenant.id,
         start_date=datetime.strptime(request.start_date, "%Y-%m-%d").date(),
         rent_amount=request.rent_amount,
-        deposit_amount=request.deposit_amount or (request.rent_amount * 2),
+        deposit_amount=deposit,
         charges_amount=request.charges_amount or 0,
         lease_type=request.lease_type,
         status="generated",

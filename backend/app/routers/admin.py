@@ -1,23 +1,40 @@
-from typing import List
+import base64
+import logging
+from typing import List, Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.services.feature_flag_service import feature_flag_service
+from app.services.notification_service import NotificationService
 from app.models.user import User, UserRole
 from app.models.property import Property
 from app.routers.auth import get_current_user
+from app.routers.verification import _purge_identity_doc_pointer
+from app.core.cache import cache
+from app.services.storage import storage
 from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import select
+
+logger = logging.getLogger(__name__)
 
 # Redis TTL is 10 min; 15 min gives the user a grace window before operator escalation
 _STALL_THRESHOLD_MINUTES = 15
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
+
+
+async def _notify_best_effort(coro) -> None:
+    """Run a notification coroutine without letting a delivery failure turn an
+    already-committed admin action into a reported 500."""
+    try:
+        await coro
+    except Exception:
+        logger.warning("Admin action notification failed", exc_info=True)
 
 
 def require_admin(current_user: User = Depends(get_current_user)) -> User:
@@ -230,7 +247,47 @@ async def get_pending_verifications(
             checks=_sanitize_checks(user.identity_data.get("checks")),
         ))
 
-    # ── 2. Unverified properties ──────────────────────────────────────────────
+    # ── 2. Identity docs AI could not verify — queued for manual review ──────
+    review_query = (
+        select(User)
+        .where(
+            User.identity_status == "pending_manual_review",
+            User.identity_verified == False,
+        )
+        .offset(skip)
+        .limit(limit)
+    )
+    review_result = await db.execute(review_query)
+    review_users = review_result.scalars().all()
+
+    for user in review_users:
+        if not user.identity_data:
+            continue
+        expires_str = user.identity_data.get("review_expires_at", "")
+        if expires_str:
+            try:
+                if now_utc > datetime.fromisoformat(expires_str):
+                    continue  # window lapsed — the underlying document is gone or about to be
+            except (ValueError, TypeError):
+                pass
+        upload_date_str = user.identity_data.get("upload_date", "")
+        stalled_for = timedelta(0)
+        if upload_date_str:
+            try:
+                stalled_for = now_utc - datetime.fromisoformat(upload_date_str)
+            except (ValueError, TypeError):
+                pass
+        pending.append(VerificationReview(
+            id=str(user.id),
+            user_name=user.full_name or user.email,
+            type="identity_pending_review",
+            status="pending_manual_review",
+            upload_date=upload_date_str,
+            minutes_stalled=int(stalled_for.total_seconds() / 60),
+            checks=None,  # AI never ran — nothing to sanitize/show
+        ))
+
+    # ── 3. Unverified properties ──────────────────────────────────────────────
     prop_query = (
         select(Property)
         .where(Property.ownership_verified == False)
@@ -253,6 +310,58 @@ async def get_pending_verifications(
             ))
 
     return pending
+
+
+@router.get("/verifications/{id}/identity-document")
+async def get_identity_document_for_review(
+    id: str,
+    db: AsyncSession = Depends(get_db),
+    admin_user: User = Depends(require_admin),
+):
+    """
+    Fetch the raw identity-document image for manual review.
+
+    Only ever available while status == pending_manual_review and the bounded
+    retention window hasn't lapsed — this is the one case where a source ID
+    document exists at rest at all. Access is logged (who viewed whose
+    document, when): this is exactly the kind of PII access GDPR accountability
+    expects an audit trail for.
+    """
+    uid = UUID(id)
+    user = await db.get(User, uid)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    data = user.identity_data or {}
+    if data.get("status") != "pending_manual_review":
+        raise HTTPException(status_code=404, detail="No document is pending manual review for this user")
+
+    expires_str = data.get("review_expires_at", "")
+    if expires_str:
+        try:
+            if datetime.now(timezone.utc).replace(tzinfo=None) > datetime.fromisoformat(expires_str):
+                raise HTTPException(status_code=410, detail="The manual-review window has expired; use /reset")
+        except (ValueError, TypeError):
+            pass
+
+    if data.get("redis_key"):
+        doc = await cache.get(str(data["redis_key"]))
+        if not doc:
+            raise HTTPException(status_code=410, detail="Document expired or unavailable")
+        content = base64.b64decode(doc["b64"])
+        content_type = doc.get("content_type", "image/jpeg")
+    elif data.get("storage_key"):
+        content = await storage.download_file(str(data["storage_key"]))
+        if content is None:
+            raise HTTPException(status_code=410, detail="Document expired or unavailable")
+        content_type = data.get("content_type", "application/octet-stream")
+    else:
+        raise HTTPException(status_code=404, detail="No document pointer on file")
+
+    logger.info(
+        "identity_document_reviewed: admin=%s subject=%s", admin_user.id, uid
+    )
+    return Response(content=content, media_type=content_type)
 
 
 @router.post("/verifications/{id}/reset")
@@ -280,6 +389,7 @@ async def reset_verification(
                 status_code=409,
                 detail="User has already completed identity verification — cannot reset.",
             )
+        await _purge_identity_doc_pointer(user.identity_data)
         user.identity_status = "unverified"
         user.identity_data = None  # type: ignore
         await db.commit()
@@ -293,19 +403,50 @@ async def approve_verification(
     id: str,
     type: str,  # identity, employment, property
     db: AsyncSession = Depends(get_db),
-    _: User = Depends(require_admin),
+    admin_user: User = Depends(require_admin),
 ):
     """Manually approve a verification"""
-    if type == "identity":
-        raise HTTPException(
-            status_code=400,
-            detail=(
-                "Identity verifications cannot be manually approved — "
-                "no document is retained post-retrofit. Use /reset to unblock stalled users."
-            ),
-        )
-
     uid = UUID(id)
+
+    if type == "identity":
+        user = await db.get(User, uid)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        data = user.identity_data or {}
+        if data.get("status") != "pending_manual_review":
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    "Only a document queued for manual review can be approved this way "
+                    "— no source document is retained otherwise. Use /reset to unblock "
+                    "stalled users."
+                ),
+            )
+        # Approve the DOCUMENT only — liveness still required. Same resting state
+        # a normal AI-validated front upload reaches; the existing selfie flow
+        # (unchanged) then completes identity_verified + assurance labelling.
+        user.identity_status = "document_uploaded"
+        user.identity_data = {
+            **data,
+            "status": "document_uploaded",
+            "checks": [{
+                "name": "manual_document_review",
+                "description": "Document reviewed and approved by an admin",
+                "passed": True,
+                "critical": True,
+            }],
+            "reviewed_by": str(admin_user.id),
+            "reviewed_at": datetime.now(timezone.utc).isoformat(),
+        }
+        await db.commit()
+        await _notify_best_effort(NotificationService(db).create_notification(
+            user_id=user.id,
+            notification_type="identity",
+            title="Identity document approved",
+            message="Your identity document was manually reviewed and approved. Please complete the selfie step to finish verification.",
+            action_url="/verification",
+        ))
+        return {"status": "approved", "user_id": id}
 
     if type == "employment":
         user = await db.get(User, uid)
@@ -325,3 +466,57 @@ async def approve_verification(
     
     await db.commit()
     return {"status": "approved"}
+
+
+class RejectRequest(BaseModel):
+    reason: Optional[str] = None
+
+
+@router.post("/verifications/{id}/reject")
+async def reject_verification(
+    id: str,
+    type: str,
+    body: RejectRequest,
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(require_admin),
+):
+    """
+    Reject a document that was queued for manual review — the admin looked at
+    it and it is not a valid/legible identity document. Purges the retained
+    document and notifies the user with the reason, if given.
+    """
+    if type != "identity":
+        raise HTTPException(status_code=400, detail=f"Reject not supported for type: {type}")
+
+    uid = UUID(id)
+    user = await db.get(User, uid)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    data = user.identity_data or {}
+    if data.get("status") != "pending_manual_review":
+        raise HTTPException(
+            status_code=400,
+            detail="Only a document queued for manual review can be rejected this way.",
+        )
+
+    await _purge_identity_doc_pointer(data)
+    user.identity_status = "rejected"
+    user.identity_data = {
+        "status": "rejected",
+        "rejected_at": datetime.now(timezone.utc).isoformat(),
+        "rejection_reason": body.reason,
+    }
+    await db.commit()
+
+    message = "Your identity document was reviewed and could not be accepted."
+    if body.reason:
+        message += f" Reason: {body.reason}"
+    await _notify_best_effort(NotificationService(db).create_notification(
+        user_id=user.id,
+        notification_type="identity",
+        title="Identity document rejected",
+        message=message + " Please upload a new document.",
+        action_url="/verification",
+    ))
+    return {"status": "rejected", "user_id": id}

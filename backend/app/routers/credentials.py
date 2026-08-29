@@ -24,6 +24,7 @@ from typing import Optional
 from app.core.database import get_db
 from app.core.timeutils import naive_utcnow
 from app.models.credential import Credential
+from app.routers.admin import require_admin
 from app.routers.auth import get_current_user
 from app.models.user import User
 from app.services.credential import credential_service, TRUST_DISCLOSURE_POINTS
@@ -137,10 +138,16 @@ async def get_public_keys():
 async def issue_credential(
     req: IssueRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_admin),
 ):
     """
-    Issue a signed, banded credential for the authenticated user.
+    Issue a signed, banded credential from caller-supplied claims.
+
+    Admin/service-only: claims here are trusted as-is (only format/assurance-
+    inflation rules are checked, never cross-referenced against a user's actual
+    verified state) — self-service issuance goes through POST /issue-mine
+    instead, which derives claims from the caller's own DB-verified data and
+    can never be used to self-assert an unearned assurance level.
 
     Claims are validated before signing — assurance inflation (MEDIUM source → HIGH claim)
     raises 422. Solvency ratios must be banded strings, never raw figures.
