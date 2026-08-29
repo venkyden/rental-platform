@@ -66,6 +66,15 @@ class Settings(BaseSettings):
     # Revisit at B2B demand — code retained, not deleted.
     ENABLE_AGENCY_TOOLING: bool = False
 
+    # Manual-review fallback for identity verification (stress-test finding,
+    # 2026-08-29): when AI extraction errors (outage, misconfiguration, low
+    # confidence), the front-document image is retained — encrypted, bounded
+    # TTL — for an admin to review, instead of being silently accepted or
+    # discarded outright. This reopens document-at-rest exposure for this one
+    # subset of cases; needs a DPIA update before relying on it in production
+    # (same legal-track gate as WS-2 biometric consent).
+    IDENTITY_MANUAL_REVIEW_TTL_HOURS: int = 24
+
     # CORS
     FRONTEND_URL: str = "http://localhost:3000"
     

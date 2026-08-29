@@ -322,12 +322,17 @@ class TestLandlordEntityEndpoint:
         assert user.kbis_verified is False
         assert user.deposit_binding_data["landlord_entity"]["gerant_match"] is False
 
-    def test_manager_sets_carte_g_only(self):
+    def test_manager_declaration_does_not_set_carte_g_verified(self):
+        """Regression: this branch has no registry check behind it (self-declared
+        type only, unlike sci's real SIREN + gérant-match chain) — it must never
+        flip the verified flag on a bare declaration. That flag flows into the
+        externally-shareable credential (credentials.py _build_claims_for_user)."""
         user = _verified_landlord()
         r = self._run(user, {"landlord_type": "manager"})
         assert r.status_code == 200
-        assert user.carte_g_verified is True
+        assert user.carte_g_verified is False
         assert user.kbis_verified is False  # never set for manager
+        assert user.deposit_binding_data["landlord_entity"]["type"] == "manager"
 
 
 class TestSciBindingIntegration:

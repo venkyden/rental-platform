@@ -46,12 +46,28 @@ async def _verify(client, credential_id: str):
 # ── basic happy paths ─────────────────────────────────────────────────────────
 
 @pytest.mark.asyncio
-async def test_issue_fr_high_credential(client):
-    """Issue a valid FR/HIGH credential; signature must be valid on verify."""
+async def test_issue_forbidden_for_non_admin(client):
+    """POST /credentials/issue is admin/service-only — a regular authenticated
+    user must not be able to self-assert arbitrary claims (e.g. a fresh tenant
+    claiming HIGH identity + solvency with zero real verification on file)."""
     sm = client._sessionmaker
     tenant = await make_user(sm, role="tenant")
 
     r = await _issue(client, _token(tenant), {
+        "subject_role": "tenant",
+        "rail": "FR",
+        "claims": VALID_FR_CLAIMS_HIGH,
+    })
+    assert r.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_issue_fr_high_credential(client):
+    """Issue a valid FR/HIGH credential; signature must be valid on verify."""
+    sm = client._sessionmaker
+    admin = await make_user(sm, role="admin")
+
+    r = await _issue(client, _token(admin), {
         "subject_role": "tenant",
         "rail": "FR",
         "claims": VALID_FR_CLAIMS_HIGH,
@@ -77,9 +93,9 @@ async def test_issue_fr_high_credential(client):
 async def test_issue_fr_medium_credential(client):
     """OCR+liveness source must produce MEDIUM, never HIGH."""
     sm = client._sessionmaker
-    tenant = await make_user(sm, role="tenant")
+    admin = await make_user(sm, role="admin")
 
-    r = await _issue(client, _token(tenant), {
+    r = await _issue(client, _token(admin), {
         "subject_role": "tenant",
         "rail": "FR",
         "claims": VALID_FR_CLAIMS_MEDIUM,
@@ -112,9 +128,9 @@ async def test_AS1_ocr_source_cannot_claim_high(client):
     identity_assurance=HIGH. The signing service rejects before storing.
     """
     sm = client._sessionmaker
-    tenant = await make_user(sm, role="tenant")
+    admin = await make_user(sm, role="admin")
 
-    r = await _issue(client, _token(tenant), {
+    r = await _issue(client, _token(admin), {
         "subject_role": "tenant",
         "rail": "FR",
         "claims": {
@@ -132,9 +148,9 @@ async def test_AS1_ocr_source_cannot_claim_high(client):
 async def test_AS1_mrz_ocr_source_cannot_claim_high(client):
     """AS-1: mrz_ocr_liveness (MEDIUM-only) rejected when HIGH assurance claimed."""
     sm = client._sessionmaker
-    tenant = await make_user(sm, role="tenant")
+    admin = await make_user(sm, role="admin")
 
-    r = await _issue(client, _token(tenant), {
+    r = await _issue(client, _token(admin), {
         "subject_role": "tenant",
         "rail": "INTL",
         "claims": {
@@ -150,9 +166,9 @@ async def test_AS1_mrz_ocr_source_cannot_claim_high(client):
 async def test_AS2_solvency_assurance_must_be_valid_band(client):
     """AS-2: solvency_assurance must be HIGH / MEDIUM / UNVERIFIED."""
     sm = client._sessionmaker
-    tenant = await make_user(sm, role="tenant")
+    admin = await make_user(sm, role="admin")
 
-    r = await _issue(client, _token(tenant), {
+    r = await _issue(client, _token(admin), {
         "subject_role": "tenant",
         "rail": "FR",
         "claims": {
@@ -172,9 +188,9 @@ async def test_AS3_raw_solvency_ratio_rejected(client):
     Passing a float must be rejected before signing.
     """
     sm = client._sessionmaker
-    tenant = await make_user(sm, role="tenant")
+    admin = await make_user(sm, role="admin")
 
-    r = await _issue(client, _token(tenant), {
+    r = await _issue(client, _token(admin), {
         "subject_role": "tenant",
         "rail": "FR",
         "claims": {
@@ -193,9 +209,9 @@ async def test_AS3_raw_solvency_ratio_rejected(client):
 async def test_AS3_solvency_ratio_without_operator_rejected(client):
     """AS-3: solvency_ratio string must begin with a comparison operator."""
     sm = client._sessionmaker
-    tenant = await make_user(sm, role="tenant")
+    admin = await make_user(sm, role="admin")
 
-    r = await _issue(client, _token(tenant), {
+    r = await _issue(client, _token(admin), {
         "subject_role": "tenant",
         "rail": "FR",
         "claims": {
@@ -212,8 +228,8 @@ async def test_AS3_solvency_ratio_without_operator_rejected(client):
 async def test_revocation_makes_credential_invalid(client):
     """Revoked credential returns valid:false and revoked:true on public verify."""
     sm = client._sessionmaker
-    tenant = await make_user(sm, role="tenant")
-    tok = _token(tenant)
+    admin = await make_user(sm, role="admin")
+    tok = _token(admin)
 
     issue_r = await _issue(client, tok, {
         "subject_role": "tenant",
@@ -241,10 +257,10 @@ async def test_revocation_makes_credential_invalid(client):
 async def test_revocation_by_other_user_forbidden(client):
     """Only the credential subject may revoke their credential."""
     sm = client._sessionmaker
-    tenant = await make_user(sm, role="tenant")
+    admin = await make_user(sm, role="admin")
     other = await make_user(sm, role="tenant")
 
-    issue_r = await _issue(client, _token(tenant), {
+    issue_r = await _issue(client, _token(admin), {
         "subject_role": "tenant",
         "rail": "FR",
         "claims": VALID_FR_CLAIMS_HIGH,
@@ -264,9 +280,9 @@ async def test_revocation_by_other_user_forbidden(client):
 async def test_evidence_pdf_returns_pdf_content(client):
     """Evidence PDF endpoint returns application/pdf without auth (public)."""
     sm = client._sessionmaker
-    tenant = await make_user(sm, role="tenant")
+    admin = await make_user(sm, role="admin")
 
-    issue_r = await _issue(client, _token(tenant), {
+    issue_r = await _issue(client, _token(admin), {
         "subject_role": "tenant",
         "rail": "FR",
         "claims": VALID_FR_CLAIMS_HIGH,
@@ -293,9 +309,9 @@ async def test_evidence_pdf_unknown_credential_404(client):
 @pytest.mark.asyncio
 async def test_invalid_subject_role_rejected(client):
     sm = client._sessionmaker
-    tenant = await make_user(sm, role="tenant")
+    admin = await make_user(sm, role="admin")
 
-    r = await _issue(client, _token(tenant), {
+    r = await _issue(client, _token(admin), {
         "subject_role": "admin",    # not a valid role
         "rail": "FR",
         "claims": {},
@@ -306,9 +322,9 @@ async def test_invalid_subject_role_rejected(client):
 @pytest.mark.asyncio
 async def test_invalid_rail_rejected(client):
     sm = client._sessionmaker
-    tenant = await make_user(sm, role="tenant")
+    admin = await make_user(sm, role="admin")
 
-    r = await _issue(client, _token(tenant), {
+    r = await _issue(client, _token(admin), {
         "subject_role": "tenant",
         "rail": "UK",               # not FR or INTL
         "claims": {},
@@ -331,9 +347,9 @@ async def test_issue_requires_auth(client):
 async def test_unknown_identity_source_rejected(client):
     """Unknown identity_source values are rejected before signing."""
     sm = client._sessionmaker
-    tenant = await make_user(sm, role="tenant")
+    admin = await make_user(sm, role="admin")
 
-    r = await _issue(client, _token(tenant), {
+    r = await _issue(client, _token(admin), {
         "subject_role": "tenant",
         "rail": "FR",
         "claims": {
@@ -351,9 +367,9 @@ async def test_unknown_identity_source_rejected(client):
 async def test_issue_landlord_credential(client):
     """Landlord credential with property_control claim issues cleanly."""
     sm = client._sessionmaker
-    landlord = await make_user(sm, role="landlord")
+    admin = await make_user(sm, role="admin")
 
-    r = await _issue(client, _token(landlord), {
+    r = await _issue(client, _token(admin), {
         "subject_role": "landlord",
         "rail": "FR",
         "claims": {
@@ -375,9 +391,9 @@ async def test_issue_landlord_credential(client):
 async def test_assurance_summary_on_verify(client):
     """Verify response includes a human-readable assurance_summary."""
     sm = client._sessionmaker
-    tenant = await make_user(sm, role="tenant")
+    admin = await make_user(sm, role="admin")
 
-    issue_r = await _issue(client, _token(tenant), {
+    issue_r = await _issue(client, _token(admin), {
         "subject_role": "tenant",
         "rail": "FR",
         "claims": VALID_FR_CLAIMS_HIGH,

@@ -645,19 +645,31 @@ async def test_back_side_stores_without_marking_verified(client, sessionmaker_):
     assert "back_file_url" not in refreshed.identity_data
 
 
-# ── 11. AI extraction failure on front → pending_review (not hard reject) ──
+# ── 11. AI extraction failure on front → queued for manual review, never a silent accept ──
 
 @pytest.mark.asyncio
-async def test_front_upload_ai_unavailable_returns_pending_review(client, sessionmaker_):
-    """Blurry/unreadable image: AI returns pending_review, upload succeeds for manual review."""
+async def test_front_upload_ai_unavailable_queues_for_manual_review(client, sessionmaker_):
+    """AI extraction failure (outage, misconfiguration, or all retries exhausted) must
+    never silently accept the document, and must never fully block with no recourse
+    either — it's queued for a human admin to review (see test_identity_manual_review.py).
+
+    Regression: this used to return verified=True/status=pending_review directly to
+    the caller with NO real review queue behind it — the manual-review path had been
+    removed by the GDPR statelessness retrofit (no source document was retained), but
+    this fallback was never tightened to match: it kept silently accepting ANY image
+    as the front document. Chained with a matching selfie (compare_faces only checks
+    face similarity, not document authenticity), this let a user reach
+    identity_verified=True having never had a real ID checked by AI or a human. Fixed
+    by actually building the human fallback: bounded-retention manual review (see
+    app/routers/admin.py's /verifications/{id}/{approve,reject,identity-document}).
+    """
     user = await make_user(sessionmaker_, role="tenant")
 
     with patch("app.services.identity.identity_service") as mock_svc, \
-         patch("app.services.storage.storage", _fake_storage()), \
          patch("app.routers.verification.apply_watermark", return_value=b"wm"):
         mock_svc.verify_document = AsyncMock(return_value={
-            "verified": True, "status": "pending_review",
-            "data": None, "validation_checks": [], "rejection_reason": None,
+            "verified": False, "status": "error",
+            "data": None, "validation_checks": [], "rejection_reason": "verification_service_unavailable",
         })
         r = await client.post(
             "/verification/identity/upload?document_type=passport",
@@ -666,8 +678,58 @@ async def test_front_upload_ai_unavailable_returns_pending_review(client, sessio
             headers=auth(user),
         )
 
-    assert r.status_code == 200
-    assert r.json()["status"] == "document_uploaded"
+    assert r.status_code == 200, r.text
+    assert r.json()["status"] == "pending_manual_review"
+    async with sessionmaker_() as s:
+        from app.models.user import User as U
+        refreshed = await s.get(U, user.id)
+        assert refreshed.identity_status == "pending_manual_review"
+        assert refreshed.identity_verified is False
+
+
+@pytest.mark.asyncio
+async def test_full_attack_chain_blocked_when_front_extraction_fails(client, sessionmaker_):
+    """End-to-end: an attacker uploads a non-ID image as the "front document" while
+    OCR extraction is down, then a selfie of themselves — compare_faces alone can't
+    catch this (it only checks face similarity, not document authenticity), so the
+    only thing stopping identity_verified=True is the front step correctly refusing
+    to ever accept the "document" as validated, queuing it for manual review instead."""
+    user = await make_user(sessionmaker_, role="tenant")
+
+    with patch("app.services.identity.identity_service") as mock_svc, \
+         patch("app.routers.verification.apply_watermark", return_value=b"wm"):
+        mock_svc.verify_document = AsyncMock(return_value={
+            "verified": False, "status": "error",
+            "data": None, "validation_checks": [], "rejection_reason": "verification_service_unavailable",
+        })
+        r1 = await client.post(
+            "/verification/identity/upload?document_type=passport",
+            files={"file": ("not_an_id.jpg", b"\xff\xd8\xff selfie-not-id", "image/jpeg")},
+            data={"side": "front"},
+            headers=auth(user),
+        )
+        assert r1.status_code == 200, r1.text
+        assert r1.json()["status"] == "pending_manual_review"
+
+        # compare_faces would happily "match" — same face in both images — but
+        # the selfie step must never be reachable while status stays pending
+        # review (not document_uploaded), regardless of what compare_faces says.
+        mock_svc.compare_faces = AsyncMock(return_value={
+            "match": True, "confidence": 0.95, "reason": "same person",
+        })
+        r2 = await client.post(
+            "/verification/identity/upload-selfie",
+            files={"file": ("same_selfie.jpg", b"\xff\xd8\xff selfie-not-id", "image/jpeg")},
+            headers=auth(user),
+        )
+
+    assert r2.status_code == 400
+    assert "before submitting a selfie" in r2.json()["detail"]
+
+    async with sessionmaker_() as s:
+        from app.models.user import User as U
+        refreshed = await s.get(U, user.id)
+        assert refreshed.identity_verified is False
 
 
 @pytest.mark.asyncio

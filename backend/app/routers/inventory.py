@@ -181,15 +181,25 @@ async def sign_inventory(
     if not lease or current_user.id not in [lease.landlord_id, lease.tenant_id]:
         raise HTTPException(status_code=403, detail="Not authorized to access this inventory")
 
+    # Once both parties have signed, the état des lieux is a dispute-evidence
+    # artifact — it must stay immutable, same discipline as the lease e-sign
+    # flow (esign.py rejects a party who already signed with 409).
+    if inventory.status == InventoryStatus.COMPLETED:
+        raise HTTPException(status_code=409, detail="This inventory is already fully signed")
+
     # Update Signatures if provided
     if sign_req.signature_tenant:
         if current_user.id != lease.tenant_id:
             raise HTTPException(status_code=403, detail="Only the tenant can sign as tenant")
+        if inventory.signature_tenant is not None:
+            raise HTTPException(status_code=409, detail="The tenant has already signed this inventory")
         inventory.signature_tenant = sign_req.signature_tenant
 
     if sign_req.signature_landlord:
         if current_user.id != lease.landlord_id:
             raise HTTPException(status_code=403, detail="Only the landlord can sign as landlord")
+        if inventory.signature_landlord is not None:
+            raise HTTPException(status_code=409, detail="The landlord has already signed this inventory")
         inventory.signature_landlord = sign_req.signature_landlord
 
     # Update Status Logic
@@ -204,4 +214,12 @@ async def sign_inventory(
         inventory.status = InventoryStatus.PENDING_TENANT_SIGNATURE
 
     await db.commit()
-    return inventory
+
+    # Reload with items eager-loaded — InventoryResponse serializes .items, and
+    # accessing it lazily here (outside the async context) raises MissingGreenlet.
+    result = await db.execute(
+        select(Inventory)
+        .options(selectinload(Inventory.items))
+        .where(Inventory.id == id)
+    )
+    return result.scalar_one()
