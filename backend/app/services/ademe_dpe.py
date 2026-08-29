@@ -14,9 +14,14 @@ import httpx
 logger = logging.getLogger(__name__)
 
 # ADEME open-data DPE endpoint for existing dwellings.
+# The dataset ID is an opaque data-fair slug, not a stable name — ADEME renamed
+# it from "dpe-v2-logements-existants" some time before 2026-08-29, which 404'd
+# every lookup here until this was updated. If this 404s again, look it up fresh:
+# GET https://data.ademe.fr/data-fair/api/v1/datasets?q=DPE+Logements+existants
+# and match on the title "DPE Logements existants (depuis juillet 2021)".
 ADEME_DPE_URL = (
     "https://data.ademe.fr/data-fair/api/v1/datasets/"
-    "dpe-v2-logements-existants/lines"
+    "meg-83tjwtg8dyz4vv7h1dqe/lines"
 )
 _TIMEOUT_SECONDS = 10.0
 _VALID_CLASSES = set("ABCDEFG")

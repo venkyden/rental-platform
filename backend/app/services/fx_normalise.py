@@ -19,7 +19,7 @@ from app.core.cache import cache
 
 logger = logging.getLogger(__name__)
 
-FRANKFURTER_URL = "https://api.frankfurter.app/latest"
+FRANKFURTER_URL = "https://api.frankfurter.dev/v1/latest"
 _FX_CACHE_TTL = 86_400  # 24 hours
 _MARGIN = 0.05
 _MARGIN_LABEL = "currency volatility buffer"
