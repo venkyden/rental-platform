@@ -37,7 +37,6 @@ The application will start without these, but related features (Messaging, Stora
 ### Notification Channels (Email)
 | `RESEND_API_KEY` | Resend API Key (primary email provider). | Email delivery (verification, reset, invites). |
 | `FROM_EMAIL` | Sender address — must match verified Resend domain. Default: `Roomivo <onboarding@resend.dev>` (test). Production: `noreply@roomivo.eu`. | Email deliverability. |
-| `SENDGRID_API_KEY` | *Alternative* to Resend. | Email delivery. |
 | `TWILIO_ACCOUNT_SID` | Twilio Account SID. | SMS & WhatsApp notifications. |
 | `TWILIO_AUTH_TOKEN` | Twilio Auth Token. | SMS & WhatsApp notifications. |
 | `TWILIO_PHONE_NUMBER` | Sender Phone Number (E.164 format). | SMS delivery. |

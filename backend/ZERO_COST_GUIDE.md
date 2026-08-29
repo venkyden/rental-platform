@@ -25,10 +25,8 @@ SMS is the highest "variable cost". Here are free alternatives:
 *   **Cons**: User must "start" the bot conversation.
 
 ### C. Email (Optimized)
-*   **Service**: **Resend** or **SendGrid**.
-*   **Free Tier**:
-    *   Resend: 3,000 emails/mo (Free).
-    *   SendGrid: 100 emails/day (Free).
+*   **Service**: **Resend**.
+*   **Free Tier**: 3,000 emails/mo (Free).
 *   **Strategy**: Use Email for *everything* and disable SMS options.
 
 ## 3. Hosting & Infrastructure

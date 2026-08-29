@@ -32,7 +32,6 @@ class Settings(BaseSettings):
     # single day of normal traffic. Paced client-side so bursts queue instead
     # of every request in the burst failing together. Raise once on paid plan.
     GEMINI_RPM_LIMIT: int = 10
-    SENDGRID_API_KEY: Optional[str] = None
     RESEND_API_KEY: Optional[str] = None
     # openrouteservice — free tier (2000 req/day). https://openrouteservice.org/dev/#/signup
     ORS_API_KEY: Optional[str] = None

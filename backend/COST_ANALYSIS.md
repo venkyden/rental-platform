@@ -31,7 +31,7 @@ Minimum costs to keep the lights on.
 |---------|------------------|-----------------|-------|
 | **Backend Hosting** | Render / Railway (Standard) | **$5 - $10** | For Python/FastAPI service. |
 | **Database** | Supabase / Neon (Postgres) | **Free - $25** | Free tiers often sufficient for start. |
-| **Email (SendGrid/Resend)** | Essentials | **Free - $20** | Free for ~3000 emails/mo. |
+| **Email (Resend)** | Essentials | **Free - $20** | Free for ~3000 emails/mo. |
 | **Frontend Vercel** | Pro | **$20** | Optional. Free tier works for hobby/test. |
 
 **Total Estimated Fixed Cost**: **$10 - $50 / month**.
