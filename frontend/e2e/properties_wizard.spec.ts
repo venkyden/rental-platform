@@ -15,32 +15,63 @@ test.describe('Landlord Listing Wizard', () => {
             localStorage.setItem('app-language', 'en');
         });
 
-        // Mock authenticated landlord session
-        await page.route('**/auth/me', async (route) => {
-            await route.fulfill({
-                status: 200,
-                contentType: 'application/json',
-                body: JSON.stringify({
-                    id: 'dummy-landlord-id',
-                    email: 'landlord@roomivo.com',
-                    full_name: 'Test Landlord',
-                    role: 'landlord',
-                    email_verified: true,
-                    identity_verified: true,
-                    employment_verified: true,
-                    trust_score: 95,
-                    onboarding_completed: true,
-                    available_roles: ['landlord']
-                }),
-            });
-        });
+        // Mock authenticated landlord session.
+        // Use regex patterns so requests to the real backend (:8000) are also
+        // intercepted — glob patterns like **/auth/me can fail to match full
+        // URLs with a port when the browser bypasses the Next.js proxy.
+        const landlordUser = {
+            id: 'dummy-landlord-id',
+            email: 'landlord@roomivo.com',
+            full_name: 'Test Landlord',
+            role: 'landlord',
+            email_verified: true,
+            identity_verified: true,
+            employment_verified: true,
+            trust_score: 95,
+            onboarding_completed: true,
+            available_roles: ['landlord'],
+        };
 
-        // Mock refresh — checkAuth() rehydrates the in-memory token from this on mount.
-        await page.route('**/auth/refresh', async (route) => {
+        // /auth/refresh — must be registered before /auth/me
+        await page.route(/\/auth\/refresh/, async (route) => {
             await route.fulfill({
                 status: 200,
                 contentType: 'application/json',
                 body: JSON.stringify({ access_token: 'dummy-token-for-landlord', token_type: 'bearer' }),
+            });
+        });
+
+        // /auth/me/segment-config — more specific; registered before /auth/me
+        await page.route(/\/auth\/me\/segment-config/, async (route) => {
+            await route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify({
+                    segment: 'landlord',
+                    segment_name: 'Landlord',
+                    segment_type: 'supply',
+                    dashboard_path: '/dashboard',
+                    common_features: [],
+                    segment_features: [],
+                    all_features: [],
+                    quick_actions: [],
+                    settings: {},
+                    verification_status: {
+                        id_verified: true,
+                        email_verified: true,
+                        employment_verified: true,
+                        onboarding_completed: true,
+                    },
+                }),
+            });
+        });
+
+        // /auth/me (exact match — not the segment-config sub-path)
+        await page.route(/\/auth\/me(?!\/segment-config)/, async (route) => {
+            await route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify(landlordUser),
             });
         });
     });
