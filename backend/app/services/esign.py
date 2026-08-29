@@ -3,8 +3,9 @@ E-sign Path B service — landlord-uploaded lease → e-sign → tamper-evident 
 
 In-house Ed25519 engine (DOSSIER §5.7 decision, 2026-06-24): reuses the credential
 signing key via `CredentialService.sign_payload`/`verify_payload`, so the published
-public key verifies both credentials and lease signatures. No DocuSeal/Documenso, no
-second service to host (0 opex/capex). DocuSeal/QTSP stay the deferred SG-5 v2 upgrade.
+public key verifies both credentials and lease signatures. No third-party AGPL
+e-sign service, no second service to host (0 opex/capex). A QTSP upgrade stays the
+deferred SG-5 v2 path if max robustness is ever needed.
 
 Legal frame: a French residential lease is an *acte sous seing privé* → no qualified
 signature required; eIDAS simple/advanced is valid for a bail. Path B = landlord's OWN

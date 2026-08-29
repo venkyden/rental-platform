@@ -12,7 +12,7 @@ disputes.
 ## Stack
 - **Backend:** FastAPI (async) + SQLAlchemy/asyncpg + PostgreSQL, Alembic migrations,
   Redis (cache + Celery broker), Cloudflare R2 (S3-compatible) object storage,
-  Resend (email), Stripe Identity / Fourthline (KYC), Sentry.
+  Resend (email), Stripe Identity (KYC), Sentry.
 - **Frontend:** Next.js 16 (App Router) + React 19 + Tailwind v4, context-based state,
   i18n (en/fr) via `frontend/lib/i18n.ts`, Playwright e2e.
 - **Hosting:** Render (EU / Frankfurt data region). Deploy via `render.yaml`.

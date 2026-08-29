@@ -111,8 +111,9 @@ l'utilisateur qui établit son propre acte.
   d'identité vérifiée du signataire, IP, consentement.
 - Contrôle envisagé : **le signataire doit correspondre à la partie vérifiée** (sinon
   blocage). Si une partie abandonne, la session expire et **rien n'est conservé**.
-- Outils OSS envisagés (DocuSeal / Documenso, en **AGPL**) utilisés **non modifiés**,
-  derrière leur API/embed.
+- **Mise à jour :** un moteur de signature **Ed25519 maison** a été retenu et livré
+  (2026-06-24) au lieu d'un outil OSS tiers — pas de second service à héberger, pas de
+  surface AGPL.
 - Une montée en gamme **horodatage qualifié / PSCo (QTSP)** est envisagée comme option
   payante ultérieure.
 
@@ -129,8 +130,9 @@ l'opposabilité entre les parties.
 2. En facilitant la signature, Roomivo endosse-t-il un rôle de **tiers de confiance** assorti
    d'obligations particulières (information, conservation, responsabilité) ? Si oui,
    lesquelles ?
-3. Le recours à **DocuSeal / Documenso (AGPL) non modifiés**, derrière leur API, soulève-t-il
-   un problème de **responsabilité** distinct côté Roomivo ?
+3. *(Question devenue sans objet — un moteur de signature Ed25519 maison a été retenu à la
+   place d'un outil OSS tiers ; conservé pour mémoire au cas où l'option QTSP tierce serait
+   ré-envisagée.)*
 4. Quelles **clauses de limitation de responsabilité** sont admissibles, sachant que nous
    voulons limiter la garantie au **seul acte de vérification / de facilitation technique**,
    sans jamais garantir l'exécution du bail ni la bonne foi des parties ?

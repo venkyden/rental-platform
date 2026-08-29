@@ -61,7 +61,6 @@ If not provided, the system defaults to local storage in `./uploads`.
 |----------|-------------|
 | `STRIPE_SECRET_KEY` | Key for Payment processing. |
 | `STRIPE_IDENTITY_WEBHOOK_SECRET` | Secret for verifying Stripe Identity webhooks. |
-| `FOURTHLINE_API_KEY` | Key for Fourthline KYC/Identity verification. |
 
 ## Quick Setup
 Copy `.env.example` to `.env` and fill in the values:

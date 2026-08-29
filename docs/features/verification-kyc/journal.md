@@ -1,7 +1,7 @@
 # Journal — Verification / KYC, Guarantor (GLI/Visale) & Documents
 
 ## Purpose
-Tenant dossier verification: identity (Stripe Identity / Fourthline), employment & income
+Tenant dossier verification: identity (Stripe Identity), employment & income
 (incl. SIRET check of the **tenant's employer**), property ownership, guarantor
 (Visale / Garantme), GLI insurance, and the document vault.
 
@@ -23,7 +23,7 @@ Tenant dossier verification: identity (Stripe Identity / Fourthline), employment
 - 🟢 Storage uses presigned R2 URLs + folder/extension allow-lists + random filenames
   (no path traversal). PII stored in Fernet-encrypted JSON columns.
 - 🟡 Identity webhook/callback signature verification should be re-confirmed end-to-end
-  against Stripe/Fourthline secrets (reviewed, not changed this pass).
+  against Stripe secrets (reviewed, not changed this pass).
 - 🟡 `employment.py` treats SIRET as optional and verifies when present — fine for
   self-employed/foreign cases; no change needed.
 
