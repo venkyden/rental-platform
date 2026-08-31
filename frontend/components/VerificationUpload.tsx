@@ -367,6 +367,39 @@ export default function VerificationUpload({ verificationType, propertyId, onSuc
     };
 
     // ════════════════════════════════════════════════════════════════════════
+    // RENDER — situation gate (tenants only): asked first, drives the
+    // employment-document checklist later in the flow (getEmploymentDocumentTypes)
+    // ════════════════════════════════════════════════════════════════════════
+
+    if (verificationType === 'identity' && (user?.role || 'tenant') === 'tenant' && !user?.preferences?.tenant?.situation) {
+        return (
+            <div className="w-full flex flex-col items-center justify-center py-12">
+                <div className="text-center mb-12 max-w-md">
+                    <h3 className="text-4xl font-black tracking-tighter mb-6 uppercase leading-none">
+                        {t('dashboard.verification.verification.situationTitle', undefined, 'Your Situation')}
+                    </h3>
+                    <p className="text-zinc-500 font-medium text-lg leading-relaxed">
+                        {t('dashboard.verification.verification.situationDesc', undefined, 'This determines which documents we ask for during verification.')}
+                    </p>
+                </div>
+                <div className="w-full max-w-sm space-y-3">
+                    {SITUATION_OPTIONS.map(opt => (
+                        <button
+                            key={opt.value}
+                            type="button"
+                            disabled={savingSituation}
+                            onClick={() => handleSituationChange(opt.value)}
+                            className="w-full text-left px-8 py-5 bg-zinc-50 hover:bg-zinc-900 hover:text-white rounded-2xl text-sm font-black uppercase tracking-widest transition-all disabled:opacity-50">
+                            {t(`onboarding.questions.tenant.situation.options.${opt.value}`, undefined, opt.label)}
+                        </button>
+                    ))}
+                </div>
+                {error && <p className="text-xs font-black uppercase tracking-[0.3em] text-red-500 mt-8">{error}</p>}
+            </div>
+        );
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
     // RENDER — desktop identity: QR code
     // ════════════════════════════════════════════════════════════════════════
 

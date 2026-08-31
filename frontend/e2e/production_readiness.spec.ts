@@ -418,7 +418,7 @@ test.describe('2. KYC — Identity (verify/identity)', () => {
         await page.route('**/verification/identity/session/**/stream', route => route.abort());
         await page.goto('/verify/identity');
         await expect(page.locator('svg').first()).toBeVisible({ timeout: 15_000 }); // QR code
-        await expect(page.locator('text=/expires/i').first()).toBeVisible();
+        await expect(page.locator('text=/expire/i').first()).toBeVisible();
     });
 });
 
