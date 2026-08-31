@@ -187,7 +187,7 @@ class IdentityVerificationService:
 
         start_time = time.time()
 
-        models_to_try = [settings.GEMINI_MODEL, settings.GEMINI_FALLBACK_MODEL]
+        models_to_try = settings.GEMINI_MODEL_CANDIDATES
         max_retries = 2
 
         document_part = types.Part.from_bytes(
@@ -484,13 +484,26 @@ Rules:
 Return ONLY JSON:
 {{"confidence": 0.85, "reasoning": "brief explanation"}}"""
             
-            async with gemini_slot():
-                response = self.ai_client.models.generate_content(
-                    model=settings.GEMINI_MODEL,
-                    contents=[prompt],
-                    config={"response_mime_type": "application/json"}
-                )
-            
+            response = None
+            for model_name in settings.GEMINI_MODEL_CANDIDATES:
+                try:
+                    async with gemini_slot():
+                        response = self.ai_client.models.generate_content(
+                            model=model_name,
+                            contents=[prompt],
+                            config={"response_mime_type": "application/json"}
+                        )
+                    break
+                except Exception as model_err:
+                    if "404" in str(model_err) or "NOT_FOUND" in str(model_err):
+                        logger.warning(f"Model {model_name} not found for name match, trying next model...")
+                        continue
+                    raise
+
+            if response is None:
+                logger.warning("AI name match: all models failed, falling back to fuzzy match")
+                return base_score
+
             import json
             data = json.loads(response.text)
             ai_score = float(data.get("confidence", base_score))
@@ -583,7 +596,7 @@ Rules:
 - is_same_person: true if face_match_confidence >= 0.7.
 - confidence_score below 0.4 if: blurry, poorly lit, ID text unreadable, or face obscured"""
 
-        models_to_try = [settings.GEMINI_MODEL, settings.GEMINI_FALLBACK_MODEL]
+        models_to_try = settings.GEMINI_MODEL_CANDIDATES
         last_error = None
 
         for model_name in models_to_try:
@@ -788,7 +801,7 @@ Rules:
 - detected_document_type: If the document is a health insurance card, medical card, or 'Carte Vitale', you MUST return "other".
 - confidence_score: below 0.4 if blurry or text unreadable
 """
-        models_to_try = [settings.GEMINI_MODEL, settings.GEMINI_FALLBACK_MODEL]
+        models_to_try = settings.GEMINI_MODEL_CANDIDATES
         doc_data = None
         for model_name in models_to_try:
             for attempt in range(3):
@@ -1012,7 +1025,7 @@ Return ONLY this JSON:
     "reason": "one-sentence explanation"
 }"""
 
-        models_to_try = [settings.GEMINI_MODEL, settings.GEMINI_FALLBACK_MODEL]
+        models_to_try = settings.GEMINI_MODEL_CANDIDATES
         for model_name in models_to_try:
             for attempt in range(3):
                 try:

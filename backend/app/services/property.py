@@ -94,7 +94,7 @@ class PropertyVerificationService:
         from app.core.gemini_quota import check_quota
         await check_quota()
 
-        models_to_try = [settings.GEMINI_MODEL, settings.GEMINI_FALLBACK_MODEL]
+        models_to_try = settings.GEMINI_MODEL_CANDIDATES
         max_retries = 2
 
         document_part = types.Part.from_bytes(

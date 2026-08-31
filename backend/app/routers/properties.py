@@ -193,10 +193,23 @@ async def generate_property_description(
             f"Return ONLY the description text, do not include any other markdown formatting wrapper (e.g. do not wrap in backticks or markdown code block) or conversational intro/outro."
         )
 
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=[prompt],  # type: ignore
-        )
+        response = None
+        for model_name in settings.GEMINI_MODEL_CANDIDATES:
+            try:
+                response = client.models.generate_content(
+                    model=model_name,
+                    contents=[prompt],  # type: ignore
+                )
+                break
+            except Exception as model_err:
+                if "404" in str(model_err) or "NOT_FOUND" in str(model_err):
+                    logger.warning(f"Model {model_name} not found for generate-description, trying next model...")
+                    continue
+                raise
+
+        if response is None:
+            logger.error("Gemini generate-description: all model candidates failed, using fallback")
+            return {"description": _build_fallback_description()}
 
         return {"description": (response.text or "").strip()}
 

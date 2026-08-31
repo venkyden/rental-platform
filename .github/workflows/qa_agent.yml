@@ -48,7 +48,12 @@ jobs:
         id: qa_agent
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY_QA || secrets.GEMINI_API_KEY }}
-          GEMINI_MODEL: "gemini-2.5-flash"
+          # gemini-2.5-flash was retired by Google (404 NOT_FOUND as of 2026-08-31).
+          # GEMINI_MODEL/GEMINI_FALLBACK_MODEL/GEMINI_EXTRA_FALLBACK_MODELS are tried
+          # in order (qa_agent.py: _gemini_model_candidates) — bump this one env var
+          # the moment Google retires gemini-3.6-flash too, no code change needed.
+          GEMINI_MODEL: "gemini-3.6-flash"
+          GEMINI_FALLBACK_MODEL: "gemini-2.5-flash"
           ENABLE_VERIFIER: "false"
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           QA_REPORT_EMAIL: ${{ secrets.QA_REPORT_EMAIL || 'contact@roomivo.eu' }}

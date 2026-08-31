@@ -141,7 +141,7 @@ async def _ai_extract_mrz(image_bytes: bytes, content_type: str, ai_client=None)
         return {"mrz_line1": "", "mrz_line2": ""}
 
     image_part = genai_types.Part.from_bytes(data=image_bytes, mime_type=content_type)
-    models_to_try = [settings.GEMINI_MODEL, settings.GEMINI_FALLBACK_MODEL]
+    models_to_try = settings.GEMINI_MODEL_CANDIDATES
     for model in models_to_try:
         try:
             response = client.models.generate_content(

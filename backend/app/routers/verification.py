@@ -2117,7 +2117,7 @@ async def _ai_extract_intl_income(
             return None
 
         image_part = _types.Part.from_bytes(data=file_content, mime_type=content_type)
-        for model in ("gemini-2.5-flash",):
+        for model in settings.GEMINI_MODEL_CANDIDATES:
             try:
                 response = client.models.generate_content(
                     model=model, contents=[image_part, prompt]
@@ -2129,6 +2129,7 @@ async def _ai_extract_intl_income(
                 return _json.loads(text)
             except Exception as _exc:
                 logger.warning("AI intl income extraction (%s) failed: %s", model, _exc)
+        logger.error("AI intl income extraction: all Gemini model candidates failed")
     except Exception as _exc:
         logger.error("_ai_extract_intl_income crashed: %s", _exc)
     return None
@@ -2187,7 +2188,7 @@ async def _ai_extract_intl_funds(
             return None
 
         image_part = _types.Part.from_bytes(data=file_content, mime_type=content_type)
-        for model in ("gemini-2.5-flash",):
+        for model in settings.GEMINI_MODEL_CANDIDATES:
             try:
                 response = client.models.generate_content(
                     model=model, contents=[image_part, prompt]
@@ -2199,6 +2200,7 @@ async def _ai_extract_intl_funds(
                 return _json.loads(text)
             except Exception as _exc:
                 logger.warning("AI intl funds extraction (%s) failed: %s", model, _exc)
+        logger.error("AI intl funds extraction: all Gemini model candidates failed")
     except Exception as _exc:
         logger.error("_ai_extract_intl_funds crashed: %s", _exc)
     return None

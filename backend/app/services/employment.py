@@ -232,7 +232,7 @@ class EmploymentVerificationService:
         from app.core.gemini_quota import check_quota
         await check_quota()
 
-        models_to_try = [settings.GEMINI_MODEL, settings.GEMINI_FALLBACK_MODEL]
+        models_to_try = settings.GEMINI_MODEL_CANDIDATES
         max_retries = 2
 
         # Prepare image for Gemini Vision
@@ -531,7 +531,7 @@ Return ONLY valid JSON with these exact keys:
 If a field is not visible or not applicable, return null for that field.
 Return ONLY the JSON object, no explanation."""
 
-        models_to_try = [settings.GEMINI_MODEL, settings.GEMINI_FALLBACK_MODEL]
+        models_to_try = settings.GEMINI_MODEL_CANDIDATES
         for model_name in models_to_try:
             for attempt in range(2):
                 try:

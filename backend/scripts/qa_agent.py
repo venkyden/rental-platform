@@ -14,7 +14,24 @@ os.chdir(REPO_ROOT)
 if "GEMINI_API_KEY" not in os.environ and "GEMINI_API_KEY_QA" in os.environ:
     os.environ["GEMINI_API_KEY"] = os.environ["GEMINI_API_KEY_QA"]
 
-GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+def _gemini_model_candidates() -> list:
+    """Ordered list of Gemini models to try. Mirrors settings.GEMINI_MODEL_CANDIDATES
+    in backend/app/core/config.py — this script runs standalone (no FastAPI settings),
+    so the same env vars are read directly instead. Add GEMINI_EXTRA_FALLBACK_MODELS
+    (comma-separated) the moment Google announces the next retirement — no code change
+    or redeploy needed."""
+    primary = os.environ.get("GEMINI_MODEL", "gemini-3.6-flash")
+    fallback = os.environ.get("GEMINI_FALLBACK_MODEL", "gemini-2.5-flash")
+    extra = [m.strip() for m in os.environ.get("GEMINI_EXTRA_FALLBACK_MODELS", "").split(",") if m.strip()]
+    candidates = []
+    for model in [primary, fallback] + extra:
+        if model not in candidates:
+            candidates.append(model)
+    return candidates
+
+
+GEMINI_MODEL_CANDIDATES = _gemini_model_candidates()
+GEMINI_MODEL = GEMINI_MODEL_CANDIDATES[0]
 ENABLE_VERIFIER = os.environ.get("ENABLE_VERIFIER", "false").lower() in ("true", "1", "yes")
 
 PROMPT = """\
@@ -185,20 +202,30 @@ Severity:
 
 
 async def run_qa_agent():
-    print(f"Starting QA Agent (model: {GEMINI_MODEL})...")
     # Enable all tools so the agent can run Playwright and create/edit specs.
     # Must run with cwd at the repo root (see workflow) so file tools aren't
     # scoped to backend/ only — the agent needs to read/write frontend/e2e/.
-    config = LocalAgentConfig(
-        model=GEMINI_MODEL,
-        policies=[policy.allow_all()]
-    )
+    last_error = None
+    for model_name in GEMINI_MODEL_CANDIDATES:
+        print(f"Starting QA Agent (model: {model_name})...")
+        config = LocalAgentConfig(
+            model=model_name,
+            policies=[policy.allow_all()]
+        )
+        try:
+            async with Agent(config=config) as agent:
+                response = await agent.chat(PROMPT)
+                report = await response.text()
+                print("QA Agent finished.")
+                return report
+        except Exception as e:
+            last_error = e
+            if "404" in str(e) or "NOT_FOUND" in str(e):
+                print(f"Model {model_name} not found, trying next model...")
+                continue
+            raise
 
-    async with Agent(config=config) as agent:
-        response = await agent.chat(PROMPT)
-        report = await response.text()
-        print("QA Agent finished.")
-        return report
+    raise last_error or RuntimeError("No Gemini model candidates configured")
 
 
 VERIFIER_PROMPT_TEMPLATE = """\
@@ -273,23 +300,38 @@ Produce a corrected report:
 
 
 async def run_verifier_agent(qa_report: str) -> str:
-    print(f"Starting Verifier Agent (model: {GEMINI_MODEL})...")
     # Specific denies always outrank a wildcard allow regardless of list
     # order (SDK policy resolution: specific deny > specific ask > specific
     # allow > wildcard deny > wildcard ask > wildcard allow), so this grants
     # full read/search/run_command access for fact-checking while still
     # hard-blocking file mutation — the verifier reviews and corrects the
     # report text, it does not silently rewrite spec files itself.
-    config = LocalAgentConfig(
-        model=GEMINI_MODEL,
-        policies=[
-            policy.deny("create_file"),
-            policy.deny("edit_file"),
-            policy.allow_all(),
-        ]
-    )
-
     prompt = VERIFIER_PROMPT_TEMPLATE.replace("<<<QA_REPORT_PLACEHOLDER>>>", qa_report)
+
+    last_error = None
+    for model_name in GEMINI_MODEL_CANDIDATES:
+        print(f"Starting Verifier Agent (model: {model_name})...")
+        config = LocalAgentConfig(
+            model=model_name,
+            policies=[
+                policy.deny("create_file"),
+                policy.deny("edit_file"),
+                policy.allow_all(),
+            ]
+        )
+        try:
+            return await _run_verifier_with_config(config, prompt)
+        except Exception as e:
+            last_error = e
+            if "404" in str(e) or "NOT_FOUND" in str(e):
+                print(f"Model {model_name} not found, trying next model...")
+                continue
+            raise
+
+    raise last_error or RuntimeError("No Gemini model candidates configured")
+
+
+async def _run_verifier_with_config(config, prompt: str) -> str:
 
     async with Agent(config=config) as agent:
         response = await agent.chat(prompt)

@@ -26,10 +26,20 @@ class Settings(BaseSettings):
 
     # External APIs
     GEMINI_API_KEY: Optional[str] = None
-    GEMINI_MODEL: str = "gemini-2.5-flash"
     # gemini-2.0-flash was retired by Google (404 NOT_FOUND as of 2026-08-26);
-    # its own error response names gemini-3.6-flash as the replacement.
-    GEMINI_FALLBACK_MODEL: str = "gemini-3.6-flash"
+    # its own error response named gemini-3.6-flash as the replacement — then
+    # gemini-2.5-flash was ALSO retired (404 NOT_FOUND as of 2026-08-31), two
+    # model retirements in the same week. GEMINI_MODEL/GEMINI_FALLBACK_MODEL
+    # are ordered oldest-known-good first; GEMINI_MODEL_CANDIDATES (below) is
+    # what every call site should actually iterate over, so the next
+    # retirement is a one-line env var change (GEMINI_EXTRA_FALLBACK_MODELS)
+    # instead of a repo-wide hunt for a hardcoded string.
+    GEMINI_MODEL: str = "gemini-3.6-flash"
+    GEMINI_FALLBACK_MODEL: str = "gemini-2.5-flash"
+    # Comma-separated extra models to try, in order, after GEMINI_MODEL and
+    # GEMINI_FALLBACK_MODEL both fail — set this in the environment (no
+    # deploy needed) the moment Google announces the next retirement.
+    GEMINI_EXTRA_FALLBACK_MODELS: Optional[str] = None
     GEMINI_DAILY_LIMIT: int = 1500  # free tier cap; raise once on paid plan
     # Free-tier gemini-2.5-flash caps requests-per-minute far below the daily
     # limit; a burst of concurrent KYC uploads can blow through it even on a
@@ -93,6 +103,25 @@ class Settings(BaseSettings):
                 "http://127.0.0.1:3001",
             ]
         return origins
+
+    @property
+    def GEMINI_MODEL_CANDIDATES(self) -> list:
+        """Ordered list of Gemini models to try. Every call site should loop
+        over this instead of hardcoding a model name or building its own
+        [GEMINI_MODEL, GEMINI_FALLBACK_MODEL] pair, so a future retirement is
+        fixed by setting GEMINI_EXTRA_FALLBACK_MODELS once, everywhere."""
+        candidates = [self.GEMINI_MODEL, self.GEMINI_FALLBACK_MODEL]
+        if self.GEMINI_EXTRA_FALLBACK_MODELS:
+            candidates += [
+                m.strip() for m in self.GEMINI_EXTRA_FALLBACK_MODELS.split(",") if m.strip()
+            ]
+        seen = set()
+        deduped = []
+        for model in candidates:
+            if model not in seen:
+                seen.add(model)
+                deduped.append(model)
+        return deduped
 
     @model_validator(mode="after")
     def _validate_production_secrets(self) -> "Settings":
