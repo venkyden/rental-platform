@@ -519,6 +519,19 @@ async def main():
         print("----- QA AGENT REPORT (raw) -----")
         print(report)
         print("----------------------------------")
+        if not report or not report.strip():
+            # The antigravity SDK can swallow a provider error (503 overload,
+            # 429 free-tier quota exhaustion) internally and return an empty
+            # response instead of raising. An empty report trivially contains
+            # neither "CRITICAL" nor "FAILED", which used to be misread as a
+            # clean PASS below — this is a real run that produced nothing,
+            # not a passing run. Route it through the same failure path as a
+            # raised exception so it gets real (non-LLM) signal instead.
+            raise RuntimeError(
+                "QA Agent returned an empty report — the LLM call likely hit "
+                "a provider error (rate limit/quota/overload) that the SDK "
+                "did not raise as an exception."
+            )
         llm_succeeded = True
     except Exception as e:
         print(f"⚠️ QA Agent failed (likely rate limit or quota): {e}")
@@ -532,6 +545,8 @@ async def main():
             print("----- VERIFIER REPORT (raw) -----")
             print(verified_report)
             print("----------------------------------")
+            if not verified_report or not verified_report.strip():
+                raise RuntimeError("Verifier agent returned an empty report")
             verdict = _extract_verdict(verified_report)
         except Exception as e:
             print(f"⚠️ Verifier agent failed: {e}. Using unverified QA report.")
