@@ -88,5 +88,13 @@ frontend/playwright-report/
 
 
 # Agent tooling
-.claude/
+# Contents-glob rather than `.claude/`, so git descends far enough for the
+# negations below to apply — an excluded *directory* cannot be re-included.
+.claude/*
+# The review guardrail ships: CLAUDE.md points every session at /llm-council, so
+# it has to survive a fresh clone rather than living on one machine. Local
+# settings and every other installed skill stay ignored.
+!.claude/skills/
+.claude/skills/*
+!.claude/skills/llm-council/
 .superpowers/
