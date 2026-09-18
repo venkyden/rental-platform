@@ -33,6 +33,7 @@ def _gemini_model_candidates() -> list:
 GEMINI_MODEL_CANDIDATES = _gemini_model_candidates()
 GEMINI_MODEL = GEMINI_MODEL_CANDIDATES[0]
 ENABLE_VERIFIER = os.environ.get("ENABLE_VERIFIER", "false").lower() in ("true", "1", "yes")
+QA_TARGET_URL = os.environ.get("QA_TARGET_URL", "https://roomivo.eu")
 
 PROMPT = """\
 ROOMIVO — NAVIGATION & INTERACTION SMOOTHNESS QA (scheduled agent prompt)
@@ -50,6 +51,32 @@ You are NOT doing performance engineering, accessibility auditing, visual
 design review, or backend load testing in this pass. Stay in scope. If you
 notice something out of scope but real, note it in one line under "Noticed,
 out of scope" — do not investigate it.
+
+## TARGET — THE LIVE SITE
+
+You are testing the **live production deployment**, not a local build:
+
+- Frontend: <<<QA_TARGET_URL>>>
+- Backend API: the Render service named by `NEXT_PUBLIC_API_URL` in
+  `render.yaml` (informational — the frontend calls it for you).
+
+Nothing runs locally in this environment: no dev server, no local backend, no
+database. Do NOT try to boot one, and do NOT run the default
+`frontend/playwright.config.ts` (it targets 127.0.0.1:3001). Run Playwright
+against the live site with the dedicated config, from `frontend/`:
+
+    cd frontend && QA_TARGET_URL=<<<QA_TARGET_URL>>> npx playwright test --config=playwright.live.config.ts --project=chromium <spec files>
+
+This is live production, so whatever you create persists and the services
+behind it (email, storage, the AI verification backend) are real. Use only
+clearly-labeled test data (e.g. names starting "QA Test") — never real
+personal documents or real people's details — and keep runs modest: this is
+an occasional manual pass, not a load test. Full verification-flow coverage
+(identity / income / guarantor uploads) is in scope. A spec that depends on
+local-only fixtures or seeded data that cannot exist on the live site is
+`NOT TESTED — reason: <why>`, not a live failure. If the very first
+navigation times out, retry once before recording a failure (a cold start of
+the deployment is possible).
 
 ## GROUND TRUTH — READ THIS, DON'T ASSUME
 
@@ -153,7 +180,8 @@ re-running the entire multi-browser suite, which risks command timeouts:
 run a scoped set of spec files with `--project=chromium` first, and only
 run the full multi-project suite once you have budget left.
 
-1. Run relevant existing specs and read the actual output.
+1. Run relevant existing specs against the live site (see TARGET above) and
+   read the actual output.
 2. For any surface above with no existing coverage, write a new spec under
    `frontend/e2e/` and leave it in the repo. Prefer **extending an existing
    QA spec file** you or a prior run created over replacing it with a
@@ -205,16 +233,17 @@ async def run_qa_agent():
     # Enable all tools so the agent can run Playwright and create/edit specs.
     # Must run with cwd at the repo root (see workflow) so file tools aren't
     # scoped to backend/ only — the agent needs to read/write frontend/e2e/.
+    prompt = PROMPT.replace("<<<QA_TARGET_URL>>>", QA_TARGET_URL)
     last_error = None
     for model_name in GEMINI_MODEL_CANDIDATES:
-        print(f"Starting QA Agent (model: {model_name})...")
+        print(f"Starting QA Agent (model: {model_name}, target: {QA_TARGET_URL})...")
         config = LocalAgentConfig(
             model=model_name,
             policies=[policy.allow_all()]
         )
         try:
             async with Agent(config=config) as agent:
-                response = await agent.chat(PROMPT)
+                response = await agent.chat(prompt)
                 report = await response.text()
                 print("QA Agent finished.")
                 return report
