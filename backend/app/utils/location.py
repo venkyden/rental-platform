@@ -20,6 +20,15 @@ _GEOCODE_CACHE: Dict[str, Tuple[float, Optional[Tuple[float, float]]]] = {}
 _POI_CACHE: Dict[Tuple[float, float], Tuple[float, Dict[str, List[str]]]] = {}
 CACHE_TTL_SECONDS = 3600  # 1 hour cache TTL
 
+# Per-endpoint HTTP timeout for Overpass, and a hard ceiling on the POI stage
+# as a whole. The ceiling is what actually bounds the request: endpoints are
+# tried in sequence, so without it the worst case is (number of endpoints x
+# per-endpoint timeout) — 18s with three mirrors down, on a user-facing call.
+# POIs are optional enrichment with an empty fallback, so exceeding the budget
+# degrades to "no POIs" rather than making the caller wait.
+_OVERPASS_TIMEOUT_SECONDS = 2.0
+_POI_TOTAL_BUDGET_SECONDS = 2.0
+
 
 async def geocode_address(
     address: str, city: str, postal_code: str, country: str = "France"
@@ -63,7 +72,9 @@ async def get_nearby_pois(latitude: float, longitude: float) -> Dict[str, List[s
     """
     Query OpenStreetMap Overpass API for nearby points of interest.
     Returns dict with transit stops and nearby landmarks.
-    Streamlined Overpass query and low timeout prevent slow response times.
+
+    Bounded by _POI_TOTAL_BUDGET_SECONDS: on timeout the empty fallback is
+    returned and cached, exactly as when every mirror fails.
     """
     now = time.time()
     grid_key = (round(latitude, 3), round(longitude, 3))
@@ -72,6 +83,29 @@ async def get_nearby_pois(latitude: float, longitude: float) -> Dict[str, List[s
         ts, cached_pois = _POI_CACHE[grid_key]
         if now - ts < CACHE_TTL_SECONDS:
             return cached_pois
+
+    try:
+        return await asyncio.wait_for(
+            _query_overpass(latitude, longitude, grid_key, now),
+            timeout=_POI_TOTAL_BUDGET_SECONDS,
+        )
+    except asyncio.TimeoutError:
+        logger.warning(
+            "Overpass POI lookup exceeded %.1fs budget; returning empty POIs",
+            _POI_TOTAL_BUDGET_SECONDS,
+        )
+        fallback = {"public_transport": [], "nearby_landmarks": []}
+        _POI_CACHE[grid_key] = (now, fallback)
+        return fallback
+
+
+async def _query_overpass(
+    latitude: float,
+    longitude: float,
+    grid_key: Tuple[float, float],
+    now: float,
+) -> Dict[str, List[str]]:
+    """Sequential Overpass mirror failover. Caller enforces the total budget."""
 
     # Optimized Overpass query - exclude relation route regex scans which cause 20s+ latency
     overpass_query = f"""
@@ -123,7 +157,7 @@ async def get_nearby_pois(latitude: float, longitude: float) -> Dict[str, List[s
         "https://overpass.kumi.systems/api/interpreter",
     ]
 
-    async with httpx.AsyncClient(timeout=6.0) as client:
+    async with httpx.AsyncClient(timeout=_OVERPASS_TIMEOUT_SECONDS) as client:
         for endpoint in overpass_endpoints:
             try:
                 response = await client.post(
