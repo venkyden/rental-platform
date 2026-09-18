@@ -30,12 +30,31 @@ def _gemini_model_candidates() -> list:
     return candidates
 
 
+def _should_try_next_model(err: Exception) -> bool:
+    """Whether a failure is per-model, so the next candidate is worth trying.
+
+    Covers the model being gone (404) and this model's quota being exhausted
+    (429 — free-tier limits are per-model, so a later candidate may still have
+    headroom; a 429 used to abort the whole run and skip the other models).
+
+    Deliberately does not claim *which* model failed: the SDK retries
+    internally and may surface an error naming a different model than the one
+    being attempted, so callers log the raw error instead of asserting a cause.
+    """
+    text = str(err)
+    return any(
+        marker in text
+        for marker in ("404", "NOT_FOUND", "429", "RESOURCE_EXHAUSTED")
+    )
+
+
 GEMINI_MODEL_CANDIDATES = _gemini_model_candidates()
 GEMINI_MODEL = GEMINI_MODEL_CANDIDATES[0]
 ENABLE_VERIFIER = os.environ.get("ENABLE_VERIFIER", "false").lower() in ("true", "1", "yes")
+QA_TARGET_URL = os.environ.get("QA_TARGET_URL", "https://roomivo.eu")
 
 PROMPT = """\
-ROOMIVO — NAVIGATION & INTERACTION SMOOTHNESS QA (scheduled agent prompt)
+ROOMIVO — NAVIGATION & INTERACTION SMOOTHNESS QA (manually-triggered agent prompt)
 
 ## ROLE
 
@@ -50,6 +69,32 @@ You are NOT doing performance engineering, accessibility auditing, visual
 design review, or backend load testing in this pass. Stay in scope. If you
 notice something out of scope but real, note it in one line under "Noticed,
 out of scope" — do not investigate it.
+
+## TARGET — THE LIVE SITE
+
+You are testing the **live production deployment**, not a local build:
+
+- Frontend: <<<QA_TARGET_URL>>>
+- Backend API: the Render service named by `NEXT_PUBLIC_API_URL` in
+  `render.yaml` (informational — the frontend calls it for you).
+
+Nothing runs locally in this environment: no dev server, no local backend, no
+database. Do NOT try to boot one, and do NOT run the default
+`frontend/playwright.config.ts` (it targets 127.0.0.1:3001). Run Playwright
+against the live site with the dedicated config, from `frontend/`:
+
+    cd frontend && QA_TARGET_URL=<<<QA_TARGET_URL>>> npx playwright test --config=playwright.live.config.ts --project=chromium <spec files>
+
+This is live production, so whatever you create persists and the services
+behind it (email, storage, the AI verification backend) are real. Use only
+clearly-labeled test data (e.g. names starting "QA Test") — never real
+personal documents or real people's details — and keep runs modest: this is
+an occasional manual pass, not a load test. Full verification-flow coverage
+(identity / income / guarantor uploads) is in scope. A spec that depends on
+local-only fixtures or seeded data that cannot exist on the live site is
+`NOT TESTED — reason: <why>`, not a live failure. If the very first
+navigation times out, retry once before recording a failure (a cold start of
+the deployment is possible).
 
 ## GROUND TRUTH — READ THIS, DON'T ASSUME
 
@@ -153,7 +198,8 @@ re-running the entire multi-browser suite, which risks command timeouts:
 run a scoped set of spec files with `--project=chromium` first, and only
 run the full multi-project suite once you have budget left.
 
-1. Run relevant existing specs and read the actual output.
+1. Run relevant existing specs against the live site (see TARGET above) and
+   read the actual output.
 2. For any surface above with no existing coverage, write a new spec under
    `frontend/e2e/` and leave it in the repo. Prefer **extending an existing
    QA spec file** you or a prior run created over replacing it with a
@@ -205,23 +251,27 @@ async def run_qa_agent():
     # Enable all tools so the agent can run Playwright and create/edit specs.
     # Must run with cwd at the repo root (see workflow) so file tools aren't
     # scoped to backend/ only — the agent needs to read/write frontend/e2e/.
+    prompt = PROMPT.replace("<<<QA_TARGET_URL>>>", QA_TARGET_URL)
     last_error = None
     for model_name in GEMINI_MODEL_CANDIDATES:
-        print(f"Starting QA Agent (model: {model_name})...")
+        print(f"Starting QA Agent (model: {model_name}, target: {QA_TARGET_URL})...")
         config = LocalAgentConfig(
             model=model_name,
             policies=[policy.allow_all()]
         )
         try:
             async with Agent(config=config) as agent:
-                response = await agent.chat(PROMPT)
+                response = await agent.chat(prompt)
                 report = await response.text()
                 print("QA Agent finished.")
                 return report
         except Exception as e:
             last_error = e
-            if "404" in str(e) or "NOT_FOUND" in str(e):
-                print(f"Model {model_name} not found, trying next model...")
+            if _should_try_next_model(e):
+                print(
+                    f"Model {model_name} unavailable, trying next candidate. "
+                    f"Raw error: {str(e)[:200]}"
+                )
                 continue
             raise
 
@@ -323,8 +373,11 @@ async def run_verifier_agent(qa_report: str) -> str:
             return await _run_verifier_with_config(config, prompt)
         except Exception as e:
             last_error = e
-            if "404" in str(e) or "NOT_FOUND" in str(e):
-                print(f"Model {model_name} not found, trying next model...")
+            if _should_try_next_model(e):
+                print(
+                    f"Model {model_name} unavailable, trying next candidate. "
+                    f"Raw error: {str(e)[:200]}"
+                )
                 continue
             raise
 
@@ -376,6 +429,14 @@ _FAILURE_MARKERS = (
     "denied by pre-tool hook",
     "command timed out",
     "context canceled",
+    # Model-provider failures. These are the ones that have actually bitten
+    # this job (repeated 503s, then free-tier 429s), and the SDK logs them as
+    # warnings rather than raising — so without these markers a run could lose
+    # most of its work to provider errors and still read as clean.
+    "system step error",
+    "quota exceeded",
+    "resource_exhausted",
+    "experiencing high demand",
 )
 
 
@@ -491,12 +552,22 @@ def run_direct_playwright_suite() -> str:
     frontend/ already built) has no standalone dependency install of its own —
     invoking it via npx from REPO_ROOT with no local install triggers a fresh
     ad-hoc download that can't resolve @playwright/test at all.
+
+    Uses playwright.live.config.ts for the same reason the agent does: this
+    workflow never runs `next build`, so the default config's `next start`
+    webServer cannot boot and every spec would fail on a dead localhost.
+    The live deployment is the only thing here that actually exists.
     """
-    print("Running direct Playwright fallback suite...")
+    print(f"Running direct Playwright fallback suite against {QA_TARGET_URL}...")
     try:
         proc = subprocess.run(
-            ["npx", "playwright", "test", "--project=chromium"],
+            [
+                "npx", "playwright", "test",
+                "--config=playwright.live.config.ts",
+                "--project=chromium",
+            ],
             cwd=str(REPO_ROOT / "frontend"),
+            env={**os.environ, "QA_TARGET_URL": QA_TARGET_URL},
             capture_output=True,
             text=True,
             timeout=300,
@@ -507,7 +578,7 @@ def run_direct_playwright_suite() -> str:
         return f"""# QA Report — Direct Playwright Execution (Non-LLM Fallback)
 
 > ℹ️ **Notice**: The LLM QA Agent was unavailable or hit Gemini Free Tier rate limits (429).
-> The automated test suite was executed directly via Playwright.
+> The automated test suite was executed directly via Playwright against {QA_TARGET_URL}.
 
 ### Overall Status: {status} (Exit Code: {proc.returncode})
 

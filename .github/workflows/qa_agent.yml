@@ -55,6 +55,10 @@ jobs:
           GEMINI_MODEL: "gemini-3.6-flash"
           GEMINI_FALLBACK_MODEL: "gemini-2.5-flash"
           ENABLE_VERIFIER: "false"
+          # This agent tests the LIVE production deployment — this workflow boots
+          # no local server or DB for it to test instead. Point this at a staging
+          # URL to keep a run off production.
+          QA_TARGET_URL: "https://roomivo.eu"
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           QA_REPORT_EMAIL: ${{ secrets.QA_REPORT_EMAIL || 'contact@roomivo.eu' }}
           FROM_EMAIL: "Roomivo QA <contact@roomivo.eu>"
