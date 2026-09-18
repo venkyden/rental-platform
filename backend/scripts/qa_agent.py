@@ -30,13 +30,31 @@ def _gemini_model_candidates() -> list:
     return candidates
 
 
+def _should_try_next_model(err: Exception) -> bool:
+    """Whether a failure is per-model, so the next candidate is worth trying.
+
+    Covers the model being gone (404) and this model's quota being exhausted
+    (429 — free-tier limits are per-model, so a later candidate may still have
+    headroom; a 429 used to abort the whole run and skip the other models).
+
+    Deliberately does not claim *which* model failed: the SDK retries
+    internally and may surface an error naming a different model than the one
+    being attempted, so callers log the raw error instead of asserting a cause.
+    """
+    text = str(err)
+    return any(
+        marker in text
+        for marker in ("404", "NOT_FOUND", "429", "RESOURCE_EXHAUSTED")
+    )
+
+
 GEMINI_MODEL_CANDIDATES = _gemini_model_candidates()
 GEMINI_MODEL = GEMINI_MODEL_CANDIDATES[0]
 ENABLE_VERIFIER = os.environ.get("ENABLE_VERIFIER", "false").lower() in ("true", "1", "yes")
 QA_TARGET_URL = os.environ.get("QA_TARGET_URL", "https://roomivo.eu")
 
 PROMPT = """\
-ROOMIVO — NAVIGATION & INTERACTION SMOOTHNESS QA (scheduled agent prompt)
+ROOMIVO — NAVIGATION & INTERACTION SMOOTHNESS QA (manually-triggered agent prompt)
 
 ## ROLE
 
@@ -249,8 +267,11 @@ async def run_qa_agent():
                 return report
         except Exception as e:
             last_error = e
-            if "404" in str(e) or "NOT_FOUND" in str(e):
-                print(f"Model {model_name} not found, trying next model...")
+            if _should_try_next_model(e):
+                print(
+                    f"Model {model_name} unavailable, trying next candidate. "
+                    f"Raw error: {str(e)[:200]}"
+                )
                 continue
             raise
 
@@ -352,8 +373,11 @@ async def run_verifier_agent(qa_report: str) -> str:
             return await _run_verifier_with_config(config, prompt)
         except Exception as e:
             last_error = e
-            if "404" in str(e) or "NOT_FOUND" in str(e):
-                print(f"Model {model_name} not found, trying next model...")
+            if _should_try_next_model(e):
+                print(
+                    f"Model {model_name} unavailable, trying next candidate. "
+                    f"Raw error: {str(e)[:200]}"
+                )
                 continue
             raise
 
@@ -405,6 +429,14 @@ _FAILURE_MARKERS = (
     "denied by pre-tool hook",
     "command timed out",
     "context canceled",
+    # Model-provider failures. These are the ones that have actually bitten
+    # this job (repeated 503s, then free-tier 429s), and the SDK logs them as
+    # warnings rather than raising — so without these markers a run could lose
+    # most of its work to provider errors and still read as clean.
+    "system step error",
+    "quota exceeded",
+    "resource_exhausted",
+    "experiencing high demand",
 )
 
 
@@ -520,12 +552,22 @@ def run_direct_playwright_suite() -> str:
     frontend/ already built) has no standalone dependency install of its own —
     invoking it via npx from REPO_ROOT with no local install triggers a fresh
     ad-hoc download that can't resolve @playwright/test at all.
+
+    Uses playwright.live.config.ts for the same reason the agent does: this
+    workflow never runs `next build`, so the default config's `next start`
+    webServer cannot boot and every spec would fail on a dead localhost.
+    The live deployment is the only thing here that actually exists.
     """
-    print("Running direct Playwright fallback suite...")
+    print(f"Running direct Playwright fallback suite against {QA_TARGET_URL}...")
     try:
         proc = subprocess.run(
-            ["npx", "playwright", "test", "--project=chromium"],
+            [
+                "npx", "playwright", "test",
+                "--config=playwright.live.config.ts",
+                "--project=chromium",
+            ],
             cwd=str(REPO_ROOT / "frontend"),
+            env={**os.environ, "QA_TARGET_URL": QA_TARGET_URL},
             capture_output=True,
             text=True,
             timeout=300,
@@ -536,7 +578,7 @@ def run_direct_playwright_suite() -> str:
         return f"""# QA Report — Direct Playwright Execution (Non-LLM Fallback)
 
 > ℹ️ **Notice**: The LLM QA Agent was unavailable or hit Gemini Free Tier rate limits (429).
-> The automated test suite was executed directly via Playwright.
+> The automated test suite was executed directly via Playwright against {QA_TARGET_URL}.
 
 ### Overall Status: {status} (Exit Code: {proc.returncode})
 
