@@ -29,6 +29,16 @@ logger = logging.getLogger(__name__)
 from app.utils.watermark import apply_watermark
 from app.models.biometric_consent import BIOMETRIC_CONSENT_VERSION, BiometricConsent
 from app.services.identity_assurance import OCR_LIVENESS_LABEL, derive_identity_assurance
+from app.services.notification_service import NotificationService
+
+
+async def _notify_best_effort(coro) -> None:
+    """Run a notification coroutine without letting a delivery failure turn an
+    already-committed verification state change into a reported error."""
+    try:
+        await coro
+    except Exception:
+        logger.warning("Verification notification failed", exc_info=True)
 
 
 async def _has_biometric_consent(user_id, db: AsyncSession) -> bool:
@@ -77,6 +87,52 @@ async def _validate_file_size(file: UploadFile, max_size_mb: int = 10):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"File size exceeds the {max_size_mb}MB limit."
         )
+
+
+async def _store_identity_doc_temp(content: bytes, content_type: str, user_id, ttl_seconds: int) -> dict:
+    """Store a temp identity document for later face-match or manual review.
+
+    Redis primary (TTL-enforced); R2/local fallback if Redis is unavailable —
+    the fallback has no automatic expiry, so callers storing for the longer
+    manual-review window must purge it explicitly on approve/reject/expiry.
+    Returns the pointer dict to merge into identity_data.
+    """
+    _redis_key = f"identity_doc:{user_id}:{secrets.token_hex(8)}"
+    if cache.redis_client:
+        await cache.set(_redis_key, {
+            "b64": base64.b64encode(content).decode(),
+            "content_type": content_type,
+        }, ttl=ttl_seconds)
+        return {"redis_key": _redis_key}
+    from io import BytesIO
+    storage_result = await storage.upload_file(
+        file_data=BytesIO(content),
+        filename=f"{user_id}.bin",
+        content_type=content_type,
+        folder=f"verification/identity/{user_id}",
+    )
+    # content_type isn't recoverable from the storage backend later (no HEAD
+    # call here) — round-trip it through identity_data so the admin document
+    # viewer can serve the image with a MIME type browsers will render.
+    return {"file_url": storage_result["url"], "storage_key": storage_result.get("key"), "content_type": content_type}
+
+
+async def _purge_identity_doc_pointer(data: Optional[dict]) -> None:
+    """Delete whichever temp document a prior identity_data pointer holds
+    (Redis key or storage key) — shared by every code path that overwrites
+    or clears identity_data, so no upload orphans a stored document (GDPR)."""
+    data = data or {}
+    if data.get("redis_key"):
+        rk = str(data["redis_key"])
+        if not await cache.delete(rk):
+            logger.warning("purge_identity_doc: failed to delete redis key %s", rk)
+    elif data.get("storage_key"):
+        sk = str(data["storage_key"])
+        try:
+            await storage.delete_file(sk)
+        except Exception as exc:
+            logger.warning("purge_identity_doc: failed to delete %s: %s", sk, exc)
+
 
 # Fallback in-memory verification sessions (if Redis is not available)
 # Format: { code: { user_id, document_type, expires_at, completed } }
@@ -309,50 +365,50 @@ async def upload_identity_document(
         )
 
     # Purge any previous temp doc before overwriting the pointer (orphaned keys = GDPR leak).
-    _prev = current_user.identity_data or {}
-    if _prev.get("redis_key"):
-        _prev_rk = str(_prev["redis_key"])
-        deleted = await cache.delete(_prev_rk)
-        if not deleted:
-            logger.warning("purge_identity_doc: failed to delete redis key %s", _prev_rk)
-    elif _prev.get("storage_key"):
-        _prev_sk = str(_prev["storage_key"])
-        try:
-            await storage.delete_file(_prev_sk)
-        except Exception as _exc:
-            logger.warning("purge_identity_doc: failed to delete %s: %s", _prev_sk, _exc)
+    await _purge_identity_doc_pointer(current_user.identity_data)
+
+    if not result["verified"] and result["status"] == "error":
+        # AI could not determine document validity (outage, misconfiguration,
+        # or low confidence) — queue for a human admin to review instead of
+        # either silently accepting it (the old bug: skipped every validity
+        # check) or hard-blocking with no recourse. Bounded retention: see
+        # IDENTITY_MANUAL_REVIEW_TTL_HOURS and docs/features/trust-layer/ —
+        # this reopens document-at-rest exposure for this one case and needs
+        # a DPIA update before production reliance.
+        from app.core.config import settings
+        ttl_hours = settings.IDENTITY_MANUAL_REVIEW_TTL_HOURS
+        pointer = await _store_identity_doc_temp(content, file.content_type, current_user.id, ttl_hours * 3600)
+        current_user.identity_data = {
+            "verified": False,
+            "upload_date": naive_utcnow().isoformat(),
+            **pointer,
+            "status": "pending_manual_review",
+            "checks": [],
+            "review_expires_at": (naive_utcnow() + timedelta(hours=ttl_hours)).isoformat(),
+        }
+        current_user.identity_verified = False
+        current_user.identity_status = "pending_manual_review"
+        await db.commit()
+        await db.refresh(current_user)
+        await _notify_best_effort(NotificationService(db).notify_admins_identity_pending_review(
+            user_name=current_user.full_name or current_user.email,
+        ))
+        return {
+            "message": "We could not automatically verify this document. It has been queued for manual review.",
+            "verified": False,
+            "status": "pending_manual_review",
+            "trust_score": current_user.trust_score,
+        }
 
     # Store temporarily for face-match: Redis with 10-min TTL primary; R2 fallback if Redis unavailable.
-    # Per-upload token suffix isolates concurrent web/mobile sessions.
-    _redis_key = f"identity_doc:{current_user.id}:{secrets.token_hex(8)}"
-    if cache.redis_client:
-        await cache.set(_redis_key, {
-            "b64": base64.b64encode(content).decode(),
-            "content_type": file.content_type,
-        }, ttl=600)
-        current_user.identity_data = {
-            "verified": False,
-            "upload_date": naive_utcnow().isoformat(),
-            "redis_key": _redis_key,
-            "status": "document_uploaded",
-            "checks": result["validation_checks"],
-        }
-    else:
-        from io import BytesIO
-        storage_result = await storage.upload_file(
-            file_data=BytesIO(content),
-            filename=file.filename,
-            content_type=file.content_type,
-            folder=f"verification/identity/{current_user.id}"
-        )
-        current_user.identity_data = {
-            "verified": False,
-            "upload_date": naive_utcnow().isoformat(),
-            "file_url": storage_result["url"],
-            "storage_key": storage_result.get("key"),
-            "status": "document_uploaded",
-            "checks": result["validation_checks"],
-        }
+    pointer = await _store_identity_doc_temp(content, file.content_type, current_user.id, 600)
+    current_user.identity_data = {
+        "verified": False,
+        "upload_date": naive_utcnow().isoformat(),
+        **pointer,
+        "status": "document_uploaded",
+        "checks": result["validation_checks"],
+    }
     current_user.identity_verified = False
     current_user.identity_status = "document_uploaded"
 
@@ -795,52 +851,48 @@ async def upload_identity_mobile(
         )
 
     # Purge any previous temp doc before overwriting the pointer (orphaned keys = GDPR leak).
-    _prev = user.identity_data or {}
-    if _prev.get("redis_key"):
-        _prev_rk = str(_prev["redis_key"])
-        deleted = await cache.delete(_prev_rk)
-        if not deleted:
-            logger.warning("purge_identity_doc: failed to delete redis key %s", _prev_rk)
-    elif _prev.get("storage_key"):
-        _prev_sk = str(_prev["storage_key"])
-        try:
-            await storage.delete_file(_prev_sk)
-        except Exception as _exc:
-            logger.warning("purge_identity_doc: failed to delete %s: %s", _prev_sk, _exc)
+    await _purge_identity_doc_pointer(user.identity_data)
+
+    if not doc_result["verified"] and doc_result["status"] == "error":
+        # See the authenticated /identity/upload path for the full rationale:
+        # queue for a human admin to review rather than silently accept or
+        # hard-block with no recourse.
+        from app.core.config import settings
+        ttl_hours = settings.IDENTITY_MANUAL_REVIEW_TTL_HOURS
+        pointer = await _store_identity_doc_temp(content, file.content_type, user.id, ttl_hours * 3600)
+        user.identity_data = {
+            "verified": False,
+            "upload_date": naive_utcnow().isoformat(),
+            **pointer,
+            "source": "mobile_capture",
+            "status": "pending_manual_review",
+            "checks": [],
+            "review_expires_at": (naive_utcnow() + timedelta(hours=ttl_hours)).isoformat(),
+        }
+        user.identity_verified = False
+        user.identity_status = "pending_manual_review"
+        await db.commit()
+        await db.refresh(user)
+        await _notify_best_effort(NotificationService(db).notify_admins_identity_pending_review(
+            user_name=user.full_name or user.email,
+        ))
+        return {
+            "message": "We could not automatically verify this document. It has been queued for manual review.",
+            "verified": False,
+            "status": "pending_manual_review",
+            "trust_score": user.trust_score,
+        }
 
     # Store temporarily for face-match: Redis with 10-min TTL primary; R2 fallback if Redis unavailable.
-    # Per-upload token suffix isolates concurrent web/mobile sessions.
-    _redis_key = f"identity_doc:{user.id}:{secrets.token_hex(8)}"
-    if cache.redis_client:
-        await cache.set(_redis_key, {
-            "b64": base64.b64encode(content).decode(),
-            "content_type": file.content_type,
-        }, ttl=600)
-        user.identity_data = {
-            "verified": False,
-            "upload_date": naive_utcnow().isoformat(),
-            "redis_key": _redis_key,
-            "source": "mobile_capture",
-            "status": "document_uploaded",
-            "checks": doc_result["validation_checks"],
-        }
-    else:
-        from io import BytesIO
-        storage_result = await storage.upload_file(
-            file_data=BytesIO(content),
-            filename=file.filename,
-            content_type=file.content_type,
-            folder=f"verification/identity/{user.id}",
-        )
-        user.identity_data = {
-            "verified": False,
-            "upload_date": naive_utcnow().isoformat(),
-            "file_url": storage_result["url"],
-            "source": "mobile_capture",
-            "storage_key": storage_result.get("key"),
-            "status": "document_uploaded",
-            "checks": doc_result["validation_checks"],
-        }
+    pointer = await _store_identity_doc_temp(content, file.content_type, user.id, 600)
+    user.identity_data = {
+        "verified": False,
+        "upload_date": naive_utcnow().isoformat(),
+        **pointer,
+        "source": "mobile_capture",
+        "status": "document_uploaded",
+        "checks": doc_result["validation_checks"],
+    }
     # Document validated — selfie required to complete identity verification
     user.identity_verified = False
     user.identity_status = "document_uploaded"
@@ -1091,16 +1143,22 @@ async def fr_solvency_check(
         fr_2ddoc.name_matches_any(id_name, avis.declarant_names) if id_name and id_name != "Unknown" else False
     )
 
-    # Persist only the banded claims — raw RFR is discarded here.
-    current_user.identity_data = {
-        **(current_user.identity_data or {}),
+    # Persist only the banded claims — raw RFR is discarded here. Written to
+    # income_data (not identity_data): that's the field solvency_verified
+    # (app/models/user.py), GET /verification/status, the landlord-facing
+    # applicant schema, and issue-mine's _build_claims_for_user all read.
+    current_user.income_verified = solvency_assurance != "UNVERIFIED"
+    current_user.income_status = "verified" if current_user.income_verified else "unverified"
+    _income = dict(current_user.income_data or {})
+    _income.update({
         "solvency_assurance": solvency_assurance,
         "solvency_ratio": solvency_ratio,
         "solvency_source": "fr_2ddoc_avis",
         "solvency_annee_des_revenus": avis.annee_des_revenus,
         "solvency_recency_flag": recency_flag,
         "solvency_name_corroborated": name_corroborated,
-    }
+    })
+    current_user.income_data = _income
     await db.commit()
     await db.refresh(current_user)
 
@@ -1202,13 +1260,17 @@ async def upload_income_document(
     current_user.income_verified = is_verified
     current_user.income_status = final_status
 
-    # Source document processed transiently — never stored (GDPR)
-    current_user.income_data = {
+    # Source document processed transiently — never stored (GDPR). Merge, don't
+    # replace: fr/solvency and intl/solvency also write into income_data, and a
+    # wholesale replace here would clobber whichever of the three ran already.
+    _income = dict(current_user.income_data or {})
+    _income.update({
         "verified": is_verified,
         "verified_at": naive_utcnow().isoformat(),
         "status": final_status,
         "checks": result["validation_checks"],
-    }
+    })
+    current_user.income_data = _income
 
     await db.commit()
     await db.refresh(current_user)
@@ -2067,7 +2129,13 @@ async def verify_landlord_entity(
 
     elif body.landlord_type == "manager":
         # Carte G mandataire scaffolding only — no mandate/brokering surface (Hoguet).
-        current_user.carte_g_verified = True
+        # Deliberately NOT setting carte_g_verified here: there is no registry check
+        # behind this branch (self-declared type only, no SIREN/gérant chain like the
+        # sci branch above). Flipping the *_verified flag on a self-declaration alone
+        # would be a false verified-professional-license claim — and this flows
+        # straight into the externally-shareable credential (credentials.py
+        # _build_claims_for_user reads deposit_binding_data.landlord_entity).
+        pass
 
     current_user.deposit_binding_data = {**existing, "landlord_entity": entity}
     await db.commit()

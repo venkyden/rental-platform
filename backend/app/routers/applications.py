@@ -2,6 +2,7 @@
 API endpoints for managing Rental Applications (Candidatures).
 """
 
+import logging
 from datetime import datetime
 from app.core.timeutils import naive_utcnow
 from typing import List
@@ -22,7 +23,23 @@ from app.models.user import User
 from app.routers.auth import get_current_user
 from app.services.notification_service import NotificationService
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/applications", tags=["Applications"])
+
+
+async def _notify_best_effort(coro) -> None:
+    """Run a notification coroutine without letting a delivery failure turn an
+    already-committed application change into a reported 500.
+
+    No rollback here (unlike esign.py's _notify): these endpoints return the
+    already-committed ORM object directly for response_model serialization —
+    a rollback expires its attributes, and re-loading them outside an awaited
+    context then crashes with MissingGreenlet."""
+    try:
+        await coro
+    except Exception:
+        logger.warning("Application notification failed", exc_info=True)
 
 
 @router.post(
@@ -97,12 +114,12 @@ async def create_application(
 
     # Notify Landlord
     notification_service = NotificationService(db)
-    await notification_service.notify_application_received(
+    await _notify_best_effort(notification_service.notify_application_received(
         landlord_id=new_app.property.landlord_id,
         tenant_name=current_user.full_name or current_user.email,
         property_title=new_app.property.title,
         application_id=new_app.id,
-    )
+    ))
 
     return new_app
 
@@ -213,12 +230,12 @@ async def update_application_status(
 
     # Send notification
     notification_service = NotificationService(db)
-    await notification_service.notify_application_status_changed(
+    await _notify_best_effort(notification_service.notify_application_status_changed(
         tenant_id=application.tenant_id,
         property_title=application.property.title,
         new_status=update_data.status.value,
         application_id=application.id,
-    )
+    ))
 
     return application
 
@@ -256,12 +273,12 @@ async def withdraw_application(
 
     # Notify Landlord
     notification_service = NotificationService(db)
-    await notification_service.create_notification(
+    await _notify_best_effort(notification_service.create_notification(
         user_id=application.property.landlord_id,
         notification_type="application",
         title="Application Withdrawn",
         message=f"The application for {application.property.title} was withdrawn by the applicant.",
         action_url=f"/applications/received"
-    )
+    ))
 
     return application

@@ -78,6 +78,31 @@ class NotificationService:
             action_url=action_url,
         )
 
+    async def notify_admins_identity_pending_review(self, user_name: str):
+        """Alert every admin that a document is waiting in the manual-review
+        queue. Nothing else surfaces this — the queue endpoint is pull-only —
+        so on a small team without a dedicated reviewer, a document can sit
+        unnoticed for its whole retention window otherwise."""
+        admins = (
+            await self.db.execute(select(User).where(User.role == "admin"))
+        ).scalars().all()
+
+        action_url = "/admin/verifications"
+        for admin in admins:
+            await self.create_notification(
+                user_id=admin.id,
+                notification_type=NotificationType.VERIFICATION.value,
+                title="Identity document needs manual review",
+                message=f"{user_name}'s identity document could not be verified automatically and is waiting for review.",
+                action_url=action_url,
+            )
+            await self._send_via_preferred_channels(
+                user_id=admin.id,
+                subject="🪪 Identity document needs manual review",
+                message=f"{user_name}'s identity document could not be verified automatically and is waiting for review.",
+                action_url=action_url,
+            )
+
     async def _send_via_preferred_channels(
         self, user_id: UUID, subject: str, message: str, action_url: str
     ):
