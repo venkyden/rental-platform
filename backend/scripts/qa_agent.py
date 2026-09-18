@@ -421,32 +421,82 @@ def _integrity_banner(raw: str, final: str) -> str:
     )
 
 
-def _verdict_banner(verdict: str) -> str:
+def _verdict_banner(verdict: str, source: str) -> str:
+    """source describes what actually produced this verdict, since the copy
+    must not claim a verification step happened when it didn't:
+    - "llm_verified": the LLM QA agent ran AND the independent verifier agent
+      fact-checked its report (ENABLE_VERIFIER=true, verifier completed).
+    - "llm_unverified": the LLM QA agent ran but no verifier fact-check
+      completed (ENABLE_VERIFIER=false, or the verifier pass itself errored).
+    - "playwright_fallback": the LLM agent was unavailable; this is a raw,
+      non-LLM `npx playwright test` exit-code result — there is no LLM report
+      to fact-check in the first place.
+    """
+    if source == "llm_verified":
+        if verdict == "PASS":
+            return (
+                "<p style=\"background:#d1e7dd;border:1px solid #a3cfbb;padding:10px;"
+                "color:#0f5132;\"><strong>&#9989; Verified.</strong> A second, "
+                "independent review agent fact-checked this report against the "
+                "actual repository and test output before this email was sent. "
+                "Any new spec files have been committed.</p>"
+            )
+        return (
+            "<p style=\"background:#f8d7da;border:1px solid #f1aeb5;padding:10px;"
+            "color:#842029;\"><strong>&#128721; Needs human review.</strong> The "
+            "independent review agent could not fully verify this report's "
+            "claims (see \"Verification notes\" below). Any new spec files were "
+            "<em>not</em> committed — nothing changed in the repo from this "
+            "run.</p>"
+        )
+    if source == "playwright_fallback":
+        if verdict == "PASS":
+            return (
+                "<p style=\"background:#d1e7dd;border:1px solid #a3cfbb;padding:10px;"
+                "color:#0f5132;\"><strong>&#9989; Direct Playwright run passed.</strong> "
+                "The LLM QA Agent was unavailable this run; this is a raw "
+                "`npx playwright test` exit-code result, not an LLM-generated "
+                "report — there was nothing to fact-check.</p>"
+            )
+        return (
+            "<p style=\"background:#f8d7da;border:1px solid #f1aeb5;padding:10px;"
+            "color:#842029;\"><strong>&#128721; Direct Playwright fallback failed "
+            "or could not run.</strong> The LLM QA Agent was unavailable this run. "
+            "See the raw Playwright output below for the actual error.</p>"
+        )
+    # source == "llm_unverified"
     if verdict == "PASS":
         return (
-            "<p style=\"background:#d1e7dd;border:1px solid #a3cfbb;padding:10px;"
-            "color:#0f5132;\"><strong>&#9989; Verified.</strong> A second, "
-            "independent review agent fact-checked this report against the "
-            "actual repository and test output before this email was sent. "
-            "Any new spec files have been committed.</p>"
+            "<p style=\"background:#fff3cd;border:1px solid #ffe08a;padding:10px;"
+            "color:#664d03;\"><strong>&#9888;&#65039; Unverified pass.</strong> "
+            "The QA Agent's own report found no CRITICAL/FAILED issues, but no "
+            "independent second-pass fact-check ran (ENABLE_VERIFIER is off). "
+            "Treat this as the agent's self-report, not independently verified.</p>"
         )
     return (
         "<p style=\"background:#f8d7da;border:1px solid #f1aeb5;padding:10px;"
         "color:#842029;\"><strong>&#128721; Needs human review.</strong> The "
-        "independent review agent could not fully verify this report's "
-        "claims (see \"Verification notes\" below). Any new spec files were "
-        "<em>not</em> committed — nothing changed in the repo from this "
-        "run.</p>"
+        "QA Agent's own report flagged issues, or the verifier pass errored "
+        "before completing. No independent fact-check confirms or corrects "
+        "these claims.</p>"
     )
 
 
 def run_direct_playwright_suite() -> str:
-    """Fallback test runner when LLM agent hits 429 quota or connection errors."""
+    """Fallback test runner when LLM agent hits 429 quota or connection errors.
+
+    Runs from frontend/, not REPO_ROOT: @playwright/test is only installed
+    under frontend/node_modules, and the root-level playwright.config.ts
+    (meant for humans running `npx playwright test` from the repo root with
+    frontend/ already built) has no standalone dependency install of its own —
+    invoking it via npx from REPO_ROOT with no local install triggers a fresh
+    ad-hoc download that can't resolve @playwright/test at all.
+    """
     print("Running direct Playwright fallback suite...")
     try:
         proc = subprocess.run(
             ["npx", "playwright", "test", "--project=chromium"],
-            cwd=str(REPO_ROOT),
+            cwd=str(REPO_ROOT / "frontend"),
             capture_output=True,
             text=True,
             timeout=300,
@@ -473,7 +523,7 @@ Failed to execute direct Playwright fallback suite: {err}
 """
 
 
-def send_report_email(raw_report: str, verdict: str):
+def send_report_email(raw_report: str, verdict: str, source: str):
     resend.api_key = os.environ.get("RESEND_API_KEY")
     if not resend.api_key:
         print("Warning: RESEND_API_KEY not found. Skipping email.")
@@ -484,7 +534,7 @@ def send_report_email(raw_report: str, verdict: str):
 
     final_report = _extract_final_report(raw_report)
     integrity_banner = _integrity_banner(raw_report, final_report)
-    verdict_banner = _verdict_banner(verdict)
+    verdict_banner = _verdict_banner(verdict, source)
 
     html_content = f"""
     <h2>Roomivo QA Agent Report</h2>
@@ -513,6 +563,7 @@ async def main():
     report = None
     verdict = "NEEDS_HUMAN_REVIEW"
     llm_succeeded = False
+    source = "playwright_fallback"  # overwritten below whenever the LLM path runs
 
     try:
         report = await run_qa_agent()
@@ -548,12 +599,15 @@ async def main():
             if not verified_report or not verified_report.strip():
                 raise RuntimeError("Verifier agent returned an empty report")
             verdict = _extract_verdict(verified_report)
+            source = "llm_verified"
         except Exception as e:
             print(f"⚠️ Verifier agent failed: {e}. Using unverified QA report.")
             verified_report = (report or "") + f"\n\n*(Note: Verifier pass skipped due to error: {e})*"
             verdict = "NEEDS_HUMAN_REVIEW"
+            source = "llm_unverified"
     elif llm_succeeded:
         print("Verifier agent skipped (ENABLE_VERIFIER=false to conserve free tier quota).")
+        source = "llm_unverified"
         if "CRITICAL" not in (report or "").upper() and "FAILED" not in (report or "").upper():
             verdict = "PASS"
         else:
@@ -563,7 +617,7 @@ async def main():
     _write_github_output("verified", "true" if verdict == "PASS" else "false")
 
     try:
-        send_report_email(verified_report or "No report content generated.", verdict)
+        send_report_email(verified_report or "No report content generated.", verdict, source)
     except Exception as e:
         print(f"Failed in send_report_email: {e}")
 
