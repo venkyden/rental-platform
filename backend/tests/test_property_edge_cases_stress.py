@@ -247,3 +247,29 @@ class TestPaginationHelper:
     def test_defaults_when_absent(self):
         from app.routers.properties import _pagination
         assert _pagination({}) == (0, 20)
+
+
+class TestCaptureCodeLookupHardening:
+    """WP5: the capture routes take a user-supplied code straight into a text
+    comparison. A NUL byte returned 500 DBAPIError on public, unauthenticated
+    endpoints — the mobile capture page's own entry points."""
+
+    def test_nul_byte_in_session_code_is_not_a_500(self, client):
+        resp = client.get("/properties/media-sessions/%00")
+        assert resp.status_code == 404
+
+    def test_embedded_nul_in_session_code_is_not_a_500(self, client):
+        resp = client.get("/properties/media-sessions/abc%00def")
+        assert resp.status_code == 404
+
+    def test_lookup_code_strips_nul(self):
+        from app.routers.properties import _lookup_code
+        assert _lookup_code("abc\x00def") == "abcdef"
+
+    def test_lookup_code_handles_none(self):
+        from app.routers.properties import _lookup_code
+        assert _lookup_code(None) == ""
+
+    def test_lookup_code_leaves_real_codes_untouched(self):
+        from app.routers.properties import _lookup_code
+        assert _lookup_code("A1B2C3D4") == "A1B2C3D4"

@@ -231,6 +231,18 @@ def _clean_query_params(request: Request) -> dict:
     return {k: v.replace("\x00", "") for k, v in request.query_params.items()}
 
 
+def _lookup_code(value: Optional[str]) -> str:
+    """A user-supplied code, safe to compare against a text column.
+
+    Same NUL-byte problem as the query filters, but reached through the capture
+    routes (path param, and the upload query param). Both are public and
+    unauthenticated, so a crafted code returned a 500 DBAPIError instead of 404.
+    Generated verification codes never contain NUL, so stripping cannot create
+    a false match.
+    """
+    return (value or "").replace("\x00", "")
+
+
 def _pagination(params: dict) -> tuple[int, int]:
     """skip/limit parsed defensively.
 
@@ -1200,7 +1212,7 @@ async def get_media_session(
 
     result = await db.execute(
         select(PropertyMediaSession).where(
-            PropertyMediaSession.verification_code == code
+            PropertyMediaSession.verification_code == _lookup_code(code)
         )
     )
     session = result.scalar_one_or_none()
@@ -1334,7 +1346,7 @@ async def upload_media(
     # Get session
     result = await db.execute(
         select(PropertyMediaSession).where(
-            PropertyMediaSession.verification_code == final_verification_code
+            PropertyMediaSession.verification_code == _lookup_code(final_verification_code)
         )
     )
     session = result.scalar_one_or_none()
