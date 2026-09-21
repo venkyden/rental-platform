@@ -221,6 +221,30 @@ async def generate_property_description(
 
 
 
+def _clean_query_params(request: Request) -> dict:
+    """Query params with NUL bytes stripped.
+
+    Postgres rejects \\x00 inside text, so an unsanitised NUL reaching any string
+    filter (city ILIKE, property_type ==) surfaces as a 500 DBAPIError on a public
+    endpoint — reachable by anyone crafting a URL.
+    """
+    return {k: v.replace("\x00", "") for k, v in request.query_params.items()}
+
+
+def _pagination(params: dict) -> tuple[int, int]:
+    """skip/limit parsed defensively.
+
+    A negative OFFSET is a Postgres error (500), not an empty page, and an
+    unbounded LIMIT is a free amplification lever — both clamped here.
+    """
+    try:
+        skip_val = max(0, int(params.get("skip") or 0))
+        limit_val = min(max(1, int(params.get("limit") or 20)), 200)
+    except (ValueError, TypeError):
+        skip_val, limit_val = 0, 20
+    return skip_val, limit_val
+
+
 def _rooms_for_capture(room_details) -> Optional[list]:
     """Room list for the capture-page selector: index + surface only — no
     hardcoded label text, so the capture page can localize it (FR/EN)."""
@@ -445,10 +469,8 @@ async def list_saved_properties(
         return []
     
     # Extract params from request
-    params = dict(request.query_params)
-    amenities = request.query_params.getlist("amenities")
-    skip = params.get("skip", "0")
-    limit = params.get("limit", "20")
+    params = _clean_query_params(request)
+    amenities = [a.replace("\x00", "") for a in request.query_params.getlist("amenities")]
 
     query = (
         select(Property)
@@ -465,12 +487,7 @@ async def list_saved_properties(
     )
 
     # Pagination
-    try:
-        skip_val = int(skip) if skip else 0
-        limit_val = int(limit) if limit else 20
-    except (ValueError, TypeError):
-        skip_val = 0
-        limit_val = 20
+    skip_val, limit_val = _pagination(params)
 
     query = query.offset(skip_val).limit(limit_val)
     result = await db.execute(query)
@@ -510,10 +527,8 @@ async def list_properties(
 ):
     """List properties with filters and sorting using direct request parameter access"""
     # Extract params from request
-    params = dict(request.query_params)
-    amenities = request.query_params.getlist("amenities")
-    skip = params.get("skip", "0")
-    limit = params.get("limit", "20")
+    params = _clean_query_params(request)
+    amenities = [a.replace("\x00", "") for a in request.query_params.getlist("amenities")]
 
     from sqlalchemy.orm import selectinload
     query = select(Property).options(selectinload(Property.landlord))
@@ -526,12 +541,7 @@ async def list_properties(
     )
 
     # Pagination — enforce a hard server-side maximum to prevent abuse
-    try:
-        skip_val = int(skip) if skip else 0
-        limit_val = min(int(limit) if limit else 20, 200)
-    except (ValueError, TypeError):
-        skip_val = 0
-        limit_val = 20
+    skip_val, limit_val = _pagination(params)
 
     query = query.offset(skip_val).limit(limit_val)
     result = await db.execute(query)

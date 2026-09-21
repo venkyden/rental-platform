@@ -196,3 +196,54 @@ class TestPropertyEdgeCasesAndSanitization:
         resp = tenant_client.get("/properties?colocation=1")
         assert resp.status_code == 200
 
+
+
+# ── WP5: hostile query params must not 500 a public endpoint ─────────────────
+
+class TestHostileQueryParams:
+    """Found by the WP5 stress pass against the running API: both of these
+    returned `500 DBAPIError` on the unauthenticated listing endpoint."""
+
+    def test_negative_skip_does_not_500(self, client):
+        # Postgres rejects a negative OFFSET outright; it must clamp to 0.
+        resp = client.get("/properties?skip=-100")
+        assert resp.status_code == 200
+
+    def test_nul_byte_in_city_does_not_500(self, client):
+        # Postgres rejects \x00 inside text — a crafted URL became a 500.
+        resp = client.get("/properties?city=%00x")
+        assert resp.status_code == 200
+
+    def test_nul_byte_in_property_type_does_not_500(self, client):
+        resp = client.get("/properties?property_type=%00")
+        assert resp.status_code == 200
+
+    def test_limit_is_clamped(self, client):
+        resp = client.get("/properties?limit=999999")
+        assert resp.status_code == 200
+
+    def test_garbage_pagination_falls_back_to_defaults(self, client):
+        resp = client.get("/properties?skip=abc&limit=xyz")
+        assert resp.status_code == 200
+
+
+class TestPaginationHelper:
+    def test_clamps_negative_skip(self):
+        from app.routers.properties import _pagination
+        assert _pagination({"skip": "-100"})[0] == 0
+
+    def test_clamps_oversized_limit(self):
+        from app.routers.properties import _pagination
+        assert _pagination({"limit": "999999"})[1] == 200
+
+    def test_rejects_zero_limit(self):
+        from app.routers.properties import _pagination
+        assert _pagination({"limit": "0"})[1] == 1
+
+    def test_garbage_falls_back(self):
+        from app.routers.properties import _pagination
+        assert _pagination({"skip": "abc", "limit": "xyz"}) == (0, 20)
+
+    def test_defaults_when_absent(self):
+        from app.routers.properties import _pagination
+        assert _pagination({}) == (0, 20)
