@@ -431,9 +431,28 @@ class CORSSafetyNet:
             await self.app(scope, receive, send)
             return
 
+        # Track whether the response has already begun. Once http.response.start
+        # is on the wire, sending a second one raises inside this handler
+        # ("Unexpected ASGI message ... after response already completed"), which
+        # replaces the real error with an ASGI crash and drops the very CORS
+        # headers this net exists to preserve.
+        response_started = False
+
+        async def send_tracked(message) -> None:
+            nonlocal response_started
+            if message.get("type") == "http.response.start":
+                response_started = True
+            await send(message)
+
         try:
-            await self.app(scope, receive, send)
+            await self.app(scope, receive, send_tracked)
         except Exception as e:
+            if response_started:
+                logger.error(
+                    f"❌ ERROR AFTER RESPONSE STARTED (cannot send 503): {str(e)}",
+                    exc_info=True,
+                )
+                raise
             try:
                 import traceback
                 logger.error(f"❌ CRITICAL ERROR CAUGHT BY SAFETY NET: {str(e)}", exc_info=True)
