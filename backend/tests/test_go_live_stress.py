@@ -415,3 +415,52 @@ def test_tenant_save_unsave_wishlist(tenant_client):
     # Unsave
     res_unsave = tenant_client.delete(f"/properties/{prop.id}/save")
     assert res_unsave.status_code == 204
+
+
+def test_publish_blocks_when_media_uploaded_but_untagged(landlord_client):
+    """WP5 trap: photos exist, but all were uploaded without picking a room.
+
+    The capture page let `selectedRoom` stay null, so every upload landed with
+    room_index=None. Publish still blocks on per-room coverage, and there is no
+    endpoint to re-tag or delete already-uploaded media — the landlord is stuck
+    with photos they cannot assign. This locks the server contract; the capture
+    page is what must stop untagged uploads happening in the first place.
+    """
+    prop = make_test_property(
+        room_details=[{"index": 0}, {"index": 1}],
+        photos=[{"url": "https://example.com/p1.jpg", "media_type": "photo"}],
+    )
+    bio_user = make_mock_user("landlord", "landlord@test.com")
+    bio_user.bio = "Landlord with a complete profile bio for publishing"
+    bio_user.id = MOCK_LANDLORD.id
+    prop.landlord = bio_user
+
+    # Three uploaded photos, every one of them untagged (room_index=None).
+    untagged = [MagicMock(room_index=None, media_type="photo") for _ in range(3)]
+
+    mock_db = MagicMock()
+    mock_db.execute = AsyncMock(
+        side_effect=[
+            MagicMock(scalar_one_or_none=MagicMock(return_value=prop)),
+            MagicMock(scalars=MagicMock(return_value=MagicMock(all=MagicMock(return_value=untagged)))),
+            MagicMock(scalars=MagicMock(return_value=MagicMock(all=MagicMock(return_value=untagged)))),
+        ]
+    )
+    mock_db.commit = AsyncMock()
+
+    async def override_get_db():
+        yield mock_db
+
+    async def override_get_current_user():
+        return bio_user
+
+    target_app = app.app if hasattr(app, 'app') else app
+    target_app.dependency_overrides[get_db] = override_get_db
+    target_app.dependency_overrides[get_current_user] = override_get_current_user
+    try:
+        resp = landlord_client.post(f"/properties/{prop.id}/publish")
+        assert resp.status_code == 400
+        # Both rooms report missing despite three uploaded photos.
+        assert "Missing media for" in resp.json()["detail"]
+    finally:
+        target_app.dependency_overrides.pop(get_current_user, None)

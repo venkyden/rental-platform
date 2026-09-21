@@ -26,7 +26,11 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
     const [pendingCount, setPendingCount] = useState(0);
     const [sessionDetails, setSessionDetails] = useState<any>(null);
     const [rooms, setRooms] = useState<Room[]>([]);
-    const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
+    // 'common' = an explicit property-level/common-area choice. Kept distinct from
+    // null (= nothing chosen yet) so photos can never upload untagged by accident:
+    // untagged uploads can't satisfy the per-room publish gate and there is no
+    // endpoint to re-tag them afterwards.
+    const [selectedRoom, setSelectedRoom] = useState<Room | 'common' | null>(null);
     const [loadError, setLoadError] = useState(false);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -193,8 +197,10 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                 gps_accuracy: location?.accuracy || null,
                 captured_at: new Date().toISOString(),
                 media_type: isVideo ? 'video' : 'photo',
-                room_index: selectedRoom?.index ?? null,
-                room_label: selectedRoom ? `${fr ? 'Chambre' : 'Room'} ${selectedRoom.index + 1}` : null,
+                room_index: selectedRoom && selectedRoom !== 'common' ? selectedRoom.index : null,
+                room_label: selectedRoom && selectedRoom !== 'common'
+                    ? `${fr ? 'Chambre' : 'Room'} ${selectedRoom.index + 1}`
+                    : null,
             };
 
             if (isOffline) {
@@ -396,29 +402,51 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                                         {fr ? 'Quelle pièce photographiez-vous ?' : 'Which room are you photographing?'}
                                     </label>
                                     <div className="grid grid-cols-2 gap-4">
-                                        {rooms.map(room => (
-                                            <button
-                                                key={room.index}
-                                                onClick={() => setSelectedRoom(room)}
-                                                className={`p-6 rounded-[2.5rem] border-2 text-left transition-all ${selectedRoom?.index === room.index ? 'bg-zinc-900 border-zinc-900 shadow-2xl' : 'border-zinc-100'}`}
-                                            >
-                                                <div className={`text-xs font-black uppercase tracking-widest mb-1 ${selectedRoom?.index === room.index ? 'text-zinc-400' : 'text-zinc-500'}`}>
-                                                    {fr ? 'Pièce' : 'Room'}
-                                                </div>
-                                                <div className={`text-sm font-black uppercase ${selectedRoom?.index === room.index ? 'text-white' : 'text-zinc-900'}`}>
-                                                    {fr ? 'Chambre' : 'Room'} {room.index + 1}
-                                                    {room.surface ? ` — ${room.surface}m²` : ''}
-                                                </div>
-                                            </button>
-                                        ))}
+                                        {rooms.map(room => {
+                                            const active = selectedRoom !== 'common' && selectedRoom?.index === room.index;
+                                            return (
+                                                <button
+                                                    key={room.index}
+                                                    onClick={() => setSelectedRoom(room)}
+                                                    className={`p-6 rounded-[2.5rem] border-2 text-left transition-all ${active ? 'bg-zinc-900 border-zinc-900 shadow-2xl' : 'border-zinc-100'}`}
+                                                >
+                                                    <div className={`text-xs font-black uppercase tracking-widest mb-1 ${active ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                                                        {fr ? 'Pièce' : 'Room'}
+                                                    </div>
+                                                    <div className={`text-sm font-black uppercase ${active ? 'text-white' : 'text-zinc-900'}`}>
+                                                        {fr ? 'Chambre' : 'Room'} {room.index + 1}
+                                                        {room.surface ? ` — ${room.surface}m²` : ''}
+                                                    </div>
+                                                </button>
+                                            );
+                                        })}
+                                        <button
+                                            onClick={() => setSelectedRoom('common')}
+                                            className={`p-6 rounded-[2.5rem] border-2 text-left transition-all ${selectedRoom === 'common' ? 'bg-zinc-900 border-zinc-900 shadow-2xl' : 'border-zinc-100'}`}
+                                        >
+                                            <div className={`text-xs font-black uppercase tracking-widest mb-1 ${selectedRoom === 'common' ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                                                {fr ? 'Espace' : 'Space'}
+                                            </div>
+                                            <div className={`text-sm font-black uppercase ${selectedRoom === 'common' ? 'text-white' : 'text-zinc-900'}`}>
+                                                {fr ? 'Parties communes' : 'Common area'}
+                                            </div>
+                                        </button>
                                     </div>
+                                    {!selectedRoom && (
+                                        <p className="text-xs font-bold text-amber-600">
+                                            {fr
+                                                ? 'Choisissez une pièce avant de photographier — chaque chambre doit avoir sa propre photo pour publier.'
+                                                : 'Pick a room before shooting — each bedroom needs its own photo before you can publish.'}
+                                        </p>
+                                    )}
                                 </div>
                             )}
 
                             <div className="mt-auto pt-4 space-y-4">
                                 <button
                                     onClick={() => fileInputRef.current?.click()}
-                                    className="w-full py-7 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.4em] rounded-[2.5rem] shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-4"
+                                    disabled={rooms.length > 0 && !selectedRoom}
+                                    className="w-full py-7 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.4em] rounded-[2.5rem] shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-4 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
                                 >
                                     <Camera className="w-4 h-4" />
                                     {fr ? "Prendre des photos" : 'Take Room Photos'}
