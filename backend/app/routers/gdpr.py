@@ -350,9 +350,14 @@ async def trigger_stale_applications_purge(
             detail="Only administrators can trigger data retention purges."
         )
 
-    from app.workers.tasks import purge_stale_applications_task
+    from app.workers.tasks import purge_stale_applications
     # No Celery broker/worker — run after the response is sent instead.
-    background_tasks.add_task(purge_stale_applications_task)
+    # Must be the async function, not the Celery wrapper: the wrapper is sync,
+    # so BackgroundTasks would run it in a threadpool thread with no running
+    # loop, it would fall back to asyncio.run(), and the resulting cross-loop
+    # use of the pooled engine both fails the purge and leaves dead
+    # connections in the pool the web dyno serves requests from.
+    background_tasks.add_task(purge_stale_applications)
 
     return {
         "status": "accepted",

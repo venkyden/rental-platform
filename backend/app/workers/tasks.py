@@ -44,17 +44,19 @@ def send_email_task(
     return True
 
 
-@celery_app.task(
-    name="app.workers.tasks.purge_stale_applications_task",
-    bind=True,
-    max_retries=1,
-)
-def purge_stale_applications_task(self) -> dict:
+async def purge_stale_applications() -> dict:
     """
     Finds and deletes REJECTED or WITHDRAWN applications older than 30 days.
     Purges associated snapshot documents from cloud storage (GDPR compliance).
+
+    A plain async function, so a caller can await it on its own event loop.
+    The engine in app/core/database.py is pooled (pool_size/max_overflow, not
+    NullPool), so connections are bound to the loop that checked them out:
+    driving this through asyncio.run() from a threadpool thread raises "got
+    Future attached to a different loop", and the loop it tears down leaves
+    connections in the shared pool that later fail with "Event loop is
+    closed". scripts/periodic_sweep.py documents the same constraint.
     """
-    import asyncio
     from datetime import timedelta
     from sqlalchemy import select
     from app.core.database import AsyncSessionLocal
@@ -62,38 +64,49 @@ def purge_stale_applications_task(self) -> dict:
     from app.models.application import Application, ApplicationStatus
     from app.services.storage import storage
 
-    async def _purge():
-        purged_count = 0
-        cutoff_date = naive_utcnow() - timedelta(days=30)
+    purged_count = 0
+    cutoff_date = naive_utcnow() - timedelta(days=30)
 
-        async with AsyncSessionLocal() as db:
-            # Find stale applications
-            stmt = select(Application).where(
-                Application.status.in_([ApplicationStatus.REJECTED.value, ApplicationStatus.WITHDRAWN.value]),
-                Application.updated_at < cutoff_date
-            )
-            result = await db.execute(stmt)
-            stale_apps = result.scalars().all()
+    async with AsyncSessionLocal() as db:
+        # Find stale applications
+        stmt = select(Application).where(
+            Application.status.in_([ApplicationStatus.REJECTED.value, ApplicationStatus.WITHDRAWN.value]),
+            Application.updated_at < cutoff_date
+        )
+        result = await db.execute(stmt)
+        stale_apps = result.scalars().all()
 
-            for app in stale_apps:
-                if app.snapshot_data and isinstance(app.snapshot_data, dict):
-                    # Attempt to delete stored documents associated with this application snapshot
-                    docs = app.snapshot_data.get("documents", [])
-                    for doc in docs:
-                        if "storage_key" in doc:
-                            try:
-                                await storage.delete_file(doc["storage_key"])
-                            except Exception as e:
-                                logger.error(f"Failed to delete document {doc['storage_key']}: {e}")
+        for app in stale_apps:
+            if app.snapshot_data and isinstance(app.snapshot_data, dict):
+                # Attempt to delete stored documents associated with this application snapshot
+                docs = app.snapshot_data.get("documents", [])
+                for doc in docs:
+                    if "storage_key" in doc:
+                        try:
+                            await storage.delete_file(doc["storage_key"])
+                        except Exception as e:
+                            logger.error(f"Failed to delete document {doc['storage_key']}: {e}")
 
-                await db.delete(app)
-                purged_count += 1
+            await db.delete(app)
+            purged_count += 1
 
-            if purged_count > 0:
-                await db.commit()
-                logger.info(f"Purged {purged_count} stale applications for GDPR compliance.")
+        if purged_count > 0:
+            await db.commit()
+            logger.info(f"Purged {purged_count} stale applications for GDPR compliance.")
 
-        return {"purged_applications_count": purged_count}
+    return {"purged_applications_count": purged_count}
+
+
+@celery_app.task(
+    name="app.workers.tasks.purge_stale_applications_task",
+    bind=True,
+    max_retries=1,
+)
+def purge_stale_applications_task(self) -> dict:
+    """Celery-task wrapper around purge_stale_applications(). Callers running
+    inside FastAPI should pass the async function to BackgroundTasks directly
+    rather than this wrapper — see the docstring above for why."""
+    import asyncio
 
     try:
         loop = asyncio.get_running_loop()
@@ -101,10 +114,9 @@ def purge_stale_applications_task(self) -> dict:
         loop = None
 
     if loop and loop.is_running():
-        future = asyncio.run_coroutine_threadsafe(_purge(), loop)
+        future = asyncio.run_coroutine_threadsafe(purge_stale_applications(), loop)
         return future.result()
-    else:
-        return asyncio.run(_purge())
+    return asyncio.run(purge_stale_applications())
 
 
 @celery_app.task(
