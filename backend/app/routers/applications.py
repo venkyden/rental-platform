@@ -50,6 +50,17 @@ async def create_application(
     if not property_obj:
         raise HTTPException(status_code=404, detail="Property not found")
 
+    # Only a published listing accepts applications. GET /properties/{id} already
+    # 403s a non-owner on anything that isn't active, but this path never checked
+    # status — so anyone holding the UUID of a draft, rented or archived listing
+    # could still apply, and the landlord got an application for a listing they
+    # had not published.
+    if property_obj.status != "active":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This listing is not accepting applications",
+        )
+
     # 2. Check if already applied
     result = await db.execute(
         select(Application)

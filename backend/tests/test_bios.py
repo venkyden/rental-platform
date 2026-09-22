@@ -147,3 +147,45 @@ class TestPublishGate:
         # Gate passed — anything but the 422 token is acceptable here since the
         # rest of publish touches mocked DB state.
         assert not (r.status_code == 422 and r.json().get("detail") == "landlord_bio_required")
+
+
+class TestApplyOnlyToActiveListings:
+    """WP5: applying never checked the listing's status. A tenant holding the
+    UUID of a draft/rented/archived property could apply to it — while GET
+    /properties/{id} 403s them on that same property."""
+
+    def _post(self, prop_status):
+        tenant = _mk(id=uuid.uuid4(), bio=VALID_BIO, full_name="Marie Martin",
+                     email="t@example.com")
+        prop = _mk(id=uuid.uuid4(), status=prop_status, landlord_id=uuid.uuid4())
+        target = _target()
+        sess = MagicMock()
+        sess.execute = AsyncMock(return_value=MagicMock(
+            scalar_one_or_none=MagicMock(return_value=prop)))
+
+        def _get_db():
+            yield sess
+
+        target.dependency_overrides[get_db] = _get_db
+        target.dependency_overrides[get_current_user] = lambda: tenant
+        try:
+            return TestClient(main_app, base_url="http://testserver/api/v1").post(
+                "/applications", json={"property_id": str(prop.id)})
+        finally:
+            target.dependency_overrides.clear()
+
+    def test_draft_listing_rejects_application(self):
+        r = self._post("draft")
+        assert r.status_code == 403
+        assert "not accepting applications" in r.json()["detail"]
+
+    def test_rented_listing_rejects_application(self):
+        assert self._post("rented").status_code == 403
+
+    def test_inactive_listing_rejects_application(self):
+        assert self._post("inactive").status_code == 403
+
+    def test_active_listing_passes_the_status_gate(self):
+        # Gets past status; fails later on the mocked duplicate-check instead.
+        r = self._post("active")
+        assert r.status_code != 403
