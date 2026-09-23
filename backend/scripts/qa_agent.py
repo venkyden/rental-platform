@@ -30,12 +30,52 @@ def _gemini_model_candidates() -> list:
     return candidates
 
 
+def _should_try_next_model(err: Exception) -> bool:
+    """Whether a failure is per-model, so the next candidate is worth trying.
+
+    Covers the model being gone (404) and this model's quota being exhausted
+    (429 — free-tier limits are per-model, so a later candidate may still have
+    headroom; a 429 used to abort the whole run and skip the other models).
+
+    Deliberately does not claim *which* model failed: the SDK retries
+    internally and may surface an error naming a different model than the one
+    being attempted, so callers log the raw error instead of asserting a cause.
+    """
+    # Matched with surrounding context rather than as bare digits: a plain
+    # "429" or "404" also occurs in token counts, byte offsets, request ids and
+    # timestamps, and matching those would silently burn the remaining
+    # candidates on an error that is actually fatal.
+    text = str(err).lower()
+    return any(
+        marker in text
+        for marker in (
+            "code 404",
+            "error 404",
+            "not_found",
+            "code 429",
+            "error 429",
+            "resource_exhausted",
+            "quota",
+            "rate limit",
+        )
+    )
+
+
 GEMINI_MODEL_CANDIDATES = _gemini_model_candidates()
 GEMINI_MODEL = GEMINI_MODEL_CANDIDATES[0]
 ENABLE_VERIFIER = os.environ.get("ENABLE_VERIFIER", "false").lower() in ("true", "1", "yes")
+# No default: this drives a run against a live deployment, and there is no
+# staging to fall back to. An unset value must fail loudly rather than silently
+# pointing someone's local invocation at production.
+QA_TARGET_URL = os.environ.get("QA_TARGET_URL", "").strip()
+if not QA_TARGET_URL:
+    raise SystemExit(
+        "QA_TARGET_URL is not set. This agent tests a live deployment and has no "
+        "safe default — set it explicitly (e.g. QA_TARGET_URL=https://roomivo.eu)."
+    )
 
 PROMPT = """\
-ROOMIVO — NAVIGATION & INTERACTION SMOOTHNESS QA (scheduled agent prompt)
+ROOMIVO — NAVIGATION & INTERACTION SMOOTHNESS QA (manually-triggered agent prompt)
 
 ## ROLE
 
@@ -50,6 +90,62 @@ You are NOT doing performance engineering, accessibility auditing, visual
 design review, or backend load testing in this pass. Stay in scope. If you
 notice something out of scope but real, note it in one line under "Noticed,
 out of scope" — do not investigate it.
+
+## TARGET — THE LIVE SITE
+
+You are testing the **live production deployment**, not a local build:
+
+- Frontend: <<<QA_TARGET_URL>>>
+- Backend API: the Render service named by `NEXT_PUBLIC_API_URL` in
+  `render.yaml` (informational — the frontend calls it for you).
+
+Nothing runs locally in this environment: no dev server, no local backend, no
+database. Do NOT try to boot one, and do NOT run the default
+`frontend/playwright.config.ts` (it targets 127.0.0.1:3001). Run Playwright
+against the live site with the dedicated config, from `frontend/`:
+
+    cd frontend && QA_TARGET_URL=<<<QA_TARGET_URL>>> npx playwright test --config=playwright.live.config.ts --project=chromium <spec files>
+
+### READ-ONLY. This is the production database, and there is no staging.
+
+`render.yaml` defines exactly two services, both on `master`, against one
+database. The site you are testing is the one real users are using. Nothing
+you do here can be rolled back by redeploying.
+
+**You may only read.** Anything that writes, persists, sends, or signs is out
+of scope for this run — not "be careful with it", out of scope:
+
+- **Do NOT register accounts or log in.** Every account is a durable PII row
+  in the production database, against a product whose entire positioning is
+  no-PII-at-rest. Test authenticated surfaces from the unauthenticated side
+  only: that a guard redirects, that a gate renders.
+- **Do NOT upload anything to a verification flow** (identity, income,
+  guarantor, MRZ). Those hit the production AI pipeline and end in a real
+  Ed25519 signature from the production credential signing key. A valid
+  Roomivo credential attesting a person who does not exist is precisely the
+  artefact this product exists to make impossible. The biometric Art. 9 DPIA
+  is also still open in CLAUDE.md — that gate is not yours to cross.
+- **Never synthesise or fetch an identity document or a face image.** Not a
+  real one, not a fabricated one.
+- **Do NOT create properties, leases, disputes, or incidents.** A listing on
+  a live marketplace is a public advert real tenants can apply to. A signed
+  lease pollutes the audit register the legal opinion is conditioned on.
+- **Do NOT trigger password resets or any other email.** Sends come from
+  `contact@roomivo.eu`, the anti-phishing anchor; bounces cost its
+  reputation, and you have no mailbox to complete the flow with anyway.
+
+In scope, read-only: landing and marketing pages, global navigation, the
+mobile drawer, language switch EN/FR, cookie consent and modals, static and
+error routes (404), the search marketplace as a visitor, redirect behaviour
+of guarded routes, and shareable `/c/` and `/d/share/` pages **for links you
+were given** — never ones you generated. On those, the PII rule in GROUND
+TRUTH is the highest-value check in this run.
+
+A surface you cannot reach without writing something is
+`NOT TESTED — reason: requires account creation (out of scope on production)`.
+That is a correct and expected outcome here, not a gap to work around. If the
+first navigation times out, retry once before recording a failure — the
+deployment can cold-start.
 
 ## GROUND TRUTH — READ THIS, DON'T ASSUME
 
@@ -123,27 +219,27 @@ run rather than rushing all of them shallowly every time:
 2. **Language switch**: EN↔FR preserves the current route and in-progress
    form state where reasonable; strings actually change; persists across
    reload and internal navigation.
-3. **Auth flows**: register → login → logout; forgot password
-   (`/auth/forgot-password` → email → `/auth/reset-password`) end-to-end
-   with a test account; forgot-email flow; invalid credentials show a clear
-   error; session expiry redirects to login without losing the intended
-   destination; verify-email flows.
-4. **Core dashboards**: landlord/agency dashboards, inbox, notifications,
-   applications — tab switching, list → detail navigation, back button
-   returns to the right state, empty states render correctly.
-5. **Property flows**: creation wizard (step forward/back, refresh
-   mid-wizard, validation clears on fix), property detail, edit, search.
-6. **Verification flows**: identity/income/guarantor upload — retry-on-
-   failure, progress indicators don't stall, cancel/back doesn't leave a
-   broken half-state.
-7. **Lease + dispute flows**: creation, detail, sign, incident, dispute
-   filing.
-8. **Settings/profile**: every toggle/switch persists its state after
-   reload.
-9. **Credential/dossier sharing**: see the PII-exposure rule above; also
-   check loading states, expired-link messaging, copy-link controls.
-10. **Modals & consent**: cookie consent persists and doesn't re-prompt
-    every navigation; modals close via X, backdrop click, and Escape.
+3. **Auth pages, rendered only**: `/auth/login`, `/auth/register`,
+   `/auth/forgot-password` render with no console errors, in both languages;
+   client-side validation messages appear on malformed input. Do NOT submit
+   any of these forms — see TARGET.
+4. **Guarded routes as a visitor**: hitting a dashboard, inbox or settings
+   route unauthenticated redirects or gates cleanly, with no flash of
+   authenticated content and no crash. The gate is the check; what is behind
+   it is out of scope this run.
+5. **Search marketplace as a visitor**: results grid, filters, pagination,
+   empty states, property detail pages that are already published.
+6. **Credential/dossier sharing**: the PII rule in GROUND TRUTH is the
+   highest-value check here — only for links you were given. Also loading
+   states, expired-link messaging, copy-link controls.
+7. **Modals & consent**: cookie consent persists and doesn't re-prompt every
+   navigation; modals close via X, backdrop click, and Escape.
+8. **Static and error routes**: 404 on an invalid route, legal/mentions
+   pages, anything reachable from the footer.
+
+Write, verification, lease and account flows are deliberately absent: they
+are covered by the mocked suite in `frontend/e2e/`, which is where they
+belong. Do not reintroduce them here.
 
 ## HOW TO RUN THIS
 
@@ -153,12 +249,14 @@ re-running the entire multi-browser suite, which risks command timeouts:
 run a scoped set of spec files with `--project=chromium` first, and only
 run the full multi-project suite once you have budget left.
 
-1. Run relevant existing specs and read the actual output.
-2. For any surface above with no existing coverage, write a new spec under
-   `frontend/e2e/` and leave it in the repo. Prefer **extending an existing
-   QA spec file** you or a prior run created over replacing it with a
-   different, shorter version each time — the goal is an accumulating,
-   stable regression suite, not a file that churns every run.
+1. Run relevant existing specs against the live site (see TARGET above) and
+   read the actual output. Many specs mock the API via `page.route` and so
+   pass regardless of the live backend — say so when that is why one passed,
+   rather than presenting it as live-backend evidence.
+2. You may write a spec under `frontend/e2e/` for an in-scope, read-only
+   surface, and it will be reported — but **nothing you write is committed**.
+   This run has no repo-write access by design. Treat a new spec as a
+   proposal in your report, not as work you have landed.
 3. Drive French-locale passes through the actual language switcher
    component in-test, not a hardcoded second config.
 4. If browsers are missing, that is itself a CI setup problem — report it,
@@ -179,14 +277,15 @@ Severity:
   mobile-only layout break that doesn't block the task.
 - **Low**: cosmetic nav glitch, minor copy/translation gap.
 
-## FIX POLICY
+## FIX POLICY — PROPOSE ONLY
 
-- Low-risk fixes (broken link, missing translation key, toggle not wired to
-  persistence, obvious dead click) — fix directly, run the relevant tests,
-  report what changed.
-- Anything touching auth, verification, credential rendering, or PII
-  handling — **propose only**, do not implement. Explain the fix, the file,
-  the risk, and wait for approval.
+**Fix nothing this run.** Nothing you edit is committed, so a "fix" you
+apply is discarded silently while your report claims it landed — which is a
+fabricated result, the failure mode the TRUTHFULNESS section exists to stop.
+
+For every issue, propose: the file, the change, the risk, the test that would
+prove it. A human applies it. This replaces the previous policy of fixing
+low-risk issues directly, which only made sense when this job could commit.
 
 ## FINAL REPORT FORMAT
 
@@ -205,23 +304,27 @@ async def run_qa_agent():
     # Enable all tools so the agent can run Playwright and create/edit specs.
     # Must run with cwd at the repo root (see workflow) so file tools aren't
     # scoped to backend/ only — the agent needs to read/write frontend/e2e/.
+    prompt = PROMPT.replace("<<<QA_TARGET_URL>>>", QA_TARGET_URL)
     last_error = None
     for model_name in GEMINI_MODEL_CANDIDATES:
-        print(f"Starting QA Agent (model: {model_name})...")
+        print(f"Starting QA Agent (model: {model_name}, target: {QA_TARGET_URL})...")
         config = LocalAgentConfig(
             model=model_name,
             policies=[policy.allow_all()]
         )
         try:
             async with Agent(config=config) as agent:
-                response = await agent.chat(PROMPT)
+                response = await agent.chat(prompt)
                 report = await response.text()
                 print("QA Agent finished.")
                 return report
         except Exception as e:
             last_error = e
-            if "404" in str(e) or "NOT_FOUND" in str(e):
-                print(f"Model {model_name} not found, trying next model...")
+            if _should_try_next_model(e):
+                print(
+                    f"Model {model_name} unavailable, trying next candidate. "
+                    f"Raw error: {str(e)[:200]}"
+                )
                 continue
             raise
 
@@ -272,10 +375,14 @@ corrected report — do not touch it yourself.
    hit denied/timed-out/cancelled commands that its summary doesn't
    mention. If the report claims a clean PASS despite that, correct it.
 5. **Spot-check, don't redo everything.** If new or modified spec files
-   exist, actually run just those files
-   (`cd frontend && npx playwright test <path> --project=chromium`) and
-   compare the real output to what the report claims. Do not re-run the
-   full multi-browser suite — that risks timing out your own review pass.
+   exist, actually run just those files and compare the real output to what
+   the report claims. Use the live config — the default one boots a local
+   server that does not exist in this environment, so it would fail every
+   check and make you wrongly conclude the report was fabricated:
+
+       cd frontend && QA_TARGET_URL=<<<QA_TARGET_URL>>> npx playwright test <path> --config=playwright.live.config.ts --project=chromium
+
+   Do not re-run the full suite — that risks timing out your own review pass.
    If a command fails twice, stop retrying and say so rather than looping.
 
 ## OUTPUT
@@ -306,7 +413,9 @@ async def run_verifier_agent(qa_report: str) -> str:
     # full read/search/run_command access for fact-checking while still
     # hard-blocking file mutation — the verifier reviews and corrects the
     # report text, it does not silently rewrite spec files itself.
-    prompt = VERIFIER_PROMPT_TEMPLATE.replace("<<<QA_REPORT_PLACEHOLDER>>>", qa_report)
+    prompt = VERIFIER_PROMPT_TEMPLATE.replace(
+        "<<<QA_REPORT_PLACEHOLDER>>>", qa_report
+    ).replace("<<<QA_TARGET_URL>>>", QA_TARGET_URL)
 
     last_error = None
     for model_name in GEMINI_MODEL_CANDIDATES:
@@ -323,8 +432,11 @@ async def run_verifier_agent(qa_report: str) -> str:
             return await _run_verifier_with_config(config, prompt)
         except Exception as e:
             last_error = e
-            if "404" in str(e) or "NOT_FOUND" in str(e):
-                print(f"Model {model_name} not found, trying next model...")
+            if _should_try_next_model(e):
+                print(
+                    f"Model {model_name} unavailable, trying next candidate. "
+                    f"Raw error: {str(e)[:200]}"
+                )
                 continue
             raise
 
@@ -376,6 +488,14 @@ _FAILURE_MARKERS = (
     "denied by pre-tool hook",
     "command timed out",
     "context canceled",
+    # Model-provider failures. These are the ones that have actually bitten
+    # this job (repeated 503s, then free-tier 429s), and the SDK logs them as
+    # warnings rather than raising — so without these markers a run could lose
+    # most of its work to provider errors and still read as clean.
+    "system step error",
+    "quota exceeded",
+    "resource_exhausted",
+    "experiencing high demand",
 )
 
 
@@ -491,12 +611,22 @@ def run_direct_playwright_suite() -> str:
     frontend/ already built) has no standalone dependency install of its own —
     invoking it via npx from REPO_ROOT with no local install triggers a fresh
     ad-hoc download that can't resolve @playwright/test at all.
+
+    Uses playwright.live.config.ts for the same reason the agent does: this
+    workflow never runs `next build`, so the default config's `next start`
+    webServer cannot boot and every spec would fail on a dead localhost.
+    The live deployment is the only thing here that actually exists.
     """
-    print("Running direct Playwright fallback suite...")
+    print(f"Running direct Playwright fallback suite against {QA_TARGET_URL}...")
     try:
         proc = subprocess.run(
-            ["npx", "playwright", "test", "--project=chromium"],
+            [
+                "npx", "playwright", "test",
+                "--config=playwright.live.config.ts",
+                "--project=chromium",
+            ],
             cwd=str(REPO_ROOT / "frontend"),
+            env={**os.environ, "QA_TARGET_URL": QA_TARGET_URL},
             capture_output=True,
             text=True,
             timeout=300,
@@ -507,7 +637,7 @@ def run_direct_playwright_suite() -> str:
         return f"""# QA Report — Direct Playwright Execution (Non-LLM Fallback)
 
 > ℹ️ **Notice**: The LLM QA Agent was unavailable or hit Gemini Free Tier rate limits (429).
-> The automated test suite was executed directly via Playwright.
+> The automated test suite was executed directly via Playwright against {QA_TARGET_URL}.
 
 ### Overall Status: {status} (Exit Code: {proc.returncode})
 
