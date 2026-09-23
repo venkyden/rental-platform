@@ -18,7 +18,32 @@ logger = logging.getLogger(__name__)
 _GEOCODE_CACHE: Dict[str, Tuple[float, Optional[Tuple[float, float]]]] = {}
 # Key format: (lat_3dp, lon_3dp) -> (timestamp, pois_dict)
 _POI_CACHE: Dict[Tuple[float, float], Tuple[float, Dict[str, List[str]]]] = {}
+# Negative cache, kept separate from _POI_CACHE so a provider outage can never
+# be mistaken for a fact about a location. Key format: (lat_3dp, lon_3dp) -> timestamp
+_POI_FAILURE_CACHE: Dict[Tuple[float, float], float] = {}
 CACHE_TTL_SECONDS = 3600  # 1 hour cache TTL
+
+# Per-endpoint HTTP timeout for Overpass, and a hard ceiling on the POI stage
+# as a whole. The ceiling is what actually bounds the request: endpoints are
+# tried in sequence, so without it the worst case is (number of endpoints x
+# per-endpoint timeout) — 18s with three mirrors down, on a user-facing call.
+# POIs are optional enrichment with an empty fallback, so exceeding the budget
+# degrades to "no POIs" rather than making the caller wait.
+# The per-endpoint value must stay a fraction of the budget. Setting the two
+# equal makes the failover list dead code: a first mirror that accepts the
+# connection then stalls consumes the whole budget on its own, so mirrors two
+# and three never get attempted. overpass-api.de is both first in the list and
+# the busiest public instance, i.e. the one most likely to go slow rather than
+# down — exactly the case failover exists for.
+_OVERPASS_TIMEOUT_SECONDS = 0.8
+_POI_TOTAL_BUDGET_SECONDS = 2.5
+
+# Failures get their own, much shorter TTL, kept separate from CACHE_TTL_SECONDS.
+# Reusing the 1-hour positive TTL would make the create wizard's "you can retry"
+# prompt untrue for the next hour, since every retry would hit the cached empty
+# result rather than Overpass. One minute is long enough to stop an outage
+# making every request pay the full budget, short enough that a retry works.
+_POI_FAILURE_TTL_SECONDS = 60
 
 
 async def geocode_address(
@@ -63,7 +88,10 @@ async def get_nearby_pois(latitude: float, longitude: float) -> Dict[str, List[s
     """
     Query OpenStreetMap Overpass API for nearby points of interest.
     Returns dict with transit stops and nearby landmarks.
-    Streamlined Overpass query and low timeout prevent slow response times.
+
+    Bounded by _POI_TOTAL_BUDGET_SECONDS. A failure is recorded in
+    _POI_FAILURE_CACHE under the short _POI_FAILURE_TTL_SECONDS, never in
+    _POI_CACHE — an outage is a fact about Overpass, not about this location.
     """
     now = time.time()
     grid_key = (round(latitude, 3), round(longitude, 3))
@@ -72,6 +100,36 @@ async def get_nearby_pois(latitude: float, longitude: float) -> Dict[str, List[s
         ts, cached_pois = _POI_CACHE[grid_key]
         if now - ts < CACHE_TTL_SECONDS:
             return cached_pois
+
+    failed_at = _POI_FAILURE_CACHE.get(grid_key)
+    if failed_at is not None and now - failed_at < _POI_FAILURE_TTL_SECONDS:
+        return {"public_transport": [], "nearby_landmarks": []}
+
+    try:
+        pois = await asyncio.wait_for(
+            _query_overpass(latitude, longitude, grid_key, now),
+            timeout=_POI_TOTAL_BUDGET_SECONDS,
+        )
+    except asyncio.TimeoutError:
+        logger.warning(
+            "Overpass POI lookup exceeded %.1fs budget (grid=%s); returning empty POIs",
+            _POI_TOTAL_BUDGET_SECONDS,
+            grid_key,
+        )
+        _POI_FAILURE_CACHE[grid_key] = now
+        return {"public_transport": [], "nearby_landmarks": []}
+
+    _POI_FAILURE_CACHE.pop(grid_key, None)
+    return pois
+
+
+async def _query_overpass(
+    latitude: float,
+    longitude: float,
+    grid_key: Tuple[float, float],
+    now: float,
+) -> Dict[str, List[str]]:
+    """Sequential Overpass mirror failover. Caller enforces the total budget."""
 
     # Optimized Overpass query - exclude relation route regex scans which cause 20s+ latency
     overpass_query = f"""
@@ -123,7 +181,7 @@ async def get_nearby_pois(latitude: float, longitude: float) -> Dict[str, List[s
         "https://overpass.kumi.systems/api/interpreter",
     ]
 
-    async with httpx.AsyncClient(timeout=6.0) as client:
+    async with httpx.AsyncClient(timeout=_OVERPASS_TIMEOUT_SECONDS) as client:
         for endpoint in overpass_endpoints:
             try:
                 response = await client.post(
@@ -140,13 +198,18 @@ async def get_nearby_pois(latitude: float, longitude: float) -> Dict[str, List[s
                     parsed = parse_overpass_results(data, latitude, longitude)
                     _POI_CACHE[grid_key] = (now, parsed)
                     return parsed
+                logger.warning(
+                    "Overpass %s returned HTTP %s", endpoint, response.status_code
+                )
             except Exception as e:
                 logger.warning("Overpass API error (%s): %s", endpoint, e)
                 continue
 
-    fallback = {"public_transport": [], "nearby_landmarks": []}
-    _POI_CACHE[grid_key] = (now, fallback)
-    return fallback
+    # Same reasoning as the timeout path: every mirror being down is a fact
+    # about Overpass, so it goes in the short-lived negative cache rather than
+    # sitting in _POI_CACHE as this location's answer for an hour.
+    _POI_FAILURE_CACHE[grid_key] = now
+    return {"public_transport": [], "nearby_landmarks": []}
 
 
 def parse_overpass_results(
