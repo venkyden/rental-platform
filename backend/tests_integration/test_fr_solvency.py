@@ -141,13 +141,18 @@ async def test_solvency_high_ratio_stored_banded(client, monkeypatch):
     assert body["recency_flag"] is False
     assert body["avis_corroborated_name"] is True
 
-    # Verify only banded data is persisted — no raw RFR.
+    # Verify only banded data is persisted — no raw RFR. Solvency is stored on
+    # income_data (not identity_data): that's the field solvency_verified,
+    # GET /verification/status, the landlord-facing applicant schema, and
+    # issue-mine's credential-claim builder all read.
     async with sm() as s:
         from app.models.user import User as U
         u = await s.get(U, tenant.id)
-        assert u.identity_data["solvency_assurance"] == "HIGH"
-        assert u.identity_data["solvency_ratio"] == ">=3.0"
-        assert "revenu_fiscal_de_reference" not in u.identity_data
+        assert u.income_data["solvency_assurance"] == "HIGH"
+        assert u.income_data["solvency_ratio"] == ">=3.0"
+        assert "revenu_fiscal_de_reference" not in u.income_data
+        assert u.income_verified is True
+        assert u.solvency_verified is True
         # Identity assurance must remain MEDIUM — solvency HIGH never inflates it.
         assert u.identity_data["identity_assurance"] == "MEDIUM"
 
@@ -212,6 +217,12 @@ async def test_solvency_rfr_absent_returns_unverified(client, monkeypatch):
     body = r.json()
     assert body["solvency_assurance"] == "UNVERIFIED"
     assert body["solvency_ratio"] is None
+
+    async with sm() as s:
+        from app.models.user import User as U
+        u = await s.get(U, tenant.id)
+        assert u.income_verified is False
+        assert u.solvency_verified is False
 
 
 @pytest.mark.asyncio
@@ -286,3 +297,28 @@ async def test_solvency_identity_assurance_not_inflated(client, monkeypatch):
         from app.models.user import User as U
         u = await s.get(U, tenant.id)
         assert u.identity_data["identity_assurance"] == "MEDIUM"
+
+
+@pytest.mark.asyncio
+async def test_solvency_high_surfaces_in_self_issued_credential(client, monkeypatch):
+    """Regression: a completed FR HIGH solvency check must actually reach the
+    shareable credential via issue-mine. It previously landed on identity_data
+    (write-only — nothing reads solvency off that field), so solvency_verified
+    stayed False and issue-mine silently omitted the claim."""
+    sm = client._sessionmaker
+    tenant = await _make_verified_tenant(sm, full_name="Jean Dupont")
+    _patch_pipeline(monkeypatch, names=["DUPONT JEAN"], rfr=36_000, annee=2024)
+
+    r = await client.post(
+        "/verification/fr/solvency",
+        headers=auth(tenant),
+        files={"file": PDF},
+        data={"monthly_rent": "1000"},
+    )
+    assert r.status_code == 200, r.text
+
+    r2 = await client.post("/credentials/issue-mine", headers=auth(tenant))
+    assert r2.status_code == 201, r2.text
+    claims = r2.json()["claims"]
+    assert claims["solvency_assurance"] == "HIGH"
+    assert claims["solvency_ratio"] == ">=3.0"

@@ -130,7 +130,7 @@ class TestPendingVerificationsQueue:
         empty_result.scalars.return_value.all.return_value = []
 
         mock_db = MagicMock()
-        mock_db.execute = AsyncMock(side_effect=[mock_result, empty_result])
+        mock_db.execute = AsyncMock(side_effect=[mock_result, empty_result, empty_result])
 
         target_app = app.app if hasattr(app, "app") else app
         admin = make_mock_user("admin", "admin@test.com")
@@ -164,7 +164,7 @@ class TestPendingVerificationsQueue:
         empty_result.scalars.return_value.all.return_value = []
 
         mock_db = MagicMock()
-        mock_db.execute = AsyncMock(side_effect=[mock_result, empty_result])
+        mock_db.execute = AsyncMock(side_effect=[mock_result, empty_result, empty_result])
 
         target_app = app.app if hasattr(app, "app") else app
         admin = make_mock_user("admin", "admin@test.com")
@@ -193,7 +193,7 @@ class TestPendingVerificationsQueue:
         empty_result.scalars.return_value.all.return_value = []
 
         mock_db = MagicMock()
-        mock_db.execute = AsyncMock(side_effect=[mock_result, empty_result])
+        mock_db.execute = AsyncMock(side_effect=[mock_result, empty_result, empty_result])
 
         target_app = app.app if hasattr(app, "app") else app
         admin = make_mock_user("admin", "admin@test.com")

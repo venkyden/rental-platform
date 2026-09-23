@@ -9,6 +9,7 @@ Legal basis: Loi ALUR, Article 22 (deposit return),
 Decree 2015-1437 (état des lieux), EU ODR Regulation.
 """
 
+import logging
 from datetime import datetime
 from app.core.timeutils import naive_utcnow
 from typing import List, Optional
@@ -35,6 +36,8 @@ from app.models.visits_and_leases import Lease
 from app.routers.auth import get_current_user
 from app.services.notification_service import NotificationService
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/disputes", tags=["Disputes"])
 
 
@@ -46,6 +49,20 @@ router = APIRouter(prefix="/disputes", tags=["Disputes"])
 def _require_admin(user: User):
     if user.role != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
+
+
+async def _notify_best_effort(coro) -> None:
+    """Run a notification coroutine without letting a delivery failure turn an
+    already-committed dispute change into a reported 500.
+
+    No rollback here (unlike esign.py's _notify): these endpoints return the
+    already-committed ORM object directly for response_model serialization —
+    a rollback expires its attributes, and re-loading them outside an awaited
+    context then crashes with MissingGreenlet."""
+    try:
+        await coro
+    except Exception:
+        logger.warning("Dispute notification failed", exc_info=True)
 
 
 async def _get_dispute_or_404(dispute_id: UUID, db: AsyncSession) -> Dispute:
@@ -148,12 +165,12 @@ async def create_dispute(
     if current_user.id == lease.landlord_id:
         recipient_id = lease.tenant_id
     
-    await notifier.notify_dispute_created(
+    await _notify_best_effort(notifier.notify_dispute_created(
         recipient_id=recipient_id,
         reporter_name=current_user.full_name or "A user",
         title=new_dispute.title,
         dispute_id=new_dispute.id,
-    )
+    ))
 
     return new_dispute
 
@@ -305,12 +322,12 @@ async def respond_to_dispute(
 
     # Notify reporter
     notifier = NotificationService(db)
-    await notifier.notify_dispute_responded(
+    await _notify_best_effort(notifier.notify_dispute_responded(
         recipient_id=dispute.raised_by_id,
         responder_name=current_user.full_name or "A user",
         title=dispute.title,
         dispute_id=dispute.id,
-    )
+    ))
 
     return dispute
 
