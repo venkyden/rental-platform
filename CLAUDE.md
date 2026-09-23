@@ -194,6 +194,29 @@ DPIA (see master plan WS-2).
 
 ---
 
+## Code review — run the council before merging
+
+**CodeRabbit does not review this repo.** It posts on every PR and reports a green
+check, but the check means *"Review skipped: repository has fewer than 10 stars"* —
+its OSS policy. Treat that green tick as no review at all; several PRs have merged
+on the strength of it.
+
+Until the repo passes 10 stars or goes private, `/llm-council` is the review: it runs
+specialist reviewers in parallel over the diff and synthesises the findings. It uses
+the Claude Code subscription, so no API spend and no external quota.
+
+- Run it before merging any PR, and before pushing a finished branch.
+- Mandatory for diffs touching identity/verification/credentials, the shareable
+  routes (`/c/`, `/d/share/`), the regulatory boundaries above, or anything that
+  acts against production.
+- Findings are input, not a verdict — verify a claim against the code before acting
+  on it, and say what you rejected and why.
+
+To restore CodeRabbit instead: star the repo to 10+, make it private, or comment
+`@coderabbitai review` per-PR to trigger a one-off.
+
+---
+
 ## Reference
 
 Full PRD, user journeys, and per-process edge-case matrices: `PRD-TrustLayer-v2.md`
