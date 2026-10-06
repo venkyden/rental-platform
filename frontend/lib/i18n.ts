@@ -203,6 +203,158 @@ export const translations = {
         },
         // Landing Page
         landing: {
+            home: {
+                hero: {
+                    tenant: {
+                        title1: "Land your real home.",
+                        title2: "Safe, in a few clicks.",
+                        sub: "Watch the place room by room, get your papers checked once, and sign from your phone."
+                    },
+                    landlord: {
+                        title1: "Film it once.",
+                        title2: "Your place speaks for itself.",
+                        sub: "Add the basics, film each room on your phone, and hear from students who have already watched the whole place.",
+                        button: "List my place",
+                        hint: "Listing is free. One small flat fee when the lease is signed."
+                    },
+                    search: {
+                        examples: {
+                            one: "a studio in Lyon under €600",
+                            two: "a flatshare in Nantes from September",
+                            three: "2 bedrooms, 2 bathrooms in Paris"
+                        },
+                        lead: "I'm looking for",
+                        understood: "Understood:",
+                        try: "Try:",
+                        button: "Show me rooms",
+                        hint: "No account needed to look around."
+                    }
+                },
+                nodes: {
+                    tenant: {
+                        film: "Filmed room by room",
+                        papers: "Papers checked, then deleted",
+                        lease: "The official French lease",
+                        fee: "One small fee, nothing more"
+                    },
+                    landlord: {
+                        film: "One walk-through on your phone",
+                        energy: "Energy rating looked up for you",
+                        deposit: "Deposit limit worked out",
+                        free: "Free to list"
+                    }
+                },
+                stamp: {
+                    line1: "One small fee.",
+                    line2: "Pay for nothing more"
+                },
+                switch: {
+                    tenant: "Moving to France",
+                    landlord: "Letting a place"
+                },
+                stations: {
+                    film: {
+                        tenant: {
+                            title: "See it move.",
+                            body: "A photo picks its angle. A walk-through shows the whole place, one room after another, filmed on the spot."
+                        },
+                        landlord: {
+                            title: "Film it once.",
+                            body: "Open the link on your phone and walk from room to room. Students see the place as it is, so the ones who write to you already know it."
+                        }
+                    },
+                    check: {
+                        title: "Checked once. Then deleted.",
+                        tenant: {
+                            body: "We read your documents, confirm what they say, and delete them. The landlord sees the result, never the papers. No guarantor? Visale is free from the state, and we accept its certificate."
+                        },
+                        landlord: {
+                            body: "Applicants can show who they are and that they can cover the rent. You get a clear result, with no folder of strangers' papers to keep."
+                        },
+                        link: "How we check, and what we keep"
+                    },
+                    sign: {
+                        title: "Signed from your phone.",
+                        tenant: {
+                            body: "The lease follows the official French model, with the deposit kept within the legal limit. You both sign online and each keep a copy."
+                        },
+                        landlord: {
+                            body: "The lease is built from your listing on the official French model. You both sign online, with nothing to print or post."
+                        }
+                    },
+                    fee: {
+                        title: "One small fee. That's all.",
+                        tenant: {
+                            body: "Looking around and applying cost nothing. You pay Roomivo once, when your room is confirmed, and there is no second fee after that."
+                        },
+                        landlord: {
+                            body: "Listing your place is free. You pay one small flat fee when the lease is signed, and nothing after that."
+                        }
+                    }
+                },
+                thread: {
+                    tenant: "From far away to the front door",
+                    landlord: "From empty room to signed lease"
+                },
+                final: {
+                    title: "Ready when you are.",
+                    tenant: "Find a room",
+                    landlord: "List my place"
+                },
+                screens: {
+                    watch: {
+                        tag: "Filmed on site · 6 rooms",
+                        rooms: "Entrance · Kitchen · Bedroom",
+                        title: "Studio · Lyon 7ᵉ",
+                        meta: "Furnished · free from 1 September",
+                        button: "Apply for this room"
+                    },
+                    film: {
+                        prompt: "Show us the kitchen.",
+                        hint: "Turn slowly so we see all of it.",
+                        count: "Room 3 of 6",
+                        next: "Next room →"
+                    },
+                    scan: {
+                        title: "Scan your passport",
+                        frame: "Hold the photo page in the frame",
+                        identity: "Identity confirmed",
+                        rent: "Can cover the rent",
+                        note: "Read, confirmed, then deleted."
+                    },
+                    applicant: {
+                        message: "Someone applied for your studio.",
+                        name: "Asha, arriving 1 September",
+                        identity: "Identity checked",
+                        rent: "Can cover the rent",
+                        visale: "Visale certificate valid",
+                        accept: "Accept",
+                        decline: "Not this time"
+                    },
+                    lease: {
+                        title: "Your lease is ready",
+                        note: "The official French model, filled in from the listing.",
+                        button: "Sign"
+                    },
+                    fee: {
+                        free: "Free",
+                        fee: "One small fee",
+                        tenant: {
+                            look: "Looking around",
+                            apply: "Applying",
+                            confirmed: "Room confirmed"
+                        },
+                        landlord: {
+                            list: "Listing your place",
+                            applications: "Receiving applications",
+                            signed: "Lease signed"
+                        },
+                        title: "What you pay Roomivo",
+                        after: "After that",
+                        nothing: "Nothing"
+                    }
+                }
+            },
             hero: {
                 badge: "Legal framework",
                 colocation: "Flatshare",
@@ -2455,6 +2607,14 @@ export const translations = {
             subtitle: "Find your next home",
             welcome_user: "Your Next Home, {{name}}",
             resultsCount: "Explore {{count}} curated listings tailored to your preferences.",
+            smart: {
+                bedrooms: "Bedrooms: {{count}}+",
+                bathrooms: "Bathrooms: {{count}}+",
+                budget: "Up to €{{amount}}",
+                from: "From {{month}}",
+                months: "Stay of {{count}}+ months",
+                remove: "Remove filter"
+            },
             loadMore: "Discover More Listings",
             sort: {
                 label: "Sort by",
@@ -3348,6 +3508,158 @@ export const translations = {
         },
         // Landing Page
         landing: {
+            home: {
+                hero: {
+                    tenant: {
+                        title1: "Trouvez votre vrai chez-vous.",
+                        title2: "En confiance, en quelques clics.",
+                        sub: "Visitez le logement pièce par pièce en vidéo, faites vérifier votre dossier une seule fois, et signez depuis votre téléphone."
+                    },
+                    landlord: {
+                        title1: "Filmez-le une fois.",
+                        title2: "Votre logement parle de lui-même.",
+                        sub: "Renseignez l'essentiel, filmez chaque pièce avec votre téléphone, et recevez des messages d'étudiants qui ont déjà vu tout le logement.",
+                        button: "Publier mon logement",
+                        hint: "L'annonce est gratuite. Un seul petit tarif fixe à la signature du bail."
+                    },
+                    search: {
+                        lead: "Je cherche",
+                        examples: {
+                            one: "un studio à Lyon moins de 600 €",
+                            two: "une colocation à Nantes dès septembre",
+                            three: "2 chambres, 2 salles de bain à Paris"
+                        },
+                        understood: "Compris :",
+                        try: "Essayez :",
+                        button: "Voir les logements",
+                        hint: "Pas besoin de compte pour regarder."
+                    }
+                },
+                nodes: {
+                    tenant: {
+                        film: "Filmé pièce par pièce",
+                        papers: "Dossier vérifié, puis supprimé",
+                        lease: "Le bail officiel français",
+                        fee: "Un seul petit tarif, rien de plus"
+                    },
+                    landlord: {
+                        film: "Un seul tour, avec votre téléphone",
+                        energy: "Classe énergie retrouvée pour vous",
+                        deposit: "Plafond du dépôt calculé",
+                        free: "Annonce gratuite"
+                    }
+                },
+                stamp: {
+                    line1: "Un seul petit tarif.",
+                    line2: "Rien d'autre à payer"
+                },
+                switch: {
+                    tenant: "J'arrive en France",
+                    landlord: "Je loue un logement"
+                },
+                stations: {
+                    film: {
+                        tenant: {
+                            title: "Voyez-le bouger.",
+                            body: "Une photo choisit son angle. Une visite filmée montre tout le logement, une pièce après l'autre, tournée sur place."
+                        },
+                        landlord: {
+                            title: "Filmez-le une fois.",
+                            body: "Ouvrez le lien sur votre téléphone et passez de pièce en pièce. Les étudiants voient le logement tel qu'il est : ceux qui vous écrivent le connaissent déjà."
+                        }
+                    },
+                    check: {
+                        title: "Vérifié une fois. Puis supprimé.",
+                        tenant: {
+                            body: "Nous lisons vos documents, confirmons ce qu'ils disent, puis les supprimons. Le propriétaire voit le résultat, jamais les papiers. Pas de garant ? Visale est gratuit et proposé par l'État, et nous acceptons son certificat."
+                        },
+                        landlord: {
+                            body: "Les candidats peuvent prouver leur identité et leur capacité à payer le loyer. Vous recevez un résultat clair, sans dossier de papiers d'inconnus à conserver."
+                        },
+                        link: "Comment nous vérifions, et ce que nous gardons"
+                    },
+                    sign: {
+                        title: "Signé depuis votre téléphone.",
+                        tenant: {
+                            body: "Le bail suit le modèle officiel français, avec un dépôt de garantie dans la limite légale. Vous signez tous les deux en ligne et gardez chacun un exemplaire."
+                        },
+                        landlord: {
+                            body: "Le bail est établi à partir de votre annonce, sur le modèle officiel français. Vous signez tous les deux en ligne, sans rien imprimer ni envoyer."
+                        }
+                    },
+                    fee: {
+                        title: "Un seul petit tarif. C'est tout.",
+                        tenant: {
+                            body: "Regarder et candidater ne coûte rien. Vous payez Roomivo une seule fois, quand votre logement est confirmé, et il n'y a pas de second tarif ensuite."
+                        },
+                        landlord: {
+                            body: "Publier votre logement est gratuit. Vous payez un seul petit tarif fixe à la signature du bail, et rien ensuite."
+                        }
+                    }
+                },
+                thread: {
+                    tenant: "De très loin jusqu'à la porte d'entrée",
+                    landlord: "De la pièce vide au bail signé"
+                },
+                final: {
+                    title: "Quand vous voulez.",
+                    tenant: "Trouver un logement",
+                    landlord: "Publier mon logement"
+                },
+                screens: {
+                    watch: {
+                        tag: "Filmé sur place · 6 pièces",
+                        rooms: "Entrée · Cuisine · Chambre",
+                        title: "Studio · Lyon 7ᵉ",
+                        meta: "Meublé · libre le 1ᵉʳ septembre",
+                        button: "Candidater pour ce logement"
+                    },
+                    film: {
+                        prompt: "Montrez-nous la cuisine.",
+                        hint: "Tournez lentement pour tout montrer.",
+                        count: "Pièce 3 sur 6",
+                        next: "Pièce suivante →"
+                    },
+                    scan: {
+                        title: "Scannez votre passeport",
+                        frame: "Placez la page photo dans le cadre",
+                        identity: "Identité confirmée",
+                        rent: "Peut payer le loyer",
+                        note: "Lu, confirmé, puis supprimé."
+                    },
+                    applicant: {
+                        message: "Quelqu'un a candidaté pour votre studio.",
+                        name: "Asha, arrivée le 1ᵉʳ septembre",
+                        identity: "Identité vérifiée",
+                        rent: "Peut payer le loyer",
+                        visale: "Certificat Visale valide",
+                        accept: "Accepter",
+                        decline: "Pas cette fois"
+                    },
+                    lease: {
+                        title: "Votre bail est prêt",
+                        note: "Le modèle officiel français, rempli à partir de l'annonce.",
+                        button: "Signer"
+                    },
+                    fee: {
+                        free: "Gratuit",
+                        fee: "Un seul petit tarif",
+                        tenant: {
+                            look: "Regarder les logements",
+                            apply: "Candidater",
+                            confirmed: "Logement confirmé"
+                        },
+                        landlord: {
+                            list: "Publier votre logement",
+                            applications: "Recevoir des candidatures",
+                            signed: "Bail signé"
+                        },
+                        title: "Ce que vous payez à Roomivo",
+                        after: "Ensuite",
+                        nothing: "Rien"
+                    }
+                }
+            },
             hero: {
                 badge: "Cadre légal",
                 colocation: "Colocation",
@@ -5433,6 +5745,14 @@ export const translations = {
             subtitle: "Trouvez votre futur chez-vous",
             welcome_user: "Votre futur chez-vous, {{name}}",
             resultsCount: "Explorez {{count}} annonces sélectionnées selon vos préférences.",
+            smart: {
+                bedrooms: "Chambres : {{count}}+",
+                bathrooms: "Salles de bain : {{count}}+",
+                budget: "Jusqu'à {{amount}} €",
+                from: "À partir de {{month}}",
+                months: "Séjour de {{count}} mois ou plus",
+                remove: "Retirer le filtre"
+            },
             loadMore: "Découvrir plus d'annonces",
             sort: {
                 label: "Trier par",

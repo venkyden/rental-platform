@@ -1,18 +1,19 @@
 <svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-        <linearGradient id="g" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stop-color="#3DD6D0"/>
-            <stop offset="100%" stop-color="#22B8B8"/>
-        </linearGradient>
-    </defs>
-    <rect width="512" height="512" rx="96" fill="url(#g)"/>
-    <g transform="translate(64, 64) scale(6)">
-        <path d="M32 10L8 30H14V52H50V30H56L32 10Z" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-        <circle cx="25" cy="32" r="4.5" fill="white" />
-        <path d="M18 28L25 25L32 28L25 31Z" fill="white"/>
-        <line x1="25" y1="28" x2="25" y2="25" stroke="white" stroke-width="1.5" />
-        <path d="M20 52C20 45 21 40 25 40C29 40 30 45 30 52" fill="white" fill-opacity="0.9"/>
-        <circle cx="39" cy="34" r="4" fill="white" fill-opacity="0.85" />
-        <path d="M34 52C34 46 35 42 39 42C43 42 44 46 44 52" fill="white" fill-opacity="0.75"/>
+    <!-- Roomivo mark: gold disc, white hub-and-spoke network.
+         Matches public/images/roomivo-logo.png (#CB8F1B). -->
+    <circle cx="256" cy="256" r="240" fill="#CB8F1B"/>
+    <g stroke="#FFFFFF" stroke-width="16" stroke-linecap="round">
+        <line x1="256" y1="256" x2="150" y2="52"/>
+        <line x1="256" y1="256" x2="404" y2="150"/>
+        <line x1="256" y1="256" x2="372" y2="344"/>
+        <line x1="256" y1="256" x2="232" y2="430"/>
+        <line x1="256" y1="256" x2="58" y2="212"/>
+    </g>
+    <g fill="#FFFFFF">
+        <circle cx="404" cy="150" r="34"/>
+        <circle cx="372" cy="344" r="27"/>
+        <circle cx="232" cy="430" r="30"/>
+        <circle cx="58" cy="212" r="27"/>
+        <circle cx="256" cy="256" r="72"/>
     </g>
 </svg>

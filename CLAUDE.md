@@ -5,6 +5,36 @@ The full PRD is in `PRD-TrustLayer-v2.md`. This file is the condensed working co
 
 ---
 
+## Direction update — 2026-10-06 (founder decisions; NOT yet legally cleared)
+
+The founder set a broader direction on 2026-10-06. Until counsel has re-reviewed the model
+and the licensed set-up exists, **the boundaries table below still governs what may ship.**
+Build order and gates: `docs/superpowers/plans/2026-10-06-ecosystem-roadmap-master.md`.
+
+- **Vision:** one rental ecosystem for international students and private landlords covering
+  the whole tenancy (find, apply, sign, stay, leave). Roomivo stays a technology company, not
+  an estate agency; licences and regulated partners are acceptable when needed.
+- **Build rule:** anything regulated or generic comes from a provider; everything else is
+  native. Shortlist: Stripe (fees, subscriptions, later rent), Appenin (home insurance), Meta
+  WhatsApp Cloud API (landlord messages). Not wanted: a rent-guarantee provider, move-in
+  services, a proof-of-funds provider, a monthly membership.
+- **Fees (amount "X" not set; never shown in marketing):** every student pays X once when a
+  landlord accepts them (the accommodation certificate is issued then if a visa is needed;
+  full refund if the visa is refused or the landlord withdraws). Landlords list free and pay
+  one small flat fee when the lease is signed. Both fees are tied to acceptance or signature,
+  which conflicts with "never success-based" below: **they must not go live before a new
+  legal opinion and the licensed set-up.**
+- **Landing page (rebuilt 2026-10-06):** `frontend/components/landing/home/`. One page with an
+  audience switch, a sentence search (`frontend/lib/smartSearch.ts`), a four-stop thread with
+  phone wireframes; the credential layer moved to `/trust`.
+- **Copy rules for every public page:** no claims about the market or competitors; no
+  brand-level promises; no "what we couldn't check" wording; never name the state tenant-file
+  service; Visale may be mentioned as free guidance; no price figure (structure only: "one
+  small fee, pay for nothing more"); the page describes only what the product does today; do
+  not change the Navbar or the landing footer unless asked.
+
+---
+
 ## What this product is (positioning settled 2026-07-04)
 
 **One product, two faces, one verification engine:**

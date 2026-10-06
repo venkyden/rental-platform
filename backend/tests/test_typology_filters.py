@@ -40,6 +40,35 @@ class TestTypologyFilters:
         assert "rooms_count" not in _where_sql(query)
 
 
+class TestSmartSearchFilters:
+    """bathrooms_min / min_duration_months / available_by (landing-page smart search)."""
+
+    def test_bathrooms_min_filter(self):
+        assert "bathrooms >=" in _where_sql(_build({"bathrooms_min": "2"}))
+
+    def test_bathrooms_min_ignores_bad_values(self):
+        for bad in ["abc", "0", "-1", "21", "nan", "1e9", "9" * 40, "", "2.5"]:
+            assert "bathrooms" not in _where_sql(_build({"bathrooms_min": bad})), bad
+
+    def test_min_duration_keeps_flexible_listings(self):
+        sql = _where_sql(_build({"min_duration_months": "9"}))
+        assert "lease_duration_months IS NULL" in sql
+        assert "lease_duration_months >=" in sql
+
+    def test_min_duration_ignores_bad_values(self):
+        for bad in ["abc", "0", "37", "inf", ""]:
+            assert "lease_duration_months" not in _where_sql(_build({"min_duration_months": bad})), bad
+
+    def test_available_by_keeps_undated_listings(self):
+        sql = _where_sql(_build({"available_by": "2027-09-30"}))
+        assert "available_from IS NULL" in sql
+        assert "available_from <=" in sql
+
+    def test_available_by_ignores_bad_values(self):
+        for bad in ["2027-13-01", "tomorrow", "2027-09", "", "' OR 1=1 --"]:
+            assert "available_from" not in _where_sql(_build({"available_by": bad})), bad
+
+
 class TestTypologyEndpoint:
     def test_list_properties_accepts_rooms_count(self, client):
         resp = client.get("/properties?rooms_count=2")
@@ -133,3 +162,17 @@ class TestLandlordTrustFields:
 
         result = _landlord_trust_fields(FakeLandlord())
         assert result["landlord_first_name"] == "Marc"
+
+
+class TestSmartSearchEndpoint:
+    def test_list_properties_accepts_smart_search_params(self, client):
+        resp = client.get(
+            "/properties?bathrooms_min=2&min_duration_months=9&available_by=2027-09-30&amenities=balcony"
+        )
+        assert resp.status_code == 200
+
+    def test_list_properties_survives_hostile_smart_search_params(self, client):
+        resp = client.get(
+            "/properties?bathrooms_min=999999999999999999999&min_duration_months=nan&available_by=%00%27"
+        )
+        assert resp.status_code == 200
