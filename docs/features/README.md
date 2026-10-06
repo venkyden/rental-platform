@@ -27,6 +27,7 @@ detailed journals. Audit status from the 2026-05-30 full audit.
 | Bulk import/export | `bulk.py` | `/bulk` | [listings-compliance](listings-compliance/journal.md) | 🟡 reviewed |
 | Webhooks (ERP/Stripe) | `webhooks.py`, `webhook_subscriptions` | `/webhooks` | [security-infrastructure](security-infrastructure/journal.md) | 🟡 reviewed |
 | Feedback | `feedback.py` | — | [security-infrastructure](security-infrastructure/journal.md) | 🟡 reviewed |
+| Landing page & smart search | `properties.py` (search filters) | `/`, `/trust`, `components/landing/home`, `lib/smartSearch.ts` | [landing](landing/DOSSIER.md) | ✅ rebuilt 2026-10-06 (both audiences, sentence search, 117 e2e tests) |
 | Security, headers & infra | `main.py`, `core/*`, nginx, docker | global | [security-infrastructure](security-infrastructure/journal.md) | ✅ fixed (headers, CORS, log) |
 
 Legend: ✅ changed in the 2026-05 remediation · 🟡 reviewed, findings in the journal/backlog.
