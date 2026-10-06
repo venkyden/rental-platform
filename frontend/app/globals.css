@@ -185,3 +185,25 @@ input[type="checkbox"], input[type="radio"] {
     font-size: 16px !important;
   }
 }
+
+/* ─── Landing: brand serif (self-hosted Playfair Display, OFL) + paper texture ─── */
+@font-face {
+  font-family: "Playfair Display";
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url("/fonts/playfair-display-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Playfair Display";
+  font-style: italic;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url("/fonts/playfair-display-italic.woff2") format("woff2");
+}
+@utility font-display {
+  font-family: "Playfair Display", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+}
+@utility paper-grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.06'/%3E%3C/svg%3E");
+}
