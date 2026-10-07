@@ -294,9 +294,7 @@ class ApiClient {
     }
 
     async getProperties(params: Record<string, any> = {}) {
-        // indexes: null sends list filters as repeated keys (amenities=a&amenities=b),
-        // which is how the API reads them.
-        const response = await this.client.get('/properties', { params, paramsSerializer: { indexes: null } });
+        const response = await this.client.get('/properties', { params });
         return response.data;
     }
 

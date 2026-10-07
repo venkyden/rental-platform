@@ -36,7 +36,7 @@ function SearchContent() {
     const initialTypology = searchParams.get('typology') || '';
     const initialFurnishedParam = searchParams.get('furnished'); // 'true' | 'false' | null
     const initialColocation = searchParams.get('colocation') === '1';
-    // Smart-search deep links (landing page): budget, bedrooms, bathrooms, amenities, move-in month, length of stay.
+    // URL filters: budget, bedrooms, bathrooms, amenities, move-in month, length of stay.
     const paramInt = (name: string, min: number, max: number): number | null => {
         const raw = searchParams.get(name);
         const n = raw === null ? NaN : Number(raw);
@@ -79,8 +79,11 @@ function SearchContent() {
 
     useEffect(() => {
         if (!config) return;
-        // Deep-link params take precedence over segment defaults
-        if (initialTypology || initialFurnishedParam || initialColocation || initialMaxRent) return;
+        // Any filter in the URL suppresses the segment defaults: the visitor asked for something specific.
+        if (
+            initialTypology || initialFurnishedParam || initialColocation || initialMaxRent ||
+            initialBedrooms || initialBathrooms || initialMonths || initialMoveIn || initialAmenities.length
+        ) return;
         const mode = config.settings.default_filter_mode;
         if (mode === 'budget') {
             setPriceRange(800);
@@ -141,7 +144,8 @@ function SearchContent() {
                 setProperties(response);
             }
         } catch (err) {
-            setError(t('search.status.error', undefined, undefined));
+            console.error('[search] could not load listings', err);
+            setError(t('search.status.error', undefined, 'We could not load the listings. Please try again.'));
         } finally {
             setLoading(false);
         }
@@ -252,7 +256,7 @@ function SearchContent() {
                     </div>
                 </div>
 
-                {/* Filters that arrived from the landing page's sentence search; each can be removed. */}
+                {/* Active URL filters without a control of their own; each can be removed. */}
                 {smartFilters.length > 0 && (
                     <div className="mb-6 flex flex-wrap items-center gap-2" data-testid="smart-filters">
                         {smartFilters.map((f) => (
@@ -378,6 +382,11 @@ function SearchContent() {
                                     setCafOnly(false);
                                     setColocation(false);
                                     setSavedOnly(false);
+                                    setMinBedrooms(null);
+                                    setMinBathrooms(null);
+                                    setAmenities([]);
+                                    setMoveIn(null);
+                                    setStayMonths(null);
                                 }}
                                 className="px-5 py-3 rounded-xl text-zinc-400 hover:text-zinc-900 hover:bg-zinc-200/50 transition-all flex items-center gap-2 group"
                             >
@@ -411,6 +420,23 @@ function SearchContent() {
                             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-16"
                         >
                             {[1, 2, 3, 4, 5, 6].map(i => <PropertyCardSkeleton key={i} />)}
+                        </motion.div>
+                    ) : error ? (
+                        <motion.div
+                            key="error"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            role="alert"
+                            data-testid="search-error"
+                            className="py-32 text-center glass-card border-none rounded-[4rem] shadow-2xl"
+                        >
+                            <p className="text-xl text-zinc-700 font-medium max-w-md mx-auto leading-relaxed mb-10">{error}</p>
+                            <button
+                                onClick={() => fetchProperties(false)}
+                                className="px-12 py-5 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.3em] rounded-[2rem]"
+                            >
+                                {t('search.smart.retry', undefined, 'Try again')}
+                            </button>
                         </motion.div>
                     ) : properties.length === 0 ? (
                         <motion.div 
