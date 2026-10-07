@@ -207,15 +207,15 @@ export const translations = {
                 hero: {
                     tenant: {
                         title1: "Land your real home.",
-                        title2: "Safe, in a few clicks.",
-                        sub: "Watch the place room by room, get your papers checked once, and sign from your phone."
+                        title2: "In a few clicks.",
+                        sub: "See the place in photos and video taken on site, get your papers checked once, and sign from your phone."
                     },
                     landlord: {
                         title1: "Film it once.",
                         title2: "Your place speaks for itself.",
-                        sub: "Add the basics, film each room on your phone, and hear from students who have already watched the whole place.",
+                        sub: "Add the basics, photograph each room and film one walk-through on your phone, and hear from students who have already seen the place.",
                         button: "List my place",
-                        hint: "Listing is free. One small flat fee when the lease is signed."
+                        hint: "Listing is free. One small flat fee, once."
                     },
                     search: {
                         examples: {
@@ -223,8 +223,8 @@ export const translations = {
                             two: "a flatshare in Nantes from September",
                             three: "2 bedrooms, 2 bathrooms in Paris"
                         },
-                        lead: "I'm looking for",
                         understood: "Understood:",
+                        lead: "I'm looking for",
                         try: "Try:",
                         button: "Show me rooms",
                         hint: "No account needed to look around."
@@ -232,7 +232,7 @@ export const translations = {
                 },
                 nodes: {
                     tenant: {
-                        film: "Filmed room by room",
+                        film: "Photos and video taken on site",
                         papers: "Papers checked, then deleted",
                         lease: "The official French lease",
                         fee: "One small fee, nothing more"
@@ -250,26 +250,27 @@ export const translations = {
                 },
                 switch: {
                     tenant: "Moving to France",
-                    landlord: "Letting a place"
+                    landlord: "Letting a place",
+                    label: "Who is this page for?"
                 },
                 stations: {
                     film: {
                         tenant: {
                             title: "See it move.",
-                            body: "A photo picks its angle. A walk-through shows the whole place, one room after another, filmed on the spot."
+                            body: "Every room is photographed on site, and a filmed walk-through shows how the place fits together when the owner records one."
                         },
                         landlord: {
                             title: "Film it once.",
-                            body: "Open the link on your phone and walk from room to room. Students see the place as it is, so the ones who write to you already know it."
+                            body: "Open the link on your phone, photograph each room and film one walk-through. Students see the place as it is, so the ones who write to you already know it."
                         }
                     },
                     check: {
                         title: "Checked once. Then deleted.",
                         tenant: {
-                            body: "We read your documents, confirm what they say, and delete them. The landlord sees the result, never the papers. No guarantor? Visale is free from the state, and we accept its certificate."
+                            body: "We read your documents, confirm what they say, and delete them. The landlord sees the result, never the papers. No guarantor? Visale is a free guarantee from Action Logement: see visale.fr to find out whether you qualify, and we will check your certificate."
                         },
                         landlord: {
-                            body: "Applicants can show who they are and that they can cover the rent. You get a clear result, with no folder of strangers' papers to keep."
+                            body: "Applicants can have their identity and their income checked. You get a clear result, with no folder of strangers' papers to keep."
                         },
                         link: "How we check, and what we keep"
                     },
@@ -285,10 +286,10 @@ export const translations = {
                     fee: {
                         title: "One small fee. That's all.",
                         tenant: {
-                            body: "Looking around and applying cost nothing. You pay Roomivo once, when your room is confirmed, and there is no second fee after that."
+                            body: "Looking around and applying cost nothing. You pay Roomivo one small fee, once, and nothing after that."
                         },
                         landlord: {
-                            body: "Listing your place is free. You pay one small flat fee when the lease is signed, and nothing after that."
+                            body: "Listing your place is free. You pay Roomivo one small flat fee, once, and nothing after that."
                         }
                     }
                 },
@@ -303,31 +304,31 @@ export const translations = {
                 },
                 screens: {
                     watch: {
-                        tag: "Filmed on site · 6 rooms",
-                        rooms: "Entrance · Kitchen · Bedroom",
+                        tag: "Taken on site · 6 rooms",
                         title: "Studio · Lyon 7ᵉ",
+                        rooms: "Entrance · Kitchen · Bedroom",
                         meta: "Furnished · free from 1 September",
                         button: "Apply for this room"
                     },
                     film: {
-                        prompt: "Show us the kitchen.",
-                        hint: "Turn slowly so we see all of it.",
-                        count: "Room 3 of 6",
-                        next: "Next room →"
+                        prompt: "Walk us through the place.",
+                        hint: "Start at the front door and go room to room.",
+                        recording: "Recording · 1:12",
+                        finish: "Finish →"
                     },
                     scan: {
                         title: "Scan your passport",
+                        note: "Read, checked, then deleted.",
                         frame: "Hold the photo page in the frame",
-                        identity: "Identity confirmed",
-                        rent: "Can cover the rent",
-                        note: "Read, confirmed, then deleted."
+                        identity: "Identity checked",
+                        rent: "Income checked against the rent"
                     },
                     applicant: {
                         message: "Someone applied for your studio.",
                         name: "Asha, arriving 1 September",
                         identity: "Identity checked",
-                        rent: "Can cover the rent",
-                        visale: "Visale certificate valid",
+                        rent: "Income checked against the rent",
+                        visale: "Visale certificate checked",
                         accept: "Accept",
                         decline: "Not this time"
                     },
@@ -338,20 +339,19 @@ export const translations = {
                     },
                     fee: {
                         free: "Free",
-                        fee: "One small fee",
+                        fee: "One small fee, once",
+                        title: "What you pay Roomivo",
+                        nothing: "Nothing",
                         tenant: {
                             look: "Looking around",
-                            apply: "Applying",
-                            confirmed: "Room confirmed"
+                            apply: "Applying"
                         },
                         landlord: {
                             list: "Listing your place",
-                            applications: "Receiving applications",
-                            signed: "Lease signed"
+                            applications: "Receiving applications"
                         },
-                        title: "What you pay Roomivo",
-                        after: "After that",
-                        nothing: "Nothing"
+                        row: "Roomivo's fee",
+                        after: "After that"
                     }
                 }
             },
@@ -2613,7 +2613,8 @@ export const translations = {
                 budget: "Up to €{{amount}}",
                 from: "From {{month}}",
                 months: "Stay of {{count}}+ months",
-                remove: "Remove filter"
+                remove: "Remove filter",
+                retry: "Try again"
             },
             loadMore: "Discover More Listings",
             sort: {
@@ -3512,20 +3513,20 @@ export const translations = {
                 hero: {
                     tenant: {
                         title1: "Trouvez votre vrai chez-vous.",
-                        title2: "En confiance, en quelques clics.",
-                        sub: "Visitez le logement pièce par pièce en vidéo, faites vérifier votre dossier une seule fois, et signez depuis votre téléphone."
+                        title2: "En quelques clics.",
+                        sub: "Découvrez le logement en photos et en vidéo prises sur place, faites vérifier votre dossier une seule fois, et signez depuis votre téléphone."
                     },
                     landlord: {
                         title1: "Filmez-le une fois.",
                         title2: "Votre logement parle de lui-même.",
-                        sub: "Renseignez l'essentiel, filmez chaque pièce avec votre téléphone, et recevez des messages d'étudiants qui ont déjà vu tout le logement.",
+                        sub: "Renseignez l'essentiel, photographiez chaque pièce et filmez une visite avec votre téléphone, et recevez des messages d'étudiants qui ont déjà vu le logement.",
                         button: "Publier mon logement",
-                        hint: "L'annonce est gratuite. Un seul petit tarif fixe à la signature du bail."
+                        hint: "L'annonce est gratuite. Un seul petit tarif fixe, une seule fois."
                     },
                     search: {
                         lead: "Je cherche",
                         examples: {
-                            one: "un studio à Lyon moins de 600 €",
+                            one: "un studio à Lyon à moins de 600 €",
                             two: "une colocation à Nantes dès septembre",
                             three: "2 chambres, 2 salles de bain à Paris"
                         },
@@ -3537,7 +3538,7 @@ export const translations = {
                 },
                 nodes: {
                     tenant: {
-                        film: "Filmé pièce par pièce",
+                        film: "Photos et vidéo prises sur place",
                         papers: "Dossier vérifié, puis supprimé",
                         lease: "Le bail officiel français",
                         fee: "Un seul petit tarif, rien de plus"
@@ -3555,26 +3556,27 @@ export const translations = {
                 },
                 switch: {
                     tenant: "J'arrive en France",
-                    landlord: "Je loue un logement"
+                    landlord: "Je propose un logement",
+                    label: "À qui s'adresse cette page ?"
                 },
                 stations: {
                     film: {
                         tenant: {
                             title: "Voyez-le bouger.",
-                            body: "Une photo choisit son angle. Une visite filmée montre tout le logement, une pièce après l'autre, tournée sur place."
+                            body: "Chaque pièce est photographiée sur place, et une visite filmée montre comment le logement s'organise lorsque le propriétaire en enregistre une."
                         },
                         landlord: {
                             title: "Filmez-le une fois.",
-                            body: "Ouvrez le lien sur votre téléphone et passez de pièce en pièce. Les étudiants voient le logement tel qu'il est : ceux qui vous écrivent le connaissent déjà."
+                            body: "Ouvrez le lien sur votre téléphone, photographiez chaque pièce et filmez une visite. Les étudiants voient le logement tel qu'il est : ceux qui vous écrivent le connaissent déjà."
                         }
                     },
                     check: {
                         title: "Vérifié une fois. Puis supprimé.",
                         tenant: {
-                            body: "Nous lisons vos documents, confirmons ce qu'ils disent, puis les supprimons. Le propriétaire voit le résultat, jamais les papiers. Pas de garant ? Visale est gratuit et proposé par l'État, et nous acceptons son certificat."
+                            body: "Nous lisons vos documents, confirmons ce qu'ils disent, puis les supprimons. Le propriétaire voit le résultat, jamais les papiers. Pas de garant ? Visale est une garantie gratuite d'Action Logement : vérifiez sur visale.fr si vous y avez droit, et nous contrôlerons votre certificat."
                         },
                         landlord: {
-                            body: "Les candidats peuvent prouver leur identité et leur capacité à payer le loyer. Vous recevez un résultat clair, sans dossier de papiers d'inconnus à conserver."
+                            body: "Les candidats peuvent faire vérifier leur identité et leurs revenus. Vous recevez un résultat clair, sans dossier de papiers d'inconnus à conserver."
                         },
                         link: "Comment nous vérifions, et ce que nous gardons"
                     },
@@ -3590,10 +3592,10 @@ export const translations = {
                     fee: {
                         title: "Un seul petit tarif. C'est tout.",
                         tenant: {
-                            body: "Regarder et candidater ne coûte rien. Vous payez Roomivo une seule fois, quand votre logement est confirmé, et il n'y a pas de second tarif ensuite."
+                            body: "Regarder et candidater ne coûtent rien. Vous payez à Roomivo un seul petit tarif, une seule fois, et rien ensuite."
                         },
                         landlord: {
-                            body: "Publier votre logement est gratuit. Vous payez un seul petit tarif fixe à la signature du bail, et rien ensuite."
+                            body: "Publier votre logement est gratuit. Vous payez à Roomivo un seul petit tarif fixe, une seule fois, et rien ensuite."
                         }
                     }
                 },
@@ -3608,31 +3610,31 @@ export const translations = {
                 },
                 screens: {
                     watch: {
-                        tag: "Filmé sur place · 6 pièces",
+                        tag: "Pris sur place · 6 pièces",
                         rooms: "Entrée · Cuisine · Chambre",
                         title: "Studio · Lyon 7ᵉ",
                         meta: "Meublé · libre le 1ᵉʳ septembre",
                         button: "Candidater pour ce logement"
                     },
                     film: {
-                        prompt: "Montrez-nous la cuisine.",
-                        hint: "Tournez lentement pour tout montrer.",
-                        count: "Pièce 3 sur 6",
-                        next: "Pièce suivante →"
+                        prompt: "Faites-nous visiter le logement.",
+                        hint: "Partez de la porte d'entrée et passez de pièce en pièce.",
+                        recording: "Enregistrement · 1:12",
+                        finish: "Terminer →"
                     },
                     scan: {
                         title: "Scannez votre passeport",
                         frame: "Placez la page photo dans le cadre",
-                        identity: "Identité confirmée",
-                        rent: "Peut payer le loyer",
-                        note: "Lu, confirmé, puis supprimé."
+                        identity: "Identité vérifiée",
+                        rent: "Revenus vérifiés par rapport au loyer",
+                        note: "Lu, vérifié, puis supprimé."
                     },
                     applicant: {
                         message: "Quelqu'un a candidaté pour votre studio.",
                         name: "Asha, arrivée le 1ᵉʳ septembre",
                         identity: "Identité vérifiée",
-                        rent: "Peut payer le loyer",
-                        visale: "Certificat Visale valide",
+                        rent: "Revenus vérifiés par rapport au loyer",
+                        visale: "Certificat Visale contrôlé",
                         accept: "Accepter",
                         decline: "Pas cette fois"
                     },
@@ -3643,20 +3645,19 @@ export const translations = {
                     },
                     fee: {
                         free: "Gratuit",
-                        fee: "Un seul petit tarif",
+                        fee: "Un seul petit tarif, une fois",
                         tenant: {
                             look: "Regarder les logements",
-                            apply: "Candidater",
-                            confirmed: "Logement confirmé"
+                            apply: "Candidater"
                         },
                         landlord: {
                             list: "Publier votre logement",
-                            applications: "Recevoir des candidatures",
-                            signed: "Bail signé"
+                            applications: "Recevoir des candidatures"
                         },
                         title: "Ce que vous payez à Roomivo",
                         after: "Ensuite",
-                        nothing: "Rien"
+                        nothing: "Rien",
+                        row: "Tarif Roomivo"
                     }
                 }
             },
@@ -5749,9 +5750,10 @@ export const translations = {
                 bedrooms: "Chambres : {{count}}+",
                 bathrooms: "Salles de bain : {{count}}+",
                 budget: "Jusqu'à {{amount}} €",
-                from: "À partir de {{month}}",
+                from: "Dès {{month}}",
                 months: "Séjour de {{count}} mois ou plus",
-                remove: "Retirer le filtre"
+                remove: "Retirer le filtre",
+                retry: "Réessayer"
             },
             loadMore: "Découvrir plus d'annonces",
             sort: {

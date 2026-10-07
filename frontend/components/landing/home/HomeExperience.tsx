@@ -1,10 +1,10 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { AnimatePresence, motion, useReducedMotion, useScroll, useSpring } from 'framer-motion';
+import { AnimatePresence, MotionConfig, motion, useReducedMotion, useScroll, useSpring } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { useLanguage } from '@/lib/LanguageContext';
 import { formatMonth, parseSearch, suggestCities, toSearchUrl } from '@/lib/smartSearch';
@@ -13,21 +13,25 @@ import { PhoneApplicant, PhoneFee, PhoneFilm, PhoneLease, PhoneScan, PhoneWatch 
 type Audience = 'tenant' | 'landlord';
 
 /**
- * The home page body. One page for both sides: the switch at the top rewrites
- * every section for a student arriving in France or an owner letting a place.
- * A gold thread (the spokes of the Roomivo mark) runs through the page and
- * fills in as the visitor scrolls.
+ * The home page body, for both audiences. The switch swaps the hero copy and
+ * call to action (sentence search for a student, "List my place" for an owner)
+ * and the copy and wireframes of the four stops; the final call is shared.
+ * The vertical gold line beside the stops fills on scroll. Text never depends
+ * on an animation to be visible; motion follows the visitor's reduced-motion
+ * setting.
  */
 export default function HomeExperience() {
   const [audience, setAudience] = useState<Audience>('tenant');
 
   return (
-    <div data-testid="home-experience" className="relative bg-[#fffdf7] text-zinc-950">
-      <div className="paper-grain pointer-events-none absolute inset-0" aria-hidden="true" />
-      <Hero audience={audience} onAudience={setAudience} />
-      <Thread audience={audience} />
-      <FinalCall />
-    </div>
+    <MotionConfig reducedMotion="user">
+      <div data-testid="home-experience" className="relative bg-[#fffdf7] text-zinc-950">
+        <div className="paper-grain pointer-events-none absolute inset-0" aria-hidden="true" />
+        <Hero audience={audience} onAudience={setAudience} />
+        <Thread audience={audience} />
+        <FinalCall />
+      </div>
+    </MotionConfig>
   );
 }
 
@@ -40,10 +44,10 @@ function Hero({ audience, onAudience }: { audience: Audience; onAudience: (a: Au
   const copy = tenant
     ? {
         title1: t('landing.home.hero.tenant.title1', undefined, 'Land your real home.'),
-        title2: t('landing.home.hero.tenant.title2', undefined, 'Safe, in a few clicks.'),
-        sub: t('landing.home.hero.tenant.sub', undefined, 'Watch the place room by room, get your papers checked once, and sign from your phone.'),
+        title2: t('landing.home.hero.tenant.title2', undefined, 'In a few clicks.'),
+        sub: t('landing.home.hero.tenant.sub', undefined, 'See the place in photos and video taken on site, get your papers checked once, and sign from your phone.'),
         nodes: [
-          t('landing.home.nodes.tenant.film', undefined, 'Filmed room by room'),
+          t('landing.home.nodes.tenant.film', undefined, 'Photos and video taken on site'),
           t('landing.home.nodes.tenant.papers', undefined, 'Papers checked, then deleted'),
           t('landing.home.nodes.tenant.lease', undefined, 'The official French lease'),
           t('landing.home.nodes.tenant.fee', undefined, 'One small fee, nothing more'),
@@ -52,7 +56,7 @@ function Hero({ audience, onAudience }: { audience: Audience; onAudience: (a: Au
     : {
         title1: t('landing.home.hero.landlord.title1', undefined, 'Film it once.'),
         title2: t('landing.home.hero.landlord.title2', undefined, "Your place speaks for itself."),
-        sub: t('landing.home.hero.landlord.sub', undefined, 'Add the basics, film each room on your phone, and hear from students who have already watched the whole place.'),
+        sub: t('landing.home.hero.landlord.sub', undefined, 'Add the basics, photograph each room and film one walk-through on your phone, and hear from students who have already seen the place.'),
         nodes: [
           t('landing.home.nodes.landlord.film', undefined, 'One walk-through on your phone'),
           t('landing.home.nodes.landlord.energy', undefined, 'Energy rating looked up for you'),
@@ -71,7 +75,7 @@ function Hero({ audience, onAudience }: { audience: Audience; onAudience: (a: Au
             {t('landing.footer.slogan', undefined, 'Where your heart wants to live')}
           </p>
 
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={audience}
               initial={{ opacity: 0, y: 14 }}
@@ -81,7 +85,7 @@ function Hero({ audience, onAudience }: { audience: Audience; onAudience: (a: Au
             >
               <h1 className="font-display mt-4 text-[clamp(2.6rem,5.4vw,4.4rem)] font-medium leading-[0.98] tracking-[-0.035em] text-zinc-950">
                 {copy.title1}
-                <span className="block text-balance italic text-gold">{copy.title2}</span>
+                <span className="block text-balance italic text-[#b07c12]">{copy.title2}</span>
               </h1>
               <p className="mt-7 max-w-[34rem] text-lg leading-relaxed text-zinc-600">{copy.sub}</p>
 
@@ -91,12 +95,12 @@ function Hero({ audience, onAudience }: { audience: Audience; onAudience: (a: Au
                 <div className="mt-9 flex flex-wrap items-center gap-4">
                   <Link
                     href="/auth/register?role=landlord"
-                    className="inline-flex items-center gap-2 rounded-full bg-gold px-7 py-4 text-sm font-bold text-white transition-transform hover:-translate-y-0.5 active:translate-y-0"
+                    className="inline-flex items-center gap-2 rounded-full bg-[#946608] px-7 py-4 text-sm font-bold text-white transition-transform hover:-translate-y-0.5 active:translate-y-0"
                   >
                     {t('landing.home.hero.landlord.button', undefined, 'List my place')}
                     <ArrowRight className="h-4 w-4" aria-hidden="true" />
                   </Link>
-                  <span className="text-sm text-zinc-500">{t('landing.home.hero.landlord.hint', undefined, 'Listing is free. One small flat fee when the lease is signed.')}</span>
+                  <span className="text-sm text-zinc-600">{t('landing.home.hero.landlord.hint', undefined, 'Listing is free. One small flat fee, once.')}</span>
                 </div>
               )}
             </motion.div>
@@ -104,7 +108,7 @@ function Hero({ audience, onAudience }: { audience: Audience; onAudience: (a: Au
 
           <div className="mt-12 inline-block -rotate-2 rounded-[3px] border-2 border-gold px-5 py-3">
             <p className="font-display text-xl font-semibold leading-tight text-[#8a5e07]">{t('landing.home.stamp.line1', undefined, 'One small fee.')}</p>
-            <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.22em] text-gold">{t('landing.home.stamp.line2', undefined, 'Pay for nothing more')}</p>
+            <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.22em] text-[#8a5e07]">{t('landing.home.stamp.line2', undefined, 'Pay for nothing more')}</p>
           </div>
         </div>
 
@@ -121,7 +125,7 @@ function AudienceSwitch({ audience, onAudience }: { audience: Audience; onAudien
     { id: 'landlord', label: t('landing.home.switch.landlord', undefined, 'Letting a place') },
   ];
   return (
-    <div className="inline-flex rounded-full border border-zinc-200 bg-white p-1 shadow-sm">
+    <div role="group" aria-label={t('landing.home.switch.label', undefined, 'Who is this page for?')} className="inline-flex rounded-full border border-zinc-200 bg-white p-1 shadow-sm">
       {options.map((o) => (
         <button
           key={o.id}
@@ -148,7 +152,9 @@ function AudienceSwitch({ audience, onAudience }: { audience: Audience; onAudien
 function SmartSearch() {
   const { t, language } = useLanguage();
   const router = useRouter();
+  const inputRef = useRef<HTMLInputElement>(null);
   const [text, setText] = useState('');
+  const [announced, setAnnounced] = useState('');
   const parsed = useMemo(() => parseSearch(text), [text]);
   const cities = useMemo(() => suggestCities(text), [text]);
 
@@ -159,6 +165,7 @@ function SmartSearch() {
   ];
 
   const typologyLabel = { studio: 'Studio', t1: 'T1', t2: 'T2', t3plus: 'T3+' } as const;
+  const understoodLabel = t('landing.home.hero.search.understood', undefined, 'Understood:');
   const understood = [
     parsed.city,
     parsed.typology && typologyLabel[parsed.typology],
@@ -173,11 +180,23 @@ function SmartSearch() {
     parsed.months && t('search.smart.months', { count: parsed.months }, `${parsed.months} months or longer`),
   ].filter((v): v is string => typeof v === 'string' && v.length > 0);
 
+  // Screen readers hear the result once typing pauses, not on every keystroke.
+  const summary = understood.length ? `${understoodLabel} ${understood.join(', ')}` : '';
+  useEffect(() => {
+    const timer = setTimeout(() => setAnnounced(summary), 700);
+    return () => clearTimeout(timer);
+  }, [summary]);
+
+  // Clicking a suggestion removes its button, so hand focus back to the sentence.
+  const fill = (value: string) => {
+    setText(value);
+    inputRef.current?.focus();
+  };
   const completeCity = (city: string) => {
     // Replace the half-typed place at the end of the sentence, or add the city.
     const typed = parsed.city;
     const endsWithTyped = typed && text.toLowerCase().trimEnd().endsWith(typed.toLowerCase());
-    setText(endsWithTyped ? `${text.trimEnd().slice(0, -typed.length)}${city} ` : `${text.trimEnd()} ${city} `);
+    fill(endsWithTyped ? `${text.trimEnd().slice(0, -typed.length)}${city} ` : `${text.trimEnd()} ${city} `);
   };
 
   const submit = (e: React.FormEvent) => {
@@ -192,6 +211,7 @@ function SmartSearch() {
       </label>
       <input
         id="smart-search"
+        ref={inputRef}
         type="text"
         value={text}
         onChange={(e) => setText(e.target.value)}
@@ -199,28 +219,32 @@ function SmartSearch() {
         maxLength={200}
         autoComplete="off"
         aria-describedby="smart-search-understood"
-        className="font-display mt-2 block w-full border-0 border-b-2 border-gold bg-transparent px-1 pb-2 text-xl italic text-[#8a5e07] placeholder:text-[#c9b27c] focus:outline-none focus:ring-0 sm:text-2xl"
+        className="font-display mt-2 block w-full border-0 border-b-2 border-gold bg-transparent px-1 pb-2 text-xl italic text-[#8a5e07] placeholder:text-[#857046] focus:outline-none focus:ring-0 focus-visible:shadow-[0_3px_0_0_#946608] sm:text-2xl"
       />
+      <p role="status" className="sr-only">{announced}</p>
 
-      <div id="smart-search-understood" aria-live="polite" className="mt-3 flex min-h-[2rem] flex-wrap items-center gap-2 text-xs">
-        {understood.length > 0 ? (
+      <div className="mt-3 flex min-h-[2rem] flex-wrap items-center gap-2 text-xs">
+        <div id="smart-search-understood" className="flex flex-wrap items-center gap-2">
+          {understood.length > 0 && (
+            <>
+              <span className="text-zinc-600">{understoodLabel}</span>
+              {understood.map((chip) => (
+                <span key={chip} className="rounded-full border border-gold/60 bg-[#fbf3e2] px-3 py-1 font-semibold text-[#8a5e07]">
+                  {chip}
+                </span>
+              ))}
+            </>
+          )}
+        </div>
+        {understood.length === 0 && (
           <>
-            <span className="text-zinc-500">{t('landing.home.hero.search.understood', undefined, 'Understood:')}</span>
-            {understood.map((chip) => (
-              <span key={chip} className="rounded-full border border-gold/60 bg-[#fbf3e2] px-3 py-1 font-semibold text-[#8a5e07]">
-                {chip}
-              </span>
-            ))}
-          </>
-        ) : (
-          <>
-            <span className="text-zinc-500">{t('landing.home.hero.search.try', undefined, 'Try:')}</span>
+            <span className="text-zinc-600">{t('landing.home.hero.search.try', undefined, 'Try:')}</span>
             {examples.map((example) => (
               <button
                 key={example}
                 type="button"
-                onClick={() => setText(example)}
-                className="rounded-full border border-zinc-200 bg-white px-3 py-1 text-zinc-600 transition-colors hover:border-gold hover:text-zinc-950"
+                onClick={() => fill(example)}
+                className="rounded-full border border-zinc-200 bg-white px-3 py-1 text-zinc-700 transition-colors hover:border-gold hover:text-zinc-950"
               >
                 {example}
               </button>
@@ -242,12 +266,12 @@ function SmartSearch() {
       <div className="mt-5 flex flex-wrap items-center gap-4">
         <button
           type="submit"
-          className="inline-flex items-center gap-2 rounded-full bg-gold px-7 py-4 text-sm font-bold text-white transition-transform hover:-translate-y-0.5 active:translate-y-0"
+          className="inline-flex items-center gap-2 rounded-full bg-[#946608] px-7 py-4 text-sm font-bold text-white transition-transform hover:-translate-y-0.5 active:translate-y-0"
         >
           {t('landing.home.hero.search.button', undefined, 'Show me rooms')}
           <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </button>
-        <span className="text-sm text-zinc-500">{t('landing.home.hero.search.hint', undefined, 'No account needed to look around.')}</span>
+        <span className="text-sm text-zinc-600">{t('landing.home.hero.search.hint', undefined, 'No account needed to look around.')}</span>
       </div>
     </form>
   );
@@ -321,15 +345,15 @@ function Thread({ audience }: { audience: Audience }) {
         ? t('landing.home.stations.film.tenant.title', undefined, 'See it move.')
         : t('landing.home.stations.film.landlord.title', undefined, 'Film it once.'),
       body: tenant
-        ? t('landing.home.stations.film.tenant.body', undefined, 'A photo picks its angle. A walk-through shows the whole place, one room after another, filmed on the spot.')
-        : t('landing.home.stations.film.landlord.body', undefined, 'Open the link on your phone and walk from room to room. Students see the place as it is, so the ones who write to you already know it.'),
+        ? t('landing.home.stations.film.tenant.body', undefined, 'Every room is photographed on site, and a filmed walk-through shows how the place fits together when the owner records one.')
+        : t('landing.home.stations.film.landlord.body', undefined, 'Open the link on your phone, photograph each room and film one walk-through. Students see the place as it is, so the ones who write to you already know it.'),
       sketch: tenant ? <PhoneWatch /> : <PhoneFilm />,
     },
     {
       title: t('landing.home.stations.check.title', undefined, 'Checked once. Then deleted.'),
       body: tenant
-        ? t('landing.home.stations.check.tenant.body', undefined, 'We read your documents, confirm what they say, and delete them. The landlord sees the result, never the papers. No guarantor? Visale is free from the state, and we accept its certificate.')
-        : t('landing.home.stations.check.landlord.body', undefined, "Applicants can show who they are and that they can cover the rent. You get a clear result, with no folder of strangers' papers to keep."),
+        ? t('landing.home.stations.check.tenant.body', undefined, 'We read your documents, confirm what they say, and delete them. The landlord sees the result, never the papers. No guarantor? Visale is a free guarantee from Action Logement: see visale.fr to find out whether you qualify, and we will check your certificate.')
+        : t('landing.home.stations.check.landlord.body', undefined, "Applicants can have their identity and their income checked. You get a clear result, with no folder of strangers' papers to keep."),
       link: { href: '/trust', label: t('landing.home.stations.check.link', undefined, 'How we check, and what we keep') },
       sketch: tenant ? <PhoneScan /> : <PhoneApplicant />,
     },
@@ -343,8 +367,8 @@ function Thread({ audience }: { audience: Audience }) {
     {
       title: t('landing.home.stations.fee.title', undefined, "One small fee. That's all."),
       body: tenant
-        ? t('landing.home.stations.fee.tenant.body', undefined, "Looking around and applying cost nothing. You pay Roomivo once, when your room is confirmed, and there is no second fee after that.")
-        : t('landing.home.stations.fee.landlord.body', undefined, 'Listing your place is free. You pay one small flat fee when the lease is signed, and nothing after that.'),
+        ? t('landing.home.stations.fee.tenant.body', undefined, "Looking around and applying cost nothing. You pay Roomivo one small fee, once, and nothing after that.")
+        : t('landing.home.stations.fee.landlord.body', undefined, 'Listing your place is free. You pay Roomivo one small flat fee, once, and nothing after that.'),
       sketch: <PhoneFee tenant={tenant} />,
     },
   ];
@@ -367,19 +391,12 @@ function Thread({ audience }: { audience: Audience }) {
           />
 
           {stations.map((s, i) => (
-            <div key={i} className="relative grid items-center gap-8 py-12 pl-14 lg:grid-cols-2 lg:gap-28 lg:pl-0">
+            <div key={i} className="relative grid grid-cols-1 items-center gap-8 py-12 pl-14 lg:grid-cols-2 lg:gap-28 lg:pl-0">
               <span className="font-display absolute left-4 top-1/2 flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-gold bg-[#fffdf7] text-base font-semibold text-[#8a5e07] lg:left-1/2">
                 {i + 1}
               </span>
 
-              <motion.div
-                key={`${audience}-${i}`}
-                initial={{ opacity: 0, y: 18 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-80px' }}
-                transition={{ duration: 0.5 }}
-                className={i % 2 ? 'lg:order-2' : ''}
-              >
+              <div className={i % 2 ? 'lg:order-2' : ''}>
                 <h3 className="font-display text-[clamp(1.75rem,3.2vw,2.6rem)] font-medium leading-[1.05] tracking-[-0.025em] text-zinc-950">{s.title}</h3>
                 <p className="mt-4 max-w-[30rem] text-[1.05rem] leading-relaxed text-zinc-600">{s.body}</p>
                 {s.link && (
@@ -388,7 +405,7 @@ function Thread({ audience }: { audience: Audience }) {
                     <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
                   </Link>
                 )}
-              </motion.div>
+              </div>
 
               <div key={`${audience}-screen-${i}`} className={i % 2 ? 'lg:order-1 lg:rotate-2' : 'lg:-rotate-2'}>
                 {s.sketch}
@@ -416,7 +433,7 @@ function FinalCall() {
           {t('landing.home.final.title', undefined, 'Ready when you are.')}
         </h2>
         <div className="mt-9 flex flex-wrap justify-center gap-3">
-          <Link href="/search" className="inline-flex items-center gap-2 rounded-full bg-gold px-7 py-4 text-sm font-bold text-white transition-transform hover:-translate-y-0.5">
+          <Link href="/search" className="inline-flex items-center gap-2 rounded-full bg-[#946608] px-7 py-4 text-sm font-bold text-white transition-transform hover:-translate-y-0.5">
             {t('landing.home.final.tenant', undefined, 'Find a room')}
             <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </Link>

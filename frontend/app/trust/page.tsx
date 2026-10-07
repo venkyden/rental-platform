@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/trust' },
 };
 
-/** How Roomivo checks, what it keeps, and the verify-by-code box (moved off the home page). */
+/** How Roomivo checks, what it keeps, and the verify-by-code box. */
 export default function TrustPage() {
   return (
     <div className="min-h-screen bg-zinc-900">
