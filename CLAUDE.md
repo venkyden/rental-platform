@@ -5,33 +5,58 @@ The full PRD is in `PRD-TrustLayer-v2.md`. This file is the condensed working co
 
 ---
 
-## Direction update — 2026-10-06 (founder decisions; NOT yet legally cleared)
+## Direction update — 2026-10-06 (founder decisions; revised 2026-10-07)
 
-The founder set a broader direction on 2026-10-06. Until counsel has re-reviewed the model
-and the licensed set-up exists, **the boundaries table below still governs what may ship.**
+The founder set a broader direction on 2026-10-06. Part of it is in force and part is
+decided but blocked. **The boundaries table below still governs what may ship.**
 Build order and gates: `docs/superpowers/plans/2026-10-06-ecosystem-roadmap-master.md`.
+This update does not revisit DG-1 or the "Next build order" pointer further down; where
+they disagree with the roadmap, ask the founder (roadmap open decision 6).
+
+### In force now
 
 - **Vision:** one rental ecosystem for international students and private landlords covering
   the whole tenancy (find, apply, sign, stay, leave). Roomivo stays a technology company, not
   an estate agency; licences and regulated partners are acceptable when needed.
 - **Build rule:** anything regulated or generic comes from a provider; everything else is
-  native. Shortlist: Stripe (fees, subscriptions, later rent), Appenin (home insurance), Meta
-  WhatsApp Cloud API (landlord messages). Not wanted: a rent-guarantee provider, move-in
-  services, a proof-of-funds provider, a monthly membership.
-- **Fees (amount "X" not set; never shown in marketing):** every student pays X once when a
-  landlord accepts them (the accommodation certificate is issued then if a visa is needed;
-  full refund if the visa is refused or the landlord withdraws). Landlords list free and pay
-  one small flat fee when the lease is signed. Both fees are tied to acceptance or signature,
-  which conflicts with "never success-based" below: **they must not go live before a new
-  legal opinion and the licensed set-up.**
-- **Landing page (rebuilt 2026-10-06):** `frontend/components/landing/home/`. One page with an
-  audience switch, a sentence search (`frontend/lib/smartSearch.ts`), a four-stop thread with
-  phone wireframes; the credential layer moved to `/trust`.
-- **Copy rules for every public page:** no claims about the market or competitors; no
-  brand-level promises; no "what we couldn't check" wording; never name the state tenant-file
-  service; Visale may be mentioned as free guidance; no price figure (structure only: "one
-  small fee, pay for nothing more"); the page describes only what the product does today; do
-  not change the Navbar or the landing footer unless asked.
+  native.
+- **Landing page (rebuilt 2026-10-06, PR #86):** `frontend/components/landing/home/`. One
+  page with an audience switch, a sentence search (`frontend/lib/smartSearch.ts`) and a
+  four-stop thread with phone wireframes. The credential-layer explainer and the
+  verify-by-code box (`CredentialLayerSection`) are at `/trust`. Dossier:
+  `docs/features/landing/DOSSIER.md`.
+- **Copy rules for marketing pages (home, `/trust`):**
+  - no claims about the market or competitors, and no brand-level promises;
+  - no "what we couldn't check" wording. This applies to marketing copy only: the
+    credential, verify and dossier pages keep their "does not prove" disclosure, and the
+    ownership limit in Phase 1 item 4 is still disclosed;
+  - never name the state tenant-file service; Visale may be mentioned as free guidance;
+  - no amount is shown, only the structure ("One small fee. Pay for nothing more.");
+  - the page describes only what the product does today, with one founder-approved
+    exception: the fee structure is shown although nothing is charged yet (free beta);
+  - do not change the Navbar or the landing footer unless asked.
+
+### Decided, blocked until a new legal opinion (roadmap L-1) and the licensed set-up
+
+"Licensed set-up" means whichever registrations L-1 concludes the model needs; they are
+not determined yet.
+
+- **Fees (amount "X" not set):** every student pays X once when a landlord accepts them
+  (the accommodation certificate is issued then if a visa is needed; full refund if the
+  visa is refused or the landlord withdraws). Landlords list free and pay one small flat
+  fee when the lease is signed. Both fees are tied to acceptance or signature. That
+  conflicts with "Never success-based" below, crosses the table row "Take a success fee on
+  a signed lease", and the 2026-06-20 lease and e-sign clearance was given on the condition
+  "No success fee". The certificate and the refund also depend on whether a visa is needed,
+  which touches the nationality and immigration-status row. **None of it goes live before
+  L-1 and the licensed set-up.** The landing page stopped stating when the fee is charged on
+  2026-10-07, pending the founder's confirmation (roadmap open decision 4).
+- **Providers shortlisted:** Stripe (fees, subscriptions, later rent), Appenin (home
+  insurance), Meta WhatsApp Cloud API (landlord messages). Rent through Stripe crosses
+  "Touch, hold, or gate funds" and Appenin crosses the insurance row: both are blocked in
+  the same way as the fees. "Subscriptions" means landlords with several homes (roadmap
+  WS-11); there is no monthly membership for students. Not wanted: a rent-guarantee
+  provider, move-in services, a proof-of-funds provider, a monthly membership.
 
 ---
 
