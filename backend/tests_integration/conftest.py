@@ -58,6 +58,28 @@ async def sessionmaker_(engine):
     return async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 
+def _all_app_limiters():
+    """Every slowapi Limiter instance living at module level anywhere in app.*.
+
+    Importing app.main pulls in every router, so after that the set of loaded
+    app modules is complete. Matching on type rather than on the name
+    ``limiter`` also catches instances bound to any other name.
+    """
+    import sys
+
+    import app.main  # noqa: F401 — ensure every router module is loaded
+    from slowapi import Limiter
+
+    found = {}
+    for name, module in list(sys.modules.items()):
+        if module is None or not (name == "app" or name.startswith("app.")):
+            continue
+        for value in vars(module).values():
+            if isinstance(value, Limiter):
+                found[id(value)] = value
+    return list(found.values())
+
+
 @pytest.fixture(autouse=True)
 def _disable_rate_limiter():
     """Per-IP rate limits would trip during a full suite run from a single test
@@ -66,10 +88,12 @@ def _disable_rate_limiter():
     instance needs disabling here — missing one is exactly what let
     verification.py's identity-upload limit start failing unrelated tests that
     happen to run after enough uploads elsewhere in the file. Disable for
-    tests; production keeps it."""
-    from app.routers import auth, credentials, properties, verification
+    tests; production keeps it.
 
-    limiters = [auth.limiter, credentials.limiter, properties.limiter, verification.limiter]
+    The instances are discovered, not listed: a hand-kept list had already
+    drifted (it missed dossiers, location and main), so a new router's
+    limiter is now covered without anyone remembering to add it here."""
+    limiters = _all_app_limiters()
     previous = [lim.enabled for lim in limiters]
     for lim in limiters:
         lim.enabled = False
