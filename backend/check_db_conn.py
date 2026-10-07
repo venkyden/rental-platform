@@ -9,9 +9,8 @@ def check_connection():
         
     try:
         import sqlalchemy
-        url = url.replace('postgres://', 'postgresql://', 1)
-        if '+asyncpg' in url:
-            url = url.replace('+asyncpg', '')
+        from app.core.db_url import to_sync_url
+        url = to_sync_url(url)
         engine = sqlalchemy.create_engine(url, connect_args={'connect_timeout': 5})
         with engine.connect() as conn:
             sys.exit(0)
