@@ -132,7 +132,10 @@ async def make_user(sm, role="tenant", email=None, biometric_consent=True) -> Us
         return u
 
 
-async def make_property(sm, landlord) -> Property:
+async def make_property(sm, landlord, status=None) -> Property:
+    """Create a property. ``status`` defaults to the model default (draft);
+    pass ``status="active"`` for anything that applies to it — only an active
+    listing accepts applications."""
     async with sm() as s:
         p = Property(
             id=uuid.uuid4(),
@@ -144,6 +147,8 @@ async def make_property(sm, landlord) -> Property:
             bedrooms=2,
             monthly_rent=900,
         )
+        if status is not None:
+            p.status = status
         s.add(p)
         await s.commit()
         await s.refresh(p)
