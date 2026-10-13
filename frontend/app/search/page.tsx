@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { AMENITY_KEYS, MAX_MONTHS, MAX_RENT, MIN_RENT, formatMonth } from '@/lib/smartSearch';
 import { useRouter } from 'next/navigation';
 import { useSegment } from '@/lib/SegmentContext';
 import { useAuth } from '@/lib/useAuth';
@@ -27,7 +28,7 @@ type Property = ListingSummary & {
 function SearchContent() {
     const { config, loading: segmentLoading } = useSegment();
     const { user, loading: authLoading } = useAuth();
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
     const isAuthenticated = !!user;
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -35,6 +36,19 @@ function SearchContent() {
     const initialTypology = searchParams.get('typology') || '';
     const initialFurnishedParam = searchParams.get('furnished'); // 'true' | 'false' | null
     const initialColocation = searchParams.get('colocation') === '1';
+    // URL filters: budget, bedrooms, bathrooms, amenities, move-in month, length of stay.
+    const paramInt = (name: string, min: number, max: number): number | null => {
+        const raw = searchParams.get(name);
+        const n = raw === null ? NaN : Number(raw);
+        return Number.isInteger(n) && n >= min && n <= max ? n : null;
+    };
+    const initialMaxRent = paramInt('max_rent', MIN_RENT, MAX_RENT);
+    const initialBedrooms = paramInt('bedrooms', 1, 9);
+    const initialBathrooms = paramInt('bathrooms', 1, 9);
+    const initialMonths = paramInt('months', 1, MAX_MONTHS);
+    const initialAmenities = searchParams.getAll('amenities').filter((a) => AMENITY_KEYS.includes(a));
+    const rawFrom = searchParams.get('from') || '';
+    const initialMoveIn = /^20\d{2}-(0[1-9]|1[0-2])$/.test(rawFrom) ? rawFrom : null;
     const shouldReduceMotion = useReducedMotion();
 
     // Data State
@@ -43,7 +57,12 @@ function SearchContent() {
     const [error, setError] = useState('');
 
     // Filter States
-    const [priceRange, setPriceRange] = useState<number>(3000);
+    const [priceRange, setPriceRange] = useState<number>(initialMaxRent ?? 3000);
+    const [minBedrooms, setMinBedrooms] = useState<number | null>(initialBedrooms);
+    const [minBathrooms, setMinBathrooms] = useState<number | null>(initialBathrooms);
+    const [amenities, setAmenities] = useState<string[]>(initialAmenities);
+    const [moveIn, setMoveIn] = useState<string | null>(initialMoveIn);
+    const [stayMonths, setStayMonths] = useState<number | null>(initialMonths);
     const [location, setLocation] = useState(initialQuery);
     const [furnishedMode, setFurnishedMode] = useState<'' | 'furnished' | 'unfurnished'>(
         initialFurnishedParam === 'true' ? 'furnished' : initialFurnishedParam === 'false' ? 'unfurnished' : ''
@@ -60,8 +79,11 @@ function SearchContent() {
 
     useEffect(() => {
         if (!config) return;
-        // Deep-link params take precedence over segment defaults
-        if (initialTypology || initialFurnishedParam || initialColocation) return;
+        // Any filter in the URL suppresses the segment defaults: the visitor asked for something specific.
+        if (
+            initialTypology || initialFurnishedParam || initialColocation || initialMaxRent ||
+            initialBedrooms || initialBathrooms || initialMonths || initialMoveIn || initialAmenities.length
+        ) return;
         const mode = config.settings.default_filter_mode;
         if (mode === 'budget') {
             setPriceRange(800);
@@ -102,6 +124,15 @@ function SearchContent() {
                 params.colocation = '1';
                 params.is_colocation = 'true';
             }
+            if (minBedrooms) params.bedrooms = minBedrooms;
+            if (minBathrooms) params.bathrooms_min = minBathrooms;
+            if (amenities.length) params.amenities = amenities;
+            if (stayMonths) params.min_duration_months = stayMonths;
+            if (moveIn) {
+                // Available by the end of the month the tenant wants to move in.
+                const [year, month] = moveIn.split('-').map(Number);
+                params.available_by = new Date(Date.UTC(year, month, 0)).toISOString().slice(0, 10);
+            }
             
             const response = savedOnly 
                 ? await apiClient.getSavedProperties(params)
@@ -113,7 +144,8 @@ function SearchContent() {
                 setProperties(response);
             }
         } catch (err) {
-            setError(t('search.status.error', undefined, undefined));
+            console.error('[search] could not load listings', err);
+            setError(t('search.status.error', undefined, 'We could not load the listings. Please try again.'));
         } finally {
             setLoading(false);
         }
@@ -122,8 +154,16 @@ function SearchContent() {
     useEffect(() => {
         const timeoutId = setTimeout(() => fetchProperties(false), 500);
         return () => clearTimeout(timeoutId);
-    }, [priceRange, location, furnishedMode, typology, colocation, cafOnly, propertyType, sortBy, orderDir, savedOnly]);
+    }, [priceRange, location, furnishedMode, typology, colocation, cafOnly, propertyType, sortBy, orderDir, savedOnly, minBedrooms, minBathrooms, amenities, moveIn, stayMonths]);
 
+
+    const smartFilters: { label: string; remove: () => void }[] = [
+        ...(minBedrooms ? [{ label: t('search.smart.bedrooms', { count: minBedrooms }, `${minBedrooms}+ bedrooms`), remove: () => setMinBedrooms(null) }] : []),
+        ...(minBathrooms ? [{ label: t('search.smart.bathrooms', { count: minBathrooms }, `${minBathrooms}+ bathrooms`), remove: () => setMinBathrooms(null) }] : []),
+        ...amenities.map((a) => ({ label: t(`property.amenity_labels.${a}`, undefined, a), remove: () => setAmenities((prev) => prev.filter((x) => x !== a)) })),
+        ...(moveIn ? [{ label: t('search.smart.from', { month: formatMonth(moveIn, language) }, `From ${formatMonth(moveIn, language)}`), remove: () => setMoveIn(null) }] : []),
+        ...(stayMonths ? [{ label: t('search.smart.months', { count: stayMonths }, `${stayMonths} months or longer`), remove: () => setStayMonths(null) }] : []),
+    ];
     const toggleSaveProperty = async (propertyId: string) => {
         if (!isAuthenticated) {
             router.push('/auth/login');
@@ -215,6 +255,24 @@ function SearchContent() {
                         </div>
                     </div>
                 </div>
+
+                {/* Active URL filters without a control of their own; each can be removed. */}
+                {smartFilters.length > 0 && (
+                    <div className="mb-6 flex flex-wrap items-center gap-2" data-testid="smart-filters">
+                        {smartFilters.map((f) => (
+                            <button
+                                key={f.label}
+                                type="button"
+                                onClick={f.remove}
+                                aria-label={`${t('search.smart.remove', undefined, 'Remove filter')}: ${f.label}`}
+                                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-2 text-xs font-bold text-zinc-700 transition-colors hover:border-zinc-900"
+                            >
+                                {f.label}
+                                <span aria-hidden="true">×</span>
+                            </button>
+                        ))}
+                    </div>
+                )}
 
                 {/* Filter Bar - High Fidelity / God Mode */}
                 <motion.div 
@@ -324,6 +382,11 @@ function SearchContent() {
                                     setCafOnly(false);
                                     setColocation(false);
                                     setSavedOnly(false);
+                                    setMinBedrooms(null);
+                                    setMinBathrooms(null);
+                                    setAmenities([]);
+                                    setMoveIn(null);
+                                    setStayMonths(null);
                                 }}
                                 className="px-5 py-3 rounded-xl text-zinc-400 hover:text-zinc-900 hover:bg-zinc-200/50 transition-all flex items-center gap-2 group"
                             >
@@ -357,6 +420,23 @@ function SearchContent() {
                             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-16"
                         >
                             {[1, 2, 3, 4, 5, 6].map(i => <PropertyCardSkeleton key={i} />)}
+                        </motion.div>
+                    ) : error ? (
+                        <motion.div
+                            key="error"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            role="alert"
+                            data-testid="search-error"
+                            className="py-32 text-center glass-card border-none rounded-[4rem] shadow-2xl"
+                        >
+                            <p className="text-xl text-zinc-700 font-medium max-w-md mx-auto leading-relaxed mb-10">{error}</p>
+                            <button
+                                onClick={() => fetchProperties(false)}
+                                className="px-12 py-5 bg-zinc-900 text-white text-xs font-black uppercase tracking-[0.3em] rounded-[2rem]"
+                            >
+                                {t('search.smart.retry', undefined, 'Try again')}
+                            </button>
                         </motion.div>
                     ) : properties.length === 0 ? (
                         <motion.div 

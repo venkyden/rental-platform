@@ -38,7 +38,7 @@ async def test_concurrent_duplicate_applications_are_prevented(client):
     sm = client._sessionmaker
     landlord = await make_user(sm, "landlord")
     tenant = await make_user(sm, "tenant")
-    prop = await make_property(sm, landlord)
+    prop = await make_property(sm, landlord, status="active")
 
     payload = {"property_id": str(prop.id), "cover_letter": "hi"}
     r1, r2 = await asyncio.gather(

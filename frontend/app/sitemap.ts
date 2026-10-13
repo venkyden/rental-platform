@@ -11,6 +11,7 @@ const STATIC_ROUTES: Array<{ path: string; changeFrequency: MetadataRoute.Sitema
   { path: '', changeFrequency: 'daily', priority: 1 },
   { path: '/search', changeFrequency: 'hourly', priority: 0.9 },
   { path: '/support', changeFrequency: 'weekly', priority: 0.5 },
+  { path: '/trust', changeFrequency: 'monthly', priority: 0.5 },
   { path: '/legal/terms', changeFrequency: 'monthly', priority: 0.3 },
   { path: '/legal/privacy', changeFrequency: 'monthly', priority: 0.3 },
   { path: '/legal/cgv', changeFrequency: 'monthly', priority: 0.3 },

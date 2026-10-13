@@ -121,6 +121,15 @@ async def test_tenant_can_apply_to_property(client, sessionmaker_):
     assert prop.status_code == 201
     property_id = prop.json()["id"]
 
+    # Only an active listing accepts applications (063f5fa). Publishing goes
+    # through capture/compliance gates that aren't what this canary guards,
+    # so flip the status directly — the path under test is the application.
+    from app.models.property import Property
+    async with sessionmaker_() as s:
+        p = await s.get(Property, uuid.UUID(property_id))
+        p.status = "active"
+        await s.commit()
+
     app = await client.post("/applications", json={
         "property_id": property_id,
     }, headers=auth(tenant))

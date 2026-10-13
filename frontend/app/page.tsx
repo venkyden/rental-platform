@@ -1,13 +1,8 @@
 import { Metadata } from 'next';
 import { BRAND, SITE_URL } from '@/lib/constants';
 import Navbar from '@/components/Navbar';
-import SearchHero from '@/components/landing/SearchHero';
+import HomeExperience from '@/components/landing/home/HomeExperience';
 import EndorsementStrip from '@/components/landing/EndorsementStrip';
-import CredentialLayerSection from '@/components/landing/CredentialLayerSection';
-import ValuePropSection from '@/components/landing/ValuePropSection';
-import HowItWorks from '@/components/landing/HowItWorks';
-import DualCTA from '@/components/landing/DualCTA';
-import FrenchComplianceSection from '@/components/landing/FrenchComplianceSection';
 import FeaturedListings from '@/components/landing/FeaturedListings';
 import LandingFooter from '@/components/landing/LandingFooter';
 
@@ -47,12 +42,11 @@ const jsonLd = {
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen relative overflow-hidden bg-white">
+    <div className="min-h-screen relative overflow-hidden bg-[#fffdf7]">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }}
       />
-      <div className="vibrancy-bg" />
 
       {/* ─── Navbar ─── */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
@@ -60,29 +54,14 @@ export default function HomePage() {
       </div>
 
       <main>
-        {/* ─── Hero Section with Search ─── */}
-        <SearchHero />
+        {/* ─── Hero, the thread and the final call (both audiences) ─── */}
+        <HomeExperience />
+
+        {/* ─── Real listings only: renders nothing below three ─── */}
+        <FeaturedListings />
 
         {/* ─── Institutional Endorsement ─── */}
         <EndorsementStrip />
-
-        {/* ─── Credential / Trust Layer ─── */}
-        <CredentialLayerSection />
-
-        {/* ─── Core Value Proposition ─── */}
-        <ValuePropSection />
-
-        {/* ─── How It Works ─── */}
-        <HowItWorks />
-
-        {/* ─── Featured Listings Carousel ─── */}
-        <FeaturedListings />
-
-        {/* ─── French Compliance Section ─── */}
-        <FrenchComplianceSection />
-
-        {/* ─── Dual CTA ─── */}
-        <DualCTA />
       </main>
 
       {/* ─── Footer ─── */}

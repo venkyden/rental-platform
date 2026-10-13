@@ -294,6 +294,29 @@ def _landlord_trust_fields(landlord) -> dict:
     }
 
 
+def _bounded_int(value, low: int, high: int) -> Optional[int]:
+    """int(value) when it parses and sits in [low, high]; otherwise None."""
+    try:
+        number = int(str(value))
+    except (ValueError, TypeError):
+        return None
+    return number if low <= number <= high else None
+
+
+def _parse_iso_date(value):
+    """A YYYY-MM-DD date, or None for anything else (other ISO forms included)."""
+    import re
+    from datetime import date
+
+    text_value = str(value)
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", text_value):
+        return None
+    try:
+        return date.fromisoformat(text_value)
+    except ValueError:
+        return None
+
+
 def _apply_property_filters(
     query,
     params: dict,
@@ -364,23 +387,38 @@ def _apply_property_filters(
         if max_rent_dec is not None:
             query = query.where(total_rent <= max_rent_dec)
 
-    if bedrooms and bedrooms != "":
-        try:
-            query = query.where(Property.bedrooms >= int(bedrooms))
-        except (ValueError, TypeError):
-            pass
+    # Lenient numeric filters: a malformed or out-of-range value is ignored rather
+    # than returning 422 on a public endpoint, and can never overflow a column type.
+    from sqlalchemy import func as _func, or_ as _or
 
-    if rooms_count and rooms_count != "":
-        try:
-            query = query.where(Property.rooms_count == int(rooms_count))
-        except (ValueError, TypeError):
-            pass
+    bedrooms_min = _bounded_int(bedrooms, 0, 50)
+    if bedrooms_min is not None:
+        query = query.where(Property.bedrooms >= bedrooms_min)
 
-    if rooms_count_min and rooms_count_min != "":
-        try:
-            query = query.where(Property.rooms_count >= int(rooms_count_min))
-        except (ValueError, TypeError):
-            pass
+    rooms_exact = _bounded_int(rooms_count, 0, 50)
+    if rooms_exact is not None:
+        query = query.where(Property.rooms_count == rooms_exact)
+
+    rooms_min = _bounded_int(rooms_count_min, 0, 50)
+    if rooms_min is not None:
+        query = query.where(Property.rooms_count >= rooms_min)
+
+    bathrooms_min = _bounded_int(params.get("bathrooms_min"), 1, 20)
+    if bathrooms_min is not None:
+        # A listing with no bathroom count is shown as having one (PropertyDetailClient),
+        # so it is treated as one here too instead of being dropped.
+        query = query.where(_func.coalesce(Property.bathrooms, 1) >= bathrooms_min)
+
+    min_duration = _bounded_int(params.get("min_duration_months"), 1, 36)
+    if min_duration is not None:
+        # NULL lease_duration_months means the landlord is flexible.
+        query = query.where(
+            _or(Property.lease_duration_months.is_(None), Property.lease_duration_months >= min_duration)
+        )
+
+    available_by = _parse_iso_date(params.get("available_by"))
+    if available_by is not None:
+        query = query.where(_or(Property.available_from.is_(None), Property.available_from <= available_by))
 
     if property_type and property_type.strip():
         from sqlalchemy import func

@@ -11,6 +11,7 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from app.core.config import settings
 from app.core.database import Base
+from app.core.db_url import to_sync_url
 from app.models.user import User, VerificationRecord, OnboardingResponse
 from app.models.application import Application
 from app.models.dispute import Dispute
@@ -34,12 +35,9 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Set sqlalchemy.url from environment. Alembic needs sync interface
-url = settings.DATABASE_URL
-if url.startswith("postgres://"):
-    url = url.replace("postgres://", "postgresql://", 1)
-elif url.startswith("postgresql+asyncpg://"):
-    url = url.replace("postgresql+asyncpg://", "postgresql://", 1)
+# Set sqlalchemy.url from environment. Alembic needs sync interface, and the
+# driver must be named explicitly — see app/core/db_url.py.
+url = to_sync_url(settings.DATABASE_URL)
 
 config.set_main_option("sqlalchemy.url", url)
 
