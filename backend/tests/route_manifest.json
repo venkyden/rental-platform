@@ -162,6 +162,7 @@
   "POST /users/me",
   "PUT /api/v1/disputes/{dispute_id}/admin-update",
   "PUT /api/v1/onboarding/preferences",
+  "PUT /api/v1/properties/media-sessions/{code}/answers",
   "PUT /api/v1/properties/{property_id}",
   "PUT /api/v1/properties/{property_id}/archive",
   "PUT /api/v1/properties/{property_id}/unarchive",

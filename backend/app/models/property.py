@@ -112,6 +112,10 @@ class Property(Base):
     # Features & Amenities
     amenities = Column(JSONB)  # ['parking', 'elevator', 'balcony', etc.]
     custom_amenities = Column(JSONB)  # User-defined amenities
+    # The landlord's own answers from the walk-through tap list, and the household
+    # card for a shared home. Shapes: app/services/walkthrough_catalogue.py.
+    walkthrough_answers = Column(JSONB)
+    flatmates = Column(JSONB)
     public_transport = Column(JSONB)  # ['Metro Line 1', 'Bus 42']
     nearby_landmarks = Column(JSONB)  # ['School - 200m', 'Supermarket - 500m']
 

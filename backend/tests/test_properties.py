@@ -247,6 +247,8 @@ class TestPropertyCompliance:
         mock_prop.complement_de_loyer = None
         mock_prop.complement_de_loyer_justification = None
         mock_prop.room_details = []
+        mock_prop.walkthrough_answers = None
+        mock_prop.flatmates = None
         mock_prop.photos = ["photo1.jpg"]
         # Concrete fields required for PropertyResponse serialization on the 200 path.
         mock_prop.title = "Test apartment"

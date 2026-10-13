@@ -28,6 +28,8 @@ from app.models.property_schemas import (MediaSessionCreate,
                                          PropertyResponse, PropertyUpdate,
                                          PropertyMatchResponse, DescriptionGenerationRequest)
 from app.models.user import User
+from app.services.walkthrough_catalogue import (bedroom_count, clean_flatmates,
+                                               clean_space_answers, merge_space)
 from app.routers.auth import get_current_user, get_current_user_optional
 
 # Rate limiting
@@ -269,6 +271,28 @@ def _rooms_for_capture(room_details) -> Optional[list]:
             surface = room.get("surface") or room.get("surface_sqm") or room.get("size_sqm")
         rooms.append({"index": i, "surface": surface})
     return rooms
+
+
+def _apply_walkthrough(property_obj, spaces: Optional[dict], flatmates, flatmates_sent: bool) -> None:
+    """Check walk-through answers against the catalogue, date them and set them on the
+    listing. ``spaces`` is ``{space_key: {item_key: state}}``; each space sent replaces
+    that space's answers. Raises 422 naming the first thing that is wrong."""
+    now = naive_utcnow().isoformat(timespec="seconds") + "Z"
+    try:
+        if spaces is not None:
+            if not isinstance(spaces, dict):
+                raise ValueError("Answers must be an object")
+            bedrooms = bedroom_count(property_obj.room_details)
+            merged = property_obj.walkthrough_answers
+            for space_key, answers in spaces.items():
+                merged = merge_space(merged, space_key, clean_space_answers(space_key, answers, bedrooms), now)
+            property_obj.walkthrough_answers = merged or None
+            flag_modified(property_obj, "walkthrough_answers")
+        if flatmates_sent and property_obj.is_colocation:
+            property_obj.flatmates = clean_flatmates(flatmates, now)
+            flag_modified(property_obj, "flatmates")
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
 
 
 def _landlord_trust_fields(landlord) -> dict:
@@ -847,8 +871,18 @@ async def update_property(
 
     # Update fields
     update_data = property_data.model_dump(exclude_unset=True)
+    # Walk-through answers are checked and dated, not stored as sent; applied after the
+    # other fields so the room list and flatshare flag are the updated ones.
+    answers_sent = "walkthrough_answers" in update_data
+    flatmates_sent = "flatmates" in update_data
+    answers_in = update_data.pop("walkthrough_answers", None)
+    flatmates_in = update_data.pop("flatmates", None)
     for field, value in update_data.items():
         setattr(property_obj, field, value)
+    if answers_sent or flatmates_sent:
+        _apply_walkthrough(
+            property_obj, answers_in if answers_sent else None, flatmates_in, flatmates_sent=flatmates_sent
+        )
 
     # If the property is active, it must remain compliant with French law.
     if property_obj.status == "active":
@@ -1241,13 +1275,8 @@ async def create_media_session(
     }
 
 
-@router.get("/media-sessions/{code}")
-async def get_media_session(
-    code: str,
-    db: AsyncSession = Depends(get_db),
-):
-    """Get media session details by verification code (no auth — used by mobile capture page)"""
-
+async def _active_media_session(db: AsyncSession, code: str) -> PropertyMediaSession:
+    """The capture session behind a code, or 404 / 400 when it cannot be used."""
     result = await db.execute(
         select(PropertyMediaSession).where(
             PropertyMediaSession.verification_code == _lookup_code(code)
@@ -1266,6 +1295,27 @@ async def get_media_session(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Session has expired",
         )
+    return session
+
+
+def _walkthrough_fields(property_obj) -> dict:
+    """What the capture page needs to show the tap lists for one listing."""
+    return {
+        "bedrooms": bedroom_count(property_obj.room_details),
+        "is_colocation": bool(property_obj.is_colocation),
+        "answers": property_obj.walkthrough_answers or {},
+        "flatmates": property_obj.flatmates if property_obj.is_colocation else None,
+    }
+
+
+@router.get("/media-sessions/{code}")
+async def get_media_session(
+    code: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """Get media session details by verification code (no auth — used by mobile capture page)"""
+
+    session = await _active_media_session(db, code)
 
     # Get property for room details
     prop_result = await db.execute(
@@ -1295,7 +1345,45 @@ async def get_media_session(
         "expires_at": session.expires_at,
         "rooms": rooms_list,
         "has_video": has_video,
+        "walkthrough": _walkthrough_fields(property_obj) if property_obj else None,
     }
+
+
+class WalkthroughAnswersIn(BaseModel):
+    """One space's answers from the capture page, and/or the household card."""
+
+    space: Optional[str] = None
+    answers: Optional[dict] = None
+    flatmates: Optional[dict] = None
+
+
+@router.put("/media-sessions/{code}/answers")
+@limiter.limit("60/minute")
+async def save_walkthrough_answers(
+    request: Request,
+    code: str,
+    body: WalkthroughAnswersIn,
+    db: AsyncSession = Depends(get_db),
+):
+    """Save the tap list for one space (no auth: the session code is the key, and it can
+    only write to its own listing)."""
+
+    session = await _active_media_session(db, code)
+    prop_result = await db.execute(select(Property).where(Property.id == session.property_id))
+    property_obj = prop_result.scalar_one_or_none()
+    if not property_obj:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invalid or expired session")
+
+    _apply_walkthrough(
+        property_obj,
+        {body.space: body.answers or {}} if body.space is not None else None,
+        body.flatmates,
+        flatmates_sent=body.flatmates is not None,
+    )
+    property_obj.updated_at = naive_utcnow()  # type: ignore
+    await db.commit()
+    await db.refresh(property_obj)
+    return _walkthrough_fields(property_obj)
 
 
 @router.post("/media/upload")
