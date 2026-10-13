@@ -82,6 +82,9 @@ word "safe" were taken off the page. Evidence and what was not verified are in
   on branch `feat/walkthrough-listing` (commit `8991c31`, local only: push the branch
   before removing its worktree). Four open points for the founder at its end.
 - **Gate:** the question-and-answer relay between student and landlord is in L-1.
+- **Status 2026-10-13:** the tap lists, the household card and the "Good to know" panel are
+  built (`docs/features/walkthrough/DOSSIER.md`). Left: the question box (L-1) and the
+  furnished publish rule (founder's decision).
 - **Done when:** a landlord can answer a tap list per space during capture, the room page
   shows a "Good to know" panel, and a question asked once stays answered on the page.
 

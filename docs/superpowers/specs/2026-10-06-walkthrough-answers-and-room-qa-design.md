@@ -1,6 +1,8 @@
 # Walk-through Answers + Room Page Q&A — Design
 
-Date: 2026-10-06. Status: draft for founder review. Not implemented.
+Date: 2026-10-06. Status: partly implemented on 2026-10-13 (tap lists, household card,
+"Good to know" panel). The question box and the furnished publish rule are not built. What
+was built, and where it differs from this design: `docs/features/walkthrough/DOSSIER.md`.
 
 ## Problem
 
