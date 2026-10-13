@@ -6,6 +6,9 @@ import { useToast } from '@/lib/ToastContext';
 import { useLanguage } from '@/lib/LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Camera, Video, CheckCircle2, Shield, MapPin, ChevronRight, WifiOff, Info, Play } from 'lucide-react';
+import TapList from '@/components/walkthrough/TapList';
+import FlatmatesFields from '@/components/walkthrough/FlatmatesFields';
+import { flattenAnswers, itemsFor, spaceKeys, spaceLabel, type Flatmates, type SpaceAnswers } from '@/lib/walkthrough';
 
 interface Room {
     index: number;
@@ -15,9 +18,9 @@ interface Room {
 export default function CapturePage({ params }: { params: Promise<{ code: string }> }) {
     const { code } = use(params);
     const { showToast } = useToast();
-    const { language, setLanguage } = useLanguage();
+    const { language, setLanguage, t } = useLanguage();
     const fr = language === 'fr';
-    const [step, setStep] = useState<'intro' | 'preview' | 'uploading' | 'success' | 'finished'>('intro');
+    const [step, setStep] = useState<'intro' | 'preview' | 'uploading' | 'success' | 'finished' | 'answers' | 'space'>('intro');
     const [files, setFiles] = useState<File[]>([]);
     const [previewUrls, setPreviewUrls] = useState<string[]>([]);
     const [location, setLocation] = useState<{ lat: number; lng: number; accuracy: number } | null>(null);
@@ -33,11 +36,21 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
     const [selectedRoom, setSelectedRoom] = useState<Room | 'common' | null>(null);
     const [loadError, setLoadError] = useState(false);
 
+    // Quick answers (the tap lists). `openSpace` is a space key or 'flatmates'.
+    const [walk, setWalk] = useState<{ bedrooms: number; shared: boolean } | null>(null);
+    const [answers, setAnswers] = useState<Record<string, SpaceAnswers>>({});
+    const [flatmates, setFlatmates] = useState<Flatmates>({});
+    const [openSpace, setOpenSpace] = useState<string | null>(null);
+    const [draft, setDraft] = useState<SpaceAnswers>({});
+    const [flatmatesDraft, setFlatmatesDraft] = useState<Flatmates>({});
+    const [savingAnswers, setSavingAnswers] = useState(false);
+    const pendingKey = `roomivo-walkthrough-pending:${code}`;
+
     const fileInputRef = useRef<HTMLInputElement>(null);
     const videoInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
-        const handleOnline = () => { setIsOffline(false); syncOfflineQueue(); };
+        const handleOnline = () => { setIsOffline(false); syncOfflineQueue(); flushPendingAnswers(); };
         const handleOffline = () => setIsOffline(true);
         window.addEventListener('online', handleOnline);
         window.addEventListener('offline', handleOffline);
@@ -80,9 +93,103 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
             setLoadError(false);
             if (res.data.location_verified) setIsSessionVerified(true);
             if (res.data.rooms) setRooms(res.data.rooms);
+            if (res.data.walkthrough) {
+                applyWalkthrough(res.data.walkthrough);
+                flushPendingAnswers();
+            }
         } catch (e) {
             console.error(e);
             setLoadError(true);
+        }
+    };
+
+    type AnswersBody = { space?: string; answers?: SpaceAnswers; flatmates?: Flatmates };
+
+    const applyWalkthrough = (data: any) => {
+        setWalk({ bedrooms: Math.max(1, Number(data.bedrooms) || 1), shared: !!data.is_colocation });
+        // Answers saved on this phone but not yet sent stay on screen until they are.
+        const waiting = readPendingAnswers();
+        const spaces = flattenAnswers(data.answers);
+        let household: Flatmates = {};
+        if (data.flatmates) {
+            const { answered_at: _answeredAt, ...rest } = data.flatmates as Flatmates;
+            household = rest;
+        }
+        for (const body of waiting) {
+            if (body.space) spaces[body.space] = body.answers ?? {};
+            if (body.flatmates) household = body.flatmates;
+        }
+        setAnswers(spaces);
+        setFlatmates(household);
+    };
+
+    const readPendingAnswers = (): AnswersBody[] => {
+        try {
+            const parsed = JSON.parse(localStorage.getItem(pendingKey) || '[]');
+            return Array.isArray(parsed) ? parsed : [];
+        } catch {
+            return [];
+        }
+    };
+
+    const writePendingAnswers = (queue: AnswersBody[]) => {
+        try {
+            if (queue.length) localStorage.setItem(pendingKey, JSON.stringify(queue));
+            else localStorage.removeItem(pendingKey);
+            return true;
+        } catch {
+            return false;
+        }
+    };
+
+    // Send what was saved while offline, oldest first. Stops at the first failure and keeps
+    // the rest; an answer the server refuses is dropped so it cannot block the ones behind it.
+    const flushPendingAnswers = async () => {
+        let queue = readPendingAnswers();
+        while (queue.length) {
+            try {
+                const res = await apiClient.client.put(`/properties/media-sessions/${code}/answers`, queue[0]);
+                queue = queue.slice(1);
+                writePendingAnswers(queue);
+                if (!queue.length) applyWalkthrough(res.data);
+            } catch (err: any) {
+                if (!err?.response) return;
+                console.error('[capture] a saved answer was refused and dropped', err.response?.data);
+                queue = queue.slice(1);
+                writePendingAnswers(queue);
+            }
+        }
+    };
+
+    const openAnswers = (spaceKey: string) => {
+        setOpenSpace(spaceKey);
+        if (spaceKey === 'flatmates') setFlatmatesDraft(flatmates);
+        else setDraft(answers[spaceKey] ?? {});
+        setStep('space');
+    };
+
+    const saveAnswers = async () => {
+        if (!openSpace) return;
+        const body: AnswersBody = openSpace === 'flatmates' ? { flatmates: flatmatesDraft } : { space: openSpace, answers: draft };
+        setSavingAnswers(true);
+        try {
+            const res = await apiClient.client.put(`/properties/media-sessions/${code}/answers`, body);
+            applyWalkthrough(res.data);
+            showToast(t('walkthrough.capture.saved', undefined, 'Answers saved'), 'success', 2000);
+            setStep('answers');
+        } catch (err: any) {
+            if (!err?.response && writePendingAnswers([...readPendingAnswers(), body])) {
+                // No network: keep it on this phone and show it as answered.
+                if (body.space) setAnswers((prev) => ({ ...prev, [body.space as string]: body.answers ?? {} }));
+                if (body.flatmates) setFlatmates(body.flatmates);
+                showToast(t('walkthrough.capture.savedOffline', undefined, 'Saved on this phone. It will be sent when you are back online.'), 'info');
+                setStep('answers');
+            } else {
+                console.error('[capture] could not save answers', err);
+                showToast(t('walkthrough.capture.saveError', undefined, 'Could not save. Please try again.'), 'error');
+            }
+        } finally {
+            setSavingAnswers(false);
         }
     };
 
@@ -442,6 +549,23 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                                 </div>
                             )}
 
+                            {walk && (
+                                <div className="mb-10 rounded-[2.5rem] border-2 border-zinc-100 p-6" data-testid="quick-answers-card">
+                                    <h3 className="text-lg font-black uppercase tracking-tight text-zinc-900">
+                                        {t('walkthrough.capture.title', undefined, 'Quick answers')}
+                                    </h3>
+                                    <p className="mt-2 text-sm font-medium leading-relaxed text-zinc-500">
+                                        {t('walkthrough.capture.body', undefined, 'Students ask the same things about every home. Answer once here, room by room, and the listing shows it.')}
+                                    </p>
+                                    <button
+                                        onClick={() => setStep('answers')}
+                                        className="mt-5 w-full rounded-2xl bg-zinc-100 py-4 text-xs font-black uppercase tracking-[0.3em] text-zinc-900 transition-colors hover:bg-zinc-200"
+                                    >
+                                        {t('walkthrough.capture.open', undefined, 'Answer the questions')}
+                                    </button>
+                                </div>
+                            )}
+
                             <div className="mt-auto pt-4 space-y-4">
                                 <button
                                     onClick={() => fileInputRef.current?.click()}
@@ -568,11 +692,91 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                                 >
                                     {fr ? "Capturer d'autres médias" : 'Capture more media'}
                                 </button>
+                                {walk && (
+                                    <button
+                                        onClick={() => { setFiles([]); setPreviewUrls([]); setStep('answers'); }}
+                                        className="w-full rounded-[2.5rem] bg-zinc-100 py-6 text-xs font-black uppercase tracking-[0.3em] text-zinc-900"
+                                    >
+                                        {t('walkthrough.capture.open', undefined, 'Answer the questions')}
+                                    </button>
+                                )}
                                 <button
                                     onClick={() => setStep('finished')}
                                     className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400"
                                 >
                                     {fr ? "J'ai terminé" : "I'm done"}
+                                </button>
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {step === 'answers' && walk && (
+                        <motion.div key="answers" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex-1 flex flex-col">
+                            <div className="mb-8 space-y-3">
+                                <h1 className="text-4xl font-black tracking-tighter uppercase leading-[0.9]">
+                                    {t('walkthrough.capture.title', undefined, 'Quick answers')}
+                                </h1>
+                                <p className="text-base font-medium leading-relaxed text-zinc-500">
+                                    {t('walkthrough.capture.pick', undefined, 'Pick a space. Leave a line empty if it does not apply.')}
+                                </p>
+                            </div>
+                            <ul className="space-y-3" data-testid="answer-spaces">
+                                {[...spaceKeys(walk.bedrooms), ...(walk.shared ? ['flatmates'] : [])].map((key) => {
+                                    const total = key === 'flatmates' ? 0 : itemsFor(key).length;
+                                    const done = key === 'flatmates'
+                                        ? Object.keys(flatmates).length
+                                        : Object.keys(answers[key] ?? {}).length;
+                                    return (
+                                        <li key={key}>
+                                            <button
+                                                onClick={() => openAnswers(key)}
+                                                className="flex w-full items-center justify-between gap-4 rounded-[2rem] border-2 border-zinc-100 px-6 py-5 text-left transition-colors hover:border-zinc-900"
+                                            >
+                                                <span className="text-sm font-black uppercase tracking-wider text-zinc-900">
+                                                    {key === 'flatmates' ? t('walkthrough.flatmates.title', undefined, 'Who lives here') : spaceLabel(t, key, walk.bedrooms)}
+                                                </span>
+                                                <span className="flex items-center gap-2 text-xs font-bold text-zinc-500">
+                                                    {key !== 'flatmates' && t('walkthrough.progress', { done, total }, `${done} of ${total} answered`)}
+                                                    {done > 0 && <CheckCircle2 className="h-4 w-4 text-zinc-900" aria-hidden="true" />}
+                                                    <ChevronRight className="h-4 w-4" aria-hidden="true" />
+                                                </span>
+                                            </button>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                            <div className="mt-auto pt-10">
+                                <button
+                                    onClick={() => setStep('intro')}
+                                    className="w-full rounded-[2.5rem] bg-zinc-900 py-6 text-xs font-black uppercase tracking-[0.3em] text-white"
+                                >
+                                    {t('walkthrough.capture.backToPhotos', undefined, 'Back to photos')}
+                                </button>
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {step === 'space' && walk && openSpace && (
+                        <motion.div key={`space-${openSpace}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex-1 flex flex-col">
+                            <h1 className="mb-6 text-4xl font-black tracking-tighter uppercase leading-[0.9]">
+                                {openSpace === 'flatmates' ? t('walkthrough.flatmates.title', undefined, 'Who lives here') : spaceLabel(t, openSpace, walk.bedrooms)}
+                            </h1>
+                            {openSpace === 'flatmates'
+                                ? <FlatmatesFields value={flatmatesDraft} onChange={setFlatmatesDraft} />
+                                : <TapList spaceKey={openSpace} value={draft} onChange={setDraft} />}
+                            <div className="mt-auto space-y-4 pt-10">
+                                <button
+                                    onClick={saveAnswers}
+                                    disabled={savingAnswers}
+                                    className="w-full rounded-[2.5rem] bg-zinc-900 py-6 text-xs font-black uppercase tracking-[0.3em] text-white disabled:opacity-50"
+                                >
+                                    {t('walkthrough.capture.save', undefined, 'Save')}
+                                </button>
+                                <button
+                                    onClick={() => setStep('answers')}
+                                    className="w-full py-3 text-xs font-black uppercase tracking-[0.3em] text-zinc-500"
+                                >
+                                    {t('walkthrough.capture.back', undefined, 'Back')}
                                 </button>
                             </div>
                         </motion.div>

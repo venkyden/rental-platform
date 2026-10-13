@@ -7,6 +7,8 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import PremiumLayout from '@/components/PremiumLayout';
 import { apiClient } from '@/lib/api';
 import { resolveMediaUrl } from '@/lib/mediaUrl';
+import GoodToKnowPanel from '@/components/walkthrough/GoodToKnowPanel';
+import { bedroomCount, type Flatmates } from '@/lib/walkthrough';
 import { decodeHtmlEntities } from '@/lib/textUtils';
 import { useToast } from '@/lib/ToastContext';
 import VisitScheduler from '@/components/VisitScheduler';
@@ -86,6 +88,8 @@ interface Property {
     photos?: Array<string | PropertyPhoto> | { urls: string[] };
     room_details?: RoomDetail[];
     is_colocation?: boolean;
+    walkthrough_answers?: unknown;
+    flatmates?: Flatmates | null;
     landlord_first_name?: string | null;
     landlord_identity_verified?: boolean;
     landlord_bio?: string | null;
@@ -556,6 +560,14 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                     </motion.div>
                                 ))}
                             </div>
+
+                            {/* What the owner answered during the walk-through */}
+                            <GoodToKnowPanel
+                                answers={property.walkthrough_answers}
+                                flatmates={property.flatmates}
+                                isColocation={property.is_colocation}
+                                bedrooms={bedroomCount(property.room_details)}
+                            />
 
                             {/* Room availability table (WP2) — one row per colocation bedroom */}
                             {property.is_colocation && property.room_details && property.room_details.length > 0 && (

@@ -12,6 +12,8 @@ import { Camera, RefreshCw, CheckCircle2, ChevronLeft, ChevronRight, Info, Shiel
 import { motion, Variants, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/lib/LanguageContext';
 import QRCodeDisplay from '@/components/QRCodeDisplay';
+import WalkthroughAnswersEditor from '@/components/walkthrough/WalkthroughAnswersEditor';
+import { bedroomCount, flattenAnswers, spaceKeys, type Flatmates, type SpaceAnswers } from '@/lib/walkthrough';
 
 const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -106,6 +108,12 @@ export default function EditPropertyPage() {
     const toast = useToast();
     const { t } = useLanguage();
     const [generatingAi, setGeneratingAi] = useState(false);
+    // Walk-through answers: kept apart from formData and sent only when changed, so an
+    // ordinary edit never rewrites them.
+    const [walkAnswers, setWalkAnswers] = useState<Record<string, SpaceAnswers>>({});
+    const [walkFlatmates, setWalkFlatmates] = useState<Flatmates>({});
+    const [walkShared, setWalkShared] = useState(false);
+    const [walkDirty, setWalkDirty] = useState({ answers: false, flatmates: false });
     const propertyId = params?.id as string;
 
     const [declared, setDeclared] = useState(false);
@@ -218,6 +226,11 @@ export default function EditPropertyPage() {
 
                 setDescriptionEn(parsedEn);
                 setDescriptionFr(parsedFr);
+
+                setWalkAnswers(flattenAnswers(property.walkthrough_answers));
+                const { answered_at: _answeredAt, ...household } = (property.flatmates || {}) as Flatmates;
+                setWalkFlatmates(household);
+                setWalkShared(!!property.is_colocation);
 
                 setFormData({
                     title: property.title || '',
@@ -401,7 +414,16 @@ export default function EditPropertyPage() {
             }
             payload.description = combinedDescription;
 
-            await apiClient.client.put(`/properties/${propertyId}`, payload);
+            const walkPayload: { walkthrough_answers?: Record<string, SpaceAnswers>; flatmates?: Flatmates } = {};
+            if (walkDirty.answers) {
+                // Only the spaces this listing has now: a bedroom removed since is left alone.
+                walkPayload.walkthrough_answers = Object.fromEntries(
+                    spaceKeys(bedroomCount(formData.room_details)).map((key) => [key, walkAnswers[key] ?? {}])
+                );
+            }
+            if (walkDirty.flatmates && walkShared) walkPayload.flatmates = walkFlatmates;
+
+            await apiClient.client.put(`/properties/${propertyId}`, { ...payload, ...walkPayload });
             toast.success(t('properties.edit.saveSuccess', undefined, 'Property updated successfully'));
             router.push(`/properties/${propertyId}`);
         } catch (error: any) {
@@ -1620,6 +1642,15 @@ export default function EditPropertyPage() {
                                                     {t('properties.edit.mediaSection.manageMedia', undefined, 'Manage Media')}
                                                 </button>
                                             </div>
+
+                                            <WalkthroughAnswersEditor
+                                                bedrooms={bedroomCount(formData.room_details)}
+                                                isColocation={walkShared}
+                                                answers={walkAnswers}
+                                                flatmates={walkFlatmates}
+                                                onAnswers={(next) => { setWalkAnswers(next); setWalkDirty((d) => ({ ...d, answers: true })); }}
+                                                onFlatmates={(next) => { setWalkFlatmates(next); setWalkDirty((d) => ({ ...d, flatmates: true })); }}
+                                            />
                                         </div>
                                     )}
 
