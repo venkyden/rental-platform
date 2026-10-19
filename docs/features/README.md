@@ -28,7 +28,7 @@ detailed journals. Audit status from the 2026-05-30 full audit.
 | Webhooks (ERP/Stripe) | `webhooks.py`, `webhook_subscriptions` | `/webhooks` | [security-infrastructure](security-infrastructure/journal.md) | 🟡 reviewed |
 | Feedback | `feedback.py` | — | [security-infrastructure](security-infrastructure/journal.md) | 🟡 reviewed |
 | Landing page & smart search | `properties.py` (search filters) | `/`, `/trust`, `/search` (URL filters), `components/landing/home`, `lib/smartSearch.ts` | [landing](landing/DOSSIER.md) | new 2026-10-06, reviewed and fixed 2026-10-07, not part of the 2026-05 audit (55 Playwright tests × 3 browsers) |
-| Walk-through answers | `walkthrough_catalogue.py`, `properties.py` (capture answers) | `/capture/[code]`, `/properties/[id]`, `/properties/[id]/edit`, `components/walkthrough` | [walkthrough](walkthrough/DOSSIER.md) | new 2026-10-13, not part of the 2026-05 audit (18 Playwright tests × 3 browsers, 96 backend tests) |
+| Walk-through answers | `walkthrough_catalogue.py`, `properties.py` (capture answers) | `/capture/[code]`, `/properties/[id]`, `/properties/[id]/edit`, `components/walkthrough` | [walkthrough](walkthrough/DOSSIER.md) | new 2026-10-13, reviewed and fixed 2026-10-19, not part of the 2026-05 audit (29 Playwright tests × 3 browsers, 110 backend tests) |
 | Security, headers & infra | `main.py`, `core/*`, nginx, docker | global | [security-infrastructure](security-infrastructure/journal.md) | ✅ fixed (headers, CORS, log) |
 
 Legend: ✅ changed in the 2026-05 remediation · 🟡 reviewed, findings in the journal/backlog.
