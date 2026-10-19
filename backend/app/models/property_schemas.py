@@ -233,6 +233,14 @@ class PropertyResponse(BaseModel):
     custom_amenities: Optional[list] = []
     walkthrough_answers: Optional[dict] = None
     flatmates: Optional[dict] = None
+
+    @model_validator(mode="after")
+    def _household_card_for_shared_homes_only(self):
+        # Never served for a home that is not shared, however the row was changed.
+        if not self.is_colocation:
+            self.flatmates = None
+        return self
+
     public_transport: Optional[list] = []
     nearby_landmarks: Optional[list] = []
 

@@ -288,7 +288,9 @@ def _apply_walkthrough(property_obj, spaces: Optional[dict], flatmates, flatmate
                 merged = merge_space(merged, space_key, clean_space_answers(space_key, answers, bedrooms), now)
             property_obj.walkthrough_answers = merged or None
             flag_modified(property_obj, "walkthrough_answers")
-        if flatmates_sent and property_obj.is_colocation:
+        if flatmates_sent:
+            if not property_obj.is_colocation:
+                raise ValueError("A household card is only for a shared home")
             property_obj.flatmates = clean_flatmates(flatmates, now)
             flag_modified(property_obj, "flatmates")
     except ValueError as exc:
@@ -830,7 +832,11 @@ async def update_property(
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid property ID format")
 
-    result = await db.execute(select(Property).where(Property.id == prop_uuid))
+    query = select(Property).where(Property.id == prop_uuid)
+    if property_data.walkthrough_answers is not None or property_data.flatmates is not None:
+        # Same lock as the capture page's save, so the two cannot overwrite each other.
+        query = query.with_for_update()
+    result = await db.execute(query)
     property_obj = result.scalar_one_or_none()
 
     if not property_obj:
@@ -883,6 +889,9 @@ async def update_property(
         _apply_walkthrough(
             property_obj, answers_in if answers_sent else None, flatmates_in, flatmates_sent=flatmates_sent
         )
+    if not property_obj.is_colocation and property_obj.flatmates is not None:
+        # The household card belongs to a shared home only.
+        property_obj.flatmates = None
 
     # If the property is active, it must remain compliant with French law.
     if property_obj.status == "active":
@@ -1365,18 +1374,26 @@ async def save_walkthrough_answers(
     body: WalkthroughAnswersIn,
     db: AsyncSession = Depends(get_db),
 ):
-    """Save the tap list for one space (no auth: the session code is the key, and it can
-    only write to its own listing)."""
+    """One space's tap list and/or the household card (no auth: the session code is the
+    key, and it can only write to its own listing)."""
+
+    if body.space is None and body.flatmates is None:
+        raise HTTPException(status_code=422, detail="Send a space with its answers, or the household card")
+    if body.space is not None and body.answers is None:
+        raise HTTPException(status_code=422, detail="Send the answers for the space")
 
     session = await _active_media_session(db, code)
-    prop_result = await db.execute(select(Property).where(Property.id == session.property_id))
+    # Locked: two spaces saved at the same moment must not overwrite each other's merge.
+    prop_result = await db.execute(
+        select(Property).where(Property.id == session.property_id).with_for_update()
+    )
     property_obj = prop_result.scalar_one_or_none()
     if not property_obj:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invalid or expired session")
 
     _apply_walkthrough(
         property_obj,
-        {body.space: body.answers or {}} if body.space is not None else None,
+        {body.space: body.answers} if body.space is not None else None,
         body.flatmates,
         flatmates_sent=body.flatmates is not None,
     )

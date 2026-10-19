@@ -3,6 +3,7 @@ Walk-through answers against real rows: the capture-session endpoint, the
 landlord's edit path and what the public listing shows.
 """
 
+import asyncio
 import secrets
 import uuid
 from datetime import timedelta
@@ -153,6 +154,11 @@ async def test_an_unusable_code_writes_nothing(client, kind):
     {"space": "kitchen", "answers": {"hob": "<script>alert(1)</script>"}},
     {"space": "kitchen", "answers": ["hob"]},
     {"space": "kitchen\u0000", "answers": {}},
+    {"space": "bedroom:00", "answers": {"desk": "present"}},
+    {"space": "kitchen"},
+    {"space": "kitchen", "answers": None},
+    {"answers": {"hob": "working"}},
+    {},
 ])
 async def test_answers_outside_the_catalogue_are_refused_and_nothing_is_stored(client, payload):
     sm = client._sessionmaker
@@ -162,7 +168,7 @@ async def test_answers_outside_the_catalogue_are_refused_and_nothing_is_stored(c
 
     resp = await client.put(f"/properties/media-sessions/{code}/answers", json=payload)
     assert resp.status_code == 422, resp.text
-    assert "<script>alert(1)</script>" not in resp.text or len(resp.text) < 200
+    assert "<script>alert(1)</script>" not in resp.text
     assert (await _stored(sm, prop)).walkthrough_answers is None
 
 
@@ -181,7 +187,7 @@ async def test_bedrooms_follow_the_room_list(client):
 
 
 @pytest.mark.asyncio
-async def test_flatmates_are_kept_for_a_shared_home_only(client):
+async def test_flatmates_are_accepted_only_for_a_shared_home(client):
     sm = client._sessionmaker
     landlord = await make_user(sm, role="landlord")
     solo = await make_property(sm, landlord)
@@ -190,8 +196,7 @@ async def test_flatmates_are_kept_for_a_shared_home_only(client):
 
     solo_code = await _session(sm, solo, landlord)
     resp = await client.put(f"/properties/media-sessions/{solo_code}/answers", json={"flatmates": card})
-    assert resp.status_code == 200, resp.text
-    assert resp.json()["flatmates"] is None
+    assert resp.status_code == 422, resp.text
     assert (await _stored(sm, solo)).flatmates is None
 
     shared_code = await _session(sm, shared, landlord)
@@ -234,8 +239,10 @@ async def test_the_landlord_can_edit_answers_from_the_listing(client):
     assert answers["home"]["internet"]["answered_at"].endswith("Z")
 
     # A later edit of one space leaves the other alone; an unrelated edit leaves both.
-    await client.put(f"/properties/{prop.id}", json={"walkthrough_answers": {"kitchen": {}}}, headers=auth(landlord))
-    await client.put(f"/properties/{prop.id}", json={"description": "A quiet flat near the tram."}, headers=auth(landlord))
+    resp = await client.put(f"/properties/{prop.id}", json={"walkthrough_answers": {"kitchen": {}}}, headers=auth(landlord))
+    assert resp.status_code == 200, resp.text
+    resp = await client.put(f"/properties/{prop.id}", json={"description": "A quiet flat near the tram."}, headers=auth(landlord))
+    assert resp.status_code == 200, resp.text
     assert (await _stored(sm, prop)).walkthrough_answers == {"home": answers["home"]}
 
 
@@ -266,3 +273,62 @@ async def test_only_the_landlord_can_edit_answers_from_the_listing(client):
     assert (await client.put(f"/properties/{prop.id}", json=payload, headers=auth(stranger))).status_code == 403
     assert (await client.put(f"/properties/{prop.id}", json=payload, headers=auth(tenant))).status_code == 403
     assert (await _stored(sm, prop)).walkthrough_answers is None
+
+
+@pytest.mark.asyncio
+async def test_two_spaces_saved_at_the_same_moment_are_both_kept(client):
+    sm = client._sessionmaker
+    landlord = await make_user(sm, role="landlord")
+    prop = await _listing(sm, landlord)
+    code = await _session(sm, prop, landlord)
+    url = f"/properties/media-sessions/{code}/answers"
+
+    for _ in range(5):
+        await _set(sm, prop, walkthrough_answers=None)
+        results = await asyncio.gather(
+            client.put(url, json={"space": "kitchen", "answers": {"hob": "working"}}),
+            client.put(url, json={"space": "home", "answers": {"internet": "present"}}),
+            client.put(f"/properties/{prop.id}", json={"walkthrough_answers": {"bathroom": {"shower_bath": "present"}}},
+                       headers=auth(landlord)),
+        )
+        assert all(r.status_code == 200 for r in results), [r.text for r in results]
+        assert set((await _stored(sm, prop)).walkthrough_answers) == {"kitchen", "home", "bathroom"}
+
+
+@pytest.mark.asyncio
+async def test_a_home_that_stops_being_shared_loses_its_household_card(client):
+    sm = client._sessionmaker
+    landlord = await make_user(sm, role="landlord")
+    prop = await _listing(sm, landlord, status="active", is_colocation=True)
+    code = await _session(sm, prop, landlord)
+    resp = await client.put(f"/properties/media-sessions/{code}/answers", json={"flatmates": {"count": 2}})
+    assert resp.status_code == 200, resp.text
+
+    resp = await client.put(f"/properties/{prop.id}", json={"is_colocation": False}, headers=auth(landlord))
+    assert resp.status_code == 200, resp.text
+    assert resp.json()["flatmates"] is None
+    assert (await _stored(sm, prop)).flatmates is None
+    assert (await client.get(f"/properties/{prop.id}")).json()["flatmates"] is None
+
+
+@pytest.mark.asyncio
+async def test_a_stored_card_is_never_served_for_a_home_that_is_not_shared(client):
+    # Belt and braces for rows changed outside the update endpoint.
+    sm = client._sessionmaker
+    landlord = await make_user(sm, role="landlord")
+    prop = await _listing(sm, landlord, status="active", flatmates={"count": 2, "answered_at": "2026-10-01T00:00:00Z"})
+    assert (await client.get(f"/properties/{prop.id}")).json()["flatmates"] is None
+
+
+@pytest.mark.asyncio
+async def test_bedroom_answers_are_checked_against_the_room_list_sent_with_them(client):
+    sm = client._sessionmaker
+    landlord = await make_user(sm, role="landlord")
+    prop = await _listing(sm, landlord)
+
+    shrink = {"room_details": [{"surface": 10}], "walkthrough_answers": {"bedroom:1": {"desk": "present"}}}
+    assert (await client.put(f"/properties/{prop.id}", json=shrink, headers=auth(landlord))).status_code == 422
+    grow = {"room_details": [{}, {}, {}], "walkthrough_answers": {"bedroom:2": {"desk": "present"}}}
+    resp = await client.put(f"/properties/{prop.id}", json=grow, headers=auth(landlord))
+    assert resp.status_code == 200, resp.text
+    assert resp.json()["walkthrough_answers"]["bedroom:2"]["desk"]["state"] == "present"

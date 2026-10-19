@@ -50,8 +50,13 @@ class TestCatalogue:
         if not dictionary.exists():
             pytest.skip("frontend sources are not present in this checkout")
         text = dictionary.read_text(encoding="utf-8")
-        for item in CATALOGUE:
-            assert len(re.findall(rf"\b{item.key}: [\"\']", text)) >= 2, item.key
+        # Only the items block of each language's walkthrough section: the same words
+        # ("desk", "tv") appear elsewhere in the dictionary.
+        blocks = re.findall(r"\n        walkthrough: \{.*?\n            items: \{(.*?)\n            \},", text, re.S)
+        assert len(blocks) == 2, "expected one walkthrough.items block per language"
+        for block in blocks:
+            labelled = set(re.findall(r"^\s+(\w+): \"[^\"]+\",$", block, re.M))
+            assert labelled == {item.key for item in CATALOGUE}
 
 
 class TestBedroomCount:
@@ -77,7 +82,8 @@ class TestCleanSpaceAnswers:
 
     @pytest.mark.parametrize("space", [
         "bedroom:2", "bedroom:-1", "bedroom:", "bedroom", "bedroom:1.0", "bedroom:01x", "bedroom:999",
-        "bedroom:٣", "garage", "", "kitchen:0", "KITCHEN", None, 3, ["kitchen"], "kitchen\x00",
+        "bedroom:٣", "bedroom:00", "bedroom:01", "garage", "", "kitchen:0", "KITCHEN", None, 3, ["kitchen"],
+        "kitchen\x00",
     ])
     def test_rejects_a_space_the_listing_does_not_have(self, space):
         with pytest.raises(ValueError):
@@ -102,10 +108,17 @@ class TestCleanSpaceAnswers:
         with pytest.raises(ValueError):
             clean_space_answers("kitchen", answers, 1)
 
-    def test_error_text_never_echoes_more_than_a_short_prefix(self):
+    @pytest.mark.parametrize("space, answers", [
+        ("kitchen", {"x" * 5000: "working"}),
+        ("kitchen", {"<img src=x onerror=alert(1)>": "working"}),
+        ("kitchen", {"hob": "<script>alert(1)</script>"}),
+        ("<b>garage</b>", {}),
+    ])
+    def test_a_refused_value_is_never_echoed_back(self, space, answers):
         with pytest.raises(ValueError) as exc:
-            clean_space_answers("kitchen", {"x" * 5000: "working"}, 1)
-        assert len(str(exc.value)) < 120
+            clean_space_answers(space, answers, 1)
+        assert "<" not in str(exc.value) and "xxxx" not in str(exc.value)
+        assert len(str(exc.value)) < 80
 
 
 class TestMergeSpace:

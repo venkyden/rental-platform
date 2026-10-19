@@ -5,8 +5,8 @@ Revises: cddfc29ae95d
 Create Date: 2026-10-13
 
 The landlord's answers from the walk-through tap list and the household card
-for a shared home. Both nullable: a listing without answers keeps showing its
-amenities list.
+for a shared home. Both nullable: existing listings have no answers, and the
+listing page shows no panel for them.
 """
 
 import sqlalchemy as sa

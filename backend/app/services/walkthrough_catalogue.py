@@ -14,6 +14,7 @@ Stored on ``properties.walkthrough_answers`` as
 ``bedroom:<index>``.
 """
 
+import re
 from dataclasses import dataclass
 from typing import Optional
 
@@ -26,6 +27,12 @@ STATES = {
 }
 
 MAX_BEDROOMS = 20
+_PLAIN_KEY = re.compile(r"[a-z_]{1,40}(:\d{1,2})?")
+
+
+def _named(value) -> str:
+    """A key to quote in an error message, or nothing: a refused value is never echoed back."""
+    return f": {value}" if isinstance(value, str) and _PLAIN_KEY.fullmatch(value) else ""
 FLATMATE_OCCUPATIONS = ("students", "working", "both")
 
 
@@ -79,9 +86,10 @@ def _base_space(space_key, bedrooms: int) -> str:
     if space_key in _BY_SPACE and space_key != "bedroom":
         return space_key
     name, _, index = space_key.partition(":")
-    if name == "bedroom" and index.isascii() and index.isdigit() and len(index) <= 2 and int(index) < bedrooms:
+    # One spelling per bedroom: "bedroom:1", never "bedroom:01".
+    if name == "bedroom" and index.isascii() and index.isdigit() and str(int(index)) == index and int(index) < bedrooms:
         return "bedroom"
-    raise ValueError(f"Unknown space: {space_key[:40]}")
+    raise ValueError(f"Unknown space{_named(space_key)}")
 
 
 def clean_space_answers(space_key, answers, bedrooms: int) -> dict[str, str]:
@@ -93,9 +101,9 @@ def clean_space_answers(space_key, answers, bedrooms: int) -> dict[str, str]:
     for key, state in answers.items():
         item = items.get(key) if isinstance(key, str) else None
         if item is None:
-            raise ValueError(f"Unknown item for this space: {str(key)[:40]}")
+            raise ValueError(f"Unknown item for this space{_named(key)}")
         if state not in STATES[item.kind]:
-            raise ValueError(f"Unknown answer for {key}: {str(state)[:40]}")
+            raise ValueError(f"Unknown answer for {key}")
         cleaned[key] = state
     return cleaned
 
@@ -125,7 +133,7 @@ def clean_flatmates(data, now: str) -> Optional[dict]:
         raise ValueError("Flatmates must be an object")
     unknown = set(data) - {"count", "occupation", "smoking", "pets"}
     if unknown:
-        raise ValueError(f"Unknown flatmates field: {sorted(unknown)[0][:40]}")
+        raise ValueError(f"Unknown flatmates field{_named(sorted(map(str, unknown))[0])}")
     cleaned: dict = {}
     count = data.get("count")
     if count is not None:
