@@ -196,8 +196,9 @@ unmatched question words (the input for adding items to the catalogue).
 
 ## Open points for the founder
 
-1. **Furnished publish rule.** Today the eleven items are checked only when a lease is
-   generated. This design also checks them at publication. Confirm that is wanted.
+1. **Furnished publish rule.** This design checks the eleven items at publication. (It said
+   they were already checked when a lease is generated; that is not so in any live route,
+   see the dossier.) Confirm that is wanted.
 2. **Flatmates.** Students also ask about the gender mix of a flatshare. It is left out
    here pending legal advice; say if you want it raised with the lawyer.
 3. **Kitchen and bathroom as spaces.** Capture media is currently tagged by bedroom or

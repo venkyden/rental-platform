@@ -122,8 +122,12 @@ Frontend (paths relative to `frontend/`):
   page). It relays between the two sides, which roadmap L-1 puts to counsel first.
 - **The furnished publish rule** (refuse to publish a furnished listing unless the eleven
   items are marked present). It would add a way for publishing to fail while listings are
-  the scarce side; it needs the founder's yes (open point 1). The eleven items are still
-  checked when a lease is generated.
+  the scarce side; it needs the founder's yes (open point 1).
+- **Nothing live checks the eleven items today.** The check exists
+  (`lease_rules.validate_furnished_inventory`), but only `lease_generation.generate` runs it,
+  and no route calls that. The lease route in use (`routers/leases.py` with
+  `lease_generator`) only prints whether the home is furnished. Found in the review of
+  2026-10-19.
 - **The measures** in the design (share of listings with complete answers, and so on).
 
 ## Tests
