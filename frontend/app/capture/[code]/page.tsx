@@ -9,6 +9,7 @@ import { Camera, Video, CheckCircle2, Shield, MapPin, ChevronRight, WifiOff, Inf
 import TapList from '@/components/walkthrough/TapList';
 import FlatmatesFields from '@/components/walkthrough/FlatmatesFields';
 import { flattenAnswers, itemsFor, spaceKeys, spaceLabel, type Flatmates, type SpaceAnswers } from '@/lib/walkthrough';
+import { enqueue, failureOf, parseQueue, targetOf, withoutSent, withoutTarget, type AnswersBody } from '@/lib/walkthroughQueue';
 
 interface Room {
     index: number;
@@ -44,7 +45,19 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
     const [draft, setDraft] = useState<SpaceAnswers>({});
     const [flatmatesDraft, setFlatmatesDraft] = useState<Flatmates>({});
     const [savingAnswers, setSavingAnswers] = useState(false);
+    const [waitingAnswers, setWaitingAnswers] = useState(0);
     const pendingKey = `roomivo-walkthrough-pending:${code}`;
+    // The sending run in progress, if any. A new save waits for it, so an older waiting
+    // answer can never reach the server after a newer one.
+    const flushRun = useRef<Promise<void> | null>(null);
+    // Sending can start before the stored language has loaded and finish after it, so the
+    // messages it shows read the current translator and room count, not the first render's.
+    const tNow = useRef(t);
+    tNow.current = t;
+    const walkNow = useRef(walk);
+    walkNow.current = walk;
+    // A request that hangs on a weak connection must end, so the answer can wait on the phone.
+    const ANSWER_TIMEOUT_MS = 15000;
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const videoInputRef = useRef<HTMLInputElement>(null);
@@ -52,8 +65,11 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
     useEffect(() => {
         const handleOnline = () => { setIsOffline(false); syncOfflineQueue(); flushPendingAnswers(); };
         const handleOffline = () => setIsOffline(true);
+        // A phone that was never "offline" (a timeout, a server error) gets no online event.
+        const handleVisible = () => { if (document.visibilityState === 'visible') flushPendingAnswers(); };
         window.addEventListener('online', handleOnline);
         window.addEventListener('offline', handleOffline);
+        document.addEventListener('visibilitychange', handleVisible);
         setIsOffline(!navigator.onLine);
         loadSessionDetails();
         requestLocation();
@@ -74,6 +90,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
             unsubscribe?.();
             window.removeEventListener('online', handleOnline);
             window.removeEventListener('offline', handleOffline);
+            document.removeEventListener('visibilitychange', handleVisible);
         };
     }, []);
 
@@ -99,11 +116,10 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
             }
         } catch (e) {
             console.error(e);
+            setWaitingAnswers(readPendingAnswers().length);
             setLoadError(true);
         }
     };
-
-    type AnswersBody = { space?: string; answers?: SpaceAnswers; flatmates?: Flatmates };
 
     const applyWalkthrough = (data: any) => {
         setWalk({ bedrooms: Math.max(1, Number(data.bedrooms) || 1), shared: !!data.is_colocation });
@@ -121,12 +137,12 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
         }
         setAnswers(spaces);
         setFlatmates(household);
+        setWaitingAnswers(waiting.length);
     };
 
     const readPendingAnswers = (): AnswersBody[] => {
         try {
-            const parsed = JSON.parse(localStorage.getItem(pendingKey) || '[]');
-            return Array.isArray(parsed) ? parsed : [];
+            return parseQueue(localStorage.getItem(pendingKey));
         } catch {
             return [];
         }
@@ -136,29 +152,57 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
         try {
             if (queue.length) localStorage.setItem(pendingKey, JSON.stringify(queue));
             else localStorage.removeItem(pendingKey);
+            setWaitingAnswers(queue.length);
             return true;
         } catch {
             return false;
         }
     };
 
-    // Send what was saved while offline, oldest first. Stops at the first failure and keeps
-    // the rest; an answer the server refuses is dropped so it cannot block the ones behind it.
-    const flushPendingAnswers = async () => {
-        let queue = readPendingAnswers();
-        while (queue.length) {
+    const answerLabel = (target: string, bedrooms: number) =>
+        target === 'flatmates'
+            ? tNow.current('walkthrough.flatmates.title', undefined, 'Who lives here')
+            : spaceLabel(tNow.current, target, bedrooms);
+
+    // Send what is waiting on this phone, oldest first, one run at a time. A connection or
+    // server problem stops the run and keeps everything; an answer the server refuses is
+    // dropped and the landlord is told which space to answer again.
+    const flushPendingAnswers = (): Promise<void> => {
+        if (flushRun.current) return flushRun.current;
+        if (!readPendingAnswers().length) return Promise.resolve();
+        flushRun.current = sendWaitingAnswers().finally(() => { flushRun.current = null; });
+        return flushRun.current;
+    };
+
+    const sendWaitingAnswers = async () => {
+        const refused: string[] = [];
+        let latest: any = null;
+        let expired = false;
+        for (let body = readPendingAnswers()[0]; body; body = readPendingAnswers()[0]) {
+            let kept: boolean;
             try {
-                const res = await apiClient.client.put(`/properties/media-sessions/${code}/answers`, queue[0]);
-                queue = queue.slice(1);
-                writePendingAnswers(queue);
-                if (!queue.length) applyWalkthrough(res.data);
+                const res = await apiClient.client.put(`/properties/media-sessions/${code}/answers`, body, { timeout: ANSWER_TIMEOUT_MS });
+                latest = res.data;
+                kept = writePendingAnswers(withoutSent(readPendingAnswers(), body));
             } catch (err: any) {
-                if (!err?.response) return;
-                console.error('[capture] a saved answer was refused and dropped', err.response?.data);
-                queue = queue.slice(1);
-                writePendingAnswers(queue);
+                const failure = failureOf(err?.response?.status);
+                if (failure === 'retry-later') break;
+                if (failure === 'link-expired') { expired = true; break; }
+                console.error('[capture] a saved answer was refused', err.response?.data);
+                refused.push(targetOf(body));
+                kept = writePendingAnswers(withoutSent(readPendingAnswers(), body));
             }
+            // Storage that cannot be written would hand back the same entry forever.
+            if (!kept) break;
         }
+        if (latest) applyWalkthrough(latest);
+        if (refused.length) {
+            const bedrooms = latest ? Math.max(1, Number(latest.bedrooms) || 1) : walkNow.current?.bedrooms ?? 1;
+            showToast(tNow.current('walkthrough.capture.notAccepted', { spaces: refused.map((r) => answerLabel(r, bedrooms)).join(', ') },
+                `These answers were not accepted. Please answer again: ${refused.join(', ')}`), 'error', 8000);
+            if (!latest) loadSessionDetails();
+        }
+        if (expired) setLoadError(true);
     };
 
     const openAnswers = (spaceKey: string) => {
@@ -173,20 +217,33 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
         const body: AnswersBody = openSpace === 'flatmates' ? { flatmates: flatmatesDraft } : { space: openSpace, answers: draft };
         setSavingAnswers(true);
         try {
-            const res = await apiClient.client.put(`/properties/media-sessions/${code}/answers`, body);
-            applyWalkthrough(res.data);
-            showToast(t('walkthrough.capture.saved', undefined, 'Answers saved'), 'success', 2000);
-            setStep('answers');
-        } catch (err: any) {
-            if (!err?.response && writePendingAnswers([...readPendingAnswers(), body])) {
-                // No network: keep it on this phone and show it as answered.
-                if (body.space) setAnswers((prev) => ({ ...prev, [body.space as string]: body.answers ?? {} }));
-                if (body.flatmates) setFlatmates(body.flatmates);
-                showToast(t('walkthrough.capture.savedOffline', undefined, 'Saved on this phone. It will be sent when you are back online.'), 'info');
+            if (flushRun.current) await flushRun.current;
+            // Kept on the phone first, replacing any older answer for this space, so that a
+            // reload or a lost connection mid-request can never send the older one instead.
+            const kept = writePendingAnswers(enqueue(readPendingAnswers(), body));
+            try {
+                const res = await apiClient.client.put(`/properties/media-sessions/${code}/answers`, body, { timeout: ANSWER_TIMEOUT_MS });
+                writePendingAnswers(withoutSent(readPendingAnswers(), body));
+                applyWalkthrough(res.data);
+                showToast(t('walkthrough.capture.saved', undefined, 'Answers saved'), 'success', 2000);
                 setStep('answers');
-            } else {
-                console.error('[capture] could not save answers', err);
-                showToast(t('walkthrough.capture.saveError', undefined, 'Could not save. Please try again.'), 'error');
+                flushPendingAnswers();
+            } catch (err: any) {
+                const failure = failureOf(err?.response?.status);
+                if (failure === 'retry-later' && kept) {
+                    if (body.space) setAnswers((prev) => ({ ...prev, [body.space as string]: body.answers ?? {} }));
+                    if (body.flatmates) setFlatmates(body.flatmates);
+                    showToast(t('walkthrough.capture.savedOffline', undefined, 'Saved on this phone. It will be sent as soon as the connection allows.'), 'info');
+                    setStep('answers');
+                } else if (failure === 'retry-later') {
+                    showToast(t('walkthrough.capture.cannotStore', undefined, 'Could not send, and this phone cannot keep answers. Please try again when the connection is back.'), 'error');
+                } else if (failure === 'link-expired') {
+                    setLoadError(true);
+                } else {
+                    writePendingAnswers(withoutSent(readPendingAnswers(), body));
+                    console.error('[capture] could not save answers', err);
+                    showToast(t('walkthrough.capture.saveError', undefined, 'Could not save. Please try again.'), 'error');
+                }
             }
         } finally {
             setSavingAnswers(false);
@@ -433,6 +490,12 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                                         ? 'Cette session de photos/vidéo est introuvable. Le lien a peut-être expiré — demandez-en un nouveau depuis votre annonce.'
                                         : 'This capture session could not be found. The link may have expired — please request a new one from your listing.'}
                                 </p>
+                                {waitingAnswers > 0 && (
+                                    <p className="text-base font-bold text-amber-700 max-w-sm" data-testid="answers-not-sent">
+                                        {t('walkthrough.capture.linkExpired', { count: waitingAnswers },
+                                            `Answers kept on this phone were not sent: ${waitingAnswers}. Please enter them again from a new link or on your listing's edit page.`)}
+                                    </p>
+                                )}
                             </div>
                         </motion.div>
                     )}
@@ -710,7 +773,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                         </motion.div>
                     )}
 
-                    {step === 'answers' && walk && (
+                    {!loadError && step === 'answers' && walk && (
                         <motion.div key="answers" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex-1 flex flex-col">
                             <div className="mb-8 space-y-3">
                                 <h1 className="text-4xl font-black tracking-tighter uppercase leading-[0.9]">
@@ -720,6 +783,19 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                                     {t('walkthrough.capture.pick', undefined, 'Pick a space. Leave a line empty if it does not apply.')}
                                 </p>
                             </div>
+                            {waitingAnswers > 0 && (
+                                <div className="mb-6 flex items-center justify-between gap-4 rounded-2xl bg-amber-50 px-5 py-4" data-testid="answers-waiting">
+                                    <span className="text-sm font-bold text-amber-800">
+                                        {t('walkthrough.capture.waiting', { count: waitingAnswers }, `Answers waiting to be sent: ${waitingAnswers}`)}
+                                    </span>
+                                    <button
+                                        onClick={() => flushPendingAnswers()}
+                                        className="rounded-xl bg-white px-4 py-2 text-xs font-black uppercase tracking-wider text-zinc-900"
+                                    >
+                                        {t('walkthrough.capture.sendNow', undefined, 'Send now')}
+                                    </button>
+                                </div>
+                            )}
                             <ul className="space-y-3" data-testid="answer-spaces">
                                 {[...spaceKeys(walk.bedrooms), ...(walk.shared ? ['flatmates'] : [])].map((key) => {
                                     const total = key === 'flatmates' ? 0 : itemsFor(key).length;
@@ -756,7 +832,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                         </motion.div>
                     )}
 
-                    {step === 'space' && walk && openSpace && (
+                    {!loadError && step === 'space' && walk && openSpace && (
                         <motion.div key={`space-${openSpace}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex-1 flex flex-col">
                             <h1 className="mb-6 text-4xl font-black tracking-tighter uppercase leading-[0.9]">
                                 {openSpace === 'flatmates' ? t('walkthrough.flatmates.title', undefined, 'Who lives here') : spaceLabel(t, openSpace, walk.bedrooms)}

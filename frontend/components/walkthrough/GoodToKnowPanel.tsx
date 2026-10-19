@@ -3,7 +3,7 @@
 import { Check, Minus, X } from 'lucide-react';
 import { useLanguage } from '@/lib/LanguageContext';
 import {
-    flattenAnswers, formatAnswerDate, hasFlatmates, itemsFor, latestAnswerDate, spaceKeys, spaceLabel,
+    flattenAnswers, formatAnswerDate, hasFlatmates, householdLines, itemsFor, latestAnswerDate, spaceKeys, spaceLabel,
     type Flatmates, type WalkState,
 } from '@/lib/walkthrough';
 
@@ -37,24 +37,8 @@ export default function GoodToKnowPanel({
     const household = isColocation && hasFlatmates(flatmates) ? flatmates! : null;
     if (spaces.length === 0 && !household) return null;
 
-    const answered = latestAnswerDate(answers, household);
-    const householdLines = household
-        ? [
-            typeof household.count === 'number' &&
-                (household.count === 1
-                    ? t('walkthrough.flatmates.countOne', undefined, '1 flatmate')
-                    : t('walkthrough.flatmates.count', { count: household.count }, `${household.count} flatmates`)),
-            household.occupation && t(`walkthrough.flatmates.occupation.${household.occupation}`, undefined, household.occupation),
-            typeof household.smoking === 'boolean' &&
-                (household.smoking
-                    ? t('walkthrough.flatmates.smokingYes', undefined, 'Smoking in the home')
-                    : t('walkthrough.flatmates.smokingNo', undefined, 'No smoking in the home')),
-            typeof household.pets === 'boolean' &&
-                (household.pets
-                    ? t('walkthrough.flatmates.petsYes', undefined, 'Pets in the home')
-                    : t('walkthrough.flatmates.petsNo', undefined, 'No pets in the home')),
-        ].filter((line): line is string => typeof line === 'string')
-        : [];
+    const answered = latestAnswerDate(answers, bedrooms, household);
+    const lines = household ? householdLines(t, household) : [];
 
     return (
         <section data-testid="good-to-know" aria-labelledby="good-to-know-title" className="glass-card !p-8 sm:!p-12 rounded-[3rem] border-zinc-100">
@@ -63,7 +47,7 @@ export default function GoodToKnowPanel({
             </h2>
             {answered && (
                 <p className="mb-8 text-sm font-medium text-zinc-500" data-testid="good-to-know-source">
-                    {t('walkthrough.panel.source', { date: formatAnswerDate(answered, language) }, `Answered by the owner on ${formatAnswerDate(answered, language)}`)}
+                    {t('walkthrough.panel.source', { date: formatAnswerDate(answered, language) }, `Last updated by the owner on ${formatAnswerDate(answered, language)}`)}
                 </p>
             )}
 
@@ -94,13 +78,13 @@ export default function GoodToKnowPanel({
                     </div>
                 ))}
 
-                {householdLines.length > 0 && (
+                {lines.length > 0 && (
                     <div data-testid="good-to-know-flatmates">
                         <h3 className="mb-3 text-xs font-black uppercase tracking-[0.3em] text-zinc-500">
                             {t('walkthrough.flatmates.title', undefined, 'Who lives here')}
                         </h3>
                         <ul className="space-y-2">
-                            {householdLines.map((line) => (
+                            {lines.map((line) => (
                                 <li key={line} className="text-sm font-medium text-zinc-700">{line}</li>
                             ))}
                         </ul>

@@ -11,7 +11,7 @@ const STATE_FALLBACK: Record<WalkState, string> = {
 };
 
 /**
- * One space's questions: a row per item, two or three large buttons. Tapping the
+ * One space's questions: a row per item, two or three large toggle buttons. Pressing the
  * chosen answer again clears it; an unanswered item is simply not shown on the listing.
  */
 export default function TapList({
@@ -39,15 +39,14 @@ export default function TapList({
                 return (
                     <li key={item.key} className="rounded-3xl border border-zinc-100 p-4">
                         <div className="mb-3 text-sm font-black text-zinc-900">{label}</div>
-                        <div role="radiogroup" aria-label={label} className="flex flex-wrap gap-2">
+                        <div role="group" aria-label={label} className="flex flex-wrap gap-2">
                             {WALK_STATES[item.kind].map((state) => {
                                 const chosen = value[item.key] === state;
                                 return (
                                     <button
                                         key={state}
                                         type="button"
-                                        role="radio"
-                                        aria-checked={chosen}
+                                        aria-pressed={chosen}
                                         onClick={() => choose(item.key, state)}
                                         className={`min-h-12 flex-1 rounded-2xl border-2 px-3 py-3 text-xs font-black uppercase tracking-wider transition-colors ${chosen ? 'border-zinc-900 bg-zinc-900 text-white' : 'border-zinc-200 bg-white text-zinc-700 hover:border-zinc-900'}`}
                                     >

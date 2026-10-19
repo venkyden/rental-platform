@@ -105,14 +105,17 @@ export function flattenAnswers(stored: unknown): Record<string, SpaceAnswers> {
     return out;
 }
 
-/** The most recent answer date across the tap lists and the household card, as YYYY-MM-DD. */
-export function latestAnswerDate(stored: unknown, flatmates?: Flatmates | null): string | null {
+/** The most recent date among the answers the panel shows (this listing's spaces, known
+ *  items, valid answers) and the household card, as a UTC YYYY-MM-DD. */
+export function latestAnswerDate(stored: unknown, bedrooms: number, flatmates?: Flatmates | null): string | null {
     const dates: string[] = [];
+    const shown = flattenAnswers(stored);
     if (stored && typeof stored === 'object' && !Array.isArray(stored)) {
-        for (const items of Object.values(stored as Record<string, unknown>)) {
-            if (!items || typeof items !== 'object') continue;
-            for (const answer of Object.values(items as Record<string, unknown>)) {
-                const at = answer && typeof answer === 'object' ? (answer as { answered_at?: unknown }).answered_at : undefined;
+        for (const spaceKey of spaceKeys(bedrooms)) {
+            const items = (stored as Record<string, unknown>)[spaceKey];
+            if (!shown[spaceKey] || !items || typeof items !== 'object') continue;
+            for (const key of Object.keys(shown[spaceKey])) {
+                const at = ((items as Record<string, unknown>)[key] as { answered_at?: unknown } | undefined)?.answered_at;
                 if (typeof at === 'string') dates.push(at);
             }
         }
@@ -122,7 +125,8 @@ export function latestAnswerDate(stored: unknown, flatmates?: Flatmates | null):
     return valid.length ? valid[valid.length - 1].slice(0, 10) : null;
 }
 
-/** "13 October 2026" / "13 octobre 2026". The input is a calendar date, so no time zone applies. */
+/** "13 October 2026" / "13 octobre 2026". The input is the UTC date of the answer; it is
+ *  formatted in UTC so it is not shifted a second time (and server and browser agree). */
 export function formatAnswerDate(isoDate: string, language: string): string {
     const [year, month, day] = isoDate.split('-').map(Number);
     if (!year || !month || !day) return isoDate;
@@ -135,3 +139,28 @@ export function formatAnswerDate(isoDate: string, language: string): string {
 export const hasFlatmates = (flatmates?: Flatmates | null): boolean =>
     !!flatmates && (typeof flatmates.count === 'number' || !!flatmates.occupation ||
         typeof flatmates.smoking === 'boolean' || typeof flatmates.pets === 'boolean');
+
+/** The household card as the lines the listing page shows, in order. Empty when there is nothing to say. */
+export function householdLines(t: Translate, flatmates?: Flatmates | null): string[] {
+    if (!hasFlatmates(flatmates)) return [];
+    const card = flatmates!;
+    const lines: (string | false | undefined)[] = [
+        typeof card.count === 'number' &&
+            (card.count === 0
+                ? t('walkthrough.flatmates.countZero', undefined, 'No flatmates')
+                : card.count === 1
+                    ? t('walkthrough.flatmates.countOne', undefined, '1 flatmate')
+                    : t('walkthrough.flatmates.count', { count: card.count }, `${card.count} flatmates`)),
+        card.occupation && (FLATMATE_OCCUPATIONS as readonly string[]).includes(card.occupation) &&
+            t(`walkthrough.flatmates.occupation.${card.occupation}`, undefined, card.occupation),
+        typeof card.smoking === 'boolean' &&
+            (card.smoking
+                ? t('walkthrough.flatmates.smokingYes', undefined, 'Smoking in the home')
+                : t('walkthrough.flatmates.smokingNo', undefined, 'No smoking in the home')),
+        typeof card.pets === 'boolean' &&
+            (card.pets
+                ? t('walkthrough.flatmates.petsYes', undefined, 'Pets in the home')
+                : t('walkthrough.flatmates.petsNo', undefined, 'No pets in the home')),
+    ];
+    return lines.filter((line): line is string => typeof line === 'string');
+}

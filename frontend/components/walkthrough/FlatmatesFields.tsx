@@ -24,13 +24,12 @@ export default function FlatmatesFields({ value, onChange }: { value: Flatmates;
     const yesNo = (field: 'smoking' | 'pets', label: string) => (
         <div className="rounded-3xl border border-zinc-100 p-4">
             <div className="mb-3 text-sm font-black text-zinc-900">{label}</div>
-            <div role="radiogroup" aria-label={label} className="flex gap-2">
+            <div role="group" aria-label={label} className="flex gap-2">
                 {[true, false].map((option) => (
                     <button
                         key={String(option)}
                         type="button"
-                        role="radio"
-                        aria-checked={value[field] === option}
+                        aria-pressed={value[field] === option}
                         onClick={() => toggle(field, option)}
                         className={pill(value[field] === option)}
                     >
@@ -67,13 +66,12 @@ export default function FlatmatesFields({ value, onChange }: { value: Flatmates;
             </div>
             <div className="rounded-3xl border border-zinc-100 p-4">
                 <div className="mb-3 text-sm font-black text-zinc-900">{occupationLabel}</div>
-                <div role="radiogroup" aria-label={occupationLabel} className="flex flex-wrap gap-2">
+                <div role="group" aria-label={occupationLabel} className="flex flex-wrap gap-2">
                     {FLATMATE_OCCUPATIONS.map((option) => (
                         <button
                             key={option}
                             type="button"
-                            role="radio"
-                            aria-checked={value.occupation === option}
+                            aria-pressed={value.occupation === option}
                             onClick={() => toggle('occupation', option)}
                             className={pill(value.occupation === option)}
                         >
