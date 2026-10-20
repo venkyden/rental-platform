@@ -114,7 +114,8 @@ test.describe('walk-through helpers', () => {
     test('the panel lines say "verified" nowhere, in either language', () => {
         for (const lang of ['en', 'fr'] as const) {
             const words = JSON.stringify(translations[lang].walkthrough);
-            expect(words).not.toMatch(/verif|vérifi|certif|guarant|garanti/i);
+            // "dépôt de garantie" is the security deposit, not a promise.
+            expect(words.replace(/dépôt de garantie/g, '')).not.toMatch(/verif|vérifi|certif|guarant|garanti/i);
         }
     });
 

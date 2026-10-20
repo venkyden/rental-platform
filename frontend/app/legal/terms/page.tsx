@@ -48,7 +48,7 @@ export default function TermsPage() {
 
                     {/* Content Sections */}
                     <div className="space-y-12">
-                        {['service', 'obligations', 'fraud', 'liability'].map((sectionKey) => (
+                        {['service', 'obligations', 'fraud', 'listings', 'liability'].map((sectionKey) => (
                             <motion.section 
                                 key={sectionKey}
                                 variants={sectionVariants}

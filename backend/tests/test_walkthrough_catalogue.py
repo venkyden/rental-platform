@@ -8,7 +8,7 @@ import pytest
 from app.services.lease_rules import FURNISHED_REQUIRED_ITEMS
 from app.services.walkthrough_catalogue import (CATALOGUE, SPACES, STATES, bedroom_count,
                                                 clean_flatmates, clean_space_answers,
-                                                merge_space)
+                                                furnished_gaps, merge_space)
 
 NOW = "2026-10-13T10:00:00Z"
 LATER = "2026-10-14T10:00:00Z"
@@ -177,3 +177,77 @@ class TestCleanFlatmates:
     def test_rejects_malformed_values(self, data):
         with pytest.raises(ValueError):
             clean_flatmates(data, NOW)
+
+
+class TestFurnishedGaps:
+    """The decree categories the owner's own answers leave open."""
+
+    @staticmethod
+    def _all_present(bedrooms=1, **overrides):
+        answers = {
+            "kitchen": {"hob": {"state": "working"}, "oven": {"state": "working"}, "microwave": {"state": "absent"},
+                        "fridge_freezer": {"state": "working"}, "plates_glasses": {"state": "present"},
+                        "pans_utensils": {"state": "present"}},
+            "living": {"table_chairs": {"state": "present"}},
+            "home": {"lights": {"state": "present"}, "storage_shelves": {"state": "present"},
+                     "cleaning_equipment": {"state": "present"}},
+        }
+        for i in range(bedrooms):
+            answers[f"bedroom:{i}"] = {"bed_bedding": {"state": "present"}, "curtains_shutters": {"state": "present"}}
+        for space, items in overrides.items():
+            answers.setdefault(space.replace("_", ":") if space.startswith("bedroom") else space, {}).update(items)
+        return answers
+
+    def test_nothing_open_when_every_category_is_there(self):
+        assert furnished_gaps(self._all_present(), 1) == {"missing": [], "unanswered": []}
+
+    def test_no_answers_at_all_leaves_every_category_unanswered_not_missing(self):
+        gaps = furnished_gaps(None, 1)
+        assert gaps["missing"] == []
+        assert gaps["unanswered"] == list(FURNISHED_REQUIRED_ITEMS)
+
+    def test_an_appliance_that_does_not_work_is_missing(self):
+        answers = self._all_present()
+        answers["kitchen"]["hob"] = {"state": "not_working"}
+        assert furnished_gaps(answers, 1)["missing"] == ["plaques_cuisson"]
+
+    def test_oven_or_microwave_one_working_is_enough(self):
+        answers = self._all_present()
+        answers["kitchen"]["oven"] = {"state": "absent"}
+        answers["kitchen"]["microwave"] = {"state": "working"}
+        assert furnished_gaps(answers, 1) == {"missing": [], "unanswered": []}
+
+    def test_oven_or_microwave_missing_only_when_neither_works(self):
+        answers = self._all_present()
+        answers["kitchen"]["oven"] = {"state": "not_working"}
+        answers["kitchen"]["microwave"] = {"state": "absent"}
+        assert furnished_gaps(answers, 1)["missing"] == ["four_ou_micro_ondes"]
+        del answers["kitchen"]["microwave"]
+        gaps = furnished_gaps(answers, 1)
+        assert gaps["missing"] == [] and gaps["unanswered"] == ["four_ou_micro_ondes"]
+
+    def test_every_bedroom_needs_bedding_and_curtains(self):
+        answers = self._all_present(bedrooms=2)
+        answers["bedroom:1"]["curtains_shutters"] = {"state": "absent"}
+        assert furnished_gaps(answers, 2)["missing"] == ["occultation_chambres"]
+        del answers["bedroom:1"]
+        gaps = furnished_gaps(answers, 2)
+        assert gaps["missing"] == [] and gaps["unanswered"] == ["literie", "occultation_chambres"]
+
+    def test_a_bedroom_the_listing_no_longer_has_does_not_count(self):
+        answers = self._all_present()
+        answers["bedroom:3"] = {"bed_bedding": {"state": "absent"}}
+        assert furnished_gaps(answers, 1) == {"missing": [], "unanswered": []}
+
+    def test_items_outside_the_decree_never_count(self):
+        answers = self._all_present()
+        answers["kitchen"]["dishwasher"] = {"state": "absent"}
+        answers["home"]["internet"] = {"state": "absent"}
+        assert furnished_gaps(answers, 1) == {"missing": [], "unanswered": []}
+
+    @pytest.mark.parametrize("junk", ["x", 5, [], {"kitchen": "x"}, {"kitchen": {"hob": "working"}},
+                                      {"kitchen": {"hob": {"state": "broken"}}}])
+    def test_a_malformed_stored_value_reads_as_unanswered(self, junk):
+        gaps = furnished_gaps(junk, 1)
+        assert gaps["missing"] == []
+        assert "plaques_cuisson" in gaps["unanswered"]

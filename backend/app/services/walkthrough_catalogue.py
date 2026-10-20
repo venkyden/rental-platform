@@ -27,13 +27,13 @@ STATES = {
 }
 
 MAX_BEDROOMS = 20
+FLATMATE_OCCUPATIONS = ("students", "working", "both")
 _PLAIN_KEY = re.compile(r"[a-z_]{1,40}(:\d{1,2})?")
 
 
 def _named(value) -> str:
     """A key to quote in an error message, or nothing: a refused value is never echoed back."""
     return f": {value}" if isinstance(value, str) and _PLAIN_KEY.fullmatch(value) else ""
-FLATMATE_OCCUPATIONS = ("students", "working", "both")
 
 
 @dataclass(frozen=True)
@@ -155,3 +155,47 @@ def clean_flatmates(data, now: str) -> Optional[dict]:
         return None
     cleaned["answered_at"] = now
     return cleaned
+
+
+# What each decree category needs, in the decree's order (lease_rules.FURNISHED_REQUIRED_ITEMS).
+_GOOD = {"appliance": "working", "thing": "present"}
+
+
+def furnished_gaps(answers, bedrooms: int) -> dict[str, list[str]]:
+    """The Décret 2015-981 categories the owner's own answers leave open, as decree keys.
+
+    ``missing``: a category the owner marked absent or not working (for the bedroom
+    categories, in any bedroom; the oven or microwave category only when neither works).
+    ``unanswered``: a category not answered yet, and not missing. Nothing here is checked
+    by Roomivo: it reads what the owner stated.
+    """
+    from app.services.lease_rules import FURNISHED_REQUIRED_ITEMS
+
+    stored = answers if isinstance(answers, dict) else {}
+
+    def state(space_key: str, item: Item):
+        space = stored.get(space_key)
+        answer = space.get(item.key) if isinstance(space, dict) else None
+        value = answer.get("state") if isinstance(answer, dict) else None
+        return value if value in STATES[item.kind] else None
+
+    def verdict(space_key: str, items: list[Item]) -> str:
+        states = [state(space_key, item) for item in items]
+        if any(st == _GOOD[item.kind] for st, item in zip(states, items)):
+            return "ok"
+        return "missing" if all(st is not None for st in states) else "unanswered"
+
+    missing: list[str] = []
+    unanswered: list[str] = []
+    for legal_key in FURNISHED_REQUIRED_ITEMS:
+        items = [item for item in CATALOGUE if item.legal_key == legal_key]
+        if items[0].space == "bedroom":
+            verdicts = [verdict(f"bedroom:{i}", items) for i in range(max(1, min(bedrooms, MAX_BEDROOMS)))]
+        else:
+            verdicts = [verdict(items[0].space, items)]
+        if "missing" in verdicts:
+            missing.append(legal_key)
+        elif "unanswered" in verdicts:
+            unanswered.append(legal_key)
+    return {"missing": missing, "unanswered": unanswered}
+

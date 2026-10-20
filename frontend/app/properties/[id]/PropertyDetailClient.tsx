@@ -8,6 +8,7 @@ import PremiumLayout from '@/components/PremiumLayout';
 import { apiClient } from '@/lib/api';
 import { resolveMediaUrl } from '@/lib/mediaUrl';
 import GoodToKnowPanel from '@/components/walkthrough/GoodToKnowPanel';
+import FurnishedNotice from '@/components/walkthrough/FurnishedNotice';
 import { bedroomCount, type Flatmates } from '@/lib/walkthrough';
 import { decodeHtmlEntities } from '@/lib/textUtils';
 import { useToast } from '@/lib/ToastContext';
@@ -90,6 +91,8 @@ interface Property {
     is_colocation?: boolean;
     walkthrough_answers?: unknown;
     flatmates?: Flatmates | null;
+    furnished_missing?: string[];
+    furnished_unanswered?: string[];
     landlord_first_name?: string | null;
     landlord_identity_verified?: boolean;
     landlord_bio?: string | null;
@@ -562,6 +565,13 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                             </div>
 
                             {/* What the owner answered during the walk-through */}
+                            <FurnishedNotice
+                                propertyId={property.id}
+                                furnished={!!property.furnished}
+                                missing={property.furnished_missing}
+                                unanswered={property.furnished_unanswered}
+                                isOwner={isOwner}
+                            />
                             <GoodToKnowPanel
                                 answers={property.walkthrough_answers}
                                 flatmates={property.flatmates}

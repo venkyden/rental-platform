@@ -116,6 +116,10 @@ class Property(Base):
     # card for a shared home. Shapes: app/services/walkthrough_catalogue.py.
     walkthrough_answers = Column(JSONB)
     flatmates = Column(JSONB)
+    # True while the owner has marked an item the furnished-housing decree requires as
+    # absent or not working: the listing is then not shown as furnished. Kept in step with
+    # the answers on every write (routers/properties.py, _refresh_furnished).
+    furnished_incomplete = Column(Boolean, default=False, nullable=False, server_default="false")
     public_transport = Column(JSONB)  # ['Metro Line 1', 'Bus 42']
     nearby_landmarks = Column(JSONB)  # ['School - 200m', 'Supermarket - 500m']
 

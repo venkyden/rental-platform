@@ -4,7 +4,7 @@ Self-contained reference for the tap lists a landlord answers about a home and t
 "Good to know" panel on the listing page. Read this before changing either. New feature =
 new conversation.
 
-Last updated: 2026-10-19 (fixes from the review of PR #89). Design: `docs/superpowers/specs/2026-10-06-walkthrough-answers-and-room-qa-design.md`.
+Last updated: 2026-10-20 (furnished rule). Design: `docs/superpowers/specs/2026-10-06-walkthrough-answers-and-room-qa-design.md`.
 
 ## Why it exists
 
@@ -96,6 +96,33 @@ Frontend (paths relative to `frontend/`):
   once a list has been touched, and only for the spaces the listing has now; the household
   card only if the home was shared when the page loaded.
 
+## The furnished rule (decided 2026-10-20)
+
+Decided by the founders' delegation to Claude acting as management, after the council's
+review, with no lawyer sign-off available. Rule: an item the furnished-housing decree requires
+that the owner **marked** absent or not working removes the "furnished" label; an item not yet
+**answered** only informs the owner. A listing is never hidden for either.
+
+- `walkthrough_catalogue.furnished_gaps(answers, bedrooms)` reads the eleven categories of
+  Décret n° 2015-981 from the owner's answers: `missing` (marked absent or not working; for
+  bedding and curtains, in any bedroom; oven or microwave only when neither works) and
+  `unanswered`.
+- `properties.furnished_incomplete` (migration `d2f4b6c8e0a1`) is kept in step on every
+  write of answers, of the furnished flag or of the room list. The search filter
+  `furnished=true` leaves those listings out; without the filter they are still found.
+- The listing response carries `furnished_missing` and `furnished_unanswered` (empty when the
+  home is not offered furnished).
+- `POST /leases/generate` and `/leases/create` refuse a furnished lease type (`meuble`,
+  `etudiant`, `mobilite`) while an item is marked missing, naming the items in French. Before
+  this, nothing live checked the eleven items at all.
+- Pages: a listing card does not say "Furnished" while an item is marked missing; the
+  listing page shows students a note attributed to the owner, and shows the owner what is
+  marked missing and what is unanswered, with a link to the edit page
+  (`components/walkthrough/FurnishedNotice.tsx`).
+- Terms of use: a new section 4, "Listings and owners' statements", in both languages.
+- Tests: `backend/tests/test_walkthrough_catalogue.py` (`TestFurnishedGaps`),
+  `backend/tests_integration/test_furnished_rule.py` (7), `frontend/e2e/furnished_rule.spec.ts` (4).
+
 ## Differences from the design
 
 - **The edit path is `PUT /properties/{id}`**, not a separate
@@ -120,14 +147,10 @@ Frontend (paths relative to `frontend/`):
 
 - **The question box** (a student asks, the landlord answers once, the answer stays on the
   page). It relays between the two sides, which roadmap L-1 puts to counsel first.
-- **The furnished publish rule** (refuse to publish a furnished listing unless the eleven
-  items are marked present). It would add a way for publishing to fail while listings are
-  the scarce side; it needs the founder's yes (open point 1).
-- **Nothing live checks the eleven items today.** The check exists
-  (`lease_rules.validate_furnished_inventory`), but only `lease_generation.generate` runs it,
-  and no route calls that. The lease route in use (`routers/leases.py` with
-  `lease_generator`) only prints whether the home is furnished. Found in the review of
-  2026-10-19.
+- **A publish block.** Replaced by the furnished rule above: publishing never fails over
+  these items.
+- **The unanswered case does not block a furnished lease**: the owner has not said anything
+  is missing, and most listings have no answers yet. Revisit once answers are common.
 - **The measures** in the design (share of listings with complete answers, and so on).
 
 ## Tests

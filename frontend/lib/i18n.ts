@@ -2675,6 +2675,25 @@ export const translations = {
                 back: "Back",
                 backToPhotos: "Back to photos",
             },
+            legal: {
+                literie: "Bedding (a duvet or blanket)",
+                occultation_chambres: "Curtains or shutters in the bedrooms",
+                plaques_cuisson: "Hob",
+                four_ou_micro_ondes: "Oven or microwave",
+                refrigerateur_congelateur: "Fridge with a freezer or freezer compartment",
+                vaisselle: "Plates and glasses",
+                ustensiles_cuisine: "Pans and utensils",
+                table_et_sieges: "Table and chairs",
+                etageres_rangement: "Storage shelves",
+                luminaires: "Lights",
+                materiel_entretien: "Cleaning equipment",
+            },
+            furnished: {
+                public: "Offered furnished by the owner, who marked these required items as missing or not working: {{items}}. Until they are there, the home is not listed as furnished.",
+                ownerMissing: "Your listing is not shown as furnished: you marked {{items}} as missing or not working. Update your answers once they are there, or offer the home unfurnished (the deposit limit is then one month's rent).",
+                ownerUnanswered: "A furnished home must have eleven kinds of items. Not answered yet: {{items}}. Answer them so students know what is there.",
+                ownerAction: "Update the answers",
+            },
             editor: {
                 title: "Quick answers for students",
                 hint: "Students often ask the same questions about a home. Answer once and the listing will show your answers. Leave a line empty if it does not apply.",
@@ -2755,12 +2774,16 @@ export const translations = {
                         title: '3. Fraud Prevention',
                         content: 'Our AI systems actively monitor for discrepancies. Manipulation of the Trust Score is prohibited and may be reported to legal authorities.'
                     },
+                    listings: {
+                        title: '4. Listings and Owners\' Statements',
+                        content: "Listings, including the answers about the home (furniture, appliances, who lives there), are the owner's own statements: Roomivo does not check them. A listing is shown as furnished only while its owner has not marked as missing or not working any item that French law requires in a furnished home (Décret n° 2015-981); until then it remains published, without that label. To report a listing, write to us from the Help page."
+                    },
                     liability: {
-                        title: '4. Limitation of Liability',
+                        title: '5. Limitation of Liability',
                         content: 'Rental decisions rest solely with the parties involved. Roomivo is not liable for transaction outcomes or user disputes.'
                     }
                 },
-                lastUpdated: 'Last updated: April 2026'
+                lastUpdated: 'Last updated: October 2026'
             },
             privacy: {
                 title: 'Privacy Policy',
@@ -5908,6 +5931,25 @@ export const translations = {
                 back: "Retour",
                 backToPhotos: "Retour aux photos",
             },
+            legal: {
+                literie: "Literie avec couette ou couverture",
+                occultation_chambres: "Occultation des fenêtres des chambres",
+                plaques_cuisson: "Plaques de cuisson",
+                four_ou_micro_ondes: "Four ou micro-ondes",
+                refrigerateur_congelateur: "Réfrigérateur avec congélateur ou compartiment congélation",
+                vaisselle: "Vaisselle",
+                ustensiles_cuisine: "Ustensiles de cuisine",
+                table_et_sieges: "Table et sièges",
+                etageres_rangement: "Étagères de rangement",
+                luminaires: "Luminaires",
+                materiel_entretien: "Matériel d'entretien ménager",
+            },
+            furnished: {
+                public: "Proposé meublé par le propriétaire, qui a indiqué ces éléments obligatoires comme absents ou hors d'usage : {{items}}. Tant qu'ils ne sont pas là, le logement n'apparaît pas comme meublé.",
+                ownerMissing: "Votre annonce n'apparaît pas comme meublée : vous avez indiqué {{items}} comme absents ou hors d'usage. Mettez vos réponses à jour quand ils seront là, ou proposez le logement non meublé (le dépôt de garantie est alors limité à un mois de loyer).",
+                ownerUnanswered: "Un logement meublé doit comporter onze catégories d'éléments. Pas encore renseigné : {{items}}. Répondez pour que les étudiants sachent ce qu'il y a.",
+                ownerAction: "Mettre à jour les réponses",
+            },
             editor: {
                 title: "Réponses rapides pour les étudiants",
                 hint: "Les étudiants posent souvent les mêmes questions sur un logement. Répondez une fois : l'annonce affichera vos réponses. Laissez une ligne vide si elle ne s'applique pas.",
@@ -5988,12 +6030,16 @@ export const translations = {
                         title: '3. Prévention de la Fraude',
                         content: 'Nos systèmes d\'IA surveillent activement les anomalies. La manipulation du Trust Score est interdite et peut être signalée aux autorités légales.'
                     },
+                    listings: {
+                        title: '4. Annonces et déclarations des propriétaires',
+                        content: "Les annonces, y compris les réponses sur le logement (mobilier, équipements, occupants), sont des déclarations du propriétaire : Roomivo ne les vérifie pas. Une annonce n'apparaît comme meublée que tant que son propriétaire n'a indiqué comme absent ou hors d'usage aucun élément que la loi exige dans un logement meublé (décret n° 2015-981) ; dans le cas contraire, elle reste publiée, sans cette mention. Pour signaler une annonce, écrivez-nous depuis la page d'aide."
+                    },
                     liability: {
-                        title: '4. Limitation de Responsabilité',
+                        title: '5. Limitation de Responsabilité',
                         content: 'Les décisions de location incombent exclusivement aux parties concernées. Roomivo n\'est pas responsable des issues de transactions ou des litiges.'
                     }
                 },
-                lastUpdated: 'Dernière mise à jour : Avril 2026'
+                lastUpdated: 'Dernière mise à jour : Octobre 2026'
             },
             privacy: {
                 title: 'Confidentialité',
