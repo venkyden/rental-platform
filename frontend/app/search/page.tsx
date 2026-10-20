@@ -353,7 +353,7 @@ function SearchContent() {
                         <div className="h-6 w-px bg-zinc-200 mx-2 hidden sm:block" />
 
                         {[
-                            { state: furnishedMode === 'furnished', setter: () => setFurnishedMode(furnishedMode === 'furnished' ? '' : 'furnished'), label: t('listing.furnished', undefined, 'Meublé') },
+                            { state: furnishedMode === 'furnished', setter: () => setFurnishedMode(furnishedMode === 'furnished' ? '' : 'furnished'), label: t('search.filters.furnishedStated', undefined, 'Furnished (as stated by the owner)') },
                             { state: furnishedMode === 'unfurnished', setter: () => setFurnishedMode(furnishedMode === 'unfurnished' ? '' : 'unfurnished'), label: t('listing.unfurnished', undefined, 'Vide') },
                             { state: colocation, setter: () => setColocation(!colocation), label: t('search.filters.colocation', undefined, 'Colocation') },
                             { state: cafOnly, setter: () => setCafOnly(!cafOnly), label: t('search.filters.caf', undefined, 'CAF') },

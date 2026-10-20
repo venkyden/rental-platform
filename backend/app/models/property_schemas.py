@@ -233,12 +233,26 @@ class PropertyResponse(BaseModel):
     custom_amenities: Optional[list] = []
     walkthrough_answers: Optional[dict] = None
     flatmates: Optional[dict] = None
+    # Decree categories the owner's answers leave open (keys of
+    # lease_rules.FURNISHED_REQUIRED_ITEMS); both empty for a listing not offered furnished.
+    furnished_missing: List[str] = []
+    furnished_unanswered: List[str] = []
 
     @model_validator(mode="after")
     def _household_card_for_shared_homes_only(self):
         # Never served for a home that is not shared, however the row was changed.
         if not self.is_colocation:
             self.flatmates = None
+        return self
+
+    @model_validator(mode="after")
+    def _furnished_gaps(self):
+        if self.furnished:
+            from app.services.walkthrough_catalogue import bedroom_count, furnished_gaps
+            gaps = furnished_gaps(self.walkthrough_answers, bedroom_count(self.room_details))
+            self.furnished_missing, self.furnished_unanswered = gaps["missing"], gaps["unanswered"]
+        else:
+            self.furnished_missing, self.furnished_unanswered = [], []
         return self
 
     public_transport: Optional[list] = []

@@ -36,8 +36,8 @@ test.describe('Page 2: Search Marketplace', () => {
     });
 
     test('should toggle filters and update UI', async ({ page }) => {
-        // Check for "Furnished" filter button (exact: "Unfurnished" also exists since WP1)
-        const furnishedBtn = page.getByRole('button', { name: 'Furnished', exact: true });
+        // The furnished filter is labelled as the owner's statement (furnished rule, 2026-10-20)
+        const furnishedBtn = page.getByRole('button', { name: 'Furnished (as stated by the owner)', exact: true });
         await expect(furnishedBtn).toBeVisible();
         
         // Click to toggle

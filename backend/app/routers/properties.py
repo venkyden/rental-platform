@@ -29,7 +29,8 @@ from app.models.property_schemas import (MediaSessionCreate,
                                          PropertyMatchResponse, DescriptionGenerationRequest)
 from app.models.user import User
 from app.services.walkthrough_catalogue import (bedroom_count, clean_flatmates,
-                                               clean_space_answers, merge_space)
+                                               clean_space_answers, furnished_gaps,
+                                               merge_space)
 from app.routers.auth import get_current_user, get_current_user_optional
 
 # Rate limiting
@@ -297,6 +298,12 @@ def _apply_walkthrough(property_obj, spaces: Optional[dict], flatmates, flatmate
         raise HTTPException(status_code=422, detail=str(exc))
 
 
+def _refresh_furnished(property_obj) -> None:
+    """Keep ``furnished_incomplete`` in step with the owner's answers and the furnished flag."""
+    gaps = furnished_gaps(property_obj.walkthrough_answers, bedroom_count(property_obj.room_details))
+    property_obj.furnished_incomplete = bool(property_obj.furnished) and bool(gaps["missing"])
+
+
 def _landlord_trust_fields(landlord) -> dict:
     """First name + identity flag for the listing trust line. Never exposes full name.
 
@@ -453,6 +460,9 @@ def _apply_property_filters(
     if furnished and furnished != "":
         val = furnished.lower() == "true" if isinstance(furnished, str) else bool(furnished)
         query = query.where(Property.furnished == val)
+        if val:
+            # Not shown as furnished while the owner has marked a required item missing.
+            query = query.where(Property.furnished_incomplete.is_(False))
 
     if caf_eligible and caf_eligible != "":
         val = caf_eligible.lower() == "true" if isinstance(caf_eligible, str) else bool(caf_eligible)
@@ -892,6 +902,7 @@ async def update_property(
     if not property_obj.is_colocation and property_obj.flatmates is not None:
         # The household card belongs to a shared home only.
         property_obj.flatmates = None
+    _refresh_furnished(property_obj)
 
     # If the property is active, it must remain compliant with French law.
     if property_obj.status == "active":
@@ -1397,6 +1408,7 @@ async def save_walkthrough_answers(
         body.flatmates,
         flatmates_sent=body.flatmates is not None,
     )
+    _refresh_furnished(property_obj)
     property_obj.updated_at = naive_utcnow()  # type: ignore
     await db.commit()
     await db.refresh(property_obj)

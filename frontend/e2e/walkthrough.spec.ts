@@ -114,7 +114,8 @@ test.describe('walk-through helpers', () => {
     test('the panel lines say "verified" nowhere, in either language', () => {
         for (const lang of ['en', 'fr'] as const) {
             const words = JSON.stringify(translations[lang].walkthrough);
-            expect(words).not.toMatch(/verif|vérifi|certif|guarant|garanti/i);
+            // "dépôt de garantie" is the security deposit, not a promise.
+            expect(words.replace(/dépôt de garantie/g, '')).not.toMatch(/verif|vérifi|certif|guarant|garanti/i);
         }
     });
 
@@ -249,7 +250,7 @@ test.describe('Capture page: quick answers', () => {
         await page.getByRole('group', { name: 'Oven' }).getByRole('button', { name: 'Not working' }).click();
         await expect(page.getByRole('group', { name: 'Hob' }).getByRole('button', { name: 'Works' })).toHaveAttribute('aria-pressed', 'true');
         // A thing is there or not: no "works" for plates.
-        await expect(page.getByRole('group', { name: 'Plates and glasses' }).getByRole('button')).toHaveCount(2);
+        await expect(page.getByRole('group', { name: 'Plates, glasses and cutlery' }).getByRole('button')).toHaveCount(2);
 
         await page.getByRole('button', { name: 'Save', exact: true }).click();
         await expect(spaces.getByRole('button', { name: /Kitchen/ })).toContainText('3 of 7 answered');

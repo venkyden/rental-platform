@@ -13,6 +13,8 @@ export interface ListingSummary {
     rooms_count?: number | null;
     property_type: string;
     furnished: boolean;
+    /** Decree categories the owner marked missing or not working; not listed as furnished while non-empty. */
+    furnished_missing?: string[];
     size_sqm?: number | null;
     photos?: { url: string }[] | null;
     amenities?: string[] | null;

@@ -115,7 +115,12 @@ export default function ListingCard({ property, onToggleSave, index = 0 }: Listi
                 <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
                         <p className="text-xs font-bold uppercase tracking-[0.15em] text-zinc-500">
-                            {typology} · {t(property.furnished ? 'listing.furnished' : 'listing.unfurnished', undefined, property.furnished ? 'Meublé' : 'Vide')}
+                            {typology}
+                            {/* Not called furnished while the owner has marked a required item missing. */}
+                            {!(property.furnished && property.furnished_missing?.length) &&
+                                ` · ${property.furnished
+                                    ? t('listing.furnishedStated', undefined, "Furnished · owner's statement")
+                                    : t('listing.unfurnished', undefined, 'Vide')}`}
                         </p>
                         <Link href={`/properties/${property.id}`}>
                             <h3 className="text-lg font-bold text-zinc-900 truncate group-hover:text-zinc-600 transition-colors">

@@ -22,7 +22,8 @@ from app.models.user import User
 from app.models.visits_and_leases import Lease
 from app.routers.auth import get_current_user, get_current_user_optional
 from app.services.lease_generator import lease_generator
-from app.services.lease_rules import LEASE_TYPES, max_deposit, validate_deposit
+from app.services.lease_rules import FURNISHED_REQUIRED_ITEMS, LEASE_TYPES, max_deposit, validate_deposit
+from app.services.walkthrough_catalogue import bedroom_count, furnished_gaps
 
 router = APIRouter(prefix="/leases", tags=["leases"])
 
@@ -58,6 +59,25 @@ class LeaseResponse(BaseModel):
 
 
 from sqlalchemy.orm import selectinload
+
+
+def _refuse_furnished_lease_with_missing_items(lease_type: str, property_obj) -> None:
+    """Décret 2015-981: a furnished lease cannot be produced for a home whose owner has
+    marked a required item absent or not working. Unanswered items do not block here:
+    the owner has not said anything is missing."""
+    if not LEASE_TYPES.get(lease_type, {}).get("furnished_required"):
+        return
+    gaps = furnished_gaps(property_obj.walkthrough_answers, bedroom_count(property_obj.room_details))
+    if gaps["missing"]:
+        items = " ; ".join(FURNISHED_REQUIRED_ITEMS[key] for key in gaps["missing"])
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "Le propriétaire a indiqué absents ou hors d'usage des éléments obligatoires d'un "
+                f"logement meublé (décret n° 2015-981) : {items}. Mettez à jour ces réponses ou "
+                "choisissez un bail non meublé."
+            ),
+        )
 
 
 @router.post("/generate", response_class=HTMLResponse)
@@ -110,6 +130,8 @@ async def generate_lease(
 
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant not found")
+
+    _refuse_furnished_lease_with_missing_items(request.lease_type, property_obj)
 
     # Generate HTML
     rent = request.rent_override or float(property_obj.monthly_rent or 0)
@@ -166,6 +188,8 @@ async def create_lease(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Identity verification required to create leases",
         )
+
+    _refuse_furnished_lease_with_missing_items(request.lease_type, property_obj)
 
     # Create lease record
     rent = request.rent_override or float(property_obj.monthly_rent or 0)
