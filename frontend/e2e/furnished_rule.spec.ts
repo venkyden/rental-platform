@@ -60,7 +60,8 @@ test.describe('furnished rule: listing cards', () => {
         ]);
         const card = (id: string) => page.locator(`a[href="/properties/${id}"]`).first().locator('xpath=ancestor::*[.//h3][1]');
         await expect(page.getByText('Studio 11111111-1111-4111-8111-111111111111')).toBeVisible();
-        await expect(card('11111111-1111-4111-8111-111111111111')).toContainText('Furnished');
+        await expect(card('11111111-1111-4111-8111-111111111111')).toContainText("Furnished · owner's statement");
+        await expect(page.getByRole('button', { name: 'Furnished (as stated by the owner)' })).toBeVisible();
         await expect(card('22222222-2222-4222-8222-222222222222')).not.toContainText(/Furnished|Unfurnished/);
         await expect(card('33333333-3333-4333-8333-333333333333')).toContainText('Unfurnished');
     });

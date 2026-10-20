@@ -119,7 +119,14 @@ that the owner **marked** absent or not working removes the "furnished" label; a
   listing page shows students a note attributed to the owner, and shows the owner what is
   marked missing and what is unanswered, with a link to the edit page
   (`components/walkthrough/FurnishedNotice.tsx`).
-- Terms of use: a new section 4, "Listings and owners' statements", in both languages.
+- Terms of use: a new section 4, "Listings and owners' statements", in both languages: the
+  label reflects the owner's answers, not an inspection; the rule is automatic; it can be
+  contested.
+- Wording from the council's legal review (`docs/legal/2026-10-20-council-legal-review.md`):
+  the card says "Furnished · owner's statement", the filter "Furnished (as stated by the owner)";
+  the owner notice says the decision is automatic, cites the terms and says how to contest
+  (DSA art. 17); students also see required items not answered yet; item labels match the
+  decree (−6 °C compartment; curtains, blinds or shutters; plates, glasses and cutlery).
 - Tests: `backend/tests/test_walkthrough_catalogue.py` (`TestFurnishedGaps`),
   `backend/tests_integration/test_furnished_rule.py` (7), `frontend/e2e/furnished_rule.spec.ts` (4).
 

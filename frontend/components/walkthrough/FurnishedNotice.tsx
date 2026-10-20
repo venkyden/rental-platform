@@ -5,9 +5,10 @@ import { useLanguage } from '@/lib/LanguageContext';
 
 /**
  * What the furnished-housing decree asks for, read from the owner's own answers.
- * A student sees a note only when the owner marked a required item missing or broken
- * (the listing is then not listed as furnished). The owner also sees what is still
- * unanswered. Nothing here is checked by Roomivo, and nothing says "verified".
+ * A student sees what the owner marked missing or broken (the listing is then not listed
+ * as furnished) or, failing that, which required items are not answered yet. The owner
+ * sees both, why, and how to contest. Nothing here is checked by Roomivo, and nothing
+ * says "verified".
  */
 export default function FurnishedNotice({
     propertyId,
@@ -29,7 +30,18 @@ export default function FurnishedNotice({
     const open = unanswered ?? [];
 
     if (!isOwner) {
-        if (!marked.length) return null;
+        if (!marked.length) {
+            if (!open.length) return null;
+            // A furnished listing with gaps the owner has not answered says so, rather than staying silent.
+            return (
+                <p data-testid="furnished-notice" className="rounded-3xl border border-zinc-200 bg-zinc-50 px-6 py-4 text-sm font-medium leading-relaxed text-zinc-700">
+                    {open.length >= 11
+                        ? t('walkthrough.furnished.publicNoneAnswered', undefined, 'The owner has not yet answered the questions about the furniture a furnished home must have.')
+                        : t('walkthrough.furnished.publicUnanswered', { items: names(open) },
+                            `The owner has not yet said whether these items, required in a furnished home, are there: ${names(open)}.`)}
+                </p>
+            );
+        }
         return (
             <p data-testid="furnished-notice" className="rounded-3xl border border-amber-200 bg-amber-50 px-6 py-4 text-sm font-medium leading-relaxed text-amber-900">
                 {t('walkthrough.furnished.public', { items: names(marked) },

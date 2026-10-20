@@ -181,6 +181,7 @@ export const translations = {
             cc: "incl. charges",
             hc: "excl. charges",
             furnished: "Furnished",
+            furnishedStated: "Furnished · owner's statement",
             unfurnished: "Unfurnished",
             bedroom: "bedroom",
             bedrooms: "bedrooms",
@@ -2607,12 +2608,12 @@ export const translations = {
                 hob: "Hob",
                 oven: "Oven",
                 microwave: "Microwave",
-                fridge_freezer: "Fridge with a freezer or freezer compartment",
-                plates_glasses: "Plates and glasses",
+                fridge_freezer: "Fridge with a freezer or a freezer compartment (-6 °C or colder)",
+                plates_glasses: "Plates, glasses and cutlery",
                 pans_utensils: "Pans and utensils",
                 dishwasher: "Dishwasher",
                 bed_bedding: "Bed with a duvet or blanket",
-                curtains_shutters: "Curtains or shutters",
+                curtains_shutters: "Curtains, blinds or shutters",
                 desk: "Desk",
                 wardrobe: "Wardrobe",
                 table_chairs: "Table and chairs",
@@ -2677,11 +2678,11 @@ export const translations = {
             },
             legal: {
                 literie: "Bedding (a duvet or blanket)",
-                occultation_chambres: "Curtains or shutters in the bedrooms",
+                occultation_chambres: "Curtains, blinds or shutters in the bedrooms",
                 plaques_cuisson: "Hob",
                 four_ou_micro_ondes: "Oven or microwave",
-                refrigerateur_congelateur: "Fridge with a freezer or freezer compartment",
-                vaisselle: "Plates and glasses",
+                refrigerateur_congelateur: "Fridge with a freezer or a freezer compartment (-6 °C or colder)",
+                vaisselle: "Plates, glasses and cutlery",
                 ustensiles_cuisine: "Pans and utensils",
                 table_et_sieges: "Table and chairs",
                 etageres_rangement: "Storage shelves",
@@ -2690,9 +2691,11 @@ export const translations = {
             },
             furnished: {
                 public: "Offered furnished by the owner, who marked these required items as missing or not working: {{items}}. Until they are there, the home is not listed as furnished.",
-                ownerMissing: "Your listing is not shown as furnished: you marked {{items}} as missing or not working. Update your answers once they are there, or offer the home unfurnished (the deposit limit is then one month's rent).",
+                ownerMissing: "Your listing is not shown as furnished. This was decided automatically from your own answers: you marked {{items}} as missing or not working (terms of use, section 4). Update your answers once they are there, or offer the home unfurnished (the deposit limit is then one month's rent). Disagree? Contact us from the Help page.",
                 ownerUnanswered: "A furnished home must have eleven kinds of items. Not answered yet: {{items}}. Answer them so students know what is there.",
                 ownerAction: "Update the answers",
+                publicUnanswered: "The owner has not yet said whether these items, required in a furnished home, are there: {{items}}.",
+                publicNoneAnswered: "The owner has not yet answered the questions about the furniture a furnished home must have.",
             },
             editor: {
                 title: "Quick answers for students",
@@ -2730,6 +2733,7 @@ export const translations = {
                 sizeDesc: "Largest Surface"
             },
             filters: {
+                furnishedStated: "Furnished (as stated by the owner)",
                 location: "Location",
                 locationPlaceholder: "Where would you like to live?",
                 budget: "Budget",
@@ -2776,7 +2780,7 @@ export const translations = {
                     },
                     listings: {
                         title: '4. Listings and Owners\' Statements',
-                        content: "Listings, including the answers about the home (furniture, appliances, who lives there), are the owner's own statements: Roomivo does not check them. A listing is shown as furnished only while its owner has not marked as missing or not working any item that French law requires in a furnished home (Décret n° 2015-981); until then it remains published, without that label. To report a listing, write to us from the Help page."
+                        content: "Listings, including the answers about the home (furniture, appliances, who lives there), are the owner's own statements: Roomivo does not check them. The furnished label reflects the owner's answers, not an inspection. Roomivo applies this rule automatically: a listing is shown as furnished only while its owner has not marked as missing or not working any item that French law requires in a furnished home (Décret n° 2015-981); otherwise it remains published, without that label, and the owner is told why. An owner who disagrees can contest the decision, and anyone can report a listing, by writing to us from the Help page."
                     },
                     liability: {
                         title: '5. Limitation of Liability',
@@ -3596,6 +3600,7 @@ export const translations = {
             cc: "cc",
             hc: "hc",
             furnished: "Meublé",
+            furnishedStated: "Meublé · déclaré par le propriétaire",
             unfurnished: "Vide",
             bedroom: "chambre",
             bedrooms: "chambres",
@@ -5863,12 +5868,12 @@ export const translations = {
                 hob: "Plaques de cuisson",
                 oven: "Four",
                 microwave: "Micro-ondes",
-                fridge_freezer: "Réfrigérateur avec congélateur ou compartiment congélation",
-                plates_glasses: "Vaisselle",
+                fridge_freezer: "Réfrigérateur avec congélateur ou compartiment à -6 °C ou moins",
+                plates_glasses: "Vaisselle et couverts",
                 pans_utensils: "Casseroles et ustensiles",
                 dishwasher: "Lave-vaisselle",
                 bed_bedding: "Lit avec couette ou couverture",
-                curtains_shutters: "Rideaux ou volets",
+                curtains_shutters: "Rideaux, stores ou volets",
                 desk: "Bureau",
                 wardrobe: "Armoire",
                 table_chairs: "Table et chaises",
@@ -5933,11 +5938,11 @@ export const translations = {
             },
             legal: {
                 literie: "Literie avec couette ou couverture",
-                occultation_chambres: "Occultation des fenêtres des chambres",
+                occultation_chambres: "Rideaux, stores ou volets dans les chambres",
                 plaques_cuisson: "Plaques de cuisson",
                 four_ou_micro_ondes: "Four ou micro-ondes",
-                refrigerateur_congelateur: "Réfrigérateur avec congélateur ou compartiment congélation",
-                vaisselle: "Vaisselle",
+                refrigerateur_congelateur: "Réfrigérateur avec congélateur ou compartiment à -6 °C ou moins",
+                vaisselle: "Vaisselle et couverts",
                 ustensiles_cuisine: "Ustensiles de cuisine",
                 table_et_sieges: "Table et sièges",
                 etageres_rangement: "Étagères de rangement",
@@ -5946,9 +5951,11 @@ export const translations = {
             },
             furnished: {
                 public: "Proposé meublé par le propriétaire, qui a indiqué ces éléments obligatoires comme absents ou hors d'usage : {{items}}. Tant qu'ils ne sont pas là, le logement n'apparaît pas comme meublé.",
-                ownerMissing: "Votre annonce n'apparaît pas comme meublée : vous avez indiqué {{items}} comme absents ou hors d'usage. Mettez vos réponses à jour quand ils seront là, ou proposez le logement non meublé (le dépôt de garantie est alors limité à un mois de loyer).",
+                ownerMissing: "Votre annonce n'apparaît pas comme meublée. Cette décision est automatique et repose sur vos propres réponses : vous avez indiqué {{items}} comme absents ou hors d'usage (conditions d'utilisation, section 4). Mettez vos réponses à jour quand ils seront là, ou proposez le logement non meublé (le dépôt de garantie est alors limité à un mois de loyer). Vous n'êtes pas d'accord ? Écrivez-nous depuis la page d'aide.",
                 ownerUnanswered: "Un logement meublé doit comporter onze catégories d'éléments. Pas encore renseigné : {{items}}. Répondez pour que les étudiants sachent ce qu'il y a.",
                 ownerAction: "Mettre à jour les réponses",
+                publicUnanswered: "Le propriétaire n'a pas encore indiqué si ces éléments, obligatoires dans un logement meublé, sont présents : {{items}}.",
+                publicNoneAnswered: "Le propriétaire n'a pas encore répondu aux questions sur le mobilier qu'un logement meublé doit comporter.",
             },
             editor: {
                 title: "Réponses rapides pour les étudiants",
@@ -5978,6 +5985,7 @@ export const translations = {
                 sizeDesc: "Plus grande surface"
             },
             filters: {
+                furnishedStated: "Meublé (déclaré par le propriétaire)",
                 location: "Localisation",
                 locationPlaceholder: "Où voulez-vous vivre ?",
                 budget: "Budget",
@@ -6032,7 +6040,7 @@ export const translations = {
                     },
                     listings: {
                         title: '4. Annonces et déclarations des propriétaires',
-                        content: "Les annonces, y compris les réponses sur le logement (mobilier, équipements, occupants), sont des déclarations du propriétaire : Roomivo ne les vérifie pas. Une annonce n'apparaît comme meublée que tant que son propriétaire n'a indiqué comme absent ou hors d'usage aucun élément que la loi exige dans un logement meublé (décret n° 2015-981) ; dans le cas contraire, elle reste publiée, sans cette mention. Pour signaler une annonce, écrivez-nous depuis la page d'aide."
+                        content: "Les annonces, y compris les réponses sur le logement (mobilier, équipements, occupants), sont des déclarations du propriétaire : Roomivo ne les vérifie pas. La mention « meublé » reflète les réponses du propriétaire, et non une inspection. Roomivo applique cette règle automatiquement : une annonce n'apparaît comme meublée que tant que son propriétaire n'a indiqué comme absent ou hors d'usage aucun élément que la loi exige dans un logement meublé (décret n° 2015-981) ; dans le cas contraire, elle reste publiée, sans cette mention, et le propriétaire en est informé avec la raison. Un propriétaire en désaccord peut contester la décision, et chacun peut signaler une annonce, en nous écrivant depuis la page d'aide."
                     },
                     liability: {
                         title: '5. Limitation de Responsabilité',
