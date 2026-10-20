@@ -286,6 +286,15 @@ async def delete_user_data(
             if key: await storage.delete_file(key)
 
     # 2. Database Anonymisation
+    # Reports this person filed keep their content, not who sent them.
+    from sqlalchemy import func
+    from app.models.content_report import ContentReport
+    await db.execute(
+        update(ContentReport)
+        .where(func.lower(ContentReport.notifier_email) == current_user.email.lower())
+        .values(notifier_name=None, notifier_email=None)
+    )
+
     anonymised_email = f"deleted_{current_user.id}@anonymised.roomivo.internal"
 
     await db.execute(

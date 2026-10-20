@@ -7,6 +7,11 @@ import uuid
 import pytest
 
 
+@pytest.fixture(autouse=True)
+def _listing_not_taken_down(listing_not_taken_down):
+    yield
+
+
 class TestPropertyEndpoints:
     """Integration tests for property CRUD operations."""
 

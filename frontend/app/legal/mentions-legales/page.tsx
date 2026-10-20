@@ -3,9 +3,15 @@
 import { motion, Variants } from 'framer-motion';
 import { useLanguage } from '@/lib/LanguageContext';
 import PremiumLayout from '@/components/PremiumLayout';
+import { LEGAL_ENTITY } from '@/lib/legalEntity';
 
 export default function MentionsLegalesPage() {
     const { t } = useLanguage();
+    const entityRows = [
+        { key: 'director', value: LEGAL_ENTITY.publicationDirector },
+        { key: 'address', value: LEGAL_ENTITY.postalAddress },
+        { key: 'phone', value: LEGAL_ENTITY.phone },
+    ].filter((row) => row.value);
 
     const containerVariants: Variants = {
         hidden: { opacity: 0 },
@@ -69,9 +75,24 @@ export default function MentionsLegalesPage() {
                                     <p className="text-xs font-black text-zinc-400 uppercase tracking-widest">{t('legal.notice.editor.labels.hq', undefined, 'Contact')}</p>
                                     <p className="font-bold text-zinc-900">{t('legal.notice.editor.hq')}</p>
                                 </div>
+                                {entityRows.map((row) => (
+                                    <div key={row.key} className="space-y-2">
+                                        <p className="text-xs font-black text-zinc-400 uppercase tracking-widest">{t(`legal.notice.editor.labels.${row.key}`)}</p>
+                                        <p className="font-bold text-zinc-900">{row.value}</p>
+                                    </div>
+                                ))}
                             </div>
                             <p className="mt-8 text-sm text-zinc-500 leading-relaxed border-l-2 border-zinc-200 pl-4">
                                 {t('legal.notice.editor.note', undefined, 'Roomivo is a student-entrepreneur project developed under the SNEE (Statut National Étudiant-Entrepreneur), supported by PÉPITE Pays de la Loire (French Ministry of Higher Education) and the Audencia entrepreneurship hub. As a project still in incubation it is not yet registered as a company and has no SIRET number; this notice will be updated upon incorporation.')}
+                            </p>
+                        </motion.section>
+
+                        <motion.section variants={sectionVariants} className="glass-card !p-12 rounded-[3rem] border-zinc-100">
+                            <h2 className="text-2xl font-black tracking-tight text-zinc-900 mb-8 uppercase">
+                                {t('legal.notice.contactPoints.title')}
+                            </h2>
+                            <p className="text-zinc-600 leading-relaxed">
+                                {t('legal.notice.contactPoints.content')}
                             </p>
                         </motion.section>
 

@@ -74,6 +74,11 @@ from app.core.database import get_db
 from app.routers.auth import get_current_user
 
 
+@pytest.fixture(autouse=True)
+def _listing_not_taken_down(listing_not_taken_down):
+    yield
+
+
 def _mk(**kw):
     m = MagicMock()
     for k, v in kw.items():

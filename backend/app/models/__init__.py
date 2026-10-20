@@ -9,5 +9,6 @@ from app.models.property_manager import PropertyManagerAccess
 from app.models.team import TeamMember, TeamMemberProperty
 from app.models.inventory import Inventory, InventoryItem
 from app.models.dispute import Dispute
+from app.models.content_report import ContentReport
 from app.models.biometric_consent import BiometricConsent
 from app.models.dossier import TrustDossier, DossierShareLink
