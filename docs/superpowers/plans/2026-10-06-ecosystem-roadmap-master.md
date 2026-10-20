@@ -79,9 +79,12 @@ word "safe" were taken off the page. Evidence and what was not verified are in
 ### WS-1 — Walk-through answers and room page questions
 - **Why:** students ask the same basic questions and landlords take 2–3 days to answer.
 - **Spec:** `docs/superpowers/specs/2026-10-06-walkthrough-answers-and-room-qa-design.md`
-  on branch `feat/walkthrough-listing` (commit `8991c31`, local only: push the branch
-  before removing its worktree). Four open points for the founder at its end.
+  on branch `feat/walkthrough-listing` (PR #89). Four open points for the founder at its
+  end.
 - **Gate:** the question-and-answer relay between student and landlord is in L-1.
+- **Status 2026-10-19:** the tap lists, the household card and the "Good to know" panel are
+  built and reviewed, in PR #89 (`docs/features/walkthrough/DOSSIER.md`). Left: the question box (L-1) and the
+  furnished publish rule (founder's decision).
 - **Done when:** a landlord can answer a tap list per space during capture, the room page
   shows a "Good to know" panel, and a question asked once stays answered on the page.
 

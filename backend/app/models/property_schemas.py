@@ -166,6 +166,10 @@ class PropertyUpdate(BaseModel):
     # DPE F/G rent freeze
     previous_tenant_rent: Optional[Decimal] = Field(None, ge=Decimal("0"))
     is_overseas_dom: Optional[bool] = None
+    # Walk-through answers as {space: {item: state}}; checked against the catalogue
+    # and dated by the update handler, not stored as sent.
+    walkthrough_answers: Optional[dict] = None
+    flatmates: Optional[dict] = None
 
     @field_validator("title", "description", "charges_description", mode="before")
     @classmethod
@@ -227,6 +231,16 @@ class PropertyResponse(BaseModel):
 
     amenities: Optional[list] = []
     custom_amenities: Optional[list] = []
+    walkthrough_answers: Optional[dict] = None
+    flatmates: Optional[dict] = None
+
+    @model_validator(mode="after")
+    def _household_card_for_shared_homes_only(self):
+        # Never served for a home that is not shared, however the row was changed.
+        if not self.is_colocation:
+            self.flatmates = None
+        return self
+
     public_transport: Optional[list] = []
     nearby_landmarks: Optional[list] = []
 

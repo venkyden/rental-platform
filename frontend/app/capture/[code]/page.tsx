@@ -6,6 +6,10 @@ import { useToast } from '@/lib/ToastContext';
 import { useLanguage } from '@/lib/LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Camera, Video, CheckCircle2, Shield, MapPin, ChevronRight, WifiOff, Info, Play } from 'lucide-react';
+import TapList from '@/components/walkthrough/TapList';
+import FlatmatesFields from '@/components/walkthrough/FlatmatesFields';
+import { flattenAnswers, itemsFor, spaceKeys, spaceLabel, type Flatmates, type SpaceAnswers } from '@/lib/walkthrough';
+import { enqueue, failureOf, parseQueue, targetOf, withoutSent, withoutTarget, type AnswersBody } from '@/lib/walkthroughQueue';
 
 interface Room {
     index: number;
@@ -15,9 +19,9 @@ interface Room {
 export default function CapturePage({ params }: { params: Promise<{ code: string }> }) {
     const { code } = use(params);
     const { showToast } = useToast();
-    const { language, setLanguage } = useLanguage();
+    const { language, setLanguage, t } = useLanguage();
     const fr = language === 'fr';
-    const [step, setStep] = useState<'intro' | 'preview' | 'uploading' | 'success' | 'finished'>('intro');
+    const [step, setStep] = useState<'intro' | 'preview' | 'uploading' | 'success' | 'finished' | 'answers' | 'space'>('intro');
     const [files, setFiles] = useState<File[]>([]);
     const [previewUrls, setPreviewUrls] = useState<string[]>([]);
     const [location, setLocation] = useState<{ lat: number; lng: number; accuracy: number } | null>(null);
@@ -33,14 +37,39 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
     const [selectedRoom, setSelectedRoom] = useState<Room | 'common' | null>(null);
     const [loadError, setLoadError] = useState(false);
 
+    // Quick answers (the tap lists). `openSpace` is a space key or 'flatmates'.
+    const [walk, setWalk] = useState<{ bedrooms: number; shared: boolean } | null>(null);
+    const [answers, setAnswers] = useState<Record<string, SpaceAnswers>>({});
+    const [flatmates, setFlatmates] = useState<Flatmates>({});
+    const [openSpace, setOpenSpace] = useState<string | null>(null);
+    const [draft, setDraft] = useState<SpaceAnswers>({});
+    const [flatmatesDraft, setFlatmatesDraft] = useState<Flatmates>({});
+    const [savingAnswers, setSavingAnswers] = useState(false);
+    const [waitingAnswers, setWaitingAnswers] = useState(0);
+    const pendingKey = `roomivo-walkthrough-pending:${code}`;
+    // The sending run in progress, if any. A new save waits for it, so an older waiting
+    // answer can never reach the server after a newer one.
+    const flushRun = useRef<Promise<void> | null>(null);
+    // Sending can start before the stored language has loaded and finish after it, so the
+    // messages it shows read the current translator and room count, not the first render's.
+    const tNow = useRef(t);
+    tNow.current = t;
+    const walkNow = useRef(walk);
+    walkNow.current = walk;
+    // A request that hangs on a weak connection must end, so the answer can wait on the phone.
+    const ANSWER_TIMEOUT_MS = 15000;
+
     const fileInputRef = useRef<HTMLInputElement>(null);
     const videoInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
-        const handleOnline = () => { setIsOffline(false); syncOfflineQueue(); };
+        const handleOnline = () => { setIsOffline(false); syncOfflineQueue(); flushPendingAnswers(); };
         const handleOffline = () => setIsOffline(true);
+        // A phone that was never "offline" (a timeout, a server error) gets no online event.
+        const handleVisible = () => { if (document.visibilityState === 'visible') flushPendingAnswers(); };
         window.addEventListener('online', handleOnline);
         window.addEventListener('offline', handleOffline);
+        document.addEventListener('visibilitychange', handleVisible);
         setIsOffline(!navigator.onLine);
         loadSessionDetails();
         requestLocation();
@@ -61,6 +90,7 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
             unsubscribe?.();
             window.removeEventListener('online', handleOnline);
             window.removeEventListener('offline', handleOffline);
+            document.removeEventListener('visibilitychange', handleVisible);
         };
     }, []);
 
@@ -80,9 +110,143 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
             setLoadError(false);
             if (res.data.location_verified) setIsSessionVerified(true);
             if (res.data.rooms) setRooms(res.data.rooms);
+            if (res.data.walkthrough) {
+                applyWalkthrough(res.data.walkthrough);
+                flushPendingAnswers();
+            }
         } catch (e) {
             console.error(e);
+            setWaitingAnswers(readPendingAnswers().length);
             setLoadError(true);
+        }
+    };
+
+    const applyWalkthrough = (data: any) => {
+        setWalk({ bedrooms: Math.max(1, Number(data.bedrooms) || 1), shared: !!data.is_colocation });
+        // Answers saved on this phone but not yet sent stay on screen until they are.
+        const waiting = readPendingAnswers();
+        const spaces = flattenAnswers(data.answers);
+        let household: Flatmates = {};
+        if (data.flatmates) {
+            const { answered_at: _answeredAt, ...rest } = data.flatmates as Flatmates;
+            household = rest;
+        }
+        for (const body of waiting) {
+            if (body.space) spaces[body.space] = body.answers ?? {};
+            if (body.flatmates) household = body.flatmates;
+        }
+        setAnswers(spaces);
+        setFlatmates(household);
+        setWaitingAnswers(waiting.length);
+    };
+
+    const readPendingAnswers = (): AnswersBody[] => {
+        try {
+            return parseQueue(localStorage.getItem(pendingKey));
+        } catch {
+            return [];
+        }
+    };
+
+    const writePendingAnswers = (queue: AnswersBody[]) => {
+        try {
+            if (queue.length) localStorage.setItem(pendingKey, JSON.stringify(queue));
+            else localStorage.removeItem(pendingKey);
+            setWaitingAnswers(queue.length);
+            return true;
+        } catch {
+            return false;
+        }
+    };
+
+    const answerLabel = (target: string, bedrooms: number) =>
+        target === 'flatmates'
+            ? tNow.current('walkthrough.flatmates.title', undefined, 'Who lives here')
+            : spaceLabel(tNow.current, target, bedrooms);
+
+    // Send what is waiting on this phone, oldest first, one run at a time. A connection or
+    // server problem stops the run and keeps everything; an answer the server refuses is
+    // dropped and the landlord is told which space to answer again.
+    const flushPendingAnswers = (): Promise<void> => {
+        if (flushRun.current) return flushRun.current;
+        if (!readPendingAnswers().length) return Promise.resolve();
+        flushRun.current = sendWaitingAnswers().finally(() => { flushRun.current = null; });
+        return flushRun.current;
+    };
+
+    const sendWaitingAnswers = async () => {
+        const refused: string[] = [];
+        let latest: any = null;
+        let expired = false;
+        for (let body = readPendingAnswers()[0]; body; body = readPendingAnswers()[0]) {
+            let kept: boolean;
+            try {
+                const res = await apiClient.client.put(`/properties/media-sessions/${code}/answers`, body, { timeout: ANSWER_TIMEOUT_MS });
+                latest = res.data;
+                kept = writePendingAnswers(withoutSent(readPendingAnswers(), body));
+            } catch (err: any) {
+                const failure = failureOf(err?.response?.status);
+                if (failure === 'retry-later') break;
+                if (failure === 'link-expired') { expired = true; break; }
+                console.error('[capture] a saved answer was refused', err.response?.data);
+                refused.push(targetOf(body));
+                kept = writePendingAnswers(withoutSent(readPendingAnswers(), body));
+            }
+            // Storage that cannot be written would hand back the same entry forever.
+            if (!kept) break;
+        }
+        if (latest) applyWalkthrough(latest);
+        if (refused.length) {
+            const bedrooms = latest ? Math.max(1, Number(latest.bedrooms) || 1) : walkNow.current?.bedrooms ?? 1;
+            showToast(tNow.current('walkthrough.capture.notAccepted', { spaces: refused.map((r) => answerLabel(r, bedrooms)).join(', ') },
+                `These answers were not accepted. Please answer again: ${refused.join(', ')}`), 'error', 8000);
+            if (!latest) loadSessionDetails();
+        }
+        if (expired) setLoadError(true);
+    };
+
+    const openAnswers = (spaceKey: string) => {
+        setOpenSpace(spaceKey);
+        if (spaceKey === 'flatmates') setFlatmatesDraft(flatmates);
+        else setDraft(answers[spaceKey] ?? {});
+        setStep('space');
+    };
+
+    const saveAnswers = async () => {
+        if (!openSpace) return;
+        const body: AnswersBody = openSpace === 'flatmates' ? { flatmates: flatmatesDraft } : { space: openSpace, answers: draft };
+        setSavingAnswers(true);
+        try {
+            if (flushRun.current) await flushRun.current;
+            // Kept on the phone first, replacing any older answer for this space, so that a
+            // reload or a lost connection mid-request can never send the older one instead.
+            const kept = writePendingAnswers(enqueue(readPendingAnswers(), body));
+            try {
+                const res = await apiClient.client.put(`/properties/media-sessions/${code}/answers`, body, { timeout: ANSWER_TIMEOUT_MS });
+                writePendingAnswers(withoutSent(readPendingAnswers(), body));
+                applyWalkthrough(res.data);
+                showToast(t('walkthrough.capture.saved', undefined, 'Answers saved'), 'success', 2000);
+                setStep('answers');
+                flushPendingAnswers();
+            } catch (err: any) {
+                const failure = failureOf(err?.response?.status);
+                if (failure === 'retry-later' && kept) {
+                    if (body.space) setAnswers((prev) => ({ ...prev, [body.space as string]: body.answers ?? {} }));
+                    if (body.flatmates) setFlatmates(body.flatmates);
+                    showToast(t('walkthrough.capture.savedOffline', undefined, 'Saved on this phone. It will be sent as soon as the connection allows.'), 'info');
+                    setStep('answers');
+                } else if (failure === 'retry-later') {
+                    showToast(t('walkthrough.capture.cannotStore', undefined, 'Could not send, and this phone cannot keep answers. Please try again when the connection is back.'), 'error');
+                } else if (failure === 'link-expired') {
+                    setLoadError(true);
+                } else {
+                    writePendingAnswers(withoutSent(readPendingAnswers(), body));
+                    console.error('[capture] could not save answers', err);
+                    showToast(t('walkthrough.capture.saveError', undefined, 'Could not save. Please try again.'), 'error');
+                }
+            }
+        } finally {
+            setSavingAnswers(false);
         }
     };
 
@@ -326,6 +490,12 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                                         ? 'Cette session de photos/vidéo est introuvable. Le lien a peut-être expiré — demandez-en un nouveau depuis votre annonce.'
                                         : 'This capture session could not be found. The link may have expired — please request a new one from your listing.'}
                                 </p>
+                                {waitingAnswers > 0 && (
+                                    <p className="text-base font-bold text-amber-700 max-w-sm" data-testid="answers-not-sent">
+                                        {t('walkthrough.capture.linkExpired', { count: waitingAnswers },
+                                            `Answers kept on this phone were not sent: ${waitingAnswers}. Please enter them again from a new link or on your listing's edit page.`)}
+                                    </p>
+                                )}
                             </div>
                         </motion.div>
                     )}
@@ -439,6 +609,23 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                                                 : 'Pick a room before shooting — each bedroom needs its own photo before you can publish.'}
                                         </p>
                                     )}
+                                </div>
+                            )}
+
+                            {walk && (
+                                <div className="mb-10 rounded-[2.5rem] border-2 border-zinc-100 p-6" data-testid="quick-answers-card">
+                                    <h3 className="text-lg font-black uppercase tracking-tight text-zinc-900">
+                                        {t('walkthrough.capture.title', undefined, 'Quick answers')}
+                                    </h3>
+                                    <p className="mt-2 text-sm font-medium leading-relaxed text-zinc-500">
+                                        {t('walkthrough.capture.body', undefined, 'Students ask the same things about every home. Answer once here, room by room, and the listing shows it.')}
+                                    </p>
+                                    <button
+                                        onClick={() => setStep('answers')}
+                                        className="mt-5 w-full rounded-2xl bg-zinc-100 py-4 text-xs font-black uppercase tracking-[0.3em] text-zinc-900 transition-colors hover:bg-zinc-200"
+                                    >
+                                        {t('walkthrough.capture.open', undefined, 'Answer the questions')}
+                                    </button>
                                 </div>
                             )}
 
@@ -568,11 +755,104 @@ export default function CapturePage({ params }: { params: Promise<{ code: string
                                 >
                                     {fr ? "Capturer d'autres médias" : 'Capture more media'}
                                 </button>
+                                {walk && (
+                                    <button
+                                        onClick={() => { setFiles([]); setPreviewUrls([]); setStep('answers'); }}
+                                        className="w-full rounded-[2.5rem] bg-zinc-100 py-6 text-xs font-black uppercase tracking-[0.3em] text-zinc-900"
+                                    >
+                                        {t('walkthrough.capture.open', undefined, 'Answer the questions')}
+                                    </button>
+                                )}
                                 <button
                                     onClick={() => setStep('finished')}
                                     className="text-xs font-black uppercase tracking-[0.4em] text-zinc-400"
                                 >
                                     {fr ? "J'ai terminé" : "I'm done"}
+                                </button>
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {!loadError && step === 'answers' && walk && (
+                        <motion.div key="answers" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex-1 flex flex-col">
+                            <div className="mb-8 space-y-3">
+                                <h1 className="text-4xl font-black tracking-tighter uppercase leading-[0.9]">
+                                    {t('walkthrough.capture.title', undefined, 'Quick answers')}
+                                </h1>
+                                <p className="text-base font-medium leading-relaxed text-zinc-500">
+                                    {t('walkthrough.capture.pick', undefined, 'Pick a space. Leave a line empty if it does not apply.')}
+                                </p>
+                            </div>
+                            {waitingAnswers > 0 && (
+                                <div className="mb-6 flex items-center justify-between gap-4 rounded-2xl bg-amber-50 px-5 py-4" data-testid="answers-waiting">
+                                    <span className="text-sm font-bold text-amber-800">
+                                        {t('walkthrough.capture.waiting', { count: waitingAnswers }, `Answers waiting to be sent: ${waitingAnswers}`)}
+                                    </span>
+                                    <button
+                                        onClick={() => flushPendingAnswers()}
+                                        className="rounded-xl bg-white px-4 py-2 text-xs font-black uppercase tracking-wider text-zinc-900"
+                                    >
+                                        {t('walkthrough.capture.sendNow', undefined, 'Send now')}
+                                    </button>
+                                </div>
+                            )}
+                            <ul className="space-y-3" data-testid="answer-spaces">
+                                {[...spaceKeys(walk.bedrooms), ...(walk.shared ? ['flatmates'] : [])].map((key) => {
+                                    const total = key === 'flatmates' ? 0 : itemsFor(key).length;
+                                    const done = key === 'flatmates'
+                                        ? Object.keys(flatmates).length
+                                        : Object.keys(answers[key] ?? {}).length;
+                                    return (
+                                        <li key={key}>
+                                            <button
+                                                onClick={() => openAnswers(key)}
+                                                className="flex w-full items-center justify-between gap-4 rounded-[2rem] border-2 border-zinc-100 px-6 py-5 text-left transition-colors hover:border-zinc-900"
+                                            >
+                                                <span className="text-sm font-black uppercase tracking-wider text-zinc-900">
+                                                    {key === 'flatmates' ? t('walkthrough.flatmates.title', undefined, 'Who lives here') : spaceLabel(t, key, walk.bedrooms)}
+                                                </span>
+                                                <span className="flex items-center gap-2 text-xs font-bold text-zinc-500">
+                                                    {key !== 'flatmates' && t('walkthrough.progress', { done, total }, `${done} of ${total} answered`)}
+                                                    {done > 0 && <CheckCircle2 className="h-4 w-4 text-zinc-900" aria-hidden="true" />}
+                                                    <ChevronRight className="h-4 w-4" aria-hidden="true" />
+                                                </span>
+                                            </button>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                            <div className="mt-auto pt-10">
+                                <button
+                                    onClick={() => setStep('intro')}
+                                    className="w-full rounded-[2.5rem] bg-zinc-900 py-6 text-xs font-black uppercase tracking-[0.3em] text-white"
+                                >
+                                    {t('walkthrough.capture.backToPhotos', undefined, 'Back to photos')}
+                                </button>
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {!loadError && step === 'space' && walk && openSpace && (
+                        <motion.div key={`space-${openSpace}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex-1 flex flex-col">
+                            <h1 className="mb-6 text-4xl font-black tracking-tighter uppercase leading-[0.9]">
+                                {openSpace === 'flatmates' ? t('walkthrough.flatmates.title', undefined, 'Who lives here') : spaceLabel(t, openSpace, walk.bedrooms)}
+                            </h1>
+                            {openSpace === 'flatmates'
+                                ? <FlatmatesFields value={flatmatesDraft} onChange={setFlatmatesDraft} />
+                                : <TapList spaceKey={openSpace} value={draft} onChange={setDraft} />}
+                            <div className="mt-auto space-y-4 pt-10">
+                                <button
+                                    onClick={saveAnswers}
+                                    disabled={savingAnswers}
+                                    className="w-full rounded-[2.5rem] bg-zinc-900 py-6 text-xs font-black uppercase tracking-[0.3em] text-white disabled:opacity-50"
+                                >
+                                    {t('walkthrough.capture.save', undefined, 'Save')}
+                                </button>
+                                <button
+                                    onClick={() => setStep('answers')}
+                                    className="w-full py-3 text-xs font-black uppercase tracking-[0.3em] text-zinc-500"
+                                >
+                                    {t('walkthrough.capture.back', undefined, 'Back')}
                                 </button>
                             </div>
                         </motion.div>
