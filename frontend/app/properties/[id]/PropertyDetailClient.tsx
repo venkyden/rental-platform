@@ -19,6 +19,7 @@ import { useLanguage } from '@/lib/LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import NeighborhoodMap from '@/components/NeighborhoodMap';
 import Image from 'next/image';
+import Link from 'next/link';
 import {
     MapPin, Share2, Shield, Zap, Wind, Check, LayoutGrid, Info,
     TrendingUp, Heart, Navigation, Building2, Flame, AlertTriangle, Calendar, BadgeCheck, Download, Video,
@@ -1070,6 +1071,12 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                         >
                                             {t('property.actions.message', undefined, 'Open Channel')}
                                         </button>
+                                        <Link
+                                            href={`/report?listing=${property.id}`}
+                                            className="block pt-2 text-center text-xs font-bold text-zinc-500 underline hover:text-zinc-900"
+                                        >
+                                            {t('report.link')}
+                                        </Link>
                                     </div>
                                 ) : (
                                     <div className="space-y-4">

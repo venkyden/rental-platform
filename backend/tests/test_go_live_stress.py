@@ -4,6 +4,7 @@ Tests all Landlord and Tenant journeys and edge cases.
 """
 
 import uuid
+import pytest
 import json
 from datetime import datetime, timedelta
 from io import BytesIO
@@ -14,6 +15,11 @@ from app.routers.auth import get_current_user
 from app.models.property import Property, PropertyMediaSession
 from app.models.user import User
 from conftest import MOCK_LANDLORD, MOCK_TENANT, make_mock_user
+
+
+@pytest.fixture(autouse=True)
+def _listing_not_taken_down(listing_not_taken_down):
+    yield
 
 
 def make_test_property(**kwargs):

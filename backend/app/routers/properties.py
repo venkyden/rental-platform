@@ -1076,6 +1076,14 @@ async def publish_property(
             detail="You do not have permission to publish this property",
         )
 
+    # A listing taken down after a report stays down until the decision is reversed.
+    from app.routers.reports import listing_is_taken_down
+    if await listing_is_taken_down(db, property_obj.id):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="listing_taken_down_after_report",
+        )
+
     # WP3 gate: a listing without a landlord bio ships an anonymous counterparty —
     # the owner (not the publishing team member) must have completed their bio.
     if not ((property_obj.landlord.bio if property_obj.landlord else "") or "").strip():

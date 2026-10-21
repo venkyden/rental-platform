@@ -78,8 +78,9 @@ The trust layer is NOT a separate entity or product — it is Roomivo's core.
 
 We sell **verified facts that enable protection**, not protection itself.
 Revenue: flat per-verification or subscription fee. Never success-based.
-Status: **incorporating in India** (registration in progress, started 2026-07-05; entity
-name not final — do NOT publish it until registration lands);
+Status: **incorporated in India** on 2026-09-18 as **Roomivo Technologies Private Limited**
+(CIN U58200PY2026PTC009828, registered office in Puducherry); since 2026-10-21 it is the
+publisher of roomivo.eu and the GDPR controller named in the legal and privacy notices;
 **EU entity added later, just-in-time before the first live pilot processing EU data**
 (country TBD — France's only unique edge is FranceConnect, which needs a French SIRET; a
 non-France EU base reaches HIGH identity via eIDAS 2.0 / EU wallet instead). Founders remain

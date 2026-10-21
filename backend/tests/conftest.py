@@ -196,3 +196,16 @@ def biometric_consent_granted():
         new=AsyncMock(return_value=True),
     ):
         yield
+
+
+@pytest.fixture
+def listing_not_taken_down():
+    """Patch the report take-down check to "no". The mocked session answers
+    every query with the same row, which would read as an upheld report; the
+    real check is covered in tests_integration/test_content_reports.py."""
+    from unittest.mock import AsyncMock, patch as _patch
+    with _patch(
+        "app.routers.reports.listing_is_taken_down",
+        new=AsyncMock(return_value=False),
+    ):
+        yield

@@ -4,6 +4,8 @@ import { motion, Variants } from 'framer-motion';
 import { useLanguage } from '@/lib/LanguageContext';
 import PremiumLayout from '@/components/PremiumLayout';
 
+const SECTIONS = ['controller', 'data', 'purposes', 'recipients', 'transfers', 'retention', 'automated', 'rights', 'security'];
+
 export default function PrivacyPage() {
     const { t } = useLanguage();
 
@@ -48,7 +50,7 @@ export default function PrivacyPage() {
 
                     {/* Content Sections */}
                     <div className="space-y-12">
-                        {['collection', 'encryption'].map((sectionKey) => (
+                        {SECTIONS.map((sectionKey) => (
                             <motion.section 
                                 key={sectionKey}
                                 variants={sectionVariants}
@@ -57,38 +59,18 @@ export default function PrivacyPage() {
                                 <h2 className="text-2xl font-black tracking-tight text-zinc-900 mb-6 uppercase">
                                     {t(`legal.privacy.sections.${sectionKey}.title`)}
                                 </h2>
-                                <p className="text-zinc-600 leading-relaxed text-lg">
-                                    {t(`legal.privacy.sections.${sectionKey}.content`)}
-                                </p>
+                                <div className="space-y-4">
+                                    {t(`legal.privacy.sections.${sectionKey}.content`).split('\n\n').map((paragraph, i) => (
+                                        <p key={i} className="text-zinc-600 leading-relaxed text-lg">{paragraph}</p>
+                                    ))}
+                                </div>
                             </motion.section>
                         ))}
                     </div>
 
-                    {/* Automated document analysis & third-party processing (GDPR subprocessor disclosure) */}
-                    <motion.section
-                        variants={sectionVariants}
-                        className="glass-card !p-12 rounded-[3rem] border-zinc-100"
-                    >
-                        <h2 className="text-2xl font-black tracking-tight text-zinc-900 mb-6 uppercase">
-                            {t('legal.privacy.sections.ai_processing.title', undefined, 'Automated Document Analysis')}
-                        </h2>
-                        <p className="text-zinc-600 leading-relaxed text-lg">
-                            {t('legal.privacy.sections.ai_processing.content', undefined, "To verify your identity, income and funds, Roomivo uses automated analysis powered by Google's Gemini AI. Documents you upload are transmitted to Google solely to extract the specific facts required for verification; Google acts as a data processor on Roomivo's behalf under a data-processing agreement. Roomivo applies a verify-and-forget model: your source document is processed transiently and is not retained after the verification result is produced — we keep only the banded result (for example \"funds cover ≥ 12 months of rent\"), never the original file. By uploading a document you consent to this automated processing, and you may contact us at any time to exercise your GDPR rights (access, erasure, objection).")}
-                        </p>
-                    </motion.section>
-
-                    {/* Security Badge */}
-                    <motion.div 
-                        variants={sectionVariants}
-                        className="p-12 bg-zinc-900 rounded-[3rem] text-center space-y-4"
-                    >
-                        <h3 className="text-2xl font-black text-white uppercase tracking-tight">
-                            {t('legal.privacy.sections.encryption.title', undefined, 'Encryption & Data Minimisation')}
-                        </h3>
-                        <p className="text-zinc-400 max-w-lg mx-auto">
-                            {t('legal.privacy.sections.encryption.content', undefined, 'Data is encrypted in transit and at rest. Verification documents are processed transiently and deleted after verification — privacy by architecture.')}
-                        </p>
-                    </motion.div>
+                    <p className="text-center text-xs font-black text-zinc-400 uppercase tracking-[0.3em]">
+                        {t('legal.privacy.lastUpdated')}
+                    </p>
                 </motion.div>
             </div>
         </PremiumLayout>

@@ -2595,6 +2595,71 @@ export const translations = {
                 "company_kbis": "Company Kbis (Professional Landlord)",
                 "management_mandate": "Management Mandate (for Agencies)"
         },
+        report: {
+            link: "Report this listing",
+            title: "Report a listing",
+            listing: "Listing",
+            missingListing: "No listing selected. Open the listing and use “Report this listing”.",
+            reasonLabel: "What is wrong?",
+            reasons: {
+                discrimination: "Discrimination",
+                scam: "Scam or fraud",
+                misleading: "Misleading listing",
+                unsafe_housing: "Unsafe or substandard housing",
+                other_illegal: "Other illegal content",
+            },
+            hints: {
+                discrimination: "Refuses or favours people because of their origin, nationality, sex, religion, disability or another ground the law protects.",
+                scam: "For example a fake landlord asking for a deposit before any visit.",
+                misleading: "Photos, price or description that do not match the home.",
+                unsafe_housing: "For example a home that does not meet the legal standard of decent housing.",
+                other_illegal: "Anything else you believe breaks the law.",
+            },
+            explanationLabel: "Explain why this listing is illegal or breaks the rules",
+            explanationHint: "Quote the words or describe what you saw. At least 20 characters.",
+            nameLabel: "Your name",
+            emailLabel: "Your email",
+            goodFaith: "I believe the information in this report is accurate and complete.",
+            howItWorks: "A person reads every report; no automated tool decides. We email you a receipt now and the decision later. We do not tell the owner who reported the listing.",
+            privacyNote: "Your name and email are used only to send you the receipt and the decision, and are erased once the decision is sent.",
+            submit: "Send the report",
+            sending: "Sending…",
+            doneTitle: "Report sent",
+            doneBody: "Thank you. A receipt is on its way to your inbox. Reference: {{ref}}",
+            backToListing: "Back to the listing",
+            errors: {
+                notFound: "This listing is not published, so it cannot be reported here. Write to contact@roomivo.eu instead.",
+                tooMany: "Too many reports from this connection. Try again in an hour, or write to contact@roomivo.eu.",
+                invalid: "Check the form: choose a reason, explain in at least 20 characters, give your name and a valid email, and tick the box.",
+                generic: "The report could not be sent. Try again, or write to contact@roomivo.eu.",
+            },
+        },
+        reportsAdmin: {
+            title: "Reports",
+            empty: "No reports.",
+            forbidden: "Admins only.",
+            loadError: "The reports could not be loaded.",
+            status: {
+                received: "To review",
+                upheld: "Upheld",
+                rejected: "Rejected",
+                reversed: "Reversed",
+            },
+            receivedOn: "Received {{date}}",
+            decidedOn: "Decided {{date}}",
+            reporter: "Reporter",
+            reporterErased: "Erased after the decision",
+            openListing: "Open the listing",
+            decisionReason: "Reason sent to the reporter and the owner (at least 20 characters)",
+            ground: "Ground",
+            groundIllegal: "Illegal content",
+            groundTerms: "Breaks the terms of use",
+            uphold: "Uphold: take the listing down",
+            reject: "Reject: keep the listing",
+            reverse: "Reverse after the owner contests",
+            saved: "Decision saved; the emails have been sent.",
+            saveError: "The decision could not be saved.",
+        },
         walkthrough: {
             spaces: {
                 kitchen: "Kitchen",
@@ -2780,7 +2845,7 @@ export const translations = {
                     },
                     listings: {
                         title: '4. Listings and Owners\' Statements',
-                        content: "Listings, including the answers about the home (furniture, appliances, who lives there), are the owner's own statements: Roomivo does not check them. The furnished label reflects the owner's answers, not an inspection. Roomivo applies this rule automatically: a listing is shown as furnished only while its owner has not marked as missing or not working any item that French law requires in a furnished home (Décret n° 2015-981); otherwise it remains published, without that label, and the owner is told why. An owner who disagrees can contest the decision, and anyone can report a listing, by writing to us from the Help page."
+                        content: "Listings, including the answers about the home (furniture, appliances, who lives there), are the owner's own statements: Roomivo does not check them. The furnished label reflects the owner's answers, not an inspection. Roomivo applies this rule automatically: a listing is shown as furnished only while its owner has not marked as missing or not working any item that French law requires in a furnished home (Décret n° 2015-981); otherwise it remains published, without that label, and the owner is told why. Listings must not refuse or favour anyone because of their origin, nationality, sex, religion, disability or any other ground protected by article 225-1 of the French Criminal Code. Anyone can report a listing with the “Report this listing” link on it. A person reads every report; a listing found illegal or contrary to these terms is taken down, and its owner is told why and how to contest the decision. To contest any decision, including the furnished label, write to contact@roomivo.eu."
                     },
                     liability: {
                         title: '5. Limitation of Liability',
@@ -2790,40 +2855,72 @@ export const translations = {
                 lastUpdated: 'Last updated: October 2026'
             },
             privacy: {
-                title: 'Privacy Policy',
-                subtitle: 'Data Protection & Trust',
-                description: 'Your data is encrypted and managed with strict adherence to GDPR standards.',
+                title: "Privacy Policy",
+                subtitle: "Personal data",
+                description: "What Roomivo collects about you, why, who receives it, how long it is kept, and your rights.",
+                lastUpdated: "Last updated: October 2026",
                 sections: {
-                    ai_processing: {
-                        content: "To verify your identity, income and funds, Roomivo uses automated analysis powered by Google's Gemini AI. Documents you upload are transmitted to Google solely to extract the specific facts required for verification; Google acts as a data processor on Roomivo's behalf under a data-processing agreement. Roomivo applies a verify-and-forget model: your source document is processed transiently and is not retained after the verification result is produced — we keep only the banded result (for example \"funds cover ≥ 12 months of rent\"), never the original file. By uploading a document you consent to this automated processing, and you may contact us at any time to exercise your GDPR rights (access, erasure, objection).",
-                        title: "Automated document analysis",
+                    controller: {
+                        title: "1. Who is responsible",
+                        content: "The controller of your personal data is Roomivo Technologies Private Limited, a company incorporated in India (CIN U58200PY2026PTC009828), whose details are in the legal notice. Its founders run the service from France. For any question about your data, write to contact@roomivo.eu. Roomivo has not appointed a data protection officer.",
                     },
-                    collection: {
-                        title: 'Data Collection',
-                        content: 'We collect identity, income, and employment data strictly for rental verification purposes.'
+                    data: {
+                        title: "2. What we collect",
+                        content: "Account: your email address, your name, your phone number if you give it, your password (stored only as a hash) or your Google sign-in identifier, your role and your settings.\n\nListings: the address, the description, photos and videos, the answers about the home and, when the home is filmed with the phone capture page, where each photo was taken.\n\nChecks you choose to run: the identity document and the selfie you submit (comparing your face with the document uses biometric data), tax notices, payslips or bank statements, guarantor documents and, for owners, documents about the property.\n\nUse of the service: applications, messages, visit bookings, leases and their signatures, inventories and disputes.\n\nTechnical: your IP address, used to limit abuse, and error reports when something breaks.",
                     },
-                    encryption: {
-                        title: 'Encryption & Data Minimisation',
-                        content: 'Data is encrypted in transit and at rest using industry-standard protocols (TLS, AES-256). Verification source documents are processed transiently and deleted after verification — we keep the signed result, not your documents.'
-                    }
-                }
+                    purposes: {
+                        title: "3. Why, and on what legal basis",
+                        content: "To run your account, publish listings, send applications and messages, book visits and sign leases: the contract between you and Roomivo (GDPR art. 6(1)(b)).\n\nTo run the checks you ask for and show their result: the same contract. Comparing your face with your identity document is done only with your explicit consent (art. 9(2)(a)), which you can withdraw at any time; withdrawing does not affect checks already made.\n\nTo prevent fraud and abuse, keep the service secure and fix errors: our legitimate interest (art. 6(1)(f)).\n\nTo handle reports of illegal content and answer the authorities: our legal obligations (art. 6(1)(c)), including those of the EU Digital Services Act.\n\nWe do not sell your data and do not use it for advertising.",
+                    },
+                    recipients: {
+                        title: "4. Who receives it",
+                        content: "The other party sees what you share with them: a landlord sees the applications sent to them and the results of the applicant's checks; an applicant sees the listing.\n\nService providers process data for us, only on our instructions: Render (application hosting, Frankfurt), Upstash (temporary cache, EU), Cloudflare R2 (file storage), Google (document analysis with Gemini, and Google sign-in if you use it), Resend (emails), Sentry (error reports) and OpenRouteService (travel times, from the listing's location only).",
+                    },
+                    transfers: {
+                        title: "5. Transfers outside the EU",
+                        content: "Several of these providers are companies based in the United States, and Google may process documents outside the EU. These transfers rely on the European Commission's adequacy decision for the EU-US Data Privacy Framework when the provider is certified under it, or otherwise on the Commission's standard contractual clauses.",
+                    },
+                    retention: {
+                        title: "6. How long we keep it",
+                        content: "Identity document and selfie: deleted as soon as the check ends. If a check is interrupted before it ends, the file stays in storage until you delete your account or ask us to delete it.\n\nTax notices, payslips and bank statements sent for a solvency check: read, not stored; only the result is kept.\n\nCheck results: while your account is open. A shareable proof expires on the date shown on it (30 days by default).\n\nGuarantor documents and documents you add to your rental file: until you delete them or your account.\n\nListings, photos, applications, messages, visits and leases: while your account is open.\n\nReports of illegal content: the reporter's name and email are erased once the decision has been sent; the report itself is kept.\n\nWhen you delete your account, we erase your profile, your documents and your check results. What you sent to someone else (messages, applications, signed leases) stays with them, no longer linked to your name.",
+                    },
+                    automated: {
+                        title: "7. Automated checks",
+                        content: "Identity and solvency checks are automated: a program reads the document and gives a result with its level of confidence. The furnished label is also applied automatically from the owner's answers. Roomivo takes no decision about your rental; the landlord decides. You can ask for a person to look at any automated result by writing to contact@roomivo.eu.",
+                    },
+                    rights: {
+                        title: "8. Your rights",
+                        content: "You can access your data, correct it, delete it, receive a copy, restrict or object to its use, and withdraw a consent at any time. Most of this is available from your account settings; otherwise write to contact@roomivo.eu. We answer within one month.\n\nIf you think we have not respected your rights, you can complain to the CNIL (Commission nationale de l'informatique et des libertés), 3 place de Fontenoy, TSA 80715, 75334 Paris Cedex 07, www.cnil.fr.",
+                    },
+                    security: {
+                        title: "9. Security",
+                        content: "Connections are encrypted (TLS). Identity, employment, income, ownership and guarantor data are encrypted in the database.",
+                    },
+                },
             },
             notice: {
                 title: 'Legal Notice',
                 subtitle: 'Administrative Compliance',
                 editor: {
                     title: 'Site Editor',
-                    company: 'Roomivo',
-                    form: 'Student-entrepreneur project — SNEE (National Student-Entrepreneur Status)',
-                    capital: 'Not yet incorporated — no SIRET (incubated via PÉPITE Pays de la Loire / Audencia)',
+                    company: 'Roomivo Technologies Private Limited',
+                    form: 'Private company limited by shares, incorporated in India (Companies Act 2013)',
+                    capital: 'CIN U58200PY2026PTC009828 (Registrar of Companies, India). No French SIRET.',
                     hq: 'Contact: contact@roomivo.eu',
-                    note: 'Roomivo is a student-entrepreneur project developed under the SNEE (Statut National Étudiant-Entrepreneur), supported by PÉPITE Pays de la Loire (French Ministry of Higher Education) and the Audencia entrepreneurship hub. As a project still in incubation it is not yet registered as a company and has no SIRET number; this notice will be updated upon incorporation.',
+                    note: 'Roomivo is run by its founders, student-entrepreneurs under the SNEE (Statut National Étudiant-Entrepreneur), incubated by Audencia Pôle Entrepreneuriat and PÉPITE Pays de la Loire (French Ministry of Higher Education).',
                     labels: {
                         company: 'Publisher',
                         form: 'Legal Status',
                         capital: 'Registration',
-                        hq: 'Contact'
+                        hq: 'Contact',
+                        director: "Publication director",
+                        address: "Registered office",
+                        phone: "Phone"
                     }
+                },
+                contactPoints: {
+                    title: "Contact points (Digital Services Act)",
+                    content: "Authorities of the EU Member States, the European Commission and the European Board for Digital Services can reach Roomivo at contact@roomivo.eu (article 11 of Regulation (EU) 2022/2065). Users can write to the same address (article 12). We answer in French or English. To report an illegal listing, use “Report this listing” on the listing page.",
                 },
                 infrastructure: {
                     title: 'Infrastructure',
@@ -2835,7 +2932,7 @@ export const translations = {
                     backend: {
                         title: 'Data Region',
                         company: 'EU compute & cache — Frankfurt, Germany (Render, Upstash EU)',
-                        address: 'Application servers (Render) and cache (Upstash) run in the EU. Document analysis uses Google as a sub-processor, which may process data outside the EU; file storage uses Cloudflare R2. Source documents are processed transiently under verify-and-forget and not retained.'
+                        address: 'Application servers (Render) and the temporary cache (Upstash) run in Frankfurt, Germany. Files are stored with Cloudflare R2. Document analysis uses Google, which may process data outside the EU. Details are in the privacy notice.'
                     }
                 }
             },
@@ -5855,6 +5952,71 @@ export const translations = {
                 "company_kbis": "Extrait Kbis (Bailleur Professionnel)",
                 "management_mandate": "Mandat de gestion (pour Agences)"
         },
+        report: {
+            link: "Signaler cette annonce",
+            title: "Signaler une annonce",
+            listing: "Annonce",
+            missingListing: "Aucune annonce sélectionnée. Ouvrez l'annonce et utilisez « Signaler cette annonce ».",
+            reasonLabel: "Quel est le problème ?",
+            reasons: {
+                discrimination: "Discrimination",
+                scam: "Arnaque ou fraude",
+                misleading: "Annonce trompeuse",
+                unsafe_housing: "Logement indécent ou dangereux",
+                other_illegal: "Autre contenu illicite",
+            },
+            hints: {
+                discrimination: "Refuse ou favorise des personnes en raison de leur origine, nationalité, sexe, religion, handicap ou d'un autre critère protégé par la loi.",
+                scam: "Par exemple un faux propriétaire qui demande un dépôt avant toute visite.",
+                misleading: "Photos, prix ou description qui ne correspondent pas au logement.",
+                unsafe_housing: "Par exemple un logement qui ne respecte pas les critères légaux de décence.",
+                other_illegal: "Tout autre contenu que vous pensez contraire à la loi.",
+            },
+            explanationLabel: "Expliquez pourquoi cette annonce est illicite ou enfreint les règles",
+            explanationHint: "Citez les mots ou décrivez ce que vous avez vu. 20 caractères au minimum.",
+            nameLabel: "Votre nom",
+            emailLabel: "Votre e-mail",
+            goodFaith: "Je déclare de bonne foi que les informations de ce signalement sont exactes et complètes.",
+            howItWorks: "Une personne lit chaque signalement ; aucun outil automatisé ne décide. Nous vous envoyons un accusé de réception maintenant, puis la décision. Nous n'indiquons pas au propriétaire qui a signalé l'annonce.",
+            privacyNote: "Votre nom et votre e-mail servent uniquement à vous envoyer l'accusé de réception et la décision, et sont effacés une fois la décision envoyée.",
+            submit: "Envoyer le signalement",
+            sending: "Envoi…",
+            doneTitle: "Signalement envoyé",
+            doneBody: "Merci. Un accusé de réception vous a été envoyé par e-mail. Référence : {{ref}}",
+            backToListing: "Retour à l'annonce",
+            errors: {
+                notFound: "Cette annonce n'est pas publiée et ne peut donc pas être signalée ici. Écrivez plutôt à contact@roomivo.eu.",
+                tooMany: "Trop de signalements depuis cette connexion. Réessayez dans une heure, ou écrivez à contact@roomivo.eu.",
+                invalid: "Vérifiez le formulaire : choisissez un motif, expliquez en 20 caractères au moins, indiquez votre nom et un e-mail valide, et cochez la case.",
+                generic: "Le signalement n'a pas pu être envoyé. Réessayez, ou écrivez à contact@roomivo.eu.",
+            },
+        },
+        reportsAdmin: {
+            title: "Signalements",
+            empty: "Aucun signalement.",
+            forbidden: "Réservé aux administrateurs.",
+            loadError: "Les signalements n'ont pas pu être chargés.",
+            status: {
+                received: "À examiner",
+                upheld: "Retenu",
+                rejected: "Rejeté",
+                reversed: "Annulé",
+            },
+            receivedOn: "Reçu le {{date}}",
+            decidedOn: "Décidé le {{date}}",
+            reporter: "Auteur du signalement",
+            reporterErased: "Effacé après la décision",
+            openListing: "Voir l'annonce",
+            decisionReason: "Motif envoyé à l'auteur du signalement et au propriétaire (20 caractères au minimum)",
+            ground: "Fondement",
+            groundIllegal: "Contenu illicite",
+            groundTerms: "Contraire aux conditions d'utilisation",
+            uphold: "Retenir : retirer l'annonce",
+            reject: "Rejeter : garder l'annonce",
+            reverse: "Annuler après contestation du propriétaire",
+            saved: "Décision enregistrée ; les e-mails ont été envoyés.",
+            saveError: "La décision n'a pas pu être enregistrée.",
+        },
         walkthrough: {
             spaces: {
                 kitchen: "Cuisine",
@@ -6040,7 +6202,7 @@ export const translations = {
                     },
                     listings: {
                         title: '4. Annonces et déclarations des propriétaires',
-                        content: "Les annonces, y compris les réponses sur le logement (mobilier, équipements, occupants), sont des déclarations du propriétaire : Roomivo ne les vérifie pas. La mention « meublé » reflète les réponses du propriétaire, et non une inspection. Roomivo applique cette règle automatiquement : une annonce n'apparaît comme meublée que tant que son propriétaire n'a indiqué comme absent ou hors d'usage aucun élément que la loi exige dans un logement meublé (décret n° 2015-981) ; dans le cas contraire, elle reste publiée, sans cette mention, et le propriétaire en est informé avec la raison. Un propriétaire en désaccord peut contester la décision, et chacun peut signaler une annonce, en nous écrivant depuis la page d'aide."
+                        content: "Les annonces, y compris les réponses sur le logement (mobilier, équipements, occupants), sont des déclarations du propriétaire : Roomivo ne les vérifie pas. La mention « meublé » reflète les réponses du propriétaire, et non une inspection. Roomivo applique cette règle automatiquement : une annonce n'apparaît comme meublée que tant que son propriétaire n'a indiqué comme absent ou hors d'usage aucun élément que la loi exige dans un logement meublé (décret n° 2015-981) ; dans le cas contraire, elle reste publiée, sans cette mention, et le propriétaire en est informé avec la raison. Une annonce ne doit refuser ni favoriser personne en raison de son origine, de sa nationalité, de son sexe, de sa religion, de son handicap ou de tout autre critère protégé par l'article 225-1 du Code pénal. Chacun peut signaler une annonce avec le lien « Signaler cette annonce » qui y figure. Une personne lit chaque signalement ; une annonce jugée illicite ou contraire aux présentes conditions est retirée, et son propriétaire est informé de la raison et de la manière de contester la décision. Pour contester toute décision, y compris sur la mention « meublé », écrivez à contact@roomivo.eu."
                     },
                     liability: {
                         title: '5. Limitation de Responsabilité',
@@ -6050,40 +6212,72 @@ export const translations = {
                 lastUpdated: 'Dernière mise à jour : Octobre 2026'
             },
             privacy: {
-                title: 'Confidentialité',
-                subtitle: 'Protection des Données',
-                description: 'Vos données sont cryptées et gérées dans le strict respect des normes RGPD.',
+                title: "Confidentialité",
+                subtitle: "Données personnelles",
+                description: "Ce que Roomivo collecte à votre sujet, pourquoi, qui le reçoit, combien de temps c'est conservé, et vos droits.",
+                lastUpdated: "Dernière mise à jour : octobre 2026",
                 sections: {
-                    ai_processing: {
-                        content: "Pour vérifier votre identité, vos revenus et vos fonds, Roomivo utilise une analyse automatisée reposant sur l'IA Gemini de Google. Les documents que vous téléversez sont transmis à Google uniquement pour en extraire les informations nécessaires à la vérification ; Google agit comme sous-traitant pour le compte de Roomivo dans le cadre d'un accord de traitement des données. Roomivo applique un modèle « vérifier puis oublier » : votre document source est traité de manière transitoire et n'est pas conservé une fois le résultat produit — nous ne gardons que le résultat en bande (par exemple « fonds couvrant ≥ 12 mois de loyer »), jamais le fichier d'origine. En téléversant un document, vous consentez à ce traitement automatisé et pouvez à tout moment exercer vos droits RGPD (accès, effacement, opposition).",
-                        title: "Analyse automatisée des documents",
+                    controller: {
+                        title: "1. Responsable du traitement",
+                        content: "Le responsable du traitement de vos données personnelles est Roomivo Technologies Private Limited, société de droit indien (CIN U58200PY2026PTC009828), dont les coordonnées figurent dans les mentions légales. Ses fondateurs exploitent le service depuis la France. Pour toute question sur vos données, écrivez à contact@roomivo.eu. Roomivo n'a pas désigné de délégué à la protection des données.",
                     },
-                    collection: {
-                        title: 'Collecte des Données',
-                        content: 'Nous collectons des données d\'identité, de revenus et d\'emploi strictement à des fins de vérification locative.'
+                    data: {
+                        title: "2. Ce que nous collectons",
+                        content: "Compte : votre adresse e-mail, votre nom, votre numéro de téléphone si vous le donnez, votre mot de passe (conservé uniquement sous forme d'empreinte) ou votre identifiant de connexion Google, votre rôle et vos réglages.\n\nAnnonces : l'adresse, la description, les photos et vidéos, les réponses sur le logement et, lorsque le logement est filmé avec la page de capture sur téléphone, l'endroit où chaque photo a été prise.\n\nVérifications que vous choisissez de lancer : la pièce d'identité et le selfie que vous envoyez (la comparaison de votre visage avec la pièce utilise des données biométriques), avis d'imposition, bulletins de salaire ou relevés bancaires, documents du garant et, pour les propriétaires, documents relatifs au bien.\n\nUtilisation du service : candidatures, messages, réservations de visites, baux et leurs signatures, états des lieux et litiges.\n\nDonnées techniques : votre adresse IP, utilisée pour limiter les abus, et les rapports d'erreur lorsqu'un problème survient.",
                     },
-                    encryption: {
-                        title: 'Chiffrement et minimisation des données',
-                        content: 'Les données sont chiffrées en transit et au repos selon les protocoles standards (TLS, AES-256). Les documents sources de vérification sont traités de manière transitoire puis supprimés — nous conservons le résultat signé, pas vos documents.'
-                    }
-                }
+                    purposes: {
+                        title: "3. Pourquoi, et sur quelle base légale",
+                        content: "Pour gérer votre compte, publier des annonces, envoyer des candidatures et des messages, réserver des visites et signer des baux : le contrat entre vous et Roomivo (RGPD, art. 6, 1, b).\n\nPour effectuer les vérifications que vous demandez et en afficher le résultat : le même contrat. La comparaison de votre visage avec votre pièce d'identité n'est faite qu'avec votre consentement explicite (art. 9, 2, a), que vous pouvez retirer à tout moment ; ce retrait ne remet pas en cause les vérifications déjà faites.\n\nPour prévenir la fraude et les abus, sécuriser le service et corriger les erreurs : notre intérêt légitime (art. 6, 1, f).\n\nPour traiter les signalements de contenus illicites et répondre aux autorités : nos obligations légales (art. 6, 1, c), notamment celles du règlement européen sur les services numériques.\n\nNous ne vendons pas vos données et ne les utilisons pas à des fins publicitaires.",
+                    },
+                    recipients: {
+                        title: "4. Qui les reçoit",
+                        content: "L'autre partie voit ce que vous partagez avec elle : un propriétaire voit les candidatures qui lui sont envoyées et les résultats des vérifications du candidat ; un candidat voit l'annonce.\n\nDes prestataires traitent des données pour nous, uniquement sur nos instructions : Render (hébergement de l'application, Francfort), Upstash (cache temporaire, UE), Cloudflare R2 (stockage des fichiers), Google (analyse des documents avec Gemini, et connexion Google si vous l'utilisez), Resend (e-mails), Sentry (rapports d'erreur) et OpenRouteService (temps de trajet, à partir de la seule localisation de l'annonce).",
+                    },
+                    transfers: {
+                        title: "5. Transferts hors de l'UE",
+                        content: "Plusieurs de ces prestataires sont des sociétés établies aux États-Unis, et Google peut traiter des documents hors de l'UE. Ces transferts reposent sur la décision d'adéquation de la Commission européenne relative au cadre de protection des données UE-États-Unis lorsque le prestataire y est certifié, et à défaut sur les clauses contractuelles types de la Commission.",
+                    },
+                    retention: {
+                        title: "6. Durées de conservation",
+                        content: "Pièce d'identité et selfie : supprimés dès la fin de la vérification. Si une vérification est interrompue avant sa fin, le fichier reste stocké jusqu'à la suppression de votre compte ou jusqu'à votre demande de suppression.\n\nAvis d'imposition, bulletins de salaire et relevés bancaires envoyés pour une vérification de solvabilité : lus, non stockés ; seul le résultat est conservé.\n\nRésultats des vérifications : tant que votre compte est ouvert. Une preuve partageable expire à la date qu'elle indique (30 jours par défaut).\n\nDocuments du garant et documents que vous ajoutez à votre dossier locatif : jusqu'à ce que vous les supprimiez, ou supprimiez votre compte.\n\nAnnonces, photos, candidatures, messages, visites et baux : tant que votre compte est ouvert.\n\nSignalements de contenus illicites : le nom et l'e-mail de l'auteur du signalement sont effacés dès que la décision lui a été envoyée ; le signalement lui-même est conservé.\n\nLorsque vous supprimez votre compte, nous effaçons votre profil, vos documents et les résultats de vos vérifications. Ce que vous avez envoyé à d'autres personnes (messages, candidatures, baux signés) reste chez elles, sans lien avec votre nom.",
+                    },
+                    automated: {
+                        title: "7. Vérifications automatisées",
+                        content: "Les vérifications d'identité et de solvabilité sont automatisées : un programme lit le document et donne un résultat avec son niveau de confiance. La mention « meublé » est elle aussi appliquée automatiquement à partir des réponses du propriétaire. Roomivo ne prend aucune décision sur votre location ; c'est le propriétaire qui décide. Vous pouvez demander qu'une personne examine tout résultat automatisé en écrivant à contact@roomivo.eu.",
+                    },
+                    rights: {
+                        title: "8. Vos droits",
+                        content: "Vous pouvez accéder à vos données, les rectifier, les supprimer, en recevoir une copie, en limiter l'utilisation ou vous y opposer, et retirer un consentement à tout moment. La plupart de ces actions sont disponibles dans les réglages de votre compte ; sinon, écrivez à contact@roomivo.eu. Nous répondons dans un délai d'un mois.\n\nSi vous estimez que vos droits n'ont pas été respectés, vous pouvez adresser une réclamation à la CNIL (Commission nationale de l'informatique et des libertés), 3 place de Fontenoy, TSA 80715, 75334 Paris Cedex 07, www.cnil.fr.",
+                    },
+                    security: {
+                        title: "9. Sécurité",
+                        content: "Les connexions sont chiffrées (TLS). Les données d'identité, d'emploi, de revenus, de propriété et de garant sont chiffrées dans la base de données.",
+                    },
+                },
             },
             notice: {
                 title: 'Mentions Légales',
                 subtitle: 'Conformité Administrative',
                 editor: {
                     title: 'Éditeur du Site',
-                    company: 'Roomivo',
-                    form: 'Projet d\'étudiant-entrepreneur — Statut National Étudiant-Entrepreneur (SNEE)',
-                    capital: 'Non immatriculé — pas de SIRET (incubé via PÉPITE Pays de la Loire / Audencia)',
+                    company: 'Roomivo Technologies Private Limited',
+                    form: 'Société de droit indien (private company limited by shares, Companies Act 2013)',
+                    capital: 'CIN U58200PY2026PTC009828 (registre des sociétés, Inde). Pas de SIRET en France.',
                     hq: 'Contact : contact@roomivo.eu',
-                    note: 'Roomivo est un projet d\'étudiant-entrepreneur développé sous le Statut National Étudiant-Entrepreneur (SNEE), accompagné par PÉPITE Pays de la Loire (Ministère de l\'Enseignement supérieur et de la Recherche) et le Hub entrepreneurial d\'Audencia. En phase d\'incubation, le projet n\'est pas encore immatriculé et ne dispose pas de numéro SIRET ; ces mentions seront mises à jour lors de la création de la structure.',
+                    note: 'Roomivo est animé par ses fondateurs, étudiants-entrepreneurs (Statut National Étudiant-Entrepreneur), incubés par Audencia Pôle Entrepreneuriat et PÉPITE Pays de la Loire (Ministère de l\'Enseignement supérieur et de la Recherche).',
                     labels: {
                         company: 'Éditeur',
                         form: 'Statut Juridique',
                         capital: 'Immatriculation',
-                        hq: 'Contact'
+                        hq: 'Contact',
+                        director: "Directeur de la publication",
+                        address: "Siège social",
+                        phone: "Téléphone"
                     }
+                },
+                contactPoints: {
+                    title: "Points de contact (règlement sur les services numériques)",
+                    content: "Les autorités des États membres de l'UE, la Commission européenne et le comité européen des services numériques peuvent joindre Roomivo à l'adresse contact@roomivo.eu (article 11 du règlement (UE) 2022/2065). Les utilisateurs peuvent écrire à la même adresse (article 12). Nous répondons en français ou en anglais. Pour signaler une annonce illicite, utilisez « Signaler cette annonce » sur la page de l'annonce.",
                 },
                 infrastructure: {
                     title: 'Infrastructure',
@@ -6095,7 +6289,7 @@ export const translations = {
                     backend: {
                         title: 'Région des Données',
                         company: 'Calcul & cache UE — Francfort, Allemagne (Render, Upstash UE)',
-                        address: 'Les serveurs applicatifs (Render) et le cache (Upstash) sont situés dans l\'UE. L\'analyse des documents recourt à Google comme sous-traitant, qui peut traiter des données hors UE ; le stockage fichiers utilise Cloudflare R2. Les documents source sont traités de façon transitoire selon le principe verify-and-forget et ne sont pas conservés.'
+                        address: 'Les serveurs applicatifs (Render) et le cache temporaire (Upstash) sont situés à Francfort, en Allemagne. Les fichiers sont stockés chez Cloudflare R2. L\'analyse des documents recourt à Google, qui peut traiter des données hors de l\'UE. Le détail figure dans la politique de confidentialité.'
                     }
                 }
             },

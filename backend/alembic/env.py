@@ -14,6 +14,7 @@ from app.core.database import Base
 from app.core.db_url import to_sync_url
 from app.models.user import User, VerificationRecord, OnboardingResponse
 from app.models.application import Application
+from app.models.content_report import ContentReport
 from app.models.dispute import Dispute
 from app.models.document import Document, DocumentExtraction
 from app.models.feature_flag import FeatureFlag

@@ -65,7 +65,7 @@ def test_erasure_clears_all_pii_columns():
             resp = client.delete("/gdpr/delete")
         assert resp.status_code == 200
 
-        updates = [s for s in captured if isinstance(s, Update)]
+        updates = [s for s in captured if isinstance(s, Update) and s.table.name == "users"]
         assert updates, "erasure issued no UPDATE"
         cleared = set(updates[0].compile().params.keys())
         missing = ERASURE_MUST_CLEAR - cleared
