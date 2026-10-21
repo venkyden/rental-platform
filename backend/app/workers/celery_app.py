@@ -39,7 +39,13 @@ celery_app.conf.update(
     broker_transport_options={
         "visibility_timeout": 3600,
         "max_connections": 5,
-        "socket_timeout": 5,
+        # An idle worker blocks on BRPOP for polling_interval seconds per command
+        # (kombu's default is 1 s: ~86k Upstash commands a day). A job still
+        # arrives at once; only the idle wait is longer.
+        "polling_interval": 30,
+        # Must outlast the BRPOP wait, or every idle poll times out.
+        "socket_timeout": 40,
+        "socket_connect_timeout": 5,
     },
 )
 
