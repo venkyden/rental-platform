@@ -40,8 +40,8 @@ their Roomivo account (matched on email, case-insensitive). The report text is k
 
 - **Publisher (decided 2026-10-21):** Roomivo Technologies Private Limited (India, CIN
   U58200PY2026PTC009828) publishes the site and is the GDPR controller; its registered office is
-  on the notice. Still missing: the **publication director** (a director of the company) and a
-  **phone number**. Until both are set in `LEGAL_ENTITY`, the legal notice is incomplete.
+  on the notice, with the publication director (Nallam Venkataramaya, a director) and a contact
+  phone, all set in `frontend/lib/legalEntity.ts`.
 - **EU representative:** with an Indian controller, GDPR art. 27 and DSA art. 13 representatives
   apply unless the founders' work from France makes France an establishment (council review §4,
   confidence medium). The privacy notice names no representative; revisit when a lawyer can be
