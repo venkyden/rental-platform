@@ -75,6 +75,29 @@ async def _is_account_locked(email: str) -> bool:
     return await _login_failure_count(email) >= _LOCKOUT_THRESHOLD
 
 
+async def _user_for_token(db: AsyncSession, payload: dict):
+    """The account a session token belongs to, or None.
+
+    Tokens are bound to the account id. The email must still match: after an
+    email change or erasure the address can belong to a new account, and an old
+    token must not reach it.
+    """
+    user_id, email = payload.get("user_id"), payload.get("sub")
+    if not user_id or not email:
+        return None
+    try:
+        user = await db.get(User, uuid.UUID(str(user_id)))
+    except ValueError:
+        return None
+    if user is None or (user.email or "").lower() != str(email).lower():
+        return None
+    return user
+
+
+def _same_name(a: str | None, b: str | None) -> bool:
+    return " ".join((a or "").split()).casefold() == " ".join((b or "").split()).casefold()
+
+
 async def get_current_user(
     token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)
 ) -> User:
@@ -96,13 +119,7 @@ async def get_current_user(
     if payload.get("type") != "access":
         raise credentials_exception
 
-    email: str = payload.get("sub")
-    if email is None:
-        raise credentials_exception
-
-    result = await db.execute(select(User).where(User.email == email))
-    user = result.scalar_one_or_none()
-
+    user = await _user_for_token(db, payload)
     if user is None or not user.is_active:
         raise credentials_exception
 
@@ -125,11 +142,7 @@ async def get_current_user_optional(
             return None
         if payload.get("type") != "access":
             return None
-        email: str = payload.get("sub")
-        if email is None:
-            return None
-        result = await db.execute(select(User).where(User.email == email))
-        user = result.scalar_one_or_none()
+        user = await _user_for_token(db, payload)
         if user is None or not user.is_active:
             return None
         return user
@@ -269,7 +282,7 @@ async def login(
 
     # Create refresh token
     refresh_token = create_refresh_token(
-        data={"sub": user.email, "version": user.refresh_token_version}
+        data={"sub": user.email, "user_id": str(user.id), "version": user.refresh_token_version}
     )
 
     # Set refresh token cookie
@@ -337,12 +350,9 @@ async def refresh_token(
             detail="Invalid or expired refresh token",
         )
 
-    email = payload.get("sub")
     version = payload.get("version")
-    
-    result = await db.execute(select(User).where(User.email == email))
-    user = result.scalar_one_or_none()
-    
+    user = await _user_for_token(db, payload)
+
     if not user or not user.is_active or user.refresh_token_version != version:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -358,7 +368,7 @@ async def refresh_token(
     
     # Issue new refresh token (rotation)
     new_refresh_token = create_refresh_token(
-        data={"sub": user.email, "version": user.refresh_token_version}
+        data={"sub": user.email, "user_id": str(user.id), "version": user.refresh_token_version}
     )
 
     # Set new refresh token cookie (SameSite=None for cross-origin frontend↔backend)
@@ -424,7 +434,18 @@ async def update_me(
 ):
     """Update current user profile (name, bio)"""
     if user_update.full_name is not None:
-        current_user.full_name = user_update.full_name.strip()
+        new_name = user_update.full_name.strip()
+        if current_user.identity_verified and _same_name(new_name, current_user.full_name):
+            new_name = current_user.full_name
+        elif current_user.identity_verified:
+            # The identity check matched the document against this name, and
+            # credentials sign it; a new name would carry the old verification.
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Your name was checked against your identity document and cannot be changed here. "
+                       "Write to contact@roomivo.eu to correct it.",
+            )
+        current_user.full_name = new_name
     if user_update.first_name is not None:
         current_user.first_name = user_update.first_name.strip() or None
     if user_update.bio is not None:
@@ -520,7 +541,7 @@ async def change_password(
     await db.commit()
 
     new_refresh = create_refresh_token(
-        data={"sub": current_user.email, "version": current_user.refresh_token_version}
+        data={"sub": current_user.email, "user_id": str(current_user.id), "version": current_user.refresh_token_version}
     )
     response.set_cookie(
         key="refresh_token",
@@ -681,9 +702,10 @@ async def google_auth(
     # ---- Step 2: Find or create user ----
     try:
         from app.models.user import UserRole
-        role_str = auth_data.role or "tenant"
+        # No role means the login page: keep the account's role.
+        role_str = auth_data.role
         try:
-            role_enum = UserRole(role_str)
+            role_enum = UserRole(role_str or "tenant")
         except ValueError:
             role_enum = UserRole.TENANT
 
@@ -694,23 +716,33 @@ async def google_auth(
             # Check by email
             result = await db.execute(select(User).where(User.email == email))
             user = result.scalar_one_or_none()
+            if user and not email_verified:
+                # Google has not confirmed this person owns the address.
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="An account already uses this email. Sign in with your password.",
+                )
 
         if user:
             if not user.google_id:
                 user.google_id = google_id
                 audit_logger.info(f"GOOGLE_LINK email={email}")
+                if not user.email_verified and user.hashed_password:
+                    # Nobody proved the password's owner had this mailbox; Google
+                    # just proved the mailbox owner is here. End the other access.
+                    user.hashed_password = None
+                    user.refresh_token_version = (user.refresh_token_version or 1) + 1
+                    audit_logger.info(f"GOOGLE_LINK_PASSWORD_REMOVED email={email}")
             if email_verified:
                 user.email_verified = True
-            
-            requested_role_str = role_enum.value
-            current_roles = user.available_roles or ["tenant"]
-            
-            if requested_role_str not in current_roles:
-                current_roles.append(requested_role_str)
-                user.available_roles = list(current_roles)
-                audit_logger.info(f"ROLE_UNLOCKED email={email} new_role={requested_role_str}")
-            
-            user.role = role_enum
+
+            if role_str:
+                current_roles = list(user.available_roles or ["tenant"])
+                if role_enum.value not in current_roles:
+                    current_roles.append(role_enum.value)
+                    user.available_roles = current_roles
+                    audit_logger.info(f"ROLE_UNLOCKED email={email} new_role={role_enum.value}")
+                user.role = role_enum
         else:
             # Create new user
             user = User(
@@ -771,7 +803,7 @@ async def google_auth(
 
         # Create refresh token
         refresh_token = create_refresh_token(
-            data={"sub": user.email, "version": user.refresh_token_version}
+            data={"sub": user.email, "user_id": str(user.id), "version": user.refresh_token_version}
         )
 
         # Set refresh token cookie (SameSite=None for cross-origin frontend↔backend)

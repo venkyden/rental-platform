@@ -4,10 +4,20 @@ Credential core — integration tests.
 Covers §2 (credential schema) and §5.2 (assurance-labelling) from the DOSSIER.
 Each row in the edge-case matrix has at least one test.
 
+Claims are only ever built by the server (POST /credentials/issue-mine). The
+validation rules are tested on the signing service itself; the stored-credential
+flows (public verify, revoke, evidence PDF) use credentials signed by the same
+service and stored the way issue-mine stores them.
+
 Run: cd backend && DATABASE_URL=... pytest tests_integration/test_credential_core.py -q
 """
 
+from datetime import datetime
+
 import pytest
+
+from app.models.credential import Credential
+from app.services.credential import credential_service
 from tests_integration.conftest import make_user, auth
 
 # ── helpers ──────────────────────────────────────────────────────────────────
@@ -31,40 +41,77 @@ VALID_FR_CLAIMS_MEDIUM = {
 }
 
 
-async def _issue(client, token: str, payload: dict):
-    return await client.post(
-        "/credentials/issue",
-        json=payload,
-        headers={"Authorization": f"Bearer {token}"},
+def _sign(subject_role="tenant", rail="FR", claims=None, name=None) -> dict:
+    return credential_service.issue(
+        subject_role=subject_role, rail=rail, claims=claims or {}, subject_display_name=name,
     )
+
+
+async def _store(sm, user, **kwargs) -> dict:
+    """Sign a credential for `user` and store it as issue-mine does."""
+    payload = _sign(**kwargs)
+    async with sm() as s:
+        s.add(Credential(
+            id=payload["credential_id"],
+            subject_role=payload["subject_role"],
+            rail=payload["rail"],
+            subject_user_id=user.id,
+            subject_display_name=payload.get("subject_display_name"),
+            issued_at=datetime.fromisoformat(payload["issued_at"].rstrip("Z")),
+            expires_at=datetime.fromisoformat(payload["expires_at"].rstrip("Z")),
+            claims=payload["claims"],
+            disclaimer=payload["disclaimer"],
+            signature=payload["signature"],
+            kid=payload.get("kid"),
+            revoked=False,
+        ))
+        await s.commit()
+    return payload
 
 
 async def _verify(client, credential_id: str):
     return await client.get(f"/credentials/{credential_id}")
 
 
+# ── no caller-supplied claims ────────────────────────────────────────────────
+
+@pytest.mark.asyncio
+async def test_there_is_no_route_that_signs_caller_supplied_claims(client):
+    """POST /credentials/issue signed any claims, name and lifetime it was sent."""
+    tenant = await make_user(client._sessionmaker, role="tenant")
+    r = await client.post("/credentials/issue", json={
+        "subject_role": "tenant", "rail": "FR", "claims": VALID_FR_CLAIMS_HIGH,
+        "subject_display_name": "Someone Else", "ttl_days": 36500,
+    }, headers=auth(tenant))
+    assert r.status_code in (404, 405)
+
+
+@pytest.mark.asyncio
+async def test_issue_mine_ignores_claims_in_the_request(client):
+    """An unverified user cannot talk issue-mine into a HIGH identity claim."""
+    tenant = await make_user(client._sessionmaker, role="tenant")
+    r = await client.post("/credentials/issue-mine", json={
+        "claims": VALID_FR_CLAIMS_HIGH, "subject_display_name": "Someone Else", "ttl_days": 36500,
+    }, headers=auth(tenant))
+    assert r.status_code == 201, r.text
+    body = r.json()
+    assert body["claims"].get("identity_assurance") != "HIGH"
+    assert body["subject_display_name"] == tenant.full_name
+    issued = datetime.fromisoformat(body["issued_at"].rstrip("Z"))
+    expires = datetime.fromisoformat(body["expires_at"].rstrip("Z"))
+    assert (expires - issued).days <= 30
+
+
 # ── basic happy paths ─────────────────────────────────────────────────────────
 
 @pytest.mark.asyncio
-async def test_issue_fr_high_credential(client):
-    """Issue a valid FR/HIGH credential; signature must be valid on verify."""
-    sm = client._sessionmaker
-    tenant = await make_user(sm, role="tenant")
+async def test_fr_high_credential_verifies(client):
+    """A stored FR/HIGH credential has a valid signature on public verify."""
+    tenant = await make_user(client._sessionmaker, role="tenant")
+    payload = await _store(client._sessionmaker, tenant, claims=VALID_FR_CLAIMS_HIGH, name="Jean Dupont")
+    assert payload["credential_id"].startswith("vc_")
 
-    r = await _issue(client, _token(tenant), {
-        "subject_role": "tenant",
-        "rail": "FR",
-        "claims": VALID_FR_CLAIMS_HIGH,
-        "subject_display_name": "Jean Dupont",
-    })
-    assert r.status_code == 201, r.text
-    body = r.json()
-    assert body["credential_id"].startswith("vc_")
-    assert body["claims"]["identity_assurance"] == "HIGH"
-    assert body["revoked"] is False
-
-    # Public verify — no auth header
-    rv = await _verify(client, body["credential_id"])
+    rv = await _verify(client, payload["credential_id"])
     assert rv.status_code == 200
     vb = rv.json()
     assert vb["valid"] is True
@@ -73,19 +120,9 @@ async def test_issue_fr_high_credential(client):
     assert vb["revoked"] is False
 
 
-@pytest.mark.asyncio
-async def test_issue_fr_medium_credential(client):
-    """OCR+liveness source must produce MEDIUM, never HIGH."""
-    sm = client._sessionmaker
-    tenant = await make_user(sm, role="tenant")
-
-    r = await _issue(client, _token(tenant), {
-        "subject_role": "tenant",
-        "rail": "FR",
-        "claims": VALID_FR_CLAIMS_MEDIUM,
-    })
-    assert r.status_code == 201, r.text
-    assert r.json()["claims"]["identity_assurance"] == "MEDIUM"
+def test_fr_medium_credential_stays_medium():
+    """OCR+liveness source produces MEDIUM, never HIGH."""
+    assert _sign(claims=VALID_FR_CLAIMS_MEDIUM)["claims"]["identity_assurance"] == "MEDIUM"
 
 
 @pytest.mark.asyncio
@@ -105,105 +142,42 @@ async def test_verify_unknown_credential_returns_404(client):
 
 # ── AS-1 / AS-2: assurance labelling (DOSSIER §5.2) ─────────────────────────
 
-@pytest.mark.asyncio
-async def test_AS1_ocr_source_cannot_claim_high(client):
-    """
-    AS-1 / AS-3: ocr_liveness (MEDIUM-only source) must not be accepted with
-    identity_assurance=HIGH. The signing service rejects before storing.
-    """
-    sm = client._sessionmaker
-    tenant = await make_user(sm, role="tenant")
-
-    r = await _issue(client, _token(tenant), {
-        "subject_role": "tenant",
-        "rail": "FR",
-        "claims": {
-            "identity_verified": True,
-            "identity_assurance": "HIGH",       # INVALID — source is MEDIUM-only
-            "identity_source": "ocr_liveness",
-        },
-    })
-    assert r.status_code == 422
-    detail = r.json()["detail"].lower()
-    assert "inflation" in detail or "medium" in detail
+def test_AS1_ocr_source_cannot_claim_high():
+    """AS-1 / AS-3: ocr_liveness (MEDIUM-only source) is refused with HIGH assurance."""
+    with pytest.raises(ValueError, match="(?i)inflation|medium"):
+        _sign(claims={"identity_verified": True, "identity_assurance": "HIGH", "identity_source": "ocr_liveness"})
 
 
-@pytest.mark.asyncio
-async def test_AS1_mrz_ocr_source_cannot_claim_high(client):
-    """AS-1: mrz_ocr_liveness (MEDIUM-only) rejected when HIGH assurance claimed."""
-    sm = client._sessionmaker
-    tenant = await make_user(sm, role="tenant")
-
-    r = await _issue(client, _token(tenant), {
-        "subject_role": "tenant",
-        "rail": "INTL",
-        "claims": {
-            "identity_verified": True,
-            "identity_assurance": "HIGH",
-            "identity_source": "mrz_ocr_liveness",
-        },
-    })
-    assert r.status_code == 422
+def test_AS1_mrz_ocr_source_cannot_claim_high():
+    """AS-1: mrz_ocr_liveness (MEDIUM-only) refused when HIGH assurance claimed."""
+    with pytest.raises(ValueError):
+        _sign(rail="INTL", claims={
+            "identity_verified": True, "identity_assurance": "HIGH", "identity_source": "mrz_ocr_liveness",
+        })
 
 
-@pytest.mark.asyncio
-async def test_AS2_solvency_assurance_must_be_valid_band(client):
+def test_AS2_solvency_assurance_must_be_valid_band():
     """AS-2: solvency_assurance must be HIGH / MEDIUM / UNVERIFIED."""
-    sm = client._sessionmaker
-    tenant = await make_user(sm, role="tenant")
-
-    r = await _issue(client, _token(tenant), {
-        "subject_role": "tenant",
-        "rail": "FR",
-        "claims": {
-            "identity_assurance": "HIGH",
-            "identity_source": "france_identite_justificatif",
-            "solvency_ratio": ">=3.0",
-            "solvency_assurance": "VERIFIED",   # invalid — not in the enum
-        },
-    })
-    assert r.status_code == 422
+    with pytest.raises(ValueError):
+        _sign(claims={
+            "identity_assurance": "HIGH", "identity_source": "france_identite_justificatif",
+            "solvency_ratio": ">=3.0", "solvency_assurance": "VERIFIED",
+        })
 
 
-@pytest.mark.asyncio
-async def test_AS3_raw_solvency_ratio_rejected(client):
-    """
-    AS-3 / SV-7: solvency_ratio must be a banded string, never a raw number.
-    Passing a float must be rejected before signing.
-    """
-    sm = client._sessionmaker
-    tenant = await make_user(sm, role="tenant")
-
-    r = await _issue(client, _token(tenant), {
-        "subject_role": "tenant",
-        "rail": "FR",
-        "claims": {
-            "identity_assurance": "HIGH",
-            "identity_source": "france_identite_justificatif",
-            "solvency_ratio": 3.5,              # raw number — must be rejected
-            "solvency_assurance": "HIGH",
-        },
-    })
-    assert r.status_code == 422
-    detail = r.json()["detail"].lower()
-    assert "banded" in detail or "string" in detail
+def test_AS3_raw_solvency_ratio_rejected():
+    """AS-3 / SV-7: solvency_ratio must be a banded string, never a raw number."""
+    with pytest.raises(ValueError, match="(?i)banded|string"):
+        _sign(claims={
+            "identity_assurance": "HIGH", "identity_source": "france_identite_justificatif",
+            "solvency_ratio": 3.5, "solvency_assurance": "HIGH",
+        })
 
 
-@pytest.mark.asyncio
-async def test_AS3_solvency_ratio_without_operator_rejected(client):
+def test_AS3_solvency_ratio_without_operator_rejected():
     """AS-3: solvency_ratio string must begin with a comparison operator."""
-    sm = client._sessionmaker
-    tenant = await make_user(sm, role="tenant")
-
-    r = await _issue(client, _token(tenant), {
-        "subject_role": "tenant",
-        "rail": "FR",
-        "claims": {
-            "solvency_ratio": "3.0",            # no operator — rejected
-            "solvency_assurance": "HIGH",
-        },
-    })
-    assert r.status_code == 422
+    with pytest.raises(ValueError):
+        _sign(claims={"solvency_ratio": "3.0", "solvency_assurance": "HIGH"})
 
 
 # ── revocation ────────────────────────────────────────────────────────────────
@@ -211,22 +185,10 @@ async def test_AS3_solvency_ratio_without_operator_rejected(client):
 @pytest.mark.asyncio
 async def test_revocation_makes_credential_invalid(client):
     """Revoked credential returns valid:false and revoked:true on public verify."""
-    sm = client._sessionmaker
-    tenant = await make_user(sm, role="tenant")
-    tok = _token(tenant)
+    tenant = await make_user(client._sessionmaker, role="tenant")
+    cid = (await _store(client._sessionmaker, tenant, claims=VALID_FR_CLAIMS_HIGH))["credential_id"]
 
-    issue_r = await _issue(client, tok, {
-        "subject_role": "tenant",
-        "rail": "FR",
-        "claims": VALID_FR_CLAIMS_HIGH,
-    })
-    assert issue_r.status_code == 201
-    cid = issue_r.json()["credential_id"]
-
-    revoke_r = await client.post(
-        f"/credentials/{cid}/revoke",
-        headers={"Authorization": f"Bearer {tok}"},
-    )
+    revoke_r = await client.post(f"/credentials/{cid}/revoke", headers=auth(tenant))
     assert revoke_r.status_code == 200
 
     verify_r = await _verify(client, cid)
@@ -240,21 +202,11 @@ async def test_revocation_makes_credential_invalid(client):
 @pytest.mark.asyncio
 async def test_revocation_by_other_user_forbidden(client):
     """Only the credential subject may revoke their credential."""
-    sm = client._sessionmaker
-    tenant = await make_user(sm, role="tenant")
-    other = await make_user(sm, role="tenant")
+    tenant = await make_user(client._sessionmaker, role="tenant")
+    other = await make_user(client._sessionmaker, role="tenant")
+    cid = (await _store(client._sessionmaker, tenant, claims=VALID_FR_CLAIMS_HIGH))["credential_id"]
 
-    issue_r = await _issue(client, _token(tenant), {
-        "subject_role": "tenant",
-        "rail": "FR",
-        "claims": VALID_FR_CLAIMS_HIGH,
-    })
-    cid = issue_r.json()["credential_id"]
-
-    revoke_r = await client.post(
-        f"/credentials/{cid}/revoke",
-        headers={"Authorization": f"Bearer {_token(other)}"},
-    )
+    revoke_r = await client.post(f"/credentials/{cid}/revoke", headers=auth(other))
     assert revoke_r.status_code == 403
 
 
@@ -263,18 +215,9 @@ async def test_revocation_by_other_user_forbidden(client):
 @pytest.mark.asyncio
 async def test_evidence_pdf_returns_pdf_content(client):
     """Evidence PDF endpoint returns application/pdf without auth (public)."""
-    sm = client._sessionmaker
-    tenant = await make_user(sm, role="tenant")
+    tenant = await make_user(client._sessionmaker, role="tenant")
+    cid = (await _store(client._sessionmaker, tenant, claims=VALID_FR_CLAIMS_HIGH, name="Jean Dupont"))["credential_id"]
 
-    issue_r = await _issue(client, _token(tenant), {
-        "subject_role": "tenant",
-        "rail": "FR",
-        "claims": VALID_FR_CLAIMS_HIGH,
-        "subject_display_name": "Jean Dupont",
-    })
-    cid = issue_r.json()["credential_id"]
-
-    # No auth header — public endpoint
     pdf_r = await client.get(f"/credentials/{cid}/evidence.pdf")
     assert pdf_r.status_code == 200
     assert pdf_r.headers["content-type"] == "application/pdf"
@@ -290,99 +233,40 @@ async def test_evidence_pdf_unknown_credential_404(client):
 
 # ── input validation ──────────────────────────────────────────────────────────
 
-@pytest.mark.asyncio
-async def test_invalid_subject_role_rejected(client):
-    sm = client._sessionmaker
-    tenant = await make_user(sm, role="tenant")
-
-    r = await _issue(client, _token(tenant), {
-        "subject_role": "admin",    # not a valid role
-        "rail": "FR",
-        "claims": {},
-    })
-    assert r.status_code == 422
+def test_invalid_subject_role_rejected():
+    with pytest.raises(ValueError):
+        _sign(subject_role="admin")
 
 
-@pytest.mark.asyncio
-async def test_invalid_rail_rejected(client):
-    sm = client._sessionmaker
-    tenant = await make_user(sm, role="tenant")
-
-    r = await _issue(client, _token(tenant), {
-        "subject_role": "tenant",
-        "rail": "UK",               # not FR or INTL
-        "claims": {},
-    })
-    assert r.status_code == 422
+def test_invalid_rail_rejected():
+    with pytest.raises(ValueError):
+        _sign(rail="UK")
 
 
-@pytest.mark.asyncio
-async def test_issue_requires_auth(client):
-    """POST /credentials/issue without a token returns 401."""
-    r = await client.post("/credentials/issue", json={
-        "subject_role": "tenant",
-        "rail": "FR",
-        "claims": VALID_FR_CLAIMS_HIGH,
-    })
-    assert r.status_code == 401
-
-
-@pytest.mark.asyncio
-async def test_unknown_identity_source_rejected(client):
+def test_unknown_identity_source_rejected():
     """Unknown identity_source values are rejected before signing."""
-    sm = client._sessionmaker
-    tenant = await make_user(sm, role="tenant")
-
-    r = await _issue(client, _token(tenant), {
-        "subject_role": "tenant",
-        "rail": "FR",
-        "claims": {
-            "identity_verified": True,
-            "identity_assurance": "HIGH",
-            "identity_source": "hacked_database",   # not a valid source
-        },
-    })
-    assert r.status_code == 422
+    with pytest.raises(ValueError):
+        _sign(claims={"identity_verified": True, "identity_assurance": "HIGH", "identity_source": "hacked_database"})
 
 
 # ── landlord + property roles ─────────────────────────────────────────────────
 
-@pytest.mark.asyncio
-async def test_issue_landlord_credential(client):
-    """Landlord credential with property_control claim issues cleanly."""
-    sm = client._sessionmaker
-    landlord = await make_user(sm, role="landlord")
-
-    r = await _issue(client, _token(landlord), {
-        "subject_role": "landlord",
-        "rail": "FR",
-        "claims": {
-            "identity_verified": True,
-            "identity_assurance": "HIGH",
-            "identity_source": "france_identite_justificatif",
-            "property_control": True,
-            "property_assurance": "MEDIUM",
-        },
-        "subject_display_name": "Marie Martin",
+def test_landlord_credential_signs_property_control():
+    """Landlord credential with property_control claim signs cleanly."""
+    payload = _sign(subject_role="landlord", name="Marie Martin", claims={
+        "identity_verified": True, "identity_assurance": "HIGH",
+        "identity_source": "france_identite_justificatif",
+        "property_control": True, "property_assurance": "MEDIUM",
     })
-    assert r.status_code == 201
-    body = r.json()
-    assert body["subject_role"] == "landlord"
-    assert body["claims"]["property_control"] is True
+    assert payload["subject_role"] == "landlord"
+    assert payload["claims"]["property_control"] is True
 
 
 @pytest.mark.asyncio
 async def test_assurance_summary_on_verify(client):
     """Verify response includes a human-readable assurance_summary."""
-    sm = client._sessionmaker
-    tenant = await make_user(sm, role="tenant")
-
-    issue_r = await _issue(client, _token(tenant), {
-        "subject_role": "tenant",
-        "rail": "FR",
-        "claims": VALID_FR_CLAIMS_HIGH,
-    })
-    cid = issue_r.json()["credential_id"]
+    tenant = await make_user(client._sessionmaker, role="tenant")
+    cid = (await _store(client._sessionmaker, tenant, claims=VALID_FR_CLAIMS_HIGH))["credential_id"]
 
     rv = await _verify(client, cid)
     assert "assurance_summary" in rv.json()
