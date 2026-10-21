@@ -58,4 +58,9 @@ celery_app.conf.beat_schedule = {
         "task": "app.workers.tasks.purge_stale_identity_docs_task",
         "schedule": crontab(minute="*/15"),
     },
+    # Rejected and withdrawn applications are deleted 30 days after their last change.
+    "purge-stale-applications": {
+        "task": "app.workers.tasks.purge_stale_applications_task",
+        "schedule": crontab(hour=3, minute=0),
+    },
 }

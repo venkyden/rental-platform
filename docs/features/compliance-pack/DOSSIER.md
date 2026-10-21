@@ -46,10 +46,11 @@ their Roomivo account (matched on email, case-insensitive). The report text is k
   apply unless the founders' work from France makes France an establishment (council review §4,
   confidence medium). The privacy notice names no representative; revisit when a lawyer can be
   consulted.
-- **No scheduled clean-up runs in production:** `render.yaml` has no worker, so the 15-minute
-  sweep of leftover identity images and the 30-day purge of rejected applications never run. The
-  privacy notice says so in plain terms ("stays in storage until you delete your account or ask
-  us"). Branch `chore/drop-celery-worker-beat` replaces the worker with a cron job but is stale.
+- **Scheduled clean-ups (fixed 2026-10-21, PR "fix(workers)"):** the embedded Celery worker in
+  the backend web service (`start.sh`) ran the identity sweep every 15 minutes, but every run
+  failed in production (a model not imported in the worker; pooled connections bound to an
+  earlier event loop). The applications purge was never scheduled. Both now run; the privacy
+  notice states the resulting deadlines.
 - **Credential lifetime is unbounded:** `POST /credentials` accepts any `ttl_days`.
 - **Validation errors from model validators return 500:** the app's `RequestValidationError`
   handler returns `exc.errors()` without `jsonable_encoder`, so a `ValueError` in a validator cannot
