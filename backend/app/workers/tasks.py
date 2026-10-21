@@ -17,6 +17,26 @@ from app.workers.celery_app import celery_app
 logger = logging.getLogger(__name__)
 
 
+def _run_async(coro_fn):
+    """Run a task's coroutine in a fresh event loop, as the worker does on every call.
+
+    The engine's pooled connections belong to the loop that opened them; each
+    call gets a new loop, so the pool is emptied before this one closes or the
+    next call fails with "attached to a different loop".
+    """
+    import asyncio
+
+    from app.core.database import engine
+
+    async def _main():
+        try:
+            return await coro_fn()
+        finally:
+            await engine.dispose()
+
+    return asyncio.run(_main())
+
+
 @celery_app.task(
     name="app.workers.tasks.send_email_task",
     bind=True,
@@ -55,7 +75,6 @@ def purge_stale_applications_task(self) -> dict:
     Finds and deletes REJECTED or WITHDRAWN applications older than 30 days.
     Purges associated snapshot documents from cloud storage (GDPR compliance).
     """
-    import asyncio
     from datetime import timedelta
     from sqlalchemy import select
     from app.core.database import AsyncSessionLocal
@@ -96,16 +115,7 @@ def purge_stale_applications_task(self) -> dict:
 
         return {"purged_applications_count": purged_count}
 
-    try:
-        loop = asyncio.get_running_loop()
-    except RuntimeError:
-        loop = None
-
-    if loop and loop.is_running():
-        future = asyncio.run_coroutine_threadsafe(_purge(), loop)
-        return future.result()
-    else:
-        return asyncio.run(_purge())
+    return _run_async(_purge)
 
 
 @celery_app.task(
@@ -121,7 +131,6 @@ def purge_legacy_verification_docs_task(self) -> dict:
 
     Safe to re-run: already-deleted keys are silently skipped by the storage layer.
     """
-    import asyncio
     from sqlalchemy import select
     from app.core.database import AsyncSessionLocal
     from app.models.user import User
@@ -222,16 +231,7 @@ def purge_legacy_verification_docs_task(self) -> dict:
         )
         return {"deleted": deleted, "errors": errors, "users_scanned": len(users)}
 
-    try:
-        loop = asyncio.get_running_loop()
-    except RuntimeError:
-        loop = None
-
-    if loop and loop.is_running():
-        future = asyncio.run_coroutine_threadsafe(_purge_docs(), loop)
-        return future.result()
-    else:
-        return asyncio.run(_purge_docs())
+    return _run_async(_purge_docs)
 
 
 @celery_app.task(
@@ -249,7 +249,6 @@ def retry_pending_dpe_task(self, property_id: str, dpe_number: str) -> dict:
     On DPENotFound: updates to UNVERIFIED.
     On ADEMEUnavailable: retries up to max_retries times (5 min apart).
     """
-    import asyncio
     from sqlalchemy import select
     from app.core.database import AsyncSessionLocal
     from app.models.property import Property
@@ -320,16 +319,7 @@ def retry_pending_dpe_task(self, property_id: str, dpe_number: str) -> dict:
         )
         return {"status": "resolved", "dpe_class": dpe.energy_class}
 
-    try:
-        loop = asyncio.get_running_loop()
-    except RuntimeError:
-        loop = None
-
-    if loop and loop.is_running():
-        future = asyncio.run_coroutine_threadsafe(_retry(), loop)
-        return future.result()
-    else:
-        return asyncio.run(_retry())
+    return _run_async(_retry)
 
 
 # Raw identity documents are only useful for the ~10 minute face-match window
@@ -367,7 +357,6 @@ def purge_stale_identity_docs_task(self) -> dict:
     storage by object age. Dangling identity_data pointers are cleared in the
     same pass so the record stops claiming to hold a document.
     """
-    import asyncio
     from datetime import datetime, timedelta
     from sqlalchemy import select
     from app.core.database import AsyncSessionLocal
@@ -415,13 +404,4 @@ def purge_stale_identity_docs_task(self) -> dict:
         )
         return {"objects_deleted": deleted, "pointers_cleared": cleared}
 
-    try:
-        loop = asyncio.get_running_loop()
-    except RuntimeError:
-        loop = None
-
-    if loop and loop.is_running():
-        future = asyncio.run_coroutine_threadsafe(_purge(), loop)
-        return future.result()
-    else:
-        return asyncio.run(_purge())
+    return _run_async(_purge)

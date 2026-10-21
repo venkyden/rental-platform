@@ -12,3 +12,7 @@ from app.models.dispute import Dispute
 from app.models.content_report import ContentReport
 from app.models.biometric_consent import BiometricConsent
 from app.models.dossier import TrustDossier, DossierShareLink
+from app.models.credential import Credential
+from app.models.feature_flag import FeatureFlag
+from app.models.feedback import Feedback
+from app.models.webhook_subscriptions import WebhookSubscription, WebhookDelivery
