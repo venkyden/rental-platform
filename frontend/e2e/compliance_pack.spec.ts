@@ -187,6 +187,17 @@ test.describe('legal pages', () => {
             await expect(page.getByRole('heading', { name: notice.contactPoints.title })).toBeVisible();
             await expect(page.getByText(notice.contactPoints.content)).toBeVisible();
         });
+
+        test(`the legal notice names the company that publishes the site (${lang})`, async ({ page }) => {
+            await start(page, lang, (route) => route.fulfill({ status: 401, json: {} }));
+            await page.goto('/legal/mentions-legales');
+            const editor = translations[lang].legal.notice.editor;
+            await expect(page.getByText(editor.company, { exact: true })).toBeVisible();
+            await expect(page.getByText(/U58200PY2026PTC009828/)).toBeVisible();
+            await expect(page.getByText(editor.labels.address)).toBeVisible();
+            await expect(page.getByText(/Pondicherry 605011, India/)).toBeVisible();
+            await expect(page.getByText(/Audencia Pôle Entrepreneuriat/).first()).toBeVisible();
+        });
     }
 
     test('nothing claims more than the code does', () => {

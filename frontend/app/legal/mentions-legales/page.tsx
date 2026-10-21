@@ -83,7 +83,7 @@ export default function MentionsLegalesPage() {
                                 ))}
                             </div>
                             <p className="mt-8 text-sm text-zinc-500 leading-relaxed border-l-2 border-zinc-200 pl-4">
-                                {t('legal.notice.editor.note', undefined, 'Roomivo is a student-entrepreneur project developed under the SNEE (Statut National Étudiant-Entrepreneur), supported by PÉPITE Pays de la Loire (French Ministry of Higher Education) and the Audencia entrepreneurship hub. As a project still in incubation it is not yet registered as a company and has no SIRET number; this notice will be updated upon incorporation.')}
+                                {t('legal.notice.editor.note', undefined, 'Roomivo is run by its founders, student-entrepreneurs under the SNEE (Statut National Étudiant-Entrepreneur), incubated by Audencia Pôle Entrepreneuriat and PÉPITE Pays de la Loire (French Ministry of Higher Education).')}
                             </p>
                         </motion.section>
 
@@ -121,7 +121,7 @@ export default function MentionsLegalesPage() {
                         className="pt-12 border-t border-zinc-100 text-center"
                     >
                         <p className="text-xs font-black text-zinc-400 uppercase tracking-[0.3em]">
-                            Roomivo • Projet étudiant-entrepreneur (SNEE) — PÉPITE Pays de la Loire / Audencia
+                            Roomivo Technologies Private Limited — Audencia Pôle Entrepreneuriat / PÉPITE Pays de la Loire
                         </p>
                     </motion.div>
                 </motion.div>

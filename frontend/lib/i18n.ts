@@ -2862,7 +2862,7 @@ export const translations = {
                 sections: {
                     controller: {
                         title: "1. Who is responsible",
-                        content: "The controller of your personal data is Roomivo, a student-entrepreneur project that is not yet a registered company. The people responsible are named in the legal notice. For any question about your data, write to contact@roomivo.eu. Roomivo has not appointed a data protection officer.",
+                        content: "The controller of your personal data is Roomivo Technologies Private Limited, a company incorporated in India (CIN U58200PY2026PTC009828), whose details are in the legal notice. Its founders run the service from France. For any question about your data, write to contact@roomivo.eu. Roomivo has not appointed a data protection officer.",
                     },
                     data: {
                         title: "2. What we collect",
@@ -2903,18 +2903,18 @@ export const translations = {
                 subtitle: 'Administrative Compliance',
                 editor: {
                     title: 'Site Editor',
-                    company: 'Roomivo',
-                    form: 'Student-entrepreneur project — SNEE (National Student-Entrepreneur Status)',
-                    capital: 'Not yet incorporated — no SIRET (incubated via PÉPITE Pays de la Loire / Audencia)',
+                    company: 'Roomivo Technologies Private Limited',
+                    form: 'Private company limited by shares, incorporated in India (Companies Act 2013)',
+                    capital: 'CIN U58200PY2026PTC009828 (Registrar of Companies, India). No French SIRET.',
                     hq: 'Contact: contact@roomivo.eu',
-                    note: 'Roomivo is a student-entrepreneur project developed under the SNEE (Statut National Étudiant-Entrepreneur), supported by PÉPITE Pays de la Loire (French Ministry of Higher Education) and the Audencia entrepreneurship hub. As a project still in incubation it is not yet registered as a company and has no SIRET number; this notice will be updated upon incorporation.',
+                    note: 'Roomivo is run by its founders, student-entrepreneurs under the SNEE (Statut National Étudiant-Entrepreneur), incubated by Audencia Pôle Entrepreneuriat and PÉPITE Pays de la Loire (French Ministry of Higher Education).',
                     labels: {
                         company: 'Publisher',
                         form: 'Legal Status',
                         capital: 'Registration',
                         hq: 'Contact',
                         director: "Publication director",
-                        address: "Postal address",
+                        address: "Registered office",
                         phone: "Phone"
                     }
                 },
@@ -6219,7 +6219,7 @@ export const translations = {
                 sections: {
                     controller: {
                         title: "1. Responsable du traitement",
-                        content: "Le responsable du traitement de vos données personnelles est Roomivo, projet d'étudiant-entrepreneur qui n'est pas encore une société immatriculée. Les personnes responsables sont indiquées dans les mentions légales. Pour toute question sur vos données, écrivez à contact@roomivo.eu. Roomivo n'a pas désigné de délégué à la protection des données.",
+                        content: "Le responsable du traitement de vos données personnelles est Roomivo Technologies Private Limited, société de droit indien (CIN U58200PY2026PTC009828), dont les coordonnées figurent dans les mentions légales. Ses fondateurs exploitent le service depuis la France. Pour toute question sur vos données, écrivez à contact@roomivo.eu. Roomivo n'a pas désigné de délégué à la protection des données.",
                     },
                     data: {
                         title: "2. Ce que nous collectons",
@@ -6260,18 +6260,18 @@ export const translations = {
                 subtitle: 'Conformité Administrative',
                 editor: {
                     title: 'Éditeur du Site',
-                    company: 'Roomivo',
-                    form: 'Projet d\'étudiant-entrepreneur — Statut National Étudiant-Entrepreneur (SNEE)',
-                    capital: 'Non immatriculé — pas de SIRET (incubé via PÉPITE Pays de la Loire / Audencia)',
+                    company: 'Roomivo Technologies Private Limited',
+                    form: 'Société de droit indien (private company limited by shares, Companies Act 2013)',
+                    capital: 'CIN U58200PY2026PTC009828 (registre des sociétés, Inde). Pas de SIRET en France.',
                     hq: 'Contact : contact@roomivo.eu',
-                    note: 'Roomivo est un projet d\'étudiant-entrepreneur développé sous le Statut National Étudiant-Entrepreneur (SNEE), accompagné par PÉPITE Pays de la Loire (Ministère de l\'Enseignement supérieur et de la Recherche) et le Hub entrepreneurial d\'Audencia. En phase d\'incubation, le projet n\'est pas encore immatriculé et ne dispose pas de numéro SIRET ; ces mentions seront mises à jour lors de la création de la structure.',
+                    note: 'Roomivo est animé par ses fondateurs, étudiants-entrepreneurs (Statut National Étudiant-Entrepreneur), incubés par Audencia Pôle Entrepreneuriat et PÉPITE Pays de la Loire (Ministère de l\'Enseignement supérieur et de la Recherche).',
                     labels: {
                         company: 'Éditeur',
                         form: 'Statut Juridique',
                         capital: 'Immatriculation',
                         hq: 'Contact',
                         director: "Directeur de la publication",
-                        address: "Adresse postale",
+                        address: "Siège social",
                         phone: "Téléphone"
                     }
                 },

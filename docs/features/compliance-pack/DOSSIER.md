@@ -38,8 +38,14 @@ their Roomivo account (matched on email, case-insensitive). The report text is k
 
 ## Known gaps (not fixed here)
 
-- **Founders' details missing:** publication director, postal address and phone. Until
-  `LEGAL_ENTITY` is filled, the legal notice is incomplete.
+- **Publisher (decided 2026-10-21):** Roomivo Technologies Private Limited (India, CIN
+  U58200PY2026PTC009828) publishes the site and is the GDPR controller; its registered office is
+  on the notice. Still missing: the **publication director** (a director of the company) and a
+  **phone number**. Until both are set in `LEGAL_ENTITY`, the legal notice is incomplete.
+- **EU representative:** with an Indian controller, GDPR art. 27 and DSA art. 13 representatives
+  apply unless the founders' work from France makes France an establishment (council review §4,
+  confidence medium). The privacy notice names no representative; revisit when a lawyer can be
+  consulted.
 - **No scheduled clean-up runs in production:** `render.yaml` has no worker, so the 15-minute
   sweep of leftover identity images and the 30-day purge of rejected applications never run. The
   privacy notice says so in plain terms ("stays in storage until you delete your account or ask
