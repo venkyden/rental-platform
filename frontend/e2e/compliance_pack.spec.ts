@@ -196,6 +196,8 @@ test.describe('legal pages', () => {
             await expect(page.getByText(/U58200PY2026PTC009828/)).toBeVisible();
             await expect(page.getByText(editor.labels.address)).toBeVisible();
             await expect(page.getByText(/Pondicherry 605011, India/)).toBeVisible();
+            await expect(page.getByText(editor.labels.phone, { exact: true })).toBeVisible();
+            await expect(page.getByText('+33 7 66 13 58 04')).toBeVisible();
             await expect(page.getByText(/Audencia Pôle Entrepreneuriat/).first()).toBeVisible();
         });
     }

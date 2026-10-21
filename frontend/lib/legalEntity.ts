@@ -8,5 +8,5 @@ export const LEGAL_ENTITY: {
 } = {
     publicationDirector: null,
     postalAddress: 'Door No. 14, First Floor, 3rd Cross Street, Venkata Nagar, Pondicherry 605011, India',
-    phone: null,
+    phone: '+33 7 66 13 58 04',
 };
