@@ -322,12 +322,14 @@ class TestLandlordEntityEndpoint:
         assert user.kbis_verified is False
         assert user.deposit_binding_data["landlord_entity"]["gerant_match"] is False
 
-    def test_manager_sets_carte_g_only(self):
+    def test_manager_records_the_type_without_marking_a_carte_g(self):
+        # Nothing checks a carte G here, so choosing "manager" must not mark one verified.
         user = _verified_landlord()
+        user.carte_g_verified = False
         r = self._run(user, {"landlord_type": "manager"})
         assert r.status_code == 200
-        assert user.carte_g_verified is True
-        assert user.kbis_verified is False  # never set for manager
+        assert user.carte_g_verified is False
+        assert user.kbis_verified is False
 
 
 class TestSciBindingIntegration:

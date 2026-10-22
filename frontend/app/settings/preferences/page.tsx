@@ -307,9 +307,7 @@ export default function SettingsPreferencesPage() {
                                             <User className="w-3 h-3" /> {t('settings.preferences.identity')}
                                         </h3>
                                         <div className="grid gap-4 sm:grid-cols-2">
-                                            <PreferenceCard title={t('settings.preferences.nationality')} icon={Globe} value={preferences.nationality} onEdit={() => openEdit({ key: 'nationality', title: t('settings.preferences.nationality'), type: 'select', options: ['French', 'American', 'British', 'German', 'Italian', 'Spanish', 'Other'].map(n => ({ value: n.toLowerCase(), label: n })) })} />
                                             <PreferenceCard title={t('settings.preferences.languages')} icon={Globe} value={preferences.languages} onEdit={() => openEdit({ key: 'languages', title: t('settings.preferences.languages'), type: 'multiselect', options: [{ value: 'fr', label: '🇫🇷 French' }, { value: 'en', label: '🇬🇧 English' }, { value: 'es', label: '🇪🇸 Spanish' }, { value: 'de', label: '🇩🇪 German' }] })} />
-                                            <PreferenceCard title={t('settings.preferences.gender')} icon={User} value={preferences.gender} onEdit={() => openEdit({ key: 'gender', title: t('settings.preferences.gender'), type: 'select', options: [{ value: 'female', label: t('settings.preferences.options.female') }, { value: 'male', label: t('settings.preferences.options.male') }, { value: 'other', label: t('settings.preferences.options.other') }] })} />
                                         </div>
                                     </section>
 
@@ -402,8 +400,7 @@ export default function SettingsPreferencesPage() {
                                                             <Heart className="w-3 h-3" /> {t('settings.preferences.tenantCriteria', undefined, 'Target Tenant')}
                                                         </h3>
                                                         <div className="grid gap-4 sm:grid-cols-2">
-                                                            <PreferenceCard title={t('settings.preferences.tenantType')} icon={Heart} value={preferences.accepted_tenant_types} onEdit={() => openEdit({ key: 'accepted_tenant_types', title: t('settings.preferences.tenantType'), type: 'multiselect', options: [{ value: 'student', label: t('settings.preferences.options.student') }, { value: 'employee', label: t('settings.preferences.options.employee') }, { value: 'freelancer', label: t('settings.preferences.options.freelancer') }, { value: 'family', label: t('settings.preferences.options.family') }] })} />
-                                                            <PreferenceCard title={t('settings.preferences.nationality')} icon={Globe} value={preferences.nationality_preference} onEdit={() => openEdit({ key: 'nationality_preference', title: t('settings.preferences.nationality'), type: 'select', options: [{ value: 'no_preference', label: t('settings.preferences.options.noPreference') }, { value: 'french', label: t('settings.preferences.options.frenchPreferred') }, { value: 'international', label: t('settings.preferences.options.international') }] })} />
+                                                            <PreferenceCard title={t('settings.preferences.tenantType')} icon={Heart} value={preferences.accepted_tenant_types} onEdit={() => openEdit({ key: 'accepted_tenant_types', title: t('settings.preferences.tenantType'), type: 'multiselect', options: [{ value: 'student', label: t('settings.preferences.options.student') }, { value: 'employee', label: t('settings.preferences.options.employee') }, { value: 'freelancer', label: t('settings.preferences.options.freelancer') }] })} />
                                                         </div>
                                                     </section>
 
