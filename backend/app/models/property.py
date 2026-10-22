@@ -76,7 +76,7 @@ class Property(Base):
     )  # ['physical', 'visale', 'garantme', 'organisation']
     accepted_tenant_types = Column(
         JSONB
-    )  # free-form list; both UI entry points currently ship ['student', 'employee', 'freelancer', 'family']
+    )  # occupations only: student, employee, freelancer (see property_schemas.TenantType)
     guarantor_income_multiple = Column(DECIMAL(3, 1))  # e.g. 3.0 = 3x rent required
 
     # Availability

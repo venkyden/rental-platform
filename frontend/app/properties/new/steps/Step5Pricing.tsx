@@ -266,7 +266,7 @@ export default function Step5Pricing({ formData, updateFormData, t, showRentCont
                     {t('properties.edit.acceptedTenants', undefined, 'Accepted Tenant Types')}
                 </label>
                 <div className="flex flex-wrap gap-3">
-                    {['student', 'employee', 'freelancer', 'family'].map((tt) => (
+                    {['student', 'employee', 'freelancer'].map((tt) => (
                         <button
                             key={tt}
                             type="button"

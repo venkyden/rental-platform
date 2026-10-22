@@ -4,11 +4,16 @@ Pydantic schemas for property endpoints.
 
 from datetime import date, datetime
 from decimal import Decimal
-from typing import List, Optional
+from typing import List, Literal, Optional
 from uuid import UUID
 
 from pydantic import BaseModel, Field, field_validator, model_validator, computed_field
 
+
+
+# Occupations only. Family situation and nationality are protected grounds
+# (Code pénal 225-1, loi 89-462 art. 1) and may not be listed as criteria.
+TenantType = Literal["student", "employee", "freelancer"]
 
 class PropertyCreate(BaseModel):
     """Schema for creating a new property"""
@@ -62,9 +67,7 @@ class PropertyCreate(BaseModel):
     accepted_guarantor_types: Optional[List[str]] = (
         []
     )  # physical, visale, garantme, organisation
-    accepted_tenant_types: Optional[List[str]] = (
-        []
-    )  # free-form list; both UI entry points currently ship student, employee, freelancer, family
+    accepted_tenant_types: Optional[List[TenantType]] = []
     guarantor_income_multiple: Optional[Decimal] = Field(
         None, ge=Decimal("0"), le=Decimal("99.9")
     )  # e.g. 3.0 = tenant income must be >= 3x rent; bounded to the DECIMAL(3,1) column's range
@@ -148,7 +151,7 @@ class PropertyUpdate(BaseModel):
     caf_eligible: Optional[bool] = None
     guarantor_required: Optional[bool] = None
     accepted_guarantor_types: Optional[List[str]] = None
-    accepted_tenant_types: Optional[List[str]] = None
+    accepted_tenant_types: Optional[List[TenantType]] = None
     guarantor_income_multiple: Optional[Decimal] = Field(None, ge=Decimal("0"), le=Decimal("99.9"))
 
     # French Compliance

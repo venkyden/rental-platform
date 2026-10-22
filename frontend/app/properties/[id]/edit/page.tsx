@@ -95,7 +95,8 @@ const STANDARD_AMENITIES = [
 ];
 const ENERGY_RATINGS = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
 const GUARANTOR_TYPES = ['visale', 'garantme', 'physical', 'organisation'];
-const TENANT_TYPES = ['student', 'employee', 'freelancer', 'family'];
+// Occupations only: family situation is a protected ground (Code pénal 225-1).
+const TENANT_TYPES = ['student', 'employee', 'freelancer'];
 const UTILITIES = ['wifi', 'elec', 'gas', 'water'];
 const BEDDING_TYPES = ['Single', 'Double', 'Queen', 'King', 'Bunk', 'Sofa Bed'];
 

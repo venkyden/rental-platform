@@ -640,43 +640,6 @@ export const translations = {
             },
             selected: "selected",
             noResults: "No results found for \"{{term}}\"",
-            nationalities: {
-                french: "French",
-                american: "American",
-                british: "British",
-                german: "German",
-                italian: "Italian",
-                spanish: "Spanish",
-                portuguese: "Portuguese",
-                chinese: "Chinese",
-                indian: "Indian",
-                brazilian: "Brazilian",
-                mexican: "Mexican",
-                canadian: "Canadian",
-                australian: "Australian",
-                japanese: "Japanese",
-                korean: "Korean",
-                dutch: "Dutch",
-                belgian: "Belgian",
-                swiss: "Swiss",
-                swedish: "Swedish",
-                norwegian: "Norwegian",
-                danish: "Danish",
-                finnish: "Finnish",
-                polish: "Polish",
-                romanian: "Romanian",
-                turkish: "Turkish",
-                moroccan: "Moroccan",
-                tunisian: "Tunisian",
-                algerian: "Algerian",
-                senegalese: "Senegalese",
-                cameroonian: "Cameroonian",
-                ivorian: "Ivorian",
-                lebanese: "Lebanese",
-                egyptian: "Egyptian",
-                nigerian: "Nigerian",
-                other: "Other"
-            },
             components: {
                 addressAutocomplete: {
                     useTyped: "Use \"{{query}}\" as typed",
@@ -879,7 +842,6 @@ export const translations = {
                 manualTitle: "Manual University Entry",
                 help: "This helps us find properties near your campus",
                 other: "Other / My school isn't listed",
-                nationalityNote: "This field is collected strictly for demographic surveys. It is never used in matching or shared with landlords."
             },
             radius: {
                 centeredOn: "Centered on {{city}} — ",
@@ -900,12 +862,7 @@ export const translations = {
                             other: "❓ Other"
                         }
                     },
-                    nationality: { question: "Where are you from?" },
                     languages: { question: "What languages do you speak?" },
-                    gender: {
-                        question: "Gender",
-                        options: { female: "Female", male: "Male", other: "Other / Prefer not to say" }
-                    },
                     contract_type: {
                         question: "Employment status?",
                         options: { cdi: "CDI (Permanent)", cdd: "CDD (Fixed-term)", internship: "Internship", self_employed: "Self-employed", student: "Student", other: "Other" }
@@ -3184,9 +3141,7 @@ export const translations = {
                 amenities: "Amenities",
                 tenant: "Tenant",
                 requirements: "Requirements",
-                nationality: "Nationality",
                 languages: "Languages",
-                gender: "Gender",
                 maxBudget: "Max Budget",
                 minSurface: "Min Surface",
                 furnished: "Furnished",
@@ -3606,43 +3561,6 @@ export const translations = {
             },
             selected: "sélectionné(s)",
             noResults: "Aucun résultat trouvé pour \"{{term}}\"",
-            nationalities: {
-                french: "Français",
-                american: "Américain",
-                british: "Britannique",
-                german: "Allemand",
-                italian: "Italien",
-                spanish: "Espagnol",
-                portuguese: "Portugais",
-                chinese: "Chinois",
-                indian: "Indien",
-                brazilian: "Brésilien",
-                mexican: "Mexicain",
-                canadian: "Canadien",
-                australian: "Australien",
-                japanese: "Japonais",
-                korean: "Coréen",
-                dutch: "Néerlandais",
-                belgian: "Belge",
-                swiss: "Suisse",
-                swedish: "Suédois",
-                norwegian: "Norvégien",
-                danish: "Danois",
-                finnish: "Finlandais",
-                polish: "Polonais",
-                romanian: "Roumain",
-                turkish: "Turc",
-                moroccan: "Marocain",
-                tunisian: "Tunisien",
-                algerian: "Algérien",
-                senegalese: "Sénégalais",
-                cameroonian: "Camerounais",
-                ivorian: "Ivoirien",
-                lebanese: "Libanais",
-                egyptian: "Égyptien",
-                nigerian: "Nigérian",
-                other: "Autre"
-            },
             components: {
                 addressAutocomplete: {
                     useTyped: "Utiliser \"{{query}}\" tel quel",
@@ -4209,7 +4127,6 @@ export const translations = {
                 manualTitle: "Saisie manuelle de l'université",
                 help: "Cela nous aide à trouver des logements près de votre campus",
                 other: "Autre / Mon école n'est pas listée",
-                nationalityNote: "Ce champ est collecté strictement pour des enquêtes démographiques. Il n'est jamais utilisé pour le matching ou partagé avec les propriétaires."
             },
             radius: {
                 centeredOn: "Centré sur {{city}} — ",
@@ -4230,12 +4147,7 @@ export const translations = {
                             other: "❓ Autres"
                         }
                     },
-                    nationality: { question: "D'où venez-vous ?" },
                     languages: { question: "Quelles langues parlez-vous ?" },
-                    gender: {
-                        question: "Genre",
-                        options: { female: "Femme", male: "Homme", other: "Autre / Préfère ne pas dire" }
-                    },
                     contract_type: {
                         question: "Statut professionnel ?",
                         options: { cdi: "CDI", cdd: "CDD", internship: "Stage / Alternance", self_employed: "Indépendant", student: "Étudiant", other: "Autre" }
@@ -6541,9 +6453,7 @@ export const translations = {
                 amenities: "Équipements",
                 tenant: "Locataire",
                 requirements: "Exigences",
-                nationality: "Nationalité",
                 languages: "Langues",
-                gender: "Genre",
                 maxBudget: "Budget Max",
                 minSurface: "Surface Min",
                 furnished: "Meublé",
