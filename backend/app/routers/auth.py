@@ -116,6 +116,17 @@ _NAME_LOCKED = (
 )
 
 
+def _name_words(name: str | None) -> list[str]:
+    return (name or "").replace("-", " ").casefold().split()
+
+
+def _is_part_of_name(part: str, full_name: str | None) -> bool:
+    """True if `part` is a run of consecutive words of `full_name` ("Marie Claire",
+    "Jean-Pierre" for "Jean Pierre Dupont")."""
+    words, full = _name_words(part), _name_words(full_name)
+    return bool(words) and any(full[i:i + len(words)] == words for i in range(len(full) - len(words) + 1))
+
+
 def _name_is_bound(user: User) -> bool:
     """True once any check has compared a document with the account's name."""
     return any((
@@ -462,7 +473,15 @@ async def update_me(
 ):
     """Update current user profile (name, bio)"""
     bound = _name_is_bound(current_user)
-    if user_update.full_name is not None:
+    if bound and not (current_user.full_name or "").strip() and (user_update.full_name or "").strip():
+        # Verified before a name was required (a Google account with no name):
+        # take the name, and redo the identity check against it.
+        current_user.identity_verified = False
+        current_user.identity_status = "unverified"
+        current_user.identity_data = None
+        current_user.full_name = user_update.full_name.strip()
+        bound = _name_is_bound(current_user)
+    elif user_update.full_name is not None:
         new_name = user_update.full_name.strip()
         if bound and _same_name(new_name, current_user.full_name):
             new_name = current_user.full_name
@@ -475,8 +494,9 @@ async def update_me(
     if user_update.first_name is not None:
         new_first = user_update.first_name.strip() or None
         # Listings show the first name next to the verified badge: it must be
-        # one of the checked names.
-        if bound and new_first and new_first.casefold() not in (current_user.full_name or "").casefold().split():
+        # part of the checked name (an unchanged value always saves).
+        if (bound and new_first and new_first != current_user.first_name
+                and not _is_part_of_name(new_first, current_user.full_name)):
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=_NAME_LOCKED)
         current_user.first_name = new_first
     if user_update.bio is not None:
@@ -585,7 +605,13 @@ async def change_password(
         domain=settings.COOKIE_DOMAIN if settings.ENVIRONMENT == "production" else None,
     )
     audit_logger.info(f"PASSWORD_CHANGE email={current_user.email} sessions_revoked=true")
-    return {"message": "Password changed successfully"}
+    # The version bump ended this session's access token too; hand back a new one
+    # so the client does not depend on the cross-site refresh cookie.
+    access_token = create_access_token(
+        data={"sub": current_user.email, "user_id": str(current_user.id), "rtv": current_user.refresh_token_version},
+        expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
+    )
+    return {"message": "Password changed successfully", "access_token": access_token, "token_type": "bearer"}
 
 @router.post("/request-email-change")
 @limiter.limit("5/minute")  # password check is a brute-force oracle for a stolen session
@@ -791,7 +817,10 @@ async def google_auth(
 
             if role_str and role_enum.value == "property_manager" and role_enum.value not in (user.available_roles or []):
                 # Agency tooling is frozen: like switch-role, never unlock it here.
-                role_str = None
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Agency accounts are not available. Sign in without choosing a role.",
+                )
             if role_str:
                 current_roles = list(user.available_roles or ["tenant"])
                 if role_enum.value not in current_roles:

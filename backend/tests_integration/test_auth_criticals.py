@@ -435,7 +435,7 @@ async def test_google_does_not_unlock_the_frozen_agency_role(client, sessionmake
     google(tenant.email, verified=True)
 
     r = await client.post("/auth/google", json={"credential": "x", "role": "property_manager"})
-    assert r.status_code == 200, r.text
+    assert r.status_code == 403, r.text
     row = await _reload(sessionmaker_, tenant.id)
     assert row.role == "tenant" and row.available_roles == ["tenant"]
 
@@ -461,3 +461,76 @@ async def test_switch_role_saves_the_unlocked_role(client, sessionmaker_):
     r = await client.post("/auth/switch-role", json={"role": "landlord"}, headers=auth(tenant))
     assert r.status_code == 200, r.text
     assert sorted((await _reload(sessionmaker_, tenant.id)).available_roles) == ["landlord", "tenant"]
+
+
+# ── regressions found by the review council ─────────────────────────────────
+
+@pytest.mark.asyncio
+async def test_an_unchanged_first_name_always_saves(client, sessionmaker_):
+    """The profile page sends the stored first_name with every bio save."""
+    user = await make_user(sessionmaker_)
+    await _set(sessionmaker_, user.id, full_name="Jean Dupont", first_name="JD", identity_verified=True)
+
+    r = await client.patch("/auth/me", json={"first_name": "JD", "bio": "Student in Nantes, quiet and tidy, looking for a room near campus."},
+                           headers=auth(user))
+    assert r.status_code == 200, r.text
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("full_name,first_name", [
+    ("Marie Claire Dupont", "Marie Claire"),
+    ("Jean Pierre Martin", "Jean-Pierre"),
+    ("Jean-Pierre Martin", "jean pierre"),
+])
+async def test_first_name_may_be_several_checked_words(client, sessionmaker_, full_name, first_name):
+    user = await make_user(sessionmaker_)
+    await _set(sessionmaker_, user.id, full_name=full_name, identity_verified=True)
+    r = await client.patch("/auth/me", json={"first_name": first_name}, headers=auth(user))
+    assert r.status_code == 200, r.text
+
+
+@pytest.mark.asyncio
+async def test_first_name_may_not_skip_words(client, sessionmaker_):
+    user = await make_user(sessionmaker_)
+    await _set(sessionmaker_, user.id, full_name="Marie Claire Dupont", identity_verified=True)
+    r = await client.patch("/auth/me", json={"first_name": "Marie Dupont"}, headers=auth(user))
+    assert r.status_code == 409, r.text
+
+
+@pytest.mark.asyncio
+async def test_a_verified_account_without_a_name_can_set_one_and_redo_the_check(client, sessionmaker_):
+    """Verified before a name was required (a Google account with no name)."""
+    user = await make_user(sessionmaker_)
+    await _set(sessionmaker_, user.id, full_name=None, identity_verified=True, identity_status="verified",
+               identity_data={"identity_assurance": "MEDIUM"})
+
+    r = await client.patch("/auth/me", json={"full_name": "Jean Dupont"}, headers=auth(user))
+    assert r.status_code == 200, r.text
+    row = await _reload(sessionmaker_, user.id)
+    assert row.full_name == "Jean Dupont"
+    assert row.identity_verified is False and row.identity_status == "unverified" and row.identity_data is None
+
+
+@pytest.mark.asyncio
+async def test_identity_entry_points_ask_for_a_name_first(client, sessionmaker_):
+    user = await make_user(sessionmaker_)
+    await _set(sessionmaker_, user.id, full_name=None)
+
+    r = await client.post("/verification/identity/session", headers=auth(user))
+    assert r.status_code == 422 and "full name" in r.json()["detail"], r.text
+    r = await client.post("/verification/identity/upload",
+                          files={"file": ("id.jpg", b"\xff\xd8\xff" + b"0" * 100, "image/jpeg")}, headers=auth(user))
+    assert r.status_code == 422 and "full name" in r.json()["detail"], r.text
+
+
+@pytest.mark.asyncio
+async def test_changing_the_password_hands_back_a_working_session(client, sessionmaker_):
+    user = await make_user(sessionmaker_)
+    session = await _login(client, user)
+
+    r = await client.post("/auth/change-password", json={"old_password": "Passw0rd!23", "new_password": "Newpass!2345"},
+                          headers=session)
+    assert r.status_code == 200, r.text
+    assert (await client.get("/auth/me", headers=session)).status_code == 401
+    fresh = {"Authorization": f"Bearer {r.json()['access_token']}"}
+    assert (await client.get("/auth/me", headers=fresh)).status_code == 200
