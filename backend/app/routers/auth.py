@@ -24,6 +24,7 @@ from app.services.email import email_service
 from app.core.cache import cache
 
 # Set up audit logger
+logger = logging.getLogger(__name__)
 audit_logger = logging.getLogger("audit")
 audit_logger.setLevel(logging.INFO)
 if not audit_logger.handlers:
@@ -91,11 +92,37 @@ async def _user_for_token(db: AsyncSession, payload: dict):
         return None
     if user is None or (user.email or "").lower() != str(email).lower():
         return None
+    # Ending sessions (logout, password reset, a takeover blocked at Google
+    # sign-in) bumps the version; a token issued before then is dead.
+    if "rtv" in payload and payload["rtv"] != user.refresh_token_version:
+        return None
     return user
+
+
+async def _user_for_link(db: AsyncSession, payload: dict):
+    """The account a single-use emailed link belongs to; it must carry the version."""
+    if "rtv" not in payload:
+        return None
+    return await _user_for_token(db, payload)
 
 
 def _same_name(a: str | None, b: str | None) -> bool:
     return " ".join((a or "").split()).casefold() == " ".join((b or "").split()).casefold()
+
+
+_NAME_LOCKED = (
+    "Your name was checked against your documents and cannot be changed here. "
+    "Write to contact@roomivo.eu to correct it."
+)
+
+
+def _name_is_bound(user: User) -> bool:
+    """True once any check has compared a document with the account's name."""
+    return any((
+        user.identity_verified, user.income_verified, user.employment_verified,
+        user.ownership_verified, user.kbis_verified,
+        user.guarantor_status == "verified", bool(user.deposit_binding_data),
+    ))
 
 
 async def get_current_user(
@@ -147,7 +174,8 @@ async def get_current_user_optional(
             return None
         return user
     except Exception:
-        # Absolutely never raise 401 here
+        # Never raise 401 here, but say why the caller is treated as anonymous.
+        logger.warning("optional authentication failed", exc_info=True)
         return None
 
 
@@ -212,7 +240,7 @@ async def register(
 
     # Send verification email
     verification_token = create_access_token(
-        data={"sub": new_user.email, "type": "email_verification"},
+        data={"sub": new_user.email, "user_id": str(new_user.id), "type": "email_verification"},
         expires_delta=timedelta(hours=24),
     )
     background_tasks.add_task(
@@ -276,7 +304,7 @@ async def login(
     # Create access token
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": user.email, "user_id": str(user.id)},
+        data={"sub": user.email, "user_id": str(user.id), "rtv": user.refresh_token_version},
         expires_delta=access_token_expires,
     )
 
@@ -362,7 +390,7 @@ async def refresh_token(
     # Issue new access token
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": user.email, "user_id": str(user.id)},
+        data={"sub": user.email, "user_id": str(user.id), "rtv": user.refresh_token_version},
         expires_delta=access_token_expires,
     )
     
@@ -433,21 +461,24 @@ async def update_me(
     current_user: User = Depends(get_current_user)
 ):
     """Update current user profile (name, bio)"""
+    bound = _name_is_bound(current_user)
     if user_update.full_name is not None:
         new_name = user_update.full_name.strip()
-        if current_user.identity_verified and _same_name(new_name, current_user.full_name):
+        if bound and _same_name(new_name, current_user.full_name):
             new_name = current_user.full_name
-        elif current_user.identity_verified:
-            # The identity check matched the document against this name, and
-            # credentials sign it; a new name would carry the old verification.
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="Your name was checked against your identity document and cannot be changed here. "
-                       "Write to contact@roomivo.eu to correct it.",
-            )
+        elif bound:
+            # Checks were made against this name (identity document, tax notice,
+            # guarantor certificate, deposit payee, SCI) and credentials sign
+            # them; a new name would carry those results over.
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=_NAME_LOCKED)
         current_user.full_name = new_name
     if user_update.first_name is not None:
-        current_user.first_name = user_update.first_name.strip() or None
+        new_first = user_update.first_name.strip() or None
+        # Listings show the first name next to the verified badge: it must be
+        # one of the checked names.
+        if bound and new_first and new_first.casefold() not in (current_user.full_name or "").casefold().split():
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=_NAME_LOCKED)
+        current_user.first_name = new_first
     if user_update.bio is not None:
         current_user.bio = user_update.bio or None
         
@@ -584,7 +615,8 @@ async def request_email_change(
 
     # Generate token with new email embedded
     change_token = create_access_token(
-        data={"sub": current_user.email, "type": "email_change", "new_email": payload.new_email},
+        data={"sub": current_user.email, "user_id": str(current_user.id), "rtv": current_user.refresh_token_version,
+              "type": "email_change", "new_email": payload.new_email},
         expires_delta=timedelta(hours=1),
     )
 
@@ -612,17 +644,14 @@ async def confirm_email_change(
             detail="Invalid or expired token",
         )
 
-    old_email = payload.get("sub")
     new_email = payload.get("new_email")
-    
+
     if not new_email:
          raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Token missing new email data")
 
-    result = await db.execute(select(User).where(User.email == old_email))
-    user = result.scalar_one_or_none()
-
+    user = await _user_for_link(db, payload)
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired token")
 
     # Ensure another user hasn't claimed it in the meantime
     check_result = await db.execute(select(User).where(User.email == new_email))
@@ -639,11 +668,26 @@ async def confirm_email_change(
     return {"message": "Email address updated successfully"}
 
 
+async def _send_google_link_notice(to_email: str, password_removed: bool) -> None:
+    """Tell the owner Google was linked; whoever set a password may not be them."""
+    if password_removed:
+        text = ("Google sign-in is now linked to your Roomivo account. The account's password was removed, "
+                "because the address had never been confirmed: sign in with Google, or set a new password "
+                "with \"Forgot password\".\n\nIf you did not create a Roomivo password, nothing else is needed.")
+    else:
+        text = ("Google sign-in is now linked to your Roomivo account. If you never set a Roomivo password "
+                "yourself, reset it now with \"Forgot password\": someone else may know it.")
+    await email_service.send_email(
+        to_email, "Google sign-in linked to your Roomivo account", f"<p>{text.replace(chr(10)+chr(10), '</p><p>')}</p>", text
+    )
+
+
 @router.post("/google", response_model=Token)
 async def google_auth(
     request: Request,
     response: Response,
     auth_data: GoogleAuthRequest,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db)
 ):
     """Authenticate with Google. Verifies Google ID token, finds or creates user."""
@@ -720,28 +764,40 @@ async def google_auth(
                 # Google has not confirmed this person owns the address.
                 raise HTTPException(
                     status_code=status.HTTP_409_CONFLICT,
-                    detail="An account already uses this email. Sign in with your password.",
+                    detail="An account already uses this email. Sign in with your password, or reset it.",
+                )
+            if user and user.google_id and user.google_id != google_id:
+                # The account is already linked to a different Google account.
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="This account is linked to another Google account. Sign in with that one.",
                 )
 
         if user:
             if not user.google_id:
                 user.google_id = google_id
-                audit_logger.info(f"GOOGLE_LINK email={email}")
-                if not user.email_verified and user.hashed_password:
-                    # Nobody proved the password's owner had this mailbox; Google
-                    # just proved the mailbox owner is here. End the other access.
-                    user.hashed_password = None
-                    user.refresh_token_version = (user.refresh_token_version or 1) + 1
-                    audit_logger.info(f"GOOGLE_LINK_PASSWORD_REMOVED email={email}")
+                audit_logger.info(f"GOOGLE_LINK user_id={user.id}")
+                if user.hashed_password:
+                    password_removed = not user.email_verified
+                    if password_removed:
+                        # Nobody proved the password's owner had this mailbox; Google
+                        # just proved the mailbox owner is here. End the other access.
+                        user.hashed_password = None
+                        user.refresh_token_version = (user.refresh_token_version or 1) + 1
+                        audit_logger.info(f"GOOGLE_LINK_PASSWORD_REMOVED user_id={user.id}")
+                    background_tasks.add_task(_send_google_link_notice, email, password_removed)
             if email_verified:
                 user.email_verified = True
 
+            if role_str and role_enum.value == "property_manager" and role_enum.value not in (user.available_roles or []):
+                # Agency tooling is frozen: like switch-role, never unlock it here.
+                role_str = None
             if role_str:
                 current_roles = list(user.available_roles or ["tenant"])
                 if role_enum.value not in current_roles:
                     current_roles.append(role_enum.value)
                     user.available_roles = current_roles
-                    audit_logger.info(f"ROLE_UNLOCKED email={email} new_role={role_enum.value}")
+                    audit_logger.info(f"ROLE_UNLOCKED user_id={user.id} new_role={role_enum.value}")
                 user.role = role_enum
         else:
             # Create new user
@@ -797,7 +853,7 @@ async def google_auth(
         # Create access token
         access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = create_access_token(
-            data={"sub": user.email, "user_id": str(user.id)},
+            data={"sub": user.email, "user_id": str(user.id), "rtv": user.refresh_token_version},
             expires_delta=access_token_expires,
         )
 
@@ -915,6 +971,7 @@ async def forgot_password(
         reset_token = create_access_token(
             data={
                 "sub": user.email,
+                "user_id": str(user.id),
                 "type": "password_reset",
                 "rtv": user.refresh_token_version,
             },
@@ -948,20 +1005,11 @@ async def reset_password(
             detail="Invalid or expired reset token",
         )
 
-    email = token_payload.get("sub")
-    result = await db.execute(select(User).where(User.email == email))
-    user = result.scalar_one_or_none()
-
+    # Single-use and account-bound: the link names the account and the session
+    # version current when it was issued. Once used (or once any other
+    # session-revoking action runs), the version no longer matches.
+    user = await _user_for_link(db, token_payload)
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-        )
-
-    # Single-use enforcement: the link is bound to the session version that was
-    # current when it was issued. Once used (or once any other session-revoking
-    # action runs), the version no longer matches and the link is dead.
-    token_rtv = token_payload.get("rtv")
-    if token_rtv is not None and token_rtv != user.refresh_token_version:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="This reset link has already been used or is no longer valid",
@@ -987,13 +1035,10 @@ async def verify_email(request: Request, token: str, db: AsyncSession = Depends(
             detail="Invalid or expired verification token",
         )
 
-    email = payload.get("sub")
-    result = await db.execute(select(User).where(User.email == email))
-    user = result.scalar_one_or_none()
-
+    user = await _user_for_token(db, payload)
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired verification token"
         )
 
     if user.email_verified:
@@ -1022,7 +1067,7 @@ async def resend_verification(
 
     # Create new verification token
     verification_token = create_access_token(
-        data={"sub": current_user.email, "type": "email_verification"},
+        data={"sub": current_user.email, "user_id": str(current_user.id), "type": "email_verification"},
         expires_delta=timedelta(hours=24),
     )
 
@@ -1082,7 +1127,8 @@ async def switch_role(
     from app.core.segment_routing import get_redirect_path, get_segment_config
 
     target_role_str = request.role
-    current_roles = current_user.available_roles or []
+    # A copy: a JSON column only saves when it is given a new object.
+    current_roles = list(current_user.available_roles or [])
 
     # Validate the role exists and is unlocked
     try:
@@ -1115,7 +1161,7 @@ async def switch_role(
     # Generate a fresh JWT token
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": current_user.email, "user_id": str(current_user.id)},
+        data={"sub": current_user.email, "user_id": str(current_user.id), "rtv": current_user.refresh_token_version},
         expires_delta=access_token_expires,
     )
 

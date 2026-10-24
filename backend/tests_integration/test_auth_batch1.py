@@ -95,9 +95,10 @@ async def test_password_reset_is_single_use(client, session_factory):
             select(User).where(User.email == "single@example.com")
         )).scalar_one()
         rtv = user.refresh_token_version
+        user_id = str(user.id)
 
     reset_token = create_access_token(
-        data={"sub": "single@example.com", "type": "password_reset", "rtv": rtv},
+        data={"sub": "single@example.com", "user_id": user_id, "type": "password_reset", "rtv": rtv},
         expires_delta=timedelta(hours=1),
     )
 

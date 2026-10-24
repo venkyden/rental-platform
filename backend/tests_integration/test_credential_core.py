@@ -22,10 +22,6 @@ from tests_integration.conftest import make_user, auth
 
 # ── helpers ──────────────────────────────────────────────────────────────────
 
-def _token(user) -> str:
-    return auth(user)["Authorization"].split(" ")[1]
-
-
 VALID_FR_CLAIMS_HIGH = {
     "identity_verified": True,
     "identity_assurance": "HIGH",
@@ -88,14 +84,21 @@ async def test_there_is_no_route_that_signs_caller_supplied_claims(client):
 
 @pytest.mark.asyncio
 async def test_issue_mine_ignores_claims_in_the_request(client):
-    """An unverified user cannot talk issue-mine into a HIGH identity claim."""
+    """A MEDIUM-verified user cannot talk issue-mine into a HIGH identity claim,
+    another name or a longer life."""
+    from app.models.user import User
     tenant = await make_user(client._sessionmaker, role="tenant")
+    async with client._sessionmaker() as s:
+        u = await s.get(User, tenant.id)
+        u.identity_verified = True
+        u.identity_data = {"identity_assurance": "MEDIUM", "identity_source": "ocr_liveness"}
+        await s.commit()
     r = await client.post("/credentials/issue-mine", json={
         "claims": VALID_FR_CLAIMS_HIGH, "subject_display_name": "Someone Else", "ttl_days": 36500,
     }, headers=auth(tenant))
     assert r.status_code == 201, r.text
     body = r.json()
-    assert body["claims"].get("identity_assurance") != "HIGH"
+    assert body["claims"]["identity_assurance"] == "MEDIUM"
     assert body["subject_display_name"] == tenant.full_name
     issued = datetime.fromisoformat(body["issued_at"].rstrip("Z"))
     expires = datetime.fromisoformat(body["expires_at"].rstrip("Z"))

@@ -2218,6 +2218,13 @@ async def upload_intl_identity_document(
     from difflib import SequenceMatcher
     from app.services.mrz import extract_mrz
 
+    if not (current_user.full_name or "").strip():
+        # The name is compared with the passport and frozen once verified.
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Add your full name in your account settings before checking your identity.",
+        )
+
     allowed = {"image/jpeg", "image/png", "image/jpg", "application/pdf", "image/heic", "image/heif"}
     if file.content_type not in allowed:
         raise HTTPException(status_code=400, detail=f"Invalid file type: {file.content_type}")

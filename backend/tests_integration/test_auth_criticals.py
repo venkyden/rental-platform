@@ -221,3 +221,243 @@ async def test_google_sign_in_with_a_role_still_unlocks_it(client, sessionmaker_
     row = await _reload(sessionmaker_, tenant.id)
     assert row.role == "landlord"
     assert sorted(row.available_roles) == ["landlord", "tenant"]
+
+
+# ── emailed links name their account ────────────────────────────────────────
+
+@pytest.fixture
+def mailbox(monkeypatch):
+    """Tokens and notices the auth routes email, by kind."""
+    from app.routers import auth as auth_router
+
+    box: dict[str, list] = {"email_change": [], "reset": [], "notice": []}
+
+    async def _change(to_email, token, full_name):
+        box["email_change"].append(token)
+
+    async def _reset(to_email, token, full_name):
+        box["reset"].append(token)
+
+    async def _send(to_email, subject, html_content, text_content=None):
+        box["notice"].append((to_email, text_content or html_content))
+        return True
+
+    monkeypatch.setattr(auth_router.email_service, "send_email_change_verification", _change)
+    monkeypatch.setattr(auth_router.email_service, "send_password_reset_email", _reset)
+    monkeypatch.setattr(auth_router.email_service, "send_email", _send)
+    return box
+
+
+async def _login(client, user) -> dict:
+    r = await client.post("/auth/login", data={"username": user.email, "password": "Passw0rd!23"})
+    assert r.status_code == 200, r.text
+    return {"Authorization": f"Bearer {r.json()['access_token']}"}
+
+
+@pytest.mark.asyncio
+async def test_email_change_link_dies_when_google_proves_the_real_owner(client, sessionmaker_, google, mailbox):
+    """Someone pre-registered the address and queued a move to their own address."""
+    squatter = await make_user(sessionmaker_)
+    await _set(sessionmaker_, squatter.id, email_verified=False)
+    r = await client.post("/auth/request-email-change", json={"new_email": f"evil_{uuid.uuid4().hex[:6]}@test.com",
+                                                              "password": "Passw0rd!23"}, headers=await _login(client, squatter))
+    assert r.status_code == 200, r.text
+
+    google(squatter.email, verified=True)
+    assert (await client.post("/auth/google", json={"credential": "x"})).status_code == 200
+
+    r = await client.post("/auth/confirm-email-change", json={"token": mailbox["email_change"][0]})
+    assert r.status_code == 400, r.text
+    assert (await _reload(sessionmaker_, squatter.id)).email == squatter.email
+
+
+@pytest.mark.asyncio
+async def test_email_change_still_works(client, sessionmaker_, mailbox):
+    user = await make_user(sessionmaker_)
+    new_email = f"moved_{uuid.uuid4().hex[:6]}@test.com"
+    r = await client.post("/auth/request-email-change", json={"new_email": new_email, "password": "Passw0rd!23"},
+                          headers=await _login(client, user))
+    assert r.status_code == 200, r.text
+
+    r = await client.post("/auth/confirm-email-change", json={"token": mailbox["email_change"][0]})
+    assert r.status_code == 200, r.text
+    assert (await _reload(sessionmaker_, user.id)).email == new_email
+
+
+@pytest.mark.asyncio
+async def test_reset_link_does_not_reach_a_new_account_with_the_same_email(client, sessionmaker_, mailbox):
+    email = f"reused_{uuid.uuid4().hex[:8]}@test.com"
+    first = await make_user(sessionmaker_, email=email)
+    assert (await client.post("/auth/forgot-password", json={"email": email})).status_code == 200
+    token = mailbox["reset"][0]
+
+    await _set(sessionmaker_, first.id, email=f"deleted_{first.id}@anonymised.roomivo.internal", is_active=False)
+    second = await make_user(sessionmaker_, email=email)
+
+    r = await client.post("/auth/reset-password", json={"token": token, "new_password": "Takeover!234"})
+    assert r.status_code == 400, r.text
+    r = await client.post("/auth/login", data={"username": email, "password": "Passw0rd!23"})
+    assert r.status_code == 200, "the new account's password must be unchanged"
+    assert (await _reload(sessionmaker_, second.id)).refresh_token_version == 1
+
+
+@pytest.mark.asyncio
+async def test_reset_link_still_works_once(client, sessionmaker_, mailbox):
+    user = await make_user(sessionmaker_)
+    await client.post("/auth/forgot-password", json={"email": user.email})
+    token = mailbox["reset"][0]
+
+    assert (await client.post("/auth/reset-password", json={"token": token, "new_password": "Brandnew!234"})).status_code == 200
+    assert (await client.post("/auth/reset-password", json={"token": token, "new_password": "Again!23456"})).status_code == 400
+
+
+# ── a takeover blocked at Google ends every session at once ─────────────────
+
+@pytest.mark.asyncio
+async def test_squatters_access_token_dies_when_google_proves_the_real_owner(client, sessionmaker_, google, mailbox):
+    squatter = await make_user(sessionmaker_)
+    await _set(sessionmaker_, squatter.id, email_verified=False)
+    squatter_session = await _login(client, squatter)
+
+    google(squatter.email, verified=True)
+    assert (await client.post("/auth/google", json={"credential": "x"})).status_code == 200
+
+    assert (await client.get("/auth/me", headers=squatter_session)).status_code == 401
+    assert mailbox["notice"] and mailbox["notice"][0][0] == squatter.email
+    assert "password was removed" in mailbox["notice"][0][1]
+
+
+@pytest.mark.asyncio
+async def test_linking_google_to_a_password_account_tells_the_owner(client, sessionmaker_, google, mailbox):
+    owner = await make_user(sessionmaker_)
+    google(owner.email, verified=True)
+    assert (await client.post("/auth/google", json={"credential": "x"})).status_code == 200
+    assert [to for to, _ in mailbox["notice"]] == [owner.email]
+
+
+@pytest.mark.asyncio
+async def test_logout_with_a_stale_token_does_not_touch_the_new_account(client, sessionmaker_):
+    email = f"reused_{uuid.uuid4().hex[:8]}@test.com"
+    first = await make_user(sessionmaker_, email=email)
+    old_token = auth(first)
+    await _set(sessionmaker_, first.id, email=f"deleted_{first.id}@anonymised.roomivo.internal", is_active=False)
+    second = await make_user(sessionmaker_, email=email)
+
+    r = await client.post("/auth/logout", headers=old_token)
+    assert r.status_code == 200, r.text
+    assert (await _reload(sessionmaker_, second.id)).refresh_token_version == 1
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("user_id", ["not-a-uuid", 123, ["x"], {"a": 1}])
+async def test_malformed_account_id_is_refused_not_an_error(client, sessionmaker_, user_id):
+    user = await make_user(sessionmaker_)
+    token = create_access_token({"sub": user.email, "user_id": user_id})
+    assert (await client.get("/auth/me", headers={"Authorization": f"Bearer {token}"})).status_code == 401
+    refresh = create_refresh_token({"sub": user.email, "user_id": user_id, "version": 1})
+    assert (await client.post("/auth/refresh", cookies={"refresh_token": refresh})).status_code == 401
+
+
+# ── a checked name stays the checked name ───────────────────────────────────
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("bound", [
+    {"income_verified": True},
+    {"guarantor_status": "verified"},
+    {"kbis_verified": True},
+    {"deposit_binding_data": {"binding": {"payee_name_match": "MATCH"}}},
+])
+async def test_name_stays_frozen_while_any_check_holds(client, sessionmaker_, bound):
+    """Re-uploading an identity document clears identity_verified; the other checks remain."""
+    user = await make_user(sessionmaker_)
+    await _set(sessionmaker_, user.id, full_name="Jean Dupont", identity_verified=False, **bound)
+
+    r = await client.patch("/auth/me", json={"full_name": "Someone Else"}, headers=auth(user))
+    assert r.status_code == 409, r.text
+
+
+@pytest.mark.asyncio
+async def test_verified_first_name_must_be_one_of_the_checked_names(client, sessionmaker_):
+    user = await make_user(sessionmaker_)
+    await _set(sessionmaker_, user.id, full_name="Jean Dupont", identity_verified=True, identity_status="verified")
+
+    r = await client.patch("/auth/me", json={"first_name": "Someone"}, headers=auth(user))
+    assert r.status_code == 409, r.text
+    r = await client.patch("/auth/me", json={"first_name": "jean"}, headers=auth(user))
+    assert r.status_code == 200, r.text
+
+
+@pytest.mark.asyncio
+async def test_verified_name_tolerates_spacing_and_case(client, sessionmaker_):
+    user = await make_user(sessionmaker_)
+    await _set(sessionmaker_, user.id, full_name="Jean Dupont", identity_verified=True, identity_status="verified")
+
+    r = await client.patch("/auth/me", json={"full_name": "jean   DUPONT"}, headers=auth(user))
+    assert r.status_code == 200, r.text
+    assert (await _reload(sessionmaker_, user.id)).full_name == "Jean Dupont"
+
+
+@pytest.mark.asyncio
+async def test_identity_check_needs_an_account_name():
+    from app.services.identity import identity_service
+
+    check = await identity_service._name_check("JEAN DUPONT", None, inclusive=True)
+    assert check["passed"] is False and check["critical"] is True
+
+
+@pytest.mark.asyncio
+async def test_international_identity_check_needs_an_account_name(client, sessionmaker_):
+    user = await make_user(sessionmaker_)
+    await _set(sessionmaker_, user.id, full_name=None)
+    r = await client.post("/verification/intl/identity/upload",
+                          files={"file": ("passport.jpg", b"\xff\xd8\xff" + b"0" * 100, "image/jpeg")}, headers=auth(user))
+    assert r.status_code == 422, r.text
+    assert "full name" in r.json()["detail"]
+
+
+# ── Google identities and roles ─────────────────────────────────────────────
+
+@pytest.mark.asyncio
+async def test_a_second_google_account_cannot_reach_a_linked_account(client, sessionmaker_, google):
+    user = await make_user(sessionmaker_)
+    await _set(sessionmaker_, user.id, google_id="g-original")
+    google(user.email, verified=True, sub="g-other")
+
+    r = await client.post("/auth/google", json={"credential": "x"})
+    assert r.status_code == 409, r.text
+    assert (await _reload(sessionmaker_, user.id)).google_id == "g-original"
+
+
+@pytest.mark.asyncio
+async def test_google_does_not_unlock_the_frozen_agency_role(client, sessionmaker_, google):
+    tenant = await make_user(sessionmaker_, role="tenant")
+    await _set(sessionmaker_, tenant.id, available_roles=["tenant"])
+    google(tenant.email, verified=True)
+
+    r = await client.post("/auth/google", json={"credential": "x", "role": "property_manager"})
+    assert r.status_code == 200, r.text
+    row = await _reload(sessionmaker_, tenant.id)
+    assert row.role == "tenant" and row.available_roles == ["tenant"]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("role,expected", [(None, "tenant"), ("landlord", "landlord")])
+async def test_google_creates_a_new_account_with_the_right_role(client, sessionmaker_, google, role, expected):
+    email = f"new_{uuid.uuid4().hex[:8]}@test.com"
+    google(email, verified=True)
+    r = await client.post("/auth/google", json={"credential": "x", **({"role": role} if role else {})})
+    assert r.status_code == 200, r.text
+    async with sessionmaker_() as s:
+        from sqlalchemy import select
+        row = (await s.execute(select(User).where(User.email == email))).scalar_one()
+    assert row.role == expected and row.available_roles == [expected]
+
+
+@pytest.mark.asyncio
+async def test_switch_role_saves_the_unlocked_role(client, sessionmaker_):
+    tenant = await make_user(sessionmaker_, role="tenant")
+    await _set(sessionmaker_, tenant.id, available_roles=["tenant"])
+
+    r = await client.post("/auth/switch-role", json={"role": "landlord"}, headers=auth(tenant))
+    assert r.status_code == 200, r.text
+    assert sorted((await _reload(sessionmaker_, tenant.id)).available_roles) == ["landlord", "tenant"]

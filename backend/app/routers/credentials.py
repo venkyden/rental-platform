@@ -2,7 +2,7 @@
 Credential endpoints — issue, verify (public), public-key, evidence PDF.
 
 Access model (DOSSIER §12):
-- POST /credentials/issue   — authenticated (subject must be logged-in user or passwordless lane)
+- POST /credentials/issue-mine — authenticated; claims are built from the account's verified state
 - GET  /credentials/{id}    — PUBLIC, no account required
 - GET  /credentials/public-key — PUBLIC
 - GET  /credentials/{id}/evidence.pdf — PUBLIC (anyone can re-fetch until expiry)
