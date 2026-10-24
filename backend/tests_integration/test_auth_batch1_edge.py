@@ -164,10 +164,10 @@ async def test_reset_revokes_existing_sessions(client, session_factory):
 
     user = await _get_user(session_factory, "rrev@example.com")
     old_refresh = create_refresh_token(
-        {"sub": "rrev@example.com", "version": user.refresh_token_version}
+        {"sub": "rrev@example.com", "user_id": str(user.id), "version": user.refresh_token_version}
     )
     reset_tok = create_access_token({
-        "sub": "rrev@example.com", "type": "password_reset",
+        "sub": "rrev@example.com", "user_id": str(user.id), "type": "password_reset",
         "rtv": user.refresh_token_version,
     })
     done = await client.post("/auth/reset-password", json={
@@ -183,10 +183,12 @@ async def test_reset_revokes_existing_sessions(client, session_factory):
 
 
 @pytest.mark.asyncio
-async def test_reset_then_login_with_new_password(client):
+async def test_reset_then_login_with_new_password(client, session_factory):
     """End-to-end: reset, then the new password actually logs in and old fails."""
     await _register(client, "re2e@example.com", password="OldStrong123!")
-    tok = create_access_token({"sub": "re2e@example.com", "type": "password_reset"})
+    user = await _get_user(session_factory, "re2e@example.com")
+    tok = create_access_token({"sub": "re2e@example.com", "user_id": str(user.id), "type": "password_reset",
+                               "rtv": user.refresh_token_version})
     await client.post("/auth/reset-password", json={
         "token": tok, "new_password": "BrandNew123!",
     })
@@ -205,7 +207,8 @@ async def test_reset_then_login_with_new_password(client):
 @pytest.mark.asyncio
 async def test_verify_email_end_to_end(client, session_factory):
     await _register(client, "ve2e@example.com")
-    tok = create_access_token({"sub": "ve2e@example.com", "type": "email_verification"})
+    registered = await _get_user(session_factory, "ve2e@example.com")
+    tok = create_access_token({"sub": "ve2e@example.com", "user_id": str(registered.id), "type": "email_verification"})
     resp = await client.get(f"/auth/verify-email?token={tok}")
     assert resp.status_code == 200
     user = await _get_user(session_factory, "ve2e@example.com")
@@ -230,9 +233,10 @@ async def test_verify_email_wrong_type(client):
 
 
 @pytest.mark.asyncio
-async def test_verify_email_idempotent(client):
+async def test_verify_email_idempotent(client, session_factory):
     await _register(client, "videm@example.com")
-    tok = create_access_token({"sub": "videm@example.com", "type": "email_verification"})
+    user = await _get_user(session_factory, "videm@example.com")
+    tok = create_access_token({"sub": "videm@example.com", "user_id": str(user.id), "type": "email_verification"})
     first = await client.get(f"/auth/verify-email?token={tok}")
     assert first.status_code == 200
     second = await client.get(f"/auth/verify-email?token={tok}")
@@ -273,11 +277,11 @@ async def test_email_change_confirm_revokes_sessions(client, session_factory):
     await _register(client, "ecrev@example.com")
     user = await _get_user(session_factory, "ecrev@example.com")
     old_refresh = create_refresh_token(
-        {"sub": "ecrev@example.com", "version": user.refresh_token_version}
+        {"sub": "ecrev@example.com", "user_id": str(user.id), "version": user.refresh_token_version}
     )
     change_tok = create_access_token({
-        "sub": "ecrev@example.com", "type": "email_change",
-        "new_email": "ecmoved@example.com",
+        "sub": "ecrev@example.com", "user_id": str(user.id), "rtv": user.refresh_token_version,
+        "type": "email_change", "new_email": "ecmoved@example.com",
     })
     confirm = await client.post("/auth/confirm-email-change", json={"token": change_tok})
     assert confirm.status_code == 200

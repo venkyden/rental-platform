@@ -102,7 +102,6 @@
   "POST /api/v1/conversations/{conversation_id}/archive",
   "POST /api/v1/conversations/{conversation_id}/messages",
   "POST /api/v1/conversations/{conversation_id}/read",
-  "POST /api/v1/credentials/issue",
   "POST /api/v1/credentials/issue-mine",
   "POST /api/v1/credentials/{credential_id}/revoke",
   "POST /api/v1/disputes/",

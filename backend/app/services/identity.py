@@ -449,6 +449,27 @@ Return ONLY the JSON."""
 
         return max(subset_ratio, jaccard_ratio)
 
+    async def _name_check(self, name_on_id: str, expected_name: Optional[str], inclusive: bool) -> dict:
+        """The critical name check. An account without a name fails it: the
+        verification would otherwise vouch for whatever name is set later."""
+        if not (expected_name or "").strip():
+            return {
+                "name": "name_match",
+                "description": "Name on ID matches account name",
+                "passed": False,
+                "critical": True,
+                "details": "The account has no name to compare with the document.",
+            }
+        match = await self._robust_name_match(name_on_id, expected_name) if name_on_id != "Unknown" else 0.0
+        passed = (match >= 0.5 if inclusive else match > 0.5) and name_on_id != "Unknown"
+        return {
+            "name": "name_match",
+            "description": "Name on ID matches account name",
+            "passed": passed,
+            "critical": True,
+            "details": f"ID: {name_on_id} | Account: {expected_name} | Match: {match:.0%}",
+        }
+
     async def _robust_name_match(self, name_on_id: str, expected_name: str) -> float:
         """
         Robust name matching using an initial fuzzy match, falling back to AI
@@ -686,15 +707,7 @@ Rules:
                     })
 
                     full_name = data.get("full_name", "Unknown")
-                    if expected_name:
-                        match = await self._robust_name_match(full_name, expected_name) if full_name != "Unknown" else 0.0
-                        checks.append({
-                            "name": "name_match",
-                            "description": "Name on ID matches account name",
-                            "passed": match >= 0.5 and full_name != "Unknown",
-                            "critical": True,
-                            "details": f"ID: {full_name} | Account: {expected_name} | Match: {match:.0%}",
-                        })
+                    checks.append(await self._name_check(full_name, expected_name, inclusive=True))
 
                     expiry_date = data.get("expiry_date")
                     if expiry_date:
@@ -941,15 +954,7 @@ Rules:
         })
 
         full_name = doc_data.get("full_name", "Unknown")
-        if expected_name:
-            match = await self._robust_name_match(full_name, expected_name) if full_name != "Unknown" else 0.0
-            checks.append({
-                "name": "name_match",
-                "description": "Name on ID matches account name",
-                "passed": match > 0.5 and full_name != "Unknown",
-                "critical": True,
-                "details": f"ID: {full_name} | Account: {expected_name} | Match: {match:.0%}",
-            })
+        checks.append(await self._name_check(full_name, expected_name, inclusive=False))
 
         expiry_date = doc_data.get("expiry_date")
         if expiry_date:
