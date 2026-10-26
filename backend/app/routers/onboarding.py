@@ -28,6 +28,20 @@ class OnboardingCompleteRequest(BaseModel):
     responses: Dict[str, Any]
 
 
+# Protected grounds (Code pénal 225-1, loi 89-462 art. 1): a landlord may not
+# state them as criteria, and nothing uses a tenant's own nationality or gender.
+_PROTECTED_KEYS = ("nationality_preference", "nationality", "gender")
+
+
+def _refuse_protected_criteria(responses: Dict[str, Any]) -> None:
+    types = responses.get("accepted_tenant_types")
+    if any(key in responses for key in _PROTECTED_KEYS) or (isinstance(types, list) and "family" in types):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Nationality, gender and family situation are not asked for and cannot be criteria for a rental.",
+        )
+
+
 @router.post("/complete")
 async def complete_onboarding(
     request: OnboardingCompleteRequest,
@@ -37,6 +51,7 @@ async def complete_onboarding(
     """Complete onboarding for the user's currently active role"""
 
     role_str = current_user.role.value if hasattr(current_user.role, "value") else str(current_user.role)
+    _refuse_protected_criteria(request.responses)
 
     # Update or create OnboardingResponse record
     stmt = select(OnboardingResponse).where(OnboardingResponse.user_id == current_user.id)
@@ -46,8 +61,9 @@ async def complete_onboarding(
     if onboarding:
         # Update existing record, keeping other roles' data if we structured it
         # For now, let's just update the responses
-        existing_responses = onboarding.responses or {}
-        if isinstance(existing_responses, dict):
+        # Copies: a JSON column only saves when it is given a new object.
+        existing_responses = dict(onboarding.responses or {})
+        if isinstance(onboarding.responses, dict):
             existing_responses[role_str] = request.responses
             onboarding.responses = existing_responses
         else:
@@ -61,10 +77,7 @@ async def complete_onboarding(
         db.add(onboarding)
 
     # Update user preferences specifically for this role
-    all_prefs = current_user.preferences or {}
-    if not isinstance(all_prefs, dict):
-        all_prefs = {}
-    
+    all_prefs = dict(current_user.preferences) if isinstance(current_user.preferences, dict) else {}
     all_prefs[role_str] = request.responses
     current_user.preferences = all_prefs
     current_user.segment = "DIRECT"
@@ -133,13 +146,12 @@ async def update_preferences(
 ):
     """Update user preferences for the active role (merge new values into existing)."""
     role_str = current_user.role.value if hasattr(current_user.role, "value") else str(current_user.role)
-    all_prefs = current_user.preferences or {}
-    
-    if not isinstance(all_prefs, dict):
-        all_prefs = {}
-        
+    _refuse_protected_criteria(request.responses)
+    # Copies: a JSON column only saves when it is given a new object.
+    all_prefs = dict(current_user.preferences) if isinstance(current_user.preferences, dict) else {}
+
     # Get preferences for active role
-    role_prefs = all_prefs.get(role_str, {})
+    role_prefs = dict(all_prefs.get(role_str) or {})
     # If the prefs were flat and didn't have role keys, migrate them if they look like they belong here
     # (Simplified: if no role keys exist, we treat the whole thing as role_prefs)
     if not any(r in all_prefs for r in ["tenant", "landlord", "property_manager"]):

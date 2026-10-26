@@ -35,15 +35,6 @@ export interface QuestionnaireProps {
 
 // ─── Static Data ─────────────────────────────────────────────────
 
-export const NATIONALITIES = [
-    'French', 'American', 'British', 'German', 'Italian', 'Spanish', 'Portuguese',
-    'Chinese', 'Indian', 'Japanese', 'Korean', 'Brazilian', 'Mexican', 'Canadian',
-    'Australian', 'Dutch', 'Belgian', 'Swiss', 'Swedish', 'Norwegian', 'Danish',
-    'Finnish', 'Polish', 'Romanian', 'Turkish', 'Moroccan', 'Tunisian', 'Algerian',
-    'Senegalese', 'Cameroonian', 'Ivorian', 'Lebanese', 'Egyptian', 'Nigerian',
-    'Other',
-];
-
 export const LANGUAGES = [
     { value: 'fr', label: '🇫🇷 French' },
     { value: 'en', label: '🇬🇧 English' },
@@ -186,32 +177,12 @@ export function getTenantQuestions(): Question[] {
             ],
         },
         {
-            id: 'nationality',
-            type: 'select',
-            question: 'question',
-            emoji: '',
-            selectOptions: NATIONALITIES.map(n => ({ 
-                value: n.toLowerCase(), 
-                label: `common.nationalities.${n.toLowerCase()}` 
-            })),
-        },
-        {
             id: 'languages',
             question: 'question',
             emoji: '',
             type: 'multiselect',
             options: LANGUAGES.map(l => ({ value: l.value, label: l.label })),
             maxSelections: 5,
-        },
-        {
-            id: 'gender',
-            question: 'question',
-            emoji: '',
-            options: [
-                { value: 'female', label: 'options.female' },
-                { value: 'male', label: 'options.male' },
-                { value: 'other', label: 'options.other' },
-            ],
         },
         {
             id: 'contract_type',
@@ -465,7 +436,6 @@ export function getLandlordQuestions(): Question[] {
                 { value: 'student', label: 'onboarding.questions.landlord.tenant_types.options.student' },
                 { value: 'employee', label: 'onboarding.questions.landlord.tenant_types.options.employee' },
                 { value: 'freelancer', label: 'onboarding.questions.landlord.tenant_types.options.freelancer' },
-                { value: 'family', label: 'onboarding.questions.landlord.tenant_types.options.family' },
             ],
             maxSelections: 4,
         },

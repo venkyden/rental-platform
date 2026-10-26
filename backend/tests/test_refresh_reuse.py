@@ -44,7 +44,7 @@ def client(user, monkeypatch):
 
     async def db_returning_user():
         session = MagicMock()
-        session.execute = AsyncMock(return_value=MagicMock(scalar_one_or_none=MagicMock(return_value=user)))
+        session.get = AsyncMock(return_value=user)
         session.commit = AsyncMock()
         yield session
 
@@ -61,7 +61,9 @@ def _refresh(client, token):
 
 
 def _token(user):
-    return create_refresh_token(data={"sub": user.email, "version": user.refresh_token_version})
+    return create_refresh_token(
+        data={"sub": user.email, "user_id": str(user.id), "version": user.refresh_token_version}
+    )
 
 
 def test_refresh_tokens_are_unique():

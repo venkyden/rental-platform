@@ -195,6 +195,16 @@ async def get_biometric_consent_status(
     }
 
 
+def _require_account_name(user: User) -> None:
+    """The identity check compares the document with the account's name, which is
+    then frozen; without a name there is nothing to compare."""
+    if not (user.full_name or "").strip():
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Add your full name in your account settings before checking your identity.",
+        )
+
+
 @router.post("/identity/upload")
 @limiter.limit("10/minute")
 async def upload_identity_document(
@@ -209,6 +219,7 @@ async def upload_identity_document(
     """
     Upload identity document for verification (OCR + liveness rail, MEDIUM assurance).
     """
+    _require_account_name(current_user)
     final_doc_type = document_type or document_type_query or "passport"
     # GDPR Art. 9: the selfie_with_id path runs a face-match on the image
     if side == "selfie_with_id":
@@ -379,6 +390,7 @@ async def create_identity_verification_session(
     Create a verification session for mobile ID capture.
     Returns a code and capture URL for QR code display on desktop.
     """
+    _require_account_name(current_user)
     _cleanup_expired_sessions()
 
     code = secrets.token_urlsafe(32)
@@ -859,6 +871,7 @@ async def upload_identity_selfie(
     db: AsyncSession = Depends(get_db),
 ):
     """Upload selfie for face-match against the stored identity document."""
+    _require_account_name(current_user)
     await _require_biometric_consent(current_user.id, db)
     if not current_user.identity_data or current_user.identity_data.get("status") != "document_uploaded":
         raise HTTPException(
@@ -1960,7 +1973,8 @@ async def bind_deposit(
     # the verified entity denomination; otherwise the landlord's verified personal name.
     existing = current_user.deposit_binding_data if isinstance(current_user.deposit_binding_data, dict) else {}
     entity = existing.get("landlord_entity") or {}
-    if entity.get("type") == "sci" and entity.get("denomination"):
+    # Only an SCI this person was found to run: anyone can name a real SCI's SIREN.
+    if entity.get("type") == "sci" and entity.get("denomination") and entity.get("gerant_match") is True:
         match_target, target_label = entity["denomination"], "sci"
     else:
         match_target, target_label = (current_user.full_name or ""), "individual"
@@ -2060,9 +2074,10 @@ async def verify_landlord_entity(
         # claim a real SCI's SIREN and read as a "verified entity landlord".
         current_user.kbis_verified = gerant_match
 
-    elif body.landlord_type == "manager":
-        # Carte G mandataire scaffolding only — no mandate/brokering surface (Hoguet).
-        current_user.carte_g_verified = True
+    else:
+        # The SCI check no longer applies. A manager's carte G is not checked here,
+        # so it is not marked verified; no mandate/brokering surface either (Hoguet).
+        current_user.kbis_verified = False
 
     current_user.deposit_binding_data = {**existing, "landlord_entity": entity}
     await db.commit()
@@ -2212,6 +2227,8 @@ async def upload_intl_identity_document(
     from datetime import date
     from difflib import SequenceMatcher
     from app.services.mrz import extract_mrz
+
+    _require_account_name(current_user)
 
     allowed = {"image/jpeg", "image/png", "image/jpg", "application/pdf", "image/heic", "image/heif"}
     if file.content_type not in allowed:

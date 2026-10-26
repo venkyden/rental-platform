@@ -116,28 +116,33 @@ class ApiClient {
                         return Promise.reject(error);
                     }
 
+                    let newAccessToken: string | null = null;
+                    let refreshError: unknown = error;
                     try {
                         // Attempt to refresh via the httpOnly cookie. Concurrent
                         // 401s coalesce into one refresh (see refreshAccessToken).
-                        const newAccessToken = await this.refreshAccessToken();
-                        if (newAccessToken) {
-                            // Retry the original request with the new token
-                            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-                            return this.client(originalRequest);
-                        }
-                    } catch (refreshError) {
-                        // Refresh token failed or expired
-                        this.clearToken();
-
-                        // If it's a public page, just retry the request WITHOUT the auth header
-                        if (isPublicPage) {
-                            delete originalRequest.headers.Authorization;
-                            return this.client(originalRequest);
-                        }
-
-                        // Otherwise let ProtectedRoute handle the unauthenticated state.
-                        return Promise.reject(refreshError);
+                        newAccessToken = await this.refreshAccessToken();
+                    } catch (e) {
+                        refreshError = e;
                     }
+                    if (newAccessToken) {
+                        // Retry the original request with the new token
+                        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+                        return this.client(originalRequest);
+                    }
+
+                    // The session ended (signed out elsewhere, password reset, expired).
+                    this.clearToken();
+                    if (typeof window !== 'undefined') window.dispatchEvent(new Event(SESSION_ENDED_EVENT));
+
+                    // If it's a public page, just retry the request WITHOUT the auth header
+                    if (isPublicPage) {
+                        delete originalRequest.headers.Authorization;
+                        return this.client(originalRequest);
+                    }
+
+                    // Otherwise let ProtectedRoute handle the unauthenticated state.
+                    return Promise.reject(refreshError);
                 }
 
                 return Promise.reject(error);
@@ -328,5 +333,8 @@ class ApiClient {
         return response.data;
     }
 }
+
+// Fired when a session can no longer be refreshed; AuthContext signs the user out.
+export const SESSION_ENDED_EVENT = 'roomivo:session-ended';
 
 export const apiClient = new ApiClient();
