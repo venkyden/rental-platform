@@ -8,6 +8,7 @@ import PremiumLayout from '@/components/PremiumLayout';
 import { apiClient } from '@/lib/api';
 import { resolveMediaUrl } from '@/lib/mediaUrl';
 import GoodToKnowPanel from '@/components/walkthrough/GoodToKnowPanel';
+import QuestionBox from '@/components/walkthrough/QuestionBox';
 import FurnishedNotice from '@/components/walkthrough/FurnishedNotice';
 import { bedroomCount, type Flatmates } from '@/lib/walkthrough';
 import { decodeHtmlEntities } from '@/lib/textUtils';
@@ -579,6 +580,16 @@ export default function PropertyDetailClient({ initialProperty }: PropertyDetail
                                 isColocation={property.is_colocation}
                                 bedrooms={bedroomCount(property.room_details)}
                             />
+                            {!isOwner && (
+                                <QuestionBox
+                                    propertyId={property.id}
+                                    answers={property.walkthrough_answers}
+                                    flatmates={property.flatmates}
+                                    isColocation={property.is_colocation}
+                                    bedrooms={bedroomCount(property.room_details)}
+                                    withAuth={executeWithAuth}
+                                />
+                            )}
 
                             {/* Room availability table (WP2) — one row per colocation bedroom */}
                             {property.is_colocation && property.room_details && property.room_details.length > 0 && (

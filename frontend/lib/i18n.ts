@@ -2617,6 +2617,22 @@ export const translations = {
             saved: "Decision saved; the emails have been sent.",
             saveError: "The decision could not be saved.",
         },
+        questionBox: {
+            title: "Ask about this home",
+            placeholder: "Type your question, for example: is there a dishwasher?",
+            matchedTitle: "Already answered by the owner",
+            notCovered: "Not what you wanted to know? Ask the owner.",
+            ask: "Ask the owner",
+            sending: "Sending…",
+            privacy: "Your question goes to the owner privately. The reply arrives in your inbox.",
+            sent: "Sent to the owner.",
+            openConversation: "Open the conversation",
+            whoMayRent: "You don't need to ask this. A landlord may not refuse anyone because of their origin, nationality, religion, sex, family situation, disability, age or any other ground protected by French law. Ask about the home itself instead, for example stairs or a lift. If you are refused for one of these reasons, report the listing.",
+            errors: {
+                tooMany: "You have sent five questions about this home today. The owner's replies will arrive in your inbox.",
+                failed: "The question could not be sent. Try again.",
+            },
+        },
         walkthrough: {
             spaces: {
                 kitchen: "Kitchen",
@@ -5928,6 +5944,22 @@ export const translations = {
             reverse: "Annuler après contestation du propriétaire",
             saved: "Décision enregistrée ; les e-mails ont été envoyés.",
             saveError: "La décision n'a pas pu être enregistrée.",
+        },
+        questionBox: {
+            title: "Une question sur ce logement ?",
+            placeholder: "Posez votre question, par exemple : y a-t-il un lave-vaisselle ?",
+            matchedTitle: "Déjà répondu par le propriétaire",
+            notCovered: "Ce n'est pas ce que vous cherchiez ? Demandez au propriétaire.",
+            ask: "Demander au propriétaire",
+            sending: "Envoi…",
+            privacy: "Votre question est envoyée au propriétaire en privé. La réponse arrive dans votre messagerie.",
+            sent: "Envoyée au propriétaire.",
+            openConversation: "Ouvrir la conversation",
+            whoMayRent: "Inutile de poser cette question. Un propriétaire ne peut refuser personne en raison de son origine, de sa nationalité, de sa religion, de son sexe, de sa situation de famille, de son handicap, de son âge ou de tout autre critère protégé par la loi. Interrogez-le plutôt sur le logement lui-même, par exemple les escaliers ou l'ascenseur. Si l'on vous refuse pour l'une de ces raisons, signalez l'annonce.",
+            errors: {
+                tooMany: "Vous avez envoyé cinq questions sur ce logement aujourd'hui. Les réponses du propriétaire arriveront dans votre messagerie.",
+                failed: "La question n'a pas pu être envoyée. Réessayez.",
+            },
         },
         walkthrough: {
             spaces: {

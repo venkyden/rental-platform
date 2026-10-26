@@ -328,6 +328,9 @@ api_v1_router.include_router(feedback.router)
 from app.routers import reports
 api_v1_router.include_router(reports.router)
 
+from app.routers import listing_questions
+api_v1_router.include_router(listing_questions.router)
+
 
 from app.routers import gdpr
 api_v1_router.include_router(gdpr.router)

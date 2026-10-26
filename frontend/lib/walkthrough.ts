@@ -140,27 +140,40 @@ export const hasFlatmates = (flatmates?: Flatmates | null): boolean =>
     !!flatmates && (typeof flatmates.count === 'number' || !!flatmates.occupation ||
         typeof flatmates.smoking === 'boolean' || typeof flatmates.pets === 'boolean');
 
-/** The household card as the lines the listing page shows, in order. Empty when there is nothing to say. */
-export function householdLines(t: Translate, flatmates?: Flatmates | null): string[] {
-    if (!hasFlatmates(flatmates)) return [];
-    const card = flatmates!;
-    const lines: (string | false | undefined)[] = [
-        typeof card.count === 'number' &&
-            (card.count === 0
+export type HouseholdTopic = 'count' | 'occupation' | 'smoking' | 'pets';
+const HOUSEHOLD_TOPICS: HouseholdTopic[] = ['count', 'occupation', 'smoking', 'pets'];
+
+/** One line of the household card, or undefined when the owner did not say. */
+export function householdLine(t: Translate, flatmates: Flatmates | null | undefined, topic: HouseholdTopic): string | undefined {
+    if (!flatmates) return undefined;
+    const card = flatmates;
+    switch (topic) {
+        case 'count':
+            if (typeof card.count !== 'number') return undefined;
+            return card.count === 0
                 ? t('walkthrough.flatmates.countZero', undefined, 'No flatmates')
                 : card.count === 1
                     ? t('walkthrough.flatmates.countOne', undefined, '1 flatmate')
-                    : t('walkthrough.flatmates.count', { count: card.count }, `${card.count} flatmates`)),
-        card.occupation && (FLATMATE_OCCUPATIONS as readonly string[]).includes(card.occupation) &&
-            t(`walkthrough.flatmates.occupation.${card.occupation}`, undefined, card.occupation),
-        typeof card.smoking === 'boolean' &&
-            (card.smoking
+                    : t('walkthrough.flatmates.count', { count: card.count }, `${card.count} flatmates`);
+        case 'occupation':
+            return card.occupation && (FLATMATE_OCCUPATIONS as readonly string[]).includes(card.occupation)
+                ? t(`walkthrough.flatmates.occupation.${card.occupation}`, undefined, card.occupation)
+                : undefined;
+        case 'smoking':
+            if (typeof card.smoking !== 'boolean') return undefined;
+            return card.smoking
                 ? t('walkthrough.flatmates.smokingYes', undefined, 'Smoking in the home')
-                : t('walkthrough.flatmates.smokingNo', undefined, 'No smoking in the home')),
-        typeof card.pets === 'boolean' &&
-            (card.pets
+                : t('walkthrough.flatmates.smokingNo', undefined, 'No smoking in the home');
+        case 'pets':
+            if (typeof card.pets !== 'boolean') return undefined;
+            return card.pets
                 ? t('walkthrough.flatmates.petsYes', undefined, 'Pets in the home')
-                : t('walkthrough.flatmates.petsNo', undefined, 'No pets in the home')),
-    ];
-    return lines.filter((line): line is string => typeof line === 'string');
+                : t('walkthrough.flatmates.petsNo', undefined, 'No pets in the home');
+    }
+}
+
+/** The household card as the lines the listing page shows, in order. Empty when there is nothing to say. */
+export function householdLines(t: Translate, flatmates?: Flatmates | null): string[] {
+    if (!hasFlatmates(flatmates)) return [];
+    return HOUSEHOLD_TOPICS.map((topic) => householdLine(t, flatmates, topic)).filter((line): line is string => !!line);
 }
