@@ -34,10 +34,7 @@ from app.services.walkthrough_catalogue import (bedroom_count, clean_flatmates,
 from app.routers.auth import get_current_user, get_current_user_optional
 
 # Rate limiting
-from slowapi import Limiter
-from slowapi.util import get_remote_address
-
-limiter = Limiter(key_func=get_remote_address)
+from app.core.rate_limit import limiter
 
 
 class PublishRequest(BaseModel):

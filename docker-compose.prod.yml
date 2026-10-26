@@ -24,6 +24,8 @@ services:
       - DATABASE_URL=${DATABASE_URL}
       - SECRET_KEY=${SECRET_KEY}
       - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
+      # nginx overwrites X-Real-IP with $remote_addr
+      - CLIENT_IP_HEADER=x-real-ip
       # Using free Gemini instead of paid Anthropic
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
       - FRONTEND_URL=${FRONTEND_URL}

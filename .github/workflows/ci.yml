@@ -24,6 +24,31 @@ jobs:
           path: ./
           extra_args: --only-verified
 
+  # ── Dependency audit ──────────────────────────────────────────────────
+  # Fails on any known advisory in backend requirements and on high/critical
+  # advisories in shipped (non-dev) frontend packages. 2ddoc-parser is pinned
+  # to a git commit and is not on PyPI, so pip-audit cannot cover it.
+  dependency-audit:
+    name: Dependency Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Audit backend requirements
+        working-directory: backend
+        run: |
+          python -m pip install pip-audit
+          pip-audit -r requirements.txt --progress-spinner off
+
+      - name: Audit frontend production packages
+        working-directory: frontend
+        run: npm audit --omit=dev --audit-level=high
+
   # ── Canary ─────────────────────────────────────────────────────────────
   # Runs first on every push/PR. If any canary fails the system is broken
   # in a user-visible way — the full backend suite won't even start.
@@ -136,6 +161,8 @@ jobs:
           python -m pytest
           tests/test_config.py tests/test_auth.py tests/test_properties.py
           tests/test_french_compliance.py tests/test_security_headers.py
+          tests/test_erp_webhook_ssrf.py tests/test_client_ip.py
+          tests/test_cookie_csrf.py tests/test_refresh_reuse.py
           -v --tb=short
 
       - name: Build schema (migrations) for integration tests
