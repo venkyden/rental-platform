@@ -2,7 +2,7 @@
 Credential endpoints — issue, verify (public), public-key, evidence PDF.
 
 Access model (DOSSIER §12):
-- POST /credentials/issue   — authenticated (subject must be logged-in user or passwordless lane)
+- POST /credentials/issue-mine — authenticated; claims are built from the account's verified state
 - GET  /credentials/{id}    — PUBLIC, no account required
 - GET  /credentials/public-key — PUBLIC
 - GET  /credentials/{id}/evidence.pdf — PUBLIC (anyone can re-fetch until expiry)
@@ -41,28 +41,6 @@ VERIFY_BASE_URL = "https://roomivo.app"
 
 
 # ── request / response schemas ───────────────────────────────────────────────
-
-class IssueRequest(BaseModel):
-    subject_role: str           # tenant | landlord | property
-    rail: str                   # FR | INTL
-    claims: dict
-    subject_display_name: Optional[str] = None
-    ttl_days: int = 30
-
-
-class CredentialResponse(BaseModel):
-    credential_id: str
-    subject_role: str
-    subject_display_name: Optional[str]
-    issued_at: str
-    expires_at: str
-    rail: str
-    claims: dict
-    disclaimer: str
-    signature: str
-    kid: Optional[str] = None    # id of the signing key (see /credentials/public-keys)
-    revoked: bool
-
 
 class VerifyResponse(BaseModel):
     credential_id: str
@@ -131,67 +109,6 @@ async def get_public_keys():
     Rotation runbook: docs/features/trust-layer/KEY-LIFECYCLE.md
     """
     return PublicKeysResponse(keys=credential_service.key_history())
-
-
-@router.post("/issue", response_model=CredentialResponse, status_code=status.HTTP_201_CREATED)
-async def issue_credential(
-    req: IssueRequest,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    """
-    Issue a signed, banded credential for the authenticated user.
-
-    Claims are validated before signing — assurance inflation (MEDIUM source → HIGH claim)
-    raises 422. Solvency ratios must be banded strings, never raw figures.
-
-    The signed record is stored in the thin credentials store (banded claims only,
-    no source documents). The credential_id is the shareable verify key.
-    """
-    try:
-        payload = credential_service.issue(
-            subject_role=req.subject_role,
-            rail=req.rail,
-            claims=req.claims,
-            subject_display_name=req.subject_display_name or current_user.full_name,
-            ttl_days=req.ttl_days,
-        )
-    except ValueError as exc:
-        raise HTTPException(status_code=422, detail=str(exc))
-
-    issued_at = datetime.fromisoformat(payload["issued_at"].rstrip("Z"))
-    expires_at = datetime.fromisoformat(payload["expires_at"].rstrip("Z"))
-
-    row = Credential(
-        id=payload["credential_id"],
-        subject_role=payload["subject_role"],
-        rail=payload["rail"],
-        subject_user_id=current_user.id,
-        subject_display_name=payload.get("subject_display_name"),
-        issued_at=issued_at,
-        expires_at=expires_at,
-        claims=payload["claims"],
-        disclaimer=payload["disclaimer"],
-        signature=payload["signature"],
-        kid=payload.get("kid"),
-        revoked=False,
-    )
-    db.add(row)
-    await db.flush()
-
-    return CredentialResponse(
-        credential_id=row.id,
-        subject_role=row.subject_role,
-        subject_display_name=row.subject_display_name,
-        issued_at=payload["issued_at"],
-        expires_at=payload["expires_at"],
-        rail=row.rail,
-        claims=row.claims,
-        disclaimer=row.disclaimer,
-        signature=row.signature,
-        kid=row.kid,
-        revoked=row.revoked,
-    )
 
 
 @router.get("/{credential_id}", response_model=VerifyResponse, summary="Verify credential (public)")

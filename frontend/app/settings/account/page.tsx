@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, Shield, Key, Mail, Camera, Loader2, CheckCircle2, Bell, Settings, LogOut } from 'lucide-react';
 import { useAuth } from '@/lib/useAuth';
@@ -26,6 +26,12 @@ export default function AccountSettingsPage() {
     const [bio, setBio] = useState(user?.bio || '');
     const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
     const [profileMessage, setProfileMessage] = useState({ text: '', type: '' });
+
+    // The user loads after the first render; show and keep its values.
+    useEffect(() => {
+        setFullName(user?.full_name || '');
+        setBio(user?.bio || '');
+    }, [user?.full_name, user?.bio]);
 
     // Avatar State
     const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
@@ -53,7 +59,9 @@ export default function AccountSettingsPage() {
         setProfileMessage({ text: '', type: '' });
 
         try {
-            await apiClient.client.patch('/auth/me', { full_name: fullName, bio });
+            // Only a changed name is sent: a checked name cannot be changed here.
+            const nameChanged = fullName.trim() !== (user?.full_name || '').trim();
+            await apiClient.client.patch('/auth/me', nameChanged ? { full_name: fullName, bio } : { bio });
             setProfileMessage({ text: t('settings.account.messages.profileSuccess', undefined, 'Profile updated successfully!'), type: 'success' });
             setTimeout(() => window.location.reload(), 1000);
         } catch (error: any) {
@@ -96,10 +104,12 @@ export default function AccountSettingsPage() {
         setPasswordMessage({ text: '', type: '' });
 
         try {
-            await apiClient.client.post('/auth/change-password', {
+            const res = await apiClient.client.post('/auth/change-password', {
                 old_password: oldPassword,
                 new_password: newPassword,
             });
+            // Changing the password ends every session, this one included.
+            if (res.data?.access_token) apiClient.setToken(res.data.access_token);
             setPasswordMessage({ text: t('settings.account.messages.passwordSuccess', undefined, 'Password updated successfully'), type: 'success' });
             setOldPassword('');
             setNewPassword('');

@@ -200,6 +200,16 @@ async def get_biometric_consent_status(
     }
 
 
+def _require_account_name(user: User) -> None:
+    """The identity check compares the document with the account's name, which is
+    then frozen; without a name there is nothing to compare."""
+    if not (user.full_name or "").strip():
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Add your full name in your account settings before checking your identity.",
+        )
+
+
 @router.post("/identity/upload")
 @limiter.limit("10/minute")
 async def upload_identity_document(
@@ -214,6 +224,7 @@ async def upload_identity_document(
     """
     Upload identity document for verification (OCR + liveness rail, MEDIUM assurance).
     """
+    _require_account_name(current_user)
     final_doc_type = document_type or document_type_query or "passport"
     # GDPR Art. 9: the selfie_with_id path runs a face-match on the image
     if side == "selfie_with_id":
@@ -384,6 +395,7 @@ async def create_identity_verification_session(
     Create a verification session for mobile ID capture.
     Returns a code and capture URL for QR code display on desktop.
     """
+    _require_account_name(current_user)
     _cleanup_expired_sessions()
 
     code = secrets.token_urlsafe(32)
@@ -864,6 +876,7 @@ async def upload_identity_selfie(
     db: AsyncSession = Depends(get_db),
 ):
     """Upload selfie for face-match against the stored identity document."""
+    _require_account_name(current_user)
     await _require_biometric_consent(current_user.id, db)
     if not current_user.identity_data or current_user.identity_data.get("status") != "document_uploaded":
         raise HTTPException(
@@ -2217,6 +2230,8 @@ async def upload_intl_identity_document(
     from datetime import date
     from difflib import SequenceMatcher
     from app.services.mrz import extract_mrz
+
+    _require_account_name(current_user)
 
     allowed = {"image/jpeg", "image/png", "image/jpg", "application/pdf", "image/heic", "image/heif"}
     if file.content_type not in allowed:

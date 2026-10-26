@@ -18,7 +18,7 @@ async def test():
         await db.refresh(user)
 
         token = create_access_token(
-            data={"sub": user.email, "type": "email_verification"},
+            data={"sub": user.email, "user_id": str(user.id), "type": "email_verification"},
             expires_delta=timedelta(hours=24)
         )
         print("TOKEN:", token)

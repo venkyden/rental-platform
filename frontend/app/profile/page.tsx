@@ -33,10 +33,8 @@ function BioSection() {
     const handleSave = async () => {
         setSaving(true);
         try {
-            await apiClient.client.patch('/auth/me', {
-                first_name: firstName,
-                bio: bio.trim(),
-            });
+            const firstChanged = firstName.trim() !== (user?.first_name || '').trim();
+            await apiClient.client.patch('/auth/me', firstChanged ? { first_name: firstName, bio: bio.trim() } : { bio: bio.trim() });
             await checkAuth?.();
             toast.success(t('bio.saved', undefined, 'Profile updated'));
             const returnTo = searchParams?.get('returnTo');
@@ -47,9 +45,11 @@ function BioSection() {
             const detail = e.response?.data?.detail;
             const msg = Array.isArray(detail) ? detail[0]?.msg : detail;
             toast.error(
-                typeof msg === 'string' && msg.includes('contact details')
-                    ? t('bio.noContactDetails', undefined, 'Your bio must not contain an email address or phone number.')
-                    : t('bio.saveFailed', undefined, 'Could not save your profile. Bio must be 40–300 characters.')
+                e.response?.status === 409 && typeof msg === 'string'
+                    ? msg
+                    : typeof msg === 'string' && msg.includes('contact details')
+                        ? t('bio.noContactDetails', undefined, 'Your bio must not contain an email address or phone number.')
+                        : t('bio.saveFailed', undefined, 'Could not save your profile. Bio must be 40–300 characters.')
             );
         } finally {
             setSaving(false);

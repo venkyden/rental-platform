@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { apiClient } from './api';
+import { apiClient, SESSION_ENDED_EVENT } from './api';
 
 /**
  * Sanitise a redirect path returned from the API.
@@ -89,6 +89,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         checkAuth();
+    }, []);
+
+    useEffect(() => {
+        const ended = () => setUser(null);
+        window.addEventListener(SESSION_ENDED_EVENT, ended);
+        return () => window.removeEventListener(SESSION_ENDED_EVENT, ended);
     }, []);
 
     const login = async (email: string, password: string) => {
