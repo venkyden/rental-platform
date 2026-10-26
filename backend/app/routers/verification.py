@@ -1978,7 +1978,8 @@ async def bind_deposit(
     # the verified entity denomination; otherwise the landlord's verified personal name.
     existing = current_user.deposit_binding_data if isinstance(current_user.deposit_binding_data, dict) else {}
     entity = existing.get("landlord_entity") or {}
-    if entity.get("type") == "sci" and entity.get("denomination"):
+    # Only an SCI this person was found to run: anyone can name a real SCI's SIREN.
+    if entity.get("type") == "sci" and entity.get("denomination") and entity.get("gerant_match") is True:
         match_target, target_label = entity["denomination"], "sci"
     else:
         match_target, target_label = (current_user.full_name or ""), "individual"
@@ -2078,9 +2079,10 @@ async def verify_landlord_entity(
         # claim a real SCI's SIREN and read as a "verified entity landlord".
         current_user.kbis_verified = gerant_match
 
-    elif body.landlord_type == "manager":
-        # Carte G mandataire scaffolding only — no mandate/brokering surface (Hoguet).
-        current_user.carte_g_verified = True
+    else:
+        # The SCI check no longer applies. A manager's carte G is not checked here,
+        # so it is not marked verified; no mandate/brokering surface either (Hoguet).
+        current_user.kbis_verified = False
 
     current_user.deposit_binding_data = {**existing, "landlord_entity": entity}
     await db.commit()

@@ -960,9 +960,7 @@ test.describe('8. Onboarding', () => {
                     completed: false,
                     responses: {
                         situation: "student",
-                        nationality: "france",
                         languages: ["french"],
-                        gender: "female",
                         contract_type: "student",
                         income: 1200,
                         university: "Université de Paris",
