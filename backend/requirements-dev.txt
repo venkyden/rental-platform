@@ -21,7 +21,7 @@
 # new tests.
 pytest>=9.0.3
 pytest-asyncio>=1.0
-aiohttp>=3.10.0
+aiohttp>=3.14.5
 
 # Local MCP admin tooling (roomivo_mcp.py) — never run in prod or CI
 mcp>=1.0.0
