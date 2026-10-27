@@ -13,12 +13,11 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field
-from slowapi import Limiter
-from slowapi.util import get_remote_address
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.core.rate_limit import limiter
 from app.core.timeutils import naive_utcnow
 from app.models.messages import Conversation, Message
 from app.models.property import Property
@@ -28,7 +27,6 @@ from app.services.notification_service import NotificationService
 from app.services.question_screen import asks_who_may_rent
 
 router = APIRouter(prefix="/properties", tags=["Listing questions"])
-limiter = Limiter(key_func=get_remote_address)
 
 QUESTIONS_PER_LISTING_PER_DAY = 5
 

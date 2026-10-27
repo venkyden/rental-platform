@@ -3,6 +3,7 @@ Redis Caching Layer - Netflix Style
 Provides distributed caching with automatic invalidation and TTL management.
 """
 
+import asyncio
 import hashlib
 import json
 import logging
@@ -47,12 +48,37 @@ class CacheLayer:
         # because __init__ cannot be async. Call await cache.connect() on
         # startup, or let the first operation lazily connect.
         self._connected = False
+        self._reconnect_task: Optional["asyncio.Task"] = None
+
+    # Backoff between background reconnect attempts; the last value repeats.
+    _RECONNECT_DELAYS = (5, 15, 30, 60)
 
     async def connect(self):
-        """Async connect to Redis. Call once from app startup."""
+        """Async connect to Redis. Call once from app startup.
+
+        If Redis is configured but unreachable at boot, keep retrying in the
+        background. Without this the process ran without Redis until restart,
+        silently disabling the login lockout, refresh-replay detection and
+        every other caller that checks redis_client.
+        """
         if self._connected:
             return
         await self._connect()
+        if not self._connected and self._reconnect_task is None and self._can_connect():
+            self._reconnect_task = asyncio.create_task(self._reconnect_loop())
+
+    @staticmethod
+    def _can_connect() -> bool:
+        from app.core.config import settings
+        return REDIS_AVAILABLE and AsyncRedis is not None and bool(settings.REDIS_URL)
+
+    async def _reconnect_loop(self):
+        attempt = 0
+        while not self._connected:
+            await asyncio.sleep(self._RECONNECT_DELAYS[min(attempt, len(self._RECONNECT_DELAYS) - 1)])
+            attempt += 1
+            await self._connect()
+        logger.info("Redis reconnected after %d background attempt(s)", attempt)
 
     async def _connect(self):
         """Connect to Redis if available"""
