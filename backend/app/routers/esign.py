@@ -21,6 +21,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 
 from app.core.database import get_db
+from app.core.rate_limit import client_ip
 from app.models.user import User
 from app.models.visits_and_leases import Lease
 from app.routers.auth import get_current_user
@@ -34,17 +35,6 @@ router = APIRouter(prefix="/esign", tags=["esign"])
 
 MAX_PDF_MB = 15
 VERIFY_BASE_URL = "https://roomivo.app"
-
-
-def _client_ip(request: Request) -> str | None:
-    # Use X-Real-IP — our nginx overwrites it with $remote_addr on every request, so it
-    # is not client-spoofable. Do NOT trust X-Forwarded-For[0]: nginx *appends* the real
-    # IP to the client-supplied value, so the first hop is attacker-controlled, and this
-    # IP is sealed into the signed manifest (eIDAS audit trail).
-    real = request.headers.get("x-real-ip")
-    if real:
-        return real.strip()
-    return request.client.host if request.client else None
 
 
 async def _notify(db: AsyncSession, method_name: str, recipient_id, lease_id) -> None:
@@ -220,7 +210,7 @@ async def sign_lease(
     audit.append(esign.build_audit_entry(
         party,
         current_user,
-        ip=_client_ip(request),
+        ip=client_ip(request),  # sealed into the signed manifest — must not be client-forgeable
         user_agent=request.headers.get("user-agent"),
         consent="Je consens à signer électroniquement ce bail (eIDAS).",
     ))

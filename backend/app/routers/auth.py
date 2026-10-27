@@ -1,4 +1,5 @@
 import logging
+import time
 import uuid
 from datetime import timedelta
 from app.core.timeutils import naive_utcnow
@@ -33,10 +34,7 @@ if not audit_logger.handlers:
     audit_logger.addHandler(handler)
 
 # Rate limiting
-from slowapi import Limiter
-from slowapi.util import get_remote_address
-
-limiter = Limiter(key_func=get_remote_address)
+from app.core.rate_limit import client_ip, limiter
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -74,6 +72,29 @@ async def _clear_login_failures(email: str) -> None:
 
 async def _is_account_locked(email: str) -> bool:
     return await _login_failure_count(email) >= _LOCKOUT_THRESHOLD
+
+
+# ------------------------------------------------------------------
+# Refresh-token reuse detection. Rotation alone leaves the presented token
+# valid until it expires, so a stolen one keeps working. Each token's jti is
+# marked spent on first use; a repeat inside the grace window (two tabs
+# refreshing at once) is tolerated, a later one means two parties hold the
+# token. Fails open without Redis, like the lockout above.
+# ------------------------------------------------------------------
+_REFRESH_REUSE_GRACE_SECONDS = 60
+
+
+async def _refresh_token_replayed(payload: dict) -> bool:
+    jti = payload.get("jti")
+    if not jti:  # minted before reuse detection shipped
+        return False
+    key = f"refresh_spent:{jti}"
+    spent = await cache.get(key)
+    if isinstance(spent, dict):
+        return time.time() - spent.get("at", 0) > _REFRESH_REUSE_GRACE_SECONDS
+    if not await cache.set(key, {"at": time.time()}, ttl=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600):
+        audit_logger.warning("REFRESH_REPLAY_CHECK_UNAVAILABLE cache write failed")
+    return False
 
 
 async def _user_for_token(db: AsyncSession, payload: dict):
@@ -201,7 +222,7 @@ async def register(
     db: AsyncSession = Depends(get_db),
 ):
     """Register a new user"""
-    client_host = request.client.host if request.client else "unknown"
+    client_host = client_ip(request) or "unknown"
     audit_logger.info(
         f"REGISTER_ATTEMPT email={user_data.email} ip={client_host}"
     )
@@ -274,7 +295,7 @@ async def login(
     db: AsyncSession = Depends(get_db),
 ):
     """Login and get JWT token"""
-    client_host = request.client.host if request.client else "unknown"
+    client_host = client_ip(request) or "unknown"
     audit_logger.info(
         f"LOGIN_ATTEMPT email={form_data.username} ip={client_host}"
     )
@@ -368,7 +389,19 @@ async def login(
     }
 
 
-@router.post("/refresh", response_model=Token)
+def _require_trusted_origin(request: Request) -> None:
+    """CSRF guard for the endpoints that authenticate by the refresh cookie.
+
+    The cookie is SameSite=None (frontend and API may sit on different sites),
+    so a third-party page can make the browser send it. Browsers attach Origin
+    to every cross-site POST; refuse any origin we don't serve.
+    """
+    origin = request.headers.get("origin")
+    if origin and origin not in settings.ALLOWED_ORIGINS:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Origin not allowed")
+
+
+@router.post("/refresh", response_model=Token, dependencies=[Depends(_require_trusted_origin)])
 async def refresh_token(
     request: Request,
     response: Response,
@@ -396,6 +429,15 @@ async def refresh_token(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User not found, inactive, or session revoked",
+        )
+
+    if await _refresh_token_replayed(payload):
+        user.refresh_token_version += 1  # revoke every session, thief's and owner's
+        await db.commit()
+        audit_logger.warning(f"REFRESH_TOKEN_REPLAY email={user.email}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Signed out everywhere: this session was used from another place. Please log in again.",
         )
 
     # Issue new access token
@@ -437,7 +479,7 @@ async def refresh_token(
     }
 
 
-@router.post("/logout")
+@router.post("/logout", dependencies=[Depends(_require_trusted_origin)])
 async def logout(
     response: Response,
     current_user: User = Depends(get_current_user_optional),
@@ -950,7 +992,7 @@ async def forgot_email(
     when a match is found we email the reminder to that address out-of-band. We
     never return the (even masked) address to the unauthenticated caller.
     """
-    client_host = request.client.host if request.client else "unknown"
+    client_host = client_ip(request) or "unknown"
 
     # Case-insensitive search using ilike
     query = select(User).where(
@@ -1083,7 +1125,7 @@ async def verify_email(request: Request, token: str, db: AsyncSession = Depends(
 @router.post("/resend-verification")
 @limiter.limit("3/minute")
 async def resend_verification(
-    request: Request,  # noqa: ARG001 — consumed by @limiter via get_remote_address
+    request: Request,  # noqa: ARG001 — consumed by @limiter via client_ip
     background_tasks: BackgroundTasks,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),

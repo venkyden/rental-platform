@@ -34,9 +34,13 @@ services:
       - key: PYTHONPATH
         value: "."
       - key: ALLOWED_ORIGINS
-        value: "https://roomivo.eu,https://www.roomivo.eu,https://api.roomivo.eu,https://roomivo-frontend-0jyi.onrender.com,http://localhost:3000"
+        value: "https://roomivo.eu,https://www.roomivo.eu,https://api.roomivo.eu,https://roomivo-frontend-0jyi.onrender.com"
       - key: COOKIE_DOMAIN
         value: ".roomivo.eu"
+      # Cloudflare overwrites this with the real client IP; X-Forwarded-For
+      # keeps client-supplied entries, so it cannot be trusted for rate limits.
+      - key: CLIENT_IP_HEADER
+        value: "cf-connecting-ip"
       - key: ENVIRONMENT
         value: "production"
       - key: GOOGLE_CLIENT_ID

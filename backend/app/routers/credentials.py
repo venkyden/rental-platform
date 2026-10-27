@@ -15,8 +15,6 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import Response, StreamingResponse
 from pydantic import BaseModel
-from slowapi import Limiter
-from slowapi.util import get_remote_address
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
@@ -33,7 +31,7 @@ logger = logging.getLogger(__name__)
 # Per-IP rate limiting on the PUBLIC endpoints (verify page, evidence PDF):
 # credential IDs are 128-bit so enumeration is hopeless, but the limits stop
 # scraping and unauthenticated DB hammering (anti-phishing dossier, WS-6).
-limiter = Limiter(key_func=get_remote_address)
+from app.core.rate_limit import limiter
 
 router = APIRouter(prefix="/credentials", tags=["Credentials"])
 

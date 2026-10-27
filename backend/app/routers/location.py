@@ -6,13 +6,11 @@ from typing import Literal
 
 from fastapi import APIRouter, HTTPException, Request, status
 from pydantic import BaseModel, Field
-from slowapi import Limiter
-from slowapi.util import get_remote_address
 
 from app.utils.location import enrich_property_location
 
 router = APIRouter(prefix="/location", tags=["Location"])
-limiter = Limiter(key_func=get_remote_address)
+from app.core.rate_limit import limiter
 
 
 class AddressEnrichRequest(BaseModel):

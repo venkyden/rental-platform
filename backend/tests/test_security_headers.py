@@ -38,3 +38,13 @@ def test_protected_endpoint_requires_auth(client):
     resp = client.get("/auth/me")
     # Assert: must not be accessible without a token
     assert resp.status_code in (401, 403)
+
+
+def test_responses_are_not_cacheable(client):
+    # Policy 4.3 / CWE-524: private API responses must never be stored by a
+    # browser, proxy or CDN. Every API response is marked, error ones included.
+    for path in ("/health", "/auth/me"):
+        resp = client.get(path)
+        assert resp.headers.get("Cache-Control") == "no-store, no-cache, must-revalidate, proxy-revalidate"
+        assert resp.headers.get("Pragma") == "no-cache"
+        assert resp.headers.get("Expires") == "0"

@@ -62,6 +62,9 @@ class Settings(BaseSettings):
     SENTRY_DSN: Optional[str] = None
     ENVIRONMENT: str = "development"
     COOKIE_DOMAIN: Optional[str] = None
+    # Header the edge proxy overwrites with the real client IP (see
+    # app/core/rate_limit.py). Unset = socket peer.
+    CLIENT_IP_HEADER: Optional[str] = None
 
     # GDPR & Privacy
     MASTER_ENCRYPTION_KEY: Optional[str] = None
@@ -95,7 +98,9 @@ class Settings(BaseSettings):
         ]
         # Only allow localhost in non-production environments.
         # Including localhost in production allows CORS from any victim's browser.
-        if self.ENVIRONMENT != "production":
+        if self.ENVIRONMENT == "production":
+            origins = [o for o in origins if "://localhost" not in o and "://127.0.0.1" not in o]
+        else:
             origins += [
                 "http://localhost:3000",
                 "http://localhost:3001",

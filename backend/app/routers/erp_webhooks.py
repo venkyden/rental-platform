@@ -3,10 +3,12 @@ ERP Webhooks API for external system integrations.
 Allows landlords to subscribe to events and receive HTTP notifications.
 """
 
+import asyncio
 import hashlib
 import hmac
 import ipaddress
 import json
+import logging
 import socket
 from datetime import datetime
 from app.core.timeutils import naive_utcnow
@@ -27,52 +29,80 @@ from app.models.webhook_subscriptions import (WebhookDelivery,
 from app.routers.auth import get_current_user
 
 router = APIRouter(prefix="/webhooks/subscriptions", tags=["ERP Webhooks"])
+logger = logging.getLogger(__name__)
 
 
-# SSRF Protection: blocked hostnames and IP ranges
-BLOCKED_HOSTS = {"localhost", "127.0.0.1", "0.0.0.0", "::1"}
-PRIVATE_IP_RANGES = [
-    ipaddress.ip_network("10.0.0.0/8"),
-    ipaddress.ip_network("172.16.0.0/12"),
-    ipaddress.ip_network("192.168.0.0/16"),
-    ipaddress.ip_network("169.254.0.0/16"),  # Link-local
-    ipaddress.ip_network("127.0.0.0/8"),  # Loopback
-]
+# SSRF Protection: every address a hostname resolves to must be globally
+# routable. is_global already excludes loopback, RFC 1918, link-local (cloud
+# metadata), CGNAT, ULA and unspecified; multicast is excluded explicitly.
+# IPv6 forms that carry an IPv4 address (mapped, NAT64, v4-compatible) are
+# judged by that address, and deprecated site-local is refused.
+_NAT64 = ipaddress.ip_network("64:ff9b::/96")
+_IPV4_COMPATIBLE = ipaddress.ip_network("::/96")
+
+
+def _is_public_ip(ip: ipaddress.IPv4Address | ipaddress.IPv6Address) -> bool:
+    if ip.version == 6:
+        if ip.ipv4_mapped:
+            ip = ip.ipv4_mapped
+        elif ip in _NAT64 or ip in _IPV4_COMPATIBLE:
+            ip = ipaddress.IPv4Address(int(ip) & 0xFFFFFFFF)
+        elif ip.is_site_local:
+            return False
+    return ip.is_global and not ip.is_multicast
+
+
+def _require_public(infos) -> ipaddress.IPv4Address | ipaddress.IPv6Address:
+    """Return the first resolved address, refusing if ANY of them is internal."""
+    ips = [ipaddress.ip_address(info[4][0]) for info in infos]
+    if not ips or not all(_is_public_ip(ip) for ip in ips):
+        raise ValueError("URL must resolve to a public internet address")
+    return ips[0]
+
+
+def _parse_webhook_url(url: str):
+    parsed = urlparse(url)
+    if parsed.scheme not in ("http", "https"):
+        raise ValueError("URL must use http or https")
+    if not parsed.hostname:
+        raise ValueError("Invalid URL: no hostname")
+    return parsed
 
 
 def validate_webhook_url(url: str) -> str:
     """Validate webhook URL to prevent SSRF attacks."""
+    parsed = _parse_webhook_url(url)
     try:
-        parsed = urlparse(url)
+        infos = socket.getaddrinfo(parsed.hostname, parsed.port or 443, type=socket.SOCK_STREAM)
+    except socket.gaierror:
+        raise ValueError("URL must resolve to a public internet address")
+    _require_public(infos)
+    return url
 
-        # Must be HTTPS in production (allow HTTP for testing)
-        if parsed.scheme not in ("http", "https"):
-            raise ValueError("URL must use http or https")
 
-        hostname = parsed.hostname
-        if not hostname:
-            raise ValueError("Invalid URL: no hostname")
+async def _getaddrinfo_async(host: str, port: int):
+    return await asyncio.get_running_loop().getaddrinfo(host, port, type=socket.SOCK_STREAM)
 
-        # Block known internal hostnames
-        if hostname.lower() in BLOCKED_HOSTS:
-            raise ValueError("Internal hosts not allowed")
 
-        # Block AWS/cloud metadata endpoints
-        if hostname in ["169.254.169.254", "metadata.google.internal"]:
-            raise ValueError("Cloud metadata endpoints not allowed")
+async def _pinned_request_target(url: str) -> tuple[str, dict, dict]:
+    """Re-check the URL at send time and pin the connection to the checked address.
 
-        # Resolve hostname and check if IP is private
-        try:
-            ip = ipaddress.ip_address(socket.gethostbyname(hostname))
-            for private_range in PRIVATE_IP_RANGES:
-                if ip in private_range:
-                    raise ValueError("Private IP addresses not allowed")
-        except socket.gaierror:
-            pass  # Allow unresolvable hostnames (might be valid external hosts)
+    Validation at save time alone is defeated by DNS rebinding (the name resolves
+    publicly when saved, internally when sent). Connecting to the IP we just
+    checked, with the original Host header and TLS SNI, closes that window.
+    """
+    parsed = _parse_webhook_url(url)
+    try:
+        infos = await _getaddrinfo_async(parsed.hostname, parsed.port or 443)
+    except socket.gaierror:
+        raise ValueError("URL must resolve to a public internet address")
+    ip = _require_public(infos)
 
-        return url
-    except ValueError as e:
-        raise ValueError(str(e))
+    host = f"[{ip}]" if ip.version == 6 else str(ip)
+    port = f":{parsed.port}" if parsed.port else ""
+    pinned_url = parsed._replace(netloc=f"{host}{port}").geturl()
+    extensions = {"sni_hostname": parsed.hostname} if parsed.scheme == "https" else {}
+    return pinned_url, {"Host": f"{parsed.hostname}{port}"}, extensions
 
 
 # Available events
@@ -106,6 +136,11 @@ class UpdateSubscriptionRequest(BaseModel):
     url: Optional[str] = None
     events: Optional[List[str]] = None
     is_active: Optional[bool] = None
+
+    @field_validator("url")
+    @classmethod
+    def validate_url(cls, v: Optional[str]) -> Optional[str]:
+        return v if v is None else validate_webhook_url(v)
 
 
 class SubscriptionResponse(BaseModel):
@@ -413,9 +448,13 @@ async def send_webhook(
     )
 
     try:
-        async with httpx.AsyncClient(timeout=10.0) as client:
+        pinned_url, host_header, extensions = await _pinned_request_target(subscription.url)
+        async with httpx.AsyncClient(timeout=10.0, follow_redirects=False) as client:
             response = await client.post(
-                subscription.url, content=payload_str, headers=headers
+                pinned_url,
+                content=payload_str,
+                headers={**headers, **host_header},
+                extensions=extensions,
             )
 
         end_time = naive_utcnow()
@@ -439,6 +478,14 @@ async def send_webhook(
     except Exception as e:
         end_time = naive_utcnow()
         duration = int((end_time - start_time).total_seconds() * 1000)
+
+        if isinstance(e, ValueError):
+            # Passed the save-time check but now resolves inside: DNS rebinding
+            # or a repointed record. Stop delivering until the landlord re-saves.
+            logger.warning("WEBHOOK_URL_REFUSED subscription=%s", subscription.id)
+            subscription.is_active = False
+        else:
+            logger.exception("Webhook delivery failed subscription=%s", subscription.id)
 
         delivery.success = False
         delivery.error_message = str(e)[:500]

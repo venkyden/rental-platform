@@ -14,8 +14,6 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, EmailStr, Field
-from slowapi import Limiter
-from slowapi.util import get_remote_address
 from sqlalchemy import case, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -30,7 +28,7 @@ from app.services.email import _render, email_service
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/reports", tags=["Reports"])
-limiter = Limiter(key_func=get_remote_address)
+from app.core.rate_limit import limiter
 
 REASON_LABELS = {
     "discrimination": ("Discrimination", "Discrimination"),

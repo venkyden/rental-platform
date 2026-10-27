@@ -83,16 +83,11 @@ def _all_app_limiters():
 @pytest.fixture(autouse=True)
 def _disable_rate_limiter():
     """Per-IP rate limits would trip during a full suite run from a single test
-    IP. Each router owns its own Limiter instance (auth.py, properties.py,
-    credentials.py, verification.py, ...) rather than sharing one, so every
-    instance needs disabling here — missing one is exactly what let
-    verification.py's identity-upload limit start failing unrelated tests that
-    happen to run after enough uploads elsewhere in the file. Disable for
-    tests; production keeps it.
-
-    The instances are discovered, not listed: a hand-kept list had already
-    drifted (it missed dossiers, location and main), so a new router's
-    limiter is now covered without anyone remembering to add it here."""
+    IP. Routers share app.core.rate_limit.limiter, but instances are
+    discovered rather than listed so a stray per-router Limiter is still
+    disabled — a missed one is exactly what let verification.py's
+    identity-upload limit start failing unrelated tests. Disable for tests;
+    production keeps it."""
     limiters = _all_app_limiters()
     previous = [lim.enabled for lim in limiters]
     for lim in limiters:

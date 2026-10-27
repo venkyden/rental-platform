@@ -1,7 +1,5 @@
 from typing import Any, List
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from slowapi import Limiter
-from slowapi.util import get_remote_address
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -18,7 +16,7 @@ from datetime import datetime
 # Per-IP rate limiting on the PUBLIC share endpoint. Tokens are 256-bit so
 # enumeration is hopeless, but the limit stops scraping and unauthenticated
 # DB/storage hammering — same posture as the credential verify endpoint.
-limiter = Limiter(key_func=get_remote_address)
+from app.core.rate_limit import limiter
 
 router = APIRouter()
 

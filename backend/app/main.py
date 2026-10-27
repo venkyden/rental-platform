@@ -33,14 +33,10 @@ except ImportError:
 # Rate limiting (optional — only if slowapi is installed)
 # ------------------------------------------------------------------
 try:
-    from slowapi import Limiter, _rate_limit_exceeded_handler
+    from slowapi import _rate_limit_exceeded_handler
     from slowapi.errors import RateLimitExceeded
-    from slowapi.util import get_remote_address
 
-    limiter = Limiter(
-        key_func=get_remote_address,
-        storage_uri=settings.REDIS_URL if settings.REDIS_URL else None,
-    )
+    from app.core.rate_limit import limiter
     RATE_LIMITING_ENABLED = True
 except ImportError:
     limiter = None
@@ -146,6 +142,13 @@ async def add_security_headers(request: Request, call_next):
         "encrypted-media=(self), fullscreen=(self), geolocation=(self), gyroscope=(), "
         "magnetometer=(), microphone=(self), midi=(), payment=(), usb=()"
     )
+
+    # Responses carry identity, solvency and credential state: never let a
+    # browser, proxy or CDN store them. A route that sets its own policy keeps it.
+    if "cache-control" not in response.headers:
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, proxy-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
 
     # HSTS only in production (avoid pinning HTTPS on local http dev).
     if settings.ENVIRONMENT == "production":
