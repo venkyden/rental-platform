@@ -12,6 +12,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from pydantic import BaseModel, EmailStr
+
+from app.core.emails import NormalizedEmail
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -32,7 +34,7 @@ logger = logging.getLogger(__name__)
 
 
 class InviteTeamMemberRequest(BaseModel):
-    email: EmailStr
+    email: NormalizedEmail
     name: str
     permission_level: str = "view_only"  # view_only, manage_visits, full_access
     property_ids: List[str] = []  # If empty, no properties assigned yet
@@ -171,6 +173,9 @@ async def get_my_invites(
     try:
         if not current_user.email:
             logger.warning(f"User {current_user.id} has no email address")
+            return []
+        if not current_user.email_verified:
+            # Invites go to an address; only someone who proved they own it sees them.
             return []
 
         # Fetch invites where the current user is the recipient (by email)
@@ -540,7 +545,9 @@ async def accept_invite(
         await db.commit()
         raise HTTPException(status_code=400, detail="Invite has expired")
 
-    # Verify email matches
+    # Verify email matches, and that this account proved it owns the address
+    if not current_user.email_verified:
+        raise HTTPException(status_code=403, detail="Confirm your email address before accepting an invite.")
     if current_user.email.lower() != member.email.lower():
         raise HTTPException(
             status_code=400,

@@ -228,9 +228,10 @@ async def test_deleting_an_account_erases_its_contact_from_open_reports(client, 
     monkeypatch.setattr(storage, "delete_files_by_prefix", _noop)
     monkeypatch.setattr(storage, "delete_file", _noop)
     landlord = await make_user(sessionmaker_, role="landlord")
-    reporter = await make_user(sessionmaker_, role="tenant", email="Reporter.Case@Example.com")
+    reporter = await make_user(sessionmaker_, role="tenant", email="reporter.case@example.com")
     prop = await make_property(sessionmaker_, landlord, status="active")
-    report = await _report(client, prop, notifier_email="reporter.case@example.com")
+    # Typed in another case than the account's address: still the same person.
+    report = await _report(client, prop, notifier_email="Reporter.Case@Example.com")
 
     r = await client.delete("/gdpr/delete", headers=auth(reporter))
     assert r.status_code == 200, r.text

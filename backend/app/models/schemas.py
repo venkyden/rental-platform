@@ -5,9 +5,11 @@ from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
 
+from app.core.emails import NormalizedEmail
+
 
 class UserRegister(BaseModel):
-    email: EmailStr
+    email: NormalizedEmail
     password: str = Field(min_length=8, max_length=128)
     full_name: str
     phone: Optional[str] = Field(None, max_length=20)
@@ -38,7 +40,7 @@ class UserRegister(BaseModel):
 
 
 class UserLogin(BaseModel):
-    email: EmailStr
+    email: NormalizedEmail
     password: str
 
 
@@ -147,7 +149,7 @@ class ChangePasswordRequest(BaseModel):
         return v
 
 class RequestEmailChangeRequest(BaseModel):
-    new_email: EmailStr
+    new_email: NormalizedEmail
     password: str
 
 class ConfirmEmailChangeRequest(BaseModel):
@@ -155,7 +157,7 @@ class ConfirmEmailChangeRequest(BaseModel):
 
 
 class ForgotPasswordRequest(BaseModel):
-    email: EmailStr
+    email: NormalizedEmail
 
 
 class ForgotEmailRequest(BaseModel):

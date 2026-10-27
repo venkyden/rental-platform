@@ -11,6 +11,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
+from app.core.emails import normalize_email
 from app.core.database import get_db
 from app.core.security import (create_access_token, create_refresh_token, get_password_hash,
                                verify_password, verify_token)
@@ -295,6 +296,9 @@ async def login(
     db: AsyncSession = Depends(get_db),
 ):
     """Login and get JWT token"""
+    # Addresses are stored in lowercase; normalising first also keeps the
+    # lockout below from being dodged by changing the case.
+    form_data.username = normalize_email(form_data.username)
     client_host = client_ip(request) or "unknown"
     audit_logger.info(
         f"LOGIN_ATTEMPT email={form_data.username} ip={client_host}"
@@ -796,7 +800,7 @@ async def google_auth(
         )
 
     google_id = google_data.get("sub")
-    email = google_data.get("email")
+    email = normalize_email(google_data.get("email") or "") or None
 
     email_verified_raw = google_data.get("email_verified", False)
     email_verified = (

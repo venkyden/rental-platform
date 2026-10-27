@@ -20,6 +20,8 @@ from app.models.user import User
 from app.routers.auth import get_current_user
 from app.services.message_safety import scan_message
 
+from app.core.emails import LowercaseEmailText
+
 router = APIRouter(tags=["Messaging"])
 
 # Bound message bodies: the DB column is unbounded Text, so without this an
@@ -57,7 +59,7 @@ class MessageResponse(BaseModel):
 
 class ConversationCreate(BaseModel):
     property_id: UUID
-    tenant_email: str
+    tenant_email: LowercaseEmailText
     subject: Optional[str] = None
     initial_message: str = Field(min_length=1, max_length=_MAX_MESSAGE_LEN)
 
