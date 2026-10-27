@@ -150,10 +150,34 @@ that the owner **marked** absent or not working removes the "furnished" label; a
 - **Media is still tagged by bedroom or common area.** Tagging photos by kitchen, bathroom
   and living area (open point 3) is not done.
 
+## The question box, step 1 (built 2026-10-26)
+
+Decided 2026-10-20 (management call after the council's legal review §1–2): step 1 matches and
+sends privately; nothing is published.
+
+- **Matching, on the listing page** (`frontend/lib/questionMatch.ts`, `components/walkthrough/QuestionBox.tsx`):
+  as the student types, words are matched against the owner's walk-through answers and, for a
+  shared home, the household card. English and French synonyms per item, accents and hyphens
+  ignored, whole words only. Deterministic, no AI. The matched answers show with the owner's date.
+- **Asking** (`POST /properties/{id}/questions`, `backend/app/routers/listing_questions.py`):
+  signed in, not the owner, published listings only, 5 to 500 characters. The question starts or
+  continues the student's conversation with the owner about that listing (message type
+  `listing_question`). Before this, a student could not start a conversation at all
+  (`POST /conversations` is owner-only). The owner gets an in-app notification and an email or
+  phone message per their contact preferences, linking to `/inbox?conversation=<id>`, which now
+  opens that conversation.
+- **Questions about who may rent are not sent** (`backend/app/services/question_screen.py`):
+  "do you accept foreigners / families / women only…" in English and French returns 422
+  `who_may_rent`, nothing is stored, and the page shows a fixed notice listing the protected
+  grounds with a link to report the listing. Questions about the home ("wheelchair accessible?",
+  "a certificate for my visa?") pass.
+- **Limits:** 20 per hour per IP address, 5 per listing per student per day.
+- **Hoguet:** Roomivo forwards the question; it does not answer, rank, recommend or filter people.
+
 ## Not built yet, and why
 
-- **The question box** (a student asks, the landlord answers once, the answer stays on the
-  page). It relays between the two sides, which roadmap L-1 puts to counsel first.
+- **The question box, step 2**: publishing the owner's answer on the listing, word for word,
+  after a screen and with a report link. Step 1 is built (below).
 - **A publish block.** Replaced by the furnished rule above: publishing never fails over
   these items.
 - **The unanswered case does not block a furnished lease**: the owner has not said anything

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import PremiumLayout from '@/components/PremiumLayout';
@@ -15,6 +15,15 @@ export default function InboxPage() {
     const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
     const [isMobileViewingConversation, setIsMobileViewingConversation] = useState(false);
     const { t } = useLanguage();
+
+    // /inbox?conversation=<id> opens that conversation (links from notifications and the question box).
+    useEffect(() => {
+        const id = new URLSearchParams(window.location.search).get('conversation');
+        if (id) {
+            setSelectedConversationId(id);
+            setIsMobileViewingConversation(true);
+        }
+    }, []);
 
     const handleSelectConversation = (conversationId: string) => {
         setSelectedConversationId(conversationId);

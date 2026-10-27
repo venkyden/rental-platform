@@ -131,6 +131,7 @@
   "POST /api/v1/properties/media/upload",
   "POST /api/v1/properties/{property_id}/media-session",
   "POST /api/v1/properties/{property_id}/publish",
+  "POST /api/v1/properties/{property_id}/questions",
   "POST /api/v1/properties/{property_id}/save",
   "POST /api/v1/reports",
   "POST /api/v1/reports/admin/{report_id}/decision",
