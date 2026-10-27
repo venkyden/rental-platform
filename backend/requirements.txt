@@ -6,7 +6,7 @@
 #
 # Dev/CI additionally: pip install -r requirements-dev.txt
 
-fastapi>=0.109.0
+fastapi>=0.162.0
 uvicorn[standard]>=0.47.0
 sqlalchemy>=2.0.25
 asyncpg>=0.30.0
