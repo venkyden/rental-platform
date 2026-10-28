@@ -163,6 +163,7 @@ jobs:
           tests/test_french_compliance.py tests/test_security_headers.py
           tests/test_erp_webhook_ssrf.py tests/test_client_ip.py
           tests/test_cookie_csrf.py tests/test_refresh_reuse.py
+          tests/test_cache_reconnect.py
           -v --tb=short
 
       - name: Build schema (migrations) for integration tests
