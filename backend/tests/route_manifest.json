@@ -113,6 +113,7 @@
   "POST /api/v1/dossiers/share",
   "POST /api/v1/esign/leases/{lease_id}/document",
   "POST /api/v1/esign/leases/{lease_id}/sign",
+  "POST /api/v1/esign/leases/{lease_id}/sign-code",
   "POST /api/v1/feedback/",
   "POST /api/v1/gdpr/purge-stale-applications",
   "POST /api/v1/inventory/",

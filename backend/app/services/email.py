@@ -181,6 +181,26 @@ class EmailService:
             to_email, subject, _render(body, "Reset your Roomivo password"), text
         )
 
+    # ── Lease signing code ────────────────────────────────────────────────────
+    async def send_esign_code(self, to_email: str, code: str, full_name: str) -> bool:
+        words = (full_name or "").split()
+        first = words[0] if words else ""
+        subject = "Your Roomivo signing code / Votre code de signature"
+        body = f"""
+          <h1>Lease signing code</h1>
+          <p>Hi {first}, here is the code to sign your lease on Roomivo. / Voici le code pour signer votre bail sur Roomivo.</p>
+          <div class="code-box" style="font-size:28px;letter-spacing:6px;text-align:center"><strong>{code}</strong></div>
+          <p style="font-size:13px;color:#888">It expires in <strong>10 minutes</strong> and works once. If you are not signing a lease right now, someone may be using your session: sign out everywhere and change your password. / Il expire dans 10 minutes et ne sert qu'une fois. Si vous ne signez pas de bail en ce moment, déconnectez-vous partout et changez votre mot de passe.</p>
+        """
+        text = (
+            f"Your Roomivo signing code / Votre code de signature : {code}\n\n"
+            "Expires in 10 minutes, single use. If you are not signing a lease "
+            "right now, sign out everywhere and change your password.\n\n© Roomivo"
+        )
+        return await self.send_email(
+            to_email, subject, _render(body, "Your lease signing code"), text
+        )
+
     # ── Forgot email reminder ─────────────────────────────────────────────────
     async def send_forgot_email_reminder(
         self, to_email: str, full_name: str

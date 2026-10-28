@@ -79,6 +79,7 @@ def build_audit_entry(
     user_agent: str | None,
     consent: str,
     credential_id: str | None = None,
+    step_up: str | None = None,
 ) -> dict:
     """
     One signer's record for the audit trail. Carries no PII source data — only the
@@ -94,6 +95,7 @@ def build_audit_entry(
         "signed_at": utcnow().replace(microsecond=0).isoformat(),
         "ip": ip,
         "user_agent": user_agent,
+        "step_up": step_up,  # how the signer re-confirmed at signing time
     }
 
 

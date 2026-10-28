@@ -25,7 +25,8 @@ interface EsignManagerProps {
 }
 
 export default function EsignManager({ leaseId }: EsignManagerProps) {
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
+    const fr = language === 'fr';
     const [status, setStatus] = useState<EsignStatus | null>(null);
     const [loading, setLoading] = useState(true);
     const [busy, setBusy] = useState(false);
@@ -35,6 +36,22 @@ export default function EsignManager({ leaseId }: EsignManagerProps) {
     const sigPadRef = useRef<SignatureCanvas | null>(null);
     const [typedName, setTypedName] = useState('');
     const [consent, setConsent] = useState(false);
+    // step-up: a one-time code emailed to the signer, required by /sign
+    const [code, setCode] = useState('');
+    const [codeSent, setCodeSent] = useState(false);
+
+    const requestCode = async () => {
+        setBusy(true);
+        setError('');
+        try {
+            await apiClient.client.post(`/esign/leases/${leaseId}/sign-code`);
+            setCodeSent(true);
+        } catch (err: any) {
+            setError(err.response?.data?.detail || t('esign.code.sendFailed', undefined, fr ? "Le code n'a pas pu être envoyé" : 'The code could not be sent'));
+        } finally {
+            setBusy(false);
+        }
+    };
 
     const loadStatus = useCallback(async () => {
         try {
@@ -80,6 +97,10 @@ export default function EsignManager({ leaseId }: EsignManagerProps) {
             setError(t('esign.error.noConsent', undefined, 'You must consent to sign electronically'));
             return;
         }
+        if (!/^\d{6}$/.test(code.trim())) {
+            setError(t('esign.code.missing', undefined, fr ? 'Saisissez le code à 6 chiffres reçu par e-mail' : 'Enter the 6-digit code from your email'));
+            return;
+        }
         setBusy(true);
         setError('');
         try {
@@ -87,7 +108,10 @@ export default function EsignManager({ leaseId }: EsignManagerProps) {
                 signature_image: drawn,
                 typed_name: drawn ? null : typedName.trim(),
                 consent: true,
+                code: code.trim(),
             });
+            setCode('');
+            setCodeSent(false);
             setTypedName('');
             sigPadRef.current?.clear();
             await loadStatus();
@@ -266,6 +290,37 @@ export default function EsignManager({ leaseId }: EsignManagerProps) {
                         />
                         <span>{t('esign.sign.consent', undefined, 'I consent to signing this lease electronically (eIDAS simple signature). I confirm my identity has been verified by Roomivo.')}</span>
                     </label>
+
+                    <div className="text-xs font-black uppercase tracking-widest text-zinc-400 mb-2">
+                        {t('esign.code.label', undefined, fr ? 'Code de confirmation' : 'Confirmation code')}
+                    </div>
+                    <p className="text-sm text-zinc-600 mb-3">
+                        {codeSent
+                            ? t('esign.code.sent', undefined, fr ? 'Code envoyé à votre adresse e-mail. Il expire dans 10 minutes.' : 'Code sent to your email. It expires in 10 minutes.')
+                            : t('esign.code.why', undefined, fr ? 'Pour signer, nous vous envoyons un code par e-mail : votre session seule ne suffit pas.' : 'To sign, we email you a code, so your session alone is not enough.')}
+                    </p>
+                    <div className="flex gap-3 mb-6">
+                        <input
+                            type="text"
+                            inputMode="numeric"
+                            autoComplete="one-time-code"
+                            maxLength={6}
+                            value={code}
+                            onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+                            placeholder="123456"
+                            className="w-36 border border-zinc-300 rounded-lg px-4 py-3 text-sm tracking-widest"
+                        />
+                        <button
+                            type="button"
+                            onClick={requestCode}
+                            disabled={busy}
+                            className="text-sm font-bold text-zinc-900 underline disabled:opacity-50"
+                        >
+                            {codeSent
+                                ? t('esign.code.resend', undefined, fr ? 'Renvoyer un code' : 'Send a new code')
+                                : t('esign.code.send', undefined, fr ? 'Recevoir le code par e-mail' : 'Email me a code')}
+                        </button>
+                    </div>
 
                     <button
                         type="button"

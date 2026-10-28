@@ -4,12 +4,17 @@ e-sign → tamper-evident evidence pack. In-house Ed25519 (DOSSIER §0.16, §5.6
 
 Endpoints (all under /esign):
 - POST /esign/leases/{id}/document    landlord uploads the lease PDF to be signed
-- POST /esign/leases/{id}/sign        a verified party signs (SG-1, SG-3, consent)
+- POST /esign/leases/{id}/sign-code   email the signer a one-time code (step-up)
+- POST /esign/leases/{id}/sign        a verified party signs (SG-1, SG-3, consent, code)
 - GET  /esign/leases/{id}/status      current signing state (for the UI)
 - GET  /esign/leases/{id}/evidence.pdf  signature evidence pack, once fully signed (SG-4)
 """
 
+import hashlib
+import hmac
 import logging
+import secrets
+from datetime import datetime, timedelta
 from io import BytesIO
 
 from fastapi import (
@@ -20,12 +25,15 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 
+from app.core.config import settings
 from app.core.database import get_db
-from app.core.rate_limit import client_ip
+from app.core.rate_limit import client_ip, limiter
+from app.core.timeutils import utcnow
 from app.models.user import User
 from app.models.visits_and_leases import Lease
 from app.routers.auth import get_current_user
 from app.services import esign, lease_legality
+from app.services.email import email_service
 from app.services.notification_service import NotificationService
 from app.services.storage import storage, StorageUnavailableError
 
@@ -62,6 +70,20 @@ class SignRequest(BaseModel):
     signature_image: str | None = None  # Base64 PNG of a drawn signature
     typed_name: str | None = None       # typed-name signature (alternative to drawn)
     consent: bool = False
+    code: str | None = None             # one-time code from POST .../sign-code
+
+
+# Step-up: signing also needs a one-time code emailed to the signer. Without it
+# the session token alone signed a lease, so a script running in the page or a
+# stolen access token could sign as the user. Only an HMAC of the code is
+# stored, bound to the lease, the signer and the exact document hash.
+_STEP_UP_TTL_SECONDS = 600
+_STEP_UP_MAX_ATTEMPTS = 5
+
+
+def _step_up_digest(lease, user_id, code: str) -> str:
+    message = f"{lease.id}:{user_id}:{lease.document_hash}:{code}".encode()
+    return hmac.new(settings.SECRET_KEY.encode(), message, hashlib.sha256).hexdigest()
 
 
 @router.post("/leases/{lease_id}/document", status_code=status.HTTP_201_CREATED)
@@ -146,6 +168,41 @@ async def upload_lease_document(
     }
 
 
+@router.post("/leases/{lease_id}/sign-code")
+@limiter.limit("5/hour")
+async def request_sign_code(
+    lease_id: UUID,
+    request: Request,  # noqa: ARG001 — consumed by @limiter
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Email the signer a one-time code that /sign requires (step-up)."""
+    lease = await _get_lease_or_404(lease_id, db)
+    allowed, reason = esign.can_sign(current_user, lease)
+    if not allowed:
+        raise HTTPException(status_code=403, detail=reason)
+    if not lease.document_hash or not lease.pdf_path:
+        raise HTTPException(status_code=400, detail="Aucun document n'a été téléversé pour signature")
+    if lease.status == "signed":
+        raise HTTPException(status_code=409, detail="Le bail est déjà entièrement signé")
+
+    party = esign.party_of(current_user, lease)
+    code = f"{secrets.randbelow(1_000_000):06d}"
+    sig_data = dict(lease.signature_data or {})
+    step_up = dict(sig_data.get("step_up") or {})
+    step_up[party] = {
+        "digest": _step_up_digest(lease, current_user.id, code),
+        "expires_at": (utcnow() + timedelta(seconds=_STEP_UP_TTL_SECONDS)).isoformat(),
+        "attempts": 0,
+    }
+    lease.signature_data = {**sig_data, "step_up": step_up}
+    await db.commit()
+
+    if not await email_service.send_esign_code(current_user.email, code, current_user.full_name or ""):
+        raise HTTPException(status_code=503, detail="Impossible d'envoyer le code ; réessayez dans un instant")
+    return {"sent": True, "expires_in": _STEP_UP_TTL_SECONDS}
+
+
 @router.post("/leases/{lease_id}/sign")
 async def sign_lease(
     lease_id: UUID,
@@ -207,12 +264,31 @@ async def sign_lease(
     if any(e.get("party") == party for e in audit):
         raise HTTPException(status_code=409, detail="Cette partie a déjà signé")
 
+    # Step-up: the emailed one-time code. A failed or expired attempt is persisted
+    # before refusing, so the attempt limit holds across requests.
+    step_up = dict(sig_data.get("step_up") or {})
+    pending = step_up.get(party)
+    if not body.code or not pending:
+        raise HTTPException(status_code=400, detail="Un code de confirmation envoyé par e-mail est requis pour signer")
+    if pending["attempts"] >= _STEP_UP_MAX_ATTEMPTS or utcnow() > datetime.fromisoformat(pending["expires_at"]):
+        step_up.pop(party)
+        lease.signature_data = {**sig_data, "step_up": step_up}
+        await db.commit()
+        raise HTTPException(status_code=400, detail="Ce code a expiré ; demandez-en un nouveau")
+    if not hmac.compare_digest(pending["digest"], _step_up_digest(lease, current_user.id, body.code.strip())):
+        step_up[party] = {**pending, "attempts": pending["attempts"] + 1}
+        lease.signature_data = {**sig_data, "step_up": step_up}
+        await db.commit()
+        raise HTTPException(status_code=400, detail="Code de confirmation incorrect")
+    step_up.pop(party)  # single use
+
     audit.append(esign.build_audit_entry(
         party,
         current_user,
         ip=client_ip(request),  # sealed into the signed manifest — must not be client-forgeable
         user_agent=request.headers.get("user-agent"),
         consent="Je consens à signer électroniquement ce bail (eIDAS).",
+        step_up="email_code",
     ))
 
     # Persist the visible signature into the party's column.
@@ -222,7 +298,7 @@ async def sign_lease(
     else:
         lease.tenant_signature = sig_value
 
-    lease.signature_data = {"esign_audit": audit, "legality": legality}
+    lease.signature_data = {"esign_audit": audit, "legality": legality, "step_up": step_up}
 
     finalised = esign.is_fully_signed(audit, lease)
     if finalised:
