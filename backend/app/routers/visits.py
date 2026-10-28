@@ -56,8 +56,10 @@ class PublicVisitSlotResponse(BaseModel):
     room_label: Optional[str] = None
 
 
+from app.core.emails import LowercaseEmailText
+
 class DirectLeaseGenerateRequest(BaseModel):
-    tenant_email: str
+    tenant_email: LowercaseEmailText
     rent_amount: float
     start_date: str
     lease_type: str = "meuble"
